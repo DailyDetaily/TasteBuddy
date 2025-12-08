@@ -1,0 +1,1723 @@
+import svgPaths from "./svg-h9nsrm0gkv";
+import imgImage from "figma:asset/0681bae57cc99eb9acba0a48c532d82e73863896.png";
+import imgImage1 from "figma:asset/c778d4444bb95d0a798d28fe5acdfe85cf6ffc14.png";
+import imgImage2 from "figma:asset/2220fac5adaafaa71708a4ae95760913fe178d89.png";
+
+function Time() {
+  return (
+    <div className="basis-0 box-border content-stretch flex gap-[10px] grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-[2px] px-0 relative shrink-0" data-name="Time">
+      <p className="font-['SF_Pro:Semibold',sans-serif] font-[590] leading-[22px] relative shrink-0 text-[#0f0f0f] text-[17px] text-center text-nowrap whitespace-pre">9:41</p>
+    </div>
+  );
+}
+
+function Battery() {
+  return (
+    <div className="h-[13px] relative shrink-0 w-[27.328px]" data-name="Battery">
+      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 28 13">
+        <g id="Battery">
+          <rect height="12" id="Border" opacity="0.35" rx="3.8" stroke="var(--stroke-0, #0F0F0F)" width="24" x="0.5" y="0.5" />
+          <path d={svgPaths.p3bbd9700} fill="var(--fill-0, #0F0F0F)" id="Cap" opacity="0.4" />
+          <rect fill="var(--fill-0, #0F0F0F)" height="9" id="Capacity" rx="2.5" width="21" x="2" y="2" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function Levels() {
+  return (
+    <div className="basis-0 box-border content-stretch flex gap-[7px] grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-px px-0 relative shrink-0" data-name="Levels">
+      <div className="h-[12.226px] relative shrink-0 w-[19.2px]" data-name="Cellular Connection">
+        <div className="absolute inset-0" style={{ "--fill-0": "rgba(15, 15, 15, 1)" } as React.CSSProperties}>
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 13">
+            <path clipRule="evenodd" d={svgPaths.p1e09e400} fill="var(--fill-0, #0F0F0F)" fillRule="evenodd" id="Cellular Connection" />
+          </svg>
+        </div>
+      </div>
+      <div className="h-[12.328px] relative shrink-0 w-[17.142px]" data-name="Wifi">
+        <div className="absolute inset-0" style={{ "--fill-0": "rgba(15, 15, 15, 1)" } as React.CSSProperties}>
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 13">
+            <path clipRule="evenodd" d={svgPaths.p18b35300} fill="var(--fill-0, #0F0F0F)" fillRule="evenodd" id="Wifi" />
+          </svg>
+        </div>
+      </div>
+      <Battery />
+    </div>
+  );
+}
+
+function StatusBarIPhone() {
+  return (
+    <div className="relative shrink-0 w-full" data-name="Status bar - iPhone">
+      <div className="flex flex-row items-center justify-center size-full">
+        <div className="box-border content-stretch flex gap-[154px] items-center justify-center pb-[19px] pt-[21px] px-[16px] relative w-full">
+          <Time />
+          <Levels />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio() {
+  return <div className="h-full w-0" data-name="Ratio" />;
+}
+
+function Ratio1() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[16px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "32" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[330deg]">
+          <Ratio />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio2() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-start overflow-clip relative shrink-0" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[32px]" style={{ "--transform-inner-width": "16", "--transform-inner-height": "32" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[323.13deg]">
+          <Ratio1 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileImageResourcePlaceholderProfileInitials() {
+  return (
+    <div className="absolute bg-white inset-0" data-name="Profile-Image/_Resource/Placeholder/Profile-Initials">
+      <div className="absolute inset-0" style={{ "--fill-0": "rgba(255, 153, 0, 1)" } as React.CSSProperties}>
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 32 32">
+          <path d="M32 32H0V0H32V32Z" fill="var(--fill-0, #FF9900)" id="Subtract" opacity="0.2" />
+        </svg>
+      </div>
+      <p className="absolute font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[normal] left-[16px] text-[#0f0f0f] text-[14px] text-center text-nowrap top-[8px] translate-x-[-50%] whitespace-pre">JH</p>
+    </div>
+  );
+}
+
+function ProfileImageProfileImage() {
+  return (
+    <div className="relative rounded-[10000px] shrink-0 size-[32px]" data-name="Profile-Image/Profile-Image">
+      <div className="content-stretch flex items-center justify-center overflow-clip relative rounded-[inherit] size-[32px]">
+        <Ratio2 />
+        <ProfileImageResourcePlaceholderProfileInitials />
+      </div>
+      <div aria-hidden="true" className="absolute border border-[rgba(15,15,15,0.2)] border-solid inset-0 pointer-events-none rounded-[10000px]" />
+    </div>
+  );
+}
+
+function ProfileImage() {
+  return (
+    <div className="content-stretch flex items-center justify-center relative shrink-0" data-name="Profile-image">
+      <ProfileImageProfileImage />
+    </div>
+  );
+}
+
+function Left() {
+  return (
+    <div className="content-stretch flex items-center relative shrink-0" data-name="Left">
+      <ProfileImage />
+    </div>
+  );
+}
+
+function Ratio3() {
+  return <div className="h-full w-0" data-name="Ratio" />;
+}
+
+function Ratio4() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[330deg]">
+          <Ratio3 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio5() {
+  return (
+    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[323.13deg]">
+          <Ratio4 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AlertUndefinedGlyphUndefined() {
+  return (
+    <div className="absolute left-0 size-[24px] top-0" data-name="Alert / undefined / Glyph: undefined">
+      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
+        <g id="Alert / undefined / Glyph: undefined">
+          <path d={svgPaths.p10a17300} fill="var(--fill-0, #3F3F3F)" id="Union" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function Icons() {
+  return (
+    <div className="relative shrink-0 size-[24px]" data-name="Icons">
+      <Ratio5 />
+      <AlertUndefinedGlyphUndefined />
+    </div>
+  );
+}
+
+function Ratio6() {
+  return <div className="h-full w-0" data-name="Ratio" />;
+}
+
+function Ratio7() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[330deg]">
+          <Ratio6 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio8() {
+  return (
+    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[323.13deg]">
+          <Ratio7 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddCircleUndefinedGlyphUndefined() {
+  return (
+    <div className="absolute left-0 size-[24px] top-0" data-name="Add Circle / undefined / Glyph: undefined">
+      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
+        <g id="Add Circle / undefined / Glyph: undefined">
+          <path d={svgPaths.p35731e80} fill="var(--fill-0, #3F3F3F)" id="Vector" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function Icons1() {
+  return (
+    <div className="relative shrink-0 size-[24px]" data-name="Icons">
+      <Ratio8 />
+      <AddCircleUndefinedGlyphUndefined />
+    </div>
+  );
+}
+
+function Ratio9() {
+  return <div className="h-full w-0" data-name="Ratio" />;
+}
+
+function Ratio10() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[330deg]">
+          <Ratio9 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio11() {
+  return (
+    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[323.13deg]">
+          <Ratio10 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Group7() {
+  return (
+    <div className="absolute inset-[21.88%_9.38%]">
+      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 14">
+        <g id="Group 151">
+          <path d={svgPaths.p184c1a00} fill="var(--fill-0, #3F3F3F)" id="Vector 229 (Stroke)" />
+          <path d={svgPaths.p22677180} fill="var(--fill-0, #3F3F3F)" id="Vector 231 (Stroke)" />
+          <path d={svgPaths.pa9da800} fill="var(--fill-0, #3F3F3F)" id="Vector 230 (Stroke)" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function NavigationUndefinedGlyphUndefined() {
+  return (
+    <div className="absolute left-0 overflow-clip size-[24px] top-0" data-name="Navigation / undefined / Glyph: undefined">
+      <Group7 />
+    </div>
+  );
+}
+
+function Icons2() {
+  return (
+    <div className="relative shrink-0 size-[24px]" data-name="Icons">
+      <Ratio11 />
+      <NavigationUndefinedGlyphUndefined />
+    </div>
+  );
+}
+
+function Icon() {
+  return (
+    <div className="box-border content-stretch flex gap-[16px] items-center justify-end px-0 py-[2px] relative shrink-0" data-name="Icon">
+      <Icons />
+      <Icons1 />
+      <Icons2 />
+    </div>
+  );
+}
+
+function Action() {
+  return (
+    <div className="content-stretch flex gap-[16px] items-center justify-center relative shrink-0" data-name="Action">
+      <Icon />
+    </div>
+  );
+}
+
+function Right() {
+  return (
+    <div className="content-stretch flex gap-[20px] items-center justify-center relative shrink-0" data-name="Right">
+      <Action />
+    </div>
+  );
+}
+
+function Content() {
+  return (
+    <div className="bg-white h-[56px] max-w-[1100px] relative shrink-0 w-full" data-name="Content">
+      <div className="flex flex-row items-center max-w-inherit overflow-clip rounded-[inherit] size-full">
+        <div className="box-border content-stretch flex h-[56px] items-center justify-between max-w-inherit pl-[20px] pr-[16px] py-[12px] relative w-full">
+          <Left />
+          <Right />
+        </div>
+      </div>
+      <div aria-hidden="true" className="absolute border-[0px_0px_1px] border-solid border-white inset-0 pointer-events-none" />
+    </div>
+  );
+}
+
+function Container() {
+  return (
+    <div className="backdrop-blur-[32px] backdrop-filter content-stretch flex flex-col items-center justify-center relative shrink-0 w-full" data-name="Container">
+      <div className="absolute bg-white inset-0 opacity-[0.74]" data-name="Background" />
+      <StatusBarIPhone />
+      <Content />
+    </div>
+  );
+}
+
+function TopAppBars() {
+  return (
+    <div className="bg-white content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Top App Bars">
+      <Container />
+    </div>
+  );
+}
+
+function OsBarTopNavigationResourceContents() {
+  return (
+    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="OS/Bar/Top Navigation/Resource/Contents">
+      <TopAppBars />
+    </div>
+  );
+}
+
+function Heading() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[10px] grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Heading">
+      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[1.4] min-h-px min-w-px relative shrink-0 text-[20px] text-black tracking-[-0.24px]">셰프 매칭</p>
+    </div>
+  );
+}
+
+function Content1() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[grey] text-nowrap text-right tracking-[0.3421px] whitespace-pre">자세히 보기</p>
+      <div className="flex items-center justify-center relative shrink-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[8px] relative w-[4px]">
+            <div className="absolute inset-[-6.25%_-12.5%]">
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5 9">
+                <path d="M4.5 0.5L0.5 4.5L4.5 8.5" id="Vector 143" stroke="var(--stroke-0, #808080)" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoreInfo() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center justify-center relative shrink-0" data-name="More info">
+      <Content1 />
+    </div>
+  );
+}
+
+function MoreInfo1() {
+  return (
+    <div className="content-stretch flex h-full items-center justify-center relative shrink-0" data-name="More Info">
+      <MoreInfo />
+    </div>
+  );
+}
+
+function Heading1() {
+  return (
+    <div className="content-stretch flex gap-[8px] items-end relative shrink-0 w-full" data-name="Heading">
+      <Heading />
+      <div className="flex flex-row items-end self-stretch">
+        <MoreInfo1 />
+      </div>
+    </div>
+  );
+}
+
+function Info() {
+  return (
+    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0" data-name="Info">
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[#0f0f0f] text-[14px] w-full">황정인 셰프</p>
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] w-full">레스토랑 베누</p>
+    </div>
+  );
+}
+
+function Info1() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start leading-[normal] relative shrink-0" data-name="Info">
+      <Info />
+      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[#0f0f0f] text-[10px] text-nowrap whitespace-pre">매칭률 75%</p>
+    </div>
+  );
+}
+
+function Content2() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0" data-name="Content">
+      <div className="relative rounded-[8px] shrink-0 size-[48px]" data-name="Image">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[8px]">
+          <img alt="" className="absolute h-[224%] left-[-27.29%] max-w-none top-[-1.88%] w-[179.2%]" src={imgImage} />
+        </div>
+      </div>
+      <Info1 />
+    </div>
+  );
+}
+
+function Cards() {
+  return (
+    <div className="bg-[#ffebcc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px]" data-name="Cards">
+      <Content2 />
+    </div>
+  );
+}
+
+function Info2() {
+  return (
+    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0" data-name="Info">
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[#0f0f0f] text-[14px] w-full">이은지 셰프</p>
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] w-full">숍 리제 (Lysée)</p>
+    </div>
+  );
+}
+
+function Info3() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start leading-[normal] relative shrink-0" data-name="Info">
+      <Info2 />
+      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[#0f0f0f] text-[10px] text-nowrap whitespace-pre">매칭률 72%</p>
+    </div>
+  );
+}
+
+function Content3() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0" data-name="Content">
+      <div className="relative rounded-[8px] shrink-0 size-[48px]" data-name="Image">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[8px]">
+          <img alt="" className="absolute h-[338.39%] left-[-85.36%] max-w-none top-[-32.13%] w-[270.71%]" src={imgImage1} />
+        </div>
+      </div>
+      <Info3 />
+    </div>
+  );
+}
+
+function Cards1() {
+  return (
+    <div className="bg-[#fff7cc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px]" data-name="Cards">
+      <Content3 />
+    </div>
+  );
+}
+
+function Info4() {
+  return (
+    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0" data-name="Info">
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[#0f0f0f] text-[14px] w-full">임정식 셰프</p>
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] w-full">정식당</p>
+    </div>
+  );
+}
+
+function Info5() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start leading-[normal] relative shrink-0" data-name="Info">
+      <Info4 />
+      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[#0f0f0f] text-[10px] text-nowrap whitespace-pre">매칭률 70%</p>
+    </div>
+  );
+}
+
+function Content4() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0" data-name="Content">
+      <div className="relative rounded-[8px] shrink-0 size-[48px]" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[8px] size-full" src={imgImage2} />
+      </div>
+      <Info5 />
+    </div>
+  );
+}
+
+function Cards2() {
+  return (
+    <div className="bg-[#eaf4cc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px]" data-name="Cards">
+      <Content4 />
+    </div>
+  );
+}
+
+function Content5() {
+  return (
+    <div className="content-stretch flex gap-[12px] items-start relative shrink-0 w-full" data-name="Content">
+      <Cards />
+      <Cards1 />
+      <Cards2 />
+    </div>
+  );
+}
+
+function ChefList() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Chef List">
+      <Heading1 />
+      <Content5 />
+    </div>
+  );
+}
+
+function Section() {
+  return (
+    <div className="relative shrink-0 w-full" data-name="Section">
+      <div aria-hidden="true" className="absolute border-[#f3f3f3] border-[1px_0px] border-solid inset-0 pointer-events-none" />
+      <div className="size-full">
+        <div className="box-border content-stretch flex flex-col items-start p-[20px] relative w-full">
+          <ChefList />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Heading2() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[10px] grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Heading">
+      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[1.4] min-h-px min-w-px relative shrink-0 text-[20px] text-black tracking-[-0.24px]">미각 프로필</p>
+    </div>
+  );
+}
+
+function Content6() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[grey] text-nowrap text-right tracking-[0.3421px] whitespace-pre">이번 주</p>
+      <div className="flex h-[4px] items-center justify-center relative shrink-0 w-[8px]" style={{ "--transform-inner-width": "4", "--transform-inner-height": "8" } as React.CSSProperties}>
+        <div className="flex-none rotate-[270deg]">
+          <div className="h-[8px] relative w-[4px]">
+            <div className="absolute inset-[-6.25%_-12.5%]">
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5 9">
+                <path d="M4.5 0.5L0.5 4.5L4.5 8.5" id="Vector 143" stroke="var(--stroke-0, #808080)" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoreInfo2() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center justify-center relative shrink-0" data-name="More info">
+      <Content6 />
+    </div>
+  );
+}
+
+function MoreInfo3() {
+  return (
+    <div className="content-stretch flex h-full items-center justify-center relative shrink-0" data-name="More Info">
+      <MoreInfo2 />
+    </div>
+  );
+}
+
+function Heading3() {
+  return (
+    <div className="content-stretch flex gap-[8px] items-end relative shrink-0 w-full" data-name="Heading">
+      <Heading2 />
+      <div className="flex flex-row items-end self-stretch">
+        <MoreInfo3 />
+      </div>
+    </div>
+  );
+}
+
+function TasteCircle() {
+  return (
+    <div className="relative shrink-0 size-[14px]" data-name="Taste Circle">
+      <div className="absolute inset-[-7.14%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+          <g id="Taste Circle">
+            <circle cx="8" cy="8" fill="url(#paint0_linear_1_1996)" id="Ellipse 211" r="8" />
+          </g>
+          <defs>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1_1996" x1="8" x2="8" y1="0" y2="16">
+              <stop offset="0.2" stopColor="#FF9900" />
+              <stop offset="0.8" stopColor="#B372B4" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Head() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Head">
+      <TasteCircle />
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">미각 변화</p>
+    </div>
+  );
+}
+
+function Content7() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">6.10-16일</p>
+      <div className="flex items-center justify-center relative shrink-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[8px] relative w-[4px]">
+            <div className="absolute inset-[-6.25%_-12.5%]" style={{ "--stroke-0": "rgba(111, 111, 111, 1)" } as React.CSSProperties}>
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5 9">
+                <path d="M4.5 0.5L0.5 4.5L4.5 8.5" id="Vector 143" stroke="var(--stroke-0, #6F6F6F)" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoreInfo4() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
+      <Content7 />
+    </div>
+  );
+}
+
+function Right1() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-[59px]" data-name="Right">
+      <MoreInfo4 />
+    </div>
+  );
+}
+
+function Heading4() {
+  return (
+    <div className="content-center flex flex-wrap gap-[187px] items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
+      <Head />
+      <Right1 />
+    </div>
+  );
+}
+
+function ArrowBox() {
+  return (
+    <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
+      <div className="absolute inset-0" style={{ "--fill-0": "rgba(255, 153, 0, 1)" } as React.CSSProperties}>
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
+          <g id="Arrow Box">
+            <rect fill="var(--fill-0, #FF9900)" height="18" rx="4" width="18" />
+            <path d={svgPaths.p3d191ac0} id="Vector 222" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Info6() {
+  return (
+    <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-name="Info">
+      <ArrowBox />
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] text-[rgba(15,15,15,0.6)] text-nowrap whitespace-pre">단맛 증가</p>
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] text-nowrap whitespace-pre">+15.2%</p>
+    </div>
+  );
+}
+
+function ArrowBox1() {
+  return (
+    <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
+      <div className="absolute inset-0" style={{ "--fill-0": "rgba(179, 114, 180, 1)" } as React.CSSProperties}>
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
+          <g id="Arrow Box">
+            <rect fill="var(--fill-0, #B372B4)" height="18" rx="4" width="18" />
+            <path d={svgPaths.p1157b300} id="Vector 222" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Frame() {
+  return (
+    <div className="basis-0 content-stretch flex font-['Pretendard_Variable:Regular',sans-serif] font-normal gap-[2px] grow items-center leading-[0] min-h-px min-w-px relative shrink-0 text-[rgba(15,15,15,0.6)] text-nowrap">
+      <div className="flex flex-col justify-center relative shrink-0 text-[12px]">
+        <p className="leading-[normal] text-nowrap whitespace-pre">감칠맛 감소</p>
+      </div>
+      <div className="flex flex-col justify-center relative shrink-0 text-[10px]">
+        <p className="leading-[normal] text-nowrap whitespace-pre">-10.7%</p>
+      </div>
+    </div>
+  );
+}
+
+function Info7() {
+  return (
+    <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-name="Info">
+      <ArrowBox1 />
+      <Frame />
+    </div>
+  );
+}
+
+function Info8() {
+  return (
+    <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full" data-name="Info">
+      <Info6 />
+      <Info7 />
+    </div>
+  );
+}
+
+function Right2() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[12px] grow items-start min-h-px min-w-px relative shrink-0" data-name="Right">
+      <div className="flex flex-col font-['Pretendard_Variable:Bold',sans-serif] font-bold h-[14px] justify-center leading-[0] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
+        <p className="leading-[100.06%]">체중 감소에 따른</p>
+      </div>
+      <Info8 />
+    </div>
+  );
+}
+
+function GraphBottom() {
+  return (
+    <div className="absolute contents right-[13px] top-[calc(50%+21.22px)] translate-y-[-50%]" data-name="Graph Bottom">
+      <div className="absolute h-[7.444px] right-[18px] top-[calc(50%+18.72px)] translate-y-[-50%] w-[100px]">
+        <div className="absolute inset-[-67.16%_-5%_-67.17%_-5%]">
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 110 18">
+            <path d={svgPaths.p3020d880} id="Vector 152" stroke="var(--stroke-0, #F0E3F0)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
+          </svg>
+        </div>
+      </div>
+      <div className="absolute h-[7.444px] right-[18px] top-[calc(50%+18.72px)] translate-y-[-50%] w-[100px]">
+        <div className="absolute inset-[-13.43%_-1%]">
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 102 10">
+            <path d={svgPaths.p3255eb00} id="Vector 168" stroke="url(#paint0_linear_5_7582)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            <defs>
+              <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_5_7582" x1="-39" x2="101" y1="3.44446" y2="3.44446">
+                <stop stopColor="#E8D5E9" />
+                <stop offset="1" stopColor="#B576B6" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+      <div className="absolute right-[13px] size-[10px] top-[calc(50%+22.44px)] translate-y-[-50%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
+          <circle cx="5" cy="5" fill="var(--fill-0, #B372B4)" id="Ellipse 210" r="5" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function GraphTop() {
+  return (
+    <div className="absolute contents right-[13px] top-[calc(50%-13.5px)] translate-y-[-50%]" data-name="Graph Top">
+      <div className="absolute h-[12px] right-[18px] top-[calc(50%-11px)] translate-y-[-50%] w-[100px]">
+        <div className="absolute inset-[-41.68%_-5%_-41.67%_-5%]">
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 110 22">
+            <path d={svgPaths.p3d90bd00} id="Vector 150" stroke="var(--stroke-0, #FFEBCC)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
+          </svg>
+        </div>
+      </div>
+      <div className="absolute h-[12px] right-[18px] top-[calc(50%-11px)] translate-y-[-50%] w-[100px]">
+        <div className="absolute inset-[-8.34%_-1%_-8.33%_-1%]">
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 102 14">
+            <path d={svgPaths.p16e45b04} id="Vector 153" stroke="url(#paint0_linear_5_7592)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            <defs>
+              <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_5_7592" x1="-39" x2="101" y1="8.50024" y2="8.50024">
+                <stop stopColor="#FFDFAF" />
+                <stop offset="1" stopColor="#FF9900" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+      <div className="absolute right-[13px] size-[10px] top-[calc(50%-17px)] translate-y-[-50%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
+          <circle cx="5" cy="5" fill="var(--fill-0, #FF9900)" id="Ellipse 203" r="5" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Group8() {
+  return (
+    <div className="absolute contents right-[13px] top-[calc(50%+2.72px)] translate-y-[-50%]">
+      <GraphBottom />
+      <GraphTop />
+    </div>
+  );
+}
+
+function MeasureGraph() {
+  return (
+    <div className="basis-0 grow h-[62px] min-h-px min-w-px relative shrink-0" data-name="Measure Graph">
+      <Group8 />
+    </div>
+  );
+}
+
+function Content8() {
+  return (
+    <div className="content-start flex flex-wrap gap-[12px] items-start justify-between min-w-[311px] relative shrink-0 w-full" data-name="Content">
+      <Right2 />
+      <MeasureGraph />
+    </div>
+  );
+}
+
+function Cards3() {
+  return (
+    <div className="bg-[#f3f3f3] h-[112px] relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+      <div className="overflow-clip rounded-[inherit] size-full">
+        <div className="box-border content-stretch flex flex-col gap-[12px] h-[112px] items-start p-[12px] relative w-full">
+          <Heading4 />
+          <Content8 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TasteCircle1() {
+  return (
+    <div className="relative shrink-0 size-[14px]" data-name="Taste Circle">
+      <div className="absolute inset-[-7.14%]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+          <g id="Taste Circle">
+            <circle cx="8" cy="8" fill="url(#paint0_linear_1_1973)" id="Ellipse 211" r="8" />
+          </g>
+          <defs>
+            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1_1973" x1="8" x2="8" y1="0" y2="16">
+              <stop offset="0.2" stopColor="#B372B4" />
+              <stop offset="0.8" stopColor="#95867A" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Head1() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Head">
+      <TasteCircle1 />
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">특이 사항</p>
+    </div>
+  );
+}
+
+function Content9() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">6.10-16일</p>
+      <div className="flex items-center justify-center relative shrink-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[8px] relative w-[4px]">
+            <div className="absolute inset-[-6.25%_-12.5%]" style={{ "--stroke-0": "rgba(111, 111, 111, 1)" } as React.CSSProperties}>
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5 9">
+                <path d="M4.5 0.5L0.5 4.5L4.5 8.5" id="Vector 143" stroke="var(--stroke-0, #6F6F6F)" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoreInfo5() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
+      <Content9 />
+    </div>
+  );
+}
+
+function Right3() {
+  return (
+    <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-[59px]" data-name="Right">
+      <MoreInfo5 />
+    </div>
+  );
+}
+
+function Heading5() {
+  return (
+    <div className="content-center flex flex-wrap gap-[187px] items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
+      <Head1 />
+      <Right3 />
+    </div>
+  );
+}
+
+function ArrowBox2() {
+  return (
+    <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
+      <div className="absolute inset-0" style={{ "--fill-0": "rgba(179, 114, 180, 1)" } as React.CSSProperties}>
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
+          <g id="Arrow Box">
+            <rect fill="var(--fill-0, #B372B4)" height="18" rx="4" width="18" />
+            <path d={svgPaths.p3d191ac0} id="Vector 222" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Info9() {
+  return (
+    <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-name="Info">
+      <ArrowBox2 />
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] text-[rgba(15,15,15,0.6)] text-nowrap whitespace-pre">구아닐산 증가</p>
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] text-nowrap whitespace-pre">+5.2%</p>
+    </div>
+  );
+}
+
+function ArrowBox3() {
+  return (
+    <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
+      <div className="absolute inset-0" style={{ "--fill-0": "rgba(149, 134, 122, 1)" } as React.CSSProperties}>
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
+          <g id="Arrow Box">
+            <rect fill="var(--fill-0, #95867A)" height="18" rx="4" width="18" />
+            <path d={svgPaths.p1157b300} id="Vector 222" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Frame1() {
+  return (
+    <div className="basis-0 content-stretch flex font-['Pretendard_Variable:Regular',sans-serif] font-normal gap-[2px] grow items-center leading-[0] min-h-px min-w-px relative shrink-0 text-[rgba(15,15,15,0.6)] text-nowrap">
+      <div className="flex flex-col justify-center relative shrink-0 text-[12px]">
+        <p className="leading-[normal] text-nowrap whitespace-pre">글루탐산 감소</p>
+      </div>
+      <div className="flex flex-col justify-center relative shrink-0 text-[10px]">
+        <p className="leading-[normal] text-nowrap whitespace-pre">-14.3%</p>
+      </div>
+    </div>
+  );
+}
+
+function Info10() {
+  return (
+    <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-name="Info">
+      <ArrowBox3 />
+      <Frame1 />
+    </div>
+  );
+}
+
+function Info11() {
+  return (
+    <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full" data-name="Info">
+      <Info9 />
+      <Info10 />
+    </div>
+  );
+}
+
+function Right4() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col gap-[12px] grow items-start min-h-px min-w-px relative shrink-0" data-name="Right">
+      <div className="flex flex-col font-['Pretendard_Variable:Bold',sans-serif] font-bold h-[14px] justify-center leading-[0] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
+        <p className="leading-[100.06%]">발효식품에 민감함</p>
+      </div>
+      <Info11 />
+    </div>
+  );
+}
+
+function Group() {
+  return (
+    <div className="absolute contents right-[113px] top-[42px]">
+      <div className="absolute flex h-[10px] items-center justify-center right-[118px] top-[47px] w-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[10px] relative w-0">
+            <div className="absolute inset-[-50%_-5px]">
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 20">
+                <path d="M5 15V5" id="Vector 222" stroke="var(--stroke-0, #FFCC7F)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute right-[113px] size-[10px] top-[42px]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
+          <circle cx="5" cy="5" fill="var(--fill-0, #FF9900)" id="Ellipse 203" r="5" />
+        </svg>
+      </div>
+      <div className="absolute flex flex-col font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold justify-center leading-[0] right-[118px] text-[6px] text-center text-white top-[46.5px] translate-x-[50%] translate-y-[-50%] w-[10px]">
+        <p className="leading-[normal]">1</p>
+      </div>
+    </div>
+  );
+}
+
+function Group1() {
+  return (
+    <div className="absolute contents right-[93px] top-[22px]">
+      <div className="absolute flex h-[30px] items-center justify-center right-[98px] top-[27px] w-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[30px] relative w-0">
+            <div className="absolute inset-[-16.67%_-5px]">
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 40">
+                <path d="M5 35V5" id="Vector 221" stroke="var(--stroke-0, #FFEA7F)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute right-[93px] size-[10px] top-[22px]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
+          <circle cx="5" cy="5" fill="var(--fill-0, #FFD600)" id="Ellipse 216" r="5" />
+        </svg>
+      </div>
+      <div className="absolute flex flex-col font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold justify-center leading-[0] right-[98px] size-[10px] text-[6px] text-center text-white top-[27px] translate-x-[50%] translate-y-[-50%]">
+        <p className="leading-[normal]">3</p>
+      </div>
+    </div>
+  );
+}
+
+function Group4() {
+  return (
+    <div className="absolute contents right-[33px] top-[12px]">
+      <div className="absolute flex h-[40px] items-center justify-center right-[38px] top-[17px] w-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[40px] relative w-0">
+            <div className="absolute inset-[-12.5%_-5px]">
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 50">
+                <path d="M5 45V5" id="Vector 218" stroke="var(--stroke-0, #D9B8D9)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute right-[33px] size-[10px] top-[12px]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
+          <circle cx="5" cy="5" fill="var(--fill-0, #B372B4)" id="Ellipse 210" r="5" />
+        </svg>
+      </div>
+      <div className="absolute flex flex-col font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold justify-center leading-[0] right-[38px] size-[10px] text-[6px] text-center text-white top-[17px] translate-x-[50%] translate-y-[-50%]">
+        <p className="leading-[normal]">4</p>
+      </div>
+    </div>
+  );
+}
+
+function Group5() {
+  return (
+    <div className="absolute contents right-[13px] top-[2px]">
+      <div className="absolute flex h-[50px] items-center justify-center right-[18px] top-[7px] w-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[50px] relative w-0">
+            <div className="absolute inset-[-10%_-5px]">
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 60">
+                <path d="M5 55V5" id="Vector 217" stroke="var(--stroke-0, #CAC2BC)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute right-[13px] size-[10px] top-[2px]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
+          <circle cx="5" cy="5" fill="var(--fill-0, #95867A)" id="Ellipse 220" r="5" />
+        </svg>
+      </div>
+      <div className="absolute flex flex-col font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold justify-center leading-[0] right-[18px] size-[10px] text-[6px] text-center text-white top-[7px] translate-x-[50%] translate-y-[-50%]">
+        <p className="leading-[normal]">5</p>
+      </div>
+    </div>
+  );
+}
+
+function Group2() {
+  return (
+    <div className="absolute contents right-[73px] top-[32px]">
+      <div className="absolute flex h-[20px] items-center justify-center right-[78px] top-[37px] w-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[20px] relative w-0">
+            <div className="absolute inset-[-25%_-5px]">
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 30">
+                <path d="M5 25V5" id="Vector 220" stroke="var(--stroke-0, #CAE47F)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute right-[73px] size-[10px] top-[32px]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
+          <circle cx="5" cy="5" fill="var(--fill-0, #95C900)" id="Ellipse 217" r="5" />
+        </svg>
+      </div>
+      <div className="absolute flex flex-col font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold justify-center leading-[0] right-[78px] size-[10px] text-[6px] text-center text-white top-[37px] translate-x-[50%] translate-y-[-50%]">
+        <p className="leading-[normal]">2</p>
+      </div>
+    </div>
+  );
+}
+
+function Group3() {
+  return (
+    <div className="absolute contents right-[53px] top-[32px]">
+      <div className="absolute flex h-[20px] items-center justify-center right-[58px] top-[37px] w-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[20px] relative w-0">
+            <div className="absolute inset-[-25%_-5px]">
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 30">
+                <path d="M5 25V5" id="Vector 219" stroke="var(--stroke-0, #B8CCFF)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute right-[53px] size-[10px] top-[32px]">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
+          <circle cx="5" cy="5" fill="var(--fill-0, #7299FF)" id="Ellipse 218" r="5" />
+        </svg>
+      </div>
+      <div className="absolute flex flex-col font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold justify-center leading-[0] right-[58px] size-[10px] text-[6px] text-center text-white top-[37px] translate-x-[50%] translate-y-[-50%]">
+        <p className="leading-[normal]">2</p>
+      </div>
+    </div>
+  );
+}
+
+function Group6() {
+  return (
+    <div className="absolute contents right-[13px] top-[2px]">
+      <Group />
+      <Group1 />
+      <Group4 />
+      <Group5 />
+      <Group2 />
+      <Group3 />
+    </div>
+  );
+}
+
+function MeasureGraph1() {
+  return (
+    <div className="basis-0 grow h-[62px] min-h-px min-w-px relative shrink-0" data-name="Measure Graph">
+      <Group6 />
+    </div>
+  );
+}
+
+function Content10() {
+  return (
+    <div className="content-start flex flex-wrap gap-[12px] items-start justify-between min-w-[311px] relative shrink-0 w-full" data-name="Content">
+      <Right4 />
+      <MeasureGraph1 />
+    </div>
+  );
+}
+
+function Cards4() {
+  return (
+    <div className="bg-[#f3f3f3] h-[116px] relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+      <div className="overflow-clip rounded-[inherit] size-full">
+        <div className="box-border content-stretch flex flex-col gap-[12px] h-[116px] items-start p-[12px] relative w-full">
+          <Heading5 />
+          <Content10 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Head2() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="Head">
+      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#0f0f0f] text-[14px]">모든 정보 보기</p>
+    </div>
+  );
+}
+
+function Content11() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[6px] grow items-center justify-end min-h-px min-w-px relative shrink-0" data-name="Content">
+      <div className="flex items-center justify-center relative shrink-0">
+        <div className="flex-none rotate-[180deg]">
+          <div className="h-[8px] relative w-[4px]">
+            <div className="absolute inset-[-6.25%_-12.5%]" style={{ "--stroke-0": "rgba(111, 111, 111, 1)" } as React.CSSProperties}>
+              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5 9">
+                <path d="M4.5 0.5L0.5 4.5L4.5 8.5" id="Vector 143" stroke="var(--stroke-0, #6F6F6F)" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoreInfo6() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
+      <Content11 />
+    </div>
+  );
+}
+
+function Right5() {
+  return (
+    <div className="basis-0 content-stretch flex gap-[6px] grow items-center justify-end min-h-px min-w-px relative shrink-0" data-name="Right">
+      <MoreInfo6 />
+    </div>
+  );
+}
+
+function Heading6() {
+  return (
+    <div className="content-center flex flex-wrap gap-[187px] items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
+      <Head2 />
+      <Right5 />
+    </div>
+  );
+}
+
+function Cards5() {
+  return (
+    <div className="bg-[#f3f3f3] relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+      <div className="overflow-clip rounded-[inherit] size-full">
+        <div className="box-border content-stretch flex flex-col gap-[12px] items-start p-[12px] relative w-full">
+          <Heading6 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Content12() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Content">
+      <Cards3 />
+      <Cards4 />
+      <Cards5 />
+    </div>
+  );
+}
+
+function TasteProfile() {
+  return (
+    <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Taste Profile">
+      <Heading3 />
+      <Content12 />
+    </div>
+  );
+}
+
+function Section1() {
+  return (
+    <div className="relative shrink-0 w-full" data-name="Section">
+      <div aria-hidden="true" className="absolute border-[#f3f3f3] border-[1px_0px] border-solid inset-0 pointer-events-none" />
+      <div className="size-full">
+        <div className="box-border content-stretch flex flex-col items-start p-[20px] relative w-full">
+          <TasteProfile />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Content13() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-start min-h-px min-w-px relative shrink-0 w-full" data-name="Content">
+      <Section />
+      {[...Array(2).keys()].map((_, i) => (
+        <Section1 key={i} />
+      ))}
+    </div>
+  );
+}
+
+function Content14() {
+  return (
+    <div className="basis-0 bg-white content-stretch flex flex-col grow items-center min-h-px min-w-px overflow-clip relative shrink-0 w-full" data-name="Content">
+      <Content13 />
+    </div>
+  );
+}
+
+function Viewport() {
+  return (
+    <div className="basis-0 content-stretch flex flex-col grow items-start min-h-px min-w-px relative shrink-0 w-full" data-name="Viewport">
+      <OsBarTopNavigationResourceContents />
+      <Content14 />
+    </div>
+  );
+}
+
+function Ratio12() {
+  return <div className="h-full w-0" data-name="Ratio" />;
+}
+
+function Ratio13() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[330deg]">
+          <Ratio12 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio14() {
+  return (
+    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[323.13deg]">
+          <Ratio13 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Icons3() {
+  return (
+    <div className="relative shrink-0 size-[24px]" data-name="Icons">
+      <Ratio14 />
+      <div className="absolute inset-[8.33%_12.5%_12.49%_12.5%]" data-name="Vector">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 19">
+          <path d={svgPaths.p3d342380} fill="var(--fill-0, #3F3F3F)" id="Vector" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Contants() {
+  return (
+    <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-full" data-name="Contants">
+      <Icons3 />
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.429] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.8)] text-nowrap tracking-[0.145px] whitespace-pre">홈</p>
+    </div>
+  );
+}
+
+function Tab() {
+  return (
+    <div className="basis-0 box-border content-stretch flex flex-col gap-[10px] grow items-center justify-center min-h-px min-w-px px-0 py-[4px] relative shrink-0" data-name="Tab 1">
+      <Contants />
+    </div>
+  );
+}
+
+function Ratio15() {
+  return <div className="h-full w-0" data-name="Ratio" />;
+}
+
+function Ratio16() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[330deg]">
+          <Ratio15 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio17() {
+  return (
+    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[323.13deg]">
+          <Ratio16 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Icons4() {
+  return (
+    <div className="relative shrink-0 size-[24px]" data-name="Icons">
+      <Ratio17 />
+      <div className="absolute inset-[12.5%_8.33%_8.33%_8.33%]" data-name="Union">
+        <div className="absolute inset-0" style={{ "--fill-0": "rgba(63, 63, 63, 1)" } as React.CSSProperties}>
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 19">
+            <g id="Union">
+              <path clipRule="evenodd" d={svgPaths.p28cd6d00} fill="#3F3F3F" fillRule="evenodd" />
+              <path d={svgPaths.p42b0300} fill="#3F3F3F" />
+              <path clipRule="evenodd" d={svgPaths.p3797e880} fill="#3F3F3F" fillRule="evenodd" />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Contants1() {
+  return (
+    <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-full" data-name="Contants">
+      <Icons4 />
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.429] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.8)] text-nowrap tracking-[0.145px] whitespace-pre">분석</p>
+    </div>
+  );
+}
+
+function Tab1() {
+  return (
+    <div className="basis-0 box-border content-stretch flex flex-col gap-[10px] grow items-center justify-center min-h-px min-w-px px-0 py-[4px] relative shrink-0" data-name="Tab 2">
+      <Contants1 />
+    </div>
+  );
+}
+
+function Ratio18() {
+  return <div className="h-full w-0" data-name="Ratio" />;
+}
+
+function Ratio19() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[330deg]">
+          <Ratio18 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio20() {
+  return (
+    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[323.13deg]">
+          <Ratio19 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Icons5() {
+  return (
+    <div className="relative shrink-0 size-[24px]" data-name="Icons">
+      <Ratio20 />
+      <div className="absolute h-[14px] left-[2px] top-[5px] w-[20px]" data-name="Union">
+        <div className="absolute inset-0" style={{ "--fill-0": "rgba(63, 63, 63, 1)" } as React.CSSProperties}>
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 14">
+            <path clipRule="evenodd" d={svgPaths.p2ac50a00} fill="var(--fill-0, #3F3F3F)" fillRule="evenodd" id="Union" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Contants2() {
+  return (
+    <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-full" data-name="Contants">
+      <Icons5 />
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.429] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.8)] text-nowrap tracking-[0.145px] whitespace-pre">메시지</p>
+    </div>
+  );
+}
+
+function Tab2() {
+  return (
+    <div className="basis-0 box-border content-stretch flex flex-col gap-[10px] grow items-center justify-center min-h-px min-w-px px-0 py-[4px] relative shrink-0" data-name="Tab 3">
+      <Contants2 />
+    </div>
+  );
+}
+
+function Ratio21() {
+  return <div className="h-full w-0" data-name="Ratio" />;
+}
+
+function Ratio22() {
+  return (
+    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[330deg]">
+          <Ratio21 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Ratio23() {
+  return (
+    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
+      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
+        <div className="flex-none h-full rotate-[323.13deg]">
+          <Ratio22 />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PersonUndefinedGlyphUndefined() {
+  return (
+    <div className="absolute left-0 size-[24px] top-0" data-name="Person / undefined / Glyph: undefined">
+      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
+        <g id="Person / undefined / Glyph: undefined">
+          <path d={svgPaths.p242dc300} fill="var(--fill-0, #3F3F3F)" id="Vector" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function Icons6() {
+  return (
+    <div className="relative shrink-0 size-[24px]" data-name="Icons">
+      <Ratio23 />
+      <PersonUndefinedGlyphUndefined />
+    </div>
+  );
+}
+
+function Contants3() {
+  return (
+    <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-full" data-name="Contants">
+      <Icons6 />
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.429] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.8)] text-nowrap tracking-[0.145px] whitespace-pre">프로필</p>
+    </div>
+  );
+}
+
+function Tab3() {
+  return (
+    <div className="basis-0 box-border content-stretch flex flex-col gap-[10px] grow items-center justify-center min-h-px min-w-px px-0 py-[4px] relative shrink-0" data-name="Tab 4">
+      <Contants3 />
+    </div>
+  );
+}
+
+function Contents() {
+  return (
+    <div className="box-border content-stretch flex gap-[26px] items-center justify-center px-0 py-[4px] relative shrink-0 w-full" data-name="Contents">
+      <Tab />
+      <Tab1 />
+      <Tab2 />
+      <Tab3 />
+    </div>
+  );
+}
+
+function SpacingBottomSafeArea() {
+  return (
+    <div className="content-stretch flex flex-col items-center relative shrink-0 w-full" data-name="Spacing/Bottom Safe Area">
+      <div className="h-[34px] shrink-0 w-full" data-name="Guide" />
+    </div>
+  );
+}
+
+function Container1() {
+  return (
+    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
+      <div className="absolute bg-white inset-0" data-name="Background" />
+      <Contents />
+      <SpacingBottomSafeArea />
+    </div>
+  );
+}
+
+function OsBarBottomNavigationResourceContents() {
+  return (
+    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="OS/Bar/Bottom Navigation/Resource/Contents">
+      <Container1 />
+    </div>
+  );
+}
+
+function Shape() {
+  return (
+    <div className="absolute bottom-[8px] h-[5px] left-[32.13%] right-[32.13%]" data-name="Shape">
+      <div className="absolute bottom-0 left-0 right-[-0.25%] top-0">
+        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 144 5">
+          <g id="Shape">
+            <path d={svgPaths.p130c0400} data-figma-bg-blur-radius="44" fill="var(--fill-0, #0F0F0F)" id="Union" />
+          </g>
+          <defs>
+            <clipPath id="bgblur_0_5_7605_clip_path" transform="translate(44 44)">
+              <path d={svgPaths.p130c0400} />
+            </clipPath>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function HomeBarHomeIndicator() {
+  return (
+    <div className="h-[34px] relative shrink-0 w-full" data-name=".Home Bar/Home Indicator">
+      <Shape />
+    </div>
+  );
+}
+
+function Content15() {
+  return (
+    <div className="content-stretch flex flex-col h-[34px] items-center justify-center relative shrink-0 w-full" data-name="Content">
+      <HomeBarHomeIndicator />
+    </div>
+  );
+}
+
+function HomeBar() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 w-full" data-name="Home Bar">
+      <Content15 />
+    </div>
+  );
+}
+
+function Absolute() {
+  return (
+    <div className="content-stretch flex flex-col h-0 items-center justify-end relative shrink-0 w-full" data-name="Absolute">
+      <HomeBar />
+    </div>
+  );
+}
+
+function OsBarBottomNavigation() {
+  return (
+    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 w-full" data-name="OS/Bar/Bottom Navigation">
+      <Absolute />
+    </div>
+  );
+}
+
+function Container2() {
+  return (
+    <div className="backdrop-blur-[32px] backdrop-filter content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
+      <OsBarBottomNavigationResourceContents />
+      <OsBarBottomNavigation />
+      <div className="h-0 shrink-0 w-full" data-name="Absolute" />
+    </div>
+  );
+}
+
+function BottomAppBars() {
+  return (
+    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Bottom app bars">
+      <Container2 />
+      <div aria-hidden="true" className="absolute border-[#e7e7e7] border-[1px_0px_0px] border-solid bottom-0 left-0 pointer-events-none right-0 top-[-1px]" />
+    </div>
+  );
+}
+
+function OsBarBottomNavigation1() {
+  return (
+    <div className="content-stretch flex flex-col items-start justify-end relative shrink-0 w-full" data-name="OS/Bar/Bottom Navigation">
+      <BottomAppBars />
+    </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <div className="bg-white content-stretch flex flex-col items-start relative size-full" data-name="Home">
+      <Viewport />
+      <OsBarBottomNavigation1 />
+    </div>
+  );
+}
