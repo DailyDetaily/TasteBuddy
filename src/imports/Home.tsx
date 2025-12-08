@@ -4,7 +4,7 @@ import imgImage from "figma:asset/0681bae57cc99eb9acba0a48c532d82e73863896.png";
 import imgImage1 from "figma:asset/c778d4444bb95d0a798d28fe5acdfe85cf6ffc14.png";
 import imgImage2 from "figma:asset/2220fac5adaafaa71708a4ae95760913fe178d89.png";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
-import { Star, Clock, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
+import { Star, StarHalf, Clock, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 
 
 
@@ -494,6 +494,27 @@ const chefData = [
     match: 70,
     image: imgImage2,
     bgColor: "#eaf4cc"
+  },
+  {
+    name: "최현석 셰프",
+    restaurant: "레스토랑 CHOI",
+    match: 68,
+    image: imgImage, // Placeholder
+    bgColor: "#E6F0FF"
+  },
+  {
+    name: "이연복 셰프",
+    restaurant: "목란",
+    match: 65,
+    image: imgImage1, // Placeholder
+    bgColor: "#F0E3F0"
+  },
+  {
+    name: "김도윤 셰프",
+    restaurant: "윤서울",
+    match: 62,
+    image: imgImage2, // Placeholder
+    bgColor: "#EAE7E4"
   }
 ];
 
@@ -505,7 +526,7 @@ function ChefCard({ chef }: { chef: typeof chefData[0] }) {
     >
       <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full h-full">
         <div className="relative rounded-[8px] shrink-0 size-[48px] overflow-hidden bg-gray-200">
-          <img alt={chef.name} className="absolute inset-0 w-full h-full object-cover" src={chef.image} />
+          <img alt={chef.name} className="absolute inset-0 w-full h-full object-cover object-[50%_20%] scale-[2.0]" src={chef.image} />
         </div>
 
         <div className="content-stretch flex flex-col justify-between items-start leading-[normal] relative shrink-0 w-full grow">
@@ -608,27 +629,25 @@ function Heading3() {
 
 function TasteCircle() {
   return (
-    <div className="relative shrink-0 size-[14px]" data-name="Taste Circle">
-      <div className="absolute inset-[-7.14%]">
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-          <g id="Taste Circle">
-            <circle cx="8" cy="8" fill="url(#paint0_linear_1_1996)" id="Ellipse 211" r="8" />
-          </g>
-          <defs>
-            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1_1996" x1="8" x2="8" y1="0" y2="16">
-              <stop offset="0.2" stopColor="#FF9900" />
-              <stop offset="0.8" stopColor="#B372B4" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
+    <div className="relative shrink-0 size-[16px]" data-name="Taste Circle">
+      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+        <g id="Taste Circle">
+          <circle cx="8" cy="8" fill="url(#paint0_linear_1_1996)" id="Ellipse 211" r="8" />
+        </g>
+        <defs>
+          <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1_1996" x1="8" x2="8" y1="0" y2="16">
+            <stop offset="0.2" stopColor="#FF9900" />
+            <stop offset="0.8" stopColor="#B372B4" />
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   );
 }
 
 function Head() {
   return (
-    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Head">
+    <div className="flex gap-[6px] items-center relative shrink-0" data-name="Head">
       <TasteCircle />
       <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">미각 변화</p>
     </div>
@@ -637,7 +656,7 @@ function Head() {
 
 function Content7() {
   return (
-    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
+    <div className="flex gap-[6px] items-center relative shrink-0" data-name="Content">
       <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">6.10-16일</p>
       <div className="flex items-center justify-center relative shrink-0">
         <div className="flex-none rotate-[180deg]">
@@ -656,7 +675,7 @@ function Content7() {
 
 function MoreInfo4() {
   return (
-    <div className="basis-0 content-stretch flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
+    <div className="basis-0 flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
       <Content7 />
     </div>
   );
@@ -664,7 +683,7 @@ function MoreInfo4() {
 
 function Right1() {
   return (
-    <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-[59px]" data-name="Right">
+    <div className="flex gap-[6px] items-center relative shrink-0 w-[59px]" data-name="Right">
       <MoreInfo4 />
     </div>
   );
@@ -672,7 +691,7 @@ function Right1() {
 
 function Heading4() {
   return (
-    <div className="content-center flex flex-wrap gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
+    <div className="flex gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
       <Head />
       <Right1 />
     </div>
@@ -853,9 +872,9 @@ function Content8() {
 
 function Cards3() {
   return (
-    <div className="bg-[#f3f3f3] h-[112px] relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+    <div className="bg-[#f3f3f3] h-auto relative rounded-[20px] shrink-0 w-full" data-name="Cards">
       <div className="overflow-clip rounded-[inherit] size-full">
-        <div className="box-border content-stretch flex flex-col gap-[12px] h-[112px] items-start p-[12px] relative w-full">
+        <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
           <Heading4 />
           <Content8 />
         </div>
@@ -866,27 +885,25 @@ function Cards3() {
 
 function TasteCircle1() {
   return (
-    <div className="relative shrink-0 size-[14px]" data-name="Taste Circle">
-      <div className="absolute inset-[-7.14%]">
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-          <g id="Taste Circle">
-            <circle cx="8" cy="8" fill="url(#paint0_linear_1_1973)" id="Ellipse 211" r="8" />
-          </g>
-          <defs>
-            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1_1973" x1="8" x2="8" y1="0" y2="16">
-              <stop offset="0.2" stopColor="#B372B4" />
-              <stop offset="0.8" stopColor="#95867A" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
+    <div className="relative shrink-0 size-[16px]" data-name="Taste Circle">
+      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+        <g id="Taste Circle">
+          <circle cx="8" cy="8" fill="url(#paint0_linear_1_1973)" id="Ellipse 211" r="8" />
+        </g>
+        <defs>
+          <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1_1973" x1="8" x2="8" y1="0" y2="16">
+            <stop offset="0.2" stopColor="#B372B4" />
+            <stop offset="0.8" stopColor="#95867A" />
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   );
 }
 
 function Head1() {
   return (
-    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Head">
+    <div className="flex gap-[6px] items-center relative shrink-0" data-name="Head">
       <TasteCircle1 />
       <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">특이 사항</p>
     </div>
@@ -1207,9 +1224,9 @@ function Content10() {
 
 function Cards4() {
   return (
-    <div className="bg-[#f3f3f3] h-[116px] relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+    <div className="bg-[#f3f3f3] h-auto relative rounded-[20px] shrink-0 w-full" data-name="Cards">
       <div className="overflow-clip rounded-[inherit] size-full">
-        <div className="box-border content-stretch flex flex-col gap-[12px] h-[116px] items-start p-[12px] relative w-full">
+        <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
           <Heading5 />
           <Content10 />
         </div>
@@ -1403,27 +1420,49 @@ function HistoryCard({ history, onRate }: { history: any, onRate: (id: number, r
           </div>
 
           <div className="content-stretch flex items-start justify-between relative shrink-0 w-full gap-[8px]">
-            <div
-              className="relative rounded-[8px] shrink-0 size-[40px]"
-              style={{ backgroundColor: history.color }}
+            <img
+              src={history.image}
+              alt={history.menu}
+              className="relative rounded-[8px] shrink-0 size-[40px] object-cover"
             />
             <div className="content-stretch flex flex-col gap-[2px] items-start relative grow">
               <p className="font-bold text-[14px]">{history.chefName} 셰프</p>
-              <p className="text-[10px] text-gray-500">{history.restaurant}</p>
+              <p className="text-[12px] text-gray-500">{history.restaurant}</p>
             </div>
             <div className="flex gap-[2px] items-center pt-[2px]">
               {[...Array(5)].map((_, i) => {
                 const isSubmitted = history.feedbackLabel === "피드백 보기";
-                const isFilled = isSubmitted && i < history.satisfaction;
+                const rating = history.satisfaction;
+                const targetFull = i + 1;
+                const targetHalf = i + 0.5;
+
+                // Determine display state
+                const isFull = isSubmitted && rating >= targetFull;
+                const isHalf = isSubmitted && rating > i && rating < targetFull;
+
+                const handleClick = () => {
+                  if (rating === targetHalf) {
+                    onRate(history.id, targetFull);
+                  } else {
+                    onRate(history.id, targetHalf);
+                  }
+                };
+
                 return (
-                  <Star
-                    key={i}
-                    onClick={() => onRate(history.id, i + 1)}
-                    className={`size-[12px] cursor-pointer ${isFilled
-                      ? "fill-[#FFB300] text-[#FFB300]"
-                      : "fill-[rgba(15,15,15,0.1)] text-transparent"
-                      }`}
-                  />
+                  <div key={i} className="relative size-[16px] cursor-pointer" onClick={handleClick}>
+                    {/* Base empty star (background) */}
+                    <Star className="absolute inset-0 size-[16px] fill-[rgba(15,15,15,0.1)] text-transparent" />
+
+                    {/* Full Star Overlay */}
+                    {isFull && (
+                      <Star className="absolute inset-0 size-[16px] fill-[#FFB300] text-transparent" />
+                    )}
+
+                    {/* Half Star Overlay */}
+                    {isHalf && (
+                      <StarHalf className="absolute inset-0 size-[16px] fill-[#FFB300] text-transparent" />
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -1637,12 +1676,13 @@ function SectionAdjustmentHistory() {
     {
       id: 1,
       menu: "트러플 파스타",
-      chefName: "김호윤",
+      chefName: "김호윤 셰프",
       restaurant: "더 이탈리안 클럽",
       date: "2024.12.04",
       time: "저녁 7:00",
       duration: "1시간 50분",
-      satisfaction: 5,
+      image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=200&h=200&fit=crop",
+      satisfaction: 0,
       color: "#E8D5E9",
       adjustments: [
         { taste: "감칠맛", change: "+10%" },
@@ -1659,12 +1699,13 @@ function SectionAdjustmentHistory() {
     {
       id: 2,
       menu: "송로버섯 리조또",
-      chefName: "황정인",
-      restaurant: "레스토랑 베누",
-      date: "2024.12.03",
-      time: "저녁 7:30",
-      duration: "2시간 15분",
-      satisfaction: 5,
+      chefName: "박준우 셰프",
+      restaurant: "오트뤼",
+      date: "2024.12.01",
+      time: "점심 12:30",
+      duration: "1시간 20분",
+      image: "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=200&h=200&fit=crop",
+      satisfaction: 0,
       color: "#FFE0B2", // Light Orange/Beige
       adjustments: [
         { taste: "단맛", change: "+15%" },
@@ -1685,6 +1726,7 @@ function SectionAdjustmentHistory() {
       date: "2024.12.02",
       time: "점심 12:00",
       duration: "1시간 45분",
+      image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=200&h=200&fit=crop",
       satisfaction: 4,
       color: "#E3F2FD", // Light Blue
       adjustments: [
@@ -1703,10 +1745,11 @@ function SectionAdjustmentHistory() {
       menu: "랍스터 비스크",
       chefName: "황정인",
       restaurant: "레스토랑 베누",
-      date: "2024.11.30",
-      time: "저녁 8:00",
-      duration: "2시간 30분",
-      satisfaction: 5,
+      date: "2024.11.28",
+      time: "저녁 6:30",
+      duration: "1시간 30분",
+      image: "https://images.unsplash.com/photo-1551248429-40975aa4de74?w=200&h=200&fit=crop",
+      satisfaction: 3,
       color: "#FFE0B2", // Light Orange/Beige
       adjustments: [
         { taste: "단맛", change: "+15%" },
@@ -1727,6 +1770,7 @@ function SectionAdjustmentHistory() {
       date: "2024.11.28",
       time: "저녁 6:30",
       duration: "2시간",
+      image: "https://images.unsplash.com/photo-1519915028121-7d3463d20b13?w=200&h=200&fit=crop",
       satisfaction: 5,
       color: "#FFF9C4", // Light Yellow
       adjustments: [
