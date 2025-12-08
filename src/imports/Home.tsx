@@ -8,62 +8,9 @@ import { Star, Clock, ChevronDown, ChevronRight, ChevronUp } from "lucide-react"
 
 
 
-function Time() {
-  return (
-    <div className="basis-0 box-border content-stretch flex gap-[10px] grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-[2px] px-0 relative shrink-0" data-name="Time">
-      <p className="font-['SF_Pro:Semibold',sans-serif] font-[590] leading-[22px] relative shrink-0 text-[#0f0f0f] text-[17px] text-center text-nowrap whitespace-pre">9:41</p>
-    </div>
-  );
-}
 
-function Battery() {
-  return (
-    <div className="h-[13px] relative shrink-0 w-[27.328px]" data-name="Battery">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 28 13">
-        <g id="Battery">
-          <rect height="12" id="Border" opacity="0.35" rx="3.8" stroke="var(--stroke-0, #0F0F0F)" width="24" x="0.5" y="0.5" />
-          <path d={svgPaths.p3bbd9700} fill="var(--fill-0, #0F0F0F)" id="Cap" opacity="0.4" />
-          <rect fill="var(--fill-0, #0F0F0F)" height="9" id="Capacity" rx="2.5" width="21" x="2" y="2" />
-        </g>
-      </svg>
-    </div>
-  );
-}
 
-function Levels() {
-  return (
-    <div className="basis-0 box-border content-stretch flex gap-[7px] grow h-[22px] items-center justify-center min-h-px min-w-px pb-0 pt-px px-0 relative shrink-0" data-name="Levels">
-      <div className="h-[12.226px] relative shrink-0 w-[19.2px]" data-name="Cellular Connection">
-        <div className="absolute inset-0" style={{ "--fill-0": "rgba(15, 15, 15, 1)" } as React.CSSProperties}>
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 13">
-            <path clipRule="evenodd" d={svgPaths.p1e09e400} fill="var(--fill-0, #0F0F0F)" fillRule="evenodd" id="Cellular Connection" />
-          </svg>
-        </div>
-      </div>
-      <div className="h-[12.328px] relative shrink-0 w-[17.142px]" data-name="Wifi">
-        <div className="absolute inset-0" style={{ "--fill-0": "rgba(15, 15, 15, 1)" } as React.CSSProperties}>
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 13">
-            <path clipRule="evenodd" d={svgPaths.p18b35300} fill="var(--fill-0, #0F0F0F)" fillRule="evenodd" id="Wifi" />
-          </svg>
-        </div>
-      </div>
-      <Battery />
-    </div>
-  );
-}
 
-function StatusBarIPhone() {
-  return (
-    <div className="relative shrink-0 w-full" data-name="Status bar - iPhone">
-      <div className="flex flex-row items-center justify-center size-full">
-        <div className="box-border content-stretch flex items-center justify-between pb-[19px] pt-[21px] px-[16px] relative w-full">
-          <Time />
-          <Levels />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function Ratio() {
   return <div className="h-full w-0" data-name="Ratio" />;
@@ -335,7 +282,7 @@ function Container() {
   return (
     <div className="backdrop-blur-[32px] backdrop-filter content-stretch flex flex-col items-center justify-center relative shrink-0 w-full" data-name="Container">
       <div className="absolute bg-white inset-0 opacity-[0.74]" data-name="Background" />
-      <StatusBarIPhone />
+
       <Content />
     </div>
   );
