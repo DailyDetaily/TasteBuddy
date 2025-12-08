@@ -2220,7 +2220,7 @@ function OsBarBottomNavigation1() {
 export default function Home() {
   return (
     <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-      <div className="bg-white content-stretch flex flex-col items-start relative w-full h-full max-w-[430px] shadow-2xl overflow-hidden" data-name="Home">
+      <div className="bg-white content-stretch flex flex-col items-start relative w-full h-full max-w-[1440px] shadow-2xl overflow-hidden" data-name="Home">
         <Viewport />
         <OsBarBottomNavigation1 />
       </div>
