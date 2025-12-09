@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import svgPaths from "./svg-h9nsrm0gkv";
-import imgImage from "figma:asset/0681bae57cc99eb9acba0a48c532d82e73863896.png";
-import imgImage1 from "figma:asset/c778d4444bb95d0a798d28fe5acdfe85cf6ffc14.png";
-import imgImage2 from "figma:asset/2220fac5adaafaa71708a4ae95760913fe178d89.png";
+// import imgImage from "figma:asset/0681bae57cc99eb9acba0a48c532d82e73863896.png";
+// import imgImage1 from "figma:asset/c778d4444bb95d0a798d28fe5acdfe85cf6ffc14.png";
+// import imgImage2 from "figma:asset/2220fac5adaafaa71708a4ae95760913fe178d89.png";
+import chefHwangJeongin from "../assets/HwangJeongin.png";
+import chefLeeEunji from "../assets/LeeEunji.png";
+import chefLimJeongsik from "../assets/LimJeongsik.png";
+import chefHyunseokChoi from "../assets/HyunseokChoi.png";
+import chefSonJongwon from "../assets/SonJongwon.png";
+import chefLeeJun from "../assets/LeeJun.png";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
 import { Star, StarHalf, Clock, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 
@@ -381,7 +387,7 @@ function Content2() {
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0" data-name="Content">
       <div className="relative rounded-[8px] shrink-0 size-[48px]" data-name="Image">
         <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[8px]">
-          <img alt="" className="absolute h-[224%] left-[-27.29%] max-w-none top-[-1.88%] w-[179.2%]" src={imgImage} />
+          <img alt="" className="absolute h-[224%] left-[-27.29%] max-w-none top-[-1.88%] w-[179.2%] object-cover" src={chefHwangJeongin} />
         </div>
       </div>
       <Info1 />
@@ -420,7 +426,7 @@ function Content3() {
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0" data-name="Content">
       <div className="relative rounded-[8px] shrink-0 size-[48px]" data-name="Image">
         <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[8px]">
-          <img alt="" className="absolute h-[338.39%] left-[-85.36%] max-w-none top-[-32.13%] w-[270.71%]" src={imgImage1} />
+          <img alt="" className="absolute h-[338.39%] left-[-85.36%] max-w-none top-[-32.13%] w-[270.71%] object-cover" src={chefLeeEunji} />
         </div>
       </div>
       <Info3 />
@@ -458,7 +464,7 @@ function Content4() {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0" data-name="Content">
       <div className="relative rounded-[8px] shrink-0 size-[48px]" data-name="Image">
-        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[8px] size-full" src={imgImage2} />
+        <img alt="" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[8px] size-full" src={chefLimJeongsik} />
       </div>
       <Info5 />
     </div>
@@ -478,42 +484,42 @@ const chefData = [
     name: "황정인 셰프",
     restaurant: "레스토랑 베누",
     match: 75,
-    image: imgImage,
+    image: chefHwangJeongin,
     bgColor: "#ffebcc"
   },
   {
     name: "이은지 셰프",
     restaurant: "숍 리제 (Lysée)",
     match: 72,
-    image: imgImage1,
+    image: chefLeeEunji,
     bgColor: "#fff7cc"
   },
   {
     name: "임정식 셰프",
     restaurant: "정식당",
     match: 70,
-    image: imgImage2,
+    image: chefLimJeongsik,
     bgColor: "#eaf4cc"
   },
   {
     name: "최현석 셰프",
     restaurant: "레스토랑 CHOI",
     match: 68,
-    image: imgImage, // Placeholder
+    image: chefHyunseokChoi,
     bgColor: "#E6F0FF"
   },
   {
-    name: "이연복 셰프",
-    restaurant: "목란",
+    name: "손종원 셰프",
+    restaurant: "이타닉가든",
     match: 65,
-    image: imgImage1, // Placeholder
+    image: chefSonJongwon,
     bgColor: "#F0E3F0"
   },
   {
-    name: "김도윤 셰프",
-    restaurant: "윤서울",
+    name: "이준 셰프",
+    restaurant: "스와니예",
     match: 62,
-    image: imgImage2, // Placeholder
+    image: chefLeeJun,
     bgColor: "#EAE7E4"
   }
 ];
@@ -526,7 +532,7 @@ function ChefCard({ chef }: { chef: typeof chefData[0] }) {
     >
       <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full h-full">
         <div className="relative rounded-[8px] shrink-0 size-[48px] overflow-hidden bg-gray-200">
-          <img alt={chef.name} className="absolute inset-0 w-full h-full object-cover object-[50%_20%] scale-[2.0]" src={chef.image} />
+          <img alt={chef.name} className="absolute inset-0 w-full h-full object-cover" src={chef.image} />
         </div>
 
         <div className="content-stretch flex flex-col justify-between items-start leading-[normal] relative shrink-0 w-full grow">
@@ -1676,7 +1682,7 @@ function SectionAdjustmentHistory() {
     {
       id: 1,
       menu: "트러플 파스타",
-      chefName: "김호윤 셰프",
+      chefName: "김호윤",
       restaurant: "더 이탈리안 클럽",
       date: "2024.12.04",
       time: "저녁 7:00",
@@ -1699,7 +1705,7 @@ function SectionAdjustmentHistory() {
     {
       id: 2,
       menu: "송로버섯 리조또",
-      chefName: "박준우 셰프",
+      chefName: "박준우",
       restaurant: "오트뤼",
       date: "2024.12.01",
       time: "점심 12:30",
