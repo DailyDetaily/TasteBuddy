@@ -1814,7 +1814,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
   return (
     <div className="flex flex-col w-full h-full bg-white relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
       {/* Header */}
-      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-[#f3f3f3]">
+      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#f3f3f3]">
         <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 19l-7-7 7-7" />
