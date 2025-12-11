@@ -1370,7 +1370,7 @@ function HeadingAdjustment() {
 
 
 
-function HistoryCard({ history, onRate }: { history: any, onRate: (id: number, rating: number, action?: boolean | "toggle" | "edit" | { type: string, value: any }) => void }) {
+function HistoryCard({ history, onRate, onClick }: { history: any, onRate: (id: number, rating: number, action?: boolean | "toggle" | "edit" | { type: string, value: any }) => void, onClick: () => void }) {
   const getTasteColor = (taste: string) => {
     const tasteColors: { [key: string]: string } = {
       "단맛": "#FF9900",
@@ -1406,7 +1406,7 @@ function HistoryCard({ history, onRate }: { history: any, onRate: (id: number, r
 
   return (
     <div className="bg-[#f3f3f3] relative rounded-[20px] shrink-0 w-full" data-name="History Card">
-      <div className="overflow-clip rounded-[inherit] size-full">
+      <div className="overflow-clip rounded-[inherit] size-full cursor-pointer" onClick={onClick}>
         <div className="box-border content-stretch flex flex-col gap-[12px] items-start p-[12px] relative w-full">
           <div className="flex items-center gap-2 w-full">
             <span
@@ -1435,43 +1435,7 @@ function HistoryCard({ history, onRate }: { history: any, onRate: (id: number, r
               <p className="font-bold text-[14px]">{history.chefName} 셰프</p>
               <p className="text-[12px] text-gray-500">{history.restaurant}</p>
             </div>
-            <div className="flex gap-[2px] items-center pt-[2px]">
-              {[...Array(5)].map((_, i) => {
-                const isSubmitted = history.feedbackLabel === "피드백 보기";
-                const rating = history.satisfaction;
-                const targetFull = i + 1;
-                const targetHalf = i + 0.5;
 
-                // Determine display state
-                const isFull = isSubmitted && rating >= targetFull;
-                const isHalf = isSubmitted && rating > i && rating < targetFull;
-
-                const handleClick = () => {
-                  if (rating === targetHalf) {
-                    onRate(history.id, targetFull);
-                  } else {
-                    onRate(history.id, targetHalf);
-                  }
-                };
-
-                return (
-                  <div key={i} className="relative size-[16px] cursor-pointer" onClick={handleClick}>
-                    {/* Base empty star (background) */}
-                    <Star className="absolute inset-0 size-[16px] fill-[rgba(15,15,15,0.1)] text-transparent" />
-
-                    {/* Full Star Overlay */}
-                    {isFull && (
-                      <Star className="absolute inset-0 size-[16px] fill-[#FFB300] text-transparent" />
-                    )}
-
-                    {/* Half Star Overlay */}
-                    {isHalf && (
-                      <StarHalf className="absolute inset-0 size-[16px] fill-[#FFB300] text-transparent" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
           </div>
 
           <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full flex-wrap">
@@ -1505,172 +1469,9 @@ function HistoryCard({ history, onRate }: { history: any, onRate: (id: number, r
             ))}
           </div>
 
-          {/* Feedback Form / Summary Section with Smooth Animation */}
-          <div
-            className={`grid transition-[grid-template-rows] duration-300 ease-in-out w-full ${history.isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-              }`}
-          >
-            <div className="overflow-hidden">
-              <div className="w-full bg-white rounded-[12px] p-4 mt-1">
-                {history.feedbackLabel === "피드백 작성하기" ? (
-                  // Write Mode
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                      <p className="font-bold text-[12px] text-[#0f0f0f]">조정된 맛의 강도는 어떠셨나요?</p>
-                      <div className="flex gap-2">
-                        {["너무 강했어요", "적당했어요", "약했어요"].map((label) => (
-                          <button
-                            key={label}
-                            onClick={() => onRate(history.id, 5, { type: "intensity", value: label })}
-                            className={`flex-1 py-2 rounded-[8px] text-[11px] font-medium transition-colors ${history.selectedIntensity === label
-                              ? "bg-[#0F0F0F]/80 text-white"
-                              : "bg-[#f3f3f3] text-[#808080]"
-                              }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
 
-                    <div className="flex flex-col gap-2">
-                      <p className="font-bold text-[12px] text-[#0f0f0f]">어떤 맛이 가장 마음에 드셨나요? (복수 선택)</p>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          { name: "단맛", color: "#FF9900" },
-                          { name: "신맛", color: "#FFD600" },
-                          { name: "쓴맛", color: "#95C900" },
-                          { name: "짠맛", color: "#7299FF" },
-                          { name: "감칠맛", color: "#B372B4" },
-                          { name: "지방맛", color: "#95867A" }
-                        ].map((taste) => {
-                          const isSelected = (history.likedTastes || []).includes(taste.name);
-                          return (
-                            <button
-                              key={taste.name}
-                              onClick={() => onRate(history.id, 5, { type: "toggle_liked", value: taste.name })}
-                              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-colors`}
-                              style={{
-                                backgroundColor: isSelected ? taste.color : `${taste.color}1A`, // 1A is ~10% opacity
-                                color: isSelected ? '#FFFFFF' : taste.color,
-                              }}
-                            >
-                              {taste.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
 
-                    <div className="flex flex-col gap-2">
-                      <p className="font-bold text-[12px] text-[#0f0f0f]">더 조정이 필요한 맛은? (선택사항)</p>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          { name: "단맛", color: "#FF9900" },
-                          { name: "신맛", color: "#FFD600" },
-                          { name: "쓴맛", color: "#95C900" },
-                          { name: "짠맛", color: "#7299FF" },
-                          { name: "감칠맛", color: "#B372B4" },
-                          { name: "지방맛", color: "#95867A" }
-                        ].map((taste) => {
-                          const isSelected = (history.neededAdjustments || []).includes(taste.name);
-                          return (
-                            <button
-                              key={taste.name}
-                              onClick={() => onRate(history.id, 5, { type: "toggle_needed", value: taste.name })}
-                              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-colors`}
-                              style={{
-                                backgroundColor: isSelected ? taste.color : `${taste.color}1A`, // 1A is ~10% opacity
-                                color: isSelected ? '#FFFFFF' : taste.color,
-                              }}
-                            >
-                              {taste.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
 
-                    <div className="flex gap-2 justify-end mt-2">
-                      <button className="px-4 py-2 rounded-[8px] bg-[#f3f3f3] hover:bg-[#0F0F0F]/10 transition-colors text-[11px] font-bold text-[#808080]" onClick={() => onRate(history.id, history.satisfaction, false)}>취소</button>
-                      <button
-                        className={`px-4 py-2 rounded-[8px] text-[11px] font-bold transition-colors ${(history.selectedIntensity || (history.likedTastes && history.likedTastes.length > 0) || (history.neededAdjustments && history.neededAdjustments.length > 0))
-                          ? "bg-[#0F0F0F]/60 hover:bg-[#0F0F0F]/80 text-white"
-                          : "bg-[#E0E0E0] text-[#808080] cursor-not-allowed"
-                          }`}
-                        onClick={() => onRate(history.id, 5, true)}
-                      >
-                        저장
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  // View Mode
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                      <p className="font-bold text-[12px] text-[#0f0f0f]">조정된 맛의 강도</p>
-                      <div className="self-start px-3 py-1.5 rounded-[8px] bg-[#0F0F0F]/80 text-[11px] font-medium text-white">
-                        {history.selectedIntensity || "평가 없음"}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <p className="font-bold text-[12px] text-[#0f0f0f]">마음에 든 맛</p>
-                      <div className="flex flex-wrap gap-2">
-                        {(history.likedTastes && history.likedTastes.length > 0) ? (
-                          history.likedTastes.map((taste: string) => (
-                            <div key={taste} className="px-3 py-1.5 rounded-[8px] text-[11px] font-bold"
-                              style={{ backgroundColor: getTasteColor(taste), color: '#FFFFFF' }}
-                            >
-                              {taste}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-[11px] text-[#808080]">선택된 맛이 없습니다.</div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <p className="font-bold text-[12px] text-[#0f0f0f]">조정이 필요한 맛</p>
-                      <div className="flex flex-wrap gap-2">
-                        {(history.neededAdjustments && history.neededAdjustments.length > 0) ? (
-                          history.neededAdjustments.map((taste: string) => (
-                            <div key={taste} className="px-3 py-1.5 rounded-[8px] text-[11px] font-bold"
-                              style={{ backgroundColor: getTasteColor(taste), color: '#FFFFFF' }}
-                            >
-                              {taste}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-[11px] text-[#808080]">선택된 맛이 없습니다.</div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-start">
-                      <span
-                        className="text-[11px] text-[#808080] underline cursor-pointer"
-                        onClick={() => onRate(history.id, history.satisfaction, "edit")}
-                      >
-                        수정
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="w-full flex justify-center items-center pt-2 cursor-pointer"
-            onClick={() => onRate(history.id, history.satisfaction, "toggle")}
-          >
-            <p className="text-[10px] text-gray-500 flex items-center gap-1">
-              {history.isExpanded ? "접기" : history.feedbackLabel}
-              {history.isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -1678,6 +1479,7 @@ function HistoryCard({ history, onRate }: { history: any, onRate: (id: number, r
 }
 
 function SectionAdjustmentHistory() {
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [historyData, setHistoryData] = useState([
     {
       id: 1,
@@ -1700,7 +1502,26 @@ function SectionAdjustmentHistory() {
       isExpanded: false,
       selectedIntensity: null as string | null,
       likedTastes: [] as string[],
-      neededAdjustments: [] as string[]
+      neededAdjustments: [] as string[],
+      adjustmentDetail: {
+        method: {
+          minus: { name: "정제염 (Salt)", desc: "직접적인 짠맛을 줄였습니다 (-3g)", icon: "📉" },
+          plus: { name: "앤초비 파우더", desc: "깊은 감칠맛으로 대체했습니다 (+5g)", icon: "📈" }
+        },
+        summary: [
+          { taste: "짠맛", value: -15, label: "짠맛" },
+          { taste: "감칠맛", value: 10, label: "감칠맛" }
+        ],
+        quote: "소금의 날카로운 짠맛 대신,\n앤초비 파우더의 깊은 감칠맛으로 간을 맞춰 자극을 줄였습니다.",
+        evaluation: {
+          question: "오늘 셰프의 전략(소금 대신 앤초비 파우더)은 어땠나요?",
+          options: {
+            positive: "완벽한 밸런스였어요",
+            negative1: "조금 비릿했어요",
+            negative2: "여전히 짰어요"
+          }
+        }
+      }
     },
     {
       id: 2,
@@ -1722,7 +1543,26 @@ function SectionAdjustmentHistory() {
       isExpanded: false,
       selectedIntensity: "적당했어요",
       likedTastes: ["단맛", "감칠맛"],
-      neededAdjustments: [] as string[]
+      neededAdjustments: [] as string[],
+      adjustmentDetail: {
+        method: {
+          minus: { name: "설탕 (Sugar)", desc: "인공적인 단맛을 줄였습니다 (-5g)", icon: "📉" },
+          plus: { name: "양파 캐러멜 (Onion Caramel)", desc: "자연스러운 단맛과 풍미를 더했습니다 (+10g)", icon: "📈" }
+        },
+        summary: [
+          { taste: "단맛", value: 15, label: "단맛" },
+          { taste: "감칠맛", value: 8, label: "감칠맛" }
+        ],
+        quote: "설탕의 인공적인 단맛 대신,\n양파 캐러멜의 깊은 풍미로 밸런스를 맞췄습니다.",
+        evaluation: {
+          question: "오늘 셰프의 전략(설탕 대신 양파 캐러멜)은 어땠나요?",
+          options: {
+            positive: "풍미가 훌륭해요",
+            negative1: "단맛이 부족해요",
+            negative2: "양파 향이 강해요"
+          }
+        }
+      }
     },
     {
       id: 3,
@@ -1744,7 +1584,26 @@ function SectionAdjustmentHistory() {
       isExpanded: false,
       selectedIntensity: "적당했어요",
       likedTastes: ["짠맛"],
-      neededAdjustments: ["지방맛"]
+      neededAdjustments: ["지방맛"],
+      adjustmentDetail: {
+        method: {
+          minus: { name: "소금 (Salt)", desc: "기본 시즈닝을 줄였습니다 (-2g)", icon: "📉" },
+          plus: { name: "트러플 소금 (Truffle Salt)", desc: "풍미 있는 짠맛으로 변경했습니다 (+3g)", icon: "📈" }
+        },
+        summary: [
+          { taste: "짠맛", value: 12, label: "짠맛" },
+          { taste: "지방맛", value: 5, label: "지방맛" }
+        ],
+        quote: "일반 소금 대신,\n트러플 소금의 풍미를 더해 나트륨은 줄이고 만족감은 높였습니다.",
+        evaluation: {
+          question: "오늘 셰프의 전략(일반 소금 대신 트러플 소금)은 어땠나요?",
+          options: {
+            positive: "고급스러운 맛이에요",
+            negative1: "향이 너무 강해요",
+            negative2: "덜 짠 것 같아요"
+          }
+        }
+      }
     },
     {
       id: 4,
@@ -1766,7 +1625,26 @@ function SectionAdjustmentHistory() {
       isExpanded: false,
       selectedIntensity: "적당했어요",
       likedTastes: ["단맛", "감칠맛"],
-      neededAdjustments: [] as string[]
+      neededAdjustments: [] as string[],
+      adjustmentDetail: {
+        method: {
+          minus: { name: "크림 (Cream)", desc: "무거운 느낌을 줄였습니다 (-10ml)", icon: "📉" },
+          plus: { name: "조개 육수 (Clam Stock)", desc: "시원한 감칠맛을 더했습니다 (+20ml)", icon: "📈" }
+        },
+        summary: [
+          { taste: "단맛", value: 15, label: "단맛" },
+          { taste: "감칠맛", value: 8, label: "감칠맛" }
+        ],
+        quote: "무거운 크림 대신,\n조개 육수의 시원한 감칠맛을 더해 가볍지만 깊은 맛을 냈습니다.",
+        evaluation: {
+          question: "오늘 셰프의 전략(크림 대신 조개 육수)은 어땠나요?",
+          options: {
+            positive: "시원하고 깊어요",
+            negative1: "너무 가벼워요",
+            negative2: "비린 맛이 나요"
+          }
+        }
+      }
     },
     {
       id: 5,
@@ -1788,7 +1666,26 @@ function SectionAdjustmentHistory() {
       isExpanded: false,
       selectedIntensity: "적당했어요",
       likedTastes: ["신맛"],
-      neededAdjustments: [] as string[]
+      neededAdjustments: [] as string[],
+      adjustmentDetail: {
+        method: {
+          minus: { name: "레몬 제스트 (Lemon Zest)", desc: "쓴맛을 줄였습니다 (-2g)", icon: "📉" },
+          plus: { name: "유자청 (Yuzu)", desc: "달콤한 신맛을 더했습니다 (+5g)", icon: "📈" }
+        },
+        summary: [
+          { taste: "신맛", value: 10, label: "신맛" },
+          { taste: "쓴맛", value: -5, label: "쓴맛" }
+        ],
+        quote: "레몬 제스트의 쓴맛 대신,\n유자청의 향긋한 달콤함을 더해 산미를 부드럽게 잡았습니다.",
+        evaluation: {
+          question: "오늘 셰프의 전략(레몬 제스트 대신 유자청)은 어땠나요?",
+          options: {
+            positive: "향긋하고 좋아요",
+            negative1: "너무 달아요",
+            negative2: "신맛이 약해요"
+          }
+        }
+      }
     }
   ]);
 
@@ -1859,7 +1756,7 @@ function SectionAdjustmentHistory() {
           {/* List */}
           <div className="flex flex-col gap-3 w-full">
             {historyData.map((item, index) => (
-              <HistoryCard key={index} history={item} onRate={handleRate} />
+              <HistoryCard key={index} history={item} onRate={handleRate} onClick={() => setSelectedId(item.id)} />
             ))}
           </div>
 
@@ -1869,6 +1766,16 @@ function SectionAdjustmentHistory() {
           </div>
         </div>
       </div>
+
+      {/* Detail Screen Overlay */}
+      {selectedId && (
+        <div className="fixed inset-0 z-50 bg-white">
+          <AdjustmentDetailScreen
+            data={historyData.find(h => h.id === selectedId)}
+            onBack={() => setSelectedId(null)}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -1880,6 +1787,185 @@ function Content13() {
       <Section1 />
       <SectionAdjustmentHistory />
 
+    </div>
+  );
+}
+
+function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => void }) {
+  if (!data || !data.adjustmentDetail) return null;
+  const { summary, method, quote, evaluation } = data.adjustmentDetail;
+
+  const tasteColors: { [key: string]: string } = {
+    "단맛": "#FF9900",
+    "신맛": "#FBC02D",
+    "쓴맛": "#95C900",
+    "짠맛": "#7299FF",
+    "감칠맛": "#B372B4",
+    "지방맛": "#95867A"
+  };
+
+  // Generate dynamic title string (e.g., "높은 단맛, 감칠맛 민감도")
+  const tasteLabels = summary.map((s: any) => s.label).join(", ");
+
+  // Identify tastes for "Reduced" and "Added" cards
+  const minusTaste = summary.find((s: any) => s.value < 0)?.label;
+  const plusTaste = summary.find((s: any) => s.value > 0)?.label;
+
+  return (
+    <div className="flex flex-col w-full h-full bg-white relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
+      {/* Header */}
+      <div className="flex items-center px-[20px] h-[56px] sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-[#f3f3f3]">
+        <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">{data.menu}</span>
+          <span className="font-medium text-[12px] text-gray-500 leading-[14px]">{data.chefName} 셰프 · {data.restaurant}</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-[24px] p-[20px]">
+        {/* Section 1: Calibration Scope (Summary) */}
+        <div className="flex flex-col gap-[12px]">
+          <h3 className="font-bold text-[20px] text-[#0f0f0f]">조정 범위</h3>
+          <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex flex-col gap-4">
+            <p className="text-[14px] text-[#0f0f0f] leading-snug font-medium">
+              고객님의 <span className="font-bold">
+                '{summary.map((s: any, i: number) => (
+                  <React.Fragment key={i}>
+                    <span style={{ color: tasteColors[s.label] || "#9333EA" }}>
+                      {i === 0 && "높은 "}
+                      {s.label}
+                      {i === summary.length - 1 && " 민감도"}
+                    </span>
+                    {i < summary.length - 1 && <span className="text-[#0f0f0f]">, </span>}
+                  </React.Fragment>
+                ))}'
+              </span>를 고려해<br />전체적인 밸런스를 조정했습니다.
+            </p>
+
+            {/* Equalizer Graph UI */}
+            <div className="flex gap-6 items-end h-[140px] justify-center mt-2 relative">
+              {/* Zero Line */}
+              <div className="absolute w-[80%] h-[1px] bg-gray-300 top-1/2 -z-0"></div>
+
+              {summary.map((item: any, idx: number) => {
+                const isPositive = item.value > 0;
+                const absValue = Math.abs(item.value);
+                const height = absValue * 3.5; // Adjusted scaling
+                const barColor = tasteColors[item.label] || (isPositive ? '#7C3AED' : '#3B82F6');
+
+                return (
+                  <div key={idx} className="flex flex-col items-center gap-2 relative z-10 w-[60px]">
+                    <span
+                      className="text-[13px] font-bold"
+                      style={{ color: barColor }}
+                    >
+                      {isPositive ? '+' : ''}{item.value}%
+                    </span>
+                    <div className="relative w-full h-[80px] flex items-center justify-center">
+                      <div
+                        className={`w-[16px] rounded-full transition-all duration-500 shadow-sm ${isPositive ? 'mb-[40px]' : 'mt-[40px]'}`}
+                        style={{ height: `${height}px`, backgroundColor: barColor }}
+                      />
+                    </div>
+                    <span className="text-[13px] text-[#555555] font-bold">{item.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2: Chef's Solution (Method & Ingredients) */}
+        <div className="flex flex-col gap-[16px]">
+          <div className="flex justify-between items-center">
+            <h3 className="font-bold text-[20px] text-[#0f0f0f]">셰프의 솔루션</h3>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {/* Minus Card */}
+            <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
+              {/* Header: Icon + Label */}
+              <div className="flex items-center gap-[6px]">
+                <div className="relative shrink-0 size-[18px]">
+                  <div className="absolute inset-0 rounded-[4px]" style={{ backgroundColor: tasteColors[minusTaste] || '#3B82F6' }}>
+                    <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
+                      <path d={svgPaths.p1157b300} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] text-[#0f0f0f] text-[14px]">줄였어요</p>
+              </div>
+
+              {/* Content: Text Left, Icon Right */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col">
+                  <span className="font-bold text-[16px] text-[#0f0f0f] mb-1">{method.minus.name}</span>
+                  <p className="text-[13px] text-[#666666] leading-snug">{method.minus.desc}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Connection Arrow */}
+            <div className="flex justify-center -my-3 z-10">
+              <div className="bg-white p-2 rounded-full text-gray-400 border border-[#f3f3f3] shadow-sm">
+                <ChevronDown size={20} />
+              </div>
+            </div>
+
+            {/* Plus Card */}
+            <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
+              {/* Header: Icon + Label */}
+              <div className="flex items-center gap-[6px]">
+                <div className="relative shrink-0 size-[18px]">
+                  <div className="absolute inset-0 rounded-[4px]" style={{ backgroundColor: tasteColors[plusTaste] || '#7C3AED' }}>
+                    <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
+                      <path d={svgPaths.p3d191ac0} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] text-[#0f0f0f] text-[14px]">대신 넣었어요</p>
+              </div>
+
+              {/* Content: Text Left, Icon Right */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col">
+                  <span className="font-bold text-[16px] text-[#0f0f0f] mb-1">{method.plus.name}</span>
+                  <p className="text-[13px] text-[#666666] leading-snug">{method.plus.desc}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-[16px] border border-[#f3f3f3] shadow-[0_2px_12px_rgba(0,0,0,0.04)] mt-2">
+            <p className="text-[13px] text-[#444444] italic text-center font-medium whitespace-pre-wrap">{quote}</p>
+          </div>
+        </div>
+
+        {/* Section 3: Feedback Action */}
+        <div className="flex flex-col gap-[16px] pb-10">
+          <h3 className="font-bold text-[20px] text-[#0f0f0f]">나의 평가</h3>
+          <p className="text-[14px] text-[#0f0f0f]">{evaluation.question}</p>
+
+          <div className="flex flex-col gap-3">
+            <button className="w-full py-[12px] rounded-[10px] bg-[#0f0f0f] text-white font-medium text-[14px] leading-normal shadow-lg hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+              {evaluation.options.positive}
+            </button>
+            <div className="flex gap-3">
+              <button className="flex-1 py-[12px] rounded-[10px] bg-[#f3f3f3] text-[#666666] font-medium text-[14px] leading-normal hover:bg-[#e0e0e0] transition-all">
+                {evaluation.options.negative1}
+              </button>
+              <button className="flex-1 py-[12px] rounded-[10px] bg-[#f3f3f3] text-[#666666] font-medium text-[14px] leading-normal hover:bg-[#e0e0e0] transition-all">
+                {evaluation.options.negative2}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
