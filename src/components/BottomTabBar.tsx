@@ -1,0 +1,70 @@
+import { HomeRegular, DataBarVerticalRegular, CalendarCheckmarkRegular, PersonRegular } from '@fluentui/react-icons';
+import React from 'react';
+
+const wrapIcon = (IconComponent: React.ElementType) => {
+  return ({ size, style, ...props }: any) => (
+    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
+  );
+};
+
+const Home = wrapIcon(HomeRegular);
+const BarChart3 = wrapIcon(DataBarVerticalRegular);
+const CalendarCheck = wrapIcon(CalendarCheckmarkRegular);
+const User = wrapIcon(PersonRegular);
+
+export type TabType = 'home' | 'analysis' | 'reservation' | 'profile';
+
+interface BottomTabBarProps {
+  activeTab: TabType;
+  onTabChange: (tab: TabType) => void;
+}
+
+const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
+  { id: 'home', label: '홈', icon: Home },
+  { id: 'analysis', label: '분석', icon: BarChart3 },
+  { id: 'reservation', label: '예약', icon: CalendarCheck },
+  { id: 'profile', label: '프로필', icon: User },
+];
+
+export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
+  return (
+    <div className="w-full bg-white border-t border-[#e7e7e7] relative shrink-0 z-50">
+      <div className="flex items-center justify-around px-2 py-1">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              className="flex flex-col items-center justify-center gap-[2px] py-[6px] px-4 relative group transition-all duration-200"
+            >
+              <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}>
+                <Icon
+                  size={24}
+                  className={`transition-colors duration-300 ${
+                    isActive ? 'text-[#0f0f0f]' : 'text-[#AFAFAF] group-hover:text-[#6F6F6F]'
+                  }`}
+                  strokeWidth={isActive ? 2.2 : 1.8}
+                />
+              </div>
+              <span
+                className={`text-[10px] tracking-[0.14px] transition-colors duration-300 ${
+                  isActive
+                    ? 'font-semibold text-[#0f0f0f]'
+                    : 'font-medium text-[#AFAFAF] group-hover:text-[#6F6F6F]'
+                }`}
+              >
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {/* Home Indicator */}
+      <div className="flex justify-center pb-1">
+        <div className="w-[134px] h-[5px] bg-[#0f0f0f] rounded-full" />
+      </div>
+    </div>
+  );
+}

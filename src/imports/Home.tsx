@@ -10,7 +10,24 @@ import chefHyunseokChoi from "../assets/HyunseokChoi.png";
 import chefSonJongwon from "../assets/SonJongwon.png";
 import chefLeeJun from "../assets/LeeJun.png";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
-import { Star, StarHalf, Clock, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
+import TopAppBar from "../components/TopAppBar";
+import {  
+  StarRegular, StarHalfRegular, ClockRegular, 
+  ChevronDownRegular, ChevronRightRegular, ChevronUpRegular 
+} from '@fluentui/react-icons';
+
+const wrapIcon = (IconComponent: React.ElementType) => {
+  return ({ size, style, ...props }: any) => (
+    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
+  );
+};
+
+const Star = wrapIcon(StarRegular);
+const StarHalf = wrapIcon(StarHalfRegular);
+const Clock = wrapIcon(ClockRegular);
+const ChevronDown = wrapIcon(ChevronDownRegular);
+const ChevronRight = wrapIcon(ChevronRightRegular);
+const ChevronUp = wrapIcon(ChevronUpRegular);
 
 
 
@@ -549,7 +566,7 @@ function ChefCard({ chef }: { chef: typeof chefData[0] }) {
 
 function Content5() {
   return (
-    <div className="content-stretch flex gap-[12px] items-start relative shrink-0 w-[calc(100%+40px)] mx-[-20px] px-[20px] overflow-x-auto pb-4 no-scrollbar" data-name="Content">
+    <div className="content-stretch flex gap-3 items-start relative shrink-0 w-[calc(100%+40px)] mx-[-20px] px-[20px] overflow-x-auto pb-4 no-scrollbar" data-name="Content">
       {chefData.map((chef, index) => (
         <ChefCard key={index} chef={chef} />
       ))}
@@ -569,9 +586,8 @@ function ChefList() {
 function Section() {
   return (
     <div className="relative shrink-0 w-full" data-name="Section">
-      <div aria-hidden="true" className="absolute border-[#f3f3f3] border-[1px_0px] border-solid inset-0 pointer-events-none" />
       <div className="size-full">
-        <div className="box-border content-stretch flex flex-col items-start p-[20px] relative w-full">
+        <div className="box-border content-stretch flex flex-col items-start relative w-full">
           <ChefList />
         </div>
       </div>
@@ -1326,9 +1342,8 @@ function TasteProfile() {
 function Section1() {
   return (
     <div className="relative shrink-0 w-full" data-name="Section">
-      <div aria-hidden="true" className="absolute border-[#f3f3f3] border-[1px_0px] border-solid inset-0 pointer-events-none" />
       <div className="size-full">
-        <div className="box-border content-stretch flex flex-col items-start p-[20px] relative w-full">
+        <div className="box-border content-stretch flex flex-col items-start relative w-full">
           <TasteProfile />
         </div>
       </div>
@@ -1421,7 +1436,7 @@ function HistoryCard({ history, onRate, onClick }: { history: any, onRate: (id: 
             <div className="grow" />
             <div className="flex items-center gap-1 cursor-pointer">
               <span className="text-[11px] text-[#808080]">자세히</span>
-              <ChevronRight className="w-3 h-3 text-[#808080]" />
+              <ChevronRight className="w-3 h-3 text-[#3F3F3F]" />
             </div>
           </div>
 
@@ -1741,15 +1756,14 @@ function SectionAdjustmentHistory() {
 
   return (
     <div className="relative shrink-0 w-full mb-10" data-name="Section">
-      <div aria-hidden="true" className="absolute border-[#f3f3f3] border-[1px_0px] border-solid inset-0 pointer-events-none" />
       <div className="size-full">
-        <div className="box-border content-stretch flex flex-col items-start p-[20px] gap-[12px] relative w-full">
+        <div className="box-border content-stretch flex flex-col items-start gap-[12px] relative w-full">
           {/* Section Header */}
           <div className="flex justify-between items-end w-full mb-2">
             <span className="text-[20px] font-bold text-[#0f0f0f] tracking-[-0.24px]">조정 히스토리</span>
             <div className="flex items-center gap-1 cursor-pointer">
               <span className="text-[11px] text-[#808080]">전체 보기</span>
-              <ChevronDown className="w-3 h-3 text-[#808080]" />
+              <ChevronDown className="w-3 h-3 text-[#3F3F3F]" />
             </div>
           </div>
 
@@ -1760,9 +1774,9 @@ function SectionAdjustmentHistory() {
             ))}
           </div>
 
-          <div className="w-full bg-[#f3f3f3] rounded-full p-[12px] flex justify-between items-center cursor-pointer">
+          <div className="w-full bg-[#f3f3f3] rounded-full p-[12px] flex justify-between items-center cursor-pointer hover:bg-[#ececec] transition-colors" onClick={() => (window as any).__goToAnalysis?.()}>
             <span className="font-bold text-[14px] text-[#0f0f0f]">모든 정보 보기</span>
-            <ChevronRight className="w-4 h-4 text-[#808080]" />
+            <ChevronRight className="w-4 h-4 text-[#3F3F3F]" />
           </div>
         </div>
       </div>
@@ -1782,7 +1796,7 @@ function SectionAdjustmentHistory() {
 
 function Content13() {
   return (
-    <div className="basis-0 content-stretch flex flex-col grow items-start min-h-px min-w-px relative shrink-0 w-full" data-name="Content">
+    <div className="basis-0 content-stretch flex flex-col gap-8 p-5 grow items-start min-h-px min-w-px relative shrink-0 w-full" data-name="Content">
       <Section />
       <Section1 />
       <SectionAdjustmentHistory />
@@ -1814,8 +1828,8 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
   return (
     <div className="flex flex-col w-full h-full bg-white relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
       {/* Header */}
-      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#f3f3f3]">
-        <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20">
+      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-white border-b border-[#f3f3f3]">
+        <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 19l-7-7 7-7" />
           </svg>
@@ -1885,7 +1899,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
             <h3 className="font-bold text-[20px] text-[#0f0f0f]">셰프의 솔루션</h3>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {/* Minus Card */}
             <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
               {/* Header: Icon + Label */}
@@ -1911,7 +1925,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
 
             {/* Connection Arrow */}
             <div className="flex justify-center -my-3 z-10">
-              <div className="bg-white p-2 rounded-full text-gray-400 border border-[#f3f3f3] shadow-sm">
+              <div className="bg-white p-2 rounded-full text-[#3F3F3F] border border-[#f3f3f3] shadow-sm">
                 <ChevronDown size={20} />
               </div>
             </div>
@@ -1981,7 +1995,9 @@ function Content14() {
 function Viewport() {
   return (
     <div className="basis-0 content-stretch flex flex-col grow items-start min-h-px min-w-px relative w-full h-full overflow-hidden" data-name="Viewport">
-      <OsBarTopNavigationResourceContents />
+      <div className="shrink-0 w-full">
+        <TopAppBar />
+      </div>
       <Content14 />
     </div>
   );
@@ -2353,12 +2369,16 @@ function OsBarBottomNavigation1() {
 
 
 
-export default function Home() {
+export default function Home({ onGoToAnalysis }: { onGoToAnalysis?: () => void }) {
+  // Store the callback globally so deeply nested components can use it
+  if (onGoToAnalysis) {
+    (window as any).__goToAnalysis = onGoToAnalysis;
+  }
+
   return (
-    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-      <div className="bg-white content-stretch flex flex-col items-start relative w-full h-full max-w-[1440px] shadow-2xl overflow-hidden" data-name="Home">
+    <div className="w-full h-full bg-white">
+      <div className="bg-white content-stretch flex flex-col items-start relative w-full h-full overflow-hidden" data-name="Home">
         <Viewport />
-        <OsBarBottomNavigation1 />
       </div>
     </div>
   );
