@@ -7,6 +7,7 @@ import personUsingTastickImage from '../assets/Image of a person using the Tasti
 import tasteCircleVideo from '../assets/video/Taste circle.mp4';
 import TbCoreLoop from '../components/graphics/TbCoreLoop';
 import TasteCircularLoop from '../components/graphics/TasteCircularLoop';
+import { TASTE_CIRCULAR_LOOP_STEP_ADVANCE_MS } from '../components/graphics/tasteCircularLoopMotion';
 
 interface TasteMeasurementScreenProps {
     onComplete: () => void;
@@ -91,16 +92,10 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
     // Simulate Active Measurement Progress
     useEffect(() => {
         let timer: NodeJS.Timeout;
-        if (phase === 'active' && activeLevel <= 10) {
+        if (phase === 'active' && activeLevel < 10) {
             timer = setTimeout(() => {
-                // If it hits 11, it means the user never pressed the button (didn't taste it).
-                // For demo purposes, we automatically advance to the next step when it goes past 10.
-                if (activeLevel === 10) {
-                    handleUserReaction();
-                } else {
-                    setActiveLevel(prev => prev + 1);
-                }
-            }, 800); // Increments every 0.8 seconds to keep demo moving
+                setActiveLevel(prev => prev + 1);
+            }, TASTE_CIRCULAR_LOOP_STEP_ADVANCE_MS); // One level now holds for two pulse cycles
         }
         return () => clearTimeout(timer);
     }, [phase, activeLevel]);
@@ -118,7 +113,9 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                 setActiveLevel(1); // Start measurement at level 1
                 break;
             case 'active':
-                handleUserReaction();
+                if (activeLevel >= 10) {
+                    handleUserReaction();
+                }
                 break;
             case 'finished':
                 onComplete();
@@ -334,12 +331,18 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                 <button
                     onClick={handleNextPhase}
                     className={`w-full h-[52px] rounded-[10px] font-medium text-[14px] flex items-center justify-center transition-transform active:scale-[0.98] ${
-                        phase === 'active'
+                        phase === 'active' && activeLevel < 10
                             ? 'bg-[#F2F2F2] text-[#AEAEAE] active:scale-100 shadow-none' // Visual indicator it's meant to be pressed via device, but we allow click for demo
                             : 'bg-[#0f0f0f] text-white shadow-lg shadow-black/10'
                     }`}
                 >
-                    {phase === 'intro' ? '측정 시작' : (phase === 'finished' ? '결과 확인하기' : '계속하기')}
+                    {phase === 'intro'
+                        ? '측정 시작'
+                        : phase === 'finished'
+                            ? '결과 확인하기'
+                            : phase === 'active' && activeLevel >= 10
+                                ? '다음으로'
+                                : '계속하기'}
                 </button>
             </div>
         </div>
