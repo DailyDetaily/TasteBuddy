@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import personUsingTastickImage from '../assets/Image of a person using the Tastick.png';
 import tasteCircleVideo from '../assets/video/Taste circle.mp4';
 import TbCoreLoop from '../components/graphics/TbCoreLoop';
+import TasteCircularLoop from '../components/graphics/TasteCircularLoop';
 
 interface TasteMeasurementScreenProps {
     onComplete: () => void;
@@ -35,6 +36,50 @@ const TASTE_CONFIGS: TasteConfig[] = [
     { id: 'umami', label: '감칠맛', koreanLabel: '감칠맛', descriptionText: '다섯 번째', colorMain: '#AF52DE', colorBg: '#EED9FA', colorPast: '#C582E8', colorBase: '#D8B8E8', angle: 210 },
     { id: 'fat', label: '지방맛', koreanLabel: '지방맛', descriptionText: '여섯 번째', colorMain: '#8E8279', colorBg: '#ECE4D9', colorPast: '#B8A082', colorBase: '#DBCCBA', angle: 270 },
 ];
+
+const TASTE_LOOP_STYLES: Record<Exclude<TasteId, 'sweet'>, {
+    nodeColors: readonly string[];
+    ringBaseColor: string;
+    ringBaseColorSoft: string;
+    ringGuideBaseColor: string;
+    glowTransparentColor: string;
+}> = {
+    sour: {
+        nodeColors: ['#FFF7CC', '#FFF4B8', '#FFF1A3', '#FFEE8F', '#FFEB7A', '#FFE866', '#FFE552', '#FFE23D', '#FFDF29', '#FFD600'],
+        ringBaseColor: '#FFF7CC',
+        ringBaseColorSoft: '#FFF7CC1A',
+        ringGuideBaseColor: '#FFD600',
+        glowTransparentColor: '#FFF7CC08',
+    },
+    bitter: {
+        nodeColors: ['#EAF4CC', '#E1EFC0', '#D8EAB4', '#CFE5A8', '#C5DF9C', '#BCDA90', '#B3D584', '#AAD078', '#A0CB6C', '#95C900'],
+        ringBaseColor: '#EAF4CC',
+        ringBaseColorSoft: '#EAF4CC1A',
+        ringGuideBaseColor: '#95C900',
+        glowTransparentColor: '#EAF4CC08',
+    },
+    salty: {
+        nodeColors: ['#E3EBFF', '#D6E2FF', '#C9D9FF', '#BCD0FF', '#AFC7FF', '#A2BEFF', '#95B5FF', '#88ACFF', '#7BA3FF', '#7299FF'],
+        ringBaseColor: '#E3EBFF',
+        ringBaseColorSoft: '#E3EBFF1A',
+        ringGuideBaseColor: '#7299FF',
+        glowTransparentColor: '#E3EBFF08',
+    },
+    umami: {
+        nodeColors: ['#F0E3F0', '#E7D7E8', '#DECAE0', '#D5BED8', '#CCB1D0', '#C3A5C8', '#BA98C0', '#B18CB8', '#A87FB0', '#B372B4'],
+        ringBaseColor: '#F0E3F0',
+        ringBaseColorSoft: '#F0E3F01A',
+        ringGuideBaseColor: '#B372B4',
+        glowTransparentColor: '#F0E3F008',
+    },
+    fat: {
+        nodeColors: ['#EAE7E4', '#E2DEDA', '#DAD5D0', '#D2CCC6', '#CAC3BC', '#C2BAB2', '#BAB1A8', '#B2A89E', '#AA9F94', '#95867A'],
+        ringBaseColor: '#EAE7E4',
+        ringBaseColorSoft: '#EAE7E41A',
+        ringGuideBaseColor: '#95867A',
+        glowTransparentColor: '#EAE7E408',
+    },
+};
 
 export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeasurementScreenProps) {
     const [phase, setPhase] = useState<MeasurementPhase>('checklist');
@@ -250,46 +295,11 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                 {currentTaste.id === 'sweet' ? (
                                     <TbCoreLoop activeLevel={activeLevel} />
                                 ) : (
-                                    <div className="relative w-[280px] h-[280px]">
-                                        <div className="absolute inset-4 rounded-full border-[1.5px] border-dashed" style={{ borderColor: currentTaste.colorBase }} />
-
-                                        {Array.from({ length: 10 }).map((_, idx) => {
-                                            const step = idx + 1;
-                                            const angle = (360 / 10) * idx;
-                                            const radian = (angle - 90) * (Math.PI / 180);
-                                            const stepRadius = 115;
-                                            const cx = 140 + stepRadius * Math.cos(radian);
-                                            const cy = 140 + stepRadius * Math.sin(radian);
-
-                                            const isActive = step === activeLevel;
-                                            const isPast = step < activeLevel;
-
-                                            return (
-                                                <div
-                                                    key={step}
-                                                    className="absolute flex flex-col items-center justify-center"
-                                                    style={{
-                                                        top: `${(cy / 280) * 100}%`,
-                                                        left: `${(cx / 280) * 100}%`,
-                                                        transform: 'translate(-50%, -50%)'
-                                                    }}
-                                                >
-                                                    <span className={`text-[12px] font-medium mb-1 absolute -top-5 ${isActive ? 'font-bold' : 'text-[#999]'}`} style={{ color: isActive ? currentTaste.colorMain : undefined }}>
-                                                        {step}
-                                                    </span>
-                                                    <div
-                                                        className={`rounded-full border-2 border-white transition-all duration-500 ${isActive ? 'w-7 h-7 shadow-md z-10 scale-110' : 'w-5 h-5 scale-100'}`}
-                                                        style={{ backgroundColor: isActive ? currentTaste.colorMain : (isPast ? currentTaste.colorPast : currentTaste.colorBg) }}
-                                                    />
-                                                </div>
-                                            );
-                                        })}
-
-                                        <div
-                                            className="absolute inset-10 rounded-full opacity-50 pointer-events-none transition-colors duration-500 text-transparent"
-                                            style={{ background: `radial-gradient(circle, ${currentTaste.colorMain}1A 0%, ${currentTaste.colorMain}00 70%)` }}
-                                        />
-                                    </div>
+                                    <TasteCircularLoop
+                                        activeLevel={activeLevel}
+                                        ariaLabel={`${currentTaste.koreanLabel} core loop`}
+                                        {...TASTE_LOOP_STYLES[currentTaste.id as Exclude<TasteId, 'sweet'>]}
+                                    />
                                 )}
                             </div>
                         </motion.div>
