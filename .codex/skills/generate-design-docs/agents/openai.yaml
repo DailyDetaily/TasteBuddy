@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Docs"
+  short_description: "Document UI patterns and components"
+  default_prompt: "Generate concise design documentation for these UI components, including usage guidance and key design notes."

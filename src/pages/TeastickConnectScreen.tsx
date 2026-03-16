@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import powerOnImage from '../assets/Power On Instructions.png';
 import tastickImage from '../assets/Tastick.png';
 import tastickConnectImage from '../assets/Tastick Connect.png';
-import tbFeedbackVideo from '../assets/video/TB Feedback.mp4';
+import tbFeedbackVideo from '../assets/video/TB Feedback [Custom].mp4';
 
 interface TeastickConnectScreenProps {
     onConnect: () => void;

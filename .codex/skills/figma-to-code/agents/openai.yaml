@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figma to Code"
+  short_description: "Turn design specs into frontend UI"
+  default_prompt: "Translate the provided design into responsive, production-ready frontend code with strong visual fidelity."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Improvement"
+  short_description: "Refine clarity, hierarchy, and readability"
+  default_prompt: "Improve this interface's clarity and polish by tightening spacing, hierarchy, and readability."

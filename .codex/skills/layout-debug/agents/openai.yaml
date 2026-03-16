@@ -1,0 +1,4 @@
+interface:
+  display_name: "Layout Debug"
+  short_description: "Find and fix CSS layout bugs"
+  default_prompt: "Diagnose this layout issue, explain the root cause, and provide the smallest reliable fix."

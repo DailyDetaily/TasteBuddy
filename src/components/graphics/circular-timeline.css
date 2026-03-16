@@ -1,0 +1,69 @@
+.circular-timeline {
+  --timeline-outer-ring-gradient: conic-gradient(from 0deg, #ff9900 0deg, #ff9900 360deg);
+  --timeline-outer-ring-inset: 23px;
+  --timeline-ring-gradient: conic-gradient(from 0deg, #ff9900 0deg, #ff9900 360deg);
+  --timeline-surface: #ffffff;
+  --timeline-ring-thickness: 18px;
+  position: relative;
+  width: min(100%, var(--timeline-max-size, 20rem));
+  aspect-ratio: 1 / 1;
+}
+
+.circular-timeline__outer-ring,
+.circular-timeline__ring {
+  position: absolute;
+  border-radius: 9999px;
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent calc(100% - var(--timeline-ring-thickness)),
+    #000 calc(100% - var(--timeline-ring-thickness) + 0.5px)
+  );
+  mask: radial-gradient(
+    circle,
+    transparent calc(100% - var(--timeline-ring-thickness)),
+    #000 calc(100% - var(--timeline-ring-thickness) + 0.5px)
+  );
+}
+
+.circular-timeline__outer-ring {
+  inset: var(--timeline-outer-ring-inset);
+  background: var(--timeline-outer-ring-gradient);
+}
+
+.circular-timeline__ring {
+  inset: calc(var(--timeline-outer-ring-inset) + var(--timeline-ring-thickness));
+  background: var(--timeline-ring-gradient);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.58);
+}
+
+.circular-timeline__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.circular-timeline__label {
+  fill: #4f4f4f;
+  font-size: 4px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  dominant-baseline: middle;
+  text-anchor: middle;
+}
+
+.circular-timeline__label--active {
+  fill: #0f0f0f;
+  font-weight: 700;
+}
+
+.circular-timeline__node {
+  stroke: rgba(255, 255, 255, 0.72);
+  stroke-width: 0.65;
+  transition: filter 240ms ease;
+}
+
+.circular-timeline__node--active {
+  filter: drop-shadow(0 6px 16px rgba(255, 153, 0, 0.26));
+}

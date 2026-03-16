@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Tokens"
+  short_description: "Extract reusable visual tokens"
+  default_prompt: "Convert these raw style values into a clean, reusable design token structure and show how to apply it."

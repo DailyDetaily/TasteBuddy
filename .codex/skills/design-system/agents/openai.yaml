@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design System"
+  short_description: "Create reusable UI foundations and tokens"
+  default_prompt: "Generate a practical design system with colors, typography, spacing, tokens, and implementation guidance."

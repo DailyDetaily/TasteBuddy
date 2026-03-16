@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Component"
+  short_description: "Create reusable frontend components"
+  default_prompt: "Build a reusable UI component with clean structure, sensible APIs, and a realistic usage example."

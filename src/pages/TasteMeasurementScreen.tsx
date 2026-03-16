@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Using the closest available assets as placeholders
 import personUsingTastickImage from '../assets/Image of a person using the Tastick.png';
 import tasteCircleVideo from '../assets/video/Taste circle.mp4';
+import TbCoreLoop from '../components/graphics/TbCoreLoop';
 
 interface TasteMeasurementScreenProps {
     onComplete: () => void;
@@ -110,11 +111,6 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
             setTasteIndex(TASTE_CONFIGS.length - 1);
         }
     };
-
-
-    // Circular Progress Settings for Intro
-    const radius = 120;
-    const center = 150;
 
     return (
         <div className="flex flex-col w-full h-full bg-white relative font-sans">
@@ -251,50 +247,50 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             </div>
 
                             <div className="flex-1 w-full flex items-center justify-center relative">
-                                <div className="relative w-[280px] h-[280px]">
-                                    {/* Base Dashed Circle */}
-                                    <div className="absolute inset-4 rounded-full border-[1.5px] border-dashed" style={{ borderColor: currentTaste.colorBase }} />
+                                {currentTaste.id === 'sweet' ? (
+                                    <TbCoreLoop activeLevel={activeLevel} />
+                                ) : (
+                                    <div className="relative w-[280px] h-[280px]">
+                                        <div className="absolute inset-4 rounded-full border-[1.5px] border-dashed" style={{ borderColor: currentTaste.colorBase }} />
 
-                                    {/* 10 Step Nodes */}
-                                    {Array.from({ length: 10 }).map((_, idx) => {
-                                        const step = idx + 1;
-                                        // Start from top (1) and go clockwise
-                                        const angle = (360 / 10) * idx;
-                                        const radian = (angle - 90) * (Math.PI / 180);
-                                        const stepRadius = 115;
-                                        const cx = 140 + stepRadius * Math.cos(radian);
-                                        const cy = 140 + stepRadius * Math.sin(radian);
+                                        {Array.from({ length: 10 }).map((_, idx) => {
+                                            const step = idx + 1;
+                                            const angle = (360 / 10) * idx;
+                                            const radian = (angle - 90) * (Math.PI / 180);
+                                            const stepRadius = 115;
+                                            const cx = 140 + stepRadius * Math.cos(radian);
+                                            const cy = 140 + stepRadius * Math.sin(radian);
 
-                                        const isActive = step === activeLevel;
-                                        const isPast = step < activeLevel;
+                                            const isActive = step === activeLevel;
+                                            const isPast = step < activeLevel;
 
-                                        return (
-                                            <div
-                                                key={step}
-                                                className="absolute flex flex-col items-center justify-center"
-                                                style={{
-                                                    top: `${(cy / 280) * 100}%`,
-                                                    left: `${(cx / 280) * 100}%`,
-                                                    transform: 'translate(-50%, -50%)'
-                                                }}
-                                            >
-                                                <span className={`text-[12px] font-medium mb-1 absolute -top-5 ${isActive ? 'font-bold' : 'text-[#999]'}`} style={{ color: isActive ? currentTaste.colorMain : undefined }}>
-                                                    {step}
-                                                </span>
+                                            return (
                                                 <div
-                                                    className={`rounded-full border-2 border-white transition-all duration-500 ${isActive ? 'w-7 h-7 shadow-md z-10 scale-110' : 'w-5 h-5 scale-100'}`}
-                                                    style={{ backgroundColor: isActive ? currentTaste.colorMain : (isPast ? currentTaste.colorPast : currentTaste.colorBg) }}
-                                                />
-                                            </div>
-                                        );
-                                    })}
+                                                    key={step}
+                                                    className="absolute flex flex-col items-center justify-center"
+                                                    style={{
+                                                        top: `${(cy / 280) * 100}%`,
+                                                        left: `${(cx / 280) * 100}%`,
+                                                        transform: 'translate(-50%, -50%)'
+                                                    }}
+                                                >
+                                                    <span className={`text-[12px] font-medium mb-1 absolute -top-5 ${isActive ? 'font-bold' : 'text-[#999]'}`} style={{ color: isActive ? currentTaste.colorMain : undefined }}>
+                                                        {step}
+                                                    </span>
+                                                    <div
+                                                        className={`rounded-full border-2 border-white transition-all duration-500 ${isActive ? 'w-7 h-7 shadow-md z-10 scale-110' : 'w-5 h-5 scale-100'}`}
+                                                        style={{ backgroundColor: isActive ? currentTaste.colorMain : (isPast ? currentTaste.colorPast : currentTaste.colorBg) }}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
 
-                                    {/* Central subtle highlight if active */}
-                                    <div
-                                        className="absolute inset-10 rounded-full opacity-50 pointer-events-none transition-colors duration-500 text-transparent"
-                                        style={{ background: `radial-gradient(circle, ${currentTaste.colorMain}1A 0%, ${currentTaste.colorMain}00 70%)` }}
-                                    />
-                                </div>
+                                        <div
+                                            className="absolute inset-10 rounded-full opacity-50 pointer-events-none transition-colors duration-500 text-transparent"
+                                            style={{ background: `radial-gradient(circle, ${currentTaste.colorMain}1A 0%, ${currentTaste.colorMain}00 70%)` }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}

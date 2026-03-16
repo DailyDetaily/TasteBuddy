@@ -1,0 +1,4 @@
+interface:
+  display_name: "CSS Cleanup"
+  short_description: "Refactor styles without visual changes"
+  default_prompt: "Clean and organize these styles, remove duplication, and preserve the current visual output."

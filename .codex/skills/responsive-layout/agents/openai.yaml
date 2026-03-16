@@ -1,0 +1,4 @@
+interface:
+  display_name: "Responsive Layout"
+  short_description: "Adapt layouts for mobile and desktop"
+  default_prompt: "Improve this layout so it works across screen sizes while preserving the intended visual design."
