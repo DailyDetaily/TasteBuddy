@@ -28,7 +28,7 @@ const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
 
 export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
   return (
-    <div className="w-full bg-white border-t border-[#e7e7e7] relative shrink-0 z-50">
+    <div className="w-full bg-[var(--tb-color-surface-base)] border-t border-[var(--tb-color-border-default)] relative shrink-0 z-50">
       <div className="flex items-center justify-around px-2 py-1">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -43,7 +43,9 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
                 <Icon
                   size={24}
                   className={`transition-colors duration-300 ${
-                    isActive ? 'text-[#0f0f0f]' : 'text-[#AFAFAF] group-hover:text-[#6F6F6F]'
+                    isActive
+                      ? 'text-[var(--tb-color-text-primary)]'
+                      : 'text-[var(--tb-color-icon-muted)] group-hover:text-[var(--tb-color-icon-hover)]'
                   }`}
                   strokeWidth={isActive ? 2.2 : 1.8}
                 />
@@ -51,8 +53,8 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
               <span
                 className={`text-[10px] tracking-[0.14px] transition-colors duration-300 ${
                   isActive
-                    ? 'font-semibold text-[#0f0f0f]'
-                    : 'font-medium text-[#AFAFAF] group-hover:text-[#6F6F6F]'
+                    ? 'font-semibold text-[var(--tb-color-text-primary)]'
+                    : 'font-medium text-[var(--tb-color-icon-muted)] group-hover:text-[var(--tb-color-icon-hover)]'
                 }`}
               >
                 {tab.label}
@@ -63,7 +65,7 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
       </div>
       {/* Home Indicator */}
       <div className="flex justify-center pb-1">
-        <div className="w-[134px] h-[5px] bg-[#0f0f0f] rounded-full" />
+        <div className="w-[134px] h-[5px] bg-[var(--tb-color-text-primary)] rounded-full" />
       </div>
     </div>
   );

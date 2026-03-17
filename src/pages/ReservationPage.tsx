@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ChevronRightRegular, LocationRegular, ClockRegular, FoodRegular,
-  HeartPulseRegular, CheckmarkCircleRegular, CircleRegular, ErrorCircleRegular
+  HeartPulseRegular, CheckmarkCircleRegular, CircleRegular
 } from '@fluentui/react-icons';
 import React from 'react';
 
@@ -18,16 +18,36 @@ const Utensils = wrapIcon(FoodRegular);
 const Activity = wrapIcon(HeartPulseRegular);
 const CheckCircle2 = wrapIcon(CheckmarkCircleRegular);
 const Circle = wrapIcon(CircleRegular);
-const AlertCircle = wrapIcon(ErrorCircleRegular);
+import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
-import { TASTE_COLORS, getTasteColor } from '../constants/tasteColors';
+import {
+  DiningAiAnalysisScreen,
+  DiningFeedbackScreen,
+} from '../components/reservation/DiningFeedbackFlow';
+import PrimaryButton from '../components/system/PrimaryButton';
+import SectionTitle from '../components/system/SectionTitle';
+import StatusChip from '../components/system/StatusChip';
+import TasteChip from '../components/system/TasteChip';
+import {
+  createDiningFeedbackDraft,
+  getDiningFeedbackScenario,
+  type DiningFeedbackDraft,
+} from '../constants/diningFeedbackData';
+import { getTasteColor } from '../constants/tasteColors';
+import {
+  formatMeasurementDate,
+  getTasteMeasurementAgeLabel,
+  isTasteMeasurementStale,
+  type TasteMeasurementSnapshot,
+} from '../constants/tasteMeasurementData';
 
 import chefHwangJeongin from '../assets/HwangJeongin.png';
 import chefLeeEunji from '../assets/LeeEunji.png';
 import chefLimJeongsik from '../assets/LimJeongsik.png';
 
 type ReservationStatus = 'upcoming' | 'preparing' | 'ready' | 'completed';
+type ReservationView = 'detail' | 'feedback' | 'analysis';
 
 interface Reservation {
   id: number;
@@ -135,12 +155,9 @@ function ReservationCard({ reservation, onSelect }: { reservation: Reservation; 
       {/* 상태 배지 + 레스토랑 */}
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-2">
-          <span
-            className="text-[10px] font-bold px-2 py-[3px] rounded-full"
-            style={{ color: status.color, backgroundColor: status.bg }}
-          >
+          <StatusChip color={status.color} backgroundColor={status.bg}>
             {status.label}
-          </span>
+          </StatusChip>
           <span className="font-bold text-[15px] text-[#0f0f0f]">{reservation.restaurant}</span>
         </div>
         <ChevronRight size={16} className="text-[#AFAFAF]" />
@@ -180,25 +197,47 @@ function ReservationCard({ reservation, onSelect }: { reservation: Reservation; 
       {/* 예상 보정 태그 */}
       <div className="flex gap-2 flex-wrap">
         {reservation.adjustments.map((adj, idx) => (
-          <span
+          <TasteChip
             key={idx}
-            className="px-2 py-1 rounded-full bg-white text-[10px] font-medium flex items-center gap-1"
-          >
-            <span className="text-[#0f0f0f]">{adj.taste}</span>
-            <span style={{ color: getTasteColor(adj.taste) }} className="font-semibold">{adj.change}</span>
-          </span>
+            taste={adj.taste}
+            value={adj.change}
+          />
         ))}
       </div>
     </SectionCard>
   );
 }
 
-function ReservationDetail({ reservation, onBack }: { reservation: Reservation; onBack: () => void }) {
+function ReservationDetail({
+  feedbackSubmitted,
+  measurementSnapshot,
+  onBack,
+  onOpenAnalysis,
+  onOpenFeedback,
+  onStartMeasurement,
+  reservation,
+}: {
+  feedbackSubmitted: boolean;
+  measurementSnapshot: TasteMeasurementSnapshot;
+  onBack: () => void;
+  onOpenAnalysis: () => void;
+  onOpenFeedback: () => void;
+  onStartMeasurement: () => void;
+  reservation: Reservation;
+}) {
   const status = statusConfig[reservation.status];
+  const feedbackScenario = getDiningFeedbackScenario(reservation.id);
+  const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
+  const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
 
   return (
     <div className="flex flex-col w-full h-full bg-white animate-slideIn">
-      <TopAppBar title={reservation.restaurant} showBack onBack={onBack} />
+      <TopAppBar
+        title={reservation.restaurant}
+        showBack
+        onBack={onBack}
+        onStartMeasurement={onStartMeasurement}
+      />
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="flex flex-col gap-[24px] p-[20px]">
           {/* 셰프 + 상태 */}
@@ -211,12 +250,9 @@ function ReservationDetail({ reservation, onBack }: { reservation: Reservation; 
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-[18px]">{reservation.chef} 셰프</span>
-                <span
-                  className="text-[10px] font-bold px-2 py-[2px] rounded-full"
-                  style={{ color: status.color, backgroundColor: status.bg }}
-                >
+                <StatusChip color={status.color} backgroundColor={status.bg}>
                   {status.label}
-                </span>
+                </StatusChip>
               </div>
               <span className="text-[13px] text-[rgba(15,15,15,0.5)]">
                 {reservation.course} · {reservation.guests}명
@@ -244,7 +280,7 @@ function ReservationDetail({ reservation, onBack }: { reservation: Reservation; 
 
           {/* 다이닝 타임라인 */}
           <div>
-            <h3 className="font-bold text-[18px] text-[#0f0f0f] mb-4">다이닝 타임라인</h3>
+            <SectionTitle className="mb-4">다이닝 타임라인</SectionTitle>
             <div className="flex flex-col gap-0">
               {reservation.timeline.map((step, idx) => (
                 <div key={idx} className="flex items-start gap-3">
@@ -275,7 +311,7 @@ function ReservationDetail({ reservation, onBack }: { reservation: Reservation; 
 
           {/* 예상 미각 보정 */}
           <div>
-            <h3 className="font-bold text-[18px] text-[#0f0f0f] mb-3">예상 미각 보정</h3>
+            <SectionTitle className="mb-3">예상 미각 보정</SectionTitle>
             <SectionCard>
               <p className="text-[13px] text-[rgba(15,15,15,0.6)] leading-relaxed w-full">
                 고객님의 미각 프로필을 기반으로 셰프가 다음과 같이 보정할 예정입니다.
@@ -310,18 +346,46 @@ function ReservationDetail({ reservation, onBack }: { reservation: Reservation; 
 
           {/* 미각 컨디션 알림 */}
           {reservation.status !== 'completed' && (
-            <div className="bg-[#F3F3F3] rounded-[20px] p-[12px] flex items-start gap-3">
-              <AlertCircle size={18} className="text-[#3F3F3F] shrink-0 mt-[2px]" />
-              <div className="flex flex-col gap-1">
-                <span className="font-bold text-[13px] text-[#0f0f0f]">사전 미각 측정 권장</span>
-                <span className="text-[12px] text-[rgba(15,15,15,0.6)]">
-                  다이닝 전 최신 미각 데이터로 업데이트하면 더 정밀한 보정이 가능합니다.
-                </span>
-                <button className="mt-2 bg-[#0f0f0f] text-white text-[12px] font-semibold px-4 py-2 rounded-[10px] self-start hover:bg-[#333] transition-colors active:scale-[0.97]">
-                  테이스틱으로 측정하기
-                </button>
+            <TasteMeasurementMiniCta
+              title={needsMeasurementRefresh ? '다이닝 전 재측정 추천' : '예약 전 한 번 더 측정'}
+              description={
+                needsMeasurementRefresh
+                  ? `${measurementAgeLabel} 데이터예요. 최신 측정값으로 바꾸면 이번 보정이 더 정확해져요.`
+                  : '현재 컨디션으로 다시 측정하면 셰프 보정이 이번 식사에 더 잘 맞아질 수 있어요.'
+              }
+              meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
+              actionLabel={needsMeasurementRefresh ? '재측정' : '측정하기'}
+              onAction={onStartMeasurement}
+              tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
+            />
+          )}
+
+          {reservation.status === 'completed' && feedbackScenario && (
+            <SectionCard hoverEffect={false} className="bg-[#F7F7F7]">
+              <div className="flex items-start justify-between gap-4 w-full">
+                <div className="flex flex-col gap-2">
+                  <SectionTitle size="md">식후 피드백 & AI 해석</SectionTitle>
+                  <p className="text-[13px] leading-relaxed text-[rgba(15,15,15,0.6)]">
+                    코스별 인상과 재료 궁합 피드백을 남기면, AI가 왜 이 메뉴가 지금의 미각 프로필과
+                    맞지 않았는지와 다음엔 어떻게 조정하면 좋을지 정리해드려요.
+                  </p>
+                </div>
               </div>
-            </div>
+              <div className="flex flex-col gap-2 w-full">
+                <PrimaryButton onClick={feedbackSubmitted ? onOpenAnalysis : onOpenFeedback}>
+                  {feedbackSubmitted ? 'AI 해석 다시 보기' : '식후 피드백 남기기'}
+                </PrimaryButton>
+                {feedbackSubmitted ? (
+                  <button
+                    type="button"
+                    onClick={onOpenFeedback}
+                    className="self-center text-[12px] font-semibold text-[rgba(15,15,15,0.58)]"
+                  >
+                    피드백 수정하기
+                  </button>
+                ) : null}
+              </div>
+            </SectionCard>
           )}
 
           <div className="h-6" />
@@ -331,30 +395,117 @@ function ReservationDetail({ reservation, onBack }: { reservation: Reservation; 
   );
 }
 
-export default function ReservationPage() {
+interface ReservationPageProps {
+  measurementSnapshot: TasteMeasurementSnapshot;
+  onStartMeasurement: () => void;
+}
+
+export default function ReservationPage({
+  measurementSnapshot,
+  onStartMeasurement,
+}: ReservationPageProps) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedView, setSelectedView] = useState<ReservationView>('detail');
+  const [feedbackByReservationId, setFeedbackByReservationId] = useState<Record<number, DiningFeedbackDraft>>({});
   const selectedReservation = reservations.find(r => r.id === selectedId);
+  const selectedScenario = selectedReservation ? getDiningFeedbackScenario(selectedReservation.id) : null;
+  const activeFeedbackDraft =
+    selectedReservation && selectedScenario
+      ? feedbackByReservationId[selectedReservation.id] ?? createDiningFeedbackDraft(selectedScenario)
+      : null;
 
   if (selectedReservation) {
-    return <ReservationDetail reservation={selectedReservation} onBack={() => setSelectedId(null)} />;
+    if (selectedView === 'feedback' && selectedScenario) {
+      return (
+        <DiningFeedbackScreen
+          scenario={selectedScenario}
+          draft={activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario)}
+          onBack={() => setSelectedView('detail')}
+          onChange={(nextDraft) =>
+            setFeedbackByReservationId((current) => ({
+              ...current,
+              [selectedReservation.id]: nextDraft,
+            }))
+          }
+          onSubmit={() => {
+            setFeedbackByReservationId((current) => ({
+              ...current,
+              [selectedReservation.id]: activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario),
+            }));
+            setSelectedView('analysis');
+          }}
+        />
+      );
+    }
+
+    if (selectedView === 'analysis' && selectedScenario) {
+      return (
+        <DiningAiAnalysisScreen
+          scenario={selectedScenario}
+          draft={activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario)}
+          measurementSnapshot={measurementSnapshot}
+          onBack={() => setSelectedView('feedback')}
+          onClose={() => setSelectedView('detail')}
+        />
+      );
+    }
+
+    return (
+      <ReservationDetail
+        reservation={selectedReservation}
+        feedbackSubmitted={Boolean(feedbackByReservationId[selectedReservation.id])}
+        measurementSnapshot={measurementSnapshot}
+        onBack={() => {
+          setSelectedId(null);
+          setSelectedView('detail');
+        }}
+        onOpenFeedback={() => setSelectedView('feedback')}
+        onOpenAnalysis={() => setSelectedView('analysis')}
+        onStartMeasurement={onStartMeasurement}
+      />
+    );
   }
 
   const upcoming = reservations.filter(r => r.status !== 'completed');
   const completed = reservations.filter(r => r.status === 'completed');
+  const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
+  const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
 
   return (
     <div className="flex flex-col w-full h-full bg-white">
-      <TopAppBar />
+      <TopAppBar onStartMeasurement={onStartMeasurement} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="flex flex-col gap-8 p-5 animate-fadeIn">
           <h1 className="font-bold text-[24px] text-[#0f0f0f] tracking-[-0.24px]">다이닝 예약</h1>
 
+          {upcoming.length > 0 && (
+            <TasteMeasurementMiniCta
+              title={needsMeasurementRefresh ? '다가오는 예약 전 재측정 추천' : '예약 전 빠른 측정'}
+              description={
+                needsMeasurementRefresh
+                  ? `${measurementAgeLabel} 데이터예요. 예약 전에 갱신해두면 다이닝 보정 정확도가 더 좋아져요.`
+                  : '다가오는 식사 전에 한 번 더 측정해서 현재 컨디션을 반영할 수 있어요.'
+              }
+              meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
+              actionLabel={needsMeasurementRefresh ? '재측정' : '측정하기'}
+              onAction={onStartMeasurement}
+              tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
+            />
+          )}
+
           {/* 다가오는 예약 */}
           {upcoming.length > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="font-semibold text-[14px] text-[rgba(15,15,15,0.5)]">다가오는 다이닝</h3>
+              <SectionTitle as="h3" size="md" className="font-semibold text-[rgba(15,15,15,0.5)]">다가오는 다이닝</SectionTitle>
               {upcoming.map((r) => (
-                <ReservationCard key={r.id} reservation={r} onSelect={() => setSelectedId(r.id)} />
+                <ReservationCard
+                  key={r.id}
+                  reservation={r}
+                  onSelect={() => {
+                    setSelectedId(r.id);
+                    setSelectedView('detail');
+                  }}
+                />
               ))}
             </div>
           )}
@@ -362,9 +513,16 @@ export default function ReservationPage() {
           {/* 지난 예약 */}
           {completed.length > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="font-semibold text-[14px] text-[rgba(15,15,15,0.5)]">지난 다이닝</h3>
+              <SectionTitle as="h3" size="md" className="font-semibold text-[rgba(15,15,15,0.5)]">지난 다이닝</SectionTitle>
               {completed.map((r) => (
-                <ReservationCard key={r.id} reservation={r} onSelect={() => setSelectedId(r.id)} />
+                <ReservationCard
+                  key={r.id}
+                  reservation={r}
+                  onSelect={() => {
+                    setSelectedId(r.id);
+                    setSelectedView('detail');
+                  }}
+                />
               ))}
             </div>
           )}

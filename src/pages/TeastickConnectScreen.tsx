@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, MoreHorizontal, Check } from 'lucide-react';
 import { Drawer } from 'vaul';
 import { motion, AnimatePresence } from 'framer-motion';
 import powerOnImage from '../assets/Power On Instructions.png';
-import tastickImage from '../assets/Tastick.png';
 import tastickConnectImage from '../assets/Tastick Connect.png';
 import tbFeedbackVideo from '../assets/video/TB Feedback [Custom].mp4';
+import PrimaryButton from '../components/system/PrimaryButton';
 
 interface TeastickConnectScreenProps {
     onConnect: () => void;
@@ -14,10 +14,45 @@ interface TeastickConnectScreenProps {
 
 type DrawerStep = 'power' | 'connecting' | 'connected';
 
+const BACKGROUND_CARD_OPEN_SCALE = 0.9;
+const BACKGROUND_CARD_OPEN_OFFSET = 40;
+const BACKGROUND_CARD_OPEN_RADIUS = 28;
+const BACKGROUND_CARD_SHADOW_Y = 20;
+const BACKGROUND_CARD_SHADOW_BLUR = 60;
+const BACKGROUND_CARD_SHADOW_OPACITY = 0.24;
+const BACKGROUND_CARD_TRANSITION = [
+    'transform 620ms cubic-bezier(0.22, 1, 0.36, 1)',
+    'border-radius 720ms cubic-bezier(0.22, 1, 0.36, 1)',
+    'box-shadow 620ms cubic-bezier(0.22, 1, 0.36, 1)',
+].join(', ');
+
 export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickConnectScreenProps) {
     const [mainStep, setMainStep] = useState(1);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [drawerStep, setDrawerStep] = useState<DrawerStep>('power');
+    const backgroundCardRef = useRef<HTMLDivElement>(null);
+
+    const applyBackgroundCardProgress = (progress: number, immediate = false) => {
+        const backgroundCard = backgroundCardRef.current;
+
+        if (!backgroundCard) return;
+
+        const clampedProgress = Math.min(Math.max(progress, 0), 1);
+        const scale = 1 - (1 - BACKGROUND_CARD_OPEN_SCALE) * clampedProgress;
+        const translateY = BACKGROUND_CARD_OPEN_OFFSET * clampedProgress;
+        const borderRadius = BACKGROUND_CARD_OPEN_RADIUS * clampedProgress;
+        const shadowOffsetY = BACKGROUND_CARD_SHADOW_Y * clampedProgress;
+        const shadowBlur = BACKGROUND_CARD_SHADOW_BLUR * clampedProgress;
+        const shadowOpacity = BACKGROUND_CARD_SHADOW_OPACITY * clampedProgress;
+
+        backgroundCard.style.transition = immediate ? 'none' : BACKGROUND_CARD_TRANSITION;
+        backgroundCard.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale})`;
+        backgroundCard.style.borderRadius = `${borderRadius}px`;
+        backgroundCard.style.boxShadow = clampedProgress > 0
+            ? `0 ${shadowOffsetY}px ${shadowBlur}px rgba(0,0,0,${shadowOpacity})`
+            : 'none';
+    };
+
     // Drawer connection sequence simulation
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -29,6 +64,10 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
         }
         return () => clearTimeout(timer);
     }, [isDrawerOpen, drawerStep]);
+
+    useEffect(() => {
+        applyBackgroundCardProgress(isDrawerOpen ? 1 : 0);
+    }, [isDrawerOpen]);
 
     const handleStartConnection = () => {
         setIsDrawerOpen(true);
@@ -52,76 +91,87 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
     ];
 
     return (
-        <div className="flex flex-col w-full h-full bg-white relative font-sans">
-            {/* Header */}
-            <header className="flex items-center justify-between px-4 h-14 bg-white z-10">
-                <button onClick={onSkip} className="p-2 -ml-2 text-black active:opacity-70 transition-opacity">
-                    <ChevronLeft strokeWidth={1.5} size={28} />
-                </button>
-                <button className="p-2 -mr-2 text-black active:opacity-70 transition-opacity">
-                    <MoreHorizontal strokeWidth={1.5} size={24} />
-                </button>
-            </header>
+        <div className={`relative flex h-full w-full font-sans transition-colors duration-500 ease-in-out ${isDrawerOpen ? 'bg-black' : 'bg-white'}`}>
+            <div
+                ref={backgroundCardRef}
+                className="relative flex h-full w-full origin-top flex-col overflow-hidden bg-white will-change-transform"
+            >
+                {/* Header */}
+                <header className="flex items-center justify-between px-4 h-14 bg-white z-10">
+                    <button onClick={onSkip} className="p-2 -ml-2 text-black active:opacity-70 transition-opacity">
+                        <ChevronLeft strokeWidth={1.5} size={28} />
+                    </button>
+                    <button className="p-2 -mr-2 text-black active:opacity-70 transition-opacity">
+                        <MoreHorizontal strokeWidth={1.5} size={24} />
+                    </button>
+                </header>
 
-            {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto px-5 pb-24">
-                <div className="mt-6 mb-12 text-center">
-                    <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight">
-                        지금부터 고객님의 미각을<br />정밀하게 측정합니다.
-                    </h1>
-                    <p className="text-[#666666] text-[14px]">
-                        매뉴얼에 따라 측정을 진행해주세요.
-                    </p>
-                </div>
+                {/* Main Content Area */}
+                <main className="flex-1 overflow-y-auto px-5 pb-24">
+                    <div className="mt-6 mb-12 text-center">
+                        <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight">
+                            지금부터 고객님의 미각을<br />정밀하게 측정합니다.
+                        </h1>
+                        <p className="text-[#666666] text-[14px]">
+                            매뉴얼에 따라 측정을 진행해주세요.
+                        </p>
+                    </div>
 
-                {/* Steps List */}
-                <div className="flex flex-col gap-3">
-                    {steps.map((step) => {
-                        const isCompleted = mainStep > step.id;
-                        const isActive = mainStep === step.id;
+                    {/* Steps List */}
+                    <div className="flex flex-col gap-3">
+                        {steps.map((step) => {
+                            const isCompleted = mainStep > step.id;
+                            const isActive = mainStep === step.id;
 
-                        let bgColor = 'bg-[#F5F5F5]';
-                        if (isActive) bgColor = 'bg-[#F6F6F6] border border-[#E5E5E5]';
-                        else if (isCompleted) bgColor = 'bg-[#F5F5F5] opacity-80';
+                            let bgColor = 'bg-[#F5F5F5]';
+                            if (isActive) bgColor = 'bg-[#F6F6F6] border border-[#E5E5E5]';
+                            else if (isCompleted) bgColor = 'bg-[#F5F5F5] opacity-80';
 
-                        return (
-                            <div key={step.id} className={`w-full rounded-[20px] p-3 ${bgColor} transition-all duration-300`}>
-                                <div className="flex items-start gap-3">
-                                    <div className={`w-[24px] h-[24px] rounded-[8px] flex items-center justify-center shrink-0 ${isCompleted || isActive ? 'bg-black text-white' : 'bg-[#AEAEAE] text-white'}`}>
-                                        {isCompleted ? <Check size={14} strokeWidth={3} /> : <span className="text-[13px] font-bold">{step.id}</span>}
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className={`text-[14px] font-bold tracking-tight ${(isActive) ? 'text-black' : 'text-[#555]'}`}>
-                                            {step.title}
-                                        </h3>
-                                        {isActive && step.desc && (
-                                            <p className="text-[12px] text-[#777] mt-1.5 leading-relaxed whitespace-pre-wrap">
-                                                {step.desc}
-                                            </p>
-                                        )}
+                            return (
+                                <div key={step.id} className={`w-full rounded-[20px] p-3 ${bgColor} transition-all duration-300`}>
+                                    <div className="flex items-start gap-3">
+                                        <div className={`w-[24px] h-[24px] rounded-[8px] flex items-center justify-center shrink-0 ${isCompleted || isActive ? 'bg-black text-white' : 'bg-[#AEAEAE] text-white'}`}>
+                                            {isCompleted ? <Check size={14} strokeWidth={3} /> : <span className="text-[13px] font-bold">{step.id}</span>}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className={`text-[14px] font-bold tracking-tight ${(isActive) ? 'text-black' : 'text-[#555]'}`}>
+                                                {step.title}
+                                            </h3>
+                                            {isActive && step.desc && (
+                                                <p className="text-[12px] text-[#777] mt-1.5 leading-relaxed whitespace-pre-wrap">
+                                                    {step.desc}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </main>
+                            );
+                        })}
+                    </div>
+                </main>
 
-            {/* Bottom Sticky Action */}
-            <div className="absolute bottom-0 left-0 right-0 w-full px-5 flex flex-col items-center justify-end pb-10 min-h-[140px] z-20 bg-gradient-to-t from-white via-white to-transparent">
-                <button
-                    onClick={mainStep === 1 ? handleStartConnection : onConnect}
-                    className="w-full h-[52px] rounded-[10px] bg-[#0f0f0f] text-white font-medium text-[14px] flex items-center justify-center transition-transform active:scale-[0.98]"
-                >
-                    {mainStep === 1 ? '연결하기' : '계속하기'}
-                </button>
+                {/* Bottom Sticky Action */}
+                <div className="tb-bottom-fade absolute bottom-0 left-0 right-0 w-full px-5 flex flex-col items-center justify-end pb-10 min-h-[140px] z-20">
+                    <PrimaryButton onClick={mainStep === 1 ? handleStartConnection : onConnect}>
+                        {mainStep === 1 ? '연결하기' : '계속하기'}
+                    </PrimaryButton>
+                </div>
             </div>
 
             {/* Connection Drawer */}
-            <Drawer.Root open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <Drawer.Root
+                open={isDrawerOpen}
+                onOpenChange={setIsDrawerOpen}
+                onDrag={(_, percentageDragged) => {
+                    applyBackgroundCardProgress(1 - percentageDragged, true);
+                }}
+                onRelease={(_, open) => {
+                    applyBackgroundCardProgress(open ? 1 : 0);
+                }}
+            >
                 <Drawer.Portal>
-                    <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
-                    <Drawer.Content className="fixed bottom-0 left-0 right-0 max-w-[1440px] mx-auto bg-white flex flex-col rounded-t-[24px] z-50 h-[85vh] outline-none">
+                    <Drawer.Overlay className="fixed inset-0 bg-[rgba(0,0,0,0.6)] z-40" />
+                    <Drawer.Content className="fixed bottom-0 left-0 right-0 max-w-[1440px] mx-auto bg-white flex flex-col rounded-t-[24px] z-50 h-[95vh] outline-none">
                         {/* Drawer Handle */}
                         <div className="w-full flex justify-center pt-3 pb-2">
                             <div className="w-10 h-1.5 bg-[#E5E5E5] rounded-full" />
@@ -204,16 +254,16 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
 
                         {/* Drawer Bottom Button */}
                         <div className="w-full px-5 flex flex-col items-center justify-end pb-10 pt-4">
-                            <button
+                            <PrimaryButton
                                 onClick={drawerStep === 'connecting' ? undefined : handleDrawerNext}
                                 disabled={drawerStep === 'connecting'}
-                                className={`w-full h-[52px] rounded-[10px] font-medium text-[14px] flex items-center justify-center transition-transform active:scale-[0.98] ${drawerStep === 'connecting'
-                                        ? 'bg-[#F2F2F2] text-[#AEAEAE] cursor-none shadow-none'
-                                        : 'bg-[#0f0f0f] text-white shadow-lg shadow-black/10'
-                                    }`}
+                                className={drawerStep === 'connecting'
+                                        ? 'cursor-none'
+                                        : ''
+                                    }
                             >
                                 {drawerStep === 'power' ? '연결하기' : (drawerStep === 'connecting' ? '연결 중...' : '계속하기')}
-                            </button>
+                            </PrimaryButton>
                         </div>
                     </Drawer.Content>
                 </Drawer.Portal>

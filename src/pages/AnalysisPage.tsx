@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import {
-  ChevronLeftRegular, ChevronRightRegular, InfoRegular, ArrowTrendingRegular, ArrowTrendingDownRegular
+  ChevronLeftRegular, ChevronRightRegular, InfoRegular
 } from '@fluentui/react-icons';
 import React from 'react';
 
@@ -13,22 +12,27 @@ const wrapIcon = (IconComponent: React.ElementType) => {
 const ChevronLeft = wrapIcon(ChevronLeftRegular);
 const ChevronRight = wrapIcon(ChevronRightRegular);
 const Info = wrapIcon(InfoRegular);
-const TrendingUp = wrapIcon(ArrowTrendingRegular);
-const TrendingDown = wrapIcon(ArrowTrendingDownRegular);
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
+import OutlineBadge from '../components/system/OutlineBadge';
+import SectionTitle from '../components/system/SectionTitle';
 import { TASTE_COLORS, TASTE_TYPES, getTasteColor } from '../constants/tasteColors';
-
-// 개인 미각 프로필 데이터
-const myTasteData = [
-  { taste: '단맛', value: 88, average: 50, change: -10, unit: 'mM' },
-  { taste: '신맛', value: 76, average: 44, change: +24, unit: 'mM' },
-  { taste: '쓴맛', value: 34, average: 55, change: -10, unit: 'mM' },
-  { taste: '짠맛', value: 65, average: 48, change: +5, unit: 'mM' },
-  { taste: '감칠맛', value: 25, average: 52, change: -15, unit: 'mM' },
-  { taste: '지방맛', value: 60, average: 40, change: +8, unit: 'mM' },
-];
+import {
+  formatMeasurementDate,
+  formatMeasurementValue,
+  getAverageMeasurementMm,
+  getTasteMeasurementAgeLabel,
+  getAverageReferenceMeasurementMm,
+  getStrongestTasteMeasurement,
+  getTasteMeasurementEntries,
+  getTasteProfileBadge,
+  getWeakestTasteMeasurement,
+  isTasteMeasurementStale,
+  type TasteMeasurementEntry,
+  type TasteMeasurementSnapshot,
+} from '../constants/tasteMeasurementData';
 
 // 주간 추이 데이터 (미각별 라인이 겹치지 않도록 간격 조정)
 const weeklyTrend = [
@@ -38,12 +42,44 @@ const weeklyTrend = [
   { week: '4주차', 단맛: 94, 신맛: 86, 짠맛: 67, 지방맛: 54, 쓴맛: 30, 감칠맛: 15 },
 ];
 
-// 인사이트 데이터
-const insights = [
-  { text: '단맛 민감도가 평균보다 70% 높습니다', taste: '단맛', type: 'high' as const },
-  { text: '지난 달 대비 신맛 민감도가 24mM 증가했습니다', taste: '신맛', type: 'up' as const },
-  { text: '감칠맛에 가장 둔감합니다 — 보정 시 감칠맛 강화 추천', taste: '감칠맛', type: 'low' as const },
-];
+function buildInsights(
+  myTasteData: TasteMeasurementEntry[],
+  totalSensitivity: number,
+  avgSensitivity: number,
+) {
+  const strongestTaste = myTasteData.reduce((strongest, entry) =>
+    entry.valueMm > strongest.valueMm ? entry : strongest,
+  );
+  const weakestTaste = myTasteData.reduce((weakest, entry) =>
+    entry.valueMm < weakest.valueMm ? entry : weakest,
+  );
+  const biggestDeltaTaste = myTasteData.reduce((biggestDelta, entry) =>
+    Math.abs(entry.deltaMm) > Math.abs(biggestDelta.deltaMm) ? entry : biggestDelta,
+  );
+
+  return [
+    {
+      taste: strongestTaste.label,
+      text: `${strongestTaste.label} 민감도가 평균보다 ${Math.round(((strongestTaste.valueMm - strongestTaste.averageMm) / strongestTaste.averageMm) * 100)}% 높습니다`,
+      type: 'high' as const,
+    },
+    {
+      taste: biggestDeltaTaste.label,
+      text: `이번 측정에서 ${biggestDeltaTaste.label}이 평균 대비 ${Math.abs(biggestDeltaTaste.deltaMm).toFixed(2)}mM ${biggestDeltaTaste.deltaMm >= 0 ? '높게' : '낮게'} 나타났습니다`,
+      type: biggestDeltaTaste.deltaMm >= 0 ? 'up' as const : 'low' as const,
+    },
+    {
+      taste: weakestTaste.label,
+      text: `${weakestTaste.label}에 가장 둔감합니다. 다음 보정에서는 ${weakestTaste.label} 강화 추천`,
+      type: 'low' as const,
+    },
+    {
+      taste: strongestTaste.label,
+      text: `전체 평균 민감도는 ${formatMeasurementValue(totalSensitivity)}로 기준 평균 ${formatMeasurementValue(avgSensitivity)}보다 높습니다`,
+      type: 'high' as const,
+    },
+  ];
+}
 
 // 6각형 꼭짓점 좌표 생성 (상단 시작, 시계 방향)
 function hexPoint(cx: number, cy: number, r: number, i: number): [number, number] {
@@ -58,7 +94,7 @@ function hexPolygon(cx: number, cy: number, r: number): string {
 }
 
 // 커스텀 6각형 레이더 차트
-function HexRadarChart() {
+function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }) {
   const cx = 160;
   const cy = 145;
   const maxR = 100;
@@ -66,14 +102,14 @@ function HexRadarChart() {
 
   // 나의 민감도 폴리곤 좌표
   const myPoints = myTasteData.map((d, i) => {
-    const r = (d.value / 100) * maxR;
+    const r = (d.score / 100) * maxR;
     return hexPoint(cx, cy, r, i);
   });
   const myPolygon = myPoints.map(([x, y]) => `${x},${y}`).join(' ');
 
   // 평균 민감도 폴리곤 좌표
   const avgPoints = myTasteData.map((d, i) => {
-    const r = (d.average / 100) * maxR;
+    const r = (d.averageScore / 100) * maxR;
     return hexPoint(cx, cy, r, i);
   });
   const avgPolygon = avgPoints.map(([x, y]) => `${x},${y}`).join(' ');
@@ -84,7 +120,7 @@ function HexRadarChart() {
     point: hexPoint(cx, cy, maxR, i),
     labelPoint: hexPoint(cx, cy, maxR + 25, i),
     dotPoint: hexPoint(cx, cy, maxR + 10, i),
-    color: getTasteColor(d.taste),
+    color: getTasteColor(d.label),
   }));
 
   // 대각선 (0-3, 1-4, 2-5)
@@ -140,8 +176,9 @@ function HexRadarChart() {
 
       {/* 대각선 (나의 민감도 점 연결 — X자 형태) */}
       {diagonals.map(([a, b], idx) => {
-        const aIdx = myTasteData.findIndex(d => d.taste === a.taste);
-        const bIdx = myTasteData.findIndex(d => d.taste === b.taste);
+        const aIdx = myTasteData.findIndex(d => d.label === a.label);
+        const bIdx = myTasteData.findIndex(d => d.label === b.label);
+
         const ax = myPoints[aIdx][0];
         const ay = myPoints[aIdx][1];
         const bx = myPoints[bIdx][0];
@@ -197,7 +234,7 @@ function HexRadarChart() {
             className="text-[9px] font-medium"
             fill="#888"
           >
-            {v.taste}
+            {v.label}
           </text>
         );
       })}
@@ -205,22 +242,35 @@ function HexRadarChart() {
   );
 }
 
-export default function AnalysisPage() {
-  const [period, setPeriod] = useState('이번 달');
-  const totalSensitivity = 80;
-  const avgSensitivity = 50;
+interface AnalysisPageProps {
+  measurementSnapshot: TasteMeasurementSnapshot;
+  onStartMeasurement: () => void;
+}
+
+export default function AnalysisPage({
+  measurementSnapshot,
+  onStartMeasurement,
+}: AnalysisPageProps) {
+  const period = '이번 측정';
+  const myTasteData = getTasteMeasurementEntries(measurementSnapshot);
+  const totalSensitivity = getAverageMeasurementMm(measurementSnapshot);
+  const avgSensitivity = getAverageReferenceMeasurementMm();
+  const strongestTaste = getStrongestTasteMeasurement(measurementSnapshot);
+  const weakestTaste = getWeakestTasteMeasurement(measurementSnapshot);
+  const tasteProfileBadge = getTasteProfileBadge(totalSensitivity);
+  const insights = buildInsights(myTasteData, totalSensitivity, avgSensitivity);
+  const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
+  const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
 
   return (
     <div className="flex flex-col w-full h-full bg-white">
-      <TopAppBar />
+      <TopAppBar onStartMeasurement={onStartMeasurement} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="flex flex-col gap-8 p-5 animate-fadeIn">
           {/* 페이지 타이틀 */}
           <div>
             <h1 className="font-bold text-[24px] text-[#0f0f0f] tracking-[-0.24px]">미각 프로필</h1>
-            <div className="mt-2 inline-block px-2 py-[2px] rounded-[6px] border border-[#535353] text-[12px] font-semibold text-[#535353]">
-              Super Taster+
-            </div>
+            <OutlineBadge className="mt-2">{tasteProfileBadge}</OutlineBadge>
           </div>
 
           {/* 슈퍼 테이스터 요약 */}
@@ -229,9 +279,9 @@ export default function AnalysisPage() {
               <div className="flex flex-col gap-1">
                 <p className="font-bold text-[16px] text-[#0f0f0f]">슈퍼 테이스터</p>
                 <p className="text-[13px] text-[rgba(15,15,15,0.6)] leading-relaxed">
-                  신준호님의 미각 민감도는 {totalSensitivity}mM으로<br />
+                  신준호님의 평균 미각 민감도는 {formatMeasurementValue(totalSensitivity)}로<br />
                   평균보다 {Math.round(((totalSensitivity - avgSensitivity) / avgSensitivity) * 100)}% 높습니다.<br />
-                  단맛에 가장 민감하며 감칠맛에 가장 둔감합니다.
+                  {strongestTaste.label}에 가장 민감하며 {weakestTaste.label}에 가장 둔감합니다.
                 </p>
               </div>
               <button className="text-[#AFAFAF] hover:text-[#0f0f0f] transition-colors size-[18px] flex items-center justify-center shrink-0">
@@ -239,6 +289,19 @@ export default function AnalysisPage() {
               </button>
             </div>
           </SectionCard>
+
+          <TasteMeasurementMiniCta
+            title={needsMeasurementRefresh ? '프로필 업데이트 추천' : '현재 컨디션 다시 측정'}
+            description={
+              needsMeasurementRefresh
+                ? `${measurementAgeLabel} 데이터예요. 다시 측정하면 분석 결과를 더 현재 입맛에 맞게 볼 수 있어요.`
+                : '컨디션이 달라졌다면 지금 다시 측정해 이번 분석을 최신 상태로 맞출 수 있어요.'
+            }
+            meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
+            actionLabel={needsMeasurementRefresh ? '재측정' : '다시 측정'}
+            onAction={onStartMeasurement}
+            tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
+          />
 
           {/* 기간 선택 */}
           <div className="flex items-center justify-between">
@@ -253,28 +316,32 @@ export default function AnalysisPage() {
 
           {/* 6각형 레이더 차트 */}
           <div className="flex flex-col items-center animate-slideUp">
-            <HexRadarChart />
+            <HexRadarChart myTasteData={myTasteData} />
 
             {/* 범례 */}
             <div className="flex items-end gap-0 mt-2">
               <div className="flex flex-col items-center gap-[4px]">
                 <span className="text-[10px] text-[#999]">나의 민감도</span>
-                <span className="bg-[#0f0f0f] text-white text-[12px] font-bold px-[10px] py-[3px] rounded-[6px]">{totalSensitivity}</span>
+                <span className="bg-[#0f0f0f] text-white text-[12px] font-bold px-[10px] py-[3px] rounded-[6px]">
+                  {formatMeasurementValue(totalSensitivity, '')}
+                </span>
               </div>
               <span className="w-[24px] h-[24px] flex items-center justify-center bg-[#B2B2B2] text-white text-[10px] rounded-[6px] mx-[2px]">→</span>
               <div className="flex flex-col items-center gap-[4px]">
                 <span className="text-[10px] text-[#999]">평균 민감도</span>
-                <span className="bg-[#0f0f0f] text-white text-[12px] font-bold px-[10px] py-[3px] rounded-[6px]">{avgSensitivity}</span>
+                <span className="bg-[#0f0f0f] text-white text-[12px] font-bold px-[10px] py-[3px] rounded-[6px]">
+                  {formatMeasurementValue(avgSensitivity, '')}
+                </span>
               </div>
             </div>
           </div>
 
           {/* 세부 분석 카드 */}
           <div>
-            <h3 className="font-bold text-[16px] text-[#0f0f0f] mb-3">세부 분석</h3>
+            <SectionTitle size="md" className="mb-3">세부 분석</SectionTitle>
             <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 w-[calc(100%+40px)] mx-[-20px] px-[20px]">
               {myTasteData.map((item, idx) => {
-                const colors = TASTE_COLORS[item.taste as keyof typeof TASTE_COLORS];
+                const colors = TASTE_COLORS[item.label as keyof typeof TASTE_COLORS];
                 return (
                   <div
                     key={idx}
@@ -289,7 +356,7 @@ export default function AnalysisPage() {
                       className="w-[32px] h-[32px] rounded-[8px] flex items-center justify-center text-[14px]"
                       style={{ backgroundColor: `${colors.main}80` }}
                     >
-                      {item.change > 0 ? (
+                      {item.deltaMm > 0 ? (
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M4 12L12 4M12 4H6M12 4V10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -300,9 +367,9 @@ export default function AnalysisPage() {
                       )}
                     </div>
                     <div className="flex flex-col gap-[1px]">
-                      <p className="font-bold text-[14px]" style={{ color: colors.dark }}>{item.taste}</p>
+                      <p className="font-bold text-[14px]" style={{ color: colors.dark }}>{item.label}</p>
                       <p className="font-semibold text-[11px]" style={{ color: colors.dark }}>
-                        {item.change > 0 ? '+' : ''}{item.change} {item.unit}
+                        {item.deltaMm > 0 ? '+' : ''}{item.deltaMm.toFixed(2)} mM
                       </p>
                     </div>
                   </div>
@@ -314,7 +381,7 @@ export default function AnalysisPage() {
           {/* 주간 추이 차트 */}
           <div className="flex flex-col gap-3">
             <div>
-              <h3 className="font-bold text-[16px] text-[#0f0f0f] mb-3">주간 미각 변화 추이</h3>
+              <SectionTitle size="md" className="mb-3">주간 미각 변화 추이</SectionTitle>
               <SectionCard>
               <div className="w-full h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -377,7 +444,7 @@ export default function AnalysisPage() {
 
           {/* 인사이트 */}
           <div className="pb-6">
-            <h3 className="font-bold text-[16px] text-[#0f0f0f] mb-3">인사이트</h3>
+            <SectionTitle size="md" className="mb-3">인사이트</SectionTitle>
             <div className="flex flex-col gap-3">
               {insights.map((item, idx) => (
                 <SectionCard key={idx}>

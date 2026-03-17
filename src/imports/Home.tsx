@@ -1992,11 +1992,11 @@ function Content14() {
   );
 }
 
-function Viewport() {
+function Viewport({ onStartMeasurement }: { onStartMeasurement?: () => void }) {
   return (
     <div className="basis-0 content-stretch flex flex-col grow items-start min-h-px min-w-px relative w-full h-full overflow-hidden" data-name="Viewport">
       <div className="shrink-0 w-full">
-        <TopAppBar />
+        <TopAppBar onStartMeasurement={onStartMeasurement} />
       </div>
       <Content14 />
     </div>
@@ -2369,7 +2369,13 @@ function OsBarBottomNavigation1() {
 
 
 
-export default function Home({ onGoToAnalysis }: { onGoToAnalysis?: () => void }) {
+export default function Home({
+  onGoToAnalysis,
+  onStartMeasurement,
+}: {
+  onGoToAnalysis?: () => void;
+  onStartMeasurement?: () => void;
+}) {
   // Store the callback globally so deeply nested components can use it
   if (onGoToAnalysis) {
     (window as any).__goToAnalysis = onGoToAnalysis;
@@ -2378,7 +2384,7 @@ export default function Home({ onGoToAnalysis }: { onGoToAnalysis?: () => void }
   return (
     <div className="w-full h-full bg-white">
       <div className="bg-white content-stretch flex flex-col items-start relative w-full h-full overflow-hidden" data-name="Home">
-        <Viewport />
+        <Viewport onStartMeasurement={onStartMeasurement} />
       </div>
     </div>
   );

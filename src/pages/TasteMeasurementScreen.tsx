@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, MoreHorizontal, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,86 +8,103 @@ import tasteCircleVideo from '../assets/video/Taste circle.mp4';
 import TbCoreLoop from '../components/graphics/TbCoreLoop';
 import TasteCircularLoop from '../components/graphics/TasteCircularLoop';
 import { TASTE_CIRCULAR_LOOP_STEP_ADVANCE_MS } from '../components/graphics/tasteCircularLoopMotion';
+import PrimaryButton from '../components/system/PrimaryButton';
+import {
+    createInitialTasteMeasurementResults,
+    createTasteMeasurementSnapshot,
+    formatMeasurementDate,
+    formatMeasurementValue,
+    getAverageMeasurementMm,
+    getStrongestTasteMeasurement,
+    getTasteMeasurementEntries,
+    getTasteProfileBadge,
+    getWeakestTasteMeasurement,
+    type TasteMeasurementSnapshot,
+} from '../constants/tasteMeasurementData';
+import { TASTE_IDS, TASTE_TOKENS } from '../constants/designTokens';
 
 interface TasteMeasurementScreenProps {
-    onComplete: () => void;
+    onComplete: (snapshot: TasteMeasurementSnapshot) => void;
     onBack: () => void;
 }
 
 type MeasurementPhase = 'checklist' | 'intro' | 'prep' | 'active' | 'finished';
-type TasteId = 'sweet' | 'sour' | 'bitter' | 'salty' | 'umami' | 'fat';
 
-interface TasteConfig {
-    id: TasteId;
-    label: string;
-    koreanLabel: string;
-    descriptionText: string;
-    colorMain: string;
-    colorBg: string;
-    colorPast: string;
-    colorBase: string;
-    angle: number;
+function roundMeasurementValue(value: number) {
+    return Number(value.toFixed(2));
 }
 
-const TASTE_CONFIGS: TasteConfig[] = [
-    { id: 'sweet', label: '단맛', koreanLabel: '단맛', descriptionText: '첫 번째', colorMain: '#FF9500', colorBg: '#FFE7C8', colorPast: '#FFB340', colorBase: '#F3CD9A', angle: 330 },
-    { id: 'sour', label: '신맛', koreanLabel: '신맛', descriptionText: '두 번째', colorMain: '#FFD600', colorBg: '#FFF5B8', colorPast: '#FFE040', colorBase: '#FBE88C', angle: 30 },
-    { id: 'bitter', label: '쓴맛', koreanLabel: '쓴맛', descriptionText: '세 번째', colorMain: '#8CC600', colorBg: '#CCEFFF', colorPast: '#66C2FF', colorBase: '#9BE4F7', angle: 90 },
-    { id: 'salty', label: '짠맛', koreanLabel: '짠맛', descriptionText: '네 번째', colorMain: '#5898FF', colorBg: '#CCE5FF', colorPast: '#4D94FF', colorBase: '#92C4F7', angle: 150 },
-    { id: 'umami', label: '감칠맛', koreanLabel: '감칠맛', descriptionText: '다섯 번째', colorMain: '#AF52DE', colorBg: '#EED9FA', colorPast: '#C582E8', colorBase: '#D8B8E8', angle: 210 },
-    { id: 'fat', label: '지방맛', koreanLabel: '지방맛', descriptionText: '여섯 번째', colorMain: '#8E8279', colorBg: '#ECE4D9', colorPast: '#B8A082', colorBase: '#DBCCBA', angle: 270 },
-];
+function hexToRgb(hex: string) {
+    const normalized = hex.replace('#', '');
 
-const TASTE_LOOP_STYLES: Record<Exclude<TasteId, 'sweet'>, {
-    nodeColors: readonly string[];
-    ringBaseColor: string;
-    ringBaseColorSoft: string;
-    ringGuideBaseColor: string;
-    glowTransparentColor: string;
-}> = {
-    sour: {
-        nodeColors: ['#FFF7CC', '#FFF4B8', '#FFF1A3', '#FFEE8F', '#FFEB7A', '#FFE866', '#FFE552', '#FFE23D', '#FFDF29', '#FFD600'],
-        ringBaseColor: '#FFF7CC',
-        ringBaseColorSoft: '#FFF7CC1A',
-        ringGuideBaseColor: '#FFD600',
-        glowTransparentColor: '#FFF7CC08',
-    },
-    bitter: {
-        nodeColors: ['#EAF4CC', '#E1EFC0', '#D8EAB4', '#CFE5A8', '#C5DF9C', '#BCDA90', '#B3D584', '#AAD078', '#A0CB6C', '#95C900'],
-        ringBaseColor: '#EAF4CC',
-        ringBaseColorSoft: '#EAF4CC1A',
-        ringGuideBaseColor: '#95C900',
-        glowTransparentColor: '#EAF4CC08',
-    },
-    salty: {
-        nodeColors: ['#E3EBFF', '#D6E2FF', '#C9D9FF', '#BCD0FF', '#AFC7FF', '#A2BEFF', '#95B5FF', '#88ACFF', '#7BA3FF', '#7299FF'],
-        ringBaseColor: '#E3EBFF',
-        ringBaseColorSoft: '#E3EBFF1A',
-        ringGuideBaseColor: '#7299FF',
-        glowTransparentColor: '#E3EBFF08',
-    },
-    umami: {
-        nodeColors: ['#F0E3F0', '#E7D7E8', '#DECAE0', '#D5BED8', '#CCB1D0', '#C3A5C8', '#BA98C0', '#B18CB8', '#A87FB0', '#B372B4'],
-        ringBaseColor: '#F0E3F0',
-        ringBaseColorSoft: '#F0E3F01A',
-        ringGuideBaseColor: '#B372B4',
-        glowTransparentColor: '#F0E3F008',
-    },
-    fat: {
-        nodeColors: ['#EAE7E4', '#E2DEDA', '#DAD5D0', '#D2CCC6', '#CAC3BC', '#C2BAB2', '#BAB1A8', '#B2A89E', '#AA9F94', '#95867A'],
-        ringBaseColor: '#EAE7E4',
-        ringBaseColorSoft: '#EAE7E41A',
-        ringGuideBaseColor: '#95867A',
-        glowTransparentColor: '#EAE7E408',
-    },
-};
+    return [0, 2, 4].map((offset) => Number.parseInt(normalized.slice(offset, offset + 2), 16));
+}
+
+function rgbToHex(rgb: number[]) {
+    return `#${rgb
+        .map((channel) => Math.round(channel).toString(16).padStart(2, '0'))
+        .join('')}`;
+}
+
+function mixHex(colorA: string, colorB: string, ratio: number) {
+    const left = hexToRgb(colorA);
+    const right = hexToRgb(colorB);
+
+    return rgbToHex(left.map((channel, index) => channel + (right[index] - channel) * ratio));
+}
+
+function getRelativeLuminance(hex: string) {
+    const [r, g, b] = hexToRgb(hex).map((channel) => {
+        const value = channel / 255;
+        return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    });
+
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function getContrastRatio(backgroundColor: string, foregroundColor: string) {
+    const backgroundLuminance = getRelativeLuminance(backgroundColor);
+    const foregroundLuminance = getRelativeLuminance(foregroundColor);
+    const lighter = Math.max(backgroundLuminance, foregroundLuminance);
+    const darker = Math.min(backgroundLuminance, foregroundLuminance);
+
+    return (lighter + 0.05) / (darker + 0.05);
+}
+
+function getAccessibleTasteLabelColor(backgroundColor: string, baseColor: string) {
+    if (getContrastRatio(backgroundColor, baseColor) >= 3) {
+        return baseColor;
+    }
+
+    for (let ratio = 0.05; ratio <= 1; ratio += 0.05) {
+        const candidate = mixHex(baseColor, '#0F0F0F', ratio);
+        if (getContrastRatio(backgroundColor, candidate) >= 3) {
+            return candidate;
+        }
+    }
+
+    return '#0F0F0F';
+}
 
 export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeasurementScreenProps) {
     const [phase, setPhase] = useState<MeasurementPhase>('checklist');
     const [tasteIndex, setTasteIndex] = useState(0);
     const [activeLevel, setActiveLevel] = useState(0);
+    const [measurementResults, setMeasurementResults] = useState(
+        createInitialTasteMeasurementResults,
+    );
+    const [completedSnapshot, setCompletedSnapshot] = useState<TasteMeasurementSnapshot | null>(null);
+    const measurementStartedAtRef = useRef<number | null>(null);
 
-    const currentTaste = TASTE_CONFIGS[tasteIndex];
+    const currentTasteId = TASTE_IDS[tasteIndex];
+    const currentTaste = TASTE_TOKENS[currentTasteId];
+    const currentTasteLoop = currentTaste.measurement.loop;
+    const displaySnapshot = completedSnapshot ?? createTasteMeasurementSnapshot(measurementResults);
+    const completedEntries = getTasteMeasurementEntries(displaySnapshot);
+    const averageMeasurement = getAverageMeasurementMm(displaySnapshot);
+    const strongestTaste = getStrongestTasteMeasurement(displaySnapshot);
+    const weakestTaste = getWeakestTasteMeasurement(displaySnapshot);
+    const tasteProfileBadge = getTasteProfileBadge(averageMeasurement);
 
     // Simulate Active Measurement Progress
     useEffect(() => {
@@ -95,10 +112,42 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
         if (phase === 'active' && activeLevel < 10) {
             timer = setTimeout(() => {
                 setActiveLevel(prev => prev + 1);
-            }, TASTE_CIRCULAR_LOOP_STEP_ADVANCE_MS); // One level now holds for two pulse cycles
+            }, TASTE_CIRCULAR_LOOP_STEP_ADVANCE_MS);
         }
         return () => clearTimeout(timer);
     }, [phase, activeLevel]);
+
+    const getCurrentMeasuredValue = () => {
+        if (measurementStartedAtRef.current === null) {
+            return activeLevel > 0 ? roundMeasurementValue(activeLevel) : 1;
+        }
+
+        const elapsedMs = Date.now() - measurementStartedAtRef.current;
+        const measuredValue = 1 + elapsedMs / TASTE_CIRCULAR_LOOP_STEP_ADVANCE_MS;
+
+        return roundMeasurementValue(Math.min(10, Math.max(1, measuredValue)));
+    };
+
+    const saveCurrentMeasurement = () => {
+        const measuredValue = getCurrentMeasuredValue();
+        const nextResults = {
+            ...measurementResults,
+            [currentTasteId]: measuredValue,
+        };
+
+        setMeasurementResults(nextResults);
+        setActiveLevel(0);
+        measurementStartedAtRef.current = null;
+
+        if (tasteIndex < TASTE_IDS.length - 1) {
+            setTasteIndex(prev => prev + 1);
+            setPhase('prep');
+            return;
+        }
+
+        setCompletedSnapshot(createTasteMeasurementSnapshot(nextResults));
+        setPhase('finished');
+    };
 
     const handleNextPhase = () => {
         switch (phase) {
@@ -109,28 +158,17 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                 setPhase('prep');
                 break;
             case 'prep':
+                setCompletedSnapshot(null);
                 setPhase('active');
                 setActiveLevel(1); // Start measurement at level 1
+                measurementStartedAtRef.current = Date.now();
                 break;
             case 'active':
-                if (activeLevel >= 10) {
-                    handleUserReaction();
-                }
+                saveCurrentMeasurement();
                 break;
             case 'finished':
-                onComplete();
+                onComplete(displaySnapshot);
                 break;
-        }
-    };
-
-    const handleUserReaction = () => {
-        // User felt the taste, record level and move to next
-        if (tasteIndex < TASTE_CONFIGS.length - 1) {
-            setTasteIndex(prev => prev + 1);
-            setPhase('prep');
-        } else {
-            // All tastes completed
-            setPhase('finished');
         }
     };
 
@@ -147,10 +185,12 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
         else if (phase === 'active') {
             setPhase('prep');
             setActiveLevel(0);
+            measurementStartedAtRef.current = null;
         }
         else if (phase === 'finished') {
             setPhase('prep');
-            setTasteIndex(TASTE_CONFIGS.length - 1);
+            setTasteIndex(TASTE_IDS.length - 1);
+            setCompletedSnapshot(null);
         }
     };
 
@@ -248,8 +288,8 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             className="absolute inset-0 flex flex-col px-5"
                         >
                             <div className="mt-8 mb-10 text-center">
-                                <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight" style={{ color: currentTaste.colorMain }}>
-                                    <span className="text-black">{currentTaste.descriptionText}, {currentTaste.koreanLabel} 측정</span>
+                                <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight" style={{ color: currentTaste.measurement.accent }}>
+                                    <span className="text-black">{currentTaste.measurement.ordinal}, {currentTaste.label} 측정</span>
                                 </h1>
                                 <p className="text-[#666666] text-[14px]">
                                     지금부터 테이스틱이 10단계로 농도를 높여가며 용액을 분사합니다.<br />준비가 완료되면 테이스틱을 입에 물고 뒷면의 버튼을 눌러주세요.
@@ -257,9 +297,13 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             </div>
 
                             <div className="flex-1 w-full flex items-center justify-center mb-6">
-                                <div className="aspect-square w-full max-w-[320px] bg-[#f4f4f4] rounded-[24px] flex items-center justify-center relative overflow-hidden shadow-sm border border-[#F0F0F0]">
+                                <div className="aspect-square w-full max-w-[440px] bg-[#f4f4f4] rounded-[24px] flex items-center justify-center relative overflow-hidden shadow-sm border border-[#F0F0F0]">
                                     {/* Image of person using the tastick */}
-                                    <img src={personUsingTastickImage} alt="Teastick Preparation" className="w-full h-full object-cover" />
+                                    <img
+                                        src={personUsingTastickImage}
+                                        alt="Teastick Preparation"
+                                        className="absolute inset-0 h-full w-full origin-bottom translate-y-[12%] scale-[1.9] object-cover object-center will-change-transform"
+                                    />
                                     
                                     <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-[12px] font-bold text-[#888]">
                                         {tasteIndex + 1} / 6
@@ -281,21 +325,21 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                         >
                             <div className="mt-8 mb-[10vh] text-center">
                                 <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight">
-                                    <span style={{ color: currentTaste.colorMain }}>{currentTaste.koreanLabel}</span> 민감도를 측정 중입니다...
+                                    <span style={{ color: currentTaste.measurement.accent }}>{currentTaste.label}</span> 민감도를 측정 중입니다...
                                 </h1>
                                 <p className="text-[#666666] text-[14px]">
-                                    {currentTaste.koreanLabel}이(가) 느껴지면 즉시 버튼을 눌러주세요.
+                                    {currentTaste.label}이(가) 느껴지면 즉시 버튼을 눌러주세요.
                                 </p>
                             </div>
 
                             <div className="flex-1 w-full flex items-center justify-center relative">
-                                {currentTaste.id === 'sweet' ? (
+                                {currentTasteId === 'sweet' ? (
                                     <TbCoreLoop activeLevel={activeLevel} />
                                 ) : (
                                     <TasteCircularLoop
                                         activeLevel={activeLevel}
-                                        ariaLabel={`${currentTaste.koreanLabel} core loop`}
-                                        {...TASTE_LOOP_STYLES[currentTaste.id as Exclude<TasteId, 'sweet'>]}
+                                        ariaLabel={`${currentTaste.label} core loop`}
+                                        {...currentTasteLoop}
                                     />
                                 )}
                             </div>
@@ -310,40 +354,135 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.4 }}
-                            className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center"
+                            className="absolute inset-0 flex flex-col px-5 pt-8 pb-[160px] overflow-y-auto no-scrollbar"
                         >
-                            <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mb-6 shadow-2xl">
+                            <div className="mx-auto w-24 h-24 bg-black rounded-full flex items-center justify-center mb-6 shadow-2xl">
                                 <Check size={48} color="white" strokeWidth={3} />
                             </div>
-                            <h1 className="text-[28px] font-bold leading-tight mb-4 tracking-tight">
-                                미각 측정이<br />완료되었습니다!
-                            </h1>
-                            <p className="text-[#666666] text-[15px] leading-relaxed">
-                                고객님의 정밀 미각 데이터가 성공적으로<br />분석되었습니다.
-                            </p>
+                            <div className="text-center mb-8">
+                                <h1 className="text-[28px] font-bold leading-tight mb-3 tracking-tight">
+                                    미각 측정이<br />완료되었어요
+                                </h1>
+                                <p className="text-[#666666] text-[15px] leading-relaxed">
+                                    방금 측정한 결과를 바탕으로 미각 프로필을 업데이트했어요.<br />
+                                    프로필에서 이번 측정값과 세부 분석을 바로 확인할 수 있습니다.
+                                </p>
+                            </div>
+
+                            <div className="rounded-[20px] bg-[#F3F3F3] p-3 flex flex-col gap-3 mb-4">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">이번 측정 요약</p>
+                                        <h2 className="text-[24px] font-bold text-[#0F0F0F] mt-1">
+                                            평균 {formatMeasurementValue(averageMeasurement)}
+                                        </h2>
+                                    </div>
+                                    <span className="rounded-full bg-white px-3 py-2 text-[12px] font-semibold text-[#0F0F0F] border border-[rgba(15,15,15,0.08)]">
+                                        {tasteProfileBadge}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="rounded-[8px] bg-white p-3">
+                                        <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)] mb-2">가장 민감한 맛</p>
+                                        <p
+                                            className="text-[18px] font-bold"
+                                            style={{ color: TASTE_TOKENS[strongestTaste.id].measurement.accent }}
+                                        >
+                                            {strongestTaste.label}
+                                        </p>
+                                        <p className="text-[13px] font-semibold text-[#0F0F0F] mt-1">
+                                            {formatMeasurementValue(strongestTaste.valueMm)}
+                                        </p>
+                                    </div>
+                                    <div className="rounded-[8px] bg-white p-3">
+                                        <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)] mb-2">가장 둔감한 맛</p>
+                                        <p
+                                            className="text-[18px] font-bold"
+                                            style={{ color: TASTE_TOKENS[weakestTaste.id].measurement.accent }}
+                                        >
+                                            {weakestTaste.label}
+                                        </p>
+                                        <p className="text-[13px] font-semibold text-[#0F0F0F] mt-1">
+                                            {formatMeasurementValue(weakestTaste.valueMm)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-3 rounded-[8px] bg-white px-3 py-3">
+                                    <div>
+                                        <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)]">프로필 반영 시점</p>
+                                        <p className="text-[13px] font-semibold text-[#0F0F0F] mt-1">
+                                            {formatMeasurementDate(displaySnapshot.measuredAt)}
+                                        </p>
+                                    </div>
+                                    <span className="text-[12px] font-semibold text-[#0F0F0F]">
+                                        6개 맛 측정 완료
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <h2 className="text-[16px] font-bold text-[#0F0F0F] mb-3">세부 측정값</h2>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {completedEntries.map((entry) => (
+                                        <div
+                                            key={entry.id}
+                                            className="rounded-[20px] p-3"
+                                            style={{
+                                                backgroundColor: TASTE_TOKENS[entry.id].palette.bg,
+                                            }}
+                                        >
+                                            {(() => {
+                                                const labelColor = getAccessibleTasteLabelColor(
+                                                    TASTE_TOKENS[entry.id].palette.bg,
+                                                    TASTE_TOKENS[entry.id].palette.dark,
+                                                );
+
+                                                return (
+                                                    <>
+                                            <p
+                                                className="text-[12px] font-semibold"
+                                                style={{ color: labelColor }}
+                                            >
+                                                {entry.label}
+                                            </p>
+                                            <p
+                                                className="text-[20px] font-bold mt-2"
+                                                style={{ color: TASTE_TOKENS[entry.id].palette.dark }}
+                                            >
+                                                {entry.valueMm.toFixed(2)}
+                                            </p>
+                                            <p className="text-[11px] font-medium text-[rgba(15,15,15,0.5)] mt-1">
+                                                기준 평균 {formatMeasurementValue(entry.averageMm)}
+                                            </p>
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </main>
 
             {/* Bottom Sticky Action */}
-            <div className={`absolute bottom-0 left-0 right-0 w-full px-5 flex flex-col items-center justify-end min-h-[140px] z-20 bg-gradient-to-t from-white via-white to-transparent ${phase === 'finished' ? 'pb-10' : 'pb-10'}`}>
-                <button
+            <div className={`tb-bottom-fade absolute bottom-0 left-0 right-0 w-full px-5 flex flex-col items-center justify-end min-h-[140px] z-20 ${phase === 'finished' ? 'pb-10' : 'pb-10'}`}>
+                <PrimaryButton
                     onClick={handleNextPhase}
-                    className={`w-full h-[52px] rounded-[10px] font-medium text-[14px] flex items-center justify-center transition-transform active:scale-[0.98] ${
-                        phase === 'active' && activeLevel < 10
-                            ? 'bg-[#F2F2F2] text-[#AEAEAE] active:scale-100 shadow-none' // Visual indicator it's meant to be pressed via device, but we allow click for demo
-                            : 'bg-[#0f0f0f] text-white shadow-lg shadow-black/10'
-                    }`}
                 >
                     {phase === 'intro'
                         ? '측정 시작'
                         : phase === 'finished'
-                            ? '결과 확인하기'
-                            : phase === 'active' && activeLevel >= 10
-                                ? '다음으로'
+                            ? '미각 프로필 보기'
+                            : phase === 'active'
+                                ? activeLevel >= 10
+                                    ? '다음으로'
+                                    : '느껴졌어요'
                                 : '계속하기'}
-                </button>
+                </PrimaryButton>
             </div>
         </div>
     );

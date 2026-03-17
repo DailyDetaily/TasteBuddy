@@ -6,6 +6,7 @@ import tbMainVideo from '../assets/video/TB Main.mp4';
 import onboardingRender1 from '../assets/onboarding_render_1.png';
 import onboardingRender3 from '../assets/onboarding_render_3.png';
 import onboardingRender4 from '../assets/onboarding_render_4.png';
+import PrimaryButton from '../components/system/PrimaryButton';
 
 interface OnboardingScreenProps {
     onComplete: () => void;
@@ -124,7 +125,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             </motion.div>
 
             {/* 하단 네비게이션 영역 */}
-            <div className="w-full px-5 flex flex-col items-center justify-end pb-10 min-h-[140px] relative z-20 bg-gradient-to-t from-white via-white to-transparent">
+            <div className="tb-bottom-fade w-full px-5 flex flex-col items-center justify-end pb-10 min-h-[140px] relative z-20">
                 {/* 인디케이터 */}
                 <div className="flex items-center gap-[6px] mb-8">
                     {ONBOARDING_STEPS.map((_, idx) => (
@@ -137,12 +138,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 </div>
 
                 {/* 버튼 */}
-                <button
-                    onClick={handleNext}
-                    className="w-full h-[52px] rounded-[10px] bg-[#0f0f0f] text-white font-medium text-[14px] flex items-center justify-center transition-transform active:scale-[0.98]"
-                >
+                <PrimaryButton onClick={handleNext}>
                     {currentStep === totalSteps - 1 ? '시작하기' : '다음'}
-                </button>
+                </PrimaryButton>
             </div>
 
             <style>{`

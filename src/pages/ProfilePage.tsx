@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   SettingsRegular, ChevronRightRegular, BluetoothRegular, Battery5Regular,
   ArrowSyncRegular, AlertRegular, QuestionCircleRegular, InfoRegular
@@ -20,23 +19,26 @@ const RefreshCw = wrapIcon(ArrowSyncRegular);
 const Bell = wrapIcon(AlertRegular);
 const HelpCircle = wrapIcon(QuestionCircleRegular);
 const Info = wrapIcon(InfoRegular);
+import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
-import { TASTE_COLORS, TASTE_TYPES, getTasteColor } from '../constants/tasteColors';
+import OutlineBadge from '../components/system/OutlineBadge';
+import SectionTitle from '../components/system/SectionTitle';
+import { getTasteColor } from '../constants/tasteColors';
+import {
+  formatMeasurementDate,
+  formatMeasurementValue,
+  getAverageMeasurementMm,
+  getTasteMeasurementAgeLabel,
+  getTasteMeasurementEntries,
+  getTasteProfileBadge,
+  isTasteMeasurementStale,
+  type TasteMeasurementSnapshot,
+} from '../constants/tasteMeasurementData';
 
 import chefHwangJeongin from '../assets/HwangJeongin.png';
 import chefLeeEunji from '../assets/LeeEunji.png';
 import chefLimJeongsik from '../assets/LimJeongsik.png';
-
-// 나의 미각 수치 데이터
-const myTaste = [
-  { taste: '단맛', value: 85, maxValue: 100 },
-  { taste: '신맛', value: 74, maxValue: 100 },
-  { taste: '쓴맛', value: 40, maxValue: 100 },
-  { taste: '짠맛', value: 60, maxValue: 100 },
-  { taste: '감칠맛', value: 30, maxValue: 100 },
-  { taste: '지방맛', value: 55, maxValue: 100 },
-];
 
 // 활동 통계
 const stats = [
@@ -71,10 +73,28 @@ const settingsSections = [
   },
 ];
 
-export default function ProfilePage() {
+interface ProfilePageProps {
+  measurementSnapshot: TasteMeasurementSnapshot;
+  onStartMeasurement: () => void;
+}
+
+export default function ProfilePage({
+  measurementSnapshot,
+  onStartMeasurement,
+}: ProfilePageProps) {
+  const myTaste = getTasteMeasurementEntries(measurementSnapshot).map((entry) => ({
+    maxValue: 10,
+    taste: entry.label,
+    value: entry.valueMm,
+  }));
+  const averageMeasurement = getAverageMeasurementMm(measurementSnapshot);
+  const tasteProfileBadge = getTasteProfileBadge(averageMeasurement);
+  const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
+  const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
+
   return (
     <div className="flex flex-col w-full h-full bg-white">
-      <TopAppBar />
+      <TopAppBar onStartMeasurement={onStartMeasurement} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="flex flex-col gap-8 p-5 animate-fadeIn">
 
@@ -89,10 +109,10 @@ export default function ProfilePage() {
             <div className="flex flex-col gap-[2px]">
               <span className="font-bold text-[20px] text-[#0f0f0f]">신준호</span>
               <div className="flex items-center gap-2">
-                <span className="text-[12px] font-semibold px-2 py-[2px] rounded-[6px] border border-[#535353] text-[#535353]">
-                  Super Taster+
+                <OutlineBadge>{tasteProfileBadge}</OutlineBadge>
+                <span className="text-[12px] text-[rgba(15,15,15,0.5)]">
+                  평균 {formatMeasurementValue(averageMeasurement)}
                 </span>
-                <span className="text-[12px] text-[rgba(15,15,15,0.5)]">80 mM</span>
               </div>
             </div>
             <div className="ml-auto">
@@ -128,13 +148,28 @@ export default function ProfilePage() {
             <div className="w-full h-px bg-[#e5e5e5]" />
             <div className="flex items-center justify-between w-full">
               <span className="text-[12px] text-[rgba(15,15,15,0.5)]">마지막 측정</span>
-              <span className="text-[12px] text-[#0f0f0f] font-medium">2025.03.08 오후 3:20</span>
+              <span className="text-[12px] text-[#0f0f0f] font-medium">
+                {formatMeasurementDate(measurementSnapshot.measuredAt)}
+              </span>
             </div>
           </SectionCard>
 
+          <TasteMeasurementMiniCta
+            title={needsMeasurementRefresh ? '미각 재측정이 필요해 보여요' : '프로필을 한 번 더 점검할 수 있어요'}
+            description={
+              needsMeasurementRefresh
+                ? `${measurementAgeLabel} 상태예요. 최신 데이터로 갱신하면 추천과 보정 정확도가 더 좋아져요.`
+                : '입맛이 달라졌다면 지금 다시 측정해서 내 프로필을 더 정확하게 유지할 수 있어요.'
+            }
+            meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
+            actionLabel={needsMeasurementRefresh ? '재측정' : '다시 측정'}
+            onAction={onStartMeasurement}
+            tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
+          />
+
           {/* 나의 미각 수치 */}
           <div>
-            <h3 className="font-bold text-[18px] text-[#0f0f0f] mb-3">나의 미각</h3>
+            <SectionTitle className="mb-3">나의 미각</SectionTitle>
             <SectionCard>
               <div className="flex flex-col gap-3 w-full">
                 {myTaste.map((item, idx) => {
@@ -153,7 +188,9 @@ export default function ProfilePage() {
                           }}
                         />
                       </div>
-                      <span className="text-[12px] font-bold w-[28px] text-right" style={{ color }}>{item.value}</span>
+                      <span className="text-[12px] font-bold w-[56px] text-right" style={{ color }}>
+                        {item.value.toFixed(2)}
+                      </span>
                     </div>
                   );
                 })}
@@ -163,7 +200,7 @@ export default function ProfilePage() {
 
           {/* 활동 요약 */}
           <div>
-            <h3 className="font-bold text-[18px] text-[#0f0f0f] mb-3">활동 요약</h3>
+            <SectionTitle className="mb-3">활동 요약</SectionTitle>
             <div className="grid grid-cols-2 gap-3">
               {stats.map((stat, idx) => {
                 const Icon = stat.icon;
@@ -189,7 +226,7 @@ export default function ProfilePage() {
 
           {/* 즐겨찾기 셰프 */}
           <div>
-            <h3 className="font-bold text-[18px] text-[#0f0f0f] mb-3">즐겨찾기 셰프</h3>
+            <SectionTitle className="mb-3">즐겨찾기 셰프</SectionTitle>
             <div className="flex flex-col gap-3">
               {favoriteChefs.map((chef, idx) => (
                 <SectionCard key={idx}>
@@ -214,7 +251,7 @@ export default function ProfilePage() {
           {/* 설정 */}
           {settingsSections.map((section, sIdx) => (
             <div key={sIdx}>
-              <h3 className="font-bold text-[18px] text-[#0f0f0f] mb-3">{section.title}</h3>
+              <SectionTitle className="mb-3">{section.title}</SectionTitle>
               <div className="flex flex-col gap-3">
                 {section.items.map((item, idx) => {
                   const Icon = item.icon;

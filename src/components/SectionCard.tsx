@@ -10,13 +10,13 @@ interface SectionCardProps {
 export default function SectionCard({ children, className = '', onClick, hoverEffect = true }: SectionCardProps) {
   return (
     <div
-      className={`bg-[#f3f3f3] rounded-[20px] w-full transition-all duration-300 ${
-        hoverEffect ? 'hover:bg-[#ececec] hover:shadow-sm' : ''
+      className={`tb-section-card ${
+        hoverEffect ? 'tb-section-card--interactive' : ''
       } ${onClick ? 'cursor-pointer' : ''} ${className}`}
       onClick={onClick}
     >
       <div className="overflow-clip rounded-[inherit] size-full">
-        <div className="box-border flex flex-col gap-[12px] items-start p-[12px] w-full">
+        <div className="tb-section-card__body">
           {children}
         </div>
       </div>

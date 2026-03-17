@@ -15,18 +15,24 @@ interface TopAppBarProps {
   title?: string;
   showBack?: boolean;
   onBack?: () => void;
+  onStartMeasurement?: () => void;
 }
 
-export default function TopAppBar({ title, showBack, onBack }: TopAppBarProps) {
+export default function TopAppBar({
+  title,
+  showBack,
+  onBack,
+  onStartMeasurement,
+}: TopAppBarProps) {
   return (
-    <div className="bg-white w-full shrink-0 z-40">
+    <div className="bg-[var(--tb-color-surface-base)] w-full shrink-0 z-40">
       <div className="flex items-center justify-between px-[20px] py-[12px] max-h-[56px]">
         {/* Left */}
         <div className="flex items-center">
           {showBack ? (
             <button
               onClick={onBack}
-              className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors text-[#3F3F3F]"
+              className="flex items-center justify-center size-[32px] rounded-full hover:bg-[var(--tb-color-surface-card)] transition-colors text-[var(--tb-color-icon-primary)]"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 19l-7-7 7-7" />
@@ -34,30 +40,36 @@ export default function TopAppBar({ title, showBack, onBack }: TopAppBarProps) {
             </button>
           ) : (
             <div className="relative rounded-full shrink-0 size-[32px]">
-              <div className="flex items-center justify-center overflow-hidden rounded-full size-[32px] bg-[#FF9900]/20">
-                <span className="font-medium text-[14px] text-[#0f0f0f]">JH</span>
+              <div className="flex items-center justify-center overflow-hidden rounded-full size-[32px] bg-[color:rgba(255,153,0,0.2)]">
+                <span className="font-medium text-[14px] text-[var(--tb-color-text-primary)]">JH</span>
               </div>
-              <div className="absolute border border-[rgba(15,15,15,0.2)] inset-0 pointer-events-none rounded-full" />
+              <div className="absolute border border-[var(--tb-color-border-avatar)] inset-0 pointer-events-none rounded-full" />
             </div>
           )}
         </div>
 
         {/* Center Title */}
         {title && (
-          <span className="font-bold text-[15px] text-[#0f0f0f] absolute left-1/2 -translate-x-1/2">
+          <span className="font-bold text-[15px] text-[var(--tb-color-text-primary)] absolute left-1/2 -translate-x-1/2">
             {title}
           </span>
         )}
 
         {/* Right */}
         <div className="flex items-center gap-[16px]">
-          <button className="text-[#3F3F3F] hover:text-[#0f0f0f] transition-colors">
+          <button className="text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors">
             <Bell size={24} strokeWidth={1.8} />
           </button>
-          <button className="text-[#3F3F3F] hover:text-[#0f0f0f] transition-colors">
+          <button
+            type="button"
+            onClick={onStartMeasurement}
+            aria-label="미각 측정 시작"
+            title="미각 측정"
+            className="text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors"
+          >
             <PlusCircle size={24} strokeWidth={1.8} />
           </button>
-          <button className="text-[#3F3F3F] hover:text-[#0f0f0f] transition-colors">
+          <button className="text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors">
             <Menu size={24} strokeWidth={1.8} />
           </button>
         </div>
