@@ -59,6 +59,105 @@ export const TYPOGRAPHY_TOKENS = {
   },
 } as const;
 
+export const SHADOW_TOKENS = {
+  hover: '0 1px 3px rgba(15, 15, 15, 0.06)',
+  soft: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  button: '0 8px 20px rgba(0, 0, 0, 0.1)',
+  drawer: '0 20px 60px rgba(0, 0, 0, 0.24)',
+} as const;
+
+export const MOTION_TOKENS = {
+  durationMs: {
+    fast: 180,
+    normal: 300,
+    medium: 500,
+    slow: 620,
+    slowest: 720,
+    loopPulse: 1600,
+    splash: 2500,
+  },
+  easing: {
+    standard: 'ease',
+    entrance: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    exit: 'ease-out',
+  },
+  spring: {
+    screenDamping: 25,
+    screenStiffness: 200,
+  },
+  scale: {
+    press: 0.98,
+    tabHover: 1.05,
+    tabActive: 1.1,
+    loopNodePulse: 1.28,
+    loopLabelPulse: 1.06,
+  },
+  distance: {
+    xSmall: 8,
+    small: 12,
+    medium: 20,
+    large: 40,
+    onboardingSwipe: 100,
+  },
+} as const;
+
+export const ICON_TOKENS = {
+  size: {
+    xs: 12,
+    sm: 14,
+    md: 16,
+    lg: 18,
+    xl: 20,
+    touch: 24,
+    hero: 28,
+  },
+  strokeWidth: {
+    thin: 1.5,
+    regular: 1.8,
+    medium: 2,
+    strong: 2.2,
+    emphasis: 3,
+  },
+  container: {
+    sm: 28,
+    md: 32,
+    lg: 40,
+    xl: 48,
+  },
+} as const;
+
+export const DATA_VIZ_TOKENS = {
+  progress: {
+    barHeight: 8,
+    barTrack: '#E8E8E8',
+  },
+  radar: {
+    size: 320,
+    gridColor: '#E8E8E8',
+    averageFill: 'rgba(240, 240, 240, 0.6)',
+    averageStroke: '#D0D0D0',
+    highlightFill: 'rgba(255, 153, 0, 0.12)',
+    highlightStroke: '#FF9900',
+    labelSize: 9,
+    labelColor: '#888888',
+    nodeSize: 3,
+    outerDotSize: 8,
+  },
+  trend: {
+    lineStrokeWidth: 1,
+    dotSize: 4,
+    activeDotSize: 5,
+  },
+  ring: {
+    outerSize: 320,
+    innerNodeRadius: 12,
+    stepCount: 10,
+    outerRingThickness: 24,
+    guideDotSize: 1,
+    stepPulses: 1,
+  },
+} as const;
+
 export const COLOR_TOKENS = {
   background: {
     page: '#FFFFFF',
@@ -98,10 +197,7 @@ export const COLOR_TOKENS = {
     hover: '#6F6F6F',
     muted: '#AFAFAF',
   },
-  shadow: {
-    soft: '0 4px 20px rgba(0, 0, 0, 0.1)',
-    button: '0 8px 20px rgba(0, 0, 0, 0.1)',
-  },
+  shadow: SHADOW_TOKENS,
 } as const;
 
 export const LAYOUT_TOKENS = {
@@ -400,9 +496,13 @@ export const TASTE_COLORS = Object.fromEntries(
 
 export const DESIGN_TOKENS = {
   colors: COLOR_TOKENS,
+  shadows: SHADOW_TOKENS,
   spacing: SPACING_TOKENS,
   radius: RADIUS_TOKENS,
   typography: TYPOGRAPHY_TOKENS,
+  motion: MOTION_TOKENS,
+  icon: ICON_TOKENS,
+  dataViz: DATA_VIZ_TOKENS,
   layout: LAYOUT_TOKENS,
   components: COMPONENT_TOKENS,
   taste: TASTE_TOKENS,

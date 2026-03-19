@@ -6,30 +6,40 @@ import powerOnImage from '../assets/Power On Instructions.png';
 import tastickConnectImage from '../assets/Tastick Connect.png';
 import tbFeedbackVideo from '../assets/video/TB Feedback [Custom].mp4';
 import PrimaryButton from '../components/system/PrimaryButton';
+import { MOTION_TOKENS } from '../constants/designTokens';
 
 interface TeastickConnectScreenProps {
     onConnect: () => void;
     onSkip: () => void;
+    initialDrawerOpen?: boolean;
+    initialDrawerStep?: DrawerStep;
+    initialMainStep?: number;
 }
 
 type DrawerStep = 'power' | 'connecting' | 'connected';
 
 const BACKGROUND_CARD_OPEN_SCALE = 0.9;
 const BACKGROUND_CARD_OPEN_OFFSET = 40;
-const BACKGROUND_CARD_OPEN_RADIUS = 28;
+const BACKGROUND_CARD_OPEN_RADIUS = 24;
 const BACKGROUND_CARD_SHADOW_Y = 20;
 const BACKGROUND_CARD_SHADOW_BLUR = 60;
 const BACKGROUND_CARD_SHADOW_OPACITY = 0.24;
 const BACKGROUND_CARD_TRANSITION = [
-    'transform 620ms cubic-bezier(0.22, 1, 0.36, 1)',
-    'border-radius 720ms cubic-bezier(0.22, 1, 0.36, 1)',
-    'box-shadow 620ms cubic-bezier(0.22, 1, 0.36, 1)',
+    `transform ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
+    `border-radius ${MOTION_TOKENS.durationMs.slowest}ms ${MOTION_TOKENS.easing.entrance}`,
+    `box-shadow ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
 ].join(', ');
 
-export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickConnectScreenProps) {
-    const [mainStep, setMainStep] = useState(1);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [drawerStep, setDrawerStep] = useState<DrawerStep>('power');
+export default function TeastickConnectScreen({
+    initialDrawerOpen = false,
+    initialDrawerStep = 'power',
+    initialMainStep = 1,
+    onConnect,
+    onSkip,
+}: TeastickConnectScreenProps) {
+    const [mainStep, setMainStep] = useState(initialMainStep);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(initialDrawerOpen);
+    const [drawerStep, setDrawerStep] = useState<DrawerStep>(initialDrawerStep);
     const backgroundCardRef = useRef<HTMLDivElement>(null);
 
     const applyBackgroundCardProgress = (progress: number, immediate = false) => {
@@ -80,7 +90,7 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
         } else if (drawerStep === 'connected') {
             setIsDrawerOpen(false);
             // After successful connection, move main step to 2
-            setTimeout(() => setMainStep(2), 300);
+            setTimeout(() => setMainStep(2), MOTION_TOKENS.durationMs.normal);
         }
     };
 
@@ -91,7 +101,10 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
     ];
 
     return (
-        <div className={`relative flex h-full w-full font-sans transition-colors duration-500 ease-in-out ${isDrawerOpen ? 'bg-black' : 'bg-white'}`}>
+        <div
+            className={`relative flex h-full w-full font-sans transition-colors duration-500 ease-in-out ${isDrawerOpen ? 'bg-black' : 'bg-white'}`}
+            style={{ transitionDuration: `${MOTION_TOKENS.durationMs.medium}ms` }}
+        >
             <div
                 ref={backgroundCardRef}
                 className="relative flex h-full w-full origin-top flex-col overflow-hidden bg-white will-change-transform"
@@ -112,7 +125,7 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
                         <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight">
                             지금부터 고객님의 미각을<br />정밀하게 측정합니다.
                         </h1>
-                        <p className="text-[#666666] text-[14px]">
+                        <p className="text-[14px] text-[var(--tb-color-text-body)]">
                             매뉴얼에 따라 측정을 진행해주세요.
                         </p>
                     </div>
@@ -123,22 +136,24 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
                             const isCompleted = mainStep > step.id;
                             const isActive = mainStep === step.id;
 
-                            let bgColor = 'bg-[#F5F5F5]';
-                            if (isActive) bgColor = 'bg-[#F6F6F6] border border-[#E5E5E5]';
-                            else if (isCompleted) bgColor = 'bg-[#F5F5F5] opacity-80';
+                            let bgColor = 'bg-[var(--tb-color-surface-muted)]';
+                            if (isActive) bgColor = 'border border-[var(--tb-color-border-strong)] bg-[var(--tb-color-surface-elevated)]';
+                            else if (isCompleted) bgColor = 'bg-[var(--tb-color-surface-muted)] opacity-80';
 
                             return (
                                 <div key={step.id} className={`w-full rounded-[20px] p-3 ${bgColor} transition-all duration-300`}>
                                     <div className="flex items-start gap-3">
-                                        <div className={`w-[24px] h-[24px] rounded-[8px] flex items-center justify-center shrink-0 ${isCompleted || isActive ? 'bg-black text-white' : 'bg-[#AEAEAE] text-white'}`}>
+                                        <div
+                                            className={`flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-[8px] ${isCompleted || isActive ? 'bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]' : 'bg-[var(--tb-color-text-disabled)] text-[var(--tb-color-text-inverse)]'}`}
+                                        >
                                             {isCompleted ? <Check size={14} strokeWidth={3} /> : <span className="text-[13px] font-bold">{step.id}</span>}
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className={`text-[14px] font-bold tracking-tight ${(isActive) ? 'text-black' : 'text-[#555]'}`}>
+                                            <h3 className={`text-[14px] font-bold tracking-tight ${(isActive) ? 'text-[var(--tb-color-text-primary)]' : 'text-[var(--tb-color-text-tertiary)]'}`}>
                                                 {step.title}
                                             </h3>
                                             {isActive && step.desc && (
-                                                <p className="text-[12px] text-[#777] mt-1.5 leading-relaxed whitespace-pre-wrap">
+                                                <p className="mt-1.5 whitespace-pre-wrap text-[12px] leading-relaxed text-[var(--tb-color-text-body)]">
                                                     {step.desc}
                                                 </p>
                                             )}
@@ -170,11 +185,11 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
                 }}
             >
                 <Drawer.Portal>
-                    <Drawer.Overlay className="fixed inset-0 bg-[rgba(0,0,0,0.6)] z-40" />
+                    <Drawer.Overlay className="fixed inset-0 z-40 bg-[rgba(0,0,0,0.6)]" />
                     <Drawer.Content className="fixed bottom-0 left-0 right-0 max-w-[1440px] mx-auto bg-white flex flex-col rounded-t-[24px] z-50 h-[95vh] outline-none">
                         {/* Drawer Handle */}
                         <div className="w-full flex justify-center pt-3 pb-2">
-                            <div className="w-10 h-1.5 bg-[#E5E5E5] rounded-full" />
+                            <div className="h-1.5 w-10 rounded-full bg-[var(--tb-color-border-strong)]" />
                         </div>
 
                         {/* Drawer Header */}
@@ -196,11 +211,11 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0, x: -50 }}
-                                        transition={{ duration: 0.3 }}
+                                        transition={{ duration: MOTION_TOKENS.durationMs.normal / 1000 }}
                                         className="absolute inset-0 flex flex-col items-center px-5 pt-10"
                                     >
-                                        <h2 className="text-[22px] font-bold text-black mb-2">테이스틱의 전원을 켭니다</h2>
-                                        <p className="text-[#666] text-[14px]">밑면의 버튼을 2초간 길게 누르세요.</p>
+                                        <h2 className="mb-2 text-[22px] font-bold text-[var(--tb-color-text-primary)]">테이스틱의 전원을 켭니다</h2>
+                                        <p className="text-[14px] text-[var(--tb-color-text-body)]">밑면의 버튼을 2초간 길게 누르세요.</p>
                                         <div className="flex-1 w-full bg-white rounded-[24px] mt-10 mb-6 flex items-center justify-center relative overflow-hidden">
                                             <img src={powerOnImage} alt="Power On Instructions" className="w-[85%] h-[85%] object-contain" />
                                         </div>
@@ -213,11 +228,11 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
                                         initial={{ opacity: 0, x: 50 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -50 }}
-                                        transition={{ duration: 0.3 }}
+                                        transition={{ duration: MOTION_TOKENS.durationMs.normal / 1000 }}
                                         className="absolute inset-0 flex flex-col items-center px-5 pt-10"
                                     >
-                                        <h2 className="text-[22px] font-bold text-black mb-2">기기를 연결중입니다</h2>
-                                        <p className="text-[#666] text-[14px]">연결이 완료되면 녹색 점등이 반짝입니다.</p>
+                                        <h2 className="mb-2 text-[22px] font-bold text-[var(--tb-color-text-primary)]">기기를 연결중입니다</h2>
+                                        <p className="text-[14px] text-[var(--tb-color-text-body)]">연결이 완료되면 녹색 점등이 반짝입니다.</p>
 
                                         <div className="flex-1 w-full bg-white rounded-[24px] mt-10 mb-6 flex items-center justify-center relative overflow-hidden">
                                             <video
@@ -238,11 +253,11 @@ export default function TeastickConnectScreen({ onConnect, onSkip }: TeastickCon
                                         initial={{ opacity: 0, x: 50 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -50 }}
-                                        transition={{ duration: 0.3 }}
+                                        transition={{ duration: MOTION_TOKENS.durationMs.normal / 1000 }}
                                         className="absolute inset-0 flex flex-col items-center px-5 pt-10"
                                     >
-                                        <h2 className="text-[22px] font-bold text-black mb-2">테이스틱 연결 완료</h2>
-                                        <p className="text-[#666] text-[14px]">테이스틱을 통해 미각 분석을 시작해보세요.</p>
+                                        <h2 className="mb-2 text-[22px] font-bold text-[var(--tb-color-text-primary)]">테이스틱 연결 완료</h2>
+                                        <p className="text-[14px] text-[var(--tb-color-text-body)]">테이스틱을 통해 미각 분석을 시작해보세요.</p>
 
                                         <div className="flex-1 w-full bg-white rounded-[24px] mt-10 mb-6 flex items-center justify-center relative overflow-hidden">
                                             <img src={tastickConnectImage} alt="Teastick device connected" className="w-[85%] h-[85%] object-contain" />

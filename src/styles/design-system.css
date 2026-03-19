@@ -34,6 +34,65 @@
   --tb-color-icon-hover: #6f6f6f;
   --tb-color-icon-muted: #afafaf;
 
+  --tb-shadow-hover: 0 1px 3px rgba(15, 15, 15, 0.06);
+  --tb-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --tb-shadow-button: 0 8px 20px rgba(0, 0, 0, 0.1);
+  --tb-shadow-drawer: 0 20px 60px rgba(0, 0, 0, 0.24);
+
+  --tb-motion-duration-fast: 180ms;
+  --tb-motion-duration-normal: 300ms;
+  --tb-motion-duration-medium: 500ms;
+  --tb-motion-duration-slow: 620ms;
+  --tb-motion-duration-slowest: 720ms;
+  --tb-motion-duration-loop-pulse: 1600ms;
+  --tb-motion-duration-splash: 2500ms;
+
+  --tb-motion-ease-standard: ease;
+  --tb-motion-ease-entrance: cubic-bezier(0.22, 1, 0.36, 1);
+  --tb-motion-ease-exit: ease-out;
+
+  --tb-motion-scale-press: 0.98;
+  --tb-motion-scale-tab-hover: 1.05;
+  --tb-motion-scale-tab-active: 1.1;
+  --tb-motion-scale-loop-node: 1.28;
+  --tb-motion-scale-loop-label: 1.06;
+
+  --tb-motion-distance-xs: 8px;
+  --tb-motion-distance-sm: 12px;
+  --tb-motion-distance-md: 20px;
+  --tb-motion-distance-lg: 40px;
+  --tb-motion-distance-onboarding-swipe: 100px;
+
+  --tb-icon-size-xs: 12px;
+  --tb-icon-size-sm: 14px;
+  --tb-icon-size-md: 16px;
+  --tb-icon-size-lg: 18px;
+  --tb-icon-size-xl: 20px;
+  --tb-icon-size-touch: 24px;
+  --tb-icon-size-hero: 28px;
+
+  --tb-icon-stroke-thin: 1.5;
+  --tb-icon-stroke-regular: 1.8;
+  --tb-icon-stroke-medium: 2;
+  --tb-icon-stroke-strong: 2.2;
+  --tb-icon-stroke-emphasis: 3;
+
+  --tb-data-viz-progress-height: 8px;
+  --tb-data-viz-progress-track: #e8e8e8;
+  --tb-data-viz-radar-size: 320px;
+  --tb-data-viz-radar-grid: #e8e8e8;
+  --tb-data-viz-radar-average-fill: rgba(240, 240, 240, 0.6);
+  --tb-data-viz-radar-average-stroke: #d0d0d0;
+  --tb-data-viz-radar-highlight-fill: rgba(255, 153, 0, 0.12);
+  --tb-data-viz-radar-highlight-stroke: #ff9900;
+  --tb-data-viz-radar-label-size: 9px;
+  --tb-data-viz-radar-label-color: #888888;
+  --tb-data-viz-radar-node-size: 3px;
+  --tb-data-viz-radar-outer-dot-size: 8px;
+  --tb-data-viz-trend-line-width: 1px;
+  --tb-data-viz-trend-dot-size: 4px;
+  --tb-data-viz-trend-active-dot-size: 5px;
+
   --tb-taste-sweet-main: #ff9900;
   --tb-taste-sweet-dark: #cc7a00;
   --tb-taste-sweet-light: #ffcc80;
@@ -153,8 +212,6 @@
   --tb-orbit-guide-radius: 138px;
   --tb-orbit-label-offset: 4px;
 
-  --tb-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
-  --tb-shadow-button: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 @layer base {
@@ -170,12 +227,15 @@
     width: 100%;
     border-radius: var(--tb-radius-20);
     background: var(--tb-color-surface-card);
-    transition: background-color 300ms ease, box-shadow 300ms ease, transform 300ms ease;
+    transition:
+      background-color var(--tb-motion-duration-normal) var(--tb-motion-ease-standard),
+      box-shadow var(--tb-motion-duration-normal) var(--tb-motion-ease-standard),
+      transform var(--tb-motion-duration-normal) var(--tb-motion-ease-standard);
   }
 
   .tb-section-card--interactive:hover {
     background: var(--tb-color-surface-card-hover);
-    box-shadow: 0 1px 3px rgba(15, 15, 15, 0.06);
+    box-shadow: var(--tb-shadow-hover);
   }
 
   .tb-section-card__body {
@@ -201,11 +261,15 @@
     font-size: var(--tb-font-size-14);
     font-weight: var(--tb-font-weight-medium);
     box-shadow: var(--tb-shadow-button);
-    transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+    transition:
+      transform var(--tb-motion-duration-fast) var(--tb-motion-ease-standard),
+      background-color var(--tb-motion-duration-fast) var(--tb-motion-ease-standard),
+      color var(--tb-motion-duration-fast) var(--tb-motion-ease-standard),
+      box-shadow var(--tb-motion-duration-fast) var(--tb-motion-ease-standard);
   }
 
   .tb-primary-button:active {
-    transform: scale(0.98);
+    transform: scale(var(--tb-motion-scale-press));
   }
 
   .tb-primary-button--disabled,

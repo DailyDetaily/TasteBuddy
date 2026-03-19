@@ -101,23 +101,23 @@ export default function ProfilePage({
           {/* 프로필 헤더 */}
           <div className="flex items-center gap-4">
             <div className="relative rounded-full size-[64px]">
-              <div className="flex items-center justify-center rounded-full size-[64px] bg-[#FF9900]/20">
-                <span className="font-bold text-[24px] text-[#0f0f0f]">JH</span>
+              <div className="flex items-center justify-center rounded-full size-[64px] bg-[var(--tb-taste-sweet-bg)]">
+                <span className="text-[24px] font-bold text-[var(--tb-color-text-primary)]">JH</span>
               </div>
-              <div className="absolute border border-[rgba(15,15,15,0.15)] inset-0 pointer-events-none rounded-full" />
+              <div className="pointer-events-none absolute inset-0 rounded-full border border-[var(--tb-color-border-avatar-soft)]" />
             </div>
             <div className="flex flex-col gap-[2px]">
-              <span className="font-bold text-[20px] text-[#0f0f0f]">신준호</span>
+              <span className="text-[20px] font-bold text-[var(--tb-color-text-primary)]">신준호</span>
               <div className="flex items-center gap-2">
                 <OutlineBadge>{tasteProfileBadge}</OutlineBadge>
-                <span className="text-[12px] text-[rgba(15,15,15,0.5)]">
+                <span className="text-[12px] text-[var(--tb-color-text-muted)]">
                   평균 {formatMeasurementValue(averageMeasurement)}
                 </span>
               </div>
             </div>
             <div className="ml-auto">
-              <button className="p-2 rounded-full hover:bg-[#f3f3f3] transition-colors">
-                <Settings size={20} className="text-[#3F3F3F]" />
+              <button className="rounded-full p-2 transition-colors hover:bg-[var(--tb-color-surface-card)]">
+                <Settings size={20} className="text-[var(--tb-color-icon-primary)]" />
               </button>
             </div>
           </div>
@@ -126,29 +126,29 @@ export default function ProfilePage({
           <SectionCard>
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
-                <div className="w-[40px] h-[40px] rounded-[12px] bg-[#0f0f0f] flex items-center justify-center">
-                  <span className="text-white text-[10px] font-bold">TB</span>
+                <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[12px] bg-[var(--tb-color-text-primary)]">
+                  <span className="text-[10px] font-bold text-[var(--tb-color-text-inverse)]">TB</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-[14px] text-[#0f0f0f]">테이스틱</span>
-                  <span className="text-[11px] text-[rgba(15,15,15,0.5)]">Teastick Pro</span>
+                  <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">테이스틱</span>
+                  <span className="text-[11px] text-[var(--tb-color-text-muted)]">Teastick Pro</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
-                  <Bluetooth size={14} className="text-[#3F3F3F]" />
-                  <span className="text-[11px] text-[#3F3F3F] font-medium">연결됨</span>
+                  <Bluetooth size={14} className="text-[var(--tb-color-icon-primary)]" />
+                  <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">연결됨</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Battery size={14} className="text-[#3F3F3F]" />
-                  <span className="text-[11px] text-[#3F3F3F] font-medium">87%</span>
+                  <Battery size={14} className="text-[var(--tb-color-icon-primary)]" />
+                  <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">87%</span>
                 </div>
               </div>
             </div>
-            <div className="w-full h-px bg-[#e5e5e5]" />
+            <div className="h-px w-full bg-[var(--tb-color-border-strong)]" />
             <div className="flex items-center justify-between w-full">
-              <span className="text-[12px] text-[rgba(15,15,15,0.5)]">마지막 측정</span>
-              <span className="text-[12px] text-[#0f0f0f] font-medium">
+              <span className="text-[12px] text-[var(--tb-color-text-muted)]">마지막 측정</span>
+              <span className="text-[12px] font-medium text-[var(--tb-color-text-primary)]">
                 {formatMeasurementDate(measurementSnapshot.measuredAt)}
               </span>
             </div>
@@ -176,8 +176,8 @@ export default function ProfilePage({
                   const color = getTasteColor(item.taste);
                   return (
                     <div key={idx} className="flex items-center gap-3 w-full">
-                      <span className="text-[12px] font-medium text-[#0f0f0f] w-[42px]">{item.taste}</span>
-                      <div className="flex-1 h-[8px] bg-[#e8e8e8] rounded-full overflow-hidden">
+                      <span className="w-[42px] text-[12px] font-medium text-[var(--tb-color-text-primary)]">{item.taste}</span>
+                      <div className="h-[8px] flex-1 overflow-hidden rounded-full bg-[var(--tb-color-border-subtle)]">
                         <div
                           className="h-full rounded-full transition-all duration-700 animate-grow"
                           style={{
@@ -214,8 +214,8 @@ export default function ProfilePage({
                         <Icon size={18} strokeWidth={1.5} style={{ color: stat.color }} />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[11px] text-[rgba(15,15,15,0.5)]">{stat.label}</span>
-                        <span className="font-semibold text-[14px] text-[#0f0f0f]">{stat.value}</span>
+                        <span className="text-[11px] text-[var(--tb-color-text-muted)]">{stat.label}</span>
+                        <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{stat.value}</span>
                       </div>
                     </div>
                   </SectionCard>
@@ -237,11 +237,11 @@ export default function ProfilePage({
                       className="w-[40px] h-[40px] rounded-[10px] object-cover"
                     />
                     <div className="flex flex-col flex-1">
-                      <span className="font-semibold text-[14px] text-[#0f0f0f]">{chef.name}</span>
-                      <span className="text-[11px] text-[rgba(15,15,15,0.5)]">{chef.restaurant}</span>
+                      <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{chef.name}</span>
+                      <span className="text-[11px] text-[var(--tb-color-text-muted)]">{chef.restaurant}</span>
                     </div>
-                    <span className="text-[12px] font-semibold text-[#0f0f0f]">{chef.matchRate}%</span>
-                    <ChevronRight size={16} className="text-[#AFAFAF]" />
+                    <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{chef.matchRate}%</span>
+                    <ChevronRight size={16} className="text-[var(--tb-color-icon-muted)]" />
                   </div>
                 </SectionCard>
               ))}
@@ -258,12 +258,12 @@ export default function ProfilePage({
                   return (
                     <SectionCard key={idx}>
                       <div className="flex items-center gap-3 w-full">
-                        <Icon size={18} className="text-[#3F3F3F] shrink-0" />
+                        <Icon size={18} className="shrink-0 text-[var(--tb-color-icon-primary)]" />
                         <div className="flex flex-col flex-1">
-                          <span className="font-semibold text-[14px] text-[#0f0f0f]">{item.label}</span>
-                          <span className="text-[11px] text-[rgba(15,15,15,0.5)]">{item.desc}</span>
+                          <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{item.label}</span>
+                          <span className="text-[11px] text-[var(--tb-color-text-muted)]">{item.desc}</span>
                         </div>
-                        <ChevronRight size={16} className="text-[#AFAFAF]" />
+                        <ChevronRight size={16} className="text-[var(--tb-color-icon-muted)]" />
                       </div>
                     </SectionCard>
                   );

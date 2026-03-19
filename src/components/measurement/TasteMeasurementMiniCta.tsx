@@ -21,24 +21,28 @@ export default function TasteMeasurementMiniCta({
 }: TasteMeasurementMiniCtaProps) {
   const accentClass =
     tone === 'alert'
-      ? 'border-[#F1D7B7] bg-[linear-gradient(135deg,#FFF4E6_0%,#FFF9F3_100%)]'
+      ? 'border-[var(--tb-taste-sweet-light)] bg-[linear-gradient(135deg,var(--tb-taste-sweet-bg)_0%,var(--tb-color-surface-base)_100%)]'
       : 'border-[var(--tb-color-border-card)] bg-[var(--tb-color-surface-card)]';
   const iconClass =
-    tone === 'alert' ? 'bg-[#0F0F0F] text-white' : 'bg-[#F1F1F1] text-[#3F3F3F]';
+    tone === 'alert'
+      ? 'bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
+      : 'bg-[var(--tb-color-surface-base)] text-[var(--tb-color-icon-primary)]';
 
   return (
-    <div className={`rounded-[18px] border p-4 ${accentClass}`}>
+    <div className={`rounded-[var(--tb-radius-20)] border p-4 ${accentClass}`}>
       <div className="flex items-start gap-3">
-        <div className={`flex size-[32px] shrink-0 items-center justify-center rounded-[10px] ${iconClass}`}>
-          <RefreshCcw size={15} strokeWidth={2} />
+        <div
+          className={`flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-10)] ${iconClass}`}
+        >
+          <RefreshCcw size={14} strokeWidth={1.8} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-[#0F0F0F]">{title}</p>
-          <p className="mt-1 text-[12px] leading-relaxed text-[rgba(15,15,15,0.62)]">
+          <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
+          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
             {description}
           </p>
           {meta ? (
-            <p className="mt-1 text-[11px] font-medium text-[rgba(15,15,15,0.42)]">{meta}</p>
+            <p className="mt-1 text-[11px] font-medium text-[var(--tb-color-text-faint)]">{meta}</p>
           ) : null}
         </div>
       </div>

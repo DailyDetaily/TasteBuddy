@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import Home from './imports/Home';
 import AnalysisPage from './pages/AnalysisPage';
+import DesignSystemPreviewPage from './pages/DesignSystemPreviewPage';
 import ReservationPage from './pages/ReservationPage';
 import ProfilePage from './pages/ProfilePage';
 import SplashScreen from './pages/SplashScreen';
@@ -69,7 +70,7 @@ function loadPersistedUserState(): PersistedUserState {
   }
 }
 
-export default function App() {
+function MainApp() {
   const [persistedUserState] = useState<PersistedUserState>(loadPersistedUserState);
   const [appState, setAppState] = useState<AppState>('splash');
   const [activeTab, setActiveTab] = useState<TabType>('home');
@@ -211,4 +212,17 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+export default function App() {
+  const previewMode =
+    typeof window === 'undefined'
+      ? null
+      : new URLSearchParams(window.location.search).get('preview');
+
+  if (previewMode === 'design-system-updates') {
+    return <DesignSystemPreviewPage />;
+  }
+
+  return <MainApp />;
 }

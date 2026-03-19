@@ -7,6 +7,7 @@ import onboardingRender1 from '../assets/onboarding_render_1.png';
 import onboardingRender3 from '../assets/onboarding_render_3.png';
 import onboardingRender4 from '../assets/onboarding_render_4.png';
 import PrimaryButton from '../components/system/PrimaryButton';
+import { MOTION_TOKENS } from '../constants/designTokens';
 
 interface OnboardingScreenProps {
     onComplete: () => void;
@@ -66,6 +67,12 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     const [currentStep, setCurrentStep] = useState(0);
     const [direction, setDirection] = useState(0); // 1 for next, -1 for prev
     const totalSteps = ONBOARDING_STEPS.length;
+    const swipeDistance = MOTION_TOKENS.distance.onboardingSwipe;
+    const onboardingSpring = {
+        type: 'spring' as const,
+        damping: MOTION_TOKENS.spring.screenDamping,
+        stiffness: MOTION_TOKENS.spring.screenStiffness,
+    };
 
     const handleNext = () => {
         if (currentStep < totalSteps - 1) {
@@ -102,10 +109,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 onDragEnd={onDragEnd}
-                initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
+                initial={{ opacity: 0, x: direction > 0 ? swipeDistance : -swipeDistance }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                exit={{ opacity: 0, x: direction > 0 ? -swipeDistance : swipeDistance }}
+                transition={onboardingSpring}
                 className="flex-1 flex flex-col items-center justify-center -translate-y-[4vh] select-none touch-none"
             >
                 {/* Graphic Container */}
@@ -115,10 +122,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
                 {/* Texts Container */}
                 <div className="text-center flex flex-col items-center px-5 min-h-[100px]">
-                    <h2 className="text-[22px] font-bold tracking-tight text-[#0f0f0f] mb-2 whitespace-pre-line text-center leading-snug">
+                    <h2 className="mb-2 whitespace-pre-line text-center text-[22px] font-bold leading-snug tracking-tight text-[var(--tb-color-text-primary)]">
                         {stepData.title}
                     </h2>
-                    <p className="text-[14px] text-[#535353] whitespace-pre-line text-center leading-relaxed">
+                    <p className="whitespace-pre-line text-center text-[14px] leading-relaxed text-[var(--tb-color-text-tertiary)]">
                         {stepData.description}
                     </p>
                 </div>
@@ -131,7 +138,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                     {ONBOARDING_STEPS.map((_, idx) => (
                         <div
                             key={idx}
-                            className={`h-[6px] rounded-full transition-all duration-300 ${idx === currentStep ? 'w-[16px] bg-[#0f0f0f]' : 'w-[6px] bg-[#E5E5E5]'
+                            className={`h-[6px] rounded-full transition-all duration-300 ${idx === currentStep ? 'w-[16px] bg-[var(--tb-color-text-primary)]' : 'w-[6px] bg-[var(--tb-color-border-strong)]'
                                 }`}
                         />
                     ))}
@@ -142,17 +149,6 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                     {currentStep === totalSteps - 1 ? '시작하기' : '다음'}
                 </PrimaryButton>
             </div>
-
-            <style>{`
-        @keyframes fade-up {
-          0% { transform: translateY(40px); opacity: 0; }
-          100% { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes scale-in {
-          0% { transform: scale(0.85); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
         </div>
     );
 }

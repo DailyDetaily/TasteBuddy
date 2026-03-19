@@ -28,7 +28,10 @@ const returnIntentOptions = [
   { id: 'no', label: '다른 방향이 좋아요' },
 ] as const;
 
-const feedbackLabelClass = 'self-start text-left text-[14px] font-semibold text-[rgba(15,15,15,0.62)]';
+const feedbackLabelClass = 'self-start text-left text-[14px] font-semibold text-[var(--tb-color-text-subtle)]';
+const feedbackSectionLabelClass = 'text-[12px] font-semibold text-[var(--tb-color-text-muted)]';
+const feedbackBodyClass = 'text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]';
+const feedbackHintClass = 'text-[12px] font-medium text-[var(--tb-color-text-faint)]';
 
 function MetaPill({
   children,
@@ -42,8 +45,8 @@ function MetaPill({
       className={cn(
         'inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-medium',
         tone === 'default'
-          ? 'bg-white text-[rgba(15,15,15,0.72)]'
-          : 'bg-[rgba(255,255,255,0.58)] text-[rgba(15,15,15,0.56)]',
+          ? 'bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-subtle)]'
+          : 'bg-[var(--tb-color-surface-overlay)] text-[var(--tb-color-text-muted)]',
       )}
     >
       {children}
@@ -70,8 +73,8 @@ function RatingSelector({
             className={cn(
               'flex size-[28px] items-center justify-center rounded-full border text-[11px] font-semibold transition-colors',
               isActive
-                ? 'border-[#0F0F0F] bg-[#0F0F0F] text-white'
-                : 'border-[rgba(15,15,15,0.12)] bg-white text-[rgba(15,15,15,0.45)]',
+                ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
+                : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-faint)]',
             )}
           >
             {score}
@@ -101,10 +104,10 @@ function ChoiceSelector({
             type="button"
             onClick={() => onSelect(choice.id)}
             className={cn(
-              'rounded-[16px] border px-3 py-3 text-left transition-colors',
+              'rounded-[var(--tb-radius-14)] border px-3 py-3 text-left transition-colors',
               isActive
-                ? 'border-[#0F0F0F] bg-white'
-                : 'border-[rgba(15,15,15,0.08)] bg-[rgba(255,255,255,0.58)]',
+                ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-surface-base)]'
+                : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-overlay)]',
             )}
           >
             <div className="flex items-start gap-3">
@@ -112,13 +115,13 @@ function ChoiceSelector({
                 className={cn(
                   'mt-[2px] size-[14px] rounded-full border transition-colors',
                   isActive
-                    ? 'border-[#0F0F0F] bg-[#0F0F0F]'
-                    : 'border-[rgba(15,15,15,0.18)] bg-transparent',
+                    ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)]'
+                    : 'border-[var(--tb-color-border-disabled)] bg-transparent',
                 )}
               />
               <div className="flex flex-col gap-1">
-                <span className="text-[13px] font-semibold text-[#0F0F0F]">{choice.label}</span>
-                <span className="text-[11px] leading-relaxed text-[rgba(15,15,15,0.52)]">
+                <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">{choice.label}</span>
+                <span className="text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">
                   {choice.reason}
                 </span>
               </div>
@@ -205,22 +208,22 @@ export function DiningFeedbackScreen({
       <TopAppBar title="식후 피드백" showBack onBack={onBack} />
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="flex flex-col gap-6 px-5 pt-6 pb-[160px]">
-          <SectionCard hoverEffect={false} className="bg-[#F7F7F7]">
+          <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-2">
                 <span className={feedbackLabelClass}>
                   {scenario.courseName}
                 </span>
                 <div>
-                  <h1 className="text-[24px] font-bold leading-tight tracking-tight text-[#0F0F0F]">
+                  <h1 className="text-[24px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
                     이번 다이닝이<br />어떻게 느껴졌는지 알려주세요
                   </h1>
-                  <p className="mt-2 text-[13px] leading-relaxed text-[rgba(15,15,15,0.6)]">
+                  <p className={`mt-2 ${feedbackBodyClass}`}>
                     {scenario.postDiningPrompt}
                   </p>
                 </div>
               </div>
-              <div className="flex size-[48px] shrink-0 items-center justify-center rounded-[16px] bg-white text-[#0F0F0F]">
+              <div className="flex size-[48px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
                 <MessageSquareText size={22} />
               </div>
             </div>
@@ -230,20 +233,20 @@ export function DiningFeedbackScreen({
             <SectionTitle className="mb-3">전체 경험</SectionTitle>
             <SectionCard hoverEffect={false}>
               <div className="w-full">
-                <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.55)]">전체 만족도</p>
+                <p className={feedbackSectionLabelClass}>전체 만족도</p>
                 <div className="mt-3 flex items-center justify-between gap-4">
                   <RatingSelector
                     value={draft.overallRating}
                     onChange={(overallRating) => onChange({ ...draft, overallRating })}
                   />
-                  <span className="text-[12px] font-medium text-[rgba(15,15,15,0.45)]">
+                  <span className={feedbackHintClass}>
                     1 아쉬움 · 5 만족
                   </span>
                 </div>
               </div>
 
               <div className="w-full">
-                <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.55)]">다시 먹고 싶은가요?</p>
+                <p className={feedbackSectionLabelClass}>다시 먹고 싶은가요?</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {returnIntentOptions.map((option) => (
                     <button
@@ -258,8 +261,8 @@ export function DiningFeedbackScreen({
                       className={cn(
                         'rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors',
                         draft.returnIntent === option.id
-                          ? 'border-[#0F0F0F] bg-[#0F0F0F] text-white'
-                          : 'border-[rgba(15,15,15,0.08)] bg-white text-[rgba(15,15,15,0.58)]',
+                          ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
+                          : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-subtle)]',
                       )}
                     >
                       {option.label}
@@ -269,7 +272,7 @@ export function DiningFeedbackScreen({
               </div>
 
               <div className="w-full">
-                <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.55)]">한 줄 메모</p>
+                <p className={feedbackSectionLabelClass}>한 줄 메모</p>
                 <textarea
                   value={draft.overallComment}
                   onChange={(event) =>
@@ -278,7 +281,7 @@ export function DiningFeedbackScreen({
                       overallComment: event.target.value,
                     })
                   }
-                  className="mt-3 min-h-[100px] w-full resize-none rounded-[16px] border border-[rgba(15,15,15,0.08)] bg-white px-4 py-3 text-[13px] text-[#0F0F0F] outline-none placeholder:text-[rgba(15,15,15,0.35)]"
+                  className="mt-3 min-h-[100px] w-full resize-none rounded-[var(--tb-radius-14)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-4 py-3 text-[13px] text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
                   placeholder="예: 메인 이후의 무게감이 조금 빠르게 쌓였고, 디저트는 당도가 먼저 느껴졌어요."
                 />
               </div>
@@ -292,18 +295,18 @@ export function DiningFeedbackScreen({
                 const response = draft.dishResponses[dish.id];
 
                 return (
-                  <SectionCard key={dish.id} hoverEffect={false} className="bg-[#F7F7F7]">
+                  <SectionCard key={dish.id} hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex flex-col gap-2">
                         <span className={feedbackLabelClass}>{dish.courseLabel}</span>
                         <div>
-                          <h2 className="text-[18px] font-bold text-[#0F0F0F]">{dish.title}</h2>
-                          <p className="mt-1 text-[12px] text-[rgba(15,15,15,0.48)]">{dish.subtitle}</p>
+                          <h2 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">{dish.title}</h2>
+                          <p className="mt-1 text-[12px] text-[var(--tb-color-text-muted)]">{dish.subtitle}</p>
                         </div>
                       </div>
                     </div>
 
-                    <p className="w-full rounded-[16px] bg-white px-4 py-3 text-[12px] leading-relaxed text-[rgba(15,15,15,0.62)]">
+                    <p className="w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-base)] px-4 py-3 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                       {dish.chefIntent}
                     </p>
 
@@ -330,7 +333,7 @@ export function DiningFeedbackScreen({
                     </div>
 
                     <div className="w-full">
-                      <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.55)]">코스 만족도</p>
+                      <p className={feedbackSectionLabelClass}>코스 만족도</p>
                       <div className="mt-3">
                         <RatingSelector
                           value={response.rating}
@@ -340,7 +343,7 @@ export function DiningFeedbackScreen({
                     </div>
 
                     <div className="w-full">
-                      <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.55)]">가장 가까운 인상</p>
+                      <p className={feedbackSectionLabelClass}>가장 가까운 인상</p>
                       <div className="mt-3">
                         <ChoiceSelector
                           choices={dish.feedbackChoices}
@@ -388,10 +391,10 @@ export function DiningAiAnalysisScreen({
       <TopAppBar title="AI 해석 결과" showBack onBack={onBack} />
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="flex flex-col gap-6 px-5 pt-6 pb-[160px]">
-          <SectionCard hoverEffect={false} className="bg-[#0F0F0F] text-white">
+          <SectionCard hoverEffect={false} className="bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-2">
-                <OutlineBadge>{summary.profileBadge}</OutlineBadge>
+                <OutlineBadge className="border-white/20 text-white">{summary.profileBadge}</OutlineBadge>
                 <div>
                   <h1 className="text-[24px] font-bold leading-tight tracking-tight">
                     AI가 이번 코스를<br />이렇게 읽었어요
@@ -401,11 +404,11 @@ export function DiningAiAnalysisScreen({
                   </p>
                 </div>
               </div>
-              <div className="flex size-[48px] shrink-0 items-center justify-center rounded-[16px] bg-white/10 text-white">
+              <div className="flex size-[48px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-white/10 text-white">
                 <Sparkles size={22} />
               </div>
             </div>
-            <p className="w-full rounded-[18px] bg-white/8 px-4 py-4 text-[13px] leading-relaxed text-white/80">
+            <p className="w-full rounded-[var(--tb-radius-20)] bg-white/8 px-4 py-4 text-[13px] leading-relaxed text-white/80">
               {summary.summary}
             </p>
           </SectionCard>
@@ -413,12 +416,12 @@ export function DiningAiAnalysisScreen({
           <div className="grid grid-cols-1 gap-3">
             <SectionCard hoverEffect={false}>
               <div className="flex items-start gap-3">
-                <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[14px] bg-[#FFF5E5] text-[#FF9900]">
+                <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-taste-sweet-bg)] text-[var(--tb-taste-sweet-main)]">
                   <Sparkles size={18} />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">프로필 충돌 지점</p>
-                  <p className="text-[14px] font-semibold text-[#0F0F0F]">
+                  <p className={feedbackHintClass}>프로필 충돌 지점</p>
+                  <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                     {summary.strongestTaste.label} 민감도가 높아 {summary.mostFrictionDish.title}에서 선택한
                     인상이 더 크게 증폭됐어요.
                   </p>
@@ -428,15 +431,15 @@ export function DiningAiAnalysisScreen({
 
             <SectionCard hoverEffect={false}>
               <div className="flex items-start gap-3">
-                <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[14px] bg-[#EEF4FF] text-[#7299FF]">
+                <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-taste-salty-bg)] text-[var(--tb-taste-salty-main)]">
                   <ChefHat size={18} />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">재료 궁합 해석</p>
-                  <p className="text-[14px] font-semibold text-[#0F0F0F]">
+                  <p className={feedbackHintClass}>재료 궁합 해석</p>
+                  <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                     {summary.mostFrictionChoice.reason}
                   </p>
-                  <p className="text-[12px] leading-relaxed text-[rgba(15,15,15,0.58)]">
+                  <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                     {summary.mostFrictionChoice.ingredientPairing}
                   </p>
                 </div>
@@ -445,15 +448,15 @@ export function DiningAiAnalysisScreen({
 
             <SectionCard hoverEffect={false}>
               <div className="flex items-start gap-3">
-                <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[14px] bg-[#F0E3F0] text-[#B372B4]">
+                <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-taste-umami-bg)] text-[var(--tb-taste-umami-main)]">
                   <MessageSquareText size={18} />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">다음 보정 제안</p>
-                  <p className="text-[14px] font-semibold text-[#0F0F0F]">
+                  <p className={feedbackHintClass}>다음 보정 제안</p>
+                  <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                     {summary.mostFrictionChoice.recommendation}
                   </p>
-                  <p className="text-[12px] leading-relaxed text-[rgba(15,15,15,0.58)]">
+                  <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                     약한 축인 {summary.weakestTaste.label}은 더 명확하게, 강한 축인 {summary.strongestTaste.label}
                     은 겹치지 않게 분리하는 방향이 유효합니다.
                   </p>
@@ -475,11 +478,11 @@ export function DiningAiAnalysisScreen({
                       <div className="flex flex-col gap-2">
                         <OutlineBadge>{dish.courseLabel}</OutlineBadge>
                         <div>
-                          <h2 className="text-[18px] font-bold text-[#0F0F0F]">{dish.title}</h2>
-                          <p className="mt-1 text-[12px] text-[rgba(15,15,15,0.48)]">{dish.subtitle}</p>
+                          <h2 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">{dish.title}</h2>
+                          <p className="mt-1 text-[12px] text-[var(--tb-color-text-muted)]">{dish.subtitle}</p>
                         </div>
                       </div>
-                      <div className="rounded-full bg-[#F5F5F5] px-3 py-2 text-[12px] font-semibold text-[#0F0F0F]">
+                      <div className="rounded-full bg-[var(--tb-color-surface-muted)] px-3 py-2 text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
                         만족도 {response.rating}/5
                       </div>
                     </div>
@@ -490,22 +493,22 @@ export function DiningAiAnalysisScreen({
                       ))}
                     </div>
 
-                    <div className="rounded-[18px] bg-[#F7F7F7] px-4 py-4">
-                      <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">당신이 남긴 인상</p>
-                      <p className="mt-2 text-[14px] font-semibold text-[#0F0F0F]">{selectedChoice.label}</p>
+                    <div className="rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 py-4">
+                      <p className={feedbackHintClass}>당신이 남긴 인상</p>
+                      <p className="mt-2 text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{selectedChoice.label}</p>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3">
-                      <div className="rounded-[18px] bg-[#FFFDF8] px-4 py-4">
-                        <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">왜 그렇게 느껴졌는지</p>
-                        <p className="mt-2 text-[13px] leading-relaxed text-[#0F0F0F]">{selectedChoice.reason}</p>
+                      <div className="rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-base)] px-4 py-4">
+                        <p className={feedbackHintClass}>왜 그렇게 느껴졌는지</p>
+                        <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">{selectedChoice.reason}</p>
                       </div>
-                      <div className="rounded-[18px] bg-[#F7FAFF] px-4 py-4">
-                        <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">레시피 조정 제안</p>
-                        <p className="mt-2 text-[13px] leading-relaxed text-[#0F0F0F]">
+                      <div className="rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-base)] px-4 py-4">
+                        <p className={feedbackHintClass}>레시피 조정 제안</p>
+                        <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
                           {selectedChoice.recommendation}
                         </p>
-                        <p className="mt-2 text-[12px] leading-relaxed text-[rgba(15,15,15,0.58)]">
+                        <p className="mt-2 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                           재료 궁합 힌트: {selectedChoice.ingredientPairing}
                         </p>
                       </div>
@@ -516,14 +519,14 @@ export function DiningAiAnalysisScreen({
             </div>
           </div>
 
-          <SectionCard hoverEffect={false} className="bg-[#F7F7F7]">
+          <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start gap-3">
-              <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[14px] bg-white text-[#0F0F0F]">
+              <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
                 <ChefHat size={18} />
               </div>
               <div className="flex flex-col gap-1">
-                <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">셰프에게 전달될 한 줄 요약</p>
-                <p className="text-[14px] font-semibold leading-relaxed text-[#0F0F0F]">
+                <p className={feedbackHintClass}>셰프에게 전달될 한 줄 요약</p>
+                <p className="text-[14px] font-semibold leading-relaxed text-[var(--tb-color-text-primary)]">
                   코스 후반은 무게감을 조금 덜어내고, 발효 감칠맛은 더 길게, 디저트는 산미를 보강하는 방향이 가장 잘 맞습니다.
                 </p>
               </div>

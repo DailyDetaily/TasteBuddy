@@ -18,6 +18,7 @@ import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
 import OutlineBadge from '../components/system/OutlineBadge';
 import SectionTitle from '../components/system/SectionTitle';
+import { DATA_VIZ_TOKENS } from '../constants/designTokens';
 import { TASTE_COLORS, TASTE_TYPES, getTasteColor } from '../constants/tasteColors';
 import {
   formatMeasurementDate,
@@ -41,6 +42,9 @@ const weeklyTrend = [
   { week: '3주차', 단맛: 97, 신맛: 82, 짠맛: 62, 지방맛: 47, 쓴맛: 28, 감칠맛: 22 },
   { week: '4주차', 단맛: 94, 신맛: 86, 짠맛: 67, 지방맛: 54, 쓴맛: 30, 감칠맛: 15 },
 ];
+
+const RADAR_CHART = DATA_VIZ_TOKENS.radar;
+const TREND_CHART = DATA_VIZ_TOKENS.trend;
 
 function buildInsights(
   myTasteData: TasteMeasurementEntry[],
@@ -131,14 +135,19 @@ function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }
   ];
 
   return (
-    <svg width="320" height="310" viewBox="0 0 320 310" className="w-full max-w-[320px] mx-auto">
+    <svg
+      width={RADAR_CHART.size}
+      height="310"
+      viewBox={`0 0 ${RADAR_CHART.size} 310`}
+      className="mx-auto w-full max-w-[320px]"
+    >
       {/* 배경 6각형 그리드 */}
       {gridLevels.map((level, idx) => (
         <polygon
           key={idx}
           points={hexPolygon(cx, cy, maxR * level)}
           fill="none"
-          stroke="#e8e8e8"
+          stroke={RADAR_CHART.gridColor}
           strokeWidth="1"
         />
       ))}
@@ -151,7 +160,7 @@ function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }
           y1={a.point[1]}
           x2={b.point[0]}
           y2={b.point[1]}
-          stroke="#e8e8e8"
+          stroke={RADAR_CHART.gridColor}
           strokeWidth="1"
         />
       ))}
@@ -159,18 +168,16 @@ function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }
       {/* 평균 민감도 헥사곤 */}
       <polygon
         points={avgPolygon}
-        fill="#f0f0f0"
-        fillOpacity="0.6"
-        stroke="#d0d0d0"
+        fill={RADAR_CHART.averageFill}
+        stroke={RADAR_CHART.averageStroke}
         strokeWidth="1.5"
       />
 
       {/* 나의 민감도 헥사곤 */}
       <polygon
         points={myPolygon}
-        fill="#FF9900"
-        fillOpacity="0.12"
-        stroke="#FF9900"
+        fill={RADAR_CHART.highlightFill}
+        stroke={RADAR_CHART.highlightStroke}
         strokeWidth="2"
       />
 
@@ -203,8 +210,8 @@ function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }
           key={`my-${i}`}
           cx={x}
           cy={y}
-          r="3"
-          fill="#FF9900"
+          r={RADAR_CHART.nodeSize}
+          fill={RADAR_CHART.highlightStroke}
         />
       ))}
 
@@ -214,7 +221,7 @@ function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }
           key={`dot-${i}`}
           cx={v.dotPoint[0]}
           cy={v.dotPoint[1]}
-          r="8"
+          r={RADAR_CHART.outerDotSize}
           fill={v.color}
         />
       ))}
@@ -232,7 +239,7 @@ function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }
             y={v.dotPoint[1] + yOffset}
             textAnchor="middle"
             className="text-[9px] font-medium"
-            fill="#888"
+            fill={RADAR_CHART.labelColor}
           >
             {v.label}
           </text>
@@ -269,7 +276,7 @@ export default function AnalysisPage({
         <div className="flex flex-col gap-8 p-5 animate-fadeIn">
           {/* 페이지 타이틀 */}
           <div>
-            <h1 className="font-bold text-[24px] text-[#0f0f0f] tracking-[-0.24px]">미각 프로필</h1>
+            <h1 className="text-[24px] font-bold tracking-[-0.24px] text-[var(--tb-color-text-primary)]">미각 프로필</h1>
             <OutlineBadge className="mt-2">{tasteProfileBadge}</OutlineBadge>
           </div>
 
@@ -277,14 +284,14 @@ export default function AnalysisPage({
           <SectionCard>
             <div className="flex items-start justify-between w-full">
               <div className="flex flex-col gap-1">
-                <p className="font-bold text-[16px] text-[#0f0f0f]">슈퍼 테이스터</p>
-                <p className="text-[13px] text-[rgba(15,15,15,0.6)] leading-relaxed">
+                <p className="text-[16px] font-bold text-[var(--tb-color-text-primary)]">슈퍼 테이스터</p>
+                <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                   신준호님의 평균 미각 민감도는 {formatMeasurementValue(totalSensitivity)}로<br />
                   평균보다 {Math.round(((totalSensitivity - avgSensitivity) / avgSensitivity) * 100)}% 높습니다.<br />
                   {strongestTaste.label}에 가장 민감하며 {weakestTaste.label}에 가장 둔감합니다.
                 </p>
               </div>
-              <button className="text-[#AFAFAF] hover:text-[#0f0f0f] transition-colors size-[18px] flex items-center justify-center shrink-0">
+              <button className="flex size-[18px] shrink-0 items-center justify-center text-[var(--tb-color-icon-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]">
                 <Info size={18} />
               </button>
             </div>
@@ -305,12 +312,12 @@ export default function AnalysisPage({
 
           {/* 기간 선택 */}
           <div className="flex items-center justify-between">
-            <button className="p-1 rounded-full hover:bg-[#f3f3f3] transition-colors">
-              <ChevronLeft size={20} className="text-[#3F3F3F]" />
+            <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-card)]">
+              <ChevronLeft size={20} className="text-[var(--tb-color-icon-primary)]" />
             </button>
-            <span className="font-semibold text-[15px] text-[#0f0f0f]">{period}</span>
-            <button className="p-1 rounded-full hover:bg-[#f3f3f3] transition-colors">
-              <ChevronRight size={20} className="text-[#3F3F3F]" />
+            <span className="text-[15px] font-semibold text-[var(--tb-color-text-primary)]">{period}</span>
+            <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-card)]">
+              <ChevronRight size={20} className="text-[var(--tb-color-icon-primary)]" />
             </button>
           </div>
 
@@ -321,15 +328,15 @@ export default function AnalysisPage({
             {/* 범례 */}
             <div className="flex items-end gap-0 mt-2">
               <div className="flex flex-col items-center gap-[4px]">
-                <span className="text-[10px] text-[#999]">나의 민감도</span>
-                <span className="bg-[#0f0f0f] text-white text-[12px] font-bold px-[10px] py-[3px] rounded-[6px]">
+                <span className="text-[10px] text-[var(--tb-color-text-hint)]">나의 민감도</span>
+                <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
                   {formatMeasurementValue(totalSensitivity, '')}
                 </span>
               </div>
-              <span className="w-[24px] h-[24px] flex items-center justify-center bg-[#B2B2B2] text-white text-[10px] rounded-[6px] mx-[2px]">→</span>
+              <span className="mx-[2px] flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-[var(--tb-color-text-disabled)] text-[10px] text-[var(--tb-color-text-inverse)]">→</span>
               <div className="flex flex-col items-center gap-[4px]">
-                <span className="text-[10px] text-[#999]">평균 민감도</span>
-                <span className="bg-[#0f0f0f] text-white text-[12px] font-bold px-[10px] py-[3px] rounded-[6px]">
+                <span className="text-[10px] text-[var(--tb-color-text-hint)]">평균 민감도</span>
+                <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
                   {formatMeasurementValue(avgSensitivity, '')}
                 </span>
               </div>
@@ -388,7 +395,7 @@ export default function AnalysisPage({
                   <LineChart data={weeklyTrend} margin={{ top: 10, bottom: 10 }}>
                     <XAxis
                       dataKey="week"
-                      tick={{ fontSize: 11, fill: '#999' }}
+                      tick={{ fontSize: 11, fill: 'var(--tb-color-text-hint)' }}
                       axisLine={false}
                       tickLine={false}
                       interval={0}
@@ -399,7 +406,7 @@ export default function AnalysisPage({
                       contentStyle={{
                         borderRadius: '12px',
                         border: 'none',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                        boxShadow: 'var(--tb-shadow-soft)',
                         fontSize: '12px',
                       }}
                     />
@@ -423,9 +430,9 @@ export default function AnalysisPage({
                           type="monotone"
                           dataKey={taste}
                           stroke={getTasteColor(taste)}
-                          strokeWidth={1}
-                          dot={{ r: 4, fill: getTasteColor(taste), strokeWidth: 0 }}
-                          activeDot={{ r: 5, fill: getTasteColor(taste), strokeWidth: 0 }}
+                          strokeWidth={TREND_CHART.lineStrokeWidth}
+                          dot={{ r: TREND_CHART.dotSize, fill: getTasteColor(taste), strokeWidth: 0 }}
+                          activeDot={{ r: TREND_CHART.activeDotSize, fill: getTasteColor(taste), strokeWidth: 0 }}
                         />
                       </React.Fragment>
                     ))}
@@ -436,9 +443,9 @@ export default function AnalysisPage({
             </div>
 
             {/* 모든 정보 보기 버튼 */}
-            <div className="w-full bg-[#f3f3f3] rounded-full p-[12px] flex justify-between items-center cursor-pointer hover:bg-[#ececec] transition-colors">
-              <span className="font-bold text-[14px] text-[#0f0f0f]">모든 정보 보기</span>
-              <ChevronRight size={16} className="text-[#3F3F3F]" />
+            <div className="flex w-full cursor-pointer items-center justify-between rounded-full bg-[var(--tb-color-surface-card)] p-[12px] transition-colors hover:bg-[var(--tb-color-surface-card-hover)]">
+              <span className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">모든 정보 보기</span>
+              <ChevronRight size={16} className="text-[var(--tb-color-icon-primary)]" />
             </div>
           </div>
 
@@ -453,7 +460,7 @@ export default function AnalysisPage({
                       className="shrink-0 w-[8px] h-[36px] rounded-full"
                       style={{ backgroundColor: getTasteColor(item.taste) }}
                     />
-                    <p className="text-[13px] text-[#0f0f0f] leading-relaxed">{item.text}</p>
+                    <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">{item.text}</p>
                   </div>
                 </SectionCard>
               ))}
