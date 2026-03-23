@@ -1,14 +1,14 @@
 :root {
   --tb-font-family-sans: "Pretendard", ui-sans-serif, system-ui, sans-serif;
 
-  --tb-color-bg-page: #ffffff;
+  --tb-color-bg-page: #f3f3f3;
 
   --tb-color-surface-base: #ffffff;
-  --tb-color-surface-card: #f3f3f3;
-  --tb-color-surface-card-hover: #ececec;
-  --tb-color-surface-muted: #f5f5f5;
-  --tb-color-surface-elevated: #f6f6f6;
-  --tb-color-surface-disabled: #f2f2f2;
+  --tb-color-surface-card: #ffffff;
+  --tb-color-surface-card-hover: #fafafa;
+  --tb-color-surface-muted: #f7f7f7;
+  --tb-color-surface-elevated: #fcfcfc;
+  --tb-color-surface-disabled: #efefef;
   --tb-color-surface-overlay: rgba(255, 255, 255, 0.8);
 
   --tb-color-text-primary: #0f0f0f;
@@ -33,6 +33,11 @@
   --tb-color-icon-primary: #3f3f3f;
   --tb-color-icon-hover: #6f6f6f;
   --tb-color-icon-muted: #afafaf;
+
+  --tb-color-success: #2f8f5b;
+  --tb-color-success-soft: #e6f4ec;
+  --tb-color-warning: #a8661a;
+  --tb-color-warning-soft: #fff1de;
 
   --tb-shadow-hover: 0 1px 3px rgba(15, 15, 15, 0.06);
   --tb-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -96,7 +101,7 @@
   --tb-taste-sweet-main: #ff9900;
   --tb-taste-sweet-dark: #cc7a00;
   --tb-taste-sweet-light: #ffcc80;
-  --tb-taste-sweet-bg: #ffebcc;
+  --tb-taste-sweet-bg: #ffd699;
   --tb-taste-sweet-gradient: linear-gradient(135deg, #ff9900, #ffb84d);
   --tb-taste-sweet-accent: #ff9500;
   --tb-taste-sweet-ring-base: #ffebcc;
@@ -105,7 +110,7 @@
   --tb-taste-sour-main: #fbc02d;
   --tb-taste-sour-dark: #c99a00;
   --tb-taste-sour-light: #fdd835;
-  --tb-taste-sour-bg: #fff7cc;
+  --tb-taste-sour-bg: #ffef99;
   --tb-taste-sour-gradient: linear-gradient(135deg, #fbc02d, #ffd54f);
   --tb-taste-sour-accent: #ffd600;
   --tb-taste-sour-ring-base: #fff7cc;
@@ -114,7 +119,7 @@
   --tb-taste-bitter-main: #95c900;
   --tb-taste-bitter-dark: #6e9600;
   --tb-taste-bitter-light: #e6ee9c;
-  --tb-taste-bitter-bg: #eaf4cc;
+  --tb-taste-bitter-bg: #e0ebb4;
   --tb-taste-bitter-gradient: linear-gradient(135deg, #95c900, #aed581);
   --tb-taste-bitter-accent: #8cc600;
   --tb-taste-bitter-ring-base: #eaf4cc;
@@ -123,7 +128,7 @@
   --tb-taste-salty-main: #7299ff;
   --tb-taste-salty-dark: #4a70cc;
   --tb-taste-salty-light: #90caf9;
-  --tb-taste-salty-bg: #e6f0ff;
+  --tb-taste-salty-bg: #c6d6ff;
   --tb-taste-salty-gradient: linear-gradient(135deg, #7299ff, #9fbfff);
   --tb-taste-salty-accent: #5898ff;
   --tb-taste-salty-ring-base: #e3ebff;
@@ -132,7 +137,7 @@
   --tb-taste-umami-main: #b372b4;
   --tb-taste-umami-dark: #8a5490;
   --tb-taste-umami-light: #ce93d8;
-  --tb-taste-umami-bg: #f0e3f0;
+  --tb-taste-umami-bg: #e1c7e1;
   --tb-taste-umami-gradient: linear-gradient(135deg, #b372b4, #ce93d8);
   --tb-taste-umami-accent: #af52de;
   --tb-taste-umami-ring-base: #f0e3f0;
@@ -141,7 +146,7 @@
   --tb-taste-fat-main: #95867a;
   --tb-taste-fat-dark: #6b5e54;
   --tb-taste-fat-light: #bcaaa4;
-  --tb-taste-fat-bg: #eae7e4;
+  --tb-taste-fat-bg: #d5cfca;
   --tb-taste-fat-gradient: linear-gradient(135deg, #95867a, #b0a49a);
   --tb-taste-fat-accent: #8e8279;
   --tb-taste-fat-ring-base: #eae7e4;
@@ -198,7 +203,7 @@
   --tb-layout-section-gap: 32px;
   --tb-layout-card-padding: 12px;
   --tb-size-top-app-bar-height: 56px;
-  --tb-size-primary-button-height: 52px;
+  --tb-size-primary-button-height: 48px;
   --tb-size-bottom-fade-min-height: 140px;
   --tb-size-bottom-indicator-width: 134px;
 
@@ -301,18 +306,22 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--tb-radius-full);
-    padding: 3px var(--tb-space-8);
-    font-size: var(--tb-font-size-10);
+    position: relative;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 10px;
     font-weight: var(--tb-font-weight-bold);
-    line-height: 1;
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   .tb-bottom-fade {
     background: linear-gradient(
       to top,
-      var(--tb-color-surface-base) 0%,
-      var(--tb-color-surface-base) 55%,
+      var(--tb-color-bg-page) 0%,
+      var(--tb-color-bg-page) 55%,
       transparent 100%
     );
   }

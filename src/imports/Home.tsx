@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import svgPaths from "./svg-h9nsrm0gkv";
 // import imgImage from "figma:asset/0681bae57cc99eb9acba0a48c532d82e73863896.png";
 // import imgImage1 from "figma:asset/c778d4444bb95d0a798d28fe5acdfe85cf6ffc14.png";
@@ -10,7 +10,9 @@ import chefHyunseokChoi from "../assets/HyunseokChoi.png";
 import chefSonJongwon from "../assets/SonJongwon.png";
 import chefLeeJun from "../assets/LeeJun.png";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
+import TasteChip from "../components/system/TasteChip";
 import TopAppBar from "../components/TopAppBar";
+import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, mixHexColors } from "../constants/tasteColors";
 import {  
   StarRegular, StarHalfRegular, ClockRegular, 
   ChevronDownRegular, ChevronRightRegular, ChevronUpRegular 
@@ -28,6 +30,122 @@ const Clock = wrapIcon(ClockRegular);
 const ChevronDown = wrapIcon(ChevronDownRegular);
 const ChevronRight = wrapIcon(ChevronRightRegular);
 const ChevronUp = wrapIcon(ChevronUpRegular);
+
+const HOME_TASTE_PROFILE_ADJUSTMENTS = [
+  { taste: "단맛", change: "+15.2%" },
+  { taste: "감칠맛", change: "-10.7%" },
+] as const;
+const HOME_TASTE_PROFILE_CIRCLE_GRADIENT = buildTasteAdjustmentGradient(
+  HOME_TASTE_PROFILE_ADJUSTMENTS,
+  { direction: "to bottom", useTint: false },
+);
+const HOME_SPECIAL_NOTE_CARD = {
+  confidenceLabel: "반복 관찰 4회",
+  confidenceNote: "최근 식사와 피드백에서 비슷한 세부 반응이 이어졌어요.",
+  details: [
+    {
+      cue: "표고, 다시, 숙성 발효 베이스에서 반응이 더 크게 나타나요.",
+      detailLabel: "구아닐산",
+      detailTypeLabel: "감칠맛 유형",
+      history: ["+0.4%", "+0.8%", "+1.1%", "+1.5%", "+1.9%", "+3.4%", "+2.7%", "+4.5%"],
+      parentTaste: "감칠맛",
+      change: "+5.2%",
+      trend: "increase",
+    },
+    {
+      cue: "무거운 지방감보다 가볍고 정돈된 마무리가 더 편안해요.",
+      detailLabel: "글루탐산",
+      detailTypeLabel: "지방 유형",
+      history: ["-0.6%", "-1.2%", "-1.8%", "-2.4%", "-3.2%", "-6.4%", "-5.3%", "-10.8%"],
+      parentTaste: "지방맛",
+      change: "-14.3%",
+      trend: "decrease",
+    },
+  ],
+  guidance: [
+    "발효 베이스는 낮게 시작하고, 깊이는 후반에 단계적으로 올려요.",
+    "풍미의 무게는 유지하되 농축된 발효감은 먼저 강하게 밀지 않아요.",
+  ],
+  keywords: ["발효 베이스", "숙성 풍미", "농축 감칠맛"],
+  periodLabel: "6.10-16일",
+  serviceHint:
+    "이 신호는 셰프의 의도를 바꾸기보다, 같은 의도가 더 편안하게 전달되도록 돕는 가이드로 쓰여요.",
+  summary:
+    "감칠맛과 지방감 전체가 아니라, 발효 풍미를 만드는 세부 요소에서 반응 차이가 보였어요. 다음 예약 personalisation에는 이 세부 신호가 함께 전달됩니다.",
+  title: "발효 풍미에 예민한 편",
+  translationStatusLabel: "다음 예약 반영 중",
+} as const;
+const HOME_SPECIAL_NOTE_CIRCLE_GRADIENT = buildTasteAdjustmentGradient(
+  HOME_SPECIAL_NOTE_CARD.details.map((detail) => ({
+    taste: detail.parentTaste,
+    change: detail.change,
+  })),
+  { direction: "to bottom", useTint: false },
+);
+
+function parseTasteChangeValue(change: number | string) {
+  if (typeof change === "number") {
+    return change;
+  }
+
+  const parsed = Number.parseFloat(change.replace("%", "").trim());
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getHomeSpecialNoteSummaryDetails() {
+  const detailsWithValue = HOME_SPECIAL_NOTE_CARD.details.map((detail) => ({
+    detail,
+    numericChange: parseTasteChangeValue(detail.change),
+  }));
+
+  const highestIncrease =
+    detailsWithValue
+      .filter((item) => item.numericChange > 0)
+      .sort((left, right) => right.numericChange - left.numericChange)[0] ??
+    [...detailsWithValue].sort((left, right) => right.numericChange - left.numericChange)[0];
+
+  const biggestDecrease =
+    detailsWithValue
+      .filter((item) => item.numericChange < 0)
+      .sort((left, right) => left.numericChange - right.numericChange)[0] ??
+    [...detailsWithValue].sort((left, right) => left.numericChange - right.numericChange)[0];
+
+  const summaryDetails: Array<(typeof HOME_SPECIAL_NOTE_CARD.details)[number]> = [];
+
+  if (highestIncrease?.detail) {
+    summaryDetails.push(highestIncrease.detail);
+  }
+
+  if (
+    biggestDecrease?.detail &&
+    biggestDecrease.detail.detailLabel !== highestIncrease?.detail?.detailLabel
+  ) {
+    summaryDetails.push(biggestDecrease.detail);
+  }
+
+  return summaryDetails;
+}
+
+const HOME_SPECIAL_NOTE_SUMMARY_DETAILS = getHomeSpecialNoteSummaryDetails();
+
+function buildSpecialNoteTrendPath(points: Array<{ x: number; y: number }>) {
+  if (points.length === 0) {
+    return "";
+  }
+
+  let path = `M ${points[0]?.x ?? 0} ${points[0]?.y ?? 0}`;
+
+  for (let index = 1; index < points.length; index += 1) {
+    const current = points[index];
+
+    if (!current) {
+      continue;
+    }
+    path += ` L ${current.x} ${current.y}`;
+  }
+
+  return path;
+}
 
 
 
@@ -502,42 +620,48 @@ const chefData = [
     restaurant: "레스토랑 베누",
     match: 75,
     image: chefHwangJeongin,
-    bgColor: "#ffebcc"
+    bgColor: "#ffebcc",
+    taste: "단맛",
   },
   {
     name: "이은지 셰프",
     restaurant: "숍 리제 (Lysée)",
     match: 72,
     image: chefLeeEunji,
-    bgColor: "#fff7cc"
+    bgColor: "#fff7cc",
+    taste: "신맛",
   },
   {
     name: "임정식 셰프",
     restaurant: "정식당",
     match: 70,
     image: chefLimJeongsik,
-    bgColor: "#eaf4cc"
+    bgColor: "#eaf4cc",
+    taste: "쓴맛",
   },
   {
     name: "최현석 셰프",
     restaurant: "레스토랑 CHOI",
     match: 68,
     image: chefHyunseokChoi,
-    bgColor: "#E6F0FF"
+    bgColor: "#E6F0FF",
+    taste: "짠맛",
   },
   {
     name: "손종원 셰프",
     restaurant: "이타닉가든",
     match: 65,
     image: chefSonJongwon,
-    bgColor: "#F0E3F0"
+    bgColor: "#F0E3F0",
+    taste: "감칠맛",
   },
   {
     name: "이준 셰프",
     restaurant: "스와니예",
     match: 62,
     image: chefLeeJun,
-    bgColor: "#EAE7E4"
+    bgColor: "#EAE7E4",
+    taste: "지방맛",
   }
 ];
 
@@ -545,7 +669,10 @@ function ChefCard({ chef }: { chef: typeof chefData[0] }) {
   return (
     <div
       className="box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 w-[132px] h-[132px]"
-      style={{ backgroundColor: chef.bgColor }}
+      style={{
+        backgroundColor: chef.bgColor,
+        border: `1px solid ${getTasteTint(chef.taste, 0.24)}`,
+      }}
     >
       <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full h-full">
         <div className="relative rounded-[8px] shrink-0 size-[48px] overflow-hidden bg-gray-200">
@@ -651,19 +778,11 @@ function Heading3() {
 
 function TasteCircle() {
   return (
-    <div className="relative shrink-0 size-[16px]" data-name="Taste Circle">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-        <g id="Taste Circle">
-          <circle cx="8" cy="8" fill="url(#paint0_linear_1_1996)" id="Ellipse 211" r="8" />
-        </g>
-        <defs>
-          <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1_1996" x1="8" x2="8" y1="0" y2="16">
-            <stop offset="0.2" stopColor="#FF9900" />
-            <stop offset="0.8" stopColor="#B372B4" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
+    <div
+      className="relative shrink-0 size-[16px] rounded-full"
+      data-name="Taste Circle"
+      style={{ background: HOME_TASTE_PROFILE_CIRCLE_GRADIENT }}
+    />
   );
 }
 
@@ -894,7 +1013,7 @@ function Content8() {
 
 function Cards3() {
   return (
-    <div className="bg-[#f3f3f3] h-auto relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+    <div className="bg-white h-auto relative rounded-[20px] shrink-0 w-full" data-name="Cards">
       <div className="overflow-clip rounded-[inherit] size-full">
         <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
           <Heading4 />
@@ -907,19 +1026,11 @@ function Cards3() {
 
 function TasteCircle1() {
   return (
-    <div className="relative shrink-0 size-[16px]" data-name="Taste Circle">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-        <g id="Taste Circle">
-          <circle cx="8" cy="8" fill="url(#paint0_linear_1_1973)" id="Ellipse 211" r="8" />
-        </g>
-        <defs>
-          <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_1_1973" x1="8" x2="8" y1="0" y2="16">
-            <stop offset="0.2" stopColor="#B372B4" />
-            <stop offset="0.8" stopColor="#95867A" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
+    <div
+      className="relative shrink-0 size-[16px] rounded-full"
+      data-name="Taste Circle"
+      style={{ background: HOME_SPECIAL_NOTE_CIRCLE_GRADIENT }}
+    />
   );
 }
 
@@ -935,7 +1046,7 @@ function Head1() {
 function Content9() {
   return (
     <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">6.10-16일</p>
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">{HOME_SPECIAL_NOTE_CARD.periodLabel}</p>
       <div className="flex items-center justify-center relative shrink-0">
         <div className="flex-none rotate-[180deg]">
           <div className="h-[8px] relative w-[4px]">
@@ -976,14 +1087,29 @@ function Heading5() {
   );
 }
 
-function ArrowBox2() {
+function SpecialNoteArrowBox({
+  parentTaste,
+  trend,
+}: {
+  parentTaste: string;
+  trend: "increase" | "decrease";
+}) {
+  const fillColor = getTasteColor(parentTaste);
+
   return (
     <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
-      <div className="absolute inset-0" style={{ "--fill-0": "rgba(179, 114, 180, 1)" } as React.CSSProperties}>
+      <div className="absolute inset-0" style={{ "--fill-0": fillColor } as React.CSSProperties}>
         <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
           <g id="Arrow Box">
             <rect fill="var(--fill-0, #B372B4)" height="18" rx="4" width="18" />
-            <path d={svgPaths.p3d191ac0} id="Vector 222" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+            <path
+              d={trend === "increase" ? svgPaths.p3d191ac0 : svgPaths.p1157b300}
+              id="Vector 222"
+              stroke="var(--stroke-0, white)"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            />
           </g>
         </svg>
       </div>
@@ -991,58 +1117,286 @@ function ArrowBox2() {
   );
 }
 
-function Info9() {
+function SpecialNoteMiniGraph() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [availableWidth, setAvailableWidth] = useState(128);
+  const graphEntries = HOME_SPECIAL_NOTE_SUMMARY_DETAILS.map((detail) => ({
+    ...detail,
+    graphValues: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
+  }));
+  const currentDotRadius = 6;
+  const historyDotRadius = 2;
+  const tintedLineWidth = 12;
+  const maxPointGap = 36;
+  const graphHeight = 24;
+  const graphInsetX = 6;
+  const lineStartWhiteMix = 0.6;
+
+  useEffect(() => {
+    const node = containerRef.current;
+
+    if (!node) {
+      return;
+    }
+
+    const updateWidth = (nextWidth: number) => {
+      setAvailableWidth((previousWidth) => {
+        const roundedWidth = Math.max(0, Math.round(nextWidth));
+        return previousWidth === roundedWidth ? previousWidth : roundedWidth;
+      });
+    };
+
+    updateWidth(node.clientWidth);
+
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) {
+        return;
+      }
+
+      updateWidth(entry.contentRect.width);
+    });
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-name="Info">
-      <ArrowBox2 />
-      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] text-[rgba(15,15,15,0.6)] text-nowrap whitespace-pre">구아닐산 증가</p>
-      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] text-nowrap whitespace-pre">+5.2%</p>
+    <div
+      aria-hidden="true"
+      ref={containerRef}
+      className="content-stretch flex w-full flex-col gap-[4px] shrink-0"
+      data-name="Special Note Graph"
+    >
+      {graphEntries.map((entry, index) => {
+        const fillColor = getTasteColor(entry.parentTaste);
+        const trackColor = getTasteTint(entry.parentTaste, 0.18);
+        const lineStartColor = mixHexColors(fillColor, '#FFFFFF', lineStartWhiteMix);
+        const maxVisiblePoints = Math.max(
+          2,
+          Math.floor(Math.max(availableWidth - graphInsetX * 2, 0) / maxPointGap) + 1,
+        );
+        const visibleValues = entry.graphValues.slice(-maxVisiblePoints);
+        const graphWidth =
+          graphInsetX * 2 + Math.max(visibleValues.length - 1, 0) * maxPointGap;
+        const values = visibleValues;
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        const xStep = maxPointGap;
+        const gradientId = `special-note-graph-gradient-${index}`;
+        const points = values.map((value, index) => {
+          const normalized =
+            maxValue === minValue ? 0.5 : (value - minValue) / (maxValue - minValue);
+
+          return {
+            x: Math.round(graphInsetX + xStep * index),
+            y: Math.round(18 - normalized * 10),
+          };
+        });
+        const graphPath = buildSpecialNoteTrendPath(points);
+        const currentPoint = points[points.length - 1] ?? { x: graphWidth - graphInsetX, y: graphHeight / 2 };
+
+        return (
+          <div key={entry.detailLabel} className="flex h-[24px] w-full items-center justify-end">
+            <div className="relative h-[24px]" style={{ width: `${graphWidth}px` }}>
+              <svg
+                className="absolute inset-0 size-full"
+                viewBox={`0 0 ${graphWidth} ${graphHeight}`}
+              >
+                <defs>
+                  <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="0" x2={graphWidth} y1="0" y2="0">
+                    <stop offset="0%" stopColor={lineStartColor} />
+                    <stop offset="100%" stopColor={fillColor} />
+                  </linearGradient>
+                </defs>
+                <path
+                  d={graphPath}
+                  fill="none"
+                  stroke={trackColor}
+                  strokeLinecap="round"
+                  strokeWidth={tintedLineWidth}
+                />
+                <path
+                  d={graphPath}
+                  fill="none"
+                  stroke={`url(#${gradientId})`}
+                  strokeLinecap="round"
+                  strokeWidth="2"
+                />
+              </svg>
+              {points.slice(0, -1).map((point, historyIndex) => {
+                const progress =
+                  graphWidth <= graphInsetX * 2
+                    ? 1
+                    : Math.min(
+                        1,
+                        Math.max(0, (point.x - graphInsetX) / (graphWidth - graphInsetX * 2)),
+                      );
+                const pointColor = mixHexColors(
+                  fillColor,
+                  '#FFFFFF',
+                  lineStartWhiteMix * (1 - progress),
+                );
+
+                return (
+                  <span
+                    key={`${entry.detailLabel}-history-${historyIndex}`}
+                    aria-hidden="true"
+                    className="absolute rounded-full"
+                    style={{
+                      backgroundColor: pointColor,
+                      height: `${historyDotRadius * 2}px`,
+                      left: `${point.x}px`,
+                      top: `${point.y}px`,
+                      transform: 'translate(-50%, -50%)',
+                      width: `${historyDotRadius * 2}px`,
+                    }}
+                  />
+                );
+              })}
+              <span
+                aria-hidden="true"
+                className="absolute rounded-full"
+                style={{
+                  backgroundColor: fillColor,
+                  height: `${currentDotRadius * 2}px`,
+                  left: `${currentPoint.x}px`,
+                  top: `${currentPoint.y}px`,
+                  transform: 'translate(-50%, -50%)',
+                  width: `${currentDotRadius * 2}px`,
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-function ArrowBox3() {
+function SpecialNoteInfo({
+  item,
+}: {
+  item: (typeof HOME_SPECIAL_NOTE_CARD.details)[number];
+}) {
+  const accentColor = getTasteColor(item.parentTaste);
+  const accentTint = getTasteTint(item.parentTaste, 0.12);
+
   return (
-    <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
-      <div className="absolute inset-0" style={{ "--fill-0": "rgba(149, 134, 122, 1)" } as React.CSSProperties}>
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
-          <g id="Arrow Box">
-            <rect fill="var(--fill-0, #95867A)" height="18" rx="4" width="18" />
-            <path d={svgPaths.p1157b300} id="Vector 222" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          </g>
-        </svg>
+    <div
+      className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full rounded-[12px] bg-[#f7f7f7] px-[10px] py-[10px]"
+      data-name="Info"
+    >
+      <SpecialNoteArrowBox parentTaste={item.parentTaste} trend={item.trend} />
+      <div className="basis-0 content-stretch flex grow min-h-px min-w-px relative shrink-0">
+        <div className="content-stretch flex flex-col gap-[4px] items-start relative w-full">
+          <div className="flex flex-wrap items-center gap-[6px]">
+            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] text-[rgba(15,15,15,0.75)]">
+              {item.detailLabel} {item.trend === "increase" ? "증가" : "감소"}
+            </p>
+            <span
+              className="inline-flex items-center rounded-full px-[6px] py-[2px] text-[10px] font-semibold"
+              style={{ backgroundColor: accentTint, color: accentColor }}
+            >
+              {item.detailTypeLabel}
+            </span>
+            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.55)]">
+              {item.change}
+            </p>
+          </div>
+          <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.4] relative text-[11px] text-[rgba(15,15,15,0.6)]">
+            {item.cue}
+          </p>
+          <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[normal] relative text-[10px]" style={{ color: accentColor }}>
+            {item.parentTaste} 팔레트로 셰프 전달 포인트에 반영
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
-function Frame1() {
+function SpecialNoteGuidanceList() {
   return (
-    <div className="basis-0 content-stretch flex font-['Pretendard_Variable:Regular',sans-serif] font-normal gap-[2px] grow items-center leading-[0] min-h-px min-w-px relative shrink-0 text-[rgba(15,15,15,0.6)] text-nowrap">
-      <div className="flex flex-col justify-center relative shrink-0 text-[12px]">
-        <p className="leading-[normal] text-nowrap whitespace-pre">글루탐산 감소</p>
-      </div>
-      <div className="flex flex-col justify-center relative shrink-0 text-[10px]">
-        <p className="leading-[normal] text-nowrap whitespace-pre">-14.3%</p>
-      </div>
+    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
+      {HOME_SPECIAL_NOTE_CARD.guidance.map((guidance) => (
+        <div
+          key={guidance}
+          className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full rounded-[12px] bg-[#f7f7f7] px-[10px] py-[10px]"
+        >
+          <div className="mt-[5px] size-[6px] rounded-full bg-[#0f0f0f]" />
+          <p className="basis-0 font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] min-h-px min-w-px relative shrink-0 text-[12px] text-[rgba(15,15,15,0.65)]">
+            {guidance}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }
 
-function Info10() {
+function SpecialNoteFeatureBody() {
   return (
-    <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-name="Info">
-      <ArrowBox3 />
-      <Frame1 />
+    <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Special Note Feature">
+      <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-[#f3f3f3]">
+        <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
+          <span className="inline-flex items-center rounded-full bg-[#0f0f0f] px-[8px] py-[3px] text-[10px] font-semibold text-white">
+            셰프 전달 포인트
+          </span>
+          <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f7f7f7] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
+            {HOME_SPECIAL_NOTE_CARD.confidenceLabel}
+          </span>
+        </div>
+        <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
+          {HOME_SPECIAL_NOTE_CARD.title}
+        </p>
+        <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.5] relative shrink-0 text-[12px] text-[rgba(15,15,15,0.6)] w-full">
+          {HOME_SPECIAL_NOTE_CARD.summary}
+        </p>
+        <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[normal] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.5)] w-full">
+          {HOME_SPECIAL_NOTE_CARD.confidenceNote}
+        </p>
+      </div>
+
+      <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
+        <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-[#f3f3f3]">
+          <div className="content-stretch flex flex-wrap gap-[8px] items-center justify-between relative shrink-0 w-full">
+            <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[12px]">
+              세부 미각 요소
+            </p>
+            <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f7f7f7] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.65)]">
+              {HOME_SPECIAL_NOTE_CARD.translationStatusLabel}
+            </span>
+          </div>
+          <Info11 />
+        </div>
+
+        <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-[#f3f3f3]">
+          <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[12px]">
+            예약에 어떻게 반영되나요
+          </p>
+          <SpecialNoteGuidanceList />
+          <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.55)] w-full">
+            {HOME_SPECIAL_NOTE_CARD.serviceHint}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
 
 function Info11() {
   return (
-    <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full" data-name="Info">
-      <Info9 />
-      <Info10 />
+    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-name="Info">
+      {HOME_SPECIAL_NOTE_CARD.details.map((detail) => (
+        <SpecialNoteInfo key={detail.detailLabel} item={detail} />
+      ))}
     </div>
   );
 }
@@ -1051,7 +1405,7 @@ function Right4() {
   return (
     <div className="basis-0 content-stretch flex flex-col gap-[12px] grow items-start min-h-px min-w-px relative shrink-0" data-name="Right">
       <div className="flex flex-col font-['Pretendard_Variable:Bold',sans-serif] font-bold h-[14px] justify-center leading-[0] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
-        <p className="leading-[100.06%]">발효식품에 민감함</p>
+        <p className="leading-[100.06%]">{HOME_SPECIAL_NOTE_CARD.title}</p>
       </div>
       <Info11 />
     </div>
@@ -1244,16 +1598,72 @@ function Content10() {
   );
 }
 
-function Cards4() {
+function Cards4({ onOpenDetail }: { onOpenDetail: () => void }) {
   return (
-    <div className="bg-[#f3f3f3] h-auto relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+    <button
+      type="button"
+      onClick={onOpenDetail}
+      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-colors hover:bg-[#fafafa]"
+      data-name="Cards"
+    >
       <div className="overflow-clip rounded-[inherit] size-full">
         <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
-          <Heading5 />
-          <Content10 />
+          <div className="content-center flex flex-wrap gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full">
+            <Head1 />
+            <div className="flex items-center gap-1 text-[#808080]">
+              <span className="text-[11px] font-medium">자세히</span>
+              <ChevronRight className="w-3 h-3 text-[#3F3F3F]" />
+            </div>
+          </div>
+
+          <div className="box-border content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full">
+            <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
+              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
+                {HOME_SPECIAL_NOTE_CARD.title}
+              </p>
+            </div>
+
+            <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
+              <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
+                {HOME_SPECIAL_NOTE_SUMMARY_DETAILS.map((detail) => (
+                  <div
+                    key={detail.detailLabel}
+                    className="flex items-center gap-[8px] w-full"
+                  >
+                    <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
+                    <div className="flex min-w-0 items-center gap-[6px]">
+                      <p className="truncate text-[13px] font-medium text-[rgba(15,15,15,0.72)]">
+                        {detail.detailLabel}
+                      </p>
+                      <p
+                        className="shrink-0 text-[12px] font-semibold leading-[1.1]"
+                        style={{ color: getTasteColor(detail.parentTaste) }}
+                      >
+                        {detail.change}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
+                <SpecialNoteMiniGraph />
+              </div>
+            </div>
+
+            <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
+              {HOME_SPECIAL_NOTE_CARD.keywords.map((keyword) => (
+                <span
+                  key={keyword}
+                  className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-white px-[8px] py-[4px] text-[10px] font-semibold text-[rgba(15,15,15,0.62)]"
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -1320,33 +1730,40 @@ function Cards5() {
   );
 }
 
-function Content12() {
+function Content12({ onOpenSpecialNote }: { onOpenSpecialNote: () => void }) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Content">
       <Cards3 />
-      <Cards4 />
-      <Cards5 />
+      <Cards4 onOpenDetail={onOpenSpecialNote} />
     </div>
   );
 }
 
-function TasteProfile() {
+function TasteProfile({ onOpenSpecialNote }: { onOpenSpecialNote: () => void }) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Taste Profile">
       <Heading3 />
-      <Content12 />
+      <Content12 onOpenSpecialNote={onOpenSpecialNote} />
     </div>
   );
 }
 
 function Section1() {
+  const [specialNoteOpen, setSpecialNoteOpen] = useState(false);
+
   return (
     <div className="relative shrink-0 w-full" data-name="Section">
       <div className="size-full">
         <div className="box-border content-stretch flex flex-col items-start relative w-full">
-          <TasteProfile />
+          <TasteProfile onOpenSpecialNote={() => setSpecialNoteOpen(true)} />
         </div>
       </div>
+
+      {specialNoteOpen ? (
+        <div className="fixed inset-0 z-50 bg-white">
+          <SpecialNoteDetailScreen onBack={() => setSpecialNoteOpen(false)} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1386,48 +1803,15 @@ function HeadingAdjustment() {
 
 
 function HistoryCard({ history, onRate, onClick }: { history: any, onRate: (id: number, rating: number, action?: boolean | "toggle" | "edit" | { type: string, value: any }) => void, onClick: () => void }) {
-  const getTasteColor = (taste: string) => {
-    const tasteColors: { [key: string]: string } = {
-      "단맛": "#FF9900",
-      "신맛": "#FBC02D",
-      "쓴맛": "#95C900",
-      "짠맛": "#7299FF",
-      "감칠맛": "#B372B4",
-      "지방맛": "#95867A"
-    };
-    return tasteColors[taste] || "#FF9900";
-  };
-
-  const getTasteGradient = (adjustments: any[]) => {
-    const tasteColors: { [key: string]: string } = {
-      "단맛": "#FFCC80", // Desaturated/Lighter Orange
-      "신맛": "#FDD835", // Desaturated/Lighter Yellow
-      "쓴맛": "#E6EE9C", // Desaturated/Lighter Lime
-      "짠맛": "#90CAF9", // Desaturated/Lighter Blue
-      "감칠맛": "#CE93D8", // Desaturated/Lighter Purple
-      "지방맛": "#BCAAA4"  // Desaturated/Lighter Brown
-    };
-
-    if (adjustments.length === 0) return "#E0E0E0";
-
-    if (adjustments.length === 1) {
-      const color = tasteColors[adjustments[0].taste] || "#FFCC80";
-      return `linear-gradient(135deg, ${color}, ${color})`;
-    }
-
-    const colors = adjustments.map((adj: any) => tasteColors[adj.taste] || "#E0E0E0");
-    return `linear-gradient(135deg, ${colors.join(', ')})`;
-  };
-
   return (
-    <div className="bg-[#f3f3f3] relative rounded-[20px] shrink-0 w-full" data-name="History Card">
+    <div className="bg-white relative rounded-[20px] shrink-0 w-full" data-name="History Card">
       <div className="overflow-clip rounded-[inherit] size-full cursor-pointer" onClick={onClick}>
         <div className="box-border content-stretch flex flex-col gap-[12px] items-start p-[12px] relative w-full">
           <div className="flex items-center gap-2 w-full">
             <span
               className="text-white text-[10px] px-[6px] py-[2px] rounded-[6px] font-bold relative shadow-[0_2px_8px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.3)]"
               style={{
-                background: getTasteGradient(history.adjustments),
+                background: buildTasteAdjustmentGradient(history.adjustments),
               }}
             >
               TCS
@@ -1467,20 +1851,11 @@ function HistoryCard({ history, onRate, onClick }: { history: any, onRate: (id: 
 
           <div className="content-stretch flex gap-[6px] items-start relative shrink-0 w-full flex-wrap">
             {history.adjustments.map((adj: any, idx: number) => (
-              <div
-                key={idx}
-                className="bg-white rounded-[100px] px-[8px] py-[4px] flex gap-[4px] items-center"
-              >
-                <p className="font-medium text-[10px] text-[#0f0f0f]">
-                  {adj.taste}
-                </p>
-                <p
-                  className="font-semibold text-[10px]"
-                  style={{ color: getTasteColor(adj.taste) }}
-                >
-                  {adj.change}
-                </p>
-              </div>
+              <TasteChip
+                key={`${history.id}-${adj.taste}-${idx}`}
+                taste={adj.taste}
+                value={adj.change}
+              />
             ))}
           </div>
 
@@ -1755,7 +2130,7 @@ function SectionAdjustmentHistory() {
   };
 
   return (
-    <div className="relative shrink-0 w-full mb-10" data-name="Section">
+    <div className="relative shrink-0 w-full" data-name="Section">
       <div className="size-full">
         <div className="box-border content-stretch flex flex-col items-start gap-[12px] relative w-full">
           {/* Section Header */}
@@ -1774,7 +2149,7 @@ function SectionAdjustmentHistory() {
             ))}
           </div>
 
-          <div className="w-full bg-[#f3f3f3] rounded-full p-[12px] flex justify-between items-center cursor-pointer hover:bg-[#ececec] transition-colors" onClick={() => (window as any).__goToAnalysis?.()}>
+          <div className="w-full bg-white rounded-full p-[12px] mb-10 flex justify-between items-center cursor-pointer hover:bg-[#fafafa] transition-colors" onClick={() => (window as any).__goToAnalysis?.()}>
             <span className="font-bold text-[14px] text-[#0f0f0f]">모든 정보 보기</span>
             <ChevronRight className="w-4 h-4 text-[#3F3F3F]" />
           </div>
@@ -1801,6 +2176,51 @@ function Content13() {
       <Section1 />
       <SectionAdjustmentHistory />
 
+    </div>
+  );
+}
+
+function SpecialNoteDetailScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="flex flex-col w-full h-full bg-white relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
+      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-white border-b border-[#f3f3f3]">
+        <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">특이 사항</span>
+          <span className="font-medium text-[12px] text-gray-500 leading-[14px]">세부 미각 요소 기반 전달 포인트</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-[20px] p-[20px]">
+        <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex items-start gap-[12px]">
+          <div
+            className="shrink-0 size-[42px] rounded-full"
+            style={{ background: HOME_SPECIAL_NOTE_CIRCLE_GRADIENT }}
+          />
+          <div className="flex flex-col gap-[6px] min-w-0">
+            <div className="flex flex-wrap gap-[6px] items-center">
+              <span className="inline-flex items-center rounded-full bg-[#0f0f0f] px-[8px] py-[3px] text-[10px] font-semibold text-white">
+                셰프 전달 포인트
+              </span>
+              <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-white px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
+                {HOME_SPECIAL_NOTE_CARD.translationStatusLabel}
+              </span>
+            </div>
+            <p className="font-bold text-[18px] leading-[1.25] text-[#0f0f0f]">
+              {HOME_SPECIAL_NOTE_CARD.title}
+            </p>
+            <p className="text-[13px] leading-[1.5] text-[rgba(15,15,15,0.62)]">
+              {HOME_SPECIAL_NOTE_CARD.serviceHint}
+            </p>
+          </div>
+        </div>
+
+        <SpecialNoteFeatureBody />
+      </div>
     </div>
   );
 }
@@ -1925,7 +2345,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
 
             {/* Connection Arrow */}
             <div className="flex justify-center -my-3 z-10">
-              <div className="bg-white p-2 rounded-full text-[#3F3F3F] border border-[#f3f3f3] shadow-sm">
+              <div className="bg-white p-2 rounded-full text-[#3F3F3F] shadow-sm">
                 <ChevronDown size={20} />
               </div>
             </div>
@@ -1954,7 +2374,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-[16px] border border-[#f3f3f3] shadow-[0_2px_12px_rgba(0,0,0,0.04)] mt-2">
+          <div className="bg-[#f3f3f3] p-4 rounded-[16px] mt-2">
             <p className="text-[13px] text-[#444444] italic text-center font-medium whitespace-pre-wrap">{quote}</p>
           </div>
         </div>
@@ -1986,7 +2406,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
 
 function Content14() {
   return (
-    <div className="basis-0 bg-white content-stretch flex flex-col grow items-center min-h-px min-w-px overflow-y-auto no-scrollbar relative w-full h-full" data-name="Content">
+    <div className="basis-0 bg-[#f3f3f3] content-stretch flex flex-col grow items-center min-h-px min-w-px overflow-y-auto no-scrollbar relative w-full h-full" data-name="Content">
       <Content13 />
     </div>
   );
@@ -2382,8 +2802,8 @@ export default function Home({
   }
 
   return (
-    <div className="w-full h-full bg-white">
-      <div className="bg-white content-stretch flex flex-col items-start relative w-full h-full overflow-hidden" data-name="Home">
+    <div className="w-full h-full bg-[#f3f3f3]">
+      <div className="bg-[#f3f3f3] content-stretch flex flex-col items-start relative w-full h-full overflow-hidden" data-name="Home">
         <Viewport onStartMeasurement={onStartMeasurement} />
       </div>
     </div>

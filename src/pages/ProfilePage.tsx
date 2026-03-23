@@ -93,7 +93,7 @@ export default function ProfilePage({
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
 
   return (
-    <div className="flex flex-col w-full h-full bg-white">
+    <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
       <TopAppBar onStartMeasurement={onStartMeasurement} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="flex flex-col gap-8 p-5 animate-fadeIn">

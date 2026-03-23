@@ -270,13 +270,13 @@ export default function AnalysisPage({
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
 
   return (
-    <div className="flex flex-col w-full h-full bg-white">
+    <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
       <TopAppBar onStartMeasurement={onStartMeasurement} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="flex flex-col gap-8 p-5 animate-fadeIn">
           {/* 페이지 타이틀 */}
           <div>
-            <h1 className="text-[24px] font-bold tracking-[-0.24px] text-[var(--tb-color-text-primary)]">미각 프로필</h1>
+            <h1 className="text-[18px] font-bold tracking-[-0.24px] text-[var(--tb-color-text-primary)]">미각 프로필</h1>
             <OutlineBadge className="mt-2">{tasteProfileBadge}</OutlineBadge>
           </div>
 
@@ -310,40 +310,38 @@ export default function AnalysisPage({
             tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
           />
 
-          {/* 기간 선택 */}
-          <div className="flex items-center justify-between">
-            <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-card)]">
-              <ChevronLeft size={20} className="text-[var(--tb-color-icon-primary)]" />
-            </button>
-            <span className="text-[15px] font-semibold text-[var(--tb-color-text-primary)]">{period}</span>
-            <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-card)]">
-              <ChevronRight size={20} className="text-[var(--tb-color-icon-primary)]" />
-            </button>
-          </div>
+          <SectionCard hoverEffect={false}>
+            <div className="flex items-center justify-between w-full">
+              <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-muted)]">
+                <ChevronLeft size={20} className="text-[var(--tb-color-icon-primary)]" />
+              </button>
+              <span className="text-[15px] font-semibold text-[var(--tb-color-text-primary)]">{period}</span>
+              <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-muted)]">
+                <ChevronRight size={20} className="text-[var(--tb-color-icon-primary)]" />
+              </button>
+            </div>
 
-          {/* 6각형 레이더 차트 */}
-          <div className="flex flex-col items-center animate-slideUp">
-            <HexRadarChart myTasteData={myTasteData} />
+            <div className="flex w-full flex-col items-center animate-slideUp">
+              <HexRadarChart myTasteData={myTasteData} />
 
-            {/* 범례 */}
-            <div className="flex items-end gap-0 mt-2">
-              <div className="flex flex-col items-center gap-[4px]">
-                <span className="text-[10px] text-[var(--tb-color-text-hint)]">나의 민감도</span>
-                <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
-                  {formatMeasurementValue(totalSensitivity, '')}
-                </span>
-              </div>
-              <span className="mx-[2px] flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-[var(--tb-color-text-disabled)] text-[10px] text-[var(--tb-color-text-inverse)]">→</span>
-              <div className="flex flex-col items-center gap-[4px]">
-                <span className="text-[10px] text-[var(--tb-color-text-hint)]">평균 민감도</span>
-                <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
-                  {formatMeasurementValue(avgSensitivity, '')}
-                </span>
+              <div className="mt-2 flex items-end gap-0">
+                <div className="flex flex-col items-center gap-[4px]">
+                  <span className="text-[10px] text-[var(--tb-color-text-hint)]">나의 민감도</span>
+                  <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
+                    {formatMeasurementValue(totalSensitivity, '')}
+                  </span>
+                </div>
+                <span className="mx-[2px] flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-[var(--tb-color-text-disabled)] text-[10px] text-[var(--tb-color-text-inverse)]">→</span>
+                <div className="flex flex-col items-center gap-[4px]">
+                  <span className="text-[10px] text-[var(--tb-color-text-hint)]">평균 민감도</span>
+                  <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
+                    {formatMeasurementValue(avgSensitivity, '')}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          </SectionCard>
 
-          {/* 세부 분석 카드 */}
           <div>
             <SectionTitle size="md" className="mb-3">세부 분석</SectionTitle>
             <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 w-[calc(100%+40px)] mx-[-20px] px-[20px]">

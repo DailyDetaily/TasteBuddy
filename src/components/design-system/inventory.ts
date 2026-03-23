@@ -1,0 +1,857 @@
+import {
+  COLOR_TOKENS,
+  COMPONENT_TOKENS,
+  ICON_TOKENS,
+  LAYOUT_TOKENS,
+  MOTION_TOKENS,
+  RADIUS_TOKENS,
+  SHADOW_TOKENS,
+  SPACING_TOKENS,
+  TASTE_TOKENS,
+  TYPOGRAPHY_TOKENS,
+  type TasteId,
+} from "../../constants/designTokens";
+
+export interface SourceReference {
+  file: string;
+  note: string;
+}
+
+export interface InventoryEntry {
+  description?: string;
+  name: string;
+  note?: string;
+  source: string;
+  status?: "currently-used" | "defined-but-unused" | "defined-only";
+}
+
+export interface TokenSwatch {
+  cssVar: string;
+  description?: string;
+  name: string;
+  source: string;
+  status?: "currently-used" | "defined-but-unused";
+  value: string;
+}
+
+export interface TypographySpec {
+  cssVars: string[];
+  name: string;
+  sample: string;
+  source: string;
+  usage: string;
+  value: {
+    fontSize: string;
+    fontWeight: number;
+    letterSpacing?: string;
+    lineHeight: number;
+  };
+}
+
+export const STYLE_STRUCTURE: InventoryEntry[] = [
+  {
+    name: "전역 스타일 진입점",
+    note: "Tailwind, globals, 앱 토큰 시트를 한곳에서 불러옵니다.",
+    source: "src/index.css",
+    status: "currently-used",
+  },
+  {
+    name: "공용 테마 토큰",
+    note: "shadcn 스타일의 semantic token과 dark mode 변수가 여기에 있습니다.",
+    source: "src/styles/globals.css",
+    status: "defined-but-unused",
+  },
+  {
+    name: "Taste Buddy tokens",
+    note: "실제 앱 shell, surface, text, taste, spacing, motion, radius 토큰이 여기에 정의됩니다.",
+    source: "src/styles/design-system.css",
+    status: "currently-used",
+  },
+  {
+    name: "타입 기반 토큰 미러",
+    note: "CSS 변수를 차트, 맛 로직, UI 메타데이터용 TS 객체로 미러링합니다.",
+    source: "src/constants/designTokens.ts",
+    status: "currently-used",
+  },
+  {
+    name: "공용 앱 컴포넌트",
+    note: "실제 앱은 작은 system layer와 card / navigation shell을 재사용합니다.",
+    source: "src/components/system, src/components/SectionCard.tsx, src/components/TopAppBar.tsx, src/components/BottomTabBar.tsx",
+    status: "currently-used",
+  },
+  {
+    name: "공용 UI 프리미티브",
+    note: "더 큰 Radix/shadcn 세트가 src/components/ui 아래에 있지만, 현재 메인 앱 플로우에서는 거의 쓰이지 않습니다.",
+    source: "src/components/ui",
+    status: "defined-but-unused",
+  },
+  {
+    name: "다크 모드 범위",
+    note: "generic semantic token만 .dark override가 있고, tb-* 앱 토큰 레이어에는 없습니다.",
+    source: "src/styles/globals.css",
+    status: "defined-only",
+  },
+];
+
+export const COLOR_GROUPS: Array<{
+  colors: TokenSwatch[];
+  id: string;
+  name: string;
+}> = [
+  {
+    id: "background",
+    name: "배경 & 서피스",
+    colors: [
+      {
+        name: "bg-page",
+        value: COLOR_TOKENS.background.page,
+        cssVar: "--tb-color-bg-page",
+        source: "src/styles/design-system.css / COLOR_TOKENS.background.page",
+        status: "currently-used",
+        description: "앱 shell 배경",
+      },
+      {
+        name: "surface-base",
+        value: COLOR_TOKENS.surface.base,
+        cssVar: "--tb-color-surface-base",
+        source: "src/styles/design-system.css / COLOR_TOKENS.surface.base",
+        status: "currently-used",
+        description: "상단 바, 내부 strip",
+      },
+      {
+        name: "surface-card",
+        value: COLOR_TOKENS.surface.card,
+        cssVar: "--tb-color-surface-card",
+        source: "src/styles/design-system.css / COLOR_TOKENS.surface.card",
+        status: "currently-used",
+        description: "기본 카드",
+      },
+      {
+        name: "surface-muted",
+        value: COLOR_TOKENS.surface.muted,
+        cssVar: "--tb-color-surface-muted",
+        source: "src/styles/design-system.css / COLOR_TOKENS.surface.muted",
+        status: "currently-used",
+        description: "체크리스트 블록, 보조 패널",
+      },
+      {
+        name: "surface-elevated",
+        value: COLOR_TOKENS.surface.elevated,
+        cssVar: "--tb-color-surface-elevated",
+        source: "src/styles/design-system.css / COLOR_TOKENS.surface.elevated",
+        status: "currently-used",
+      },
+      {
+        name: "surface-disabled",
+        value: COLOR_TOKENS.surface.disabled,
+        cssVar: "--tb-color-surface-disabled",
+        source: "src/styles/design-system.css / COLOR_TOKENS.surface.disabled",
+        status: "currently-used",
+      },
+      {
+        name: "surface-overlay",
+        value: COLOR_TOKENS.surface.overlay,
+        cssVar: "--tb-color-surface-overlay",
+        source: "src/styles/design-system.css / COLOR_TOKENS.surface.overlay",
+        status: "currently-used",
+        description: "반투명 선택 패널",
+      },
+    ],
+  },
+  {
+    id: "text",
+    name: "텍스트 & 아이콘",
+    colors: [
+      {
+        name: "text-primary",
+        value: COLOR_TOKENS.text.primary,
+        cssVar: "--tb-color-text-primary",
+        source: "src/styles/design-system.css / COLOR_TOKENS.text.primary",
+        status: "currently-used",
+      },
+      {
+        name: "text-secondary",
+        value: COLOR_TOKENS.text.secondary,
+        cssVar: "--tb-color-text-secondary",
+        source: "src/styles/design-system.css / COLOR_TOKENS.text.secondary",
+        status: "currently-used",
+      },
+      {
+        name: "text-tertiary",
+        value: COLOR_TOKENS.text.tertiary,
+        cssVar: "--tb-color-text-tertiary",
+        source: "src/styles/design-system.css / COLOR_TOKENS.text.tertiary",
+        status: "currently-used",
+      },
+      {
+        name: "text-body",
+        value: COLOR_TOKENS.text.body,
+        cssVar: "--tb-color-text-body",
+        source: "src/styles/design-system.css / COLOR_TOKENS.text.body",
+        status: "currently-used",
+      },
+      {
+        name: "text-hint",
+        value: COLOR_TOKENS.text.hint,
+        cssVar: "--tb-color-text-hint",
+        source: "src/styles/design-system.css / COLOR_TOKENS.text.hint",
+        status: "currently-used",
+      },
+      {
+        name: "text-disabled",
+        value: COLOR_TOKENS.text.disabled,
+        cssVar: "--tb-color-text-disabled",
+        source: "src/styles/design-system.css / COLOR_TOKENS.text.disabled",
+        status: "currently-used",
+      },
+      {
+        name: "icon-primary",
+        value: COLOR_TOKENS.icon.primary,
+        cssVar: "--tb-color-icon-primary",
+        source: "src/styles/design-system.css / COLOR_TOKENS.icon.primary",
+        status: "currently-used",
+      },
+      {
+        name: "icon-hover",
+        value: COLOR_TOKENS.icon.hover,
+        cssVar: "--tb-color-icon-hover",
+        source: "src/styles/design-system.css / COLOR_TOKENS.icon.hover",
+        status: "currently-used",
+      },
+      {
+        name: "icon-muted",
+        value: COLOR_TOKENS.icon.muted,
+        cssVar: "--tb-color-icon-muted",
+        source: "src/styles/design-system.css / COLOR_TOKENS.icon.muted",
+        status: "currently-used",
+      },
+    ],
+  },
+  {
+    id: "border",
+    name: "보더 & 상태",
+    colors: [
+      {
+        name: "border-card",
+        value: COLOR_TOKENS.border.card,
+        cssVar: "--tb-color-border-card",
+        source: "src/styles/design-system.css / COLOR_TOKENS.border.card",
+        status: "currently-used",
+      },
+      {
+        name: "border-subtle",
+        value: COLOR_TOKENS.border.subtle,
+        cssVar: "--tb-color-border-subtle",
+        source: "src/styles/design-system.css / COLOR_TOKENS.border.subtle",
+        status: "currently-used",
+      },
+      {
+        name: "border-default",
+        value: COLOR_TOKENS.border.default,
+        cssVar: "--tb-color-border-default",
+        source: "src/styles/design-system.css / COLOR_TOKENS.border.default",
+        status: "currently-used",
+      },
+      {
+        name: "border-strong",
+        value: COLOR_TOKENS.border.strong,
+        cssVar: "--tb-color-border-strong",
+        source: "src/styles/design-system.css / COLOR_TOKENS.border.strong",
+        status: "currently-used",
+      },
+      {
+        name: "border-disabled",
+        value: COLOR_TOKENS.border.disabled,
+        cssVar: "--tb-color-border-disabled",
+        source: "src/styles/design-system.css / COLOR_TOKENS.border.disabled",
+        status: "currently-used",
+      },
+      {
+        name: "success",
+        value: COLOR_TOKENS.state.success,
+        cssVar: "--tb-color-success",
+        source: "src/styles/design-system.css / COLOR_TOKENS.state.success",
+        status: "currently-used",
+        description: "앱 semantic success 전경색",
+      },
+      {
+        name: "success-soft",
+        value: COLOR_TOKENS.state.successSoft,
+        cssVar: "--tb-color-success-soft",
+        source: "src/styles/design-system.css / COLOR_TOKENS.state.successSoft",
+        status: "currently-used",
+        description: "success 배경 채움색",
+      },
+      {
+        name: "warning",
+        value: COLOR_TOKENS.state.warning,
+        cssVar: "--tb-color-warning",
+        source: "src/styles/design-system.css / COLOR_TOKENS.state.warning",
+        status: "currently-used",
+        description: "앱 semantic warning 전경색",
+      },
+      {
+        name: "warning-soft",
+        value: COLOR_TOKENS.state.warningSoft,
+        cssVar: "--tb-color-warning-soft",
+        source: "src/styles/design-system.css / COLOR_TOKENS.state.warningSoft",
+        status: "currently-used",
+        description: "warning 배경 채움색",
+      },
+      {
+        name: "primary",
+        value: "#030213",
+        cssVar: "--primary",
+        source: "src/styles/globals.css",
+        status: "defined-but-unused",
+        description: "공용 shadcn semantic 토큰",
+      },
+      {
+        name: "secondary",
+        value: "oklch(0.95 0.0058 264.53)",
+        cssVar: "--secondary",
+        source: "src/styles/globals.css",
+        status: "defined-but-unused",
+      },
+      {
+        name: "destructive",
+        value: "#d4183d",
+        cssVar: "--destructive",
+        source: "src/styles/globals.css",
+        status: "defined-but-unused",
+      },
+    ],
+  },
+  {
+    id: "taste",
+    name: "맛 포인트 컬러",
+    colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      ([tasteId, definition]) => ({
+        name: tasteId,
+        value: definition.palette.main,
+        cssVar: `--tb-taste-${tasteId}-main`,
+        source: "src/styles/design-system.css / TASTE_TOKENS",
+        status: "currently-used",
+        description: definition.label,
+      }),
+    ),
+  },
+];
+
+export const TYPOGRAPHY_SPECS: TypographySpec[] = [
+  {
+    name: "디스플레이",
+    sample: "한눈에 들어오는 결과 헤드라인",
+    source: "src/styles/design-system.css / src/guidelines/Guidelines.md",
+    usage: "완료 / 성공 헤드라인",
+    cssVars: ["--tb-font-size-28", "--tb-font-weight-bold", "--tb-line-height-tight"],
+    value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[28], fontWeight: 700, lineHeight: 1.2 },
+  },
+  {
+    name: "헤딩",
+    sample: "프로필은 조금씩 더 정교해집니다",
+    source: "src/pages/OnboardingScreen.tsx / src/pages/TeastickConnectScreen.tsx",
+    usage: "온보딩과 드로어 타이틀",
+    cssVars: ["--tb-font-size-22", "--tb-font-weight-bold", "--tb-line-height-snug"],
+    value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[22], fontWeight: 700, lineHeight: 1.35 },
+  },
+  {
+    name: "타이틀",
+    sample: "미각 프로필",
+    source: "src/components/system/SectionTitle.tsx / src/pages/AnalysisPage.tsx",
+    usage: "섹션 타이틀과 페이지 단위 카드",
+    cssVars: ["--tb-font-size-18", "--tb-font-weight-bold", "--tb-letter-spacing-tight"],
+    value: {
+      fontSize: TYPOGRAPHY_TOKENS.fontSize[18],
+      fontWeight: 700,
+      lineHeight: 1.2,
+      letterSpacing: TYPOGRAPHY_TOKENS.letterSpacing.tight,
+    },
+  },
+  {
+    name: "본문",
+    sample: "현재 프로필을 빠르게 정리해 첫 예약부터 활용할 수 있도록 돕습니다.",
+    source: "src/styles/design-system.css / src/pages/ReservationPage.tsx",
+    usage: "카드 본문과 설명 문구",
+    cssVars: ["--tb-font-size-14", "--tb-font-weight-regular", "--tb-line-height-relaxed"],
+    value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[14], fontWeight: 400, lineHeight: 1.5 },
+  },
+  {
+    name: "캡션",
+    sample: "보조 정보, 상태 라벨, 메타 텍스트",
+    source: "src/components/system/OutlineBadge.tsx / src/components/system/StatusChip.tsx",
+    usage: "배지, 헬퍼 텍스트, 메타 정보",
+    cssVars: ["--tb-font-size-12", "--tb-font-weight-semibold", "--tb-line-height-normal"],
+    value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[12], fontWeight: 600, lineHeight: 1.4 },
+  },
+];
+
+export const SPACING_ITEMS = Object.entries(SPACING_TOKENS).map(([name, value]) => ({
+  name: `space-${name}`,
+  value,
+  source: "src/styles/design-system.css / SPACING_TOKENS",
+}));
+
+export const RADIUS_ITEMS = Object.entries(RADIUS_TOKENS).map(([name, value]) => ({
+  name: `radius-${name}`,
+  value,
+  source: "src/styles/design-system.css / RADIUS_TOKENS",
+}));
+
+export const SHADOW_ITEMS = Object.entries(SHADOW_TOKENS).map(([name, value]) => ({
+  name,
+  value,
+  source: "src/styles/design-system.css / SHADOW_TOKENS",
+}));
+
+export const BORDER_ITEMS = [
+  {
+    name: "기본 보더",
+    value: `1px solid ${COLOR_TOKENS.border.default}`,
+    source: "src/styles/design-system.css / --tb-color-border-default",
+  },
+  {
+    name: "강조 보더",
+    value: `1px solid ${COLOR_TOKENS.border.strong}`,
+    source: "src/styles/design-system.css / --tb-color-border-strong",
+  },
+  {
+    name: "아바타 보더",
+    value: `1px solid ${COLOR_TOKENS.border.avatar}`,
+    source: "src/styles/design-system.css / --tb-color-border-avatar",
+  },
+];
+
+export const ICON_RULES = [
+  {
+    name: "Fluent 라인 아이콘",
+    source: "src/components/TopAppBar.tsx / src/components/BottomTabBar.tsx / src/pages/AnalysisPage.tsx",
+    description: "주요 내비게이션과 유틸리티 아이콘은 @fluentui/react-icons를 사용합니다.",
+  },
+  {
+    name: "Lucide 유틸리티 아이콘",
+    source: "src/pages/TeastickConnectScreen.tsx / src/components/reservation/DiningFeedbackFlow.tsx / src/components/measurement/TasteMeasurementMiniCta.tsx",
+    description: "액션, 피드백, 플로우 아이콘은 lucide-react를 사용합니다.",
+  },
+  {
+    name: "아이콘 사이즈 토큰",
+    source: "src/constants/designTokens.ts / src/styles/design-system.css",
+    description: `정의된 크기: ${Object.keys(ICON_TOKENS.size).join(", ")}`,
+  },
+];
+
+export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
+  {
+    name: "SectionCard",
+    source: "src/components/SectionCard.tsx",
+    note: "카드, 통계 타일, 리스트 섹션의 기본 shell입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "PrimaryButton",
+    source: "src/components/system/PrimaryButton.tsx",
+    note: "온보딩, 측정, 예약, 피드백 플로우 전반의 주요 CTA입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "TopAppBar",
+    source: "src/components/TopAppBar.tsx",
+    note: "공용 상단 내비게이션 shell입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "BottomTabBar",
+    source: "src/components/BottomTabBar.tsx",
+    note: "메인 플로우의 기본 앱 내비게이션입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "OutlineBadge",
+    source: "src/components/system/OutlineBadge.tsx",
+    note: "섹션과 프로필 라벨에 쓰입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "StatusChip",
+    source: "src/components/system/StatusChip.tsx",
+    note: "예약 상태 메타데이터에 쓰입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "Home TCS Badge",
+    source: "src/imports/Home.tsx",
+    note: "홈 탭 히스토리 카드 상단의 gradient TCS 배지입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "TasteChip",
+    source: "src/components/system/TasteChip.tsx",
+    note: "맛 포인트에 특화된 작은 pill 컴포넌트입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "SectionTitle",
+    source: "src/components/system/SectionTitle.tsx",
+    note: "가이드라인 기반 heading helper로, 분석과 다이닝 피드백에서 쓰입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "TasteMeasurementMiniCta",
+    source: "src/components/measurement/TasteMeasurementMiniCta.tsx",
+    note: "여러 탭에서 재사용되는 앱 전용 inline 액션 카드입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "DiningFeedbackFlow",
+    source: "src/components/reservation/DiningFeedbackFlow.tsx",
+    note: "플로우 전용 카드, 선택 패턴, 피드백 필드를 포함합니다.",
+    status: "currently-used",
+  },
+];
+
+export const UNUSED_UI_PRIMITIVES: InventoryEntry[] = [
+  { name: "Button", source: "src/components/ui/button.tsx", status: "defined-but-unused" },
+  { name: "Input", source: "src/components/ui/input.tsx", status: "defined-but-unused" },
+  { name: "Textarea", source: "src/components/ui/textarea.tsx", status: "defined-but-unused" },
+  { name: "Select", source: "src/components/ui/select.tsx", status: "defined-but-unused" },
+  { name: "Checkbox", source: "src/components/ui/checkbox.tsx", status: "defined-but-unused" },
+  { name: "RadioGroup", source: "src/components/ui/radio-group.tsx", status: "defined-but-unused" },
+  { name: "Switch", source: "src/components/ui/switch.tsx", status: "defined-but-unused" },
+  { name: "Tabs", source: "src/components/ui/tabs.tsx", status: "defined-but-unused" },
+  { name: "Card", source: "src/components/ui/card.tsx", status: "defined-but-unused" },
+  { name: "Badge", source: "src/components/ui/badge.tsx", status: "defined-but-unused" },
+  { name: "Dialog", source: "src/components/ui/dialog.tsx", status: "defined-but-unused" },
+  { name: "Sheet", source: "src/components/ui/sheet.tsx", status: "defined-but-unused" },
+  { name: "Popover", source: "src/components/ui/popover.tsx", status: "defined-but-unused" },
+  { name: "Tooltip", source: "src/components/ui/tooltip.tsx", status: "defined-but-unused" },
+  { name: "Alert", source: "src/components/ui/alert.tsx", status: "defined-but-unused" },
+  { name: "Progress", source: "src/components/ui/progress.tsx", status: "defined-but-unused" },
+  { name: "Skeleton", source: "src/components/ui/skeleton.tsx", status: "defined-but-unused" },
+  { name: "Slider", source: "src/components/ui/slider.tsx", status: "defined-but-unused" },
+  { name: "Toast 래퍼", source: "src/components/ui/sonner.tsx", status: "defined-but-unused" },
+  { name: "Drawer", source: "src/components/ui/drawer.tsx", status: "defined-but-unused" },
+];
+
+export const INCONSISTENCIES: InventoryEntry[] = [
+  {
+    name: "토큰 레이어가 두 갈래로 병존",
+    source: "src/styles/globals.css / src/styles/design-system.css",
+    note: "generic semantic theme와 tb-* 앱 테마가 역할이 겹치지만, 실제 앱 shell은 tb-* 레이어가 주도합니다.",
+  },
+  {
+    name: "기능 페이지에 하드코딩 유틸리티 값이 남아 있음",
+    source: "src/pages/ReservationPage.tsx / src/pages/ProfilePage.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
+    note: "여러 padding, radius, text size가 시각적으로는 토큰과 맞지만, 토큰 참조 대신 raw arbitrary value로 반복됩니다.",
+  },
+  {
+    name: "SectionTitle이 일관되게 채택되지 않음",
+    source: "src/components/system/SectionTitle.tsx / src/pages/AnalysisPage.tsx / src/pages/ProfilePage.tsx",
+    note: "여러 페이지 섹션이 공용 heading helper 대신 ad hoc heading class를 계속 사용합니다.",
+  },
+  {
+    name: "다크 모드 적용 범위가 부분적",
+    source: "src/styles/globals.css / src/styles/design-system.css",
+    note: "generic semantic token 세트에만 .dark override가 있어서, 실제 앱 shell은 일관되게 다크 모드 전환이 되지 않습니다.",
+  },
+  {
+    name: "앱 토큰 레이어의 상태 색상이 아직 불완전",
+    source: "src/styles/design-system.css / src/pages/ReservationPage.tsx",
+    note: "success와 warning은 이제 first-class tb-* 토큰이지만, error는 아직 앱 토큰 레이어가 아니라 generic destructive token에 의존합니다.",
+  },
+];
+
+export const TODO_ITEMS: InventoryEntry[] = [
+  {
+    name: "공용 폼 필드 추출",
+    source: "src/components/reservation/DiningFeedbackFlow.tsx / src/pages/ReservationPage.tsx",
+    note: "검색 행, textarea shell, choice selector가 재사용 가능한 field component로 추출될 수 있을 만큼 시각 규칙을 반복합니다.",
+  },
+  {
+    name: "리스트 아이템 프리미티브 추출",
+    source: "src/pages/ProfilePage.tsx / src/pages/ReservationPage.tsx",
+    note: "예약 행, 셰프 행, 설정 행이 비슷한 list-cell 패턴을 공유하지만 아직 inline으로 작성되어 있습니다.",
+  },
+  {
+    name: "오버레이 전략 통합",
+    source: "src/pages/TeastickConnectScreen.tsx / src/components/ui/dialog.tsx / src/components/ui/sheet.tsx / src/components/ui/drawer.tsx",
+    note: "제품은 custom drawer형 레이아웃을 쓰고 있고, Radix/Vaul overlay도 존재하지만 아직 메인 앱에는 통합되지 않았습니다.",
+  },
+  {
+    name: "지속형 디자인 토큰 편집기",
+    source: "src/lib/designTokenRuntime.ts / src/styles/design-system.css / src/constants/designTokens.ts",
+    note: "플로팅 메뉴로 로컬 앱 전체에 runtime override를 적용할 수 있지만, source-of-truth 코드 변경은 여전히 토큰 파일 수정이 필요합니다.",
+  },
+];
+
+export const SOURCE_REFERENCES: SourceReference[] = [
+  {
+    file: "src/index.css",
+    note: "Tailwind와 두 토큰 레이어를 함께 불러옵니다.",
+  },
+  {
+    file: "src/styles/globals.css",
+    note: "공용 semantic 토큰, 다크 모드, 기본 유틸리티가 있습니다.",
+  },
+  {
+    file: "src/styles/design-system.css",
+    note: "앱 전용 tb-* 토큰과 컴포넌트 CSS class가 있습니다.",
+  },
+  {
+    file: "src/constants/designTokens.ts",
+    note: "CSS 변수에서 미러링된 타입 기반 토큰 소스입니다.",
+  },
+  {
+    file: "src/components/system",
+    note: "현재 실제로 쓰이고 있는 앱 레벨 재사용 컴포넌트입니다.",
+  },
+  {
+    file: "src/components/ui",
+    note: "정의된 Radix/shadcn 프리미티브로, 현재 화면에서는 대부분 미사용 상태입니다.",
+  },
+];
+
+export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
+  audit: SOURCE_REFERENCES,
+  colors: [
+    {
+      file: "src/styles/design-system.css",
+      note: "semantic color 변수와 미각 포인트 컬러가 정의됩니다.",
+    },
+    {
+      file: "src/constants/designTokens.ts",
+      note: "COLOR_TOKENS와 TASTE_TOKENS가 CSS 값을 미러링합니다.",
+    },
+    {
+      file: "src/styles/globals.css",
+      note: "fallback용 공용 semantic color와 다크 모드 토큰이 있습니다.",
+    },
+  ],
+  typography: [
+    {
+      file: "src/styles/design-system.css",
+      note: "font size, weight, line-height, letter-spacing 변수가 있습니다.",
+    },
+    {
+      file: "src/guidelines/Guidelines.md",
+      note: "토큰 크기를 현재 앱의 시각적 역할에 매핑합니다.",
+    },
+  ],
+  spacing: [
+    {
+      file: "src/styles/design-system.css",
+      note: "spacing, radius, layout, shadow 토큰이 정의됩니다.",
+    },
+    {
+      file: "src/constants/designTokens.ts",
+      note: "SPACING_TOKENS, RADIUS_TOKENS, SHADOW_TOKENS, LAYOUT_TOKENS가 있습니다.",
+    },
+  ],
+  icons: [
+    {
+      file: "src/components/TopAppBar.tsx",
+      note: "내비게이션에서의 Fluent 아이콘 사용 예시입니다.",
+    },
+    {
+      file: "src/components/measurement/TasteMeasurementMiniCta.tsx",
+      note: "앱 전용 카드에서의 Lucide 액션 아이콘 사용 예시입니다.",
+    },
+  ],
+  buttons: [
+    {
+      file: "src/components/system/PrimaryButton.tsx",
+      note: "현재 앱에서 실제로 쓰이는 CTA 컴포넌트입니다.",
+    },
+    {
+      file: "src/components/ui/button.tsx",
+      note: "정의된 공용 button variant로, 기존 제품 화면에서는 미사용이었습니다.",
+    },
+  ],
+  badges: [
+    {
+      file: "src/components/ui/badge.tsx",
+      note: "정의된 범용 badge 프리미티브입니다.",
+    },
+    {
+      file: "src/imports/Home.tsx",
+      note: "홈 탭 히스토리 카드의 gradient TCS 배지 원본입니다.",
+    },
+    {
+      file: "src/components/system/OutlineBadge.tsx",
+      note: "프로필 단계, 섹션 라벨에 쓰이는 앱 전용 outline badge입니다.",
+    },
+    {
+      file: "src/components/system/StatusChip.tsx",
+      note: "예약 상태를 보여주는 앱 전용 status badge이며, 홈 탭 TCS 배지를 기준으로 정리되었습니다.",
+    },
+    {
+      file: "src/components/system/TasteChip.tsx",
+      note: "미각 포인트와 현재 반응을 보여주는 앱 전용 taste chip입니다.",
+    },
+  ],
+  fields: [
+    {
+      file: "src/components/ui/input.tsx",
+      note: "공용 input shell입니다.",
+    },
+    {
+      file: "src/components/ui/textarea.tsx",
+      note: "공용 textarea shell입니다.",
+    },
+    {
+      file: "src/components/ui/select.tsx",
+      note: "Radix 기반 select 필드입니다.",
+    },
+    {
+      file: "src/components/reservation/DiningFeedbackFlow.tsx",
+      note: "현재 앱 전용 field 조합과 choice selector가 있습니다.",
+    },
+  ],
+  cards: [
+    {
+      file: "src/components/SectionCard.tsx",
+      note: "현재 화면에서 쓰이는 메인 공용 card shell입니다.",
+    },
+    {
+      file: "src/components/measurement/TasteMeasurementMiniCta.tsx",
+      note: "앱 전용 인라인 CTA 카드입니다.",
+    },
+    {
+      file: "src/components/ui/card.tsx",
+      note: "정의된 범용 card 프리미티브입니다.",
+    },
+    {
+      file: "src/pages/ProfilePage.tsx",
+      note: "기기 상태 카드, 활동 통계 타일, 셰프 카드, 설정 카드 패턴입니다.",
+    },
+    {
+      file: "src/pages/ReservationPage.tsx",
+      note: "예약 요약 카드와 예약 상세 보정 카드 패턴입니다.",
+    },
+    {
+      file: "src/components/reservation/DiningFeedbackFlow.tsx",
+      note: "피드백 요약, 변화 노트, confidence, 셰프용 요약 카드가 있습니다.",
+    },
+    {
+      file: "src/pages/QuickTasteCalibrationScreen.tsx",
+      note: "빠른 보정 힌트 카드와 스타터 프로필 결과 카드 패턴입니다.",
+    },
+  ],
+  navigation: [
+    {
+      file: "src/components/TopAppBar.tsx",
+      note: "현재 상단 내비게이션 shell입니다.",
+    },
+    {
+      file: "src/components/BottomTabBar.tsx",
+      note: "현재 하단 내비게이션 shell입니다.",
+    },
+    {
+      file: "src/components/ui/tabs.tsx",
+      note: "정의된 세그먼트 / tabs 프리미티브입니다.",
+    },
+  ],
+  feedback: [
+    {
+      file: "src/components/ui/alert.tsx",
+      note: "정의된 alert 프리미티브입니다.",
+    },
+    {
+      file: "src/components/ui/progress.tsx",
+      note: "정의된 progress 프리미티브입니다.",
+    },
+    {
+      file: "src/components/ui/skeleton.tsx",
+      note: "정의된 skeleton 프리미티브입니다.",
+    },
+    {
+      file: "src/components/ui/sonner.tsx",
+      note: "toast wrapper는 존재하지만 현재 화면에는 연결되어 있지 않습니다.",
+    },
+  ],
+  overlay: [
+    {
+      file: "src/components/ui/dialog.tsx",
+      note: "dialog 프리미티브입니다.",
+    },
+    {
+      file: "src/components/ui/sheet.tsx",
+      note: "sheet / bottom-sheet 프리미티브입니다.",
+    },
+    {
+      file: "src/components/ui/popover.tsx",
+      note: "popover 프리미티브입니다.",
+    },
+    {
+      file: "src/components/ui/tooltip.tsx",
+      note: "tooltip 프리미티브입니다.",
+    },
+  ],
+  appSpecific: [
+    {
+      file: "src/components/system",
+      note: "메인 앱 전용 재사용 컴포넌트입니다.",
+    },
+    {
+      file: "src/components/measurement/TasteMeasurementMiniCta.tsx",
+      note: "Taste Buddy 전용 CTA 카드입니다.",
+    },
+    {
+      file: "src/components/reservation/DiningFeedbackFlow.tsx",
+      note: "플로우 전용 custom choice와 feedback block이 있습니다.",
+    },
+  ],
+  componentSpecs: [
+    {
+      file: "src/components/design-system/componentStyleSpecs.ts",
+      note: "복사용 컴포넌트 스타일 값과 코덱스 프롬프트 템플릿이 정의됩니다.",
+    },
+    {
+      file: "src/styles/design-system.css",
+      note: "tb-* 공용 클래스 기반 컴포넌트의 실제 스타일 원본입니다.",
+    },
+    {
+      file: "src/components/ui",
+      note: "Badge, Button, Input, Select, Tabs, Overlay 프리미티브의 정의 위치입니다.",
+    },
+  ],
+  auditNotes: [
+    {
+      file: "src/guidelines/Guidelines.md",
+      note: "저장소에 이미 있는 디자인 시스템 가이드입니다.",
+    },
+    {
+      file: "src/pages/OnboardingScreen.tsx",
+      note: "실사용 중인 motion token과 온보딩 타이포그래피를 보여줍니다.",
+    },
+    {
+      file: "src/pages/AnalysisPage.tsx",
+      note: "data-viz token, section title, 혼합 아이콘 사용 예시를 보여줍니다.",
+    },
+  ],
+};
+
+export const PLAYGROUND_DEFAULTS = {
+  accentTaste: "sweet" as TasteId,
+  background: COLOR_TOKENS.background.page,
+  bodyText: COLOR_TOKENS.text.body,
+  border: COLOR_TOKENS.border.default,
+  cardRadius: Number.parseInt(RADIUS_TOKENS[20], 10),
+  cardSurface: COLOR_TOKENS.surface.card,
+  controlRadius: Number.parseInt(RADIUS_TOKENS[10], 10),
+  displaySize: Number.parseInt(TYPOGRAPHY_TOKENS.fontSize[28], 10),
+  fontWeight: TYPOGRAPHY_TOKENS.fontWeight.semibold,
+  gap: Number.parseInt(SPACING_TOKENS[12], 10),
+  iconSize: ICON_TOKENS.size.xl,
+  primaryShadow: SHADOW_TOKENS.button,
+  primaryText: COLOR_TOKENS.text.primary,
+  sectionGap: Number.parseInt(SPACING_TOKENS[20], 10),
+  titleSize: Number.parseInt(TYPOGRAPHY_TOKENS.fontSize[18], 10),
+} as const;
+
+export const AUDIT_SUMMARY = {
+  componentCount: CURRENTLY_USED_COMPONENTS.length,
+  definedPrimitiveCount: UNUSED_UI_PRIMITIVES.length,
+  motionDuration: MOTION_TOKENS.durationMs.normal,
+  screenMaxWidth: LAYOUT_TOKENS.screenMaxWidth,
+  sharedButtonHeight: COMPONENT_TOKENS.button.height,
+};

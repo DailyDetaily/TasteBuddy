@@ -47,13 +47,13 @@
 
 | Token | Value | Role |
 | --- | --- | --- |
-| `--tb-color-bg-page` | `#FFFFFF` | 기본 화면 배경 |
+| `--tb-color-bg-page` | `#F3F3F3` | 기본 화면 배경 |
 | `--tb-color-surface-base` | `#FFFFFF` | 상단 바, 드로어 내부, 이미지 프레임 기본면 |
-| `--tb-color-surface-card` | `#F3F3F3` | 기본 카드 면 |
-| `--tb-color-surface-card-hover` | `#ECECEC` | 인터랙티브 카드 hover |
-| `--tb-color-surface-muted` | `#F5F5F5` | 체크리스트, 보조 블록 |
-| `--tb-color-surface-elevated` | `#F6F6F6` | 현재 단계 강조면 |
-| `--tb-color-surface-disabled` | `#F2F2F2` | disabled 버튼 |
+| `--tb-color-surface-card` | `#FFFFFF` | 기본 카드 면 |
+| `--tb-color-surface-card-hover` | `#FAFAFA` | 인터랙티브 카드 hover |
+| `--tb-color-surface-muted` | `#F7F7F7` | 체크리스트, 보조 블록 |
+| `--tb-color-surface-elevated` | `#FCFCFC` | 현재 단계 강조면 |
+| `--tb-color-surface-disabled` | `#EFEFEF` | disabled 버튼 |
 | `--tb-color-text-primary` | `#0F0F0F` | 메인 제목, 주 액션 |
 | `--tb-color-text-secondary` | `#3F3F3F` | 보조 제목, 아이콘 기본 |
 | `--tb-color-text-tertiary` | `#535353` | 배지, 보조 라벨 |
@@ -65,24 +65,36 @@
 | `--tb-color-border-default` | `#E7E7E7` | 탭 바 상단 경계 |
 | `--tb-color-border-strong` | `#E5E5E5` | active step, drawer handle |
 
-### 2-2. Taste Palette
+### 2-2. State Semantics
+
+| Token | Value | Role |
+| --- | --- | --- |
+| `--tb-color-success` | `#2F8F5B` | 준비 완료, 긍정 상태 텍스트/아이콘 |
+| `--tb-color-success-soft` | `#E6F4EC` | success chip / subtle success background |
+| `--tb-color-warning` | `#A8661A` | 진행 중, 주의가 필요한 상태 텍스트/아이콘 |
+| `--tb-color-warning-soft` | `#FFF1DE` | warning chip / subtle warning background |
+
+### 2-3. Taste Palette
 
 | Taste | Main | Dark | Light | Background | Gradient |
 | --- | --- | --- | --- | --- | --- |
-| Sweet | `#FF9900` | `#CC7A00` | `#FFCC80` | `#FFEBCC` | `linear-gradient(135deg, #FF9900, #FFB84D)` |
-| Sour | `#FBC02D` | `#C99A00` | `#FDD835` | `#FFF7CC` | `linear-gradient(135deg, #FBC02D, #FFD54F)` |
-| Bitter | `#95C900` | `#6E9600` | `#E6EE9C` | `#EAF4CC` | `linear-gradient(135deg, #95C900, #AED581)` |
-| Salty | `#7299FF` | `#4A70CC` | `#90CAF9` | `#E6F0FF` | `linear-gradient(135deg, #7299FF, #9FBFFF)` |
-| Umami | `#B372B4` | `#8A5490` | `#CE93D8` | `#F0E3F0` | `linear-gradient(135deg, #B372B4, #CE93D8)` |
-| Fat | `#95867A` | `#6B5E54` | `#BCAAA4` | `#EAE7E4` | `linear-gradient(135deg, #95867A, #B0A49A)` |
+| Sweet | `#FF9900` | `#CC7A00` | `#FFCC80` | `#FFD699` | `linear-gradient(135deg, #FF9900, #FFB84D)` |
+| Sour | `#FBC02D` | `#C99A00` | `#FDD835` | `#FFEF99` | `linear-gradient(135deg, #FBC02D, #FFD54F)` |
+| Bitter | `#95C900` | `#6E9600` | `#E6EE9C` | `#E0EBB4` | `linear-gradient(135deg, #95C900, #AED581)` |
+| Salty | `#7299FF` | `#4A70CC` | `#90CAF9` | `#C6D6FF` | `linear-gradient(135deg, #7299FF, #9FBFFF)` |
+| Umami | `#B372B4` | `#8A5490` | `#CE93D8` | `#E1C7E1` | `linear-gradient(135deg, #B372B4, #CE93D8)` |
+| Fat | `#95867A` | `#6B5E54` | `#BCAAA4` | `#D5CFCA` | `linear-gradient(135deg, #95867A, #B0A49A)` |
 
-### 2-3. Color Usage Rules
+### 2-4. Color Usage Rules
 
 - 대부분의 화면은 `white -> light gray card -> taste accent` 순서로 계층을 만든다.
 - taste color는 제목 전체보다 값, 그래프, 변화량, 상태 포인트에 쓰는 것이 기본이다.
 - 본문 문단을 taste color로 길게 쓰지 않는다.
 - 맛 배경색 위 텍스트는 가능한 한 해당 taste의 dark tone을 먼저 쓰고, 대비가 부족하면 `#0F0F0F`로 내린다.
+- 분석 탭 세부 분석 카드는 각 taste palette의 `Background` 값을 그대로 사용한다.
 - 차트와 링에서는 맛의 정체성을 유지하되, 격자와 기준선은 반드시 뉴트럴 그레이로 남긴다.
+- success / warning은 상태 chip, 진행 상태, 짧은 피드백에만 제한적으로 쓴다.
+- 상태색을 새로 만들기 전에는 neutral scale, success, warning, taste palette 순서로 먼저 검토한다.
 
 ## 3. Color Tokens
 
@@ -92,6 +104,7 @@
 - 텍스트: `--tb-color-text-*`
 - 경계: `--tb-color-border-*`
 - 아이콘: `--tb-color-icon-*`
+- 상태: `--tb-color-success*`, `--tb-color-warning*`
 - 맛별 토큰: `--tb-taste-{taste}-{role}`
 - 코드 레이어에서는 `COLOR_TOKENS`, `TASTE_TOKENS`, `TASTE_COLORS`를 source of truth로 사용한다.
 
@@ -243,15 +256,21 @@ Pretendard를 전 화면 기본 서체로 사용한다. 헤드라인은 촘촘�
 
 ### 9-5. Buttons
 
-- primary button은 black fill + white text + `52px` height + `10px` radius
+- primary button은 black fill + white text + `48px` height + `10px` radius
 - compact button은 `40px` 이상 높이 유지
 - disabled는 surface gray로 낮추고 shadow를 제거한다
 
 ### 9-6. Chips And Badges
 
 - `OutlineBadge`: 12px, 6px radius, thin border
-- `StatusChip`: full pill, 10px bold text
-- `TasteChip`: white pill 내부에 taste label + colorized value
+- `StatusChip`: 홈 탭 `TCS` 배지를 기준으로 한다
+- 홈 탭 `TCS` 배지는 단순 색 나열이 아니라, `adjustments.change` 절대값 비율만큼 각 미각 컬러 구간이 달라지는 weighted gradient를 사용한다
+- 홈 탭 `TCS` 배지 gradient는 각 taste `light` palette에 `white 25% mix`를 적용한 더 옅은 컬러를 사용한다
+- 홈 탭 `TCS` 배지 gradient 경계는 끊기지 않도록 넓은 transition 구간으로 자연스럽게 연결한다
+- `StatusChip` spec: `10px` bold text, `6px` radius, `6px / 2px` padding, relative positioning
+- `StatusChip` shadow: `0 2px 8px rgba(0,0,0,0.1)`, `0 1px 2px rgba(0,0,0,0.1)`, `inset 0 1px 0 rgba(255,255,255,0.3)`
+- `StatusChip`은 상태 의미에 따라 background fill과 text color만 바꾸고, 크기와 타이포그래피는 유지한다
+- `TasteChip`: 각 미각 메인 컬러의 `5% tint` 배경과 `18% tint` 외곽선을 사용하고, 내부에는 taste label + colorized value를 넣는다
 
 ### 9-7. Section Title
 

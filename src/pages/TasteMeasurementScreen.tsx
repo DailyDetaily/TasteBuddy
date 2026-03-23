@@ -195,9 +195,9 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
     };
 
     return (
-        <div className="flex flex-col w-full h-full bg-white relative font-sans">
+        <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)] relative font-sans">
             {/* Header */}
-            <header className="flex items-center justify-between px-4 h-14 bg-white z-10">
+            <header className="flex items-center justify-between px-4 h-14 bg-[var(--tb-color-bg-page)] z-10">
                 <button onClick={handleBack} className="p-2 -ml-2 text-black active:opacity-70 transition-opacity">
                     {phase === 'checklist' ? <span className="text-[20px] font-light px-1">✕</span> : <ChevronLeft strokeWidth={1.5} size={28} />}
                 </button>
@@ -220,7 +220,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             className="absolute inset-0 flex flex-col px-5"
                         >
                             <div className="mt-8 mb-12 text-center">
-                                <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight">체크리스트</h1>
+                                <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight">체크리스트</h1>
                                 <p className="text-[#666666] text-[14px]">
                                     정확한 미각 측정을 위해, 아래 단계를 먼저 준비해주세요.
                                 </p>
@@ -254,7 +254,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             className="absolute inset-0 flex flex-col px-5"
                         >
                             <div className="mt-8 mb-16 text-center">
-                                <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight">
+                                <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight">
                                     이제, 당신의 미각을<br />만나볼 시간입니다.
                                 </h1>
                                 <p className="text-[#666666] text-[14px]">
@@ -288,7 +288,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             className="absolute inset-0 flex flex-col px-5"
                         >
                             <div className="mt-8 mb-10 text-center">
-                                <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight" style={{ color: currentTaste.measurement.accent }}>
+                                <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight" style={{ color: currentTaste.measurement.accent }}>
                                     <span className="text-black">{currentTaste.measurement.ordinal}, {currentTaste.label} 측정</span>
                                 </h1>
                                 <p className="text-[#666666] text-[14px]">
@@ -324,7 +324,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             className="absolute inset-0 flex flex-col px-5"
                         >
                             <div className="mt-8 mb-[10vh] text-center">
-                                <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight">
+                                <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight">
                                     <span style={{ color: currentTaste.measurement.accent }}>{currentTaste.label}</span> 민감도를 측정 중입니다...
                                 </h1>
                                 <p className="text-[#666666] text-[14px]">

@@ -15,7 +15,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     }, [onComplete]);
 
     return (
-        <div className="flex flex-col items-center justify-center w-full h-full bg-white animate-fadeIn">
+        <div className="flex flex-col items-center justify-center w-full h-full bg-[var(--tb-color-bg-page)] animate-fadeIn">
             <div className="animate-[fadein_1s_ease-out_forwards]">
                 <SplashLogo />
             </div>

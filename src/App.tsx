@@ -2,17 +2,19 @@ import { useEffect, useState } from 'react';
 
 import Home from './imports/Home';
 import AnalysisPage from './pages/AnalysisPage';
+import DesignSystemPage from './pages/DesignSystemPage';
 import DesignSystemPreviewPage from './pages/DesignSystemPreviewPage';
 import ReservationPage from './pages/ReservationPage';
 import ProfilePage from './pages/ProfilePage';
 import SplashScreen from './pages/SplashScreen';
 import OnboardingScreen from './pages/OnboardingScreen';
+import QuickTasteCalibrationScreen from './pages/QuickTasteCalibrationScreen';
 import TeastickConnectScreen from './pages/TeastickConnectScreen';
 import TasteMeasurementScreen from './pages/TasteMeasurementScreen';
 import BottomTabBar, { type TabType } from './components/BottomTabBar';
 import { type TasteMeasurementSnapshot } from './constants/tasteMeasurementData';
 
-type AppState = 'splash' | 'onboarding' | 'teastick' | 'measurement' | 'main';
+type AppState = 'splash' | 'onboarding' | 'calibration' | 'teastick' | 'measurement' | 'main';
 type MeasurementEntryPoint = 'initial' | 'main';
 
 const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v1';
@@ -112,9 +114,7 @@ function MainApp() {
   };
 
   const handleStartInitialMeasurementFlow = () => {
-    setMeasurementEntryPoint('initial');
-    setMeasurementReturnTab('analysis');
-    setAppState('teastick');
+    setAppState('calibration');
   };
 
   const handleStartMeasurementFromMain = (originTab: TabType) => {
@@ -134,11 +134,22 @@ function MainApp() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="relative flex h-screen w-full max-w-[1440px] flex-col overflow-hidden bg-white font-sans shadow-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--tb-color-bg-page)]">
+      <div className="relative flex h-screen w-full max-w-[1440px] flex-col overflow-hidden bg-[var(--tb-color-bg-page)] font-sans shadow-2xl">
         {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}
         {appState === 'onboarding' && (
           <OnboardingScreen onComplete={handleStartInitialMeasurementFlow} />
+        )}
+        {appState === 'calibration' && (
+          <QuickTasteCalibrationScreen
+            onBack={() => setAppState('onboarding')}
+            onComplete={(snapshot) => {
+              setLatestTasteMeasurementSnapshot(snapshot);
+              setHasCompletedInitialMeasurement(true);
+              setActiveTab('analysis');
+              setAppState('main');
+            }}
+          />
         )}
         {appState === 'teastick' && (
           <TeastickConnectScreen
@@ -214,13 +225,48 @@ function MainApp() {
   );
 }
 
-export default function App() {
-  const previewMode =
-    typeof window === 'undefined'
-      ? null
-      : new URLSearchParams(window.location.search).get('preview');
+type InternalRoute = 'app' | 'design-system' | 'design-system-updates';
+
+function getInternalRoute(): InternalRoute {
+  if (typeof window === 'undefined') {
+    return 'app';
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const previewMode = searchParams.get('preview');
+  const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+
+  if (previewMode === 'design-system' || normalizedPath === '/design-system') {
+    return 'design-system';
+  }
 
   if (previewMode === 'design-system-updates') {
+    return 'design-system-updates';
+  }
+
+  return 'app';
+}
+
+export default function App() {
+  const [internalRoute, setInternalRoute] = useState<InternalRoute>(getInternalRoute);
+
+  useEffect(() => {
+    const syncRoute = () => {
+      setInternalRoute(getInternalRoute());
+    };
+
+    window.addEventListener('popstate', syncRoute);
+
+    return () => {
+      window.removeEventListener('popstate', syncRoute);
+    };
+  }, []);
+
+  if (internalRoute === 'design-system') {
+    return <DesignSystemPage />;
+  }
+
+  if (internalRoute === 'design-system-updates') {
     return <DesignSystemPreviewPage />;
   }
 

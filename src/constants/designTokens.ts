@@ -160,15 +160,15 @@ export const DATA_VIZ_TOKENS = {
 
 export const COLOR_TOKENS = {
   background: {
-    page: '#FFFFFF',
+    page: '#F3F3F3',
   },
   surface: {
     base: '#FFFFFF',
-    card: '#F3F3F3',
-    cardHover: '#ECECEC',
-    muted: '#F5F5F5',
-    elevated: '#F6F6F6',
-    disabled: '#F2F2F2',
+    card: '#FFFFFF',
+    cardHover: '#FAFAFA',
+    muted: '#F7F7F7',
+    elevated: '#FCFCFC',
+    disabled: '#EFEFEF',
     overlay: 'rgba(255, 255, 255, 0.8)',
   },
   text: {
@@ -197,6 +197,12 @@ export const COLOR_TOKENS = {
     hover: '#6F6F6F',
     muted: '#AFAFAF',
   },
+  state: {
+    success: '#2F8F5B',
+    successSoft: '#E6F4EC',
+    warning: '#A8661A',
+    warningSoft: '#FFF1DE',
+  },
   shadow: SHADOW_TOKENS,
 } as const;
 
@@ -206,7 +212,7 @@ export const LAYOUT_TOKENS = {
   sectionGap: '32px',
   cardPadding: '12px',
   topAppBarHeight: '56px',
-  primaryButtonHeight: '52px',
+  primaryButtonHeight: '48px',
   bottomFadeMinHeight: '140px',
   bottomIndicatorWidth: '134px',
   tasteLoopSize: 320,
@@ -296,7 +302,7 @@ export const TASTE_TOKENS = {
       main: '#FF9900',
       dark: '#CC7A00',
       light: '#FFCC80',
-      bg: '#FFEBCC',
+      bg: '#FFD699',
       gradient: 'linear-gradient(135deg, #FF9900, #FFB84D)',
     },
     measurement: {
@@ -328,7 +334,7 @@ export const TASTE_TOKENS = {
       main: '#FBC02D',
       dark: '#C99A00',
       light: '#FDD835',
-      bg: '#FFF7CC',
+      bg: '#FFEF99',
       gradient: 'linear-gradient(135deg, #FBC02D, #FFD54F)',
     },
     measurement: {
@@ -360,7 +366,7 @@ export const TASTE_TOKENS = {
       main: '#95C900',
       dark: '#6E9600',
       light: '#E6EE9C',
-      bg: '#EAF4CC',
+      bg: '#E0EBB4',
       gradient: 'linear-gradient(135deg, #95C900, #AED581)',
     },
     measurement: {
@@ -392,7 +398,7 @@ export const TASTE_TOKENS = {
       main: '#7299FF',
       dark: '#4A70CC',
       light: '#90CAF9',
-      bg: '#E6F0FF',
+      bg: '#C6D6FF',
       gradient: 'linear-gradient(135deg, #7299FF, #9FBFFF)',
     },
     measurement: {
@@ -424,7 +430,7 @@ export const TASTE_TOKENS = {
       main: '#B372B4',
       dark: '#8A5490',
       light: '#CE93D8',
-      bg: '#F0E3F0',
+      bg: '#E1C7E1',
       gradient: 'linear-gradient(135deg, #B372B4, #CE93D8)',
     },
     measurement: {
@@ -456,7 +462,7 @@ export const TASTE_TOKENS = {
       main: '#95867A',
       dark: '#6B5E54',
       light: '#BCAAA4',
-      bg: '#EAE7E4',
+      bg: '#D5CFCA',
       gradient: 'linear-gradient(135deg, #95867A, #B0A49A)',
     },
     measurement: {

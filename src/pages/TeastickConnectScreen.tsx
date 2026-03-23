@@ -102,15 +102,15 @@ export default function TeastickConnectScreen({
 
     return (
         <div
-            className={`relative flex h-full w-full font-sans transition-colors duration-500 ease-in-out ${isDrawerOpen ? 'bg-black' : 'bg-white'}`}
+            className={`relative flex h-full w-full font-sans transition-colors duration-500 ease-in-out ${isDrawerOpen ? 'bg-black' : 'bg-[var(--tb-color-bg-page)]'}`}
             style={{ transitionDuration: `${MOTION_TOKENS.durationMs.medium}ms` }}
         >
             <div
                 ref={backgroundCardRef}
-                className="relative flex h-full w-full origin-top flex-col overflow-hidden bg-white will-change-transform"
+                className="relative flex h-full w-full origin-top flex-col overflow-hidden bg-[var(--tb-color-bg-page)] will-change-transform"
             >
                 {/* Header */}
-                <header className="flex items-center justify-between px-4 h-14 bg-white z-10">
+                <header className="flex items-center justify-between px-4 h-14 bg-[var(--tb-color-bg-page)] z-10">
                     <button onClick={onSkip} className="p-2 -ml-2 text-black active:opacity-70 transition-opacity">
                         <ChevronLeft strokeWidth={1.5} size={28} />
                     </button>
@@ -122,7 +122,7 @@ export default function TeastickConnectScreen({
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-y-auto px-5 pb-24">
                     <div className="mt-6 mb-12 text-center">
-                        <h1 className="text-[24px] font-bold leading-tight mb-3 tracking-tight">
+                        <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight">
                             지금부터 고객님의 미각을<br />정밀하게 측정합니다.
                         </h1>
                         <p className="text-[14px] text-[var(--tb-color-text-body)]">

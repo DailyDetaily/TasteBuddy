@@ -1,0 +1,546 @@
+export type ComponentStyleSpecStatus = "currently-used" | "defined-but-unused";
+
+export interface ComponentStyleValue {
+  label: string;
+  note?: string;
+  value: string;
+}
+
+export interface ComponentStyleSource {
+  file: string;
+  note?: string;
+}
+
+export interface ComponentStyleSpec {
+  description: string;
+  group: string;
+  id: string;
+  name: string;
+  note?: string;
+  selector?: string;
+  sources: ComponentStyleSource[];
+  status: ComponentStyleSpecStatus;
+  values: ComponentStyleValue[];
+}
+
+export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
+  {
+    id: "taste-chip",
+    name: "TasteChip",
+    group: "배지",
+    status: "currently-used",
+    description: "현재 앱의 미각 포인트 칩입니다.",
+    selector: "src/components/system/TasteChip.tsx root span className",
+    sources: [
+      { file: "src/components/system/TasteChip.tsx", note: "루트와 텍스트 스타일이 여기서 정의됩니다." },
+      { file: "src/constants/tasteColors.ts", note: "taste value 강조 컬러를 계산합니다." },
+    ],
+    values: [
+      { label: "display", value: "inline-flex" },
+      { label: "align-items", value: "center" },
+      { label: "gap", value: "4px", note: "`gap-1`" },
+      { label: "border-radius", value: "9999px", note: "`rounded-full`" },
+      { label: "border", value: "1px solid rgba(getTasteColor(taste), 0.18)", note: "각 미각 메인 컬러의 18% tint" },
+      { label: "background-color", value: "rgba(getTasteColor(taste), 0.05)", note: "거의 흰색처럼 보이는 5% tint 배경" },
+      { label: "padding-inline", value: "8px", note: "`px-2`" },
+      { label: "padding-block", value: "4px", note: "`py-1`" },
+      { label: "font-size", value: "10px", note: "`text-[10px]`" },
+      { label: "font-weight", value: "500", note: "`font-medium`" },
+      { label: "label color", value: "var(--tb-color-text-primary)" },
+      { label: "value font-weight", value: "600", note: "`font-semibold`" },
+      { label: "value color", value: "getTasteColor(taste)", note: "taste별 accent 컬러" },
+    ],
+  },
+  {
+    id: "home-tcs-badge",
+    name: "HomeTcsBadge",
+    group: "배지",
+    status: "currently-used",
+    description: "홈 탭 히스토리 카드 상단의 gradient TCS 배지입니다.",
+    selector: "src/imports/Home.tsx > HistoryCard > span",
+    sources: [
+      { file: "src/imports/Home.tsx", note: "홈 탭 카드 상단의 실제 one-off 배지 원본입니다." },
+      { file: "src/guidelines/Guidelines.md", note: "StatusChip spec의 기준 컴포넌트로 문서화되어 있습니다." },
+    ],
+    values: [
+      { label: "display", value: "inline-flex" },
+      { label: "align-items", value: "center" },
+      { label: "border-radius", value: "6px", note: "`rounded-[6px]`" },
+      { label: "padding", value: "2px 6px", note: "`px-[6px] py-[2px]`" },
+      { label: "font-size", value: "10px", note: "`text-[10px]`" },
+      { label: "font-weight", value: "700", note: "`font-bold`" },
+      { label: "text color", value: "#FFFFFF" },
+      {
+        label: "background",
+        value: "linear-gradient(135deg, weighted taste.light stops with blended transitions ...)",
+        note: "history.adjustments의 `change` 절대값 비율만큼 각 미각 light palette 구간이 넓어지고, 각 색은 white 25% mix로 한 단계 더 밝게 처리됩니다.",
+      },
+      {
+        label: "box-shadow",
+        value: "0 2px 8px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3)",
+      },
+    ],
+  },
+  {
+    id: "status-chip",
+    name: "StatusChip",
+    group: "배지",
+    status: "currently-used",
+    description: "예약 상태와 진행 상태를 표시하는 칩입니다.",
+    selector: ".tb-status-chip",
+    sources: [
+      { file: "src/imports/Home.tsx", note: "홈 탭 TCS 배지가 시각 기준이 되는 원형입니다." },
+      { file: "src/components/system/StatusChip.tsx", note: "backgroundColor, color prop을 인라인으로 받습니다." },
+      { file: "src/styles/design-system.css", note: "기본 radius, padding, shadow, font가 여기서 정의됩니다." },
+    ],
+    values: [
+      { label: "display", value: "inline-flex" },
+      { label: "align-items", value: "center" },
+      { label: "border-radius", value: "6px" },
+      { label: "padding", value: "2px 6px" },
+      { label: "font-size", value: "10px" },
+      { label: "font-weight", value: "var(--tb-font-weight-bold)" },
+      { label: "background-color", value: "prop: backgroundColor" },
+      { label: "text color", value: "prop: color" },
+      {
+        label: "box-shadow",
+        value: "0 2px 8px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3)",
+      },
+    ],
+  },
+  {
+    id: "outline-badge",
+    name: "OutlineBadge",
+    group: "배지",
+    status: "currently-used",
+    description: "프로필 단계와 작은 상태 라벨에 쓰이는 외곽선 배지입니다.",
+    selector: ".tb-outline-badge",
+    sources: [
+      { file: "src/components/system/OutlineBadge.tsx" },
+      { file: "src/styles/design-system.css", note: "border, radius, font, padding 정의" },
+    ],
+    values: [
+      { label: "display", value: "inline-flex" },
+      { label: "align-items", value: "center" },
+      { label: "justify-content", value: "center" },
+      { label: "border", value: "1px solid var(--tb-color-text-tertiary)" },
+      { label: "border-radius", value: "var(--tb-radius-6)" },
+      { label: "padding", value: "var(--tb-space-2) var(--tb-space-8)" },
+      { label: "text color", value: "var(--tb-color-text-tertiary)" },
+      { label: "font-size", value: "var(--tb-font-size-12)" },
+      { label: "font-weight", value: "var(--tb-font-weight-semibold)" },
+      { label: "line-height", value: "var(--tb-line-height-normal)" },
+    ],
+  },
+  {
+    id: "primary-button",
+    name: "PrimaryButton",
+    group: "버튼",
+    status: "currently-used",
+    description: "메인 앱에서 실제로 가장 많이 쓰는 CTA 버튼입니다.",
+    selector: ".tb-primary-button",
+    sources: [
+      { file: "src/components/system/PrimaryButton.tsx", note: "compact, disabled, fullWidth variant가 여기서 갈립니다." },
+      { file: "src/styles/design-system.css", note: "공통 크기, 색상, shadow, transition 정의" },
+    ],
+    values: [
+      { label: "display", value: "inline-flex" },
+      { label: "width", value: "100%", note: "fullWidth=false면 `w-auto` override" },
+      { label: "height", value: "var(--tb-size-primary-button-height)" },
+      { label: "padding-inline", value: "var(--tb-space-16)" },
+      { label: "border-radius", value: "var(--tb-radius-10)" },
+      { label: "background-color", value: "var(--tb-color-text-primary)" },
+      { label: "text color", value: "var(--tb-color-text-inverse)" },
+      { label: "font-size", value: "var(--tb-font-size-14)" },
+      { label: "font-weight", value: "var(--tb-font-weight-medium)" },
+      { label: "shadow", value: "var(--tb-shadow-button)" },
+      { label: "active scale", value: "var(--tb-motion-scale-press)" },
+      { label: "compact size", value: "min-height 40px, px 16px, py 8px, font-size 12px, font-weight 600, shadow none" },
+      { label: "disabled state", value: "background var(--tb-color-surface-disabled), color var(--tb-color-text-disabled), shadow none" },
+    ],
+  },
+  {
+    id: "section-card",
+    name: "SectionCard",
+    group: "카드",
+    status: "currently-used",
+    description: "현재 앱 공용 카드 셸입니다.",
+    selector: ".tb-section-card / .tb-section-card__body",
+    sources: [
+      { file: "src/components/SectionCard.tsx", note: "interactive variant와 body wrapper 구조" },
+      { file: "src/styles/design-system.css", note: "radius, background, hover, body gap/padding 정의" },
+    ],
+    values: [
+      { label: "width", value: "100%" },
+      { label: "border-radius", value: "var(--tb-radius-20)" },
+      { label: "background-color", value: "var(--tb-color-surface-card)" },
+      { label: "hover background", value: "var(--tb-color-surface-card-hover)" },
+      { label: "hover shadow", value: "var(--tb-shadow-hover)" },
+      { label: "body display", value: "flex column" },
+      { label: "body gap", value: "var(--tb-space-12)" },
+      { label: "body padding", value: "var(--tb-space-12)" },
+      { label: "transition", value: "background-color, box-shadow, transform" },
+    ],
+  },
+  {
+    id: "taste-measurement-mini-cta",
+    name: "TasteMeasurementMiniCta",
+    group: "앱 전용",
+    status: "currently-used",
+    description: "분석, 예약, 프로필에서 재사용되는 인라인 CTA 카드입니다.",
+    selector: "src/components/measurement/TasteMeasurementMiniCta.tsx root div",
+    sources: [
+      { file: "src/components/measurement/TasteMeasurementMiniCta.tsx", note: "tone별 root, icon, typography, spacing이 모두 여기 있습니다." },
+      { file: "src/components/system/PrimaryButton.tsx", note: "버튼은 compact PrimaryButton을 사용합니다." },
+    ],
+    values: [
+      { label: "border-radius", value: "var(--tb-radius-20)" },
+      { label: "border", value: "1px solid", note: "tone에 따라 색상 변경" },
+      { label: "padding", value: "16px", note: "`p-4`" },
+      { label: "alert background", value: "linear-gradient(135deg, var(--tb-taste-sweet-bg) 0%, var(--tb-color-surface-base) 100%)" },
+      { label: "neutral background", value: "var(--tb-color-surface-card)" },
+      { label: "alert border color", value: "var(--tb-taste-sweet-light)" },
+      { label: "neutral border color", value: "var(--tb-color-border-card)" },
+      { label: "icon size", value: "32px" },
+      { label: "icon radius", value: "var(--tb-radius-10)" },
+      { label: "title font", value: "13px / 600" },
+      { label: "description font", value: "12px / line-height relaxed" },
+      { label: "meta font", value: "11px / 500" },
+      { label: "action button", value: "PrimaryButton compact" },
+    ],
+  },
+  {
+    id: "top-app-bar",
+    name: "TopAppBar",
+    group: "내비게이션",
+    status: "currently-used",
+    description: "상단 앱 바와 아이콘 액션 영역입니다.",
+    selector: "src/components/TopAppBar.tsx root div",
+    sources: [
+      { file: "src/components/TopAppBar.tsx", note: "전체 레이아웃과 아이콘 버튼, 아바타가 모두 여기 있습니다." },
+    ],
+    values: [
+      { label: "shell background", value: "var(--tb-color-bg-page)" },
+      { label: "horizontal padding", value: "20px", note: "`px-[20px]`" },
+      { label: "vertical padding", value: "12px", note: "`py-[12px]`" },
+      { label: "max height", value: "56px" },
+      { label: "avatar size", value: "32px" },
+      { label: "avatar border", value: "1px solid var(--tb-color-border-avatar)" },
+      { label: "title font", value: "15px / 700" },
+      { label: "action gap", value: "16px" },
+      { label: "icon size", value: "24px" },
+      { label: "icon color", value: "var(--tb-color-icon-primary)" },
+      { label: "icon hover color", value: "var(--tb-color-text-primary)" },
+    ],
+  },
+  {
+    id: "bottom-tab-bar",
+    name: "BottomTabBar",
+    group: "내비게이션",
+    status: "currently-used",
+    description: "하단 탭 바와 홈 인디케이터입니다.",
+    selector: "src/components/BottomTabBar.tsx root div",
+    sources: [
+      { file: "src/components/BottomTabBar.tsx", note: "tab button, active state, indicator 정의" },
+    ],
+    values: [
+      { label: "background-color", value: "var(--tb-color-surface-base)" },
+      { label: "border-top", value: "1px solid var(--tb-color-border-default)" },
+      { label: "tab padding", value: "6px 16px" },
+      { label: "tab gap", value: "2px" },
+      { label: "icon size", value: "24px" },
+      { label: "label font", value: "10px" },
+      { label: "active icon/text color", value: "var(--tb-color-text-primary)" },
+      { label: "inactive icon/text color", value: "var(--tb-color-icon-muted)" },
+      { label: "hover icon/text color", value: "var(--tb-color-icon-hover)" },
+      { label: "active scale", value: "1.1" },
+      { label: "active stroke width", value: "2.2" },
+      { label: "indicator size", value: "134px x 5px" },
+    ],
+  },
+  {
+    id: "badge",
+    name: "Badge",
+    group: "배지",
+    status: "defined-but-unused",
+    description: "공용 shadcn badge 프리미티브입니다.",
+    selector: "badgeVariants() in src/components/ui/badge.tsx",
+    sources: [
+      { file: "src/components/ui/badge.tsx", note: "base + variant class map이 모두 여기에 있습니다." },
+    ],
+    values: [
+      { label: "display", value: "inline-flex" },
+      { label: "border-radius", value: "6px", note: "`rounded-md`" },
+      { label: "padding", value: "2px 8px", note: "`px-2 py-0.5`" },
+      { label: "font-size", value: "12px", note: "`text-xs`" },
+      { label: "font-weight", value: "500", note: "`font-medium`" },
+      { label: "gap", value: "4px", note: "`gap-1`" },
+      { label: "default variant", value: "bg-primary / text-primary-foreground" },
+      { label: "secondary variant", value: "bg-secondary / text-secondary-foreground" },
+      { label: "outline variant", value: "text-foreground + hover accent" },
+      { label: "destructive variant", value: "bg-destructive / text-white" },
+    ],
+  },
+  {
+    id: "button",
+    name: "Button",
+    group: "버튼",
+    status: "defined-but-unused",
+    description: "공용 shadcn button 프리미티브입니다.",
+    selector: "buttonVariants() in src/components/ui/button.tsx",
+    sources: [
+      { file: "src/components/ui/button.tsx", note: "variant와 size class map이 모두 여기에 있습니다." },
+    ],
+    values: [
+      { label: "display", value: "inline-flex" },
+      { label: "gap", value: "8px", note: "`gap-2`" },
+      { label: "border-radius", value: "6px", note: "`rounded-md`" },
+      { label: "font-size", value: "14px", note: "`text-sm`" },
+      { label: "font-weight", value: "500", note: "`font-medium`" },
+      { label: "focus ring", value: "3px" },
+      { label: "default size", value: "height 36px, padding 8px 16px" },
+      { label: "sm size", value: "height 32px, padding 8px 12px" },
+      { label: "lg size", value: "height 40px, padding 8px 24px" },
+      { label: "icon size", value: "36px x 36px" },
+      { label: "default variant", value: "bg-primary / text-primary-foreground" },
+      { label: "outline variant", value: "border + bg-background + hover accent" },
+      { label: "ghost variant", value: "background on hover only" },
+    ],
+  },
+  {
+    id: "input",
+    name: "Input",
+    group: "필드",
+    status: "defined-but-unused",
+    description: "공용 input 프리미티브입니다.",
+    selector: "src/components/ui/input.tsx data-slot=input",
+    sources: [
+      { file: "src/components/ui/input.tsx" },
+    ],
+    values: [
+      { label: "height", value: "36px", note: "`h-9`" },
+      { label: "border-radius", value: "6px", note: "`rounded-md`" },
+      { label: "border color", value: "token: border-input" },
+      { label: "background-color", value: "token: bg-input-background" },
+      { label: "padding-inline", value: "12px", note: "`px-3`" },
+      { label: "padding-block", value: "4px", note: "`py-1`" },
+      { label: "font-size", value: "16px base / md 14px", note: "`text-base md:text-sm`" },
+      { label: "placeholder color", value: "token: muted-foreground" },
+      { label: "focus ring", value: "3px" },
+      { label: "disabled state", value: "pointer-events none + opacity 0.5" },
+    ],
+  },
+  {
+    id: "textarea",
+    name: "Textarea",
+    group: "필드",
+    status: "defined-but-unused",
+    description: "공용 textarea 프리미티브입니다.",
+    selector: "src/components/ui/textarea.tsx data-slot=textarea",
+    sources: [
+      { file: "src/components/ui/textarea.tsx" },
+    ],
+    values: [
+      { label: "min-height", value: "64px", note: "`min-h-16`" },
+      { label: "border-radius", value: "6px", note: "`rounded-md`" },
+      { label: "border color", value: "token: border-input" },
+      { label: "background-color", value: "token: bg-input-background" },
+      { label: "padding-inline", value: "12px", note: "`px-3`" },
+      { label: "padding-block", value: "8px", note: "`py-2`" },
+      { label: "font-size", value: "16px base / md 14px" },
+      { label: "focus ring", value: "3px" },
+      { label: "resize", value: "none" },
+      { label: "disabled state", value: "opacity 0.5" },
+    ],
+  },
+  {
+    id: "select-trigger",
+    name: "SelectTrigger",
+    group: "필드",
+    status: "defined-but-unused",
+    description: "공용 select 트리거 입력면입니다.",
+    selector: "src/components/ui/select.tsx data-slot=select-trigger",
+    sources: [
+      { file: "src/components/ui/select.tsx", note: "trigger, content, item class map이 여기 있습니다." },
+    ],
+    values: [
+      { label: "height", value: "36px default / 32px sm" },
+      { label: "border-radius", value: "6px", note: "`rounded-md`" },
+      { label: "border color", value: "token: border-input" },
+      { label: "background-color", value: "token: bg-input-background" },
+      { label: "padding-inline", value: "12px", note: "`px-3`" },
+      { label: "padding-block", value: "8px", note: "`py-2`" },
+      { label: "font-size", value: "14px", note: "`text-sm`" },
+      { label: "gap", value: "8px", note: "`gap-2`" },
+      { label: "focus ring", value: "3px" },
+      { label: "icon size", value: "16px" },
+    ],
+  },
+  {
+    id: "tabs",
+    name: "Tabs",
+    group: "내비게이션",
+    status: "defined-but-unused",
+    description: "공용 segmented tabs 프리미티브입니다.",
+    selector: "src/components/ui/tabs.tsx data-slot=tabs-*",
+    sources: [
+      { file: "src/components/ui/tabs.tsx", note: "TabsList, TabsTrigger, TabsContent 정의" },
+    ],
+    values: [
+      { label: "root gap", value: "8px", note: "`gap-2`" },
+      { label: "list height", value: "36px", note: "`h-9`" },
+      { label: "list radius", value: "12px", note: "`rounded-xl`" },
+      { label: "list padding", value: "3px" },
+      { label: "trigger radius", value: "12px", note: "`rounded-xl`" },
+      { label: "trigger padding", value: "4px 8px", note: "`px-2 py-1`" },
+      { label: "trigger font", value: "14px / 500" },
+      { label: "active background", value: "bg-card" },
+      { label: "focus ring", value: "3px" },
+    ],
+  },
+  {
+    id: "dialog-content",
+    name: "DialogContent",
+    group: "오버레이",
+    status: "defined-but-unused",
+    description: "공용 dialog 콘텐츠 패널입니다.",
+    selector: "src/components/ui/dialog.tsx data-slot=dialog-content",
+    sources: [
+      { file: "src/components/ui/dialog.tsx", note: "overlay, content, title, description 정의" },
+    ],
+    values: [
+      { label: "position", value: "fixed center" },
+      { label: "max-width", value: "calc(100% - 2rem), sm max 32rem" },
+      { label: "gap", value: "16px", note: "`gap-4`" },
+      { label: "border-radius", value: "8px", note: "`rounded-lg`" },
+      { label: "border", value: "1px solid" },
+      { label: "padding", value: "24px", note: "`p-6`" },
+      { label: "shadow", value: "shadow-lg" },
+      { label: "overlay", value: "bg-black/50" },
+      { label: "close button position", value: "top 16px / right 16px" },
+    ],
+  },
+  {
+    id: "sheet-content",
+    name: "SheetContent",
+    group: "오버레이",
+    status: "defined-but-unused",
+    description: "공용 sheet / bottom sheet 콘텐츠 패널입니다.",
+    selector: "src/components/ui/sheet.tsx data-slot=sheet-content",
+    sources: [
+      { file: "src/components/ui/sheet.tsx", note: "side별 레이아웃과 overlay 정의" },
+    ],
+    values: [
+      { label: "position", value: "fixed" },
+      { label: "display", value: "flex column" },
+      { label: "gap", value: "16px", note: "`gap-4`" },
+      { label: "shadow", value: "shadow-lg" },
+      { label: "right side size", value: "75% width, sm max-width small" },
+      { label: "bottom side size", value: "full width, auto height, border-top" },
+      { label: "header padding", value: "16px", note: "`p-4`" },
+      { label: "footer padding", value: "16px", note: "`p-4`" },
+      { label: "overlay", value: "bg-black/50" },
+    ],
+  },
+  {
+    id: "popover-content",
+    name: "PopoverContent",
+    group: "오버레이",
+    status: "defined-but-unused",
+    description: "공용 popover 콘텐츠 패널입니다.",
+    selector: "src/components/ui/popover.tsx data-slot=popover-content",
+    sources: [
+      { file: "src/components/ui/popover.tsx" },
+    ],
+    values: [
+      { label: "width", value: "288px", note: "`w-72`" },
+      { label: "border-radius", value: "6px", note: "`rounded-md`" },
+      { label: "border", value: "1px solid" },
+      { label: "padding", value: "16px", note: "`p-4`" },
+      { label: "background-color", value: "token: bg-popover" },
+      { label: "text color", value: "token: text-popover-foreground" },
+      { label: "shadow", value: "shadow-md" },
+      { label: "side offset", value: "4px default" },
+    ],
+  },
+  {
+    id: "tooltip-content",
+    name: "TooltipContent",
+    group: "오버레이",
+    status: "defined-but-unused",
+    description: "공용 tooltip 콘텐츠 패널입니다.",
+    selector: "src/components/ui/tooltip.tsx data-slot=tooltip-content",
+    sources: [
+      { file: "src/components/ui/tooltip.tsx" },
+    ],
+    values: [
+      { label: "width", value: "fit-content" },
+      { label: "border-radius", value: "6px", note: "`rounded-md`" },
+      { label: "padding", value: "6px 12px", note: "`px-3 py-1.5`" },
+      { label: "font-size", value: "12px", note: "`text-xs`" },
+      { label: "background-color", value: "token: bg-primary" },
+      { label: "text color", value: "token: text-primary-foreground" },
+      { label: "arrow size", value: "10px", note: "`size-2.5`" },
+      { label: "side offset", value: "0px default" },
+    ],
+  },
+];
+
+function formatStatus(status: ComponentStyleSpecStatus) {
+  return status === "currently-used" ? "Currently used" : "Defined but unused";
+}
+
+export function buildComponentStyleSnippet(spec: ComponentStyleSpec) {
+  return [
+    `컴포넌트: ${spec.name}`,
+    `분류: ${spec.group}`,
+    `상태: ${formatStatus(spec.status)}`,
+    "",
+    "수정 파일:",
+    ...spec.sources.map((source) =>
+      source.note ? `- ${source.file} (${source.note})` : `- ${source.file}`,
+    ),
+    ...(spec.selector ? ["", `선택자/루트: ${spec.selector}`] : []),
+    "",
+    "현재 스타일 값:",
+    ...spec.values.map((value) =>
+      value.note
+        ? `- ${value.label}: ${value.value} (${value.note})`
+        : `- ${value.label}: ${value.value}`,
+    ),
+    ...(spec.note ? ["", "메모:", `- ${spec.note}`] : []),
+  ].join("\n");
+}
+
+export function buildComponentCodexPrompt(spec: ComponentStyleSpec) {
+  return [
+    "아래 컴포넌트의 현재 스타일을 기준으로 수정해줘.",
+    "",
+    `컴포넌트: ${spec.name}`,
+    `분류: ${spec.group}`,
+    `상태: ${formatStatus(spec.status)}`,
+    "",
+    "수정 파일:",
+    ...spec.sources.map((source) =>
+      source.note ? `- ${source.file} (${source.note})` : `- ${source.file}`,
+    ),
+    ...(spec.selector ? ["", `선택자/루트: ${spec.selector}`] : []),
+    "",
+    "현재 스타일 값:",
+    ...spec.values.map((value) =>
+      value.note
+        ? `- ${value.label}: ${value.value} (${value.note})`
+        : `- ${value.label}: ${value.value}`,
+    ),
+    ...(spec.note ? ["", "메모:", `- ${spec.note}`] : []),
+    "",
+    "요청사항:",
+    "- [여기에 원하는 변경사항을 적어주세요]",
+    "",
+    "조건:",
+    "- 기존 디자인 언어와 토큰 구조를 최대한 유지해줘.",
+    "- 가능하면 var(--tb-*) 토큰을 우선 재사용해줘.",
+    "- 관련 상태/variant가 있으면 함께 정리해줘.",
+    "- 수정 후 어떤 파일이 바뀌었는지 함께 알려줘.",
+  ].join("\n");
+}

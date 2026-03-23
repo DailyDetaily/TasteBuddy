@@ -25,7 +25,7 @@ export default function TopAppBar({
   onStartMeasurement,
 }: TopAppBarProps) {
   return (
-    <div className="bg-[var(--tb-color-surface-base)] w-full shrink-0 z-40">
+    <div className="bg-[var(--tb-color-bg-page)] w-full shrink-0 z-40">
       <div className="flex items-center justify-between px-[20px] py-[12px] max-h-[56px]">
         {/* Left */}
         <div className="flex items-center">

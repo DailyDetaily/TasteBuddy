@@ -144,7 +144,7 @@ export const DINING_FEEDBACK_SCENARIOS: Record<number, DiningFeedbackScenario> =
             ingredientPairing: '된장 jus에 표고 농축액이나 흑마늘을 조금 더해 감칠맛의 길이를 늘릴 수 있습니다.',
             label: '감칠맛이 기대보다 짧았어요',
             recommendation:
-              '된장 jus의 깊이를 조금 더 키우고 버섯 듀셀의 농축도를 올려 코스 중심축을 강화해보세요.',
+              '된장 jus의 깊이를 조금 더 키우고 버섯 듀셀의 농축도를 올려 코스의 중심 인상을 더 분명하게 만들어보세요.',
             reason:
               '고기의 육향은 충분했지만 발효된장과 버섯에서 기대한 깊은 감칠맛이 짧게 끝난 인상입니다.',
           },
@@ -163,9 +163,9 @@ export const DINING_FEEDBACK_SCENARIOS: Record<number, DiningFeedbackScenario> =
             id: 'main-balanced',
             ingredientPairing: '직화 향과 발효 감칠맛의 균형이 좋습니다.',
             label: '메인으로 가장 만족스러웠어요',
-            recommendation: '현재 중심축을 유지하되 가니시의 산뜻한 포인트만 미세 조정하면 좋습니다.',
+            recommendation: '현재 중심 인상은 유지하되 가니시의 산뜻한 포인트만 미세 조정하면 좋습니다.',
             reason:
-              '고기, 버섯, 된장의 세 축이 균형 있게 올라오며 메인 코스로서의 존재감이 충분했습니다.',
+              '고기, 버섯, 된장의 세 가지 포인트가 균형 있게 올라오며 메인 코스로서의 존재감이 충분했습니다.',
           },
         ],
         flavorNotes: ['육향', '발효 감칠맛', '직화 향', '묵직한 피니시'],
@@ -196,7 +196,7 @@ export const DINING_FEEDBACK_SCENARIOS: Record<number, DiningFeedbackScenario> =
             ingredientPairing: '배즙 대신 매실 또는 청사과 그라니타를 쓰면 끝맛이 더 살아납니다.',
             label: '고소함은 좋지만 산미가 부족했어요',
             recommendation:
-              '곡물 향은 유지하되 디저트 마무리에 작은 산미 축을 넣어 후반 무게를 덜어내는 편이 좋습니다.',
+              '곡물 향은 유지하되 디저트 마무리에 작은 산미 포인트를 넣어 후반 무게를 덜어내는 편이 좋습니다.',
             reason:
               '전체 코스 후반의 지방감과 고소함을 정리할 산미가 부족해 마무리가 다소 평평하게 느껴졌습니다.',
           },

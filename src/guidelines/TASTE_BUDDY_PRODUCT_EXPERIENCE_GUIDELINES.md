@@ -195,6 +195,16 @@ Profile results should always connect to:
 - chef-ready guidance
 - next-step usefulness
 
+### 6.3.1 Special Notes Must Be Translation, Not Trivia
+
+When the product shows a "Special Note" or an equivalent refined signal:
+
+- it should represent a repeatable pattern in detailed taste elements, not a decorative side fact
+- it should translate that pattern into chef-usable guidance for the next dining experience
+- it should preserve chef autonomy by framing the signal as calibration support, not a recipe command
+- it should show confidence or evidence level when the signal is still evolving
+- it should clearly indicate how the signal is being used in reservation personalization or chef-facing delivery
+
 ## 6.4 Feedback Must Feel Valuable
 
 Post-dining feedback must never feel like an admin task.  
