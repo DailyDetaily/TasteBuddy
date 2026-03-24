@@ -18,8 +18,8 @@ import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
 import OutlineBadge from '../components/system/OutlineBadge';
 import SectionTitle from '../components/system/SectionTitle';
-import { DATA_VIZ_TOKENS } from '../constants/designTokens';
-import { TASTE_COLORS, TASTE_TYPES, getTasteColor, getTasteTint, mixHexColors } from '../constants/tasteColors';
+import { DATA_VIZ_TOKENS, TASTE_LABELS } from '../constants/designTokens';
+import { TASTE_COLORS, getTasteColor, getTasteTint, mixHexColors } from '../constants/tasteColors';
 import {
   formatMeasurementDate,
   formatMeasurementValue,
@@ -35,12 +35,12 @@ import {
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
 
-// 주간 추이 데이터 (미각별 라인이 겹치지 않도록 간격 조정)
-const weeklyTrend = [
-  { week: '1주차', 단맛: 95, 신맛: 80, 짠맛: 65, 지방맛: 20, 쓴맛: 35, 감칠맛: 50 },
-  { week: '2주차', 단맛: 92, 신맛: 84, 짠맛: 68, 지방맛: 18, 쓴맛: 32, 감칠맛: 52 },
-  { week: '3주차', 단맛: 97, 신맛: 82, 짠맛: 62, 지방맛: 22, 쓴맛: 28, 감칠맛: 47 },
-  { week: '4주차', 단맛: 94, 신맛: 86, 짠맛: 67, 지방맛: 15, 쓴맛: 30, 감칠맛: 54 },
+// 측정/피드백 기반 변화 데이터 (미각별 라인이 겹치지 않도록 간격 조정)
+const profileChangeTrend = [
+  { event: '03.02', 단맛: 95, 신맛: 82, 쓴맛: 69, 짠맛: 58, 감칠맛: 44, 지방맛: 20 },
+  { event: '03.08', 단맛: 92, 신맛: 79, 쓴맛: 66, 짠맛: 61, 감칠맛: 47, 지방맛: 18 },
+  { event: '03.17', 단맛: 96, 신맛: 81, 쓴맛: 64, 짠맛: 59, 감칠맛: 41, 지방맛: 22 },
+  { event: '03.24', 단맛: 94, 신맛: 84, 쓴맛: 67, 짠맛: 60, 감칠맛: 45, 지방맛: 15 },
 ];
 
 const RADAR_CHART = DATA_VIZ_TOKENS.radar;
@@ -53,6 +53,10 @@ const TREND_ACTIVE_DOT_HALO_WHITE_MIX = 0.72;
 const TREND_GUIDE_GAP = 2;
 const TREND_GUIDE_MASK_WIDTH = 6;
 const TREND_GUIDE_BOTTOM_TAIL = 8;
+const PROFILE_CHANGE_TREND_LAST_INDEX = profileChangeTrend.length - 1;
+const GRAPH_TASTE_ORDER = TASTE_LABELS;
+
+type ProfileChangeTrendPoint = (typeof profileChangeTrend)[number];
 
 interface WeeklyTrendActiveDotProps {
   cx?: number;
@@ -67,6 +71,15 @@ interface WeeklyTrendCursorProps {
     y?: number;
   }>;
   top?: number;
+}
+
+interface WeeklyTrendAxisTickProps {
+  index?: number;
+  payload?: {
+    value?: string;
+  };
+  x?: number;
+  y?: number;
 }
 
 function WeeklyTrendActiveDot({
@@ -156,8 +169,36 @@ function WeeklyTrendCursor({
   );
 }
 
+function WeeklyTrendAxisTick({
+  index,
+  payload,
+  x,
+  y,
+}: WeeklyTrendAxisTickProps) {
+  if (typeof x !== 'number' || typeof y !== 'number') {
+    return null;
+  }
+
+  const isFirst = index === 0;
+  const isLast = index === PROFILE_CHANGE_TREND_LAST_INDEX;
+
+  return (
+    <text
+      x={x}
+      y={y + 10}
+      fill="var(--tb-color-text-hint)"
+      fontSize="11"
+      textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
+      dx={isFirst ? 2 : isLast ? -2 : 0}
+    >
+      {payload?.value}
+    </text>
+  );
+}
+
 interface WeeklyTrendTooltipEntry {
   dataKey?: string | number;
+  payload?: ProfileChangeTrendPoint;
   value?: number | string;
 }
 
@@ -174,10 +215,17 @@ function WeeklyTrendTooltip({
     return null;
   }
 
-  const uniqueEntries = TASTE_TYPES.map((taste) =>
-    payload.find((entry) => String(entry.dataKey) === taste),
-  ).filter((entry): entry is WeeklyTrendTooltipEntry & { dataKey: string; value: number | string } =>
-    typeof entry?.dataKey === 'string' && typeof entry.value !== 'undefined',
+  const activeDatum = payload[0]?.payload;
+
+  if (!activeDatum) {
+    return null;
+  }
+
+  const uniqueEntries = GRAPH_TASTE_ORDER.map((taste) => ({
+    dataKey: taste,
+    value: activeDatum[taste],
+  })).filter((entry): entry is { dataKey: string; value: number | string } =>
+    typeof entry.value !== 'undefined',
   );
 
   return (
@@ -435,7 +483,7 @@ export default function AnalysisPage({
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
       <TopAppBar onStartMeasurement={onStartMeasurement} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
-        <div className="flex flex-col gap-8 p-5 animate-fadeIn">
+        <div className="flex flex-col gap-6 p-5 animate-fadeIn">
           {/* 페이지 타이틀 */}
           <div>
             <h1 className="text-[18px] font-bold tracking-[-0.24px] text-[var(--tb-color-text-primary)]">미각 프로필</h1>
@@ -506,7 +554,7 @@ export default function AnalysisPage({
 
           <div>
             <SectionTitle size="md" className="mb-3">세부 분석</SectionTitle>
-            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 w-[calc(100%+40px)] mx-[-20px] px-[20px]">
+            <div className="flex gap-[10px] overflow-x-auto no-scrollbar pb-2 w-[calc(100%+40px)] mx-[-20px] px-[20px]">
               {myTasteData.map((item, idx) => {
                 const colors = TASTE_COLORS[item.label as keyof typeof TASTE_COLORS];
                 return (
@@ -545,21 +593,21 @@ export default function AnalysisPage({
             </div>
           </div>
 
-          {/* 주간 추이 차트 */}
-          <div className="flex flex-col gap-3">
+          {/* 측정/피드백 변화 차트 */}
+          <div className="flex flex-col gap-2">
             <div>
-              <SectionTitle size="md" className="mb-3">주간 미각 변화 추이</SectionTitle>
+              <SectionTitle size="md" className="mb-3">측정·피드백 기반 미각 변화 추이</SectionTitle>
               <SectionCard>
               <div className="w-full h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={weeklyTrend} margin={{ top: 10, bottom: 0 }}>
+                  <LineChart data={profileChangeTrend} margin={{ top: 10, bottom: 0 }}>
                     <XAxis
-                      dataKey="week"
-                      tick={{ fontSize: 11, fill: 'var(--tb-color-text-hint)' }}
+                      dataKey="event"
+                      tick={<WeeklyTrendAxisTick />}
                       axisLine={false}
                       tickLine={false}
                       interval={0}
-                      padding={{ left: 10, right: 10 }}
+                      padding={{ left: 12, right: 12 }}
                       height={18}
                       tickMargin={0}
                     />
@@ -568,7 +616,7 @@ export default function AnalysisPage({
                       content={<WeeklyTrendTooltip />}
                       cursor={<WeeklyTrendCursor />}
                     />
-                    {TASTE_TYPES.map((taste) => (
+                    {GRAPH_TASTE_ORDER.map((taste) => (
                       <React.Fragment key={taste}>
                         <Line
                           type="linear"
@@ -610,7 +658,7 @@ export default function AnalysisPage({
           {/* 인사이트 */}
           <div className="pb-6">
             <SectionTitle size="md" className="mb-3">인사이트</SectionTitle>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {insights.map((item, idx) => (
                 <SectionCard key={idx}>
                   <div className="flex items-center gap-3 w-full">
