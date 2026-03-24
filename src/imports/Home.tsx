@@ -12,9 +12,9 @@ import chefLeeJun from "../assets/LeeJun.png";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
 import TasteChip from "../components/system/TasteChip";
 import TopAppBar from "../components/TopAppBar";
-import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, mixHexColors } from "../constants/tasteColors";
+import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, mixHexColors, TASTE_TYPES } from "../constants/tasteColors";
 import {  
-  StarRegular, StarHalfRegular, ClockRegular, 
+  StarRegular, StarHalfRegular, ClockRegular, SearchRegular,
   ChevronDownRegular, ChevronRightRegular, ChevronUpRegular 
 } from '@fluentui/react-icons';
 
@@ -27,18 +27,61 @@ const wrapIcon = (IconComponent: React.ElementType) => {
 const Star = wrapIcon(StarRegular);
 const StarHalf = wrapIcon(StarHalfRegular);
 const Clock = wrapIcon(ClockRegular);
+const Search = wrapIcon(SearchRegular);
 const ChevronDown = wrapIcon(ChevronDownRegular);
 const ChevronRight = wrapIcon(ChevronRightRegular);
 const ChevronUp = wrapIcon(ChevronUpRegular);
 
-const HOME_TASTE_PROFILE_ADJUSTMENTS = [
-  { taste: "단맛", change: "+15.2%" },
-  { taste: "감칠맛", change: "-10.7%" },
-] as const;
+const HOME_TASTE_PROFILE_CARD = {
+  details: [
+    {
+      cue: "당 보강 없이도 단맛이 더 빨리 또렷하게 느껴지는 흐름이에요.",
+      detailLabel: "단맛",
+      history: ["+1.8%", "+3.2%", "+5.4%", "+7.1%", "+9.8%", "+12.6%"],
+      parentTaste: "단맛",
+      change: "+15.2%",
+      trend: "increase",
+    },
+    {
+      cue: "풍미의 깊이보다 마무리의 밀도에서 먼저 둔감해졌어요.",
+      detailLabel: "감칠맛",
+      history: ["-1.4%", "-2.9%", "-4.1%", "-5.8%", "-7.6%", "-9.1%"],
+      parentTaste: "감칠맛",
+      change: "-10.7%",
+      trend: "decrease",
+    },
+  ],
+  keywords: ["체중 감소", "단맛 반응", "감칠맛 밀도"],
+  periodLabel: "6.10-16일",
+  summary:
+    "최근 6일 동안 단맛은 더 빨리 또렷해지고, 감칠맛은 같은 강도에서도 밀도가 덜 느껴졌어요. 지금 변화는 음식 취향이 바뀌었다기보다 컨디션 변화에 따른 반응 차이에 가까워요.",
+  serviceHint:
+    "다음 추천과 셰프 메모에는 단맛 자극은 과하게 올리지 않고, 감칠맛은 깊이보다 잔향과 밀도를 보강하는 방향으로 반영됩니다.",
+  title: "체중 감소 뒤 반응이 달라졌어요",
+} as const;
 const HOME_TASTE_PROFILE_CIRCLE_GRADIENT = buildTasteAdjustmentGradient(
-  HOME_TASTE_PROFILE_ADJUSTMENTS,
+  HOME_TASTE_PROFILE_CARD.details.map((detail) => ({
+    taste: detail.parentTaste,
+    change: detail.change,
+  })),
   { direction: "to bottom", useTint: false },
 );
+const HOME_TASTE_PROFILE_WEEKLY_SERIES = [
+  { label: "6.10", "단맛": 1.8, "감칠맛": -1.4, "신맛": 0.4, "쓴맛": -0.8, "짠맛": 0.7, "지방맛": -0.5 },
+  { label: "6.11", "단맛": 3.2, "감칠맛": -2.9, "신맛": 0.9, "쓴맛": -1.1, "짠맛": 0.4, "지방맛": -0.9 },
+  { label: "6.12", "단맛": 5.4, "감칠맛": -4.1, "신맛": 1.2, "쓴맛": -1.3, "짠맛": 0.2, "지방맛": -1.6 },
+  { label: "6.13", "단맛": 7.1, "감칠맛": -5.8, "신맛": 1.5, "쓴맛": -1.7, "짠맛": -0.3, "지방맛": -2.4 },
+  { label: "6.14", "단맛": 9.8, "감칠맛": -7.6, "신맛": 1.9, "쓴맛": -1.9, "짠맛": -0.7, "지방맛": -3.2 },
+  { label: "6.16", "단맛": 15.2, "감칠맛": -10.7, "신맛": 2.3, "쓴맛": -2.1, "짠맛": -1.4, "지방맛": -4.7 },
+] as const;
+const HOME_TASTE_PROFILE_OVERVIEW_VALUES = [
+  { taste: "단맛", change: 15.2 },
+  { taste: "신맛", change: 2.3 },
+  { taste: "쓴맛", change: -2.1 },
+  { taste: "짠맛", change: -1.4 },
+  { taste: "감칠맛", change: -10.7 },
+  { taste: "지방맛", change: -4.7 },
+] as const;
 const HOME_SPECIAL_NOTE_CARD = {
   confidenceLabel: "반복 관찰 4회",
   confidenceNote: "최근 식사와 피드백에서 비슷한 세부 반응이 이어졌어요.",
@@ -68,6 +111,8 @@ const HOME_SPECIAL_NOTE_CARD = {
   ],
   keywords: ["발효 베이스", "숙성 풍미", "농축 감칠맛"],
   periodLabel: "6.10-16일",
+  reservationHint:
+    "다음 예약에서는 이 신호가 셰프 메모에 함께 전달돼요. 메뉴 방향은 유지하되, 발효 베이스의 시작 강도와 풍미의 밀도를 더 부드럽게 조정하는 기준으로 반영됩니다.",
   serviceHint:
     "이 신호는 셰프의 의도를 바꾸기보다, 같은 의도가 더 편안하게 전달되도록 돕는 가이드로 쓰여요.",
   summary:
@@ -91,6 +136,42 @@ function parseTasteChangeValue(change: number | string) {
   const parsed = Number.parseFloat(change.replace("%", "").trim());
   return Number.isFinite(parsed) ? parsed : 0;
 }
+
+function getHomeTasteProfileSummaryDetails() {
+  const detailsWithValue = HOME_TASTE_PROFILE_CARD.details.map((detail) => ({
+    detail,
+    numericChange: parseTasteChangeValue(detail.change),
+  }));
+
+  const highestIncrease =
+    detailsWithValue
+      .filter((item) => item.numericChange > 0)
+      .sort((left, right) => right.numericChange - left.numericChange)[0] ??
+    [...detailsWithValue].sort((left, right) => right.numericChange - left.numericChange)[0];
+
+  const biggestDecrease =
+    detailsWithValue
+      .filter((item) => item.numericChange < 0)
+      .sort((left, right) => left.numericChange - right.numericChange)[0] ??
+    [...detailsWithValue].sort((left, right) => left.numericChange - right.numericChange)[0];
+
+  const summaryDetails: Array<(typeof HOME_TASTE_PROFILE_CARD.details)[number]> = [];
+
+  if (highestIncrease?.detail) {
+    summaryDetails.push(highestIncrease.detail);
+  }
+
+  if (
+    biggestDecrease?.detail &&
+    biggestDecrease.detail.detailLabel !== highestIncrease?.detail?.detailLabel
+  ) {
+    summaryDetails.push(biggestDecrease.detail);
+  }
+
+  return summaryDetails;
+}
+
+const HOME_TASTE_PROFILE_SUMMARY_DETAILS = getHomeTasteProfileSummaryDetails();
 
 function getHomeSpecialNoteSummaryDetails() {
   const detailsWithValue = HOME_SPECIAL_NOTE_CARD.details.map((detail) => ({
@@ -722,56 +803,14 @@ function Section() {
   );
 }
 
-function Heading2() {
-  return (
-    <div className="basis-0 content-stretch flex gap-[10px] grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Heading">
-      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[1.4] min-h-px min-w-px relative shrink-0 text-[20px] text-black tracking-[-0.24px]">미각 프로필</p>
-    </div>
-  );
-}
-
-function Content6() {
-  return (
-    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[grey] text-nowrap text-right tracking-[0.3421px] whitespace-pre">이번 주</p>
-      <div className="flex h-[4px] items-center justify-center relative shrink-0 w-[8px]" style={{ "--transform-inner-width": "4", "--transform-inner-height": "8" } as React.CSSProperties}>
-        <div className="flex-none rotate-[270deg]">
-          <div className="h-[8px] relative w-[4px]">
-            <div className="absolute inset-[-6.25%_-12.5%]">
-              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5 9">
-                <path d="M4.5 0.5L0.5 4.5L4.5 8.5" id="Vector 143" stroke="var(--stroke-0, #808080)" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MoreInfo2() {
-  return (
-    <div className="content-stretch flex gap-[6px] items-center justify-center relative shrink-0" data-name="More info">
-      <Content6 />
-    </div>
-  );
-}
-
-function MoreInfo3() {
-  return (
-    <div className="content-stretch flex h-full items-center justify-center relative shrink-0" data-name="More Info">
-      <MoreInfo2 />
-    </div>
-  );
-}
-
 function Heading3() {
   return (
-    <div className="content-stretch flex gap-[8px] items-end relative shrink-0 w-full" data-name="Heading">
-      <Heading2 />
-      <div className="flex flex-row items-end self-stretch">
-        <MoreInfo3 />
-      </div>
+    <div className="flex justify-between items-start w-full" data-name="Heading">
+      <span className="text-[20px] font-bold text-[#0f0f0f] tracking-[-0.24px]">미각 프로필</span>
+      <button type="button" className="flex items-center gap-1 cursor-pointer">
+        <span className="text-[11px] text-[#808080]">이번 주</span>
+        <ChevronDown className="w-3 h-3 text-[#3F3F3F]" />
+      </button>
     </div>
   );
 }
@@ -790,7 +829,7 @@ function Head() {
   return (
     <div className="flex gap-[6px] items-center relative shrink-0" data-name="Head">
       <TasteCircle />
-      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">미각 변화</p>
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">미각변화</p>
     </div>
   );
 }
@@ -798,7 +837,9 @@ function Head() {
 function Content7() {
   return (
     <div className="flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">6.10-16일</p>
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">
+        {HOME_TASTE_PROFILE_CARD.periodLabel}
+      </p>
       <div className="flex items-center justify-center relative shrink-0">
         <div className="flex-none rotate-[180deg]">
           <div className="h-[8px] relative w-[4px]">
@@ -839,188 +880,225 @@ function Heading4() {
   );
 }
 
-function ArrowBox() {
+function TasteChangeMiniGraph() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [availableWidth, setAvailableWidth] = useState(128);
+  const graphEntries = HOME_TASTE_PROFILE_SUMMARY_DETAILS.map((detail) => ({
+    ...detail,
+    graphValues: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
+  }));
+  const currentDotRadius = 6;
+  const historyDotRadius = 2;
+  const tintedLineWidth = 12;
+  const maxPointGap = 36;
+  const graphHeight = 24;
+  const graphInsetX = 6;
+  const lineStartWhiteMix = 0.6;
+
+  useEffect(() => {
+    const node = containerRef.current;
+
+    if (!node) {
+      return;
+    }
+
+    const updateWidth = (nextWidth: number) => {
+      setAvailableWidth((previousWidth) => {
+        const roundedWidth = Math.max(0, Math.round(nextWidth));
+        return previousWidth === roundedWidth ? previousWidth : roundedWidth;
+      });
+    };
+
+    updateWidth(node.clientWidth);
+
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) {
+        return;
+      }
+
+      updateWidth(entry.contentRect.width);
+    });
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
-      <div className="absolute inset-0" style={{ "--fill-0": "rgba(255, 153, 0, 1)" } as React.CSSProperties}>
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
-          <g id="Arrow Box">
-            <rect fill="var(--fill-0, #FF9900)" height="18" rx="4" width="18" />
-            <path d={svgPaths.p3d191ac0} id="Vector 222" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          </g>
-        </svg>
-      </div>
+    <div
+      aria-hidden="true"
+      ref={containerRef}
+      className="content-stretch flex w-full flex-col gap-[4px] shrink-0"
+      data-name="Taste Change Graph"
+    >
+      {graphEntries.map((entry, index) => {
+        const fillColor = getTasteColor(entry.parentTaste);
+        const trackColor = getTasteTint(entry.parentTaste, 0.18);
+        const lineStartColor = mixHexColors(fillColor, '#FFFFFF', lineStartWhiteMix);
+        const maxVisiblePoints = Math.max(
+          2,
+          Math.floor(Math.max(availableWidth - graphInsetX * 2, 0) / maxPointGap) + 1,
+        );
+        const visibleValues = entry.graphValues.slice(-maxVisiblePoints);
+        const graphWidth =
+          graphInsetX * 2 + Math.max(visibleValues.length - 1, 0) * maxPointGap;
+        const values = visibleValues;
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        const xStep = maxPointGap;
+        const gradientId = `taste-change-graph-gradient-${index}`;
+        const points = values.map((value, pointIndex) => {
+          const normalized =
+            maxValue === minValue ? 0.5 : (value - minValue) / (maxValue - minValue);
+
+          return {
+            x: Math.round(graphInsetX + xStep * pointIndex),
+            y: Math.round(18 - normalized * 10),
+          };
+        });
+        const graphPath = buildSpecialNoteTrendPath(points);
+        const currentPoint =
+          points[points.length - 1] ?? { x: graphWidth - graphInsetX, y: graphHeight / 2 };
+
+        return (
+          <div key={entry.detailLabel} className="flex h-[24px] w-full items-center justify-end">
+            <div className="relative h-[24px]" style={{ width: `${graphWidth}px` }}>
+              <svg className="absolute inset-0 size-full" viewBox={`0 0 ${graphWidth} ${graphHeight}`}>
+                <defs>
+                  <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="0" x2={graphWidth} y1="0" y2="0">
+                    <stop offset="0%" stopColor={lineStartColor} />
+                    <stop offset="100%" stopColor={fillColor} />
+                  </linearGradient>
+                </defs>
+                <path
+                  d={graphPath}
+                  fill="none"
+                  stroke={trackColor}
+                  strokeLinecap="round"
+                  strokeWidth={tintedLineWidth}
+                />
+                <path
+                  d={graphPath}
+                  fill="none"
+                  stroke={`url(#${gradientId})`}
+                  strokeLinecap="round"
+                  strokeWidth="2"
+                />
+              </svg>
+              {points.slice(0, -1).map((point, historyIndex) => {
+                const progress =
+                  graphWidth <= graphInsetX * 2
+                    ? 1
+                    : Math.min(
+                        1,
+                        Math.max(0, (point.x - graphInsetX) / (graphWidth - graphInsetX * 2)),
+                      );
+                const pointColor = mixHexColors(
+                  fillColor,
+                  '#FFFFFF',
+                  lineStartWhiteMix * (1 - progress),
+                );
+
+                return (
+                  <span
+                    key={`${entry.detailLabel}-history-${historyIndex}`}
+                    aria-hidden="true"
+                    className="absolute rounded-full"
+                    style={{
+                      backgroundColor: pointColor,
+                      height: `${historyDotRadius * 2}px`,
+                      left: `${point.x}px`,
+                      top: `${point.y}px`,
+                      transform: 'translate(-50%, -50%)',
+                      width: `${historyDotRadius * 2}px`,
+                    }}
+                  />
+                );
+              })}
+              <span
+                aria-hidden="true"
+                className="absolute rounded-full"
+                style={{
+                  backgroundColor: fillColor,
+                  height: `${currentDotRadius * 2}px`,
+                  left: `${currentPoint.x}px`,
+                  top: `${currentPoint.y}px`,
+                  transform: 'translate(-50%, -50%)',
+                  width: `${currentDotRadius * 2}px`,
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-function Info6() {
+function Cards3({ onOpenDetail }: { onOpenDetail: () => void }) {
   return (
-    <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-name="Info">
-      <ArrowBox />
-      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] text-[rgba(15,15,15,0.6)] text-nowrap whitespace-pre">단맛 증가</p>
-      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] text-nowrap whitespace-pre">+15.2%</p>
-    </div>
-  );
-}
-
-function ArrowBox1() {
-  return (
-    <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
-      <div className="absolute inset-0" style={{ "--fill-0": "rgba(179, 114, 180, 1)" } as React.CSSProperties}>
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
-          <g id="Arrow Box">
-            <rect fill="var(--fill-0, #B372B4)" height="18" rx="4" width="18" />
-            <path d={svgPaths.p1157b300} id="Vector 222" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          </g>
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function Frame() {
-  return (
-    <div className="basis-0 content-stretch flex font-['Pretendard_Variable:Regular',sans-serif] font-normal gap-[2px] grow items-center leading-[0] min-h-px min-w-px relative shrink-0 text-[rgba(15,15,15,0.6)] text-nowrap">
-      <div className="flex flex-col justify-center relative shrink-0 text-[12px]">
-        <p className="leading-[normal] text-nowrap whitespace-pre">감칠맛 감소</p>
-      </div>
-      <div className="flex flex-col justify-center relative shrink-0 text-[10px]">
-        <p className="leading-[normal] text-nowrap whitespace-pre">-10.7%</p>
-      </div>
-    </div>
-  );
-}
-
-function Info7() {
-  return (
-    <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-name="Info">
-      <ArrowBox1 />
-      <Frame />
-    </div>
-  );
-}
-
-function Info8() {
-  return (
-    <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full" data-name="Info">
-      <Info6 />
-      <Info7 />
-    </div>
-  );
-}
-
-function Right2() {
-  return (
-    <div className="basis-0 content-stretch flex flex-col gap-[12px] grow items-start min-h-px min-w-px relative shrink-0" data-name="Right">
-      <div className="flex flex-col font-['Pretendard_Variable:Bold',sans-serif] font-bold h-[14px] justify-center leading-[0] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
-        <p className="leading-[100.06%]">체중 감소에 따른</p>
-      </div>
-      <Info8 />
-    </div>
-  );
-}
-
-function GraphBottom() {
-  return (
-    <div className="absolute contents right-[13px] top-[calc(50%_+_21.22px)] translate-y-[-50%]" data-name="Graph Bottom">
-      <div className="absolute h-[7.444px] right-[18px] top-[calc(50%_+_18.72px)] translate-y-[-50%] w-[100px]">
-        <div className="absolute inset-[-67.16%_-5%_-67.17%_-5%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 110 18">
-            <path d={svgPaths.p3020d880} id="Vector 152" stroke="var(--stroke-0, #F0E3F0)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
-          </svg>
-        </div>
-      </div>
-      <div className="absolute h-[7.444px] right-[18px] top-[calc(50%_+_18.72px)] translate-y-[-50%] w-[100px]">
-        <div className="absolute inset-[-13.43%_-1%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 102 10">
-            <path d={svgPaths.p3255eb00} id="Vector 168" stroke="url(#paint0_linear_5_7582)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            <defs>
-              <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_5_7582" x1="-39" x2="101" y1="3.44446" y2="3.44446">
-                <stop stopColor="#E8D5E9" />
-                <stop offset="1" stopColor="#B576B6" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-      </div>
-      <div className="absolute right-[13px] size-[10px] top-[calc(50%_+_22.44px)] translate-y-[-50%]">
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
-          <circle cx="5" cy="5" fill="var(--fill-0, #B372B4)" id="Ellipse 210" r="5" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function GraphTop() {
-  return (
-    <div className="absolute contents right-[13px] top-[calc(50%_-_13.5px)] translate-y-[-50%]" data-name="Graph Top">
-      <div className="absolute h-[12px] right-[18px] top-[calc(50%_-_11px)] translate-y-[-50%] w-[100px]">
-        <div className="absolute inset-[-41.68%_-5%_-41.67%_-5%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 110 22">
-            <path d={svgPaths.p3d90bd00} id="Vector 150" stroke="var(--stroke-0, #FFEBCC)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="10" />
-          </svg>
-        </div>
-      </div>
-      <div className="absolute h-[12px] right-[18px] top-[calc(50%_-_11px)] translate-y-[-50%] w-[100px]">
-        <div className="absolute inset-[-8.34%_-1%_-8.33%_-1%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 102 14">
-            <path d={svgPaths.p16e45b04} id="Vector 153" stroke="url(#paint0_linear_5_7592)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            <defs>
-              <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_5_7592" x1="-39" x2="101" y1="8.50024" y2="8.50024">
-                <stop stopColor="#FFDFAF" />
-                <stop offset="1" stopColor="#FF9900" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-      </div>
-      <div className="absolute right-[13px] size-[10px] top-[calc(50%_-_17px)] translate-y-[-50%]">
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10 10">
-          <circle cx="5" cy="5" fill="var(--fill-0, #FF9900)" id="Ellipse 203" r="5" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function Group8() {
-  return (
-    <div className="absolute contents right-[13px] top-[calc(50%_+_2.72px)] translate-y-[-50%]">
-      <GraphBottom />
-      <GraphTop />
-    </div>
-  );
-}
-
-function MeasureGraph() {
-  return (
-    <div className="basis-0 grow h-[62px] min-h-px min-w-px relative shrink-0" data-name="Measure Graph">
-      <Group8 />
-    </div>
-  );
-}
-
-function Content8() {
-  return (
-    <div className="content-start flex flex-wrap gap-[12px] items-start justify-between min-w-[311px] relative shrink-0 w-full" data-name="Content">
-      <Right2 />
-      <MeasureGraph />
-    </div>
-  );
-}
-
-function Cards3() {
-  return (
-    <div className="bg-white h-auto relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+    <button
+      type="button"
+      onClick={onOpenDetail}
+      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-colors hover:bg-[#fafafa]"
+      data-name="Cards"
+    >
       <div className="overflow-clip rounded-[inherit] size-full">
         <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
           <Heading4 />
-          <Content8 />
+
+          <div className="box-border content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full">
+            <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
+              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
+                {HOME_TASTE_PROFILE_CARD.title}
+              </p>
+            </div>
+
+            <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
+              <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
+                {HOME_TASTE_PROFILE_SUMMARY_DETAILS.map((detail) => (
+                  <div key={detail.detailLabel} className="flex items-center gap-[8px] w-full">
+                    <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
+                    <div className="flex min-w-0 items-center gap-[6px]">
+                      <p className="truncate text-[13px] font-medium text-[rgba(15,15,15,0.72)]">
+                        {detail.detailLabel}
+                      </p>
+                      <p
+                        className="shrink-0 text-[12px] font-semibold leading-[1.1]"
+                        style={{ color: getTasteColor(detail.parentTaste) }}
+                      >
+                        {detail.change}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
+                <TasteChangeMiniGraph />
+              </div>
+            </div>
+
+            <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
+              {HOME_TASTE_PROFILE_CARD.keywords.map((keyword) => (
+                <span
+                  key={keyword}
+                  className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-white px-[8px] py-[4px] text-[10px] font-semibold text-[rgba(15,15,15,0.62)]"
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -1038,7 +1116,7 @@ function Head1() {
   return (
     <div className="flex gap-[6px] items-center relative shrink-0" data-name="Head">
       <TasteCircle1 />
-      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">특이 사항</p>
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">특이사항</p>
     </div>
   );
 }
@@ -1332,7 +1410,7 @@ function SpecialNoteGuidanceList() {
           className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full rounded-[12px] bg-[#f7f7f7] px-[10px] py-[10px]"
         >
           <div className="mt-[5px] size-[6px] rounded-full bg-[#0f0f0f]" />
-          <p className="basis-0 font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] min-h-px min-w-px relative shrink-0 text-[12px] text-[rgba(15,15,15,0.65)]">
+          <p className="basis-0 grow min-w-0 self-stretch font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] relative text-[12px] text-[rgba(15,15,15,0.65)] whitespace-normal break-keep text-left">
             {guidance}
           </p>
         </div>
@@ -1344,12 +1422,12 @@ function SpecialNoteGuidanceList() {
 function SpecialNoteFeatureBody() {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Special Note Feature">
-      <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-[#f3f3f3]">
+      <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-white">
         <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
           <span className="inline-flex items-center rounded-full bg-[#0f0f0f] px-[8px] py-[3px] text-[10px] font-semibold text-white">
             셰프 전달 포인트
           </span>
-          <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f7f7f7] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
+          <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f3f3f3] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
             {HOME_SPECIAL_NOTE_CARD.confidenceLabel}
           </span>
         </div>
@@ -1365,25 +1443,25 @@ function SpecialNoteFeatureBody() {
       </div>
 
       <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
-        <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-[#f3f3f3]">
+        <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-white">
           <div className="content-stretch flex flex-wrap gap-[8px] items-center justify-between relative shrink-0 w-full">
             <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[12px]">
               세부 미각 요소
             </p>
-            <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f7f7f7] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.65)]">
+            <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f3f3f3] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.65)]">
               {HOME_SPECIAL_NOTE_CARD.translationStatusLabel}
             </span>
           </div>
           <Info11 />
         </div>
 
-        <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-[#f3f3f3]">
+        <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-white">
           <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[12px]">
             예약에 어떻게 반영되나요
           </p>
           <SpecialNoteGuidanceList />
-          <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.55)] w-full">
-            {HOME_SPECIAL_NOTE_CARD.serviceHint}
+          <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] relative min-w-0 self-stretch text-[11px] text-[rgba(15,15,15,0.55)] whitespace-normal break-keep text-left">
+            {HOME_SPECIAL_NOTE_CARD.reservationHint}
           </p>
         </div>
       </div>
@@ -1730,37 +1808,59 @@ function Cards5() {
   );
 }
 
-function Content12({ onOpenSpecialNote }: { onOpenSpecialNote: () => void }) {
+function Content12({
+  onOpenSpecialNote,
+  onOpenTasteProfile,
+}: {
+  onOpenSpecialNote: () => void;
+  onOpenTasteProfile: () => void;
+}) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Content">
-      <Cards3 />
+      <Cards3 onOpenDetail={onOpenTasteProfile} />
       <Cards4 onOpenDetail={onOpenSpecialNote} />
     </div>
   );
 }
 
-function TasteProfile({ onOpenSpecialNote }: { onOpenSpecialNote: () => void }) {
+function TasteProfile({
+  onOpenSpecialNote,
+  onOpenTasteProfile,
+}: {
+  onOpenSpecialNote: () => void;
+  onOpenTasteProfile: () => void;
+}) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Taste Profile">
       <Heading3 />
-      <Content12 onOpenSpecialNote={onOpenSpecialNote} />
+      <Content12 onOpenSpecialNote={onOpenSpecialNote} onOpenTasteProfile={onOpenTasteProfile} />
     </div>
   );
 }
 
 function Section1() {
   const [specialNoteOpen, setSpecialNoteOpen] = useState(false);
+  const [tasteProfileOpen, setTasteProfileOpen] = useState(false);
 
   return (
     <div className="relative shrink-0 w-full" data-name="Section">
       <div className="size-full">
         <div className="box-border content-stretch flex flex-col items-start relative w-full">
-          <TasteProfile onOpenSpecialNote={() => setSpecialNoteOpen(true)} />
+          <TasteProfile
+            onOpenSpecialNote={() => setSpecialNoteOpen(true)}
+            onOpenTasteProfile={() => setTasteProfileOpen(true)}
+          />
         </div>
       </div>
 
+      {tasteProfileOpen ? (
+        <div className="fixed inset-0 z-[60] bg-[#f3f3f3]">
+          <TasteProfileDetailScreen onBack={() => setTasteProfileOpen(false)} />
+        </div>
+      ) : null}
+
       {specialNoteOpen ? (
-        <div className="fixed inset-0 z-50 bg-white">
+        <div className="fixed inset-0 z-[70] bg-[#f3f3f3]">
           <SpecialNoteDetailScreen onBack={() => setSpecialNoteOpen(false)} />
         </div>
       ) : null}
@@ -1802,9 +1902,26 @@ function HeadingAdjustment() {
 
 
 
-function HistoryCard({ history, onRate, onClick }: { history: any, onRate: (id: number, rating: number, action?: boolean | "toggle" | "edit" | { type: string, value: any }) => void, onClick: () => void }) {
+function HistoryCard({
+  history,
+  onRate,
+  onClick,
+  isCompareMode = false,
+  isSelectedForCompare = false,
+  compareSelectionOrder = 0,
+}: {
+  history: any,
+  onRate: (id: number, rating: number, action?: boolean | "toggle" | "edit" | { type: string, value: any }) => void,
+  onClick: () => void,
+  isCompareMode?: boolean;
+  isSelectedForCompare?: boolean;
+  compareSelectionOrder?: number;
+}) {
   return (
-    <div className="bg-white relative rounded-[20px] shrink-0 w-full" data-name="History Card">
+    <div
+      className={`bg-white relative rounded-[20px] shrink-0 w-full transition-all ${isSelectedForCompare ? 'ring-2 ring-[#0f0f0f] shadow-[0_8px_24px_rgba(15,15,15,0.08)]' : ''}`}
+      data-name="History Card"
+    >
       <div className="overflow-clip rounded-[inherit] size-full cursor-pointer" onClick={onClick}>
         <div className="box-border content-stretch flex flex-col gap-[12px] items-start p-[12px] relative w-full">
           <div className="flex items-center gap-2 w-full">
@@ -1818,10 +1935,18 @@ function HistoryCard({ history, onRate, onClick }: { history: any, onRate: (id: 
             </span>
             <p className="font-bold text-[14px]">{history.menu}</p>
             <div className="grow" />
-            <div className="flex items-center gap-1 cursor-pointer">
-              <span className="text-[11px] text-[#808080]">자세히</span>
-              <ChevronRight className="w-3 h-3 text-[#3F3F3F]" />
-            </div>
+            {isCompareMode ? (
+              <div
+                className={`inline-flex items-center rounded-full px-[8px] py-[4px] text-[10px] font-semibold ${isSelectedForCompare ? 'bg-[#0f0f0f] text-white' : 'bg-[#f3f3f3] text-[#666666]'}`}
+              >
+                {isSelectedForCompare ? `${compareSelectionOrder}번째 선택` : '비교 선택'}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 cursor-pointer">
+                <span className="text-[11px] text-[#808080]">자세히</span>
+                <ChevronRight className="w-3 h-3 text-[#3F3F3F]" />
+              </div>
+            )}
           </div>
 
           <div className="content-stretch flex items-start justify-between relative shrink-0 w-full gap-[8px]">
@@ -1868,8 +1993,478 @@ function HistoryCard({ history, onRate, onClick }: { history: any, onRate: (id: 
   );
 }
 
+function getHistoryTimestampValue(history: any) {
+  return Number(String(history.date).replace(/\./g, ''));
+}
+
+function getAdjustmentMagnitudeValue(change: string) {
+  return Math.abs(Number(String(change).replace('%', '')) || 0);
+}
+
+function getAdjustmentSignedValue(change: string) {
+  return Number(String(change).replace('%', '')) || 0;
+}
+
+function getHistoryAdjustmentMagnitude(history: any) {
+  return history.adjustments.reduce(
+    (sum: number, adjustment: any) => sum + getAdjustmentMagnitudeValue(adjustment.change),
+    0,
+  );
+}
+
+function isFeedbackPendingHistory(history: any) {
+  return history.feedbackLabel === '피드백 작성하기' || history.satisfaction === 0;
+}
+
+function getTopAdjustedTastes(historyData: any[]) {
+  const tasteCounts = new Map<string, number>();
+
+  historyData.forEach((history) => {
+    history.adjustments.forEach((adjustment: any) => {
+      tasteCounts.set(adjustment.taste, (tasteCounts.get(adjustment.taste) || 0) + 1);
+    });
+  });
+
+  return Array.from(tasteCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([taste]) => taste);
+}
+
+function getTasteFilterChipStyle(taste: string, isSelected: boolean) {
+  if (taste === '전체') {
+    return isSelected
+      ? {
+          backgroundColor: '#0f0f0f',
+          borderColor: '#0f0f0f',
+          color: '#FFFFFF',
+        }
+      : {
+          backgroundColor: '#f3f3f3',
+          borderColor: '#f3f3f3',
+          color: '#555555',
+        };
+  }
+
+  return isSelected
+    ? {
+        backgroundColor: getTasteColor(taste),
+        borderColor: getTasteColor(taste),
+        color: '#FFFFFF',
+      }
+    : {
+        backgroundColor: '#f3f3f3',
+        borderColor: '#f3f3f3',
+        color: '#555555',
+      };
+}
+
+function getStrongestAdjustment(history: any) {
+  return history.adjustments.reduce((strongest: any, adjustment: any) => {
+    if (!strongest) {
+      return adjustment;
+    }
+
+    return getAdjustmentMagnitudeValue(adjustment.change) > getAdjustmentMagnitudeValue(strongest.change)
+      ? adjustment
+      : strongest;
+  }, null);
+}
+
+function getComparisonSummary(histories: any[]) {
+  if (histories.length !== 2) {
+    return null;
+  }
+
+  const [firstHistory, secondHistory] = histories;
+  const firstMap = new Map(firstHistory.adjustments.map((adjustment: any) => [adjustment.taste, getAdjustmentSignedValue(adjustment.change)]));
+  const secondMap = new Map(secondHistory.adjustments.map((adjustment: any) => [adjustment.taste, getAdjustmentSignedValue(adjustment.change)]));
+  const allTastes = Array.from(new Set([...firstMap.keys(), ...secondMap.keys()]));
+
+  const sharedTastes = allTastes.filter((taste) => firstMap.has(taste) && secondMap.has(taste));
+  const mostDifferentTaste = allTastes.reduce((result, taste) => {
+    const difference = Math.abs((firstMap.get(taste) || 0) - (secondMap.get(taste) || 0));
+
+    if (!result || difference > result.difference) {
+      return { taste, difference };
+    }
+
+    return result;
+  }, null as null | { taste: string; difference: number });
+
+  return {
+    firstStrongest: getStrongestAdjustment(firstHistory),
+    secondStrongest: getStrongestAdjustment(secondHistory),
+    sharedTastes,
+    mostDifferentTaste,
+  };
+}
+
+function AdjustmentHistoryScreen({
+  historyData,
+  onBack,
+  onOpenDetail,
+  onRate,
+}: {
+  historyData: any[];
+  onBack: () => void;
+  onOpenDetail: (id: number) => void;
+  onRate: (id: number, rating: number, action?: boolean | "toggle" | "edit" | { type: string, value: any }) => void;
+}) {
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const tasteFilterTrackRef = useRef<HTMLDivElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const [shouldCenterTasteFilters, setShouldCenterTasteFilters] = useState(false);
+  const [selectedTasteFilter, setSelectedTasteFilter] = useState('전체');
+  const [sortMode, setSortMode] = useState<'recent' | 'adjustment' | 'satisfaction'>('recent');
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedCompareIds, setSelectedCompareIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchOpen]);
+
+  const availableTasteFilters = Array.from(
+    new Set(historyData.flatMap((history) => history.adjustments.map((adjustment: any) => adjustment.taste))),
+  );
+  const orderedTasteFilters = TASTE_TYPES.filter((taste) => availableTasteFilters.includes(taste));
+  const topAdjustedTastes = getTopAdjustedTastes(historyData);
+  const pendingFeedbackCount = historyData.filter(isFeedbackPendingHistory).length;
+  const filteredHistoryData = [...historyData]
+    .filter((history) => {
+      const normalizedQuery = searchQuery.trim().toLowerCase();
+      const searchableText = `${history.menu} ${history.chefName} ${history.restaurant}`.toLowerCase();
+      const matchesSearch = normalizedQuery.length === 0 || searchableText.includes(normalizedQuery);
+      const matchesTaste =
+        selectedTasteFilter === '전체'
+          ? true
+          : history.adjustments.some((adjustment: any) => adjustment.taste === selectedTasteFilter);
+
+      return matchesSearch && matchesTaste;
+    })
+    .sort((leftHistory, rightHistory) => {
+      if (sortMode === 'adjustment') {
+        return getHistoryAdjustmentMagnitude(rightHistory) - getHistoryAdjustmentMagnitude(leftHistory);
+      }
+
+      if (sortMode === 'satisfaction') {
+        return rightHistory.satisfaction - leftHistory.satisfaction;
+      }
+
+      return getHistoryTimestampValue(rightHistory) - getHistoryTimestampValue(leftHistory);
+    });
+  const selectedCompareHistories = historyData.filter((history) => selectedCompareIds.includes(history.id));
+  const comparisonSummary = getComparisonSummary(selectedCompareHistories);
+
+  useEffect(() => {
+    const trackElement = tasteFilterTrackRef.current;
+
+    if (!trackElement) {
+      return;
+    }
+
+    const updateTasteFilterAlignment = () => {
+      setShouldCenterTasteFilters(trackElement.scrollWidth <= trackElement.clientWidth + 1);
+    };
+
+    const animationFrameId = window.requestAnimationFrame(updateTasteFilterAlignment);
+    const resizeObserver = new ResizeObserver(updateTasteFilterAlignment);
+
+    resizeObserver.observe(trackElement);
+    window.addEventListener('resize', updateTasteFilterAlignment);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateTasteFilterAlignment);
+    };
+  }, [orderedTasteFilters.join('|'), isSearchOpen, selectedTasteFilter]);
+
+  const handleToggleCompareMode = () => {
+    setCompareMode((prev) => !prev);
+    setSelectedCompareIds([]);
+  };
+
+  const sortOptions = [
+    { id: 'recent', label: '최신순' },
+    { id: 'adjustment', label: '변화량 큰 순' },
+    { id: 'satisfaction', label: '만족도 높은 순' },
+  ] as const;
+
+  const handleHistoryCardClick = (historyId: number) => {
+    if (!compareMode) {
+      onOpenDetail(historyId);
+      return;
+    }
+
+    setSelectedCompareIds((prev) => {
+      if (prev.includes(historyId)) {
+        return prev.filter((id) => id !== historyId);
+      }
+
+      if (prev.length >= 2) {
+        return prev;
+      }
+
+      return [...prev, historyId];
+    });
+  };
+
+  return (
+    <div className="flex flex-col w-full h-full bg-[#f3f3f3] relative font-['Pretendard_Variable',sans-serif]">
+      <div className="sticky top-0 z-50 bg-[#f3f3f3] border-b border-[#ececec]">
+        <div className="flex items-center px-[20px] py-[12px] max-h-[56px]">
+          <button
+            onClick={onBack}
+            className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">조정 히스토리</span>
+            <span className="font-medium text-[12px] text-gray-500 leading-[14px]">{historyData.length}개의 조정 기록</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsSearchOpen((prev) => !prev)}
+            className={`ml-auto flex items-center justify-center size-[32px] rounded-full transition-colors z-20 ${isSearchOpen ? 'bg-white text-[#0f0f0f]' : 'hover:bg-gray-100 text-[#3F3F3F]'}`}
+            aria-label={isSearchOpen ? '검색창 닫기' : '검색 열기'}
+          >
+            <Search size={18} />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+        <div className="sticky top-0 z-40 border-b border-[#e3e3e3] bg-[#f3f3f3]">
+          <div className="flex flex-col gap-[8px] px-[20px] pt-[8px] pb-[10px]">
+            {isSearchOpen ? (
+              <div className="flex items-center gap-[10px] rounded-[18px] bg-white px-[14px] py-[12px] shadow-[0_8px_24px_rgba(15,15,15,0.04)]">
+                <Search size={16} className="text-[rgba(15,15,15,0.38)]" />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="메뉴명, 셰프명, 레스토랑 검색"
+                  className="w-full bg-transparent text-[14px] text-[#0f0f0f] outline-none placeholder:text-[rgba(15,15,15,0.38)]"
+                />
+              </div>
+            ) : null}
+
+            <div
+              ref={tasteFilterTrackRef}
+              className={`flex gap-[8px] overflow-x-auto no-scrollbar ${shouldCenterTasteFilters ? 'justify-center' : 'justify-start'}`}
+            >
+              {['전체', ...orderedTasteFilters].map((taste) => (
+                <button
+                  key={taste}
+                  type="button"
+                  onClick={() => setSelectedTasteFilter(taste)}
+                  className="shrink-0 rounded-full px-[12px] py-[8px] text-[12px] font-semibold transition-colors"
+                  style={{
+                    ...getTasteFilterChipStyle(taste, selectedTasteFilter === taste),
+                    ...(selectedTasteFilter !== taste
+                      ? {
+                        backgroundColor: '#f3f3f3',
+                        borderColor: 'transparent',
+                      }
+                    : {}),
+                  }}
+                >
+                  {taste}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-[16px] px-[20px] pt-[10px]">
+          <div className="bg-white rounded-[24px] p-[16px] flex flex-col gap-[14px] shadow-[0_8px_24px_rgba(15,15,15,0.04)]">
+            <div className="flex items-start justify-between gap-[12px]">
+              <div className="flex flex-col gap-[4px]">
+                <span className="text-[11px] font-semibold text-[rgba(15,15,15,0.5)] tracking-[0.2px]">최근 30일 요약</span>
+                <p className="text-[20px] font-bold text-[#0f0f0f] tracking-[-0.24px]">반복된 조정 패턴을 빠르게 찾으세요</p>
+                <p className="text-[13px] leading-[1.45] text-[rgba(15,15,15,0.62)]">
+                  가장 자주 조정된 포인트는{' '}
+                  {topAdjustedTastes.map((taste, index) => (
+                    <React.Fragment key={taste}>
+                      <span style={{ color: getTasteColor(taste) }} className="font-semibold">
+                        {taste}
+                      </span>
+                      {index < topAdjustedTastes.length - 1 ? <span> · </span> : null}
+                    </React.Fragment>
+                  ))}
+                  이고, 아직 평가가 남은 기록은 {pendingFeedbackCount}개예요.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleCompareMode}
+                className={`shrink-0 rounded-full px-[12px] py-[8px] text-[12px] font-semibold transition-colors ${compareMode ? 'bg-[#0f0f0f] text-white' : 'bg-[#f3f3f3] text-[#0f0f0f]'}`}
+              >
+                {compareMode ? '비교 종료' : '비교 시작'}
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-[8px]">
+              <div className="rounded-[18px] bg-[#f7f7f7] px-[12px] py-[10px]">
+                <div className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">전체 기록</div>
+                <div className="mt-[4px] text-[18px] font-bold text-[#0f0f0f]">{historyData.length}개</div>
+              </div>
+              <div className="rounded-[18px] bg-[#f7f7f7] px-[12px] py-[10px]">
+                <div className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">자주 조정된 미각</div>
+                <div className="mt-[6px] text-[14px] font-bold leading-[1.35]">
+                  {topAdjustedTastes.map((taste, index) => (
+                    <React.Fragment key={taste}>
+                      <span style={{ color: getTasteColor(taste) }}>{taste}</span>
+                      {index < topAdjustedTastes.length - 1 ? <span className="text-[#0f0f0f]"> · </span> : null}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[18px] bg-[#f7f7f7] px-[12px] py-[10px]">
+                <div className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">피드백 미작성</div>
+                <div className="mt-[4px] text-[18px] font-bold text-[#0f0f0f]">{pendingFeedbackCount}건</div>
+              </div>
+            </div>
+          </div>
+
+          {compareMode ? (
+            <div className="bg-white rounded-[24px] p-[16px] flex flex-col gap-[12px] shadow-[0_8px_24px_rgba(15,15,15,0.04)]">
+              <div className="flex items-center justify-between gap-[12px]">
+                <div>
+                  <p className="text-[16px] font-bold text-[#0f0f0f]">비교할 기록 선택</p>
+                  <p className="text-[12px] text-[rgba(15,15,15,0.56)]">카드 2개를 고르면 반복 포인트와 차이를 바로 볼 수 있어요.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCompareIds([])}
+                  className="rounded-full bg-[#f3f3f3] px-[10px] py-[7px] text-[11px] font-semibold text-[#555555]"
+                >
+                  선택 초기화
+                </button>
+              </div>
+
+              <div className="flex gap-[8px] flex-wrap">
+                {selectedCompareHistories.length > 0 ? selectedCompareHistories.map((history) => (
+                  <span key={history.id} className="inline-flex items-center rounded-full bg-[#f3f3f3] px-[10px] py-[6px] text-[12px] font-semibold text-[#0f0f0f]">
+                    {history.menu}
+                  </span>
+                )) : (
+                  <span className="inline-flex items-center rounded-full bg-[#f3f3f3] px-[10px] py-[6px] text-[12px] font-medium text-[#666666]">
+                    아직 선택된 기록이 없어요
+                  </span>
+                )}
+              </div>
+
+              {comparisonSummary ? (
+                <div className="flex flex-col gap-[10px] rounded-[18px] bg-[#f7f7f7] p-[12px]">
+                  <div className="grid grid-cols-2 gap-[8px]">
+                    <div className="rounded-[16px] bg-white p-[12px]">
+                      <p className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">{selectedCompareHistories[0].menu}</p>
+                      <p className="mt-[6px] text-[14px] font-bold text-[#0f0f0f]">
+                        {comparisonSummary.firstStrongest?.taste} {comparisonSummary.firstStrongest?.change}
+                      </p>
+                    </div>
+                    <div className="rounded-[16px] bg-white p-[12px]">
+                      <p className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">{selectedCompareHistories[1].menu}</p>
+                      <p className="mt-[6px] text-[14px] font-bold text-[#0f0f0f]">
+                        {comparisonSummary.secondStrongest?.taste} {comparisonSummary.secondStrongest?.change}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="rounded-[16px] bg-white p-[12px] flex flex-col gap-[4px]">
+                    <p className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">비교 요약</p>
+                    <p className="text-[13px] font-semibold text-[#0f0f0f]">
+                      공통 조정: {comparisonSummary.sharedTastes.length > 0 ? comparisonSummary.sharedTastes.join(' · ') : '겹치는 미각 없음'}
+                    </p>
+                    <p className="text-[12px] text-[rgba(15,15,15,0.62)]">
+                      가장 차이 큰 포인트는 {comparisonSummary.mostDifferentTaste?.taste}이고, 차이는 {comparisonSummary.mostDifferentTaste?.difference}%p예요.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-[18px] bg-[#f7f7f7] px-[12px] py-[10px] text-[12px] text-[rgba(15,15,15,0.62)]">
+                  두 개를 고르면 공통 조정과 가장 다른 포인트를 바로 보여드릴게요.
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          <div className="flex items-start justify-between gap-[12px]">
+            <div className="flex items-center gap-[8px]">
+              <p className="text-[18px] font-bold tracking-[-0.24px] text-[#0f0f0f]">조정 기록</p>
+              <p className="text-[12px] text-[rgba(15,15,15,0.48)]">{filteredHistoryData.length}개 표시</p>
+            </div>
+            <div className="relative shrink-0 pt-[2px]">
+              <button
+                type="button"
+                onClick={() => setIsSortMenuOpen((prev) => !prev)}
+                className="flex items-center gap-1 cursor-pointer"
+                aria-expanded={isSortMenuOpen}
+                aria-label="정렬 기준 열기"
+              >
+                <span className="text-[11px] text-[#808080]">
+                  {sortOptions.find((option) => option.id === sortMode)?.label ?? '최신순'}
+                </span>
+                <ChevronDown className={`w-3 h-3 text-[#3F3F3F] transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isSortMenuOpen ? (
+                <div className="absolute right-0 top-[calc(100%+8px)] z-10 min-w-[148px] rounded-[18px] bg-white p-[6px] shadow-[0_16px_32px_rgba(15,15,15,0.12)]">
+                  {sortOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => {
+                        setSortMode(option.id);
+                        setIsSortMenuOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-[12px] px-[10px] py-[9px] text-left text-[12px] font-semibold transition-colors ${sortMode === option.id ? 'bg-[#0f0f0f] text-white' : 'text-[#555555] hover:bg-[#f5f5f5]'}`}
+                    >
+                      <span>{option.label}</span>
+                      {sortMode === option.id ? <span className="text-[11px]">적용 중</span> : null}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-[12px]">
+            {filteredHistoryData.length > 0 ? filteredHistoryData.map((item) => (
+              <HistoryCard
+                key={item.id}
+                history={item}
+                onRate={onRate}
+                onClick={() => handleHistoryCardClick(item.id)}
+                isCompareMode={compareMode}
+                isSelectedForCompare={selectedCompareIds.includes(item.id)}
+                compareSelectionOrder={selectedCompareIds.indexOf(item.id) + 1}
+              />
+            )) : (
+              <div className="bg-white rounded-[24px] px-[16px] py-[20px] text-center shadow-[0_8px_24px_rgba(15,15,15,0.04)]">
+                <p className="text-[15px] font-bold text-[#0f0f0f]">조건에 맞는 기록이 없어요</p>
+                <p className="mt-[6px] text-[13px] leading-[1.45] text-[rgba(15,15,15,0.58)]">검색어나 필터를 조금 넓혀서 다시 찾아보세요.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SectionAdjustmentHistory() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [historyPageOpen, setHistoryPageOpen] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
   const [historyData, setHistoryData] = useState([
     {
       id: 1,
@@ -2129,36 +2724,67 @@ function SectionAdjustmentHistory() {
     }));
   };
 
+  const visibleHistoryCount = showAllHistory ? historyData.length : 2;
+  const visibleHistoryData = historyData.slice(0, visibleHistoryCount);
+  const hasHiddenHistory = historyData.length > 2;
+
   return (
     <div className="relative shrink-0 w-full" data-name="Section">
       <div className="size-full">
         <div className="box-border content-stretch flex flex-col items-start gap-[12px] relative w-full">
           {/* Section Header */}
-          <div className="flex justify-between items-end w-full mb-2">
+          <div className="flex justify-between items-start w-full mb-2">
             <span className="text-[20px] font-bold text-[#0f0f0f] tracking-[-0.24px]">조정 히스토리</span>
-            <div className="flex items-center gap-1 cursor-pointer">
-              <span className="text-[11px] text-[#808080]">전체 보기</span>
-              <ChevronDown className="w-3 h-3 text-[#3F3F3F]" />
-            </div>
+            {hasHiddenHistory ? (
+              <button
+                type="button"
+                className="flex items-center gap-1 cursor-pointer"
+                onClick={() => setShowAllHistory((prev) => !prev)}
+                aria-expanded={showAllHistory}
+                aria-label={showAllHistory ? "조정 히스토리 접기" : "조정 히스토리 전체 보기"}
+              >
+                <span className="text-[11px] text-[#808080]">{showAllHistory ? "접기" : "전체 보기"}</span>
+                {showAllHistory ? (
+                  <ChevronUp className="w-3 h-3 text-[#3F3F3F]" />
+                ) : (
+                  <ChevronDown className="w-3 h-3 text-[#3F3F3F]" />
+                )}
+              </button>
+            ) : null}
           </div>
 
           {/* List */}
           <div className="flex flex-col gap-3 w-full">
-            {historyData.map((item, index) => (
+            {visibleHistoryData.map((item, index) => (
               <HistoryCard key={index} history={item} onRate={handleRate} onClick={() => setSelectedId(item.id)} />
             ))}
           </div>
 
-          <div className="w-full bg-white rounded-full p-[12px] mb-10 flex justify-between items-center cursor-pointer hover:bg-[#fafafa] transition-colors" onClick={() => (window as any).__goToAnalysis?.()}>
+          <button
+            type="button"
+            className="w-full bg-white rounded-full p-[12px] mb-10 flex justify-between items-center cursor-pointer hover:bg-[#fafafa] transition-colors"
+            onClick={() => setHistoryPageOpen(true)}
+          >
             <span className="font-bold text-[14px] text-[#0f0f0f]">모든 정보 보기</span>
             <ChevronRight className="w-4 h-4 text-[#3F3F3F]" />
-          </div>
+          </button>
         </div>
       </div>
 
+      {historyPageOpen ? (
+        <div className="fixed inset-0 z-[60] bg-white">
+          <AdjustmentHistoryScreen
+            historyData={historyData}
+            onBack={() => setHistoryPageOpen(false)}
+            onOpenDetail={(id) => setSelectedId(id)}
+            onRate={handleRate}
+          />
+        </div>
+      ) : null}
+
       {/* Detail Screen Overlay */}
       {selectedId && (
-        <div className="fixed inset-0 z-50 bg-white">
+        <div className="fixed inset-0 z-[70] bg-white">
           <AdjustmentDetailScreen
             data={historyData.find(h => h.id === selectedId)}
             onBack={() => setSelectedId(null)}
@@ -2182,21 +2808,21 @@ function Content13() {
 
 function SpecialNoteDetailScreen({ onBack }: { onBack: () => void }) {
   return (
-    <div className="flex flex-col w-full h-full bg-white relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
-      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-white border-b border-[#f3f3f3]">
+    <div className="flex flex-col w-full h-full bg-[#f3f3f3] relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
+      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-[#f3f3f3] border-b border-[#e7e7e7]">
         <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">특이 사항</span>
+          <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">특이사항</span>
           <span className="font-medium text-[12px] text-gray-500 leading-[14px]">세부 미각 요소 기반 전달 포인트</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-[20px] p-[20px]">
-        <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex items-start gap-[12px]">
+      <div className="flex flex-col gap-[12px] p-[20px]">
+        <div className="bg-white rounded-[20px] p-[12px] flex items-start gap-[12px]">
           <div
             className="shrink-0 size-[42px] rounded-full"
             style={{ background: HOME_SPECIAL_NOTE_CIRCLE_GRADIENT }}
@@ -2206,7 +2832,7 @@ function SpecialNoteDetailScreen({ onBack }: { onBack: () => void }) {
               <span className="inline-flex items-center rounded-full bg-[#0f0f0f] px-[8px] py-[3px] text-[10px] font-semibold text-white">
                 셰프 전달 포인트
               </span>
-              <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-white px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
+              <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f3f3f3] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
                 {HOME_SPECIAL_NOTE_CARD.translationStatusLabel}
               </span>
             </div>
@@ -2220,6 +2846,193 @@ function SpecialNoteDetailScreen({ onBack }: { onBack: () => void }) {
         </div>
 
         <SpecialNoteFeatureBody />
+      </div>
+    </div>
+  );
+}
+
+function TasteProfileTrendChart() {
+  return (
+    <div className="w-full">
+      <div className="h-[180px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={HOME_TASTE_PROFILE_WEEKLY_SERIES}
+            margin={{ top: 12, right: 12, bottom: 12, left: 0 }}
+          >
+            {HOME_TASTE_PROFILE_SUMMARY_DETAILS.map((detail) => {
+              const strokeColor = getTasteColor(detail.parentTaste);
+
+              return (
+                <Line
+                  key={detail.detailLabel}
+                  type="monotone"
+                  dataKey={detail.parentTaste}
+                  stroke={strokeColor}
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: "#ffffff", stroke: strokeColor, strokeWidth: 2 }}
+                  activeDot={{ r: 4, fill: strokeColor, stroke: "#ffffff", strokeWidth: 1.5 }}
+                />
+              );
+            })}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="mt-[2px] flex items-center justify-between px-[6px]">
+        {HOME_TASTE_PROFILE_WEEKLY_SERIES.map((item) => (
+          <span
+            key={item.label}
+            className="text-[10px] font-medium text-[rgba(15,15,15,0.42)]"
+          >
+            {item.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TasteProfileDetailScreen({ onBack }: { onBack: () => void }) {
+  const maxAbsChange = Math.max(
+    ...HOME_TASTE_PROFILE_OVERVIEW_VALUES.map((item) => Math.abs(item.change)),
+  );
+
+  return (
+    <div className="flex flex-col w-full h-full bg-[#f3f3f3] relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
+      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-[#f3f3f3] border-b border-[#e7e7e7]">
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">미각변화</span>
+          <span className="font-medium text-[12px] text-gray-500 leading-[14px]">최근 6일 반응 추세</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-[12px] p-[20px]">
+        <div className="bg-white rounded-[20px] p-[12px] flex items-start gap-[12px]">
+          <div
+            className="shrink-0 size-[42px] rounded-full"
+            style={{ background: HOME_TASTE_PROFILE_CIRCLE_GRADIENT }}
+          />
+          <div className="flex flex-col gap-[6px] min-w-0">
+            <div className="flex flex-wrap gap-[6px] items-center">
+              <span className="inline-flex items-center rounded-full bg-[#0f0f0f] px-[8px] py-[3px] text-[10px] font-semibold text-white">
+                이번 주 요약
+              </span>
+              <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f3f3f3] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
+                {HOME_TASTE_PROFILE_CARD.periodLabel}
+              </span>
+            </div>
+            <p className="font-bold text-[18px] leading-[1.25] text-[#0f0f0f]">
+              {HOME_TASTE_PROFILE_CARD.title}
+            </p>
+            <p className="text-[13px] leading-[1.5] text-[rgba(15,15,15,0.62)]">
+              {HOME_TASTE_PROFILE_CARD.summary}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-[20px] p-[12px] flex flex-col gap-[12px]">
+          <div className="flex items-center justify-between gap-[12px]">
+            <div>
+              <p className="text-[14px] font-bold text-[#0f0f0f]">주간 추이</p>
+              <p className="mt-[3px] text-[11px] leading-[1.45] text-[rgba(15,15,15,0.55)]">
+                단맛과 감칠맛의 반응 변화가 가장 크게 흔들렸어요.
+              </p>
+            </div>
+          </div>
+          <TasteProfileTrendChart />
+        </div>
+
+        <div className="bg-white rounded-[20px] p-[12px] flex flex-col gap-[10px]">
+          <div>
+            <p className="text-[14px] font-bold text-[#0f0f0f]">핵심 변화</p>
+            <p className="mt-[3px] text-[11px] leading-[1.45] text-[rgba(15,15,15,0.55)]">
+              현재 컨디션에서 가장 크게 바뀐 두 포인트만 먼저 보여드려요.
+            </p>
+          </div>
+
+          {HOME_TASTE_PROFILE_SUMMARY_DETAILS.map((detail) => (
+            <div
+              key={detail.detailLabel}
+              className="flex gap-[10px] items-start rounded-[12px] bg-[#f7f7f7] px-[10px] py-[10px]"
+            >
+              <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
+              <div className="flex min-w-0 flex-col gap-[4px]">
+                <div className="flex min-w-0 flex-wrap items-center gap-[6px]">
+                  <p className="text-[13px] font-semibold text-[#0f0f0f]">
+                    {detail.detailLabel}
+                  </p>
+                  <p
+                    className="text-[12px] font-semibold"
+                    style={{ color: getTasteColor(detail.parentTaste) }}
+                  >
+                    {detail.change}
+                  </p>
+                </div>
+                <p className="text-[11px] leading-[1.45] text-[rgba(15,15,15,0.58)] break-keep">
+                  {detail.cue}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          <p className="text-[11px] leading-[1.45] text-[rgba(15,15,15,0.55)] break-keep">
+            {HOME_TASTE_PROFILE_CARD.serviceHint}
+          </p>
+        </div>
+
+        <div className="bg-white rounded-[20px] p-[12px] flex flex-col gap-[12px] pb-[20px]">
+          <div>
+            <p className="text-[14px] font-bold text-[#0f0f0f]">전체 미각 분포</p>
+            <p className="mt-[3px] text-[11px] leading-[1.45] text-[rgba(15,15,15,0.55)]">
+              모든 미각의 변화량을 함께 보면 이번 주 반응의 중심이 더 분명해져요.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-[10px]">
+            {HOME_TASTE_PROFILE_OVERVIEW_VALUES.map((item) => {
+              const barWidth = `${(Math.abs(item.change) / maxAbsChange) * 100}%`;
+              const accentColor = getTasteColor(item.taste);
+              const accentTint = getTasteTint(item.taste, 0.14);
+
+              return (
+                <div key={item.taste} className="flex items-center gap-[10px]">
+                  <div className="w-[46px] shrink-0">
+                    <span className="text-[12px] font-medium text-[rgba(15,15,15,0.72)]">
+                      {item.taste}
+                    </span>
+                  </div>
+                  <div className="flex-1 rounded-full bg-[#f3f3f3] h-[12px] overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        background: `linear-gradient(90deg, ${accentTint} 0%, ${accentColor} 100%)`,
+                        width: barWidth,
+                      }}
+                    />
+                  </div>
+                  <div className="w-[52px] shrink-0 text-right">
+                    <span
+                      className="text-[12px] font-semibold"
+                      style={{ color: accentColor }}
+                    >
+                      {item.change > 0 ? "+" : ""}
+                      {item.change.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

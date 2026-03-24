@@ -24,7 +24,7 @@ function Head() {
   return (
     <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Head">
       <TasteCircle />
-      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">특이 사항</p>
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">특이사항</p>
     </div>
   );
 }

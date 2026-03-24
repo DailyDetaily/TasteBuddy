@@ -19,7 +19,7 @@ import SectionCard from '../components/SectionCard';
 import OutlineBadge from '../components/system/OutlineBadge';
 import SectionTitle from '../components/system/SectionTitle';
 import { DATA_VIZ_TOKENS } from '../constants/designTokens';
-import { TASTE_COLORS, TASTE_TYPES, getTasteColor } from '../constants/tasteColors';
+import { TASTE_COLORS, TASTE_TYPES, getTasteColor, getTasteTint, mixHexColors } from '../constants/tasteColors';
 import {
   formatMeasurementDate,
   formatMeasurementValue,
@@ -37,14 +37,176 @@ import {
 
 // 주간 추이 데이터 (미각별 라인이 겹치지 않도록 간격 조정)
 const weeklyTrend = [
-  { week: '1주차', 단맛: 95, 신맛: 80, 짠맛: 65, 지방맛: 50, 쓴맛: 35, 감칠맛: 20 },
-  { week: '2주차', 단맛: 92, 신맛: 84, 짠맛: 68, 지방맛: 52, 쓴맛: 32, 감칠맛: 18 },
-  { week: '3주차', 단맛: 97, 신맛: 82, 짠맛: 62, 지방맛: 47, 쓴맛: 28, 감칠맛: 22 },
-  { week: '4주차', 단맛: 94, 신맛: 86, 짠맛: 67, 지방맛: 54, 쓴맛: 30, 감칠맛: 15 },
+  { week: '1주차', 단맛: 95, 신맛: 80, 짠맛: 65, 지방맛: 20, 쓴맛: 35, 감칠맛: 50 },
+  { week: '2주차', 단맛: 92, 신맛: 84, 짠맛: 68, 지방맛: 18, 쓴맛: 32, 감칠맛: 52 },
+  { week: '3주차', 단맛: 97, 신맛: 82, 짠맛: 62, 지방맛: 22, 쓴맛: 28, 감칠맛: 47 },
+  { week: '4주차', 단맛: 94, 신맛: 86, 짠맛: 67, 지방맛: 15, 쓴맛: 30, 감칠맛: 54 },
 ];
 
 const RADAR_CHART = DATA_VIZ_TOKENS.radar;
-const TREND_CHART = DATA_VIZ_TOKENS.trend;
+const TREND_TINT_LINE_STROKE_WIDTH = 10;
+const TREND_LINE_STROKE_WIDTH = 1;
+const TREND_DOT_RADIUS = 5;
+const TREND_ACTIVE_DOT_OUTER_RADIUS = 9;
+const TREND_ACTIVE_DOT_CORE_RADIUS = TREND_DOT_RADIUS;
+const TREND_ACTIVE_DOT_HALO_WHITE_MIX = 0.72;
+const TREND_GUIDE_GAP = 2;
+const TREND_GUIDE_MASK_WIDTH = 6;
+const TREND_GUIDE_BOTTOM_TAIL = 8;
+
+interface WeeklyTrendActiveDotProps {
+  cx?: number;
+  cy?: number;
+}
+
+interface WeeklyTrendCursorProps {
+  height?: number;
+  payload?: WeeklyTrendTooltipEntry[];
+  points?: Array<{
+    x?: number;
+    y?: number;
+  }>;
+  top?: number;
+}
+
+function WeeklyTrendActiveDot({
+  cx,
+  cy,
+  taste,
+}: WeeklyTrendActiveDotProps & {
+  taste: string;
+}) {
+  if (typeof cx !== 'number' || typeof cy !== 'number') {
+    return null;
+  }
+
+  const tasteColor = getTasteColor(taste);
+  const haloColor = mixHexColors(tasteColor, '#FFFFFF', TREND_ACTIVE_DOT_HALO_WHITE_MIX);
+
+  return (
+    <g>
+      <rect
+        x={cx - TREND_GUIDE_MASK_WIDTH / 2}
+        y={cy - (TREND_ACTIVE_DOT_OUTER_RADIUS + TREND_GUIDE_GAP)}
+        width={TREND_GUIDE_MASK_WIDTH}
+        height={(TREND_ACTIVE_DOT_OUTER_RADIUS + TREND_GUIDE_GAP) * 2}
+        fill="#FFFFFF"
+        rx={TREND_GUIDE_MASK_WIDTH / 2}
+      />
+      <circle cx={cx} cy={cy} r={TREND_ACTIVE_DOT_OUTER_RADIUS} fill={haloColor} />
+      <circle cx={cx} cy={cy} r={TREND_ACTIVE_DOT_CORE_RADIUS} fill={tasteColor} />
+    </g>
+  );
+}
+
+function WeeklyTrendCursor({
+  height,
+  payload,
+  points,
+  top,
+}: WeeklyTrendCursorProps) {
+  const x = points?.[0]?.x;
+  const startY = points?.[0]?.y;
+  const defaultEndY = points?.[1]?.y;
+
+  if (
+    typeof x !== 'number' ||
+    typeof startY !== 'number' ||
+    typeof defaultEndY !== 'number' ||
+    typeof top !== 'number' ||
+    typeof height !== 'number'
+  ) {
+    return null;
+  }
+
+  const bottomMostPointY = (payload ?? []).reduce<number | null>((currentBottomY, entry) => {
+    const value = Number(entry.value);
+
+    if (!Number.isFinite(value)) {
+      return currentBottomY;
+    }
+
+    const clampedValue = Math.max(0, Math.min(100, value));
+    const nextY = top + height * (1 - clampedValue / 100);
+
+    if (currentBottomY === null) {
+      return nextY;
+    }
+
+    return Math.max(currentBottomY, nextY);
+  }, null);
+
+  const endY = bottomMostPointY === null
+    ? defaultEndY
+    : Math.min(
+        defaultEndY,
+        bottomMostPointY + TREND_ACTIVE_DOT_OUTER_RADIUS + TREND_GUIDE_GAP + TREND_GUIDE_BOTTOM_TAIL,
+      );
+
+  return (
+    <line
+      x1={x}
+      x2={x}
+      y1={startY}
+      y2={endY}
+      stroke="#0F0F0F"
+      strokeWidth={2}
+      pointerEvents="none"
+    />
+  );
+}
+
+interface WeeklyTrendTooltipEntry {
+  dataKey?: string | number;
+  value?: number | string;
+}
+
+function WeeklyTrendTooltip({
+  active,
+  label,
+  payload,
+}: {
+  active?: boolean;
+  label?: string;
+  payload?: WeeklyTrendTooltipEntry[];
+}) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  const uniqueEntries = TASTE_TYPES.map((taste) =>
+    payload.find((entry) => String(entry.dataKey) === taste),
+  ).filter((entry): entry is WeeklyTrendTooltipEntry & { dataKey: string; value: number | string } =>
+    typeof entry?.dataKey === 'string' && typeof entry.value !== 'undefined',
+  );
+
+  return (
+    <div className="min-w-[116px] rounded-[12px] bg-white px-[12px] py-[10px] shadow-[var(--tb-shadow-soft)]">
+      <p className="mb-[6px] text-[11px] font-semibold text-[rgba(15,15,15,0.55)]">{label}</p>
+      <div className="flex flex-col gap-[5px]">
+        {uniqueEntries.map((entry) => (
+          <div key={entry.dataKey} className="flex items-center justify-between gap-[12px]">
+            <div className="flex items-center gap-[6px]">
+              <span
+                className="size-[8px] rounded-full"
+                style={{ backgroundColor: getTasteColor(entry.dataKey) }}
+              />
+              <span className="text-[12px] font-medium text-[rgba(15,15,15,0.72)]">
+                {entry.dataKey}
+              </span>
+            </div>
+            <span
+              className="text-[12px] font-semibold"
+              style={{ color: getTasteColor(entry.dataKey) }}
+            >
+              {entry.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function buildInsights(
   myTasteData: TasteMeasurementEntry[],
@@ -390,7 +552,7 @@ export default function AnalysisPage({
               <SectionCard>
               <div className="w-full h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={weeklyTrend} margin={{ top: 10, bottom: 10 }}>
+                  <LineChart data={weeklyTrend} margin={{ top: 10, bottom: 0 }}>
                     <XAxis
                       dataKey="week"
                       tick={{ fontSize: 11, fill: 'var(--tb-color-text-hint)' }}
@@ -398,39 +560,37 @@ export default function AnalysisPage({
                       tickLine={false}
                       interval={0}
                       padding={{ left: 10, right: 10 }}
+                      height={18}
+                      tickMargin={0}
                     />
                     <YAxis hide domain={[0, 100]} />
                     <Tooltip
-                      contentStyle={{
-                        borderRadius: '12px',
-                        border: 'none',
-                        boxShadow: 'var(--tb-shadow-soft)',
-                        fontSize: '12px',
-                      }}
+                      content={<WeeklyTrendTooltip />}
+                      cursor={<WeeklyTrendCursor />}
                     />
                     {TASTE_TYPES.map((taste) => (
                       <React.Fragment key={taste}>
-                        {/* 굵고 반투명한 배경 선 (도트 제거) */}
                         <Line
-                          type="monotone"
+                          type="linear"
                           dataKey={taste}
-                          stroke={getTasteColor(taste)}
-                          strokeWidth={12}
-                          strokeOpacity={0.2}
+                          stroke={getTasteTint(taste, 0.18)}
+                          strokeWidth={TREND_TINT_LINE_STROKE_WIDTH}
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           dot={false}
                           activeDot={false}
                           isAnimationActive={false}
                         />
-                        {/* 얇고 불투명한 메인 실선 및 배경 선에 맞춘 큰 불투명 도트 */}
                         <Line
-                          type="monotone"
+                          type="linear"
                           dataKey={taste}
                           stroke={getTasteColor(taste)}
-                          strokeWidth={TREND_CHART.lineStrokeWidth}
-                          dot={{ r: TREND_CHART.dotSize, fill: getTasteColor(taste), strokeWidth: 0 }}
-                          activeDot={{ r: TREND_CHART.activeDotSize, fill: getTasteColor(taste), strokeWidth: 0 }}
+                          strokeWidth={TREND_LINE_STROKE_WIDTH}
+                          dot={{ r: TREND_DOT_RADIUS, fill: getTasteColor(taste), strokeWidth: 0 }}
+                          activeDot={(props) => <WeeklyTrendActiveDot {...props} taste={taste} />}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          isAnimationActive={false}
                         />
                       </React.Fragment>
                     ))}
