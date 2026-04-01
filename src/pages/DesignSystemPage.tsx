@@ -29,6 +29,7 @@ import {
   Star,
 } from "lucide-react";
 
+import AppMenuDrawer from "../components/AppMenuDrawer";
 import BottomTabBar, { type TabType } from "../components/BottomTabBar";
 import CardGallery from "../components/design-system/CardGallery";
 import ComponentStyleSpecCard from "../components/design-system/ComponentStyleSpecCard";
@@ -57,8 +58,10 @@ import {
   UNUSED_UI_PRIMITIVES,
 } from "../components/design-system/inventory";
 import TasteMeasurementMiniCta from "../components/measurement/TasteMeasurementMiniCta";
+import NotificationPanel from "../components/NotificationPanel";
 import SectionCard from "../components/SectionCard";
 import TopAppBar from "../components/TopAppBar";
+import EmptyState from "../components/system/EmptyState";
 import OutlineBadge from "../components/system/OutlineBadge";
 import PrimaryButton from "../components/system/PrimaryButton";
 import SectionTitle from "../components/system/SectionTitle";
@@ -139,6 +142,8 @@ import {
   persistDesignTokenRuntimeState,
   type DesignTokenRuntimeState,
 } from "../lib/designTokenRuntime";
+import ImproveAccuracyScreen from "./ImproveAccuracyScreen";
+import ReservationConfirmationScreen from "./ReservationConfirmationScreen";
 
 type ButtonFamily = "system" | "generic";
 type ButtonState = "default" | "active" | "disabled" | "loading";
@@ -457,6 +462,33 @@ function ComponentPreviewUnit({
   );
 }
 
+function PhonePreviewFrame({
+  children,
+  description,
+  title,
+}: {
+  children: React.ReactNode;
+  description: string;
+  title: string;
+}) {
+  return (
+    <div className="grid gap-3">
+      <div>
+        <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+          {description}
+        </p>
+      </div>
+      <div className="mx-auto w-full max-w-[390px] overflow-hidden rounded-[32px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)] shadow-[0_24px_60px_rgba(15,15,15,0.12)]">
+        <div className="pointer-events-none flex justify-center pt-3">
+          <div className="h-1.5 w-24 rounded-full bg-[var(--tb-color-border-strong)]" />
+        </div>
+        <div className="h-[844px] overflow-hidden bg-[var(--tb-color-bg-page)]">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 function InventoryCard({
   description,
   name,
@@ -545,6 +577,7 @@ export default function DesignSystemPage() {
   const [fieldRadio, setFieldRadio] = useState("balanced");
   const [activeTab, setActiveTab] = useState<TabType>("analysis");
   const [showBack, setShowBack] = useState(false);
+  const [showUnreadNotifications, setShowUnreadNotifications] = useState(true);
   const [genericTabsValue, setGenericTabsValue] = useState("overview");
   const [progress, setProgress] = useState(68);
   const [destructiveAlert, setDestructiveAlert] = useState(false);
@@ -553,9 +586,15 @@ export default function DesignSystemPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
+  const [menuDrawerOpen, setMenuDrawerOpen] = useState(false);
   const [accentTaste, setAccentTaste] = useState<TasteId>(PLAYGROUND_DEFAULTS.accentTaste);
   const [statusKey, setStatusKey] = useState<AppStatus>("preparing");
   const [ctaTone, setCtaTone] = useState<"neutral" | "alert">("alert");
+  const [improveAccuracyStage, setImproveAccuracyStage] = useState<
+    "Starter" | "Building" | "Refined"
+  >("Building");
+  const [confirmationPreviewKey, setConfirmationPreviewKey] = useState(0);
   const [appliedRuntimeTokenState, setAppliedRuntimeTokenState] =
     useState<DesignTokenRuntimeState>(initialRuntimeTokenState);
   const [floatingMenuOpen, setFloatingMenuOpen] = useState(true);
@@ -1482,7 +1521,7 @@ export default function DesignSystemPage() {
         <PlaygroundSection
           id="icons"
           title="Icons"
-          description="The app mixes Fluent navigation icons with Lucide utility icons. The list below shows the icon language actually referenced by active screens and shared components."
+          description="현재 실제 앱은 Fluent 아이콘을 메인 언어로 사용하고, Lucide는 디자인 시스템 문서와 보조 샘플, generic primitive 안에 일부 남아 있습니다."
           controls={
             <>
               <SliderControl label="Icon size" value={iconSize} min={12} max={32} onChange={setIconSize} />
@@ -2028,7 +2067,7 @@ export default function DesignSystemPage() {
         <PlaygroundSection
           id="navigation"
           title="Navigation"
-          description="TopAppBar and BottomTabBar are the real navigation shells in the product. A generic Tabs primitive also exists in the codebase and is included here as a defined-but-unused segmented control."
+          description="TopAppBar와 BottomTabBar가 실제 앱 셸을 담당하고, TopAppBar의 알림/메뉴 액션은 현재 NotificationPanel과 AppMenuDrawer로 연결됩니다. 범용 Tabs primitive도 코드에는 남아 있어 비교용으로 함께 둡니다."
           controls={
             <>
               <ControlBlock label="Active app tab">
@@ -2047,6 +2086,13 @@ export default function DesignSystemPage() {
                 <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">Show back button</span>
                 <Switch checked={showBack} onCheckedChange={setShowBack} />
               </div>
+              <div className="flex items-center justify-between rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+                <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">Unread indicator</span>
+                <Switch
+                  checked={showUnreadNotifications}
+                  onCheckedChange={setShowUnreadNotifications}
+                />
+              </div>
               <ControlBlock label="Generic tabs">
                 <SegmentedControl
                   value={genericTabsValue}
@@ -2064,7 +2110,7 @@ export default function DesignSystemPage() {
           previewStyle={previewStyle}
         >
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-              <div className="grid gap-3">
+            <div className="grid gap-3">
               <div className="flex items-center justify-between">
                 <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Current app navigation</p>
                 <StatusTag tone="used">Currently used</StatusTag>
@@ -2072,6 +2118,8 @@ export default function DesignSystemPage() {
               <div className="flex flex-wrap gap-2">
                 <SectionEyebrow>TopAppBar</SectionEyebrow>
                 <SectionEyebrow>BottomTabBar</SectionEyebrow>
+                <SectionEyebrow>NotificationPanel</SectionEyebrow>
+                <SectionEyebrow>AppMenuDrawer</SectionEyebrow>
               </div>
               <div className="overflow-hidden rounded-[28px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]">
                 <TopAppBar
@@ -2079,9 +2127,27 @@ export default function DesignSystemPage() {
                   title={showBack ? "식후 피드백" : undefined}
                   onBack={() => undefined}
                   onStartMeasurement={() => undefined}
+                  onOpenNotifications={() => setNotificationPanelOpen(true)}
+                  onOpenMenu={() => setMenuDrawerOpen(true)}
+                  hasUnreadNotifications={showUnreadNotifications}
                 />
-                <div className="flex min-h-[240px] items-center justify-center px-5 py-6 text-[var(--tb-color-text-muted)]">
-                  콘텐츠 영역
+                <div className="grid min-h-[240px] content-center gap-3 px-5 py-6">
+                  <div className={cn(previewPanelClass, "p-4")}>
+                    <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
+                      앱 셸 미리보기
+                    </p>
+                    <p className="mt-2 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                      알림 아이콘과 메뉴 아이콘은 실제 오버레이 컴포넌트를 열도록 연결되어 있습니다.
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)] px-4 py-3">
+                    <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
+                      현재 탭
+                    </span>
+                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">
+                      {APP_TAB_LABELS[activeTab]}
+                    </span>
+                  </div>
                 </div>
                 <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
               </div>
@@ -2155,7 +2221,10 @@ export default function DesignSystemPage() {
                 <SectionEyebrow>Skeleton</SectionEyebrow>
                 <SectionEyebrow>Spinner</SectionEyebrow>
               </div>
-              <Alert variant={destructiveAlert ? "destructive" : "default"}>
+              <Alert
+                variant={destructiveAlert ? "destructive" : "default"}
+                className="rounded-[var(--tb-radius-20)]"
+              >
                 <Sparkles className="h-4 w-4" />
                 <AlertTitle>{destructiveAlert ? "주의가 필요한 상태" : "프로필이 업데이트됐습니다"}</AlertTitle>
                 <AlertDescription>
@@ -2198,21 +2267,30 @@ export default function DesignSystemPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Empty state</p>
-                    <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">Currently built as one-off cards in feature screens.</p>
+                    <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">`EmptyState`가 이제 ReservationPage의 실제 empty 예약 상태에 연결되어 있습니다.</p>
                   </div>
-                  <Badge variant="outline">Pattern</Badge>
+                  <StatusTag tone="used">Currently used</StatusTag>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <SectionEyebrow>Empty state card</SectionEyebrow>
+                  <SectionEyebrow>EmptyState</SectionEyebrow>
                 </div>
-                <div className="mt-4 flex flex-col items-center rounded-[20px] bg-[var(--tb-color-surface-muted)] px-5 py-8 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--tb-color-surface-card)] text-[var(--tb-color-text-primary)] shadow-[var(--tb-shadow-soft)]">
-                    <ChefHat size={22} />
+                <div className="mt-4 grid gap-3">
+                  <div className={cn(previewPanelClass, "p-2")}>
+                    <EmptyState
+                      title="아직 예약이 없어요"
+                      description="프로필이 준비되면 맞춤 다이닝을 시작할 수 있어요."
+                      icon={<Calendar size={20} />}
+                    />
                   </div>
-                  <p className="mt-4 text-[16px] font-semibold text-[var(--tb-color-text-primary)]">아직 추천 셰프가 없어요</p>
-                  <p className="mt-2 max-w-[28ch] text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                    다음 측정과 예약 데이터를 쌓으면 더 잘 맞는 다이닝 후보를 추천할 수 있어요.
-                  </p>
+                  <div className={cn(previewPanelClass, "p-2")}>
+                    <EmptyState
+                      title="아직 추천 셰프가 없어요"
+                      description="다음 측정과 예약 데이터를 쌓으면 더 잘 맞는 다이닝 후보를 추천할 수 있어요."
+                      actionLabel="예약 추천 보기"
+                      onAction={() => undefined}
+                      icon={<ChefHat size={20} />}
+                    />
+                  </div>
                 </div>
               </div>
               <div className={cn(previewCardClass, "p-4")}>
@@ -2243,13 +2321,15 @@ export default function DesignSystemPage() {
         <PlaygroundSection
           id="overlay"
           title="Overlay"
-          description="Dialog, sheet, popover, and tooltip primitives exist in the repo even though the current main app mostly uses custom in-page drawers. This section makes them inspectable and interactive."
+          description="generic overlay primitive와 함께, 현재 제품이 실제로 쓰는 NotificationPanel과 AppMenuDrawer도 같은 자리에서 비교할 수 있게 구성했습니다."
           controls={
             <>
               <Button onClick={() => setDialogOpen(true)}>Open dialog</Button>
               <Button variant="outline" onClick={() => setSheetOpen(true)}>Open bottom sheet</Button>
               <Button variant="secondary" onClick={() => setPopoverOpen((previous) => !previous)}>Toggle popover</Button>
               <Button variant="ghost" onClick={() => setTooltipOpen((previous) => !previous)}>Toggle tooltip</Button>
+              <Button variant="secondary" onClick={() => setNotificationPanelOpen(true)}>Open notifications</Button>
+              <Button variant="outline" onClick={() => setMenuDrawerOpen(true)}>Open menu drawer</Button>
             </>
           }
           sources={PLAYGROUND_SECTION_SOURCES.overlay}
@@ -2292,11 +2372,39 @@ export default function DesignSystemPage() {
             </Card>
 
             <div className={cn(previewCardClass, "p-4")}>
-              <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Current product behavior</p>
-              <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                Main flows still lean on custom drawer layouts such as the Teastick connection flow rather than
-                these primitives. That split is tracked in the audit notes below.
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Current product overlays</p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                    메인 앱은 generic primitive보다 제품 전용 overlay shell을 더 자주 사용합니다. 아래 버튼은 실제 컴포넌트를 그대로 엽니다.
+                  </p>
+                </div>
+                <StatusTag tone="used">Currently used</StatusTag>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <SectionEyebrow>NotificationPanel</SectionEyebrow>
+                <SectionEyebrow>AppMenuDrawer</SectionEyebrow>
+              </div>
+              <div className="mt-4 grid gap-3">
+                <div className={cn(previewPanelClass, "p-4")}>
+                  <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">NotificationPanel</p>
+                  <p className="mt-2 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                    상단 app bar에서 열리는 드롭다운형 알림 패널입니다. sticky header, unread dot, read/unread row 상태를 포함합니다.
+                  </p>
+                  <Button className="mt-3" size="sm" onClick={() => setNotificationPanelOpen(true)}>
+                    패널 열기
+                  </Button>
+                </div>
+                <div className={cn(previewPanelClass, "p-4")}>
+                  <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">AppMenuDrawer</p>
+                  <p className="mt-2 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                    우측 glass drawer 안에 프로필 요약과 측정/정확도 향상 액션이 들어 있습니다.
+                  </p>
+                  <Button className="mt-3" variant="outline" size="sm" onClick={() => setMenuDrawerOpen(true)}>
+                    드로어 열기
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2339,7 +2447,7 @@ export default function DesignSystemPage() {
         <PlaygroundSection
           id="appSpecific"
           title="App-specific Components"
-          description="Taste Buddy 고유의 시각 언어를 만드는 shared components 입니다. 이 섹션은 현재 실제 앱에서 반복되는 조합을 그대로 보여줍니다."
+          description="Taste Buddy 고유의 시각 언어를 만드는 shared component와 신규 screen composite를 함께 모았습니다. 반복되는 작은 컴포넌트부터 최근 추가된 정확도 향상/예약 확정 플로우까지 같은 기준으로 확인할 수 있습니다."
           controls={
             <>
               <ControlBlock label="Taste accent" hint={TASTE_TOKENS[accentTaste].label}>
@@ -2372,86 +2480,135 @@ export default function DesignSystemPage() {
                   ]}
                 />
               </ControlBlock>
+              <ControlBlock label="Accuracy stage">
+                <SegmentedControl
+                  value={improveAccuracyStage}
+                  onChange={setImproveAccuracyStage}
+                  options={[
+                    { value: "Starter", label: "Starter" },
+                    { value: "Building", label: "Building" },
+                    { value: "Refined", label: "Refined" },
+                  ]}
+                />
+              </ControlBlock>
+              <Button variant="outline" onClick={() => setConfirmationPreviewKey((value) => value + 1)}>
+                Restart confirmation preview
+              </Button>
             </>
           }
           sources={PLAYGROUND_SECTION_SOURCES.appSpecific}
           previewStyle={previewStyle}
         >
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-            <div className="grid gap-3">
-              <div className="flex items-center justify-between">
-                <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Active shared components</p>
-                <StatusTag tone="used">Currently used</StatusTag>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <SectionEyebrow>OutlineBadge</SectionEyebrow>
-                <SectionEyebrow>StatusChip</SectionEyebrow>
-                <SectionEyebrow>TasteChip</SectionEyebrow>
-                <SectionEyebrow>TasteMeasurementMiniCta</SectionEyebrow>
-                <SectionEyebrow>SectionCard</SectionEyebrow>
-              </div>
+          <div className="grid gap-6">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
               <div className="grid gap-3">
-                <div className="flex flex-wrap gap-2">
-                  <OutlineBadge>{TASTE_TOKENS[accentTaste].label} Focus</OutlineBadge>
-                  <StatusChip color={STATUS_CONFIG[statusKey].color} backgroundColor={STATUS_CONFIG[statusKey].bg}>
-                    {STATUS_CONFIG[statusKey].label}
-                  </StatusChip>
-                  <TasteChip taste={TASTE_TOKENS[accentTaste].label} value="현재 더 또렷한 포인트" />
+                <div className="flex items-center justify-between">
+                  <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Active shared components</p>
+                  <StatusTag tone="used">Currently used</StatusTag>
                 </div>
-                <TasteMeasurementMiniCta
-                  title="재측정으로 프로필 업데이트"
-                  description={`${TASTE_TOKENS[accentTaste].label} 쪽 반응을 중심으로 다음 예약 전 빠르게 프로필을 보정할 수 있어요.`}
-                  meta="최근 측정 후 6일 경과"
-                  actionLabel="지금 측정하기"
-                  onAction={() => undefined}
-                  tone={ctaTone}
-                />
-                <SectionCard hoverEffect={false}>
-                  <div className="flex w-full items-start justify-between gap-3">
-                    <div>
-                      <SectionTitle>프로필 루프 카드</SectionTitle>
-                      <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                        taste accent는 중립 바탕 위에 포인트로만 쓰는 것이 현재 앱의 기본 규칙입니다.
-                      </p>
-                    </div>
-                    <div
-                      className="flex h-12 w-12 items-center justify-center rounded-[14px]"
-                      style={{ background: accentPalette.bg, color: accentPalette.dark }}
-                    >
-                      <Sparkles size={18} />
-                    </div>
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  <SectionEyebrow>OutlineBadge</SectionEyebrow>
+                  <SectionEyebrow>StatusChip</SectionEyebrow>
+                  <SectionEyebrow>TasteChip</SectionEyebrow>
+                  <SectionEyebrow>TasteMeasurementMiniCta</SectionEyebrow>
+                  <SectionEyebrow>SectionCard</SectionEyebrow>
+                </div>
+                <div className="grid gap-3">
                   <div className="flex flex-wrap gap-2">
-                    <TasteChip taste={TASTE_TOKENS[accentTaste].label} />
-                    <TasteChip taste="지방맛" value="부드러움" />
-                    <TasteChip taste="짠맛" value="후반 정리" />
+                    <OutlineBadge>{TASTE_TOKENS[accentTaste].label} Focus</OutlineBadge>
+                    <StatusChip color={STATUS_CONFIG[statusKey].color} backgroundColor={STATUS_CONFIG[statusKey].bg}>
+                      {STATUS_CONFIG[statusKey].label}
+                    </StatusChip>
+                    <TasteChip taste={TASTE_TOKENS[accentTaste].label} value="현재 더 또렷한 포인트" />
                   </div>
-                </SectionCard>
+                  <TasteMeasurementMiniCta
+                    title="재측정으로 프로필 업데이트"
+                    description={`${TASTE_TOKENS[accentTaste].label} 쪽 반응을 중심으로 다음 예약 전 빠르게 프로필을 보정할 수 있어요.`}
+                    meta="최근 측정 후 6일 경과"
+                    actionLabel="지금 측정하기"
+                    onAction={() => undefined}
+                    tone={ctaTone}
+                  />
+                  <SectionCard hoverEffect={false}>
+                    <div className="flex w-full items-start justify-between gap-3">
+                      <div>
+                        <SectionTitle>프로필 루프 카드</SectionTitle>
+                        <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                          taste accent는 중립 바탕 위에 포인트로만 쓰는 것이 현재 앱의 기본 규칙입니다.
+                        </p>
+                      </div>
+                      <div
+                        className="flex h-12 w-12 items-center justify-center rounded-[14px]"
+                        style={{ background: accentPalette.bg, color: accentPalette.dark }}
+                      >
+                        <Sparkles size={18} />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <TasteChip taste={TASTE_TOKENS[accentTaste].label} />
+                      <TasteChip taste="지방맛" value="부드러움" />
+                      <TasteChip taste="짠맛" value="후반 정리" />
+                    </div>
+                  </SectionCard>
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                <div className={cn(previewCardClass, "p-4")}>
+                  <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Taste accent breakdown</p>
+                  <div className="mt-4 grid gap-2">
+                    {(["main", "dark", "light", "bg"] as const).map((key) => (
+                      <div key={key} className="flex items-center gap-3 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+                        <div className="h-10 w-10 rounded-[var(--tb-radius-10)]" style={{ background: accentPalette[key] }} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{ACCENT_PALETTE_LABELS[key]}</p>
+                          <p className="font-mono text-[11px] text-[var(--tb-color-text-muted)]">{accentPalette[key]}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className={cn(previewCardClass, "p-4")}>
+                  <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Why these matter</p>
+                  <ul className="mt-3 grid gap-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                    <li>`PrimaryButton`, `SectionCard`, `TopAppBar`, `BottomTabBar` are the real shared shell today.</li>
+                    <li>`TasteChip`, `StatusChip`, and `OutlineBadge` carry the app's small-component identity.</li>
+                    <li>`TasteMeasurementMiniCta`, `ImproveAccuracyScreen`, and `ReservationConfirmationScreen` show how new flows are inheriting the same system values.</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
             <div className="grid gap-3">
-              <div className={cn(previewCardClass, "p-4")}>
-                <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Taste accent breakdown</p>
-                <div className="mt-4 grid gap-2">
-                  {(["main", "dark", "light", "bg"] as const).map((key) => (
-                    <div key={key} className="flex items-center gap-3 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
-                      <div className="h-10 w-10 rounded-[var(--tb-radius-10)]" style={{ background: accentPalette[key] }} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{ACCENT_PALETTE_LABELS[key]}</p>
-                        <p className="font-mono text-[11px] text-[var(--tb-color-text-muted)]">{accentPalette[key]}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">New screen composites</p>
+                <StatusTag tone="used">Recently added</StatusTag>
               </div>
-              <div className={cn(previewCardClass, "p-4")}>
-                <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Why these matter</p>
-                <ul className="mt-3 grid gap-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                  <li>`PrimaryButton`, `SectionCard`, `TopAppBar`, `BottomTabBar` are the real shared shell today.</li>
-                  <li>`TasteChip`, `StatusChip`, and `OutlineBadge` carry the app's small-component identity.</li>
-                  <li>`TasteMeasurementMiniCta` is the clearest app-specific component worth preserving and iterating.</li>
-                </ul>
+              <div className="flex flex-wrap gap-2">
+                <SectionEyebrow>ImproveAccuracyScreen</SectionEyebrow>
+                <SectionEyebrow>ReservationConfirmationScreen</SectionEyebrow>
+              </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                <PhonePreviewFrame
+                  title="Improve Accuracy"
+                  description="정확도 단계 카드와 benefits, 안심 메시지, 하단 CTA가 하나의 풀스크린 흐름으로 정리되었습니다."
+                >
+                  <ImproveAccuracyScreen
+                    currentProfileStage={improveAccuracyStage}
+                    onConnectDevice={() => undefined}
+                    onSkip={() => undefined}
+                  />
+                </PhonePreviewFrame>
+                <PhonePreviewFrame
+                  title="Reservation Confirmation"
+                  description="예약 확정 직후 상태 진행, 완료 카드, 후속 CTA를 묶은 신규 confirmation flow입니다."
+                >
+                  <ReservationConfirmationScreen
+                    key={confirmationPreviewKey}
+                    onBack={() => undefined}
+                    onComplete={() => undefined}
+                  />
+                </PhonePreviewFrame>
               </div>
             </div>
           </div>
@@ -2578,6 +2735,28 @@ export default function DesignSystemPage() {
           </div>
         </PlaygroundSection>
       </div>
+
+      <NotificationPanel
+        isOpen={notificationPanelOpen}
+        onClose={() => setNotificationPanelOpen(false)}
+      />
+      <AppMenuDrawer
+        isOpen={menuDrawerOpen}
+        onClose={() => setMenuDrawerOpen(false)}
+        onStartMeasurement={() => {
+          setApplyFeedback({
+            message: "메뉴의 미각 재측정 CTA는 실제 앱에서 측정 플로우로 연결됩니다.",
+            tone: "note",
+          });
+        }}
+        onImproveAccuracy={() => {
+          handleJumpToSection("appSpecific");
+          setApplyFeedback({
+            message: "정확도 향상 프리뷰 위치로 이동했습니다.",
+            tone: "note",
+          });
+        }}
+      />
 
       <div
         ref={floatingMenuClusterRef}

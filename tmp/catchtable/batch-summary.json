@@ -1,0 +1,129 @@
+{
+  "generatedAt": "2026-03-29T12:33:20.143Z",
+  "attemptOcr": false,
+  "results": [
+    {
+      "name": "소수헌",
+      "chefName": "박경재",
+      "status": "fallback_ready_for_review",
+      "slugCandidates": [
+        "sosuheon"
+      ],
+      "publicManifestPath": "tmp/public-sources/sosuheon-seoul/manifest.json",
+      "publicReviewPath": "tmp/public-sources/sosuheon-seoul/review-template.json",
+      "fallbackFetchStdout": "[public-source] restaurant: 소수헌\n[public-source] output: tmp/public-sources/sosuheon-seoul\n[public-source] manifest: tmp/public-sources/sosuheon-seoul/manifest.json\n[public-source] summary: {\"documents\":1,\"menuCandidates\":1}",
+      "fallbackReviewStdout": "[public-review] created: tmp/public-sources/sosuheon-seoul/review-template.json\n[public-review] summary: {\"restaurant\":\"소수헌\",\"documents\":1,\"menus\":1,\"menuTypes\":[\"other\"]}",
+      "fallbackReviewStderr": ""
+    },
+    {
+      "name": "모수",
+      "chefName": "안성재",
+      "status": "ready_for_review",
+      "slug": "tempmosuseoul",
+      "manifestPath": "tmp/catchtable/tempmosuseoul/manifest.json",
+      "reviewPath": "tmp/catchtable/tempmosuseoul/review-template.json",
+      "menuCount": 3,
+      "imageCount": 0,
+      "fetchStdout": "[catchtable] slug: tempmosuseoul\n[catchtable] menus page: https://www.catchtable.net/shop/tempmosuseoul/menus\n[catchtable] output dir: tmp/catchtable/tempmosuseoul\n[catchtable] summary: {\"restaurantName\":\"MOSU Seoul by Chef Sung Anh\",\"lastUpdated\":\"Nov 26, 2025\",\"menus\":3,\"images\":0,\"downloadedImages\":0}\n[catchtable] manifest: tmp/catchtable/tempmosuseoul/manifest.json",
+      "reviewStdout": "[catchtable-review] created: tmp/catchtable/tempmosuseoul/review-template.json\n[catchtable-review] summary: {\"restaurant\":\"모수\",\"menus\":3,\"menuTypes\":[\"lunch\",\"dinner\",\"other\"]}",
+      "reviewStderr": ""
+    },
+    {
+      "name": "에빗",
+      "chefName": "조셉 리저우드",
+      "status": "ready_for_review",
+      "slug": "evett",
+      "manifestPath": "tmp/catchtable/evett/manifest.json",
+      "reviewPath": "tmp/catchtable/evett/review-template.json",
+      "menuCount": 10,
+      "imageCount": 0,
+      "fetchStdout": "[catchtable] slug: evett\n[catchtable] menus page: https://www.catchtable.net/shop/evett/menus\n[catchtable] output dir: tmp/catchtable/evett\n[catchtable] summary: {\"restaurantName\":\"evett\",\"lastUpdated\":\"Feb 03, 2026\",\"menus\":10,\"images\":0,\"downloadedImages\":0}\n[catchtable] manifest: tmp/catchtable/evett/manifest.json",
+      "reviewStdout": "[catchtable-review] created: tmp/catchtable/evett/review-template.json\n[catchtable-review] summary: {\"restaurant\":\"에빗\",\"menus\":10,\"menuTypes\":[\"lunch\",\"lunch\",\"dinner\",\"dinner\",\"dinner\",\"dinner\",\"dinner\",\"lunch\",\"lunch\",\"other\"]}",
+      "reviewStderr": ""
+    },
+    {
+      "name": "라연",
+      "chefName": "김성일",
+      "status": "fallback_ready_for_review",
+      "slugCandidates": [
+        "layeon",
+        "layeonseoul",
+        "layeon_shilla",
+        "shillalayeon",
+        "hotelshillalayeon",
+        "layeonhotel",
+        "shillalayeonseoul"
+      ],
+      "publicManifestPath": "tmp/public-sources/la-yeon-seoul/manifest.json",
+      "publicReviewPath": "tmp/public-sources/la-yeon-seoul/review-template.json",
+      "fallbackFetchStdout": "[public-source] restaurant: 라연\n[public-source] output: tmp/public-sources/la-yeon-seoul\n[public-source] manifest: tmp/public-sources/la-yeon-seoul/manifest.json\n[public-source] summary: {\"documents\":1,\"menuCandidates\":1}",
+      "fallbackReviewStdout": "[public-review] created: tmp/public-sources/la-yeon-seoul/review-template.json\n[public-review] summary: {\"restaurant\":\"라연\",\"documents\":1,\"menus\":1,\"menuTypes\":[\"other\"]}",
+      "fallbackReviewStderr": ""
+    },
+    {
+      "name": "레스토랑 알렌",
+      "chefName": "서현민",
+      "status": "ready_for_review",
+      "slug": "allen",
+      "manifestPath": "tmp/catchtable/allen/manifest.json",
+      "reviewPath": "tmp/catchtable/allen/review-template.json",
+      "menuCount": 2,
+      "imageCount": 0,
+      "fetchStdout": "[catchtable] slug: allen\n[catchtable] menus page: https://www.catchtable.net/shop/allen/menus\n[catchtable] output dir: tmp/catchtable/allen\n[catchtable] summary: {\"restaurantName\":\"Restaurant Allen\",\"lastUpdated\":\"Mar 01, 2026\",\"menus\":2,\"images\":0,\"downloadedImages\":0}\n[catchtable] manifest: tmp/catchtable/allen/manifest.json",
+      "reviewStdout": "[catchtable-review] created: tmp/catchtable/allen/review-template.json\n[catchtable-review] summary: {\"restaurant\":\"레스토랑 알렌\",\"menus\":2,\"menuTypes\":[\"lunch\",\"dinner\"]}",
+      "reviewStderr": ""
+    },
+    {
+      "name": "권숙수",
+      "chefName": "권우중",
+      "status": "ready_for_review",
+      "slug": "kwonsooksoo",
+      "manifestPath": "tmp/catchtable/kwonsooksoo/manifest.json",
+      "reviewPath": "tmp/catchtable/kwonsooksoo/review-template.json",
+      "menuCount": 3,
+      "imageCount": 0,
+      "fetchStdout": "[catchtable] slug: kwonsooksoo\n[catchtable] menus page: https://www.catchtable.net/shop/kwonsooksoo/menus\n[catchtable] output dir: tmp/catchtable/kwonsooksoo\n[catchtable] summary: {\"restaurantName\":\"Kwonsooksoo\",\"lastUpdated\":\"Mar 17, 2026\",\"menus\":3,\"images\":0,\"downloadedImages\":0}\n[catchtable] manifest: tmp/catchtable/kwonsooksoo/manifest.json",
+      "reviewStdout": "[catchtable-review] created: tmp/catchtable/kwonsooksoo/review-template.json\n[catchtable-review] summary: {\"restaurant\":\"권숙수\",\"menus\":3,\"menuTypes\":[\"lunch\",\"lunch\",\"dinner\"]}",
+      "reviewStderr": ""
+    },
+    {
+      "name": "미토우",
+      "chefName": "권영운 / 김보미",
+      "status": "ready_for_review",
+      "slug": "mitou",
+      "manifestPath": "tmp/catchtable/mitou/manifest.json",
+      "reviewPath": "tmp/catchtable/mitou/review-template.json",
+      "menuCount": 1,
+      "imageCount": 0,
+      "fetchStdout": "[catchtable] slug: mitou\n[catchtable] menus page: https://www.catchtable.net/shop/mitou/menus\n[catchtable] output dir: tmp/catchtable/mitou\n[catchtable] summary: {\"restaurantName\":\"Mitou\",\"lastUpdated\":\"Jan 06, 2025\",\"menus\":1,\"images\":0,\"downloadedImages\":0}\n[catchtable] manifest: tmp/catchtable/mitou/manifest.json",
+      "reviewStdout": "[catchtable-review] created: tmp/catchtable/mitou/review-template.json\n[catchtable-review] summary: {\"restaurant\":\"미토우\",\"menus\":1,\"menuTypes\":[\"other\"]}",
+      "reviewStderr": ""
+    },
+    {
+      "name": "스와니예",
+      "chefName": "이준",
+      "status": "ready_for_review",
+      "slug": "soigneseoul",
+      "manifestPath": "tmp/catchtable/soigneseoul/manifest.json",
+      "reviewPath": "tmp/catchtable/soigneseoul/review-template.json",
+      "menuCount": 4,
+      "imageCount": 2,
+      "fetchStdout": "[catchtable] slug: soigneseoul\n[catchtable] menus page: https://www.catchtable.net/shop/soigneseoul/menus\n[catchtable] output dir: tmp/catchtable/soigneseoul\n[catchtable] summary: {\"restaurantName\":\"SOIGNE\",\"lastUpdated\":\"Mar 14, 2026\",\"menus\":4,\"images\":2,\"downloadedImages\":2}\n[catchtable] manifest: tmp/catchtable/soigneseoul/manifest.json",
+      "reviewStdout": "[catchtable-review] created: tmp/catchtable/soigneseoul/review-template.json\n[catchtable-review] summary: {\"restaurant\":\"스와니예\",\"menus\":4,\"menuTypes\":[\"lunch\",\"dinner\",\"lunch\",\"dinner\"]}",
+      "reviewStderr": ""
+    },
+    {
+      "name": "알라프리마",
+      "chefName": "김진혁",
+      "status": "ready_for_review",
+      "slug": "allaprima",
+      "manifestPath": "tmp/catchtable/allaprima/manifest.json",
+      "reviewPath": "tmp/catchtable/allaprima/review-template.json",
+      "menuCount": 2,
+      "imageCount": 5,
+      "fetchStdout": "[catchtable] slug: allaprima\n[catchtable] menus page: https://www.catchtable.net/shop/allaprima/menus\n[catchtable] output dir: tmp/catchtable/allaprima\n[catchtable] summary: {\"restaurantName\":\"alla prima\",\"lastUpdated\":\"Mar 08, 2026\",\"menus\":2,\"images\":5,\"downloadedImages\":5}\n[catchtable] manifest: tmp/catchtable/allaprima/manifest.json",
+      "reviewStdout": "[catchtable-review] created: tmp/catchtable/allaprima/review-template.json\n[catchtable-review] summary: {\"restaurant\":\"알라프리마\",\"menus\":2,\"menuTypes\":[\"lunch\",\"dinner\"]}",
+      "reviewStderr": ""
+    }
+  ]
+}

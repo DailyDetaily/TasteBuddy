@@ -1,0 +1,666 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Seed generated from curated intake CSV files for 세븐도어.",
+    "generatedAt": "2026-03-29T11:47:30.049Z",
+    "sourceFiles": [
+      "docs/mvp-content-intake-7th-door.csv"
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "7th-door-seoul",
+      "name": "세븐도어",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "세븐도어 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "7th-door-seoul",
+      "display_name": "김대천",
+      "bio": "큐레이션 intake CSV에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/7th-door-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "restaurant_slug": "7th-door-seoul",
+      "source_type": "review",
+      "title": "Tripadvisor diner review for 7th Door tasting menu",
+      "url": "https://www.tripadvisor.com/Restaurant_Review-g294197-d23134902-Reviews-7th_Door-Seoul.html",
+      "excerpt": "시트러스 롤 / 세이버리 머쉬룸 타르트 / 고구마 크렘브륄레 바이트 / 세이버리 필링 도넛 / 비프와 피클드 채소 / 시나몬 펀치와 배 소르베",
+      "raw_text": "시트러스 롤\n세이버리 머쉬룸 타르트\n고구마 크렘브륄레 바이트\n세이버리 필링 도넛\n비프와 피클드 채소\n시나몬 펀치와 배 소르베\n라임 딜 아이스크림과 딸기 청",
+      "trust_score": 0.62
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "7th-door-seoul-dish-001",
+      "restaurant_slug": "7th-door-seoul",
+      "season_label": "2023-2025 public tasting notes",
+      "public_title": "시트러스 롤",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "7th-door-seoul-dish-002",
+      "restaurant_slug": "7th-door-seoul",
+      "season_label": "2023-2025 public tasting notes",
+      "public_title": "세이버리 머쉬룸 타르트",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "7th-door-seoul-dish-003",
+      "restaurant_slug": "7th-door-seoul",
+      "season_label": "2023-2025 public tasting notes",
+      "public_title": "고구마 크렘브륄레 바이트",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "7th-door-seoul-dish-004",
+      "restaurant_slug": "7th-door-seoul",
+      "season_label": "2023-2025 public tasting notes",
+      "public_title": "세이버리 필링 도넛",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "7th-door-seoul-dish-005",
+      "restaurant_slug": "7th-door-seoul",
+      "season_label": "2023-2025 public tasting notes",
+      "public_title": "비프와 피클드 채소",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "7th-door-seoul-dish-006",
+      "restaurant_slug": "7th-door-seoul",
+      "season_label": "2023-2025 public tasting notes",
+      "public_title": "시나몬 펀치와 배 소르베",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "7th-door-seoul-dish-007",
+      "restaurant_slug": "7th-door-seoul",
+      "season_label": "2023-2025 public tasting notes",
+      "public_title": "라임 딜 아이스크림과 딸기 청",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "7th-door-seoul-dish-001",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "ingredients",
+      "value_text": "시트러스",
+      "value_json": {
+        "ingredients": [
+          "시트러스"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-001",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "techniques",
+      "value_text": "rolled bite",
+      "value_json": {
+        "techniques": [
+          "rolled bite"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-001",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "sensory_words",
+      "value_text": "bright opening, fermented freshness, short clean finish",
+      "value_json": {
+        "sensory_words": [
+          "bright opening",
+          "fermented freshness",
+          "short clean finish"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-001",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-002",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "ingredients",
+      "value_text": "버섯",
+      "value_json": {
+        "ingredients": [
+          "버섯"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-002",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "techniques",
+      "value_text": "tart, baking",
+      "value_json": {
+        "techniques": [
+          "tart",
+          "baking"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-002",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "sensory_words",
+      "value_text": "earthy umami, savory pastry note, fermented depth",
+      "value_json": {
+        "sensory_words": [
+          "earthy umami",
+          "savory pastry note",
+          "fermented depth"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-002",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-003",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "ingredients",
+      "value_text": "고구마",
+      "value_json": {
+        "ingredients": [
+          "고구마"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-003",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "techniques",
+      "value_text": "brulee-style bite",
+      "value_json": {
+        "techniques": [
+          "brulee-style bite"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-003",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "sensory_words",
+      "value_text": "caramelized sweetness, soft richness, playful start",
+      "value_json": {
+        "sensory_words": [
+          "caramelized sweetness",
+          "soft richness",
+          "playful start"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-003",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-004",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "ingredients",
+      "value_text": "도넛, 세이버리 필링",
+      "value_json": {
+        "ingredients": [
+          "도넛",
+          "세이버리 필링"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-004",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "techniques",
+      "value_text": "filled dough preparation",
+      "value_json": {
+        "techniques": [
+          "filled dough preparation"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-004",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "sensory_words",
+      "value_text": "playful savory richness, fermented surprise, soft chew",
+      "value_json": {
+        "sensory_words": [
+          "playful savory richness",
+          "fermented surprise",
+          "soft chew"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-004",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-005",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "ingredients",
+      "value_text": "소고기, 피클드 채소",
+      "value_json": {
+        "ingredients": [
+          "소고기",
+          "피클드 채소"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-005",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "techniques",
+      "value_text": "main-course preparation",
+      "value_json": {
+        "techniques": [
+          "main-course preparation"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-005",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "sensory_words",
+      "value_text": "smoky beef core, pickled relief, modern Korean density",
+      "value_json": {
+        "sensory_words": [
+          "smoky beef core",
+          "pickled relief",
+          "modern Korean density"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-005",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-006",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "ingredients",
+      "value_text": "시나몬, 배",
+      "value_json": {
+        "ingredients": [
+          "시나몬",
+          "배"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-006",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "techniques",
+      "value_text": "sorbet, iced dessert",
+      "value_json": {
+        "techniques": [
+          "sorbet",
+          "iced dessert"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-006",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "sensory_words",
+      "value_text": "warm spice aroma, pear brightness, refreshing finish",
+      "value_json": {
+        "sensory_words": [
+          "warm spice aroma",
+          "pear brightness",
+          "refreshing finish"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-006",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-007",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "ingredients",
+      "value_text": "라임, 딜, 딸기 청",
+      "value_json": {
+        "ingredients": [
+          "라임",
+          "딜",
+          "딸기 청"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-007",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "techniques",
+      "value_text": "ice cream, preserve",
+      "value_json": {
+        "techniques": [
+          "ice cream",
+          "preserve"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-007",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "sensory_words",
+      "value_text": "herbal citrus lift, sweet tart finish, fermented fruit echo",
+      "value_json": {
+        "sensory_words": [
+          "herbal citrus lift",
+          "sweet tart finish",
+          "fermented fruit echo"
+        ]
+      },
+      "confidence": 0.62
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-007",
+      "source_external_key": "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.62
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "7th-door-seoul-dish-001",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.34,
+        "bitter": 0.02,
+        "salty": 0.06,
+        "umami": 0.14,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.72,
+        "heaviness": 0.04,
+        "cleanFinish": 0.74,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.54,
+      "rationale": "A citrus-flavored roll from a fermentation-led tasting menu likely acts as a bright opener with high cleanliness and controlled savoriness.",
+      "uncertainty_notes": [
+        "This is a reviewer description rather than an official dish name",
+        "filling and exact citrus are unknown"
+      ],
+      "evidence_ids": [
+        "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu"
+      ]
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-002",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.12,
+        "umami": 0.56,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.22,
+        "cleanFinish": 0.46,
+        "linger": 0.24,
+        "smoke": 0,
+        "aromaIntensity": 0.38,
+        "textureRichness": 0.32,
+        "thermalImpact": 0.12
+      },
+      "confidence": 0.58,
+      "rationale": "A mushroom tart in this context likely leans into earthy umami and pastry richness while staying relatively compact as a bite.",
+      "uncertainty_notes": [
+        "Dish name and exact composition are reviewer-provided descriptors, not official menu wording"
+      ],
+      "evidence_ids": [
+        "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu"
+      ]
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-003",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.52,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.04,
+        "umami": 0.1,
+        "fat": 0.14
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.14,
+        "cleanFinish": 0.46,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.56,
+      "rationale": "The review suggests a sweet potato brulee-like bite, so the profile emphasizes caramelized sweetness with modest richness in a small format.",
+      "uncertainty_notes": [
+        "This title is a working label based on a public review, not an official menu title"
+      ],
+      "evidence_ids": [
+        "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu"
+      ]
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-004",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.42,
+        "fat": 0.2
+      },
+      "perceptual_vector": {
+        "brightness": 0.16,
+        "heaviness": 0.2,
+        "cleanFinish": 0.44,
+        "linger": 0.3,
+        "smoke": 0,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.52,
+      "rationale": "The playful donut-in-a-bag presentation implies a richer savory interlude rather than a dessert note, with more texture and linger than the smaller opening bites.",
+      "uncertainty_notes": [
+        "Only the review mentions this presentation",
+        "filling and fermentation details are not public"
+      ],
+      "evidence_ids": [
+        "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu"
+      ]
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-005",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.18,
+        "bitter": 0.04,
+        "salty": 0.16,
+        "umami": 0.74,
+        "fat": 0.32
+      },
+      "perceptual_vector": {
+        "brightness": 0.28,
+        "heaviness": 0.4,
+        "cleanFinish": 0.36,
+        "linger": 0.52,
+        "smoke": 0.12,
+        "aromaIntensity": 0.36,
+        "textureRichness": 0.44,
+        "thermalImpact": 0.34
+      },
+      "confidence": 0.66,
+      "rationale": "The public review highlights especially memorable beef with pickled vegetables, which suggests a main built on beef umami and acid relief in line with the restaurant's fermentation theme.",
+      "uncertainty_notes": [
+        "This title is a working label from a public diner description",
+        "cut, sauce, and pickle set are not public"
+      ],
+      "evidence_ids": [
+        "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu"
+      ]
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-006",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.42,
+        "sour": 0.28,
+        "bitter": 0.04,
+        "salty": 0.02,
+        "umami": 0.02,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.74,
+        "heaviness": 0.04,
+        "cleanFinish": 0.76,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.64,
+      "rationale": "Pear sorbet with cinnamon punch reads as a cleansing dessert with aromatic spice and bright fruit relief after savory fermentation-heavy courses.",
+      "uncertainty_notes": [
+        "The exact punch format and sweetness level are not public"
+      ],
+      "evidence_ids": [
+        "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu"
+      ]
+    },
+    {
+      "dish_external_key": "7th-door-seoul-dish-007",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.44,
+        "sour": 0.34,
+        "bitter": 0.02,
+        "salty": 0.02,
+        "umami": 0.04,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.82,
+        "heaviness": 0.06,
+        "cleanFinish": 0.72,
+        "linger": 0.14,
+        "smoke": 0,
+        "aromaIntensity": 0.4,
+        "textureRichness": 0.14,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.66,
+      "rationale": "This dessert pairing likely closes with bright herb-citrus freshness and sweet-tart preserved fruit, echoing fermentation without heaviness.",
+      "uncertainty_notes": [
+        "This title is reviewer-derived and not an official menu title"
+      ],
+      "evidence_ids": [
+        "7th-door-seoul-tripadvisor-diner-review-for-7th-door-tasting-menu"
+      ]
+    }
+  ],
+  "research_rules": []
+}

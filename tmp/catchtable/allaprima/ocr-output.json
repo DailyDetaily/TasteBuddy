@@ -1,0 +1,1490 @@
+{
+  "generatedAt": "2026-03-29T15:05:19.829Z",
+  "restaurant": {
+    "slug": "allaprima",
+    "displayName": "alla prima"
+  },
+  "manifestRelativePath": "tmp/catchtable/allaprima/manifest.json",
+  "images": [
+    {
+      "index": 1,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/7fdf9ac4f9594149b6eedaeb16293b5a?details500",
+      "relativeImagePath": "tmp/catchtable/allaprima/images/01-allaprima.jpg",
+      "fullText": "THE MICHELIN GUIDE SEOUL 2026\nTHE MICHELIN GUIDE SEOUL 2025\n＊＊\nTHE MICHELIN GUIDE SEOUL 2024\n€3$3\nTHE MICHELIN GUIDE SEOUL 2023\n＊＊\nTHE MICHELIN GUIDE SEOUL 2022\nTHE MICHELIN GUIDE SEOUL 2021\n＊＊\nTHE MICHELIN GUIDE SEOUL 2020\nTHE MICHELIN GUIDE SEOUL 2019\n83 THE MICHELIN GUIDE SEOUL 2018\n* THE MICHELIN GUIDE SEOUL 2017\nLA LISTE 2026 TOP 1000 Awards\nLA LISTE 2025 TOP 1000 Awards\nLA LISTE 2024 TOP 1000 Awards\nLA LISTE 2023 TOP 1000 Awards\nLA LISTE 2022 TOP 1000 Awards\n目\nLA LISTE 2021 TOP 1000 Awards\nII LA LISTE 2020 TOP 1000 Awards\nW LA LISTE 2019 TOP 1000 Awards\nAsia's 50 Best Restaurants 2026:51-100\nAsia's 50 Best Restaurants 2025:51-100\nAsia's 50 Best Restaurants 2024:51-100\nTasta ef Seeuf 2025 BEST WESTERN RESTAURANT AWARD\nThe BEST CHEF 2025 4$",
+      "lines": [
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.6415094339622642,
+            "x": 0.2264150836477991,
+            "y": 0.8959999998666667
+          },
+          "confidence": 1,
+          "text": "THE MICHELIN GUIDE SEOUL 2026"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.628930817610063,
+            "x": 0.2389937211740038,
+            "y": 0.8720000002
+          },
+          "confidence": 1,
+          "text": "THE MICHELIN GUIDE SEOUL 2025"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08176100628930819,
+            "x": 0.13836478123689724,
+            "y": 0.8440000001333333
+          },
+          "confidence": 0.5,
+          "text": "＊＊"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.628930817610063,
+            "x": 0.23899371761006266,
+            "y": 0.8399999995333334
+          },
+          "confidence": 1,
+          "text": "THE MICHELIN GUIDE SEOUL 2024"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08176100628930819,
+            "x": 0.13836478089622636,
+            "y": 0.8120000002
+          },
+          "confidence": 0.5,
+          "text": "€3$3"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.628930817610063,
+            "x": 0.238993700209644,
+            "y": 0.8119999998666667
+          },
+          "confidence": 1,
+          "text": "THE MICHELIN GUIDE SEOUL 2023"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08176100628930819,
+            "x": 0.13836478123689724,
+            "y": 0.7840000001333334
+          },
+          "confidence": 0.5,
+          "text": "＊＊"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.6226415094339623,
+            "x": 0.2389937159591194,
+            "y": 0.77999999965
+          },
+          "confidence": 1,
+          "text": "THE MICHELIN GUIDE SEOUL 2022"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.6226415094339622,
+            "x": 0.23899371771488442,
+            "y": 0.7479999995333333
+          },
+          "confidence": 1,
+          "text": "THE MICHELIN GUIDE SEOUL 2021"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08176100628930819,
+            "x": 0.13836478089622636,
+            "y": 0.7200000002
+          },
+          "confidence": 0.5,
+          "text": "＊＊"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.628930817610063,
+            "x": 0.2389937185534589,
+            "y": 0.71600000025
+          },
+          "confidence": 1,
+          "text": "THE MICHELIN GUIDE SEOUL 2020"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.6226415094339622,
+            "x": 0.23899370031446576,
+            "y": 0.6839999998666666
+          },
+          "confidence": 1,
+          "text": "THE MICHELIN GUIDE SEOUL 2019"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.6918238993710691,
+            "x": 0.17610063757861616,
+            "y": 0.6480000001999999
+          },
+          "confidence": 1,
+          "text": "83 THE MICHELIN GUIDE SEOUL 2018"
+        },
+        {
+          "boundingBox": {
+            "height": 0.027999999999999914,
+            "width": 0.6855345911949685,
+            "x": 0.1761006205188682,
+            "y": 0.61200000035
+          },
+          "confidence": 1,
+          "text": "* THE MICHELIN GUIDE SEOUL 2017"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.6226415094339623,
+            "x": 0.2389937095387841,
+            "y": 0.5680000004
+          },
+          "confidence": 1,
+          "text": "LA LISTE 2026 TOP 1000 Awards"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.6226415094339622,
+            "x": 0.23899370031446576,
+            "y": 0.5279999997333333
+          },
+          "confidence": 1,
+          "text": "LA LISTE 2025 TOP 1000 Awards"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.6226415094339623,
+            "x": 0.2389937095387841,
+            "y": 0.4880000004
+          },
+          "confidence": 1,
+          "text": "LA LISTE 2024 TOP 1000 Awards"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.6163522012578616,
+            "x": 0.23899371839622627,
+            "y": 0.44000000014999996
+          },
+          "confidence": 1,
+          "text": "LA LISTE 2023 TOP 1000 Awards"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.6163522012578617,
+            "x": 0.23899370041928752,
+            "y": 0.3999999998000001
+          },
+          "confidence": 1,
+          "text": "LA LISTE 2022 TOP 1000 Awards"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.0503144624098292,
+            "x": 0.17610063126887993,
+            "y": 0.3560000001333333
+          },
+          "confidence": 0.30000001192092896,
+          "text": "目"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.6163522012578616,
+            "x": 0.23899371839622627,
+            "y": 0.3520000001999999
+          },
+          "confidence": 1,
+          "text": "LA LISTE 2021 TOP 1000 Awards"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02961825180053712,
+            "width": 0.6800563020526238,
+            "x": 0.17564699653440802,
+            "y": 0.3066198094455552
+          },
+          "confidence": 1,
+          "text": "II LA LISTE 2020 TOP 1000 Awards"
+        },
+        {
+          "boundingBox": {
+            "height": 0.027999999999999914,
+            "width": 0.679245283018868,
+            "x": 0.17610064025157193,
+            "y": 0.2640000000666667
+          },
+          "confidence": 1,
+          "text": "W LA LISTE 2019 TOP 1000 Awards"
+        },
+        {
+          "boundingBox": {
+            "height": 0.027999999999999914,
+            "width": 0.679245283018868,
+            "x": 0.16352200503144682,
+            "y": 0.21600000046666679
+          },
+          "confidence": 1,
+          "text": "Asia's 50 Best Restaurants 2026:51-100"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.679245283018868,
+            "x": 0.16352202389937068,
+            "y": 0.18000000019999995
+          },
+          "confidence": 1,
+          "text": "Asia's 50 Best Restaurants 2025:51-100"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.679245283018868,
+            "x": 0.16352200691823907,
+            "y": 0.14800000030000005
+          },
+          "confidence": 1,
+          "text": "Asia's 50 Best Restaurants 2024:51-100"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.7169811320754716,
+            "x": 0.14465409999999965,
+            "y": 0.10800000019999989
+          },
+          "confidence": 1,
+          "text": "Tasta ef Seeuf 2025 BEST WESTERN RESTAURANT AWARD"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.3647798742138365,
+            "x": 0.32075471729008054,
+            "y": 0.0719999999824561
+          },
+          "confidence": 1,
+          "text": "The BEST CHEF 2025 4$"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/babd965dd15e4421be0ae5d596f9a9dc?details500",
+      "relativeImagePath": "tmp/catchtable/allaprima/images/02-allaprima.jpg",
+      "fullText": "Nor Ter\nLoww.mes.to\nvenous com oro\nเออกน.\n8g...). 38.29808",
+      "lines": [
+        {
+          "boundingBox": {
+            "height": 0.03600000000000003,
+            "width": 0.13157894736842102,
+            "x": 0.4210526308270677,
+            "y": 0.5840000002571428
+          },
+          "confidence": 0.30000001192092896,
+          "text": "Nor Ter"
+        },
+        {
+          "boundingBox": {
+            "height": 0.03200000000000003,
+            "width": 0.27631578947368424,
+            "x": 0.3486842101893453,
+            "y": 0.5320000000390244
+          },
+          "confidence": 0.30000001192092896,
+          "text": "Loww.mes.to"
+        },
+        {
+          "boundingBox": {
+            "height": 0.016000000000000014,
+            "width": 0.16447368421052627,
+            "x": 0.40789473651315794,
+            "y": 0.424000000032
+          },
+          "confidence": 1,
+          "text": "venous com oro"
+        },
+        {
+          "boundingBox": {
+            "height": 0.040000000000000036,
+            "width": 0.19736842105263158,
+            "x": 0.39473684175696594,
+            "y": 0.388000000117647
+          },
+          "confidence": 0.30000001192092896,
+          "text": "เออกน."
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.23026315789473684,
+            "x": 0.3749999996498302,
+            "y": 0.33200000003870966
+          },
+          "confidence": 1,
+          "text": "8g...). 38.29808"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/576df3cc5b1f46438b776c2bcfc74447?details500",
+      "relativeImagePath": "tmp/catchtable/allaprima/images/03-allaprima.jpg",
+      "fullText": "LUNCH\nComorer. Scolop\nTeng rioh Coa\nra Lotus roct Cherry bicasom\nม. 82. สบ\nCOMe TOO",
+      "lines": [
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.07499999999999996,
+            "x": 0.45000000124999995,
+            "y": 0.8480000002
+          },
+          "confidence": 1,
+          "text": "LUNCH"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.16250000000000003,
+            "x": 0.4062499972916667,
+            "y": 0.6439999998
+          },
+          "confidence": 0.5,
+          "text": "Comorer. Scolop"
+        },
+        {
+          "boundingBox": {
+            "height": 0.03599999999999992,
+            "width": 0.22499999999999998,
+            "x": 0.3750000028124999,
+            "y": 0.54400000035
+          },
+          "confidence": 0.30000001192092896,
+          "text": "Teng rioh Coa"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.275,
+            "x": 0.3499999954166668,
+            "y": 0.4919999998
+          },
+          "confidence": 1,
+          "text": "ra Lotus roct Cherry bicasom"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.10624999999999996,
+            "x": 0.43750000177083326,
+            "y": 0.48000000006666665
+          },
+          "confidence": 0.5,
+          "text": "ม. 82. สบ"
+        },
+        {
+          "boundingBox": {
+            "height": 0.03600000000000003,
+            "width": 0.11249999999999993,
+            "x": 0.43125,
+            "y": 0.12399999954999996
+          },
+          "confidence": 0.30000001192092896,
+          "text": "COMe TOO"
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/61003751edd142918b7e0aa026d02d39?details500",
+      "relativeImagePath": "tmp/catchtable/allaprima/images/04-allaprima.jpg",
+      "fullText": "Ambagadey\nBy The Glass 10c\nKrug Grande Cunte 1734me Édition\n78,000\nStandard Bottle\nKrug Grande Curée 173*** Édition\n480.000\nKrug Grande Cunte 172** Edition\n580,000\nKrug Grande Cuvée 171*** Edition\n680,000\nKrug Grande Cuvée 170tm° Édition\n780.000\nKrug Grande Cunte 167*** Edition\n800.000\nKrug Grande Cuvée 162*** (dition\n1,030,000\nKrug Grande Cunte 161*** Edition\n1.000.000\nKrug Rose 27*** Edition\n280.000\nKrug Rose 29*** Coition\n780.000\nKrug 1998\n1.600.000\nKrug 2000\n1,500.000\nKrug 2002\n1.600.000\nKrug 2008\n1.800.000\nKrug 2011\n1,100.000\nKrug 2013\n950.000\nKrug Clos du Mesnil 2006\n3,300,000\nKrug Clos du Mesnil 2008\n3,900,000\nKrug Clos d'Ambornay 1998\n7.800.000\nKrug Clos d'Ambonnay 2006\n5,800,000\nKrug Collection 1995\n2.100.000\nMagnum Bottle\nKrug Grande Curée 168ème Edition\n1,650,000\nKrug 1998\n2200.000\nKrug 2004\n2,400,000\nKrug Collection 1982\n8,500,000",
+      "lines": [
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.2046783625730994,
+            "x": 0.3508771955409356,
+            "y": 0.85600000005
+          },
+          "confidence": 0.5,
+          "text": "Ambagadey"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.18128653855351679,
+            "x": 0.11695907292597053,
+            "y": 0.8320000002
+          },
+          "confidence": 0.5,
+          "text": "By The Glass 10c"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.3216374269005848,
+            "x": 0.11695906968810899,
+            "y": 0.8160000000666666
+          },
+          "confidence": 0.5,
+          "text": "Krug Grande Cunte 1734me Édition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.05847953216374269,
+            "x": 0.8421052628654971,
+            "y": 0.8120000001000001
+          },
+          "confidence": 1,
+          "text": "78,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.18128654970760236,
+            "x": 0.11695906403508774,
+            "y": 0.7680000000322581
+          },
+          "confidence": 1,
+          "text": "Standard Bottle"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.3099415204678363,
+            "x": 0.11695906820175431,
+            "y": 0.7400000002
+          },
+          "confidence": 1,
+          "text": "Krug Grande Curée 173*** Édition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.07602339181286555,
+            "x": 0.8245614022417155,
+            "y": 0.7439999998
+          },
+          "confidence": 1,
+          "text": "480.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.3099415204678363,
+            "x": 0.11695906820175431,
+            "y": 0.7160000002
+          },
+          "confidence": 0.5,
+          "text": "Krug Grande Cunte 172** Edition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.07017543859649122,
+            "x": 0.8304093565789472,
+            "y": 0.7159999997
+          },
+          "confidence": 1,
+          "text": "580,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.30994152046783624,
+            "x": 0.11695906949317719,
+            "y": 0.6920000001333333
+          },
+          "confidence": 1,
+          "text": "Krug Grande Cuvée 171*** Edition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.07017543859649122,
+            "x": 0.830409356608187,
+            "y": 0.69199999976
+          },
+          "confidence": 1,
+          "text": "680,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.3099415204678363,
+            "x": 0.11695906820175431,
+            "y": 0.6680000000999999
+          },
+          "confidence": 0.5,
+          "text": "Krug Grande Cuvée 170tm° Édition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.07017543859649122,
+            "x": 0.8304093576023392,
+            "y": 0.6680000001999999
+          },
+          "confidence": 1,
+          "text": "780.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.3157894736842106,
+            "x": 0.11111111637426882,
+            "y": 0.6440000001333334
+          },
+          "confidence": 0.5,
+          "text": "Krug Grande Cunte 167*** Edition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.07602339181286555,
+            "x": 0.8245614022417155,
+            "y": 0.6439999998
+          },
+          "confidence": 1,
+          "text": "800.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.30994152046783624,
+            "x": 0.11695906072124772,
+            "y": 0.6159999995333334
+          },
+          "confidence": 0.5,
+          "text": "Krug Grande Cuvée 162*** (dition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.08771929266857126,
+            "x": 0.8128654984025566,
+            "y": 0.6199999998000001
+          },
+          "confidence": 1,
+          "text": "1,030,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.31578947368421045,
+            "x": 0.1111111058479534,
+            "y": 0.5919999998
+          },
+          "confidence": 0.5,
+          "text": "Krug Grande Cunte 161*** Edition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.08771929266857126,
+            "x": 0.8128654984025566,
+            "y": 0.5959999998000001
+          },
+          "confidence": 1,
+          "text": "1.000.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.2222222222222222,
+            "x": 0.11695906803118898,
+            "y": 0.5680000001333334
+          },
+          "confidence": 1,
+          "text": "Krug Rose 27*** Edition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.07017543859649122,
+            "x": 0.8304093576023392,
+            "y": 0.5680000002
+          },
+          "confidence": 1,
+          "text": "280.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.027999999999999914,
+            "width": 0.22222222222222224,
+            "x": 0.11111110740740751,
+            "y": 0.5399999998
+          },
+          "confidence": 0.5,
+          "text": "Krug Rose 29*** Coition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.07602339181286555,
+            "x": 0.8245614038011695,
+            "y": 0.5440000004
+          },
+          "confidence": 1,
+          "text": "780.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.10526315789473685,
+            "x": 0.1111111093567252,
+            "y": 0.5159999998666667
+          },
+          "confidence": 0.5,
+          "text": "Krug 1998"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08771929824561397,
+            "x": 0.8128654967105262,
+            "y": 0.5159999997
+          },
+          "confidence": 1,
+          "text": "1.600.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.0994152046783626,
+            "x": 0.11695906557017541,
+            "y": 0.4920000002
+          },
+          "confidence": 0.5,
+          "text": "Krug 2000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08771929824561397,
+            "x": 0.8128654959795322,
+            "y": 0.4919999998
+          },
+          "confidence": 1,
+          "text": "1,500.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.10526315789473685,
+            "x": 0.1111111093567252,
+            "y": 0.46799999980000007
+          },
+          "confidence": 0.5,
+          "text": "Krug 2002"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08771929266857126,
+            "x": 0.8128654984025566,
+            "y": 0.4679999997333333
+          },
+          "confidence": 1,
+          "text": "1.600.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.0994152046783626,
+            "x": 0.11695906403508771,
+            "y": 0.44400000005882345
+          },
+          "confidence": 0.5,
+          "text": "Krug 2008"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.0935672514619883,
+            "x": 0.8070175426900585,
+            "y": 0.43999999980000004
+          },
+          "confidence": 1,
+          "text": "1.800.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.10526315789473685,
+            "x": 0.1111111093567252,
+            "y": 0.4159999998666667
+          },
+          "confidence": 0.5,
+          "text": "Krug 2011"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.08771929824561409,
+            "x": 0.8128654981725146,
+            "y": 0.42000000015000005
+          },
+          "confidence": 1,
+          "text": "1,100.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.11111111111111112,
+            "x": 0.11111110925925931,
+            "y": 0.3919999997333333
+          },
+          "confidence": 0.5,
+          "text": "Krug 2013"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.07602339181286555,
+            "x": 0.8245614044590642,
+            "y": 0.3920000001999999
+          },
+          "confidence": 1,
+          "text": "950.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.24561403508771928,
+            "x": 0.1111111152046782,
+            "y": 0.3680000001999999
+          },
+          "confidence": 0.5,
+          "text": "Krug Clos du Mesnil 2006"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.08771929824561397,
+            "x": 0.8128654959795322,
+            "y": 0.36799999985
+          },
+          "confidence": 1,
+          "text": "3,300,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.24561403508771928,
+            "x": 0.1111111152046782,
+            "y": 0.34000000026666666
+          },
+          "confidence": 0.5,
+          "text": "Krug Clos du Mesnil 2008"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08771929824561397,
+            "x": 0.8128654959795322,
+            "y": 0.33999999980000006
+          },
+          "confidence": 1,
+          "text": "3,900,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.2573099415204678,
+            "x": 0.11695906111111118,
+            "y": 0.31599999980000004
+          },
+          "confidence": 0.5,
+          "text": "Krug Clos d'Ambornay 1998"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.0935672514619883,
+            "x": 0.8070175446393762,
+            "y": 0.31200000016666674
+          },
+          "confidence": 1,
+          "text": "7.800.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.26900584795321636,
+            "x": 0.11111111559454179,
+            "y": 0.29200000019999994
+          },
+          "confidence": 0.5,
+          "text": "Krug Clos d'Ambonnay 2006"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.08771929824561409,
+            "x": 0.8128654968045113,
+            "y": 0.29200000007142857
+          },
+          "confidence": 1,
+          "text": "5,800,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.1929824561403509,
+            "x": 0.116959066739766,
+            "y": 0.26800000015000003
+          },
+          "confidence": 1,
+          "text": "Krug Collection 1995"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.09356724588494547,
+            "x": 0.8128655014239989,
+            "y": 0.2680000001999999
+          },
+          "confidence": 1,
+          "text": "2.100.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.025450788497924814,
+            "width": 0.1875205681337948,
+            "x": 0.1167660348457073,
+            "y": 0.21127460599348158
+          },
+          "confidence": 0.5,
+          "text": "Magnum Bottle"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.3508771929824561,
+            "x": 0.11695906125731004,
+            "y": 0.18799999965000003
+          },
+          "confidence": 1,
+          "text": "Krug Grande Curée 168ème Edition"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.08771929824561397,
+            "x": 0.8128654968567252,
+            "y": 0.1960000000833334
+          },
+          "confidence": 1,
+          "text": "1,650,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.10526315789473684,
+            "x": 0.11695906564327482,
+            "y": 0.17200000019999995
+          },
+          "confidence": 0.5,
+          "text": "Krug 1998"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.08771929824561397,
+            "x": 0.8128654959795322,
+            "y": 0.17199999980000003
+          },
+          "confidence": 1,
+          "text": "2200.000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.10526315789473685,
+            "x": 0.1111111093567252,
+            "y": 0.15199999980000012
+          },
+          "confidence": 0.5,
+          "text": "Krug 2004"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.08771929266857126,
+            "x": 0.8128654991822835,
+            "y": 0.15199999966666666
+          },
+          "confidence": 1,
+          "text": "2,400,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.19883040935672514,
+            "x": 0.11111111442495113,
+            "y": 0.1320000001999999
+          },
+          "confidence": 1,
+          "text": "Krug Collection 1982"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.09356724588494547,
+            "x": 0.8128655014239989,
+            "y": 0.1320000001999999
+          },
+          "confidence": 1,
+          "text": "8,500,000"
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/ea0fd9c8c36941de879ca731df172b01?details500",
+      "relativeImagePath": "tmp/catchtable/allaprima/images/05-allaprima.jpg",
+      "fullText": "By The Glass\nChampagne 100\nw% Krug Grand Cuvee tf seme toldon led\nNw Vilmart & Gie Grand Cellier Brut 19a\n4503\nWhite & Rose 10d\n222 Veyder Malberg Hochrain Gruner Velliner, Wachau\n44,000\n220 Domaine de l'Ecu Muscadet Sevre et Maine Orthogneiss, Loire\n28,000\n22) Chateau de Plaisance Anjou Ronceray, Loire\n40000\n2020 Peter Iskch Kuhn Jacobus Riesling Trocken. Rhienos\n2021 Clos Cbonne Tibouren Speciale des Vignettes, Provence sou\nRed nod\n2016 Castello di Ama San Lorenzo, Toscana\n42,000\n222 Domaine de Chassorey Volnay, Bourgogne\nbesers\n2015 FX. Pichler Loibner Loibenberg Riesling TBA, Wachau\n80,000\n2015 Castello Monterinaldi Vinsanto del Chianti Classico, Toscana\n34,000\nN/ Gonzalez Byass Apostoles 30 Years Old Palo Cortado, Jerez\n45,000\n八海山 Hatkaisan Daiginjo, Nigsta\n42,000\nLigesor dd\nChartreuse V.EP. June Yellow\nChartreuse Vit.P. Verte Green)\nChartreuse Liqueur du 9 Centenaire\n50,000\n1906 Domaine Boingneres Bas Armagna\n98,000\nChateau du Brevil X.O. 30 Year Old Calvados Pays d Auge\n80,000\nChateau du Brevil XO. 6 Year Old Calvados Pays & Auge\n25,000\nRoal Saute 2YamOdSeewa\nDalmore 18 Year Old Scotch Whisky\nYamazaki 18 Year Old Single Malt Whisky\nYamazaki 12 Year Old Single Mait Whisky\n45,000\nPairing\n3 glasses (unch)\n130.000 a0rug +60.0)\n5 classes funch / Dinne\n7 glasses (Diner)\nc00000 (rg •to0,\n8 glasses (Diner)\n280,000 (ug - 600)",
+      "lines": [
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.14942528735632182,
+            "x": 0.41379310095785443,
+            "y": 0.9159999997333333
+          },
+          "confidence": 1,
+          "text": "By The Glass"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.15517241379310348,
+            "x": 0.1264367790229886,
+            "y": 0.8919999999333333
+          },
+          "confidence": 1,
+          "text": "Champagne 100"
+        },
+        {
+          "boundingBox": {
+            "height": 0.01200000000000001,
+            "width": 0.41379305960118085,
+            "x": 0.08045981272814316,
+            "y": 0.8760000002
+          },
+          "confidence": 0.5,
+          "text": "w% Krug Grand Cuvee tf seme toldon led"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.39655172413793105,
+            "x": 0.0804597767241377,
+            "y": 0.8520000001333333
+          },
+          "confidence": 1,
+          "text": "Nw Vilmart & Gie Grand Cellier Brut 19a"
+        },
+        {
+          "boundingBox": {
+            "height": 0.008000000000000007,
+            "width": 0.05747126436781613,
+            "x": 0.8390804594827587,
+            "y": 0.86000000004
+          },
+          "confidence": 0.30000001192092896,
+          "text": "4503"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.17816090857845612,
+            "x": 0.12643679005943081,
+            "y": 0.8120000002
+          },
+          "confidence": 1,
+          "text": "White & Rose 10d"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.5402298850574713,
+            "x": 0.08045976111111143,
+            "y": 0.7919999998
+          },
+          "confidence": 0.5,
+          "text": "222 Veyder Malberg Hochrain Gruner Velliner, Wachau"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.7920000002
+          },
+          "confidence": 1,
+          "text": "44,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.6436781609195402,
+            "x": 0.0804597593869736,
+            "y": 0.7719999998
+          },
+          "confidence": 1,
+          "text": "220 Domaine de l'Ecu Muscadet Sevre et Maine Orthogneiss, Loire"
+        },
+        {
+          "boundingBox": {
+            "height": 0.015999999046325653,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.7760000006101705
+          },
+          "confidence": 1,
+          "text": "28,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.47126436781609193,
+            "x": 0.08045977796934842,
+            "y": 0.7480000002666667
+          },
+          "confidence": 0.5,
+          "text": "22) Chateau de Plaisance Anjou Ronceray, Loire"
+        },
+        {
+          "boundingBox": {
+            "height": 0.007999999046325645,
+            "width": 0.057471258886929166,
+            "x": 0.8390804596369955,
+            "y": 0.7560000004768371
+          },
+          "confidence": 0.30000001192092896,
+          "text": "40000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.01200000000000001,
+            "width": 0.5574712205207211,
+            "x": 0.08045981991205053,
+            "y": 0.7359999998000001
+          },
+          "confidence": 0.5,
+          "text": "2020 Peter Iskch Kuhn Jacobus Riesling Trocken. Rhienos"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.6264367816091954,
+            "x": 0.08045978055555524,
+            "y": 0.7080000001333333
+          },
+          "confidence": 1,
+          "text": "2021 Clos Cbonne Tibouren Speciale des Vignettes, Provence sou"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.08045977011494254,
+            "x": 0.1264367829501915,
+            "y": 0.6680000001999999
+          },
+          "confidence": 0.5,
+          "text": "Red nod"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.42528735632183906,
+            "x": 0.07471263735632205,
+            "y": 0.6480000003333333
+          },
+          "confidence": 1,
+          "text": "2016 Castello di Ama San Lorenzo, Toscana"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.06321839080459779,
+            "x": 0.8390804600574713,
+            "y": 0.6480000003333333
+          },
+          "confidence": 1,
+          "text": "42,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.471264367816092,
+            "x": 0.08045976422413807,
+            "y": 0.62399999985
+          },
+          "confidence": 0.5,
+          "text": "222 Domaine de Chassorey Volnay, Bourgogne"
+        },
+        {
+          "boundingBox": {
+            "height": 0.008000000000000007,
+            "width": 0.09770114942528735,
+            "x": 0.1264367813218391,
+            "y": 0.5920000000235295
+          },
+          "confidence": 0.30000001192092896,
+          "text": "besers"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.5632183908045977,
+            "x": 0.07471265306513382,
+            "y": 0.5640000002
+          },
+          "confidence": 0.5,
+          "text": "2015 FX. Pichler Loibner Loibenberg Riesling TBA, Wachau"
+        },
+        {
+          "boundingBox": {
+            "height": 0.016000000000000014,
+            "width": 0.06321839080459779,
+            "x": 0.8390804594827587,
+            "y": 0.5680000000727272
+          },
+          "confidence": 1,
+          "text": "80,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.6206896551724138,
+            "x": 0.080459777873563,
+            "y": 0.54400000015
+          },
+          "confidence": 1,
+          "text": "2015 Castello Monterinaldi Vinsanto del Chianti Classico, Toscana"
+        },
+        {
+          "boundingBox": {
+            "height": 0.015999999046325764,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.5480000006101704
+          },
+          "confidence": 1,
+          "text": "34,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.6149425287356322,
+            "x": 0.08045978036398434,
+            "y": 0.5240000000666667
+          },
+          "confidence": 1,
+          "text": "N/ Gonzalez Byass Apostoles 30 Years Old Palo Cortado, Jerez"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.5240000002
+          },
+          "confidence": 1,
+          "text": "45,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.33333333333333337,
+            "x": 0.12643678577586195,
+            "y": 0.46000000015
+          },
+          "confidence": 0.5,
+          "text": "八海山 Hatkaisan Daiginjo, Nigsta"
+        },
+        {
+          "boundingBox": {
+            "height": 0.015999999046325653,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.46400000061017044
+          },
+          "confidence": 1,
+          "text": "42,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.01200000000000001,
+            "width": 0.10919539133707681,
+            "x": 0.12643679254985188,
+            "y": 0.42000000019999995
+          },
+          "confidence": 0.5,
+          "text": "Ligesor dd"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.2931034482758621,
+            "x": 0.12643678649425275,
+            "y": 0.39600000013333325
+          },
+          "confidence": 1,
+          "text": "Chartreuse V.EP. June Yellow"
+        },
+        {
+          "boundingBox": {
+            "height": 0.01200000000000001,
+            "width": 0.28160917347875136,
+            "x": 0.1264368066514275,
+            "y": 0.3800000001999999
+          },
+          "confidence": 1,
+          "text": "Chartreuse Vit.P. Verte Green)"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.34482756428334904,
+            "x": 0.1264367983180954,
+            "y": 0.3560000001999999
+          },
+          "confidence": 1,
+          "text": "Chartreuse Liqueur du 9 Centenaire"
+        },
+        {
+          "boundingBox": {
+            "height": 0.015999999046325653,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.36000000061017046
+          },
+          "confidence": 1,
+          "text": "50,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.3908045977011494,
+            "x": 0.08045977499999987,
+            "y": 0.3320000002
+          },
+          "confidence": 0.5,
+          "text": "1906 Domaine Boingneres Bas Armagna"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.3360000002
+          },
+          "confidence": 1,
+          "text": "98,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.5517241379310345,
+            "x": 0.1264367724137934,
+            "y": 0.31599999980000004
+          },
+          "confidence": 1,
+          "text": "Chateau du Brevil X.O. 30 Year Old Calvados Pays d Auge"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.31600000019999996
+          },
+          "confidence": 1,
+          "text": "80,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.5459770114942528,
+            "x": 0.12643679070881192,
+            "y": 0.2960000000666666
+          },
+          "confidence": 1,
+          "text": "Chateau du Brevil XO. 6 Year Old Calvados Pays & Auge"
+        },
+        {
+          "boundingBox": {
+            "height": 0.015999999046325764,
+            "width": 0.06321839080459768,
+            "x": 0.8390804587164752,
+            "y": 0.2960000003435038
+          },
+          "confidence": 1,
+          "text": "25,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.0119999999999999,
+            "width": 0.38505742741727284,
+            "x": 0.12643682278561458,
+            "y": 0.2799999998000001
+          },
+          "confidence": 0.5,
+          "text": "Roal Saute 2YamOdSeewa"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.3505747126436782,
+            "x": 0.1264367859913792,
+            "y": 0.2520000001
+          },
+          "confidence": 1,
+          "text": "Dalmore 18 Year Old Scotch Whisky"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.40229885057471265,
+            "x": 0.12643678663793095,
+            "y": 0.23200000015
+          },
+          "confidence": 1,
+          "text": "Yamazaki 18 Year Old Single Malt Whisky"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.40229885057471265,
+            "x": 0.12643678663793095,
+            "y": 0.21200000014999998
+          },
+          "confidence": 1,
+          "text": "Yamazaki 12 Year Old Single Mait Whisky"
+        },
+        {
+          "boundingBox": {
+            "height": 0.015999999046325653,
+            "width": 0.06321839080459768,
+            "x": 0.8390804608237548,
+            "y": 0.21600000061017044
+          },
+          "confidence": 1,
+          "text": "45,000"
+        },
+        {
+          "boundingBox": {
+            "height": 0.011999999046325649,
+            "width": 0.06896551176049243,
+            "x": 0.12643678607377667,
+            "y": 0.17600000057683718
+          },
+          "confidence": 0.5,
+          "text": "Pairing"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.15517241379310343,
+            "x": 0.12643678354885052,
+            "y": 0.15200000015000004
+          },
+          "confidence": 1,
+          "text": "3 glasses (unch)"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.16666665570489292,
+            "x": 0.6321839163046415,
+            "y": 0.15200000019999993
+          },
+          "confidence": 0.5,
+          "text": "130.000 a0rug +60.0)"
+        },
+        {
+          "boundingBox": {
+            "height": 0.0119999999999999,
+            "width": 0.2126436781609195,
+            "x": 0.1264367869252871,
+            "y": 0.13600000010000002
+          },
+          "confidence": 0.5,
+          "text": "5 classes funch / Dinne"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.16091954022988508,
+            "x": 0.1264367836206896,
+            "y": 0.11200000015
+          },
+          "confidence": 1,
+          "text": "7 glasses (Diner)"
+        },
+        {
+          "boundingBox": {
+            "height": 0.0119999999999999,
+            "width": 0.16091952926811137,
+            "x": 0.6321839146762891,
+            "y": 0.1120000001768372
+          },
+          "confidence": 0.30000001192092896,
+          "text": "c00000 (rg •to0,"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.16666665570489292,
+            "x": 0.12068966343107836,
+            "y": 0.08800000019999998
+          },
+          "confidence": 1,
+          "text": "8 glasses (Diner)"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.16666665570489292,
+            "x": 0.6321839163046415,
+            "y": 0.08800000019999998
+          },
+          "confidence": 0.5,
+          "text": "280,000 (ug - 600)"
+        }
+      ]
+    }
+  ]
+}

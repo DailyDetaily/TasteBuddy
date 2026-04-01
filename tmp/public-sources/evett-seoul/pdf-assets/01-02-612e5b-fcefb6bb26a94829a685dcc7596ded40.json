@@ -1,0 +1,26 @@
+{
+  "pageCount": 4,
+  "pages": [
+    {
+      "imagePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/public-sources/evett-seoul/pdf-assets/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40-page-01.png",
+      "pageNumber": 1,
+      "text": "스낵 바다정원 메주도넛 돼지감자 방어 생선 미각 전복 오리 갈비 딸기 버섯 마지막 한입"
+    },
+    {
+      "imagePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/public-sources/evett-seoul/pdf-assets/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40-page-02.png",
+      "pageNumber": 2,
+      "text": "*프라이빗 룸 메뉴 나무 방어 생선 미각 전복 오리 갈비 버섯 마지막 한 입"
+    },
+    {
+      "imagePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/public-sources/evett-seoul/pdf-assets/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40-page-03.png",
+      "pageNumber": 3,
+      "text": "Snack Sea garden Meju donut Artichoke Yellowtail Fish Palate Abalone Duck Galbi Strawberry Mushrooms Last bite"
+    },
+    {
+      "imagePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/public-sources/evett-seoul/pdf-assets/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40-page-04.png",
+      "pageNumber": 4,
+      "text": "*Pravate Dinning Room Menu Tree Yellowtail Fish Palate Abalone Duck Galbi Mushroom Last bite"
+    }
+  ],
+  "pdfPath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/public-sources/evett-seoul/pdf-assets/01-02-612e5b-fcefb6bb26a94829a685dcc7596ded40.pdf"
+}

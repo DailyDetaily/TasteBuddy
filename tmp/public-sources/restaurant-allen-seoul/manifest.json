@@ -1,0 +1,369 @@
+{
+  "fetchedAt": "2026-03-29T14:37:56.242Z",
+  "restaurant": {
+    "slug": "restaurant-allen-seoul",
+    "displayName": "레스토랑 알렌",
+    "chefName": "서현민",
+    "city": "Seoul"
+  },
+  "source": {
+    "mode": "public_fallback",
+    "outputDirRelativePath": "tmp/public-sources/restaurant-allen-seoul",
+    "nextStep": "Review source snippets, copy verified menu/course lines into review-template rows, then generate intake CSVs or seed JSON."
+  },
+  "documents": [
+    {
+      "index": 1,
+      "label": "Official menu page",
+      "sourceType": "official_menu_page",
+      "url": "https://restaurantallen.com/menu",
+      "fetchedUrl": "https://r.jina.ai/http://restaurantallen.com/menu",
+      "mirrorUrl": "https://r.jina.ai/http://restaurantallen.com/menu",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.98,
+      "title": "Restaurant Allen | Menu",
+      "publishedTime": null,
+      "blocked": false,
+      "contentRelativePath": "tmp/public-sources/restaurant-allen-seoul/01-official-menu-page.md",
+      "excerpt": [
+        "Restaurant Allen | Menu",
+        "ALLEN",
+        "TEAM",
+        "MENU",
+        "INFO",
+        "RESERVATION",
+        "AWARDS",
+        "WINE BAR CONTINUUM",
+        "Restaurant Allen**",
+        "레스토랑 알렌은 다채로운"
+      ],
+      "courseTitleDrafts": [
+        "Restaurant Allen | Menu",
+        "ALLEN",
+        "MENU",
+        "INFO",
+        "WINE BAR CONTINUUM",
+        "Restaurant Allen**",
+        "레스토랑 알렌은 다채로운",
+        "한국 사계절의 변화에 맞추어",
+        "신선한 제철재료를 활용한",
+        "메뉴로 3개월 마다 변경됩니다.",
+        "We change our seasonal tasting menu",
+        "every three months to celebrate the new flavor",
+        "Wine pairing",
+        "Tasting Course",
+        "Lunch",
+        "3 glass"
+      ]
+    },
+    {
+      "index": 2,
+      "label": "Official reservation page",
+      "sourceType": "official_page",
+      "url": "https://restaurantallen.com/reservation",
+      "fetchedUrl": "https://r.jina.ai/http://restaurantallen.com/reservation",
+      "mirrorUrl": "https://r.jina.ai/http://restaurantallen.com/reservation",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.95,
+      "title": "Restaurant Allen | Reservation",
+      "publishedTime": null,
+      "blocked": false,
+      "contentRelativePath": "tmp/public-sources/restaurant-allen-seoul/02-official-reservation-page.md",
+      "excerpt": [
+        "Restaurant Allen | Reservation",
+        "ALLEN",
+        "TEAM",
+        "MENU",
+        "INFO",
+        "RESERVATION",
+        "AWARDS",
+        "WINE BAR CONTINUUM",
+        "예약안내",
+        "예약은 최대 30일 전에 가능하며"
+      ],
+      "courseTitleDrafts": [
+        "Restaurant Allen | Reservation",
+        "ALLEN",
+        "MENU",
+        "INFO",
+        "WINE BAR CONTINUUM",
+        "예약안내",
+        "예약은 최대 30일 전에 가능하며",
+        "“캐치테이블”을 이용해주세요.",
+        "(아래 Reservation 버튼 클릭)",
+        "룸 예약 및 5인 이상 단체 예약은 전화 또는",
+        "이메일로 문의하여 주시기 바랍니다.",
+        "전화 예약 및 문의 가능시간은 화 ~토",
+        "오전 10시 부터 오후 10시 입니다.",
+        "서비스 시간에는 문의가 어려울 수 있으며",
+        "불편함 없도록 빠른 시간내에",
+        "안내 도와드리겠습니다."
+      ]
+    }
+  ],
+  "menuCandidates": [
+    {
+      "id": "restaurant-allen-seoul-01-1",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "Restaurant Allen | Menu",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "ALLEN"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-2",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "MENU",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "INFO",
+        "WINE BAR CONTINUUM",
+        "Restaurant Allen**",
+        "레스토랑 알렌은 다채로운",
+        "한국 사계절의 변화에 맞추어",
+        "신선한 제철재료를 활용한",
+        "메뉴로 3개월 마다 변경됩니다."
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-3",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "We change our seasonal tasting menu",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "every three months to celebrate the new flavor",
+        "Wine pairing"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-4",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "Tasting Course",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "Lunch",
+        "3 glass"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-5",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "lunch",
+      "menuTitle": "Lunch",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "3 glass"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-6",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "95,000 KRW",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "6 glass"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-7",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "190,000 KRW",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "Lunch"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-8",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "210,000 KRW",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "Dinner"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-9",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "dinner",
+      "menuTitle": "Dinner",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "tasting course"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-10",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "330,000 KRW",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "Dinner",
+        "6 glass wine pairing"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-11",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "240,000 KRW",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "레스토랑 알렌을 방문해 주시는 고객님께",
+        "최고의 식사 경험을 제공하고자",
+        "엄선된 제철 식재료를 사용하여",
+        "사계절의 아름다움을 접시 위에 담았습니다.",
+        "또한 매 코스 마다 최상의 마리아주를 위한",
+        "와인 페어링을 준비 하였습니다."
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-12",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "lunch",
+      "menuTitle": "런치와 디너는 서로 다른 단일코스로 운영되며",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "음식 알레르기나 특이사항 있으신 분은",
+        "사전에 알려주시기 바랍니다",
+        "We carefully select the best seasonal",
+        "ingredients to bring you",
+        "the best culinary experience.",
+        "We also offer you the experience of marriage"
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-01-13",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Restaurant Allen | Menu",
+      "sourceUrl": "https://restaurantallen.com/menu",
+      "menuType": "other",
+      "menuTitle": "with wine pairing through each course",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "Please let us know in advance",
+        "if you have any food allergies or dietary issues",
+        "© 2021 All Right Reserved."
+      ]
+    },
+    {
+      "id": "restaurant-allen-seoul-02-1",
+      "sourceIndex": 2,
+      "sourceLabel": "Official reservation page",
+      "sourceType": "official_page",
+      "sourceTitle": "Restaurant Allen | Reservation",
+      "sourceUrl": "https://restaurantallen.com/reservation",
+      "menuType": "other",
+      "menuTitle": "레스토랑 알렌 예약 안내",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": []
+    }
+  ],
+  "requestedSources": [
+    {
+      "label": "Official menu page",
+      "sourceType": "official_menu_page",
+      "url": "https://restaurantallen.com/menu",
+      "trustScore": 0.98,
+      "menuType": null,
+      "createReferenceMenu": false
+    },
+    {
+      "label": "Official reservation page",
+      "sourceType": "official_page",
+      "url": "https://restaurantallen.com/reservation",
+      "trustScore": 0.95,
+      "menuType": null,
+      "createReferenceMenu": true
+    }
+  ]
+}

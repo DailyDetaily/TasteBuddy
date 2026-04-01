@@ -1,0 +1,316 @@
+{
+  "generatedAt": "2026-03-29T14:35:57.518Z",
+  "restaurant": {
+    "slug": "soigneseoul",
+    "displayName": "SOIGNE"
+  },
+  "manifestRelativePath": "tmp/catchtable/soigneseoul/manifest.json",
+  "images": [
+    {
+      "index": 1,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/8fd1bcd9b4464e69b6183e0a7b1e3f83?details500",
+      "relativeImagePath": "tmp/catchtable/soigneseoul/images/01-soigneseoul.jpg",
+      "fullText": "Deodeok, Hoe-Deopbap, Nurung)i\nMinari Mul-kimchi\nKorean Cabbage Jeon\nBurdock & Winter fish\nAbalone & Gim\nHanwoo beef\nChef's Signature dishes\nSeorae Escargot 25.\nJujube & Coffee\nSignature Pairing 160,\nPetit Four\n240,",
+      "lines": [
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.35672514619883045,
+            "x": 0.09941520438596493,
+            "y": 0.8280000000163934
+          },
+          "confidence": 0.5,
+          "text": "Deodeok, Hoe-Deopbap, Nurung)i"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.19883040935672514,
+            "x": 0.09941520716374262,
+            "y": 0.7400000002
+          },
+          "confidence": 1,
+          "text": "Minari Mul-kimchi"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.24561403508771928,
+            "x": 0.0935672555555554,
+            "y": 0.6560000001999999
+          },
+          "confidence": 1,
+          "text": "Korean Cabbage Jeon"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.24561403508771928,
+            "x": 0.09941520774853796,
+            "y": 0.5680000001500001
+          },
+          "confidence": 1,
+          "text": "Burdock & Winter fish"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.16959063212076825,
+            "x": 0.09941521308191598,
+            "y": 0.48400000006666666
+          },
+          "confidence": 0.5,
+          "text": "Abalone & Gim"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.15204678362573099,
+            "x": 0.09356724892787532,
+            "y": 0.3959999998000001
+          },
+          "confidence": 1,
+          "text": "Hanwoo beef"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.2514619883040936,
+            "x": 0.6315789505116959,
+            "y": 0.3920000001999999
+          },
+          "confidence": 1,
+          "text": "Chef's Signature dishes"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.21637426900584789,
+            "x": 0.6608187123781677,
+            "y": 0.35599999960000006
+          },
+          "confidence": 1,
+          "text": "Seorae Escargot 25."
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.18713449176989103,
+            "x": 0.0935672539201228,
+            "y": 0.30799999980000003
+          },
+          "confidence": 1,
+          "text": "Jujube & Coffee"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02399999999999991,
+            "width": 0.26900584795321636,
+            "x": 0.6198830454191031,
+            "y": 0.23600000013333333
+          },
+          "confidence": 1,
+          "text": "Signature Pairing 160,"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.11695906432748537,
+            "x": 0.09356725000000005,
+            "y": 0.21999999984999996
+          },
+          "confidence": 1,
+          "text": "Petit Four"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.06432748538011701,
+            "x": 0.8187134513645223,
+            "y": 0.21200000006666664
+          },
+          "confidence": 1,
+          "text": "240,"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/2c20922126954c0d9710fa25a2fae809?details500",
+      "relativeImagePath": "tmp/catchtable/soigneseoul/images/02-soigneseoul.jpg",
+      "fullText": "Deodeok, Hoe-Deopbap, Nurungi\nChestnut\nMinari Mul-kimchi\nKorean Cabbage Jeon\nHwangtae-guk\nBurdock & Winter fish\nAbalone & Gim\nQuail & Cacao\nHarwoo beef\nChef's Signature dishes\nSeorac Escargot 25,\nKuchhs s hand\nJujube & Coffee\nStandard Pairing 220.\nSignature Paring 280,\nho rotar\n380,",
+      "lines": [
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.35632181715691236,
+            "x": 0.097701154448364,
+            "y": 0.8839999998
+          },
+          "confidence": 0.5,
+          "text": "Deodeok, Hoe-Deopbap, Nurungi"
+        },
+        {
+          "boundingBox": {
+            "height": 0.021222059249877967,
+            "width": 0.10964426501043911,
+            "x": 0.0974767162451756,
+            "y": 0.819388970195498
+          },
+          "confidence": 0.5,
+          "text": "Chestnut"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.20114942528735635,
+            "x": 0.09770114607279702,
+            "y": 0.7559999998
+          },
+          "confidence": 1,
+          "text": "Minari Mul-kimchi"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.23563218390804602,
+            "x": 0.09770114549808441,
+            "y": 0.6919999997999999
+          },
+          "confidence": 1,
+          "text": "Korean Cabbage Jeon"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.15517241379310343,
+            "x": 0.10344827392241385,
+            "y": 0.62799999985
+          },
+          "confidence": 0.5,
+          "text": "Hwangtae-guk"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.2471264367816092,
+            "x": 0.0977011535440612,
+            "y": 0.5640000002
+          },
+          "confidence": 1,
+          "text": "Burdock & Winter fish"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.16666665570489292,
+            "x": 0.09770115212839657,
+            "y": 0.4999999998
+          },
+          "confidence": 0.5,
+          "text": "Abalone & Gim"
+        },
+        {
+          "boundingBox": {
+            "height": 0.019999999999999907,
+            "width": 0.15517241379310343,
+            "x": 0.10344827392241385,
+            "y": 0.43599999985000004
+          },
+          "confidence": 1,
+          "text": "Quail & Cacao"
+        },
+        {
+          "boundingBox": {
+            "height": 0.021821431159973148,
+            "width": 0.14417859877663097,
+            "x": 0.10319805728610475,
+            "y": 0.37108928464233026
+          },
+          "confidence": 1,
+          "text": "Harwoo beef"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.25287356321839083,
+            "x": 0.6206896509578546,
+            "y": 0.37999999986666666
+          },
+          "confidence": 1,
+          "text": "Chef's Signature dishes"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.2183908045977011,
+            "x": 0.6551724110632186,
+            "y": 0.34399999980000007
+          },
+          "confidence": 1,
+          "text": "Seorac Escargot 25,"
+        },
+        {
+          "boundingBox": {
+            "height": 0.008000000000000007,
+            "width": 0.16091954022988503,
+            "x": 0.09770114914857386,
+            "y": 0.31600000001481476
+          },
+          "confidence": 1,
+          "text": "Kuchhs s hand"
+        },
+        {
+          "boundingBox": {
+            "height": 0.020000000000000018,
+            "width": 0.17816090857845615,
+            "x": 0.10344828431230438,
+            "y": 0.2440000001999999
+          },
+          "confidence": 1,
+          "text": "Jujube & Coffee"
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.2586206896551725,
+            "x": 0.6206896569683907,
+            "y": 0.23599999965000007
+          },
+          "confidence": 1,
+          "text": "Standard Pairing 220."
+        },
+        {
+          "boundingBox": {
+            "height": 0.028000000000000025,
+            "width": 0.2701149425287356,
+            "x": 0.6149425332375477,
+            "y": 0.20400000006666663
+          },
+          "confidence": 1,
+          "text": "Signature Paring 280,"
+        },
+        {
+          "boundingBox": {
+            "height": 0.008000000000000007,
+            "width": 0.1091954022988506,
+            "x": 0.09770114913793103,
+            "y": 0.18800000002105266
+          },
+          "confidence": 0.30000001192092896,
+          "text": "ho rotar"
+        },
+        {
+          "boundingBox": {
+            "height": 0.02400000000000002,
+            "width": 0.05747126436781613,
+            "x": 0.8218390811781608,
+            "y": 0.18000000009999995
+          },
+          "confidence": 1,
+          "text": "380,"
+        }
+      ]
+    }
+  ]
+}

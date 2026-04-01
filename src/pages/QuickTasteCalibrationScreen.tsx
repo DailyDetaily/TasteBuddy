@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, ChevronLeft, MoreHorizontal, Sparkles } from 'lucide-react';
+import { CheckmarkRegular, ChevronLeftRegular, MoreHorizontalRegular, SparkleRegular } from '@fluentui/react-icons';
+const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
+const Check = wrapIcon(CheckmarkRegular);
+const ChevronLeft = wrapIcon(ChevronLeftRegular);
+const MoreHorizontal = wrapIcon(MoreHorizontalRegular);
+const Sparkles = wrapIcon(SparkleRegular);
 
 import tasteCircleVideo from '../assets/video/Taste circle.mp4';
 import SectionCard from '../components/SectionCard';
@@ -249,7 +254,7 @@ export default function QuickTasteCalibrationScreen({
                       }
                       className={`rounded-[20px] border p-4 text-left transition-all ${
                         isSelected
-                          ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-surface-base)] shadow-[0_10px_24px_rgba(15,15,15,0.06)]'
+                          ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-surface-base)] shadow-[var(--tb-shadow-soft)]'
                           : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)]'
                       }`}
                     >
@@ -290,7 +295,7 @@ export default function QuickTasteCalibrationScreen({
               transition={{ duration: 0.35 }}
               className="absolute inset-0 overflow-y-auto px-5 pt-8 pb-[170px] no-scrollbar"
             >
-              <div className="mx-auto flex size-[88px] items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] shadow-[0_20px_40px_rgba(15,15,15,0.16)]">
+              <div className="mx-auto flex size-[88px] items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] shadow-[var(--tb-shadow-strong)]">
                 <Check size={42} strokeWidth={3} className="text-white" />
               </div>
 

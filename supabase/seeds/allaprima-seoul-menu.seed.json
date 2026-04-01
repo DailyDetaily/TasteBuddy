@@ -1,0 +1,2140 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Seed generated from curated intake CSV files for 알라프리마.",
+    "generatedAt": "2026-03-29T15:25:00.710Z",
+    "sourceFiles": [
+      "docs/mvp-content-intake-allaprima-lunch.csv",
+      "docs/mvp-content-intake-allaprima-dinner.csv"
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "allaprima-seoul",
+      "name": "알라프리마",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "알라프리마 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "allaprima-seoul",
+      "display_name": "김진혁",
+      "bio": "큐레이션 intake CSV에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/allaprima-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "restaurant_slug": "allaprima-seoul",
+      "source_type": "menu",
+      "title": "알라프리마 런치 메뉴 2026-03-08 캐치테이블 이미지",
+      "url": "http://www.catchtable.net/shop/allaprima/menu?foodMenuSeq=1457718",
+      "excerpt": "닭간장 · 용과 · 헤이즐넛 / 유청 / 캐모마일 · 관자 · 능이버섯 · 밤 · 블랙트러플 / 옥돔 · 우엉 · 초피 / 럼프 · 연근 · 벚꽃잎 / 스파게티 · 새조개 · 당귀잎 · 유자",
+      "raw_text": "닭간장 · 용과 · 헤이즐넛\n유청\n캐모마일 · 관자 — 능이버섯 · 밤 · 블랙트러플\n옥돔 · 우엉 · 초피\n럼프 · 연근 · 벚꽃잎\n스파게티 · 새조개 — 당귀잎 · 유자\n소일\n호지차 · 메밀 · 요거프레트\n쁘띠푸르\n커피 · 차",
+      "trust_score": 0.97
+    },
+    {
+      "external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "restaurant_slug": "allaprima-seoul",
+      "source_type": "menu",
+      "title": "알라프리마 디너 메뉴 2026-03-08 캐치테이블 이미지",
+      "url": "http://www.catchtable.net/shop/allaprima/menu?foodMenuSeq=1457719",
+      "excerpt": "콜리플라워 · 무 · 서양배 / 아오사 · 무늬오징어 · 금귤 / 삼치 · 용과 · 헤이즐넛 / 도화새우 · 미소 · 캐비아 / 전복 · 토란 / 랑구스틴 · 아몬드 · 밤",
+      "raw_text": "콜리플라워 · 무 · 서양배\n아오사 · 무늬오징어 · 금귤\n삼치 · 용과 · 헤이즐넛\n도화새우 · 미소 · 캐비아\n전복 · 토란\n랑구스틴 · 아몬드 · 밤\n찹쌀 · 블랙송로 — 관자 · 한련화\n찰옥수수 · 초피 — 깻잎 · 옥돔\n쇼트립 · 땅콩 · 고추냉이잎\n스파게티 · 백합 — 토마토 · 참외 · 레몬\n마스카포네 · 에스프레소 · 마르살라\n딸기 · 유칼립투스\n쁘띠푸르\n커피 · 차",
+      "trust_score": 0.97
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "allaprima-seoul-dish-001",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "닭간장 · 용과 · 헤이즐넛",
+      "public_subtitle": null,
+      "course_position": "amuse",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-002",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "유청",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-003",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "캐모마일 · 관자",
+      "public_subtitle": "능이버섯 · 밤 · 블랙트러플",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-004",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "옥돔 · 우엉 · 초피",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-005",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "럼프 · 연근 · 벚꽃잎",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-006",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "스파게티 · 새조개",
+      "public_subtitle": "당귀잎 · 유자",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-007",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "소일",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-008",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "호지차 · 메밀 · 요거프레트",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-009",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "쁘띠푸르",
+      "public_subtitle": null,
+      "course_position": "petit_four",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-010",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 lunch",
+      "public_title": "커피 · 차",
+      "public_subtitle": null,
+      "course_position": "beverage",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-011",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "콜리플라워 · 무 · 서양배",
+      "public_subtitle": null,
+      "course_position": "amuse",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-012",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "아오사 · 무늬오징어 · 금귤",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-013",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "삼치 · 용과 · 헤이즐넛",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-014",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "도화새우 · 미소 · 캐비아",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-015",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "전복 · 토란",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-016",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "랑구스틴 · 아몬드 · 밤",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-017",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "찹쌀 · 블랙송로",
+      "public_subtitle": "관자 · 한련화",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-018",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "찰옥수수 · 초피",
+      "public_subtitle": "깻잎 · 옥돔",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-019",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "쇼트립 · 땅콩 · 고추냉이잎",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-020",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "스파게티 · 백합",
+      "public_subtitle": "토마토 · 참외 · 레몬",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-021",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "마스카포네 · 에스프레소 · 마르살라",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-022",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "딸기 · 유칼립투스",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-023",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "쁘띠푸르",
+      "public_subtitle": null,
+      "course_position": "petit_four",
+      "status": "active"
+    },
+    {
+      "external_key": "allaprima-seoul-dish-024",
+      "restaurant_slug": "allaprima-seoul",
+      "season_label": "2026-03-08 dinner",
+      "public_title": "커피 · 차",
+      "public_subtitle": null,
+      "course_position": "beverage",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "allaprima-seoul-dish-001",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "닭간장, 용과, 헤이즐넛",
+      "value_json": {
+        "ingredients": [
+          "닭간장",
+          "용과",
+          "헤이즐넛"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-001",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-001",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "savory sweet opening",
+      "value_json": {
+        "sensory_words": [
+          "savory sweet opening"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-001",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-002",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "유청",
+      "value_json": {
+        "ingredients": [
+          "유청"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-002",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-002",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "light dairy transition",
+      "value_json": {
+        "sensory_words": [
+          "light dairy transition"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-002",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-003",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "캐모마일, 관자, 능이버섯, 밤, 블랙트러플",
+      "value_json": {
+        "ingredients": [
+          "캐모마일",
+          "관자",
+          "능이버섯",
+          "밤",
+          "블랙트러플"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-003",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-003",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "floral shellfish earthy aroma",
+      "value_json": {
+        "sensory_words": [
+          "floral shellfish earthy aroma"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-003",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-004",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "옥돔, 우엉, 초피",
+      "value_json": {
+        "ingredients": [
+          "옥돔",
+          "우엉",
+          "초피"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-004",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-004",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "clean fish peppery finish",
+      "value_json": {
+        "sensory_words": [
+          "clean fish peppery finish"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-004",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-005",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "럼프, 연근, 벚꽃잎",
+      "value_json": {
+        "ingredients": [
+          "럼프",
+          "연근",
+          "벚꽃잎"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-005",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-005",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "meaty depth botanical finish",
+      "value_json": {
+        "sensory_words": [
+          "meaty depth botanical finish"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-005",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-006",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "스파게티, 새조개, 당귀잎, 유자",
+      "value_json": {
+        "ingredients": [
+          "스파게티",
+          "새조개",
+          "당귀잎",
+          "유자"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-006",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-006",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "briny pasta citrus herb lift",
+      "value_json": {
+        "sensory_words": [
+          "briny pasta citrus herb lift"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-006",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-007",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "소일",
+      "value_json": {
+        "ingredients": [
+          "소일"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-007",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-007",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "earthy dessert bridge",
+      "value_json": {
+        "sensory_words": [
+          "earthy dessert bridge"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-007",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-008",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "호지차, 메밀, 요거프레트",
+      "value_json": {
+        "ingredients": [
+          "호지차",
+          "메밀",
+          "요거프레트"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-008",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-008",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "toasty tea grain finish",
+      "value_json": {
+        "sensory_words": [
+          "toasty tea grain finish"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-008",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-009",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "쁘띠푸르",
+      "value_json": {
+        "ingredients": [
+          "쁘띠푸르"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-009",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-009",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "small sweet close",
+      "value_json": {
+        "sensory_words": [
+          "small sweet close"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-009",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-010",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "ingredients",
+      "value_text": "커피, 차",
+      "value_json": {
+        "ingredients": [
+          "커피",
+          "차"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-010",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-010",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "sensory_words",
+      "value_text": "closing beverage service",
+      "value_json": {
+        "sensory_words": [
+          "closing beverage service"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-010",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-011",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "콜리플라워, 무, 서양배",
+      "value_json": {
+        "ingredients": [
+          "콜리플라워",
+          "무",
+          "서양배"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-011",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-011",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "vegetal bright opening",
+      "value_json": {
+        "sensory_words": [
+          "vegetal bright opening"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-011",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-012",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "아오사, 무늬오징어, 금귤",
+      "value_json": {
+        "ingredients": [
+          "아오사",
+          "무늬오징어",
+          "금귤"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-012",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-012",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "marine citrus snap",
+      "value_json": {
+        "sensory_words": [
+          "marine citrus snap"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-012",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-013",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "삼치, 용과, 헤이즐넛",
+      "value_json": {
+        "ingredients": [
+          "삼치",
+          "용과",
+          "헤이즐넛"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-013",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-013",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "oily fish fruit accent",
+      "value_json": {
+        "sensory_words": [
+          "oily fish fruit accent"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-013",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-014",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "도화새우, 미소, 캐비아",
+      "value_json": {
+        "ingredients": [
+          "도화새우",
+          "미소",
+          "캐비아"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-014",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-014",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "shellfish umami saline pop",
+      "value_json": {
+        "sensory_words": [
+          "shellfish umami saline pop"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-014",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-015",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "전복, 토란",
+      "value_json": {
+        "ingredients": [
+          "전복",
+          "토란"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-015",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-015",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "dense shellfish starch body",
+      "value_json": {
+        "sensory_words": [
+          "dense shellfish starch body"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-015",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-016",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "랑구스틴, 아몬드, 밤",
+      "value_json": {
+        "ingredients": [
+          "랑구스틴",
+          "아몬드",
+          "밤"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-016",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-016",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "sweet crustacean nutty richness",
+      "value_json": {
+        "sensory_words": [
+          "sweet crustacean nutty richness"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-016",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-017",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "찹쌀, 블랙송로, 관자, 한련화",
+      "value_json": {
+        "ingredients": [
+          "찹쌀",
+          "블랙송로",
+          "관자",
+          "한련화"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-017",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-017",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "earthy rice floral shellfish",
+      "value_json": {
+        "sensory_words": [
+          "earthy rice floral shellfish"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-017",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-018",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "찰옥수수, 초피, 깻잎, 옥돔",
+      "value_json": {
+        "ingredients": [
+          "찰옥수수",
+          "초피",
+          "깻잎",
+          "옥돔"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-018",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-018",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "sweet corn peppery fish",
+      "value_json": {
+        "sensory_words": [
+          "sweet corn peppery fish"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-018",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-019",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "쇼트립, 땅콩, 고추냉이잎",
+      "value_json": {
+        "ingredients": [
+          "쇼트립",
+          "땅콩",
+          "고추냉이잎"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-019",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-019",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "deep meat nutty green heat",
+      "value_json": {
+        "sensory_words": [
+          "deep meat nutty green heat"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-019",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-020",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "스파게티, 백합, 토마토, 참외, 레몬",
+      "value_json": {
+        "ingredients": [
+          "스파게티",
+          "백합",
+          "토마토",
+          "참외",
+          "레몬"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-020",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-020",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "saline pasta bright acidity",
+      "value_json": {
+        "sensory_words": [
+          "saline pasta bright acidity"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-020",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-021",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "마스카포네, 에스프레소, 마르살라",
+      "value_json": {
+        "ingredients": [
+          "마스카포네",
+          "에스프레소",
+          "마르살라"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-021",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-021",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "rich dairy roasted aroma",
+      "value_json": {
+        "sensory_words": [
+          "rich dairy roasted aroma"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-021",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-022",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "딸기, 유칼립투스",
+      "value_json": {
+        "ingredients": [
+          "딸기",
+          "유칼립투스"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-022",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-022",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "bright fruit cool aroma",
+      "value_json": {
+        "sensory_words": [
+          "bright fruit cool aroma"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-022",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-023",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "쁘띠푸르",
+      "value_json": {
+        "ingredients": [
+          "쁘띠푸르"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-023",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-023",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "small sweet close",
+      "value_json": {
+        "sensory_words": [
+          "small sweet close"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-023",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-024",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "ingredients",
+      "value_text": "커피, 차",
+      "value_json": {
+        "ingredients": [
+          "커피",
+          "차"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-024",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "techniques",
+      "value_text": "메뉴 이미지 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "메뉴 이미지 기반 코스명"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-024",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "sensory_words",
+      "value_text": "closing beverage service",
+      "value_json": {
+        "sensory_words": [
+          "closing beverage service"
+        ]
+      },
+      "confidence": 0.97
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-024",
+      "source_external_key": "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.97
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "allaprima-seoul-dish-001",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.1,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.28,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.36,
+        "heaviness": 0.18,
+        "cleanFinish": 0.48,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.3,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.72,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-002",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.1,
+        "bitter": 0,
+        "salty": 0.08,
+        "umami": 0.18,
+        "fat": 0.14
+      },
+      "perceptual_vector": {
+        "brightness": 0.42,
+        "heaviness": 0.1,
+        "cleanFinish": 0.62,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.18,
+        "textureRichness": 0.14,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.58,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-003",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.08,
+        "bitter": 0.06,
+        "salty": 0.12,
+        "umami": 0.58,
+        "fat": 0.24
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.36,
+        "cleanFinish": 0.34,
+        "linger": 0.38,
+        "smoke": 0,
+        "aromaIntensity": 0.56,
+        "textureRichness": 0.4,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.8,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-004",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.1,
+        "bitter": 0.06,
+        "salty": 0.16,
+        "umami": 0.54,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.44,
+        "heaviness": 0.16,
+        "cleanFinish": 0.56,
+        "linger": 0.24,
+        "smoke": 0,
+        "aromaIntensity": 0.3,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.22
+      },
+      "confidence": 0.78,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-005",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.18,
+        "umami": 0.62,
+        "fat": 0.36
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.48,
+        "cleanFinish": 0.34,
+        "linger": 0.44,
+        "smoke": 0,
+        "aromaIntensity": 0.36,
+        "textureRichness": 0.38,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.72,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-006",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.22,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.56,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.58,
+        "heaviness": 0.22,
+        "cleanFinish": 0.52,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.4,
+        "textureRichness": 0.32,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.8,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-007",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.24,
+        "sour": 0.08,
+        "bitter": 0.1,
+        "salty": 0.04,
+        "umami": 0.12,
+        "fat": 0.14
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.24,
+        "cleanFinish": 0.38,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.56,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-008",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.26,
+        "sour": 0.1,
+        "bitter": 0.06,
+        "salty": 0.04,
+        "umami": 0.14,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.3,
+        "heaviness": 0.2,
+        "cleanFinish": 0.54,
+        "linger": 0.2,
+        "smoke": 0,
+        "aromaIntensity": 0.44,
+        "textureRichness": 0.2,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.62,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-009",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.34,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.04,
+        "umami": 0.1,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.1,
+        "cleanFinish": 0.62,
+        "linger": 0.14,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.16,
+        "thermalImpact": 0.04
+      },
+      "confidence": 0.56,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-010",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.1,
+        "salty": 0,
+        "umami": 0.02,
+        "fat": 0
+      },
+      "perceptual_vector": {
+        "brightness": 0.12,
+        "heaviness": 0.04,
+        "cleanFinish": 0.4,
+        "linger": 0.08,
+        "smoke": 0,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.02,
+        "thermalImpact": 0.42
+      },
+      "confidence": 0.48,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457718"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-011",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.14,
+        "bitter": 0.02,
+        "salty": 0.08,
+        "umami": 0.12,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.58,
+        "heaviness": 0.1,
+        "cleanFinish": 0.66,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.16,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.68,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-012",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.2,
+        "bitter": 0.02,
+        "salty": 0.2,
+        "umami": 0.46,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.62,
+        "heaviness": 0.12,
+        "cleanFinish": 0.6,
+        "linger": 0.16,
+        "smoke": 0,
+        "aromaIntensity": 0.3,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.7,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-013",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.16,
+        "sour": 0.1,
+        "bitter": 0.02,
+        "salty": 0.2,
+        "umami": 0.52,
+        "fat": 0.24
+      },
+      "perceptual_vector": {
+        "brightness": 0.42,
+        "heaviness": 0.24,
+        "cleanFinish": 0.46,
+        "linger": 0.28,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.28,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.76,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-014",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.3,
+        "umami": 0.72,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.26,
+        "heaviness": 0.26,
+        "cleanFinish": 0.32,
+        "linger": 0.44,
+        "smoke": 0,
+        "aromaIntensity": 0.4,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.82,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-015",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.2,
+        "umami": 0.78,
+        "fat": 0.22
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.38,
+        "cleanFinish": 0.28,
+        "linger": 0.46,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.44,
+        "thermalImpact": 0.22
+      },
+      "confidence": 0.78,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-016",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.6,
+        "fat": 0.3
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.34,
+        "cleanFinish": 0.34,
+        "linger": 0.36,
+        "smoke": 0,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.4,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.78,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-017",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.06,
+        "bitter": 0.06,
+        "salty": 0.12,
+        "umami": 0.58,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.34,
+        "cleanFinish": 0.38,
+        "linger": 0.34,
+        "smoke": 0,
+        "aromaIntensity": 0.48,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.74,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-018",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.22,
+        "sour": 0.1,
+        "bitter": 0.04,
+        "salty": 0.12,
+        "umami": 0.44,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.46,
+        "heaviness": 0.2,
+        "cleanFinish": 0.52,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.7,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-019",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.22,
+        "umami": 0.8,
+        "fat": 0.48
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.68,
+        "cleanFinish": 0.22,
+        "linger": 0.64,
+        "smoke": 0.04,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.54,
+        "thermalImpact": 0.28
+      },
+      "confidence": 0.8,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-020",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.28,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.48,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.7,
+        "heaviness": 0.16,
+        "cleanFinish": 0.66,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.82,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-021",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.28,
+        "sour": 0.06,
+        "bitter": 0.14,
+        "salty": 0.02,
+        "umami": 0.12,
+        "fat": 0.36
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.42,
+        "cleanFinish": 0.22,
+        "linger": 0.4,
+        "smoke": 0,
+        "aromaIntensity": 0.56,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.78,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-022",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.36,
+        "sour": 0.22,
+        "bitter": 0.02,
+        "salty": 0.02,
+        "umami": 0.06,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.82,
+        "heaviness": 0.06,
+        "cleanFinish": 0.76,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.44,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.04
+      },
+      "confidence": 0.72,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-023",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.34,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.04,
+        "umami": 0.1,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.1,
+        "cleanFinish": 0.62,
+        "linger": 0.14,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.16,
+        "thermalImpact": 0.04
+      },
+      "confidence": 0.56,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    },
+    {
+      "dish_external_key": "allaprima-seoul-dish-024",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.1,
+        "salty": 0,
+        "umami": 0.02,
+        "fat": 0
+      },
+      "perceptual_vector": {
+        "brightness": 0.12,
+        "heaviness": 0.04,
+        "cleanFinish": 0.4,
+        "linger": 0.08,
+        "smoke": 0,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.02,
+        "thermalImpact": 0.42
+      },
+      "confidence": 0.48,
+      "rationale": "Generated from curated intake CSV. Review before production import if needed.",
+      "uncertainty_notes": [
+        "Imported from intake CSV without additional normalization."
+      ],
+      "evidence_ids": [
+        "allaprima-seoul-2026-03-08-http-www-catchtable-net-shop-allaprima-menu-foodmenuseq-1457719"
+      ]
+    }
+  ],
+  "research_rules": []
+}

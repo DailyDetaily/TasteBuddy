@@ -1,0 +1,136 @@
+{
+  "fetchedAt": "2026-03-29T14:37:41.527Z",
+  "restaurant": {
+    "slug": "mosu-seoul",
+    "displayName": "모수",
+    "chefName": "안성재",
+    "city": "Seoul"
+  },
+  "source": {
+    "mode": "public_fallback",
+    "outputDirRelativePath": "tmp/public-sources/mosu-seoul",
+    "nextStep": "Review source snippets, copy verified menu/course lines into review-template rows, then generate intake CSVs or seed JSON."
+  },
+  "documents": [
+    {
+      "index": 1,
+      "label": "Official lunch menu PDF",
+      "sourceType": "official_pdf",
+      "url": "https://cdn.data.mosuseoul.com/Lunch.pdf",
+      "fetchedUrl": "https://r.jina.ai/http://cdn.data.mosuseoul.com/Lunch.pdf",
+      "mirrorUrl": "https://r.jina.ai/http://cdn.data.mosuseoul.com/Lunch.pdf",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.99,
+      "title": "404 Not Found",
+      "publishedTime": null,
+      "blocked": false,
+      "contentRelativePath": "tmp/public-sources/mosu-seoul/01-official-lunch-menu-pdf.md",
+      "excerpt": [
+        "404 Not Found",
+        "404 Not Found",
+        "* *",
+        "nginx"
+      ],
+      "courseTitleDrafts": [
+        "404 Not Found",
+        "nginx"
+      ]
+    },
+    {
+      "index": 2,
+      "label": "Official dinner menu PDF",
+      "sourceType": "official_pdf",
+      "url": "https://cdn.data.mosuseoul.com/Dinner-20250526060606.pdf",
+      "fetchedUrl": "https://r.jina.ai/http://cdn.data.mosuseoul.com/Dinner-20250526060606.pdf",
+      "mirrorUrl": "https://r.jina.ai/http://cdn.data.mosuseoul.com/Dinner-20250526060606.pdf",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.99,
+      "title": "Dinner-20250526060606.pdf",
+      "publishedTime": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "blocked": false,
+      "contentRelativePath": "tmp/public-sources/mosu-seoul/02-official-dinner-menu-pdf.md",
+      "excerpt": [
+        "small bites",
+        "black sesame tofu",
+        "maesangyi soup",
+        "deodeok & pine nut",
+        "tilefish, squash, saffron",
+        "ember roasted acorn noodle",
+        "Hanwoo B.L.T",
+        "small sweets"
+      ],
+      "courseTitleDrafts": [
+        "small bites",
+        "black sesame tofu",
+        "maesangyi soup",
+        "deodeok & pine nut",
+        "tilefish, squash, saffron",
+        "ember roasted acorn noodle",
+        "Hanwoo B.L.T",
+        "small sweets"
+      ]
+    }
+  ],
+  "menuCandidates": [
+    {
+      "id": "mosu-seoul-01-1",
+      "sourceIndex": 1,
+      "sourceLabel": "Official lunch menu PDF",
+      "sourceType": "official_pdf",
+      "sourceTitle": "404 Not Found",
+      "sourceUrl": "https://cdn.data.mosuseoul.com/Lunch.pdf",
+      "menuType": "lunch",
+      "menuTitle": "모수 런치 코스",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "404 Not Found",
+        "nginx"
+      ]
+    },
+    {
+      "id": "mosu-seoul-02-1",
+      "sourceIndex": 2,
+      "sourceLabel": "Official dinner menu PDF",
+      "sourceType": "official_pdf",
+      "sourceTitle": "Dinner-20250526060606.pdf",
+      "sourceUrl": "https://cdn.data.mosuseoul.com/Dinner-20250526060606.pdf",
+      "menuType": "dinner",
+      "menuTitle": "모수 디너 코스",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "courseTitleDrafts": [
+        "small bites",
+        "black sesame tofu",
+        "maesangyi soup",
+        "deodeok & pine nut",
+        "tilefish, squash, saffron",
+        "ember roasted acorn noodle",
+        "Hanwoo B.L.T",
+        "small sweets"
+      ]
+    }
+  ],
+  "requestedSources": [
+    {
+      "label": "Official lunch menu PDF",
+      "sourceType": "official_pdf",
+      "url": "https://cdn.data.mosuseoul.com/Lunch.pdf",
+      "trustScore": 0.99,
+      "menuType": "lunch",
+      "createReferenceMenu": false
+    },
+    {
+      "label": "Official dinner menu PDF",
+      "sourceType": "official_pdf",
+      "url": "https://cdn.data.mosuseoul.com/Dinner-20250526060606.pdf",
+      "trustScore": 0.99,
+      "menuType": "dinner",
+      "createReferenceMenu": false
+    }
+  ]
+}

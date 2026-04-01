@@ -1,0 +1,2065 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Seed generated from curated intake CSV files for 이타닉가든.",
+    "generatedAt": "2026-03-29T11:47:30.043Z",
+    "sourceFiles": [
+      "docs/mvp-content-intake-eatanic-garden-lunch.csv",
+      "docs/mvp-content-intake-eatanic-garden-dinner.csv"
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "eatanic-garden-seoul",
+      "name": "이타닉가든",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "이타닉가든 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "eatanic-garden-seoul",
+      "display_name": "손종원",
+      "bio": "큐레이션 intake CSV에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/eatanic-garden-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "source_type": "menu",
+      "title": "Eatanic Garden Lunch Menu (user-provided image)",
+      "url": "user-provided-image",
+      "excerpt": "주나미 쌀 / 부각 / 더덕 / 봄동 / 한재 미나리 / 생선 조림",
+      "raw_text": "주나미 쌀\n부각\n더덕\n봄동\n한재 미나리\n생선 조림\n삼계탕\n불고기\n군고구마\n옥광밤\n자개함",
+      "trust_score": 0.98
+    },
+    {
+      "external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "source_type": "menu",
+      "title": "Eatanic Garden Dinner Menu (user-provided image)",
+      "url": "user-provided-image",
+      "excerpt": "주나미 쌀 / 부각 / 더덕 / 봄동 / 한재 미나리 / 생선 조림",
+      "raw_text": "주나미 쌀\n부각\n더덕\n봄동\n한재 미나리\n생선 조림\n삼계탕\n불고기\n생강\n군고구마\n옥광밤\n자개함",
+      "trust_score": 0.98
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "eatanic-garden-seoul-dish-001",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "주나미 쌀",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-002",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "부각",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-003",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "더덕",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-004",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "봄동",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-005",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "한재 미나리",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-006",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "생선 조림",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-007",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "삼계탕",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-008",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "불고기",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-009",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "군고구마",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-010",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "옥광밤",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-011",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated lunch menu",
+      "public_title": "자개함",
+      "public_subtitle": null,
+      "course_position": "petit_four",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-012",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "주나미 쌀",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-013",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "부각",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-014",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "더덕",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-015",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "봄동",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-016",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "한재 미나리",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-017",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "생선 조림",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-018",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "삼계탕",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-019",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "불고기",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-020",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "생강",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-021",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "군고구마",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-022",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "옥광밤",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "eatanic-garden-seoul-dish-023",
+      "restaurant_slug": "eatanic-garden-seoul",
+      "season_label": "undated dinner menu",
+      "public_title": "자개함",
+      "public_subtitle": null,
+      "course_position": "petit_four",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-001",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "쌀",
+      "value_json": {
+        "ingredients": [
+          "쌀"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-001",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "rice course",
+      "value_json": {
+        "techniques": [
+          "rice course"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-001",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "gentle grain sweetness, calm opening, soft warm body",
+      "value_json": {
+        "sensory_words": [
+          "gentle grain sweetness",
+          "calm opening",
+          "soft warm body"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-001",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-002",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "부각",
+      "value_json": {
+        "ingredients": [
+          "부각"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-002",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dehydration, frying",
+      "value_json": {
+        "techniques": [
+          "dehydration",
+          "frying"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-002",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "crisp salt lift, light savory crunch, short finish",
+      "value_json": {
+        "sensory_words": [
+          "crisp salt lift",
+          "light savory crunch",
+          "short finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-002",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-003",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "더덕",
+      "value_json": {
+        "ingredients": [
+          "더덕"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-003",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "root preparation",
+      "value_json": {
+        "techniques": [
+          "root preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-003",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "root bitterness, aromatic lift, earthy clean line",
+      "value_json": {
+        "sensory_words": [
+          "root bitterness",
+          "aromatic lift",
+          "earthy clean line"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-003",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-004",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "봄동",
+      "value_json": {
+        "ingredients": [
+          "봄동"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-004",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "leaf vegetable plating",
+      "value_json": {
+        "techniques": [
+          "leaf vegetable plating"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-004",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "green freshness, mild bitterness, clean vegetable finish",
+      "value_json": {
+        "sensory_words": [
+          "green freshness",
+          "mild bitterness",
+          "clean vegetable finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-004",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-005",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "미나리",
+      "value_json": {
+        "ingredients": [
+          "미나리"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-005",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "herb-focused course",
+      "value_json": {
+        "techniques": [
+          "herb-focused course"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-005",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "bright herb aroma, watery freshness, sharp clean reset",
+      "value_json": {
+        "sensory_words": [
+          "bright herb aroma",
+          "watery freshness",
+          "sharp clean reset"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-005",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-006",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "생선 조림",
+      "value_json": {
+        "ingredients": [
+          "생선 조림"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-006",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "braising, jorim",
+      "value_json": {
+        "techniques": [
+          "braising",
+          "jorim"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-006",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "reduced savory depth, warm fish body, lingering sauce finish",
+      "value_json": {
+        "sensory_words": [
+          "reduced savory depth",
+          "warm fish body",
+          "lingering sauce finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-006",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-007",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "삼계탕",
+      "value_json": {
+        "ingredients": [
+          "삼계탕"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-007",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "broth reinterpretation",
+      "value_json": {
+        "techniques": [
+          "broth reinterpretation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-007",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "comforting poultry savoriness, herbal warmth, soft restorative body",
+      "value_json": {
+        "sensory_words": [
+          "comforting poultry savoriness",
+          "herbal warmth",
+          "soft restorative body"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-007",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-008",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "불고기",
+      "value_json": {
+        "ingredients": [
+          "불고기"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-008",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "grilling, marination",
+      "value_json": {
+        "techniques": [
+          "grilling",
+          "marination"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-008",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory beef core, glossy finish, main-course warmth",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory beef core",
+          "glossy finish",
+          "main-course warmth"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-008",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-009",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "고구마",
+      "value_json": {
+        "ingredients": [
+          "고구마"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-009",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "baking",
+      "value_json": {
+        "techniques": [
+          "baking"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-009",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "earthy sweetness, soft roasted finish, comforting close",
+      "value_json": {
+        "sensory_words": [
+          "earthy sweetness",
+          "soft roasted finish",
+          "comforting close"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-009",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-010",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "밤",
+      "value_json": {
+        "ingredients": [
+          "밤"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-010",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "chestnut dessert",
+      "value_json": {
+        "techniques": [
+          "chestnut dessert"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-010",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "nutty sweetness, denser dessert body, layered autumnal finish",
+      "value_json": {
+        "sensory_words": [
+          "nutty sweetness",
+          "denser dessert body",
+          "layered autumnal finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-010",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-011",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "자개함 시그니처 마무리",
+      "value_json": {
+        "ingredients": [
+          "자개함 시그니처 마무리"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-011",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "boxed sweet service",
+      "value_json": {
+        "techniques": [
+          "boxed sweet service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-011",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "elegant closing sweets, varied texture, memorable finale",
+      "value_json": {
+        "sensory_words": [
+          "elegant closing sweets",
+          "varied texture",
+          "memorable finale"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-011",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-012",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "쌀",
+      "value_json": {
+        "ingredients": [
+          "쌀"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-012",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "rice course",
+      "value_json": {
+        "techniques": [
+          "rice course"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-012",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "gentle grain sweetness, calm opening, soft warm body",
+      "value_json": {
+        "sensory_words": [
+          "gentle grain sweetness",
+          "calm opening",
+          "soft warm body"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-012",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-013",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "부각",
+      "value_json": {
+        "ingredients": [
+          "부각"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-013",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dehydration, frying",
+      "value_json": {
+        "techniques": [
+          "dehydration",
+          "frying"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-013",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "crisp salt lift, light savory crunch, short finish",
+      "value_json": {
+        "sensory_words": [
+          "crisp salt lift",
+          "light savory crunch",
+          "short finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-013",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-014",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "더덕",
+      "value_json": {
+        "ingredients": [
+          "더덕"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-014",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "root preparation",
+      "value_json": {
+        "techniques": [
+          "root preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-014",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "root bitterness, aromatic lift, earthy clean line",
+      "value_json": {
+        "sensory_words": [
+          "root bitterness",
+          "aromatic lift",
+          "earthy clean line"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-014",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-015",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "봄동",
+      "value_json": {
+        "ingredients": [
+          "봄동"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-015",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "leaf vegetable plating",
+      "value_json": {
+        "techniques": [
+          "leaf vegetable plating"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-015",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "green freshness, mild bitterness, clean vegetable finish",
+      "value_json": {
+        "sensory_words": [
+          "green freshness",
+          "mild bitterness",
+          "clean vegetable finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-015",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-016",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "미나리",
+      "value_json": {
+        "ingredients": [
+          "미나리"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-016",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "herb-focused course",
+      "value_json": {
+        "techniques": [
+          "herb-focused course"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-016",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "bright herb aroma, watery freshness, sharp clean reset",
+      "value_json": {
+        "sensory_words": [
+          "bright herb aroma",
+          "watery freshness",
+          "sharp clean reset"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-016",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-017",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "생선 조림",
+      "value_json": {
+        "ingredients": [
+          "생선 조림"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-017",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "braising, jorim",
+      "value_json": {
+        "techniques": [
+          "braising",
+          "jorim"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-017",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "reduced savory depth, warm fish body, lingering sauce finish",
+      "value_json": {
+        "sensory_words": [
+          "reduced savory depth",
+          "warm fish body",
+          "lingering sauce finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-017",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-018",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "삼계탕",
+      "value_json": {
+        "ingredients": [
+          "삼계탕"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-018",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "broth reinterpretation",
+      "value_json": {
+        "techniques": [
+          "broth reinterpretation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-018",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "comforting poultry savoriness, herbal warmth, soft restorative body",
+      "value_json": {
+        "sensory_words": [
+          "comforting poultry savoriness",
+          "herbal warmth",
+          "soft restorative body"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-018",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-019",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "불고기",
+      "value_json": {
+        "ingredients": [
+          "불고기"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-019",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "grilling, marination",
+      "value_json": {
+        "techniques": [
+          "grilling",
+          "marination"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-019",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory beef core, glossy finish, main-course warmth",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory beef core",
+          "glossy finish",
+          "main-course warmth"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-019",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-020",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "생강",
+      "value_json": {
+        "ingredients": [
+          "생강"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-020",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "palate cleanser, ginger preparation",
+      "value_json": {
+        "techniques": [
+          "palate cleanser",
+          "ginger preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-020",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "spiced aromatic lift, warming reset, short sharp finish",
+      "value_json": {
+        "sensory_words": [
+          "spiced aromatic lift",
+          "warming reset",
+          "short sharp finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-020",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-021",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "고구마",
+      "value_json": {
+        "ingredients": [
+          "고구마"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-021",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "baking",
+      "value_json": {
+        "techniques": [
+          "baking"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-021",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "earthy sweetness, soft roasted finish, comforting close",
+      "value_json": {
+        "sensory_words": [
+          "earthy sweetness",
+          "soft roasted finish",
+          "comforting close"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-021",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-022",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "밤",
+      "value_json": {
+        "ingredients": [
+          "밤"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-022",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "chestnut dessert",
+      "value_json": {
+        "techniques": [
+          "chestnut dessert"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-022",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "nutty sweetness, denser dessert body, layered autumnal finish",
+      "value_json": {
+        "sensory_words": [
+          "nutty sweetness",
+          "denser dessert body",
+          "layered autumnal finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-022",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-023",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "자개함 시그니처 마무리",
+      "value_json": {
+        "ingredients": [
+          "자개함 시그니처 마무리"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-023",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "boxed sweet service",
+      "value_json": {
+        "techniques": [
+          "boxed sweet service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-023",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "elegant closing sweets, varied texture, memorable finale",
+      "value_json": {
+        "sensory_words": [
+          "elegant closing sweets",
+          "varied texture",
+          "memorable finale"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-023",
+      "source_external_key": "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-001",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.06,
+        "umami": 0.16,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.08,
+        "cleanFinish": 0.62,
+        "linger": 0.14,
+        "smoke": 0,
+        "aromaIntensity": 0.14,
+        "textureRichness": 0.2,
+        "thermalImpact": 0.24
+      },
+      "confidence": 0.64,
+      "rationale": "A rice-led opening course is likely designed as a calm foundation with low heaviness, restrained savoriness, and a gentle grain sweetness rather than a strong first punch.",
+      "uncertainty_notes": [
+        "The menu image only gives the title, so the exact rice cultivar, garnish, and preparation are not public"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-002",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.04,
+        "salty": 0.18,
+        "umami": 0.18,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.08,
+        "cleanFinish": 0.56,
+        "linger": 0.14,
+        "smoke": 0,
+        "aromaIntensity": 0.18,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.68,
+      "rationale": "Bugak generally introduces crisp texture, restrained salinity, and a short savory finish, making it suitable as a small opening texture contrast.",
+      "uncertainty_notes": [
+        "The exact ingredient used for the bugak is not specified on the menu image"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-003",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.06,
+        "bitter": 0.18,
+        "salty": 0.06,
+        "umami": 0.18,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.32,
+        "heaviness": 0.08,
+        "cleanFinish": 0.58,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.72,
+      "rationale": "Deodeok usually brings aromatic bitterness and a clean earthy line, so it is modeled as a root-focused course with higher aroma than richness.",
+      "uncertainty_notes": [
+        "Preparation style, seasoning, and whether smoke is involved are not visible on the menu"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-004",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.1,
+        "bitter": 0.1,
+        "salty": 0.04,
+        "umami": 0.1,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.54,
+        "heaviness": 0.04,
+        "cleanFinish": 0.74,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.12,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.7,
+      "rationale": "A bomdong course likely works as a clean leafy interlude with freshness and slight bitterness rather than a dense savory moment.",
+      "uncertainty_notes": [
+        "The image marks this as a +75,000 supplement, and the supporting components are not public"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-005",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.18,
+        "bitter": 0.08,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.72,
+        "heaviness": 0.02,
+        "cleanFinish": 0.82,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.46,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.74,
+      "rationale": "Minari-centered dishes usually read as highly aromatic, green, and cleansing, so the profile emphasizes brightness and clean finish over weight.",
+      "uncertainty_notes": [
+        "The menu only provides the title, so dressing, protein pairing, and temperature remain unknown"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-006",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.1,
+        "bitter": 0.04,
+        "salty": 0.22,
+        "umami": 0.7,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.28,
+        "cleanFinish": 0.36,
+        "linger": 0.54,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.4
+      },
+      "confidence": 0.78,
+      "rationale": "A jorim course strongly suggests concentrated braised savory flavor with moderate salinity and a longer sauce-driven finish than the earlier vegetable courses.",
+      "uncertainty_notes": [
+        "Fish species, broth base, and sweetness level of the jorim are not public"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-007",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.1,
+        "umami": 0.52,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.18,
+        "cleanFinish": 0.56,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.28,
+        "thermalImpact": 0.46
+      },
+      "confidence": 0.76,
+      "rationale": "Samgyetang in a fine-dining lunch sequence likely acts as a warm restorative pivot with poultry umami, herbal lift, and more comfort than heaviness.",
+      "uncertainty_notes": [
+        "The exact deconstruction level, stock concentration, and ginseng prominence are not listed on the image"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-008",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.22,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.76,
+        "fat": 0.28
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.34,
+        "cleanFinish": 0.34,
+        "linger": 0.5,
+        "smoke": 0.06,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.38,
+        "thermalImpact": 0.42
+      },
+      "confidence": 0.8,
+      "rationale": "Bulgogi strongly implies a sweet-savory beef core with a warmer and fuller finish than the preceding broth and fish courses, making it the lunch menu's likely meat peak.",
+      "uncertainty_notes": [
+        "The exact cut, marinade balance, and charcoal intensity are not public"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-009",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.62,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.02,
+        "umami": 0.06,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.16,
+        "cleanFinish": 0.48,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.72,
+      "rationale": "Baked sweet potato dessert likely closes with earthy sweetness and a gentle roasted softness rather than bright acidity.",
+      "uncertainty_notes": [
+        "The menu presents this as one of two dessert options, so the exact accompaniment is unknown"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-010",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.56,
+        "sour": 0.04,
+        "bitter": 0.04,
+        "salty": 0.02,
+        "umami": 0.08,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.2,
+        "cleanFinish": 0.42,
+        "linger": 0.3,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.16
+      },
+      "confidence": 0.7,
+      "rationale": "A chestnut dessert usually carries a denser nutty sweetness and slightly richer finish than baked sweet potato, while still staying gentle rather than sharp.",
+      "uncertainty_notes": [
+        "The image marks this as a +85,000 supplement and does not reveal the full dessert composition"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-011",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.52,
+        "sour": 0.1,
+        "bitter": 0.04,
+        "salty": 0.04,
+        "umami": 0.06,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.26,
+        "heaviness": 0.12,
+        "cleanFinish": 0.5,
+        "linger": 0.24,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.66,
+      "rationale": "The mother-of-pearl box reads as a signature closing sweet service with moderate sweetness and multiple textures rather than a single plated dessert.",
+      "uncertainty_notes": [
+        "The exact sweets inside the box are not listed on the menu image"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-lunch-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-012",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.06,
+        "umami": 0.16,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.08,
+        "cleanFinish": 0.62,
+        "linger": 0.14,
+        "smoke": 0,
+        "aromaIntensity": 0.14,
+        "textureRichness": 0.2,
+        "thermalImpact": 0.24
+      },
+      "confidence": 0.64,
+      "rationale": "A rice-led opening course is likely designed as a calm foundation with low heaviness, restrained savoriness, and a gentle grain sweetness rather than a strong first punch.",
+      "uncertainty_notes": [
+        "The menu image only gives the title, so the exact rice cultivar, garnish, and preparation are not public"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-013",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.04,
+        "salty": 0.18,
+        "umami": 0.18,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.08,
+        "cleanFinish": 0.56,
+        "linger": 0.14,
+        "smoke": 0,
+        "aromaIntensity": 0.18,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.68,
+      "rationale": "Bugak generally introduces crisp texture, restrained salinity, and a short savory finish, making it suitable as a small opening texture contrast.",
+      "uncertainty_notes": [
+        "The exact ingredient used for the bugak is not specified on the menu image"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-014",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.06,
+        "bitter": 0.18,
+        "salty": 0.06,
+        "umami": 0.18,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.32,
+        "heaviness": 0.08,
+        "cleanFinish": 0.58,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.72,
+      "rationale": "Deodeok usually brings aromatic bitterness and a clean earthy line, so it is modeled as a root-focused course with higher aroma than richness.",
+      "uncertainty_notes": [
+        "Preparation style, seasoning, and whether smoke is involved are not visible on the menu"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-015",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.1,
+        "bitter": 0.1,
+        "salty": 0.04,
+        "umami": 0.1,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.54,
+        "heaviness": 0.04,
+        "cleanFinish": 0.74,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.12,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.72,
+      "rationale": "A bomdong course likely works as a clean leafy interlude with freshness and slight bitterness rather than a dense savory moment.",
+      "uncertainty_notes": [
+        "The dinner image lists this as part of the standard flow without showing supporting components"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-016",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.18,
+        "bitter": 0.08,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.72,
+        "heaviness": 0.02,
+        "cleanFinish": 0.82,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.46,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.74,
+      "rationale": "Minari-centered dishes usually read as highly aromatic, green, and cleansing, so the profile emphasizes brightness and clean finish over weight.",
+      "uncertainty_notes": [
+        "The menu only provides the title, so dressing, protein pairing, and temperature remain unknown"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-017",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.1,
+        "bitter": 0.04,
+        "salty": 0.22,
+        "umami": 0.7,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.28,
+        "cleanFinish": 0.36,
+        "linger": 0.54,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.4
+      },
+      "confidence": 0.78,
+      "rationale": "A jorim course strongly suggests concentrated braised savory flavor with moderate salinity and a longer sauce-driven finish than the earlier vegetable courses.",
+      "uncertainty_notes": [
+        "Fish species, broth base, and sweetness level of the jorim are not public"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-018",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.1,
+        "umami": 0.52,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.18,
+        "cleanFinish": 0.56,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.28,
+        "thermalImpact": 0.46
+      },
+      "confidence": 0.76,
+      "rationale": "Samgyetang in a fine-dining dinner sequence likely acts as a warm restorative pivot with poultry umami, herbal lift, and more comfort than heaviness.",
+      "uncertainty_notes": [
+        "The exact deconstruction level, stock concentration, and ginseng prominence are not listed on the image"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-019",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.22,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.76,
+        "fat": 0.28
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.34,
+        "cleanFinish": 0.34,
+        "linger": 0.5,
+        "smoke": 0.06,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.38,
+        "thermalImpact": 0.42
+      },
+      "confidence": 0.8,
+      "rationale": "Bulgogi strongly implies a sweet-savory beef core with a warmer and fuller finish than the preceding broth and fish courses, making it the dinner menu's likely meat peak.",
+      "uncertainty_notes": [
+        "The exact cut, marinade balance, and charcoal intensity are not public"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-020",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.26,
+        "bitter": 0.1,
+        "salty": 0.02,
+        "umami": 0.02,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.62,
+        "heaviness": 0.02,
+        "cleanFinish": 0.76,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.54,
+        "textureRichness": 0.08,
+        "thermalImpact": 0.26
+      },
+      "confidence": 0.78,
+      "rationale": "A standalone ginger course in this position most likely serves as a palate reset before dessert, with aromatic warmth and clear, short finish rather than richness.",
+      "uncertainty_notes": [
+        "The exact format is not shown on the menu image, so sweetness and texture remain inferred"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-021",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.62,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.02,
+        "umami": 0.06,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.16,
+        "cleanFinish": 0.48,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.72,
+      "rationale": "Baked sweet potato dessert likely closes with earthy sweetness and a gentle roasted softness rather than bright acidity.",
+      "uncertainty_notes": [
+        "The menu presents this as one of two dessert options, so the exact accompaniment is unknown"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-022",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.56,
+        "sour": 0.04,
+        "bitter": 0.04,
+        "salty": 0.02,
+        "umami": 0.08,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.2,
+        "cleanFinish": 0.42,
+        "linger": 0.3,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.16
+      },
+      "confidence": 0.7,
+      "rationale": "A chestnut dessert usually carries a denser nutty sweetness and slightly richer finish than baked sweet potato, while still staying gentle rather than sharp.",
+      "uncertainty_notes": [
+        "The image marks this as a +85,000 supplement and does not reveal the full dessert composition"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "eatanic-garden-seoul-dish-023",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.52,
+        "sour": 0.1,
+        "bitter": 0.04,
+        "salty": 0.04,
+        "umami": 0.06,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.26,
+        "heaviness": 0.12,
+        "cleanFinish": 0.5,
+        "linger": 0.24,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.66,
+      "rationale": "The mother-of-pearl box reads as a signature closing sweet service with moderate sweetness and multiple textures rather than a single plated dessert.",
+      "uncertainty_notes": [
+        "The exact sweets inside the box are not listed on the menu image"
+      ],
+      "evidence_ids": [
+        "eatanic-garden-seoul-eatanic-garden-dinner-menu-user-provided-image"
+      ]
+    }
+  ],
+  "research_rules": []
+}

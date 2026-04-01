@@ -7,7 +7,7 @@ interface SectionCardProps {
   hoverEffect?: boolean;
 }
 
-export default function SectionCard({ children, className = '', onClick, hoverEffect = true }: SectionCardProps) {
+export default function SectionCard({ children, className = '', onClick, hoverEffect = !!onClick }: SectionCardProps) {
   return (
     <div
       className={`tb-section-card ${

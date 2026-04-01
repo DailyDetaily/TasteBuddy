@@ -1,0 +1,262 @@
+[
+  {
+    "name": "소수헌",
+    "canonicalSlug": "sosuheon-seoul",
+    "chefName": "박경재",
+    "city": "Seoul",
+    "slugCandidates": ["sosuheon"],
+    "publicSources": [
+      {
+        "label": "Cook&Chef Sosuheon profile",
+        "sourceType": "news_article",
+        "url": "https://cooknchefnews.com/news/view/1065590534958931",
+        "trustScore": 0.94,
+        "referenceMenus": [
+          {
+            "menuType": "lunch",
+            "menuTitle": "소수헌 런치 오마카세 개요",
+            "priceLabel": "KRW 300,000",
+            "priceValue": 300000,
+            "courseTitleDrafts": [
+              "제철 작은 요리",
+              "대게",
+              "벚꽃도미 찜",
+              "갈치구이",
+              "전갱이 니기리",
+              "참치 니기리",
+              "말차 마무리"
+            ]
+          },
+          {
+            "menuType": "dinner",
+            "menuTitle": "소수헌 디너 오마카세 개요",
+            "priceLabel": "KRW 500,000",
+            "priceValue": 500000,
+            "courseTitleDrafts": [
+              "제철 작은 요리",
+              "대게",
+              "벚꽃도미 찜",
+              "갈치구이",
+              "전어 니기리",
+              "갑오징어 니기리",
+              "전복 니기리",
+              "전갱이 니기리",
+              "방어 니기리",
+              "참치 니기리",
+              "말차 마무리"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "모수",
+    "canonicalSlug": "mosu-seoul",
+    "chefName": "안성재",
+    "city": "Seoul",
+    "slugCandidates": ["tempmosuseoul", "mosuseoul"],
+    "publicSources": [
+      {
+        "label": "Official lunch menu PDF",
+        "sourceType": "official_pdf",
+        "url": "https://cdn.data.mosuseoul.com/Lunch.pdf",
+        "trustScore": 0.99,
+        "menuType": "lunch",
+        "referenceMenuTitle": "모수 런치 코스",
+        "captureCourseLines": true
+      },
+      {
+        "label": "Official dinner menu PDF",
+        "sourceType": "official_pdf",
+        "url": "https://cdn.data.mosuseoul.com/Dinner-20250526060606.pdf",
+        "trustScore": 0.99,
+        "menuType": "dinner",
+        "referenceMenuTitle": "모수 디너 코스",
+        "captureCourseLines": true
+      }
+    ]
+  },
+  {
+    "name": "에빗",
+    "canonicalSlug": "evett-seoul",
+    "chefName": "조셉 리저우드",
+    "city": "Seoul",
+    "slugCandidates": ["evett"],
+    "publicSources": [
+      {
+        "label": "Official menu page",
+        "sourceType": "official_menu_page",
+        "url": "https://www.restaurantevett.com/menu",
+        "trustScore": 0.98,
+        "captureCourseLines": true
+      },
+      {
+        "label": "MICHELIN EVETT feature",
+        "sourceType": "michelin_article",
+        "url": "https://guide.michelin.com/kr/en/article/features/rooted-in-curiosity-shaped-by-the-seasons-the-quiet-evolution-of-evett",
+        "trustScore": 0.9,
+        "createReferenceMenu": true,
+        "referenceMenuTitle": "미쉐린 EVETT 소개"
+      }
+    ]
+  },
+  {
+    "name": "라연",
+    "canonicalSlug": "la-yeon-seoul",
+    "chefName": "김성일",
+    "city": "Seoul",
+    "slugCandidates": ["layeon", "layeonseoul", "layeon_shilla", "shillalayeon", "hotelshillalayeon", "layeonhotel", "shillalayeonseoul"],
+    "publicSources": [
+      {
+        "label": "The Shilla Seoul dining page",
+        "sourceType": "official_page",
+        "url": "https://www.shilla.net/seoul/dining/viewDining.do?contId=KRN",
+        "trustScore": 0.98,
+        "createReferenceMenu": true,
+        "referenceMenuTitle": "라연 다이닝 안내",
+        "captureCourseLines": true
+      },
+      {
+        "label": "Go Guides La Yeon overview",
+        "sourceType": "guide_article",
+        "url": "https://kr.hotels.com/go/south-korea/la-yeon",
+        "trustScore": 0.86,
+        "referenceMenus": [
+          {
+            "menuType": "lunch",
+            "menuTitle": "Feast 코스 개요",
+            "courseTitleDrafts": [
+              "닭고기와 생삼을 넣은 죽",
+              "채소를 말아 구운 소고기 롤",
+              "제철 생선",
+              "간장에 재운 한우 편육",
+              "차가운 메밀국수",
+              "전복과 채소 솥밥"
+            ]
+          },
+          {
+            "menuType": "dinner",
+            "menuTitle": "Shilla 코스 개요",
+            "courseTitleDrafts": [
+              "구절판",
+              "닭과 인삼을 넣은 차가운 두유 국물",
+              "소고기와 버섯 만두",
+              "장어구이",
+              "숯불 한우 등심",
+              "떡갈비",
+              "갈비찜"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "레스토랑 알렌",
+    "canonicalSlug": "restaurant-allen-seoul",
+    "chefName": "서현민",
+    "city": "Seoul",
+    "slugCandidates": ["allen", "restaurantallen", "allenseoul"],
+    "publicSources": [
+      {
+        "label": "Official menu page",
+        "sourceType": "official_menu_page",
+        "url": "https://restaurantallen.com/menu",
+        "trustScore": 0.98,
+        "captureCourseLines": true
+      },
+      {
+        "label": "Official reservation page",
+        "sourceType": "official_page",
+        "url": "https://restaurantallen.com/reservation",
+        "trustScore": 0.95,
+        "createReferenceMenu": true,
+        "referenceMenuTitle": "레스토랑 알렌 예약 안내"
+      }
+    ]
+  },
+  {
+    "name": "권숙수",
+    "canonicalSlug": "kwonsooksoo-seoul",
+    "chefName": "권우중",
+    "city": "Seoul",
+    "slugCandidates": ["kwonsooksoo"],
+    "publicSources": [
+      {
+        "label": "Official menu page",
+        "sourceType": "official_menu_page",
+        "url": "https://www.kwonsooksoo.com/menu.asp",
+        "trustScore": 0.99,
+        "captureCourseLines": true
+      },
+      {
+        "label": "MICHELIN Genesis feature",
+        "sourceType": "michelin_article",
+        "url": "https://guide.michelin.com/kr/en/article/features/genesis_kwonsooksoo-en",
+        "trustScore": 0.9,
+        "createReferenceMenu": true,
+        "referenceMenuTitle": "미쉐린 권숙수 소개"
+      }
+    ]
+  },
+  {
+    "name": "미토우",
+    "canonicalSlug": "mitou-seoul",
+    "chefName": "권영운 / 김보미",
+    "city": "Seoul",
+    "slugCandidates": ["mitou"],
+    "publicSources": [
+      {
+        "label": "MICHELIN Mitou feature",
+        "sourceType": "michelin_article",
+        "url": "https://guide.michelin.com/en/article/features/mitou-with-two-michelin-stars",
+        "trustScore": 0.9,
+        "createReferenceMenu": true,
+        "referenceMenuTitle": "미쉐린 미토우 소개"
+      },
+      {
+        "label": "MICHELIN Young Chef Award article",
+        "sourceType": "michelin_article",
+        "url": "https://guide.michelin.com/kr/en/article/people/2022-michelin-seoul-young-chef-mitou-en",
+        "trustScore": 0.86,
+        "createReferenceMenu": true,
+        "referenceMenuTitle": "미쉐린 미토우 셰프 소개"
+      }
+    ]
+  },
+  {
+    "name": "스와니예",
+    "canonicalSlug": "soigne-seoul",
+    "chefName": "이준",
+    "city": "Seoul",
+    "slugCandidates": ["soigneseoul"],
+    "publicSources": [
+      {
+        "label": "MICHELIN Jun Lee interview",
+        "sourceType": "michelin_article",
+        "url": "https://guide.michelin.com/kr/en/article/people/first-day-we-got-our-stars-jun-lee-of-soigne",
+        "trustScore": 0.9,
+        "createReferenceMenu": true,
+        "referenceMenuTitle": "미쉐린 스와니예 소개"
+      }
+    ]
+  },
+  {
+    "name": "알라프리마",
+    "canonicalSlug": "allaprima-seoul",
+    "chefName": "김진혁",
+    "city": "Seoul",
+    "slugCandidates": ["allaprima"],
+    "publicSources": [
+      {
+        "label": "MICHELIN Alla Prima chef profile",
+        "sourceType": "michelin_article",
+        "url": "https://guide.michelin.com/kr/en/article/people/chef_kim_jin-hyuk_of_alla_prima",
+        "trustScore": 0.9,
+        "createReferenceMenu": true,
+        "referenceMenuTitle": "미쉐린 알라프리마 소개"
+      }
+    ]
+  }
+]

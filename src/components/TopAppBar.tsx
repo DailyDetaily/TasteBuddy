@@ -16,6 +16,9 @@ interface TopAppBarProps {
   showBack?: boolean;
   onBack?: () => void;
   onStartMeasurement?: () => void;
+  onOpenNotifications?: () => void;
+  onOpenMenu?: () => void;
+  hasUnreadNotifications?: boolean;
 }
 
 export default function TopAppBar({
@@ -23,9 +26,12 @@ export default function TopAppBar({
   showBack,
   onBack,
   onStartMeasurement,
+  onOpenNotifications,
+  onOpenMenu,
+  hasUnreadNotifications,
 }: TopAppBarProps) {
   return (
-    <div className="bg-[var(--tb-color-bg-page)] w-full shrink-0 z-40">
+    <div className="bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md border-b border-transparent w-full shrink-0 z-40 supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70">
       <div className="flex items-center justify-between px-[20px] py-[12px] max-h-[56px]">
         {/* Left */}
         <div className="flex items-center">
@@ -57,8 +63,16 @@ export default function TopAppBar({
 
         {/* Right */}
         <div className="flex items-center gap-[16px]">
-          <button className="text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors">
+          <button
+            type="button"
+            onClick={onOpenNotifications}
+            aria-label="알림"
+            className="relative text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors"
+          >
             <Bell size={24} strokeWidth={1.8} />
+            {hasUnreadNotifications && (
+              <div className="absolute top-[2px] right-[2px] size-[6px] rounded-full bg-[var(--tb-taste-sweet-main)]" />
+            )}
           </button>
           <button
             type="button"
@@ -69,7 +83,12 @@ export default function TopAppBar({
           >
             <PlusCircle size={24} strokeWidth={1.8} />
           </button>
-          <button className="text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors">
+          <button
+            type="button"
+            onClick={onOpenMenu}
+            aria-label="메뉴 열기"
+            className="text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors"
+          >
             <Menu size={24} strokeWidth={1.8} />
           </button>
         </div>

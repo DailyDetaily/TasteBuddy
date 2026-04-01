@@ -1,0 +1,1621 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Seed generated from curated intake CSV files for 소수헌.",
+    "generatedAt": "2026-03-29T14:21:53.911Z",
+    "sourceFiles": [
+      "docs/mvp-content-intake-sosuheon-lunch.csv",
+      "docs/mvp-content-intake-sosuheon-dinner.csv"
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "sosuheon-seoul",
+      "name": "소수헌",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "소수헌 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "sosuheon-seoul",
+      "display_name": "박경재",
+      "bio": "큐레이션 intake CSV에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/sosuheon-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "restaurant_slug": "sosuheon-seoul",
+      "source_type": "article",
+      "title": "Cook&Chef Sosuheon profile (published 2025-12-09)",
+      "url": "https://cooknchefnews.com/news/view/1065590534958931",
+      "excerpt": "제철 작은 요리 · 런치 오마카세 개요 / 대게 · 런치 오마카세 개요 / 벚꽃도미 찜 · 런치 오마카세 개요 / 갈치구이 · 런치 오마카세 개요 / 전갱이 니기리 · 런치 오마카세 개요 / 참치 니기리 · 런치 오마카세 개요",
+      "raw_text": "제철 작은 요리 — 런치 오마카세 개요\n대게 — 런치 오마카세 개요\n벚꽃도미 찜 — 런치 오마카세 개요\n갈치구이 — 런치 오마카세 개요\n전갱이 니기리 — 런치 오마카세 개요\n참치 니기리 — 런치 오마카세 개요\n말차 마무리 — 런치 오마카세 개요\n제철 작은 요리 — 디너 오마카세 개요\n대게 — 디너 오마카세 개요\n벚꽃도미 찜 — 디너 오마카세 개요\n갈치구이 — 디너 오마카세 개요\n전어 니기리 — 디너 오마카세 개요\n갑오징어 니기리 — 디너 오마카세 개요\n전복 니기리 — 디너 오마카세 개요\n전갱이 니기리 — 디너 오마카세 개요\n방어 니기리 — 디너 오마카세 개요\n참치 니기리 — 디너 오마카세 개요\n말차 마무리 — 디너 오마카세 개요",
+      "trust_score": 0.94
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "sosuheon-seoul-dish-001",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference lunch",
+      "public_title": "제철 작은 요리",
+      "public_subtitle": "런치 오마카세 개요",
+      "course_position": "amuse",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-002",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference lunch",
+      "public_title": "대게",
+      "public_subtitle": "런치 오마카세 개요",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-003",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference lunch",
+      "public_title": "벚꽃도미 찜",
+      "public_subtitle": "런치 오마카세 개요",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-004",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference lunch",
+      "public_title": "갈치구이",
+      "public_subtitle": "런치 오마카세 개요",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-005",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference lunch",
+      "public_title": "전갱이 니기리",
+      "public_subtitle": "런치 오마카세 개요",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-006",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference lunch",
+      "public_title": "참치 니기리",
+      "public_subtitle": "런치 오마카세 개요",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-007",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference lunch",
+      "public_title": "말차 마무리",
+      "public_subtitle": "런치 오마카세 개요",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-008",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "제철 작은 요리",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "amuse",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-009",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "대게",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-010",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "벚꽃도미 찜",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-011",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "갈치구이",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-012",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "전어 니기리",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-013",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "갑오징어 니기리",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-014",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "전복 니기리",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-015",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "전갱이 니기리",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-016",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "방어 니기리",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-017",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "참치 니기리",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "sosuheon-seoul-dish-018",
+      "restaurant_slug": "sosuheon-seoul",
+      "season_label": "2025-12 public reference dinner",
+      "public_title": "말차 마무리",
+      "public_subtitle": "디너 오마카세 개요",
+      "course_position": "dessert",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "sosuheon-seoul-dish-001",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "제철 재료",
+      "value_json": {
+        "ingredients": [
+          "제철 재료"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-001",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "small plate",
+      "value_json": {
+        "techniques": [
+          "small plate"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-001",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "seasonal elegance, quiet opening, light ceremonial tone",
+      "value_json": {
+        "sensory_words": [
+          "seasonal elegance",
+          "quiet opening",
+          "light ceremonial tone"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-001",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-002",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "대게",
+      "value_json": {
+        "ingredients": [
+          "대게"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-002",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "crab preparation",
+      "value_json": {
+        "techniques": [
+          "crab preparation"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-002",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "sweet shellfish umami, clean marine finish, fine texture",
+      "value_json": {
+        "sensory_words": [
+          "sweet shellfish umami",
+          "clean marine finish",
+          "fine texture"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-002",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-003",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "벚꽃도미",
+      "value_json": {
+        "ingredients": [
+          "벚꽃도미"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-003",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "steaming",
+      "value_json": {
+        "techniques": [
+          "steaming"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-003",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "soft marine savoriness, gentle warmth, clean finish",
+      "value_json": {
+        "sensory_words": [
+          "soft marine savoriness",
+          "gentle warmth",
+          "clean finish"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-003",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-004",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "갈치",
+      "value_json": {
+        "ingredients": [
+          "갈치"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-004",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "grilling",
+      "value_json": {
+        "techniques": [
+          "grilling"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-004",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "clean fish oil, light char, savory crispness",
+      "value_json": {
+        "sensory_words": [
+          "clean fish oil",
+          "light char",
+          "savory crispness"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-004",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-005",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "전갱이, 샤리",
+      "value_json": {
+        "ingredients": [
+          "전갱이",
+          "샤리"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-005",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "nigiri",
+      "value_json": {
+        "techniques": [
+          "nigiri"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-005",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "bright silver fish note, compact rice bite, clean umami",
+      "value_json": {
+        "sensory_words": [
+          "bright silver fish note",
+          "compact rice bite",
+          "clean umami"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-005",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-006",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "참치, 샤리",
+      "value_json": {
+        "ingredients": [
+          "참치",
+          "샤리"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-006",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "nigiri",
+      "value_json": {
+        "techniques": [
+          "nigiri"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-006",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "dense tuna umami, soft fat, longer finish",
+      "value_json": {
+        "sensory_words": [
+          "dense tuna umami",
+          "soft fat",
+          "longer finish"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-006",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-007",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "말차",
+      "value_json": {
+        "ingredients": [
+          "말차"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-007",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "tea service",
+      "value_json": {
+        "techniques": [
+          "tea service"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-007",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "earthy bitterness, quiet reset, ceremonial close",
+      "value_json": {
+        "sensory_words": [
+          "earthy bitterness",
+          "quiet reset",
+          "ceremonial close"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-007",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-008",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "제철 재료",
+      "value_json": {
+        "ingredients": [
+          "제철 재료"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-008",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "small plate",
+      "value_json": {
+        "techniques": [
+          "small plate"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-008",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "seasonal elegance, quiet opening, ceremonial pacing",
+      "value_json": {
+        "sensory_words": [
+          "seasonal elegance",
+          "quiet opening",
+          "ceremonial pacing"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-008",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-009",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "대게",
+      "value_json": {
+        "ingredients": [
+          "대게"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-009",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "crab preparation",
+      "value_json": {
+        "techniques": [
+          "crab preparation"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-009",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "sweet shellfish umami, clean marine finish, fine texture",
+      "value_json": {
+        "sensory_words": [
+          "sweet shellfish umami",
+          "clean marine finish",
+          "fine texture"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-009",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-010",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "벚꽃도미",
+      "value_json": {
+        "ingredients": [
+          "벚꽃도미"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-010",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "steaming",
+      "value_json": {
+        "techniques": [
+          "steaming"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-010",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "soft marine savoriness, gentle warmth, clean finish",
+      "value_json": {
+        "sensory_words": [
+          "soft marine savoriness",
+          "gentle warmth",
+          "clean finish"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-010",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-011",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "갈치",
+      "value_json": {
+        "ingredients": [
+          "갈치"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-011",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "grilling",
+      "value_json": {
+        "techniques": [
+          "grilling"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-011",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "clean fish oil, light char, savory crispness",
+      "value_json": {
+        "sensory_words": [
+          "clean fish oil",
+          "light char",
+          "savory crispness"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-011",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-012",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "전어, 샤리",
+      "value_json": {
+        "ingredients": [
+          "전어",
+          "샤리"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-012",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "nigiri",
+      "value_json": {
+        "techniques": [
+          "nigiri"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-012",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "bright silver-fish oil, compact bite, clean acid lift",
+      "value_json": {
+        "sensory_words": [
+          "bright silver-fish oil",
+          "compact bite",
+          "clean acid lift"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-012",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-013",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "갑오징어, 샤리",
+      "value_json": {
+        "ingredients": [
+          "갑오징어",
+          "샤리"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-013",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "nigiri",
+      "value_json": {
+        "techniques": [
+          "nigiri"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-013",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "clean sweetness, firm snap, quiet marine finish",
+      "value_json": {
+        "sensory_words": [
+          "clean sweetness",
+          "firm snap",
+          "quiet marine finish"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-013",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-014",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "전복, 샤리",
+      "value_json": {
+        "ingredients": [
+          "전복",
+          "샤리"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-014",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "nigiri",
+      "value_json": {
+        "techniques": [
+          "nigiri"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-014",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "chewy shellfish umami, mineral savoriness, controlled linger",
+      "value_json": {
+        "sensory_words": [
+          "chewy shellfish umami",
+          "mineral savoriness",
+          "controlled linger"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-014",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-015",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "전갱이, 샤리",
+      "value_json": {
+        "ingredients": [
+          "전갱이",
+          "샤리"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-015",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "nigiri",
+      "value_json": {
+        "techniques": [
+          "nigiri"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-015",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "bright silver fish note, compact rice bite, clean umami",
+      "value_json": {
+        "sensory_words": [
+          "bright silver fish note",
+          "compact rice bite",
+          "clean umami"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-015",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-016",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "방어, 샤리",
+      "value_json": {
+        "ingredients": [
+          "방어",
+          "샤리"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-016",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "nigiri",
+      "value_json": {
+        "techniques": [
+          "nigiri"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-016",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "rich fish oil, winter depth, longer finish",
+      "value_json": {
+        "sensory_words": [
+          "rich fish oil",
+          "winter depth",
+          "longer finish"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-016",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-017",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "참치, 샤리",
+      "value_json": {
+        "ingredients": [
+          "참치",
+          "샤리"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-017",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "nigiri",
+      "value_json": {
+        "techniques": [
+          "nigiri"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-017",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "dense tuna umami, soft fat, longer finish",
+      "value_json": {
+        "sensory_words": [
+          "dense tuna umami",
+          "soft fat",
+          "longer finish"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-017",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-018",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "ingredients",
+      "value_text": "말차",
+      "value_json": {
+        "ingredients": [
+          "말차"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-018",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "techniques",
+      "value_text": "tea service",
+      "value_json": {
+        "techniques": [
+          "tea service"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-018",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "sensory_words",
+      "value_text": "earthy bitterness, quiet reset, ceremonial close",
+      "value_json": {
+        "sensory_words": [
+          "earthy bitterness",
+          "quiet reset",
+          "ceremonial close"
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-018",
+      "source_external_key": "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.94
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "sosuheon-seoul-dish-001",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.08,
+        "umami": 0.2,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.08,
+        "cleanFinish": 0.74,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.68,
+      "rationale": "The article frames Sosuheon as a highly disciplined sushi counter, so the opening seasonal bites are modeled as delicate and palate-awakening rather than heavy.",
+      "uncertainty_notes": [
+        "The profile article does not break out lunch-only amuse items separately from dinner"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-002",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.54,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.42,
+        "heaviness": 0.08,
+        "cleanFinish": 0.76,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.28,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.74,
+      "rationale": "Snow crab reads as a sweet and precise shellfish course that suits the article's refined omakase framing.",
+      "uncertainty_notes": [
+        "The article does not specify whether the crab is served chilled, steamed, or lightly seasoned"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-003",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.46,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.28,
+        "heaviness": 0.1,
+        "cleanFinish": 0.74,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.72,
+      "rationale": "Steamed cherry-blossom sea bream suggests a restrained and elegant fish expression with minimal heaviness.",
+      "uncertainty_notes": [
+        "The article confirms the dish name but not broth, garnish, or exact cooking sequence"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-004",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.5,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.18,
+        "cleanFinish": 0.62,
+        "linger": 0.24,
+        "smoke": 0.1,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.28
+      },
+      "confidence": 0.72,
+      "rationale": "Grilled hairtail likely adds a warmer, lightly charred pivot before nigiri, with more oil than the steamed fish but still a clean finish.",
+      "uncertainty_notes": [
+        "Salt level and charcoal intensity are not described in the article"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-005",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.52,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.42,
+        "heaviness": 0.12,
+        "cleanFinish": 0.72,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.76,
+      "rationale": "Horse mackerel nigiri should feel brighter and cleaner than the fatty tuna close, emphasizing precision in both fish cut and rice balance.",
+      "uncertainty_notes": [
+        "The lunch article does not confirm whether this specific nigiri always appears at lunch or how it is seasoned"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-006",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.78,
+        "fat": 0.24
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.28,
+        "cleanFinish": 0.56,
+        "linger": 0.36,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.78,
+      "rationale": "Tuna nigiri likely acts as the lunch lineup's deepest umami point, with longer linger than the lighter silver fish.",
+      "uncertainty_notes": [
+        "The article does not specify which tuna cut is used at lunch"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-007",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.02,
+        "bitter": 0.34,
+        "salty": 0,
+        "umami": 0.02,
+        "fat": 0
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.02,
+        "cleanFinish": 0.84,
+        "linger": 0.08,
+        "smoke": 0,
+        "aromaIntensity": 0.36,
+        "textureRichness": 0.04,
+        "thermalImpact": 0.16
+      },
+      "confidence": 0.7,
+      "rationale": "The article explicitly notes a matcha finish, which suits a contemplative omakase close with dryness and herbal bitterness rather than sweetness.",
+      "uncertainty_notes": [
+        "The exact wagashi or sweets accompaniment is not publicly described"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-008",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.08,
+        "umami": 0.2,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.08,
+        "cleanFinish": 0.74,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.68,
+      "rationale": "The dinner article frames Sosuheon as a calm hanok omakase, so the opening seasonal bites are modeled as refined and disciplined rather than dramatic.",
+      "uncertainty_notes": [
+        "The profile story does not specify which small dishes rotate on the current date"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-009",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.54,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.42,
+        "heaviness": 0.08,
+        "cleanFinish": 0.76,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.28,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.74,
+      "rationale": "Snow crab likely provides one of the sweeter shellfish notes early in the dinner sequence while preserving the restaurant's clean sushi-counter precision.",
+      "uncertainty_notes": [
+        "The article does not disclose whether it is served as leg meat, chawanmushi garnish, or another composed style"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-010",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.46,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.28,
+        "heaviness": 0.1,
+        "cleanFinish": 0.74,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.72,
+      "rationale": "Steamed sea bream fits the article's restrained omakase flow, offering delicacy and warmth before grilled and nigiri-heavy turns.",
+      "uncertainty_notes": [
+        "Sauce, broth, and garnish are not specified publicly"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-011",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.5,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.18,
+        "cleanFinish": 0.62,
+        "linger": 0.24,
+        "smoke": 0.1,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.28
+      },
+      "confidence": 0.72,
+      "rationale": "Grilled hairtail likely introduces a warm, lightly charred bridge between composed fish dishes and nigiri progression.",
+      "uncertainty_notes": [
+        "The public article does not describe seasoning or charcoal intensity"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-012",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.1,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.5,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.52,
+        "heaviness": 0.1,
+        "cleanFinish": 0.72,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.76,
+      "rationale": "Gizzard shad nigiri is modeled as bright and lightly oily, with a sharper, cleaner edge than the richer shellfish and tuna pieces that follow.",
+      "uncertainty_notes": [
+        "The article confirms the species but not the precise curing or vinegar treatment"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-013",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.08,
+        "umami": 0.34,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.4,
+        "heaviness": 0.06,
+        "cleanFinish": 0.8,
+        "linger": 0.14,
+        "smoke": 0,
+        "aromaIntensity": 0.18,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.04
+      },
+      "confidence": 0.78,
+      "rationale": "Cuttlefish nigiri should read cleaner and sweeter than oily fish, emphasizing texture precision and controlled sweetness.",
+      "uncertainty_notes": [
+        "The current knife work and topping are not described in the public profile"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-014",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.1,
+        "umami": 0.56,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.26,
+        "heaviness": 0.1,
+        "cleanFinish": 0.74,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.78,
+      "rationale": "Abalone nigiri likely adds more mineral umami and chew than cuttlefish, but still within a disciplined sushi-counter format.",
+      "uncertainty_notes": [
+        "Cooking degree and seasoning are not specified publicly"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-015",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.52,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.42,
+        "heaviness": 0.12,
+        "cleanFinish": 0.72,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.76,
+      "rationale": "Horse mackerel nigiri should feel cleaner and slightly brighter than the fattier winter fish in the later sequence.",
+      "uncertainty_notes": [
+        "The article does not confirm whether ginger, scallion, or citrus is used"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-016",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.64,
+        "fat": 0.26
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.24,
+        "cleanFinish": 0.56,
+        "linger": 0.34,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.28,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.78,
+      "rationale": "Yellowtail nigiri likely provides a richer winter-fat note and a longer finish than the silver fish pieces before it.",
+      "uncertainty_notes": [
+        "The profile article does not reveal aging time or brush sauce"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-017",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.82,
+        "fat": 0.28
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.3,
+        "cleanFinish": 0.54,
+        "linger": 0.38,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.8,
+      "rationale": "Tuna nigiri likely anchors the richest end of the nigiri arc with the deepest umami and the most persistent finish.",
+      "uncertainty_notes": [
+        "The article does not specify whether the course uses akami, chutoro, or otoro"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    },
+    {
+      "dish_external_key": "sosuheon-seoul-dish-018",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.02,
+        "bitter": 0.34,
+        "salty": 0,
+        "umami": 0.02,
+        "fat": 0
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.02,
+        "cleanFinish": 0.84,
+        "linger": 0.08,
+        "smoke": 0,
+        "aromaIntensity": 0.36,
+        "textureRichness": 0.04,
+        "thermalImpact": 0.16
+      },
+      "confidence": 0.7,
+      "rationale": "The article explicitly notes a matcha finish, which fits the calm and highly formal dinner close described in the profile.",
+      "uncertainty_notes": [
+        "No public detail is given about sweets or accompaniments served with the tea"
+      ],
+      "evidence_ids": [
+        "sosuheon-seoul-cook-chef-sosuheon-profile-published-2025-12-09"
+      ]
+    }
+  ],
+  "research_rules": []
+}

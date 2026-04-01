@@ -1,0 +1,1300 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Catchtable seed generated from reviewed menu data for 스와니예.",
+    "generatedFrom": "tmp/catchtable/soigneseoul/review-template.parsed.json",
+    "generatedAt": "2026-03-29T14:49:13.336Z",
+    "notes": [
+      "Observed fields come from Catchtable menu images and reviewed OCR output.",
+      "Inferred fields remain hypotheses until a human reviews or enriches them."
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "soigneseoul",
+      "name": "스와니예",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "스와니예 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "soigneseoul",
+      "display_name": "이준",
+      "bio": "캐치테이블 메뉴 워크플로우에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/soigneseoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "soigneseoul-lunch-1483368",
+      "restaurant_slug": "soigneseoul",
+      "source_type": "menu",
+      "title": "Catchtable SOIGNE Lunch KRW 240,000 menu image (Last update: Mar 14, 2026)",
+      "url": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1483368",
+      "excerpt": "Deodeok, Hoe-Deopbap, Nurung)i\nMinari Mul-kimchi\nKorean Cabbage Jeon\nBurdock & Winter fish\nAbalone & Gim\nHanwoo beef\nChef's Signature dishes\nSeorae Escargot 25.\nJujube & Coffee\nSignature Pairing 160,\nPetit Four\n240,",
+      "raw_text": "Deodeok, Hoe-Deopbap, Nurung)i\nMinari Mul-kimchi\nKorean Cabbage Jeon\nBurdock & Winter fish\nAbalone & Gim\nHanwoo beef\nChef's Signature dishes\nSeorae Escargot 25.\nJujube & Coffee\nSignature Pairing 160,\nPetit Four\n240,\n\nLocal image: tmp/catchtable/soigneseoul/images/01-soigneseoul.jpg",
+      "trust_score": 0.99
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369",
+      "restaurant_slug": "soigneseoul",
+      "source_type": "menu",
+      "title": "Catchtable SOIGNE Dinner KRW 380,000 menu image (Last update: Mar 14, 2026)",
+      "url": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1483369",
+      "excerpt": "Deodeok, Hoe-Deopbap, Nurungi\nChestnut\nMinari Mul-kimchi\nKorean Cabbage Jeon\nHwangtae-guk\nBurdock & Winter fish\nAbalone & Gim\nQuail & Cacao\nHarwoo beef\nChef's Signature dishes\nSeorac Escargot 25,\nKuchhs s hand\nJujube & Coffee\nStandard Pairing 220.\nSignature Paring 280,\nho rotar\n3",
+      "raw_text": "Deodeok, Hoe-Deopbap, Nurungi\nChestnut\nMinari Mul-kimchi\nKorean Cabbage Jeon\nHwangtae-guk\nBurdock & Winter fish\nAbalone & Gim\nQuail & Cacao\nHarwoo beef\nChef's Signature dishes\nSeorac Escargot 25,\nKuchhs s hand\nJujube & Coffee\nStandard Pairing 220.\nSignature Paring 280,\nho rotar\n380,\n\nLocal image: tmp/catchtable/soigneseoul/images/02-soigneseoul.jpg",
+      "trust_score": 0.99
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "soigneseoul-lunch-1483368-dish-01",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 lunch",
+      "public_title": "더덕, 회덮밥, 누룽지",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-lunch-1483368-dish-02",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 lunch",
+      "public_title": "미나리 물김치",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-lunch-1483368-dish-03",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 lunch",
+      "public_title": "배추전",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-lunch-1483368-dish-04",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 lunch",
+      "public_title": "우엉과 겨울 생선",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-lunch-1483368-dish-05",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 lunch",
+      "public_title": "전복과 김",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-lunch-1483368-dish-06",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 lunch",
+      "public_title": "한우",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-lunch-1483368-dish-07",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 lunch",
+      "public_title": "대추와 커피",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-lunch-1483368-dish-08",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 lunch",
+      "public_title": "쁘띠푸르",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-01",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "더덕, 회덮밥, 누룽지",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-02",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "밤",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-03",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "미나리 물김치",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-04",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "배추전",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-05",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "황태국",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-06",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "우엉과 겨울 생선",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-07",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "전복과 김",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-08",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "메추라기와 카카오",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-09",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "한우",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "soigneseoul-dinner-1483369-dish-10",
+      "restaurant_slug": "soigneseoul",
+      "season_label": "Mar 14, 2026 dinner",
+      "public_title": "대추와 커피",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-01",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "ingredients",
+      "value_text": "더덕, 회덮밥, 누룽지",
+      "value_json": {
+        "ingredients": [
+          "더덕, 회덮밥, 누룽지"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-01",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "techniques",
+      "value_text": "named course from menu image",
+      "value_json": {
+        "techniques": [
+          "named course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-01",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-01",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-02",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "ingredients",
+      "value_text": "미나리 물김치",
+      "value_json": {
+        "ingredients": [
+          "미나리 물김치"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-02",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "techniques",
+      "value_text": "named course from menu image",
+      "value_json": {
+        "techniques": [
+          "named course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-02",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-02",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-03",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "ingredients",
+      "value_text": "배추전",
+      "value_json": {
+        "ingredients": [
+          "배추전"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-03",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "techniques",
+      "value_text": "named course from menu image",
+      "value_json": {
+        "techniques": [
+          "named course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-03",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-03",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-04",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "ingredients",
+      "value_text": "우엉과 겨울 생선",
+      "value_json": {
+        "ingredients": [
+          "우엉과 겨울 생선"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-04",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "techniques",
+      "value_text": "seafood or fish course from menu image",
+      "value_json": {
+        "techniques": [
+          "seafood or fish course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-04",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-04",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-05",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "ingredients",
+      "value_text": "전복과 김",
+      "value_json": {
+        "ingredients": [
+          "전복과 김"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-05",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "techniques",
+      "value_text": "seafood or fish course from menu image",
+      "value_json": {
+        "techniques": [
+          "seafood or fish course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-05",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-05",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-06",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "ingredients",
+      "value_text": "한우",
+      "value_json": {
+        "ingredients": [
+          "한우"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-06",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "techniques",
+      "value_text": "main course from menu image",
+      "value_json": {
+        "techniques": [
+          "main course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-06",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-06",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-07",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "ingredients",
+      "value_text": "대추와 커피",
+      "value_json": {
+        "ingredients": [
+          "대추와 커피"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-07",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "techniques",
+      "value_text": "menu image OCR",
+      "value_json": {
+        "techniques": [
+          "menu image OCR"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-07",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-07",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-08",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "ingredients",
+      "value_text": "쁘띠푸르",
+      "value_json": {
+        "ingredients": [
+          "쁘띠푸르"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-08",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "techniques",
+      "value_text": "menu image OCR",
+      "value_json": {
+        "techniques": [
+          "menu image OCR"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-08",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-08",
+      "source_external_key": "soigneseoul-lunch-1483368",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-01",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "더덕, 회덮밥, 누룽지",
+      "value_json": {
+        "ingredients": [
+          "더덕, 회덮밥, 누룽지"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-01",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "named course from menu image",
+      "value_json": {
+        "techniques": [
+          "named course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-01",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-01",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-02",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "밤",
+      "value_json": {
+        "ingredients": [
+          "밤"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-02",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "named course from menu image",
+      "value_json": {
+        "techniques": [
+          "named course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-02",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-02",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-03",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "미나리 물김치",
+      "value_json": {
+        "ingredients": [
+          "미나리 물김치"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-03",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "named course from menu image",
+      "value_json": {
+        "techniques": [
+          "named course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-03",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-03",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-04",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "배추전",
+      "value_json": {
+        "ingredients": [
+          "배추전"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-04",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "menu image OCR",
+      "value_json": {
+        "techniques": [
+          "menu image OCR"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-04",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-04",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-05",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "황태국",
+      "value_json": {
+        "ingredients": [
+          "황태국"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-05",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "menu image OCR",
+      "value_json": {
+        "techniques": [
+          "menu image OCR"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-05",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-05",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-06",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "우엉과 겨울 생선",
+      "value_json": {
+        "ingredients": [
+          "우엉과 겨울 생선"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-06",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "seafood or fish course from menu image",
+      "value_json": {
+        "techniques": [
+          "seafood or fish course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-06",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-06",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-07",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "전복과 김",
+      "value_json": {
+        "ingredients": [
+          "전복과 김"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-07",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "seafood or fish course from menu image",
+      "value_json": {
+        "techniques": [
+          "seafood or fish course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-07",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-07",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-08",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "메추라기와 카카오",
+      "value_json": {
+        "ingredients": [
+          "메추라기와 카카오"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-08",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "menu image OCR",
+      "value_json": {
+        "techniques": [
+          "menu image OCR"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-08",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-08",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-09",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "한우",
+      "value_json": {
+        "ingredients": [
+          "한우"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-09",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "main course from menu image",
+      "value_json": {
+        "techniques": [
+          "main course from menu image"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-09",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-09",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-10",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "ingredients",
+      "value_text": "대추와 커피",
+      "value_json": {
+        "ingredients": [
+          "대추와 커피"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-10",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "techniques",
+      "value_text": "menu image OCR",
+      "value_json": {
+        "techniques": [
+          "menu image OCR"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-10",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "sensory_words",
+      "value_text": "OCR-derived menu title",
+      "value_json": {
+        "sensory_words": [
+          "OCR-derived menu title"
+        ]
+      },
+      "confidence": 0.99
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-10",
+      "source_external_key": "soigneseoul-dinner-1483369",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.99
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-01",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-lunch-1483368"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-02",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-lunch-1483368"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-03",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-lunch-1483368"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-04",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-lunch-1483368"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-05",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-lunch-1483368"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-06",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-lunch-1483368"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-07",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-lunch-1483368"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-lunch-1483368-dish-08",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-lunch-1483368"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-01",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-02",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-03",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-04",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-05",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-06",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-07",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-08",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-09",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    },
+    {
+      "dish_external_key": "soigneseoul-dinner-1483369-dish-10",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+      "uncertainty_notes": [
+        "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+      ],
+      "evidence_ids": [
+        "soigneseoul-dinner-1483369"
+      ]
+    }
+  ],
+  "research_rules": []
+}

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T12:33:20.118Z",
+  "manifestRelativePath": "tmp/catchtable/allaprima/manifest.json",
+  "restaurant": {
+    "name": "알라프리마",
+    "slug": "allaprima",
+    "chefName": "김진혁",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "menu",
+    "sourceTrustScore": 0.99,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "Mar 08, 2026 catchtable"
+  },
+  "instructions": {
+    "rowEditing": [
+      "rows 배열에 코스별 항목을 추가한다.",
+      "observed 값은 메뉴 이미지에 직접 보이는 정보만 적는다.",
+      "비공개 레시피를 사실처럼 쓰지 않는다.",
+      "inferred 값이 아직 없으면 빈 문자열로 두고 나중에 채운다."
+    ],
+    "coursePositionGuide": [
+      "amuse",
+      "starter",
+      "fish",
+      "main",
+      "dessert",
+      "other"
+    ]
+  },
+  "menus": [
+    {
+      "menuType": "lunch",
+      "menuTitle": "LUNCH Price Variable. Please note , since all menus are subject to change according to seasonality and availability, the amount of exact expanse of the course might differ from the day you contact us. Thank you for your understanding.",
+      "rawTitle": "LUNCH Price Variable. Please note , since all menus are subject to change according to seasonality and availability, the amount of exact expanse of the course might differ from the day you contact us. Thank you for your understanding. ₩190,000",
+      "priceLabel": "KRW 190,000",
+      "priceValue": 190000,
+      "foodMenuSeq": "1457718",
+      "sourceTitle": "Catchtable alla prima LUNCH Price Variable. Please note , since all menus are subject to change according to seasonality and availability, the amount of exact expanse of the course might differ from the day you contact us. Thank you for your understanding. KRW 190,000 menu image (Last update: Mar 08, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/allaprima/menu?foodMenuSeq=1457718",
+      "localImageRelativePath": "tmp/catchtable/allaprima/images/01-allaprima.jpg",
+      "seasonLabel": "Mar 08, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "DINNER Price Variable. We may not be able to offer the course if you have some food allergies or dietary restriction. Therefore, when you are unable or have difficulty to consume such as raw seafood, lamb, pork, coriander, cucumber, flour, dairy-products and etc, please make sure reservation is available via phone-call only. If not, we will not be able to serve you any other alternatives. Thank you for your understanding.",
+      "rawTitle": "DINNER Price Variable. We may not be able to offer the course if you have some food allergies or dietary restriction. Therefore, when you are unable or have difficulty to consume such as raw seafood, lamb, pork, coriander, cucumber, flour, dairy-products and etc, please make sure reservation is available via phone-call only. If not, we will not be able to serve you any other alternatives. Thank you for your understanding. ₩350,000",
+      "priceLabel": "KRW 350,000",
+      "priceValue": 350000,
+      "foodMenuSeq": "1457719",
+      "sourceTitle": "Catchtable alla prima DINNER Price Variable. We may not be able to offer the course if you have some food allergies or dietary restriction. Therefore, when you are unable or have difficulty to consume such as raw seafood, lamb, pork, coriander, cucumber, flour, dairy-products and etc, please make sure reservation is available via phone-call only. If not, we will not be able to serve you any other alternatives. Thank you for your understanding. KRW 350,000 menu image (Last update: Mar 08, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/allaprima/menu?foodMenuSeq=1457719",
+      "localImageRelativePath": "tmp/catchtable/allaprima/images/02-allaprima.jpg",
+      "seasonLabel": "Mar 08, 2026 dinner",
+      "rows": []
+    }
+  ]
+}

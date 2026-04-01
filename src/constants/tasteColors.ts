@@ -72,6 +72,14 @@ export function getTasteLight(taste: string): string {
   return (TASTE_COLORS as any)[taste]?.light || '#E0E0E0';
 }
 
+export function getTasteTintText(taste: string): string {
+  return (TASTE_COLORS as any)[taste]?.tintText || getTasteDark(taste);
+}
+
+export function getTasteTintSubText(taste: string): string {
+  return (TASTE_COLORS as any)[taste]?.tintSubText || getTasteTintText(taste);
+}
+
 function parseTasteAdjustmentWeight(change: number | string): number {
   if (typeof change === 'number') {
     return Math.abs(change);

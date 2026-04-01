@@ -1,0 +1,74 @@
+{
+  "fetchedAt": "2026-03-29T10:04:40.967Z",
+  "restaurant": {
+    "slug": "jungsik",
+    "displayName": "JUNGSIK"
+  },
+  "source": {
+    "menusPageUrl": "https://www.catchtable.net/shop/jungsik/menus",
+    "mirrorUrl": "https://r.jina.ai/http://www.catchtable.net/shop/jungsik/menus",
+    "rawMarkdownRelativePath": "tmp/catchtable/jungsik/menus-page.md",
+    "lastUpdatedLabel": "Feb 28, 2026"
+  },
+  "notes": {
+    "imageGuessMethod": "Menu links are paired with image URLs by ordinal order from the mirrored Catchtable menus page. Review before generating final CSVs.",
+    "nextStep": "Review menu images, transcribe course text, then generate lunch/dinner intake CSVs."
+  },
+  "images": [
+    {
+      "index": 1,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/3f2549ff1b9b41e4a32609a2cf6f7798?details500",
+      "contentType": "image/jpeg",
+      "absolutePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/catchtable/jungsik/images/01-jungsik.jpg",
+      "relativePath": "tmp/catchtable/jungsik/images/01-jungsik.jpg"
+    },
+    {
+      "index": 2,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/d2dec6f8529145309359d1ed9341c882?details500",
+      "contentType": "image/jpeg",
+      "absolutePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/catchtable/jungsik/images/02-jungsik.jpg",
+      "relativePath": "tmp/catchtable/jungsik/images/02-jungsik.jpg"
+    }
+  ],
+  "menus": [
+    {
+      "index": 1,
+      "rawTitle": "Lunch Signature ₩230,000",
+      "title": "Lunch Signature",
+      "priceLabel": "KRW 230,000",
+      "priceValue": 230000,
+      "url": "http://www.catchtable.net/shop/jungsik/menu?foodMenuSeq=1444674",
+      "foodMenuSeq": "1444674",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": "https://ugc-images.catchtable.co.kr/shop/manager/images/3f2549ff1b9b41e4a32609a2cf6f7798?details500",
+      "imageGuessMethod": "ordinal-order",
+      "localImageRelativePathGuess": "tmp/catchtable/jungsik/images/01-jungsik.jpg"
+    },
+    {
+      "index": 2,
+      "rawTitle": "Dinner Signature ₩330,000",
+      "title": "Dinner Signature",
+      "priceLabel": "KRW 330,000",
+      "priceValue": 330000,
+      "url": "http://www.catchtable.net/shop/jungsik/menu?foodMenuSeq=1444675",
+      "foodMenuSeq": "1444675",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": "https://ugc-images.catchtable.co.kr/shop/manager/images/d2dec6f8529145309359d1ed9341c882?details500",
+      "imageGuessMethod": "ordinal-order",
+      "localImageRelativePathGuess": "tmp/catchtable/jungsik/images/02-jungsik.jpg"
+    },
+    {
+      "index": 3,
+      "rawTitle": "JUNGSIK Space Menu The JUNGSIK Space is a dedicated venue operated by a formal dining establishment, designed to accommodate a variety of occasions including small weddings, first birthday celebrations, private parties, corporate events, and brand showcases. For reservations and inquiries, please contact us via the email address below. event@jungsik.kr",
+      "title": "JUNGSIK Space Menu The JUNGSIK Space is a dedicated venue operated by a formal dining establishment, designed to accommodate a variety of occasions including small weddings, first birthday celebrations, private parties, corporate events, and brand showcases. For reservations and inquiries, please contact us via the email address below. event@jungsik.kr",
+      "priceLabel": null,
+      "priceValue": null,
+      "url": "http://www.catchtable.net/shop/jungsik/menu?foodMenuSeq=974858",
+      "foodMenuSeq": "974858",
+      "menuType": "other",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    }
+  ]
+}

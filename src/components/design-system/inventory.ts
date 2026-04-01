@@ -336,6 +336,34 @@ export const COLOR_GROUPS: Array<{
       }),
     ),
   },
+  {
+    id: "taste-tint-text",
+    name: "미각 틴트 배경 텍스트",
+    colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      ([tasteId, definition]) => ({
+        name: tasteId,
+        value: definition.palette.tintText,
+        cssVar: `--tb-taste-${tasteId}-tint-text`,
+        source: "src/styles/design-system.css / src/constants/designTokens.ts",
+        status: "currently-used",
+        description: `${definition.label} 틴트 배경 위 텍스트`,
+      }),
+    ),
+  },
+  {
+    id: "taste-tint-sub-text",
+    name: "미각 틴트 배경 보조 텍스트",
+    colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      ([tasteId, definition]) => ({
+        name: tasteId,
+        value: definition.palette.tintSubText,
+        cssVar: `--tb-taste-${tasteId}-tint-sub-text`,
+        source: "src/styles/design-system.css / src/constants/designTokens.ts",
+        status: "currently-used",
+        description: `${definition.label} 틴트 배경 위 보조 텍스트`,
+      }),
+    ),
+  },
 ];
 
 export const TYPOGRAPHY_SPECS: TypographySpec[] = [
@@ -424,14 +452,14 @@ export const BORDER_ITEMS = [
 
 export const ICON_RULES = [
   {
-    name: "Fluent 라인 아이콘",
-    source: "src/components/TopAppBar.tsx / src/components/BottomTabBar.tsx / src/pages/AnalysisPage.tsx",
-    description: "주요 내비게이션과 유틸리티 아이콘은 @fluentui/react-icons를 사용합니다.",
+    name: "Fluent 시스템 아이콘",
+    source: "src/components/TopAppBar.tsx / src/components/BottomTabBar.tsx / src/components/AppMenuDrawer.tsx / src/components/NotificationPanel.tsx / src/pages/AnalysisPage.tsx / src/pages/ProfilePage.tsx / src/pages/TeastickConnectScreen.tsx / src/pages/TasteMeasurementScreen.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
+    description: "메인 내비게이션, 오버레이, 측정/피드백 플로우까지 현재 실제 앱 아이콘 언어는 대부분 @fluentui/react-icons로 정리되었습니다.",
   },
   {
-    name: "Lucide 유틸리티 아이콘",
-    source: "src/pages/TeastickConnectScreen.tsx / src/components/reservation/DiningFeedbackFlow.tsx / src/components/measurement/TasteMeasurementMiniCta.tsx",
-    description: "액션, 피드백, 플로우 아이콘은 lucide-react를 사용합니다.",
+    name: "Lucide 보조 아이콘",
+    source: "src/pages/DesignSystemPage.tsx / src/components/design-system/CardGallery.tsx / src/components/ui",
+    description: "Lucide는 현재 디자인 시스템 문서, 카드 갤러리 샘플, 일부 generic UI primitive 내부에서 주로 보조적으로 남아 있습니다.",
   },
   {
     name: "아이콘 사이즈 토큰",
@@ -463,6 +491,18 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     name: "BottomTabBar",
     source: "src/components/BottomTabBar.tsx",
     note: "메인 플로우의 기본 앱 내비게이션입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "NotificationPanel",
+    source: "src/components/NotificationPanel.tsx",
+    note: "TopAppBar의 알림 액션과 연결된 상단 드롭다운 오버레이입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "AppMenuDrawer",
+    source: "src/components/AppMenuDrawer.tsx",
+    note: "TopAppBar의 메뉴 액션과 연결된 우측 드로어입니다.",
     status: "currently-used",
   },
   {
@@ -499,6 +539,18 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     name: "TasteMeasurementMiniCta",
     source: "src/components/measurement/TasteMeasurementMiniCta.tsx",
     note: "여러 탭에서 재사용되는 앱 전용 inline 액션 카드입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "EmptyState",
+    source: "src/components/system/EmptyState.tsx",
+    note: "예약이 없을 때처럼 비어 있는 상태를 안내하는 공용 empty state 블록입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "ImproveAccuracyScreen",
+    source: "src/pages/ImproveAccuracyScreen.tsx",
+    note: "프로필 정밀도 향상 플로우를 설명하는 신규 full-screen composite입니다.",
     status: "currently-used",
   },
   {
@@ -653,7 +705,7 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     },
     {
       file: "src/components/measurement/TasteMeasurementMiniCta.tsx",
-      note: "앱 전용 카드에서의 Lucide 액션 아이콘 사용 예시입니다.",
+      note: "앱 전용 카드의 보조 아이콘과 CTA 조합 예시입니다.",
     },
   ],
   buttons: [
@@ -735,15 +787,35 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       file: "src/pages/QuickTasteCalibrationScreen.tsx",
       note: "빠른 보정 힌트 카드와 스타터 프로필 결과 카드 패턴입니다.",
     },
+    {
+      file: "src/pages/ImproveAccuracyScreen.tsx",
+      note: "정확도 단계 카드, 장점 카드, 안심 메시지 카드가 추가되었습니다.",
+    },
+    {
+      file: "src/pages/ReservationConfirmationScreen.tsx",
+      note: "예약 확정 후 단계별 상태 카드와 완료 요약 카드가 정의되어 있습니다.",
+    },
+    {
+      file: "src/components/system/EmptyState.tsx",
+      note: "예약/추천 비어 있음 상태에 쓰이는 공용 empty state 컴포넌트입니다.",
+    },
   ],
   navigation: [
     {
       file: "src/components/TopAppBar.tsx",
-      note: "현재 상단 내비게이션 shell입니다.",
+      note: "알림 배지와 메뉴 액션까지 포함한 현재 상단 내비게이션 shell입니다.",
     },
     {
       file: "src/components/BottomTabBar.tsx",
-      note: "현재 하단 내비게이션 shell입니다.",
+      note: "블러 배경과 press scale이 추가된 현재 하단 내비게이션 shell입니다.",
+    },
+    {
+      file: "src/components/NotificationPanel.tsx",
+      note: "TopAppBar 알림 액션에서 열리는 상단 오버레이입니다.",
+    },
+    {
+      file: "src/components/AppMenuDrawer.tsx",
+      note: "TopAppBar 메뉴 액션에서 열리는 우측 드로어입니다.",
     },
     {
       file: "src/components/ui/tabs.tsx",
@@ -762,6 +834,10 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     {
       file: "src/components/ui/skeleton.tsx",
       note: "정의된 skeleton 프리미티브입니다.",
+    },
+    {
+      file: "src/components/system/EmptyState.tsx",
+      note: "ReservationPage에서 실제로 사용하는 empty state 피드백 컴포넌트입니다.",
     },
     {
       file: "src/components/ui/sonner.tsx",
@@ -785,6 +861,14 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       file: "src/components/ui/tooltip.tsx",
       note: "tooltip 프리미티브입니다.",
     },
+    {
+      file: "src/components/NotificationPanel.tsx",
+      note: "현재 제품에서 실제로 쓰이는 상단 notification overlay입니다.",
+    },
+    {
+      file: "src/components/AppMenuDrawer.tsx",
+      note: "현재 제품에서 실제로 쓰이는 우측 menu drawer입니다.",
+    },
   ],
   appSpecific: [
     {
@@ -798,6 +882,14 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     {
       file: "src/components/reservation/DiningFeedbackFlow.tsx",
       note: "플로우 전용 custom choice와 feedback block이 있습니다.",
+    },
+    {
+      file: "src/pages/ImproveAccuracyScreen.tsx",
+      note: "프로필 정교화 단계와 benefits를 묶은 신규 app-specific screen입니다.",
+    },
+    {
+      file: "src/pages/ReservationConfirmationScreen.tsx",
+      note: "예약 확정 후 상태 진행을 보여주는 신규 composite screen입니다.",
     },
   ],
   componentSpecs: [

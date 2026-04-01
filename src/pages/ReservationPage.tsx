@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ChevronRightRegular, LocationRegular, ClockRegular, FoodRegular,
   HeartPulseRegular, CheckmarkCircleRegular, CircleRegular
@@ -29,10 +29,11 @@ import PrimaryButton from '../components/system/PrimaryButton';
 import SectionTitle from '../components/system/SectionTitle';
 import StatusChip from '../components/system/StatusChip';
 import TasteChip from '../components/system/TasteChip';
+import EmptyState from '../components/system/EmptyState';
 import {
   createDiningFeedbackDraft,
-  getDiningFeedbackScenario,
   type DiningFeedbackDraft,
+  type DiningFeedbackScenario,
 } from '../constants/diningFeedbackData';
 import { getTasteColor } from '../constants/tasteColors';
 import {
@@ -43,119 +44,19 @@ import {
   type TasteMeasurementEntry,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
+import {
+  RESERVATION_CATALOG,
+  type ReservationRecord as Reservation,
+  type ReservationStatus,
+} from '../constants/reservationCatalog';
 import { COLOR_TOKENS } from '../constants/designTokens';
+import {
+  hydrateReservationPageData,
+  submitDiningFeedbackToSupabase,
+} from '../lib/tasteBuddySupabase';
+import { isSupabaseConfigured } from '../lib/supabase';
 
-import chefHwangJeongin from '../assets/HwangJeongin.png';
-import chefLeeEunji from '../assets/LeeEunji.png';
-import chefLimJeongsik from '../assets/LimJeongsik.png';
-
-type ReservationStatus = 'upcoming' | 'preparing' | 'ready' | 'completed';
 type ReservationView = 'detail' | 'feedback' | 'analysis';
-
-interface Reservation {
-  id: number;
-  restaurant: string;
-  chef: string;
-  chefImage: string;
-  date: string;
-  time: string;
-  guests: number;
-  status: ReservationStatus;
-  course: string;
-  matchRate: number;
-  tcsStatus: string;
-  adjustments: { taste: string; change: string }[];
-  diningPromise: string;
-  guestUnderstanding: string;
-  timeline: { step: string; done: boolean; current?: boolean }[];
-}
-
-const reservations: Reservation[] = [
-  {
-    id: 1,
-    restaurant: '레스토랑 베누',
-    chef: '황정인',
-    chefImage: chefHwangJeongin,
-    date: '2025.03.15',
-    time: '저녁 7:00',
-    guests: 2,
-    status: 'preparing',
-    course: '시그니처 디너 코스',
-    matchRate: 75,
-    tcsStatus: '셰프가 보정 전략을 준비 중입니다',
-    adjustments: [
-      { taste: '감칠맛', change: '+12%' },
-      { taste: '짠맛', change: '-8%' },
-    ],
-    diningPromise:
-      '코스의 중심 풍미는 살리되, 피니시는 조금 더 또렷하게 정리해 황정인 셰프의 의도가 더 자연스럽게 전달되도록 준비 중입니다.',
-    guestUnderstanding:
-      '지금의 프로필은 깊이감은 즐기지만 마무리가 무거워지면 만족이 떨어질 수 있다는 점을 보여줘요.',
-    timeline: [
-      { step: '예약 확정', done: true },
-      { step: '미각 데이터 전달', done: true },
-      { step: '셰프 TCS 준비', done: false, current: true },
-      { step: '사전 미각 측정', done: false },
-      { step: '다이닝 당일', done: false },
-    ],
-  },
-  {
-    id: 2,
-    restaurant: '숍 리제 (Lysée)',
-    chef: '이은지',
-    chefImage: chefLeeEunji,
-    date: '2025.03.22',
-    time: '저녁 6:30',
-    guests: 2,
-    status: 'upcoming',
-    course: '봄 시즌 테이스팅 코스',
-    matchRate: 72,
-    tcsStatus: '예약이 확정되었습니다',
-    adjustments: [
-      { taste: '단맛', change: '+15%' },
-      { taste: '신맛', change: '+5%' },
-    ],
-    diningPromise:
-      '디저트와 피니시 코스에서 단맛과 산미의 균형이 더 잘 맞도록, 이은지 셰프가 전달 강도를 조율할 수 있는 상태예요.',
-    guestUnderstanding:
-      '지금의 프로필은 부드러운 단맛은 좋아하지만 마무리에 선명한 정리감이 함께 있을 때 더 만족할 가능성을 보여줘요.',
-    timeline: [
-      { step: '예약 확정', done: true },
-      { step: '미각 데이터 전달', done: false, current: true },
-      { step: '셰프 TCS 준비', done: false },
-      { step: '사전 미각 측정', done: false },
-      { step: '다이닝 당일', done: false },
-    ],
-  },
-  {
-    id: 3,
-    restaurant: '정식당',
-    chef: '임정식',
-    chefImage: chefLimJeongsik,
-    date: '2025.02.28',
-    time: '저녁 7:30',
-    guests: 4,
-    status: 'completed',
-    course: '한식 모던 코스',
-    matchRate: 70,
-    tcsStatus: '다이닝이 완료되었습니다',
-    adjustments: [
-      { taste: '감칠맛', change: '+10%' },
-      { taste: '지방맛', change: '+7%' },
-    ],
-    diningPromise:
-      '메인 코스의 밀도와 발효 감칠맛이 더 자연스럽게 이어지도록 프로필이 반영된 다이닝이었습니다.',
-    guestUnderstanding:
-      '당시 프로필은 중심 풍미가 살아 있는 코스에서 만족이 높고, 후반 무게감은 더 섬세한 정리가 필요하다는 방향을 보여줬어요.',
-    timeline: [
-      { step: '예약 확정', done: true },
-      { step: '미각 데이터 전달', done: true },
-      { step: '셰프 TCS 준비', done: true },
-      { step: '사전 미각 측정', done: true },
-      { step: '다이닝 완료', done: true },
-    ],
-  },
-];
 
 const statusConfig: Record<ReservationStatus, { label: string; color: string; bg: string }> = {
   upcoming: { label: '예약 확정', color: '#3F3F3F', bg: '#F3F3F3' },
@@ -182,10 +83,6 @@ interface ReservationPersonalizationSummary {
   softest: TasteMeasurementEntry;
 }
 
-function getAdjustmentDirection(change: string) {
-  return change.trim().startsWith('-') ? '낮추고' : '살리고';
-}
-
 function buildReservationPersonalizationSummary(
   measurementSnapshot: TasteMeasurementSnapshot,
   reservation: Reservation,
@@ -198,7 +95,7 @@ function buildReservationPersonalizationSummary(
   const topTasteLabels = primary.map((entry) => entry.label).join('과 ');
   const chefGuidance = reservation.adjustments.map((adjustment, index) => {
     const matchingAxis = primary[index] ?? primary[0];
-    return `${adjustment.taste} 포인트는 ${adjustment.change} 방향으로 ${getAdjustmentDirection(adjustment.change)} ${matchingAxis.label} 인상이 더 자연스럽게 전달되도록 참고합니다.`;
+    return `${adjustment.taste} 포인트는 ${adjustment.direction} 방향으로 ${matchingAxis.label} 인상이 더 자연스럽게 전달되도록 참고합니다.`;
   });
 
   return {
@@ -226,61 +123,70 @@ function ReservationCard({ reservation, onSelect }: { reservation: Reservation; 
           <StatusChip color={status.color} backgroundColor={status.bg}>
             {status.label}
           </StatusChip>
-          <span className="font-bold text-[14px] text-[#0f0f0f]">{reservation.restaurant}</span>
+          <span className="font-bold text-[14px] text-[var(--tb-color-text-primary)]">{reservation.restaurant}</span>
         </div>
-        <ChevronRight size={16} className="text-[#AFAFAF]" />
+        <ChevronRight size={16} className="text-[var(--tb-color-text-disabled)]" />
       </div>
 
       {/* 셰프 정보 */}
       <div className="flex items-center gap-3 w-full">
-        <img
-          src={reservation.chefImage}
-          alt={reservation.chef}
-          className="w-[40px] h-[40px] rounded-[8px] object-cover"
-        />
+        {reservation.chefImage ? (
+          <img
+            src={reservation.chefImage}
+            alt={reservation.chef}
+            className="w-[40px] h-[40px] rounded-[8px] object-cover"
+          />
+        ) : (
+          <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[8px] bg-[var(--tb-color-surface-muted)] text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
+            {reservation.chef.slice(0, 1)}
+          </div>
+        )}
         <div className="flex flex-col">
-          <span className="font-semibold text-[13px] text-[#0f0f0f]">{reservation.chef} 셰프</span>
-          <span className="text-[11px] text-[rgba(15,15,15,0.5)]">매칭률 {reservation.matchRate}%</span>
+          <span className="font-semibold text-[14px] text-[var(--tb-color-text-primary)]">{reservation.chef} 셰프</span>
+          <span className="text-[12px] text-[var(--tb-color-text-subtle)]">프로필 반영 중</span>
         </div>
       </div>
 
       {/* 예약 정보 */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 w-full">
         <div className="flex items-center gap-1">
-          <Clock size={12} className="text-[rgba(15,15,15,0.4)]" />
-          <span className="text-[11px] text-[rgba(15,15,15,0.6)]">{reservation.date} {reservation.time}</span>
+          <Clock size={12} className="text-[var(--tb-color-icon-muted)]" />
+          <span className="text-[12px] text-[var(--tb-color-text-muted)]">{reservation.date} {reservation.time}</span>
         </div>
         <div className="flex items-center gap-1">
-          <Utensils size={12} className="text-[rgba(15,15,15,0.4)]" />
-          <span className="text-[11px] text-[rgba(15,15,15,0.6)]">{reservation.course}</span>
+          <Utensils size={12} className="text-[var(--tb-color-icon-muted)]" />
+          <span className="text-[12px] text-[var(--tb-color-text-muted)]">{reservation.course}</span>
         </div>
       </div>
 
       {/* TCS 상태 */}
       <div className="flex items-center gap-2 w-full rounded-[12px] bg-[var(--tb-color-surface-muted)] px-3 py-2">
         <Activity size={14} style={{ color: status.color }} />
-        <span className="text-[12px] text-[#0f0f0f]">{reservation.tcsStatus}</span>
+        <span className="text-[12px] text-[var(--tb-color-text-primary)]">{reservation.tcsStatus}</span>
       </div>
 
-      <p className="w-full text-[12px] leading-relaxed text-[rgba(15,15,15,0.6)]">
+      <p className="w-full text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
         {reservation.diningPromise}
       </p>
 
       {/* 예상 보정 태그 */}
-      <div className="flex gap-2 flex-wrap">
-        {reservation.adjustments.map((adj, idx) => (
-          <TasteChip
-            key={idx}
-            taste={adj.taste}
-            value={adj.change}
-          />
-        ))}
-      </div>
+      {reservation.adjustments.length > 0 ? (
+        <div className="flex gap-2 flex-wrap">
+          {reservation.adjustments.map((adj, idx) => (
+            <TasteChip
+              key={idx}
+              taste={adj.taste}
+              value={adj.direction}
+            />
+          ))}
+        </div>
+      ) : null}
     </SectionCard>
   );
 }
 
 function ReservationDetail({
+  feedbackScenario,
   feedbackSubmitted,
   measurementSnapshot,
   onBack,
@@ -289,6 +195,7 @@ function ReservationDetail({
   onStartMeasurement,
   reservation,
 }: {
+  feedbackScenario: DiningFeedbackScenario | null;
   feedbackSubmitted: boolean;
   measurementSnapshot: TasteMeasurementSnapshot;
   onBack: () => void;
@@ -298,7 +205,6 @@ function ReservationDetail({
   reservation: Reservation;
 }) {
   const status = statusConfig[reservation.status];
-  const feedbackScenario = getDiningFeedbackScenario(reservation.id);
   const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
   const personalizationSummary = buildReservationPersonalizationSummary(
@@ -325,12 +231,12 @@ function ReservationDetail({
                   </StatusChip>
                   <SectionTitle size="md">{personalizationSummary.headline}</SectionTitle>
                 </div>
-                <span className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">
-                  매칭률 {reservation.matchRate}%
+                <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
+                  프로필 반영 중
                 </span>
               </div>
 
-              <p className="text-[13px] leading-relaxed text-[rgba(15,15,15,0.6)]">
+              <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
                 {personalizationSummary.guestMessage}
               </p>
 
@@ -345,8 +251,8 @@ function ReservationDetail({
               </div>
 
               <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)]">이번 예약에서 달라지는 점</p>
-                <p className="mt-2 text-[13px] leading-relaxed text-[#0f0f0f]">
+                <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">이번 예약에서 달라지는 점</p>
+                <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
                   {reservation.diningPromise}
                 </p>
               </div>
@@ -355,11 +261,17 @@ function ReservationDetail({
 
           {/* 셰프 + 상태 */}
           <div className="flex items-center gap-4">
-            <img
-              src={reservation.chefImage}
-              alt={reservation.chef}
-              className="w-[56px] h-[56px] rounded-[14px] object-cover"
-            />
+            {reservation.chefImage ? (
+              <img
+                src={reservation.chefImage}
+                alt={reservation.chef}
+                className="w-[56px] h-[56px] rounded-[14px] object-cover"
+              />
+            ) : (
+              <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[14px] bg-[var(--tb-color-surface-muted)] text-[18px] font-semibold text-[var(--tb-color-text-subtle)]">
+                {reservation.chef.slice(0, 1)}
+              </div>
+            )}
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-[18px]">{reservation.chef} 셰프</span>
@@ -367,7 +279,7 @@ function ReservationDetail({
                   {status.label}
                 </StatusChip>
               </div>
-              <span className="text-[13px] text-[rgba(15,15,15,0.5)]">
+              <span className="text-[14px] text-[var(--tb-color-text-subtle)]">
                 {reservation.course} · {reservation.guests}명
               </span>
             </div>
@@ -377,15 +289,15 @@ function ReservationDetail({
           <SectionCard>
             <div className="flex flex-col gap-3 w-full">
               <div className="flex items-center gap-2">
-                <Clock size={16} className="text-[#3F3F3F]" />
+                <Clock size={16} className="text-[var(--tb-color-text-secondary)]" />
                 <span className="text-[14px] font-medium">{reservation.date} {reservation.time}</span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin size={16} className="text-[#3F3F3F]" />
+                <MapPin size={16} className="text-[var(--tb-color-text-secondary)]" />
                 <span className="text-[14px] font-medium">{reservation.restaurant}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Utensils size={16} className="text-[#3F3F3F]" />
+                <Utensils size={16} className="text-[var(--tb-color-text-secondary)]" />
                 <span className="text-[14px] font-medium">{reservation.course}</span>
               </div>
             </div>
@@ -395,20 +307,20 @@ function ReservationDetail({
             <SectionTitle className="mb-3">프로필 기반 예약 개인화</SectionTitle>
             <SectionCard hoverEffect={false}>
               <div className="flex flex-col gap-4 w-full">
-                <p className="text-[13px] leading-relaxed text-[rgba(15,15,15,0.6)]">
+                <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
                   Taste Buddy는 레시피를 바꾸라고 지시하지 않고, 현재 프로필이 더 편안하게 받아들일 수 있는 전달 강도와 마무리 방향을 셰프가 참고할 수 있게 정리합니다.
                 </p>
 
                 <div className="grid grid-cols-1 gap-3">
                   <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                    <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)]">게스트 관점</p>
-                    <p className="mt-2 text-[13px] leading-relaxed text-[#0f0f0f]">
+                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">게스트 관점</p>
+                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
                       코스가 내 현재 입맛과 더 자연스럽게 연결되도록 준비된다는 뜻이에요.
                     </p>
                   </div>
                   <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                    <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)]">셰프 관점</p>
-                    <p className="mt-2 text-[13px] leading-relaxed text-[#0f0f0f]">
+                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">셰프 관점</p>
+                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
                       셰프는 코스의 의도는 유지한 채, 어느 포인트를 더 선명하게 전달하고 어디를 더 부드럽게 정리할지 참고할 수 있어요.
                     </p>
                   </div>
@@ -425,21 +337,21 @@ function ReservationDetail({
                 <div key={idx} className="flex items-start gap-3">
                   <div className="flex flex-col items-center">
                     {step.done ? (
-                      <CheckCircle2 size={20} className="text-[#0f0f0f] shrink-0" />
+                      <CheckCircle2 size={20} className="text-[var(--tb-color-text-primary)] shrink-0" />
                     ) : step.current ? (
                       <div className="relative">
-                        <Circle size={20} className="text-[#3F3F3F] shrink-0" />
-                        <div className="absolute inset-[4px] rounded-full bg-[#3F3F3F] animate-pulse-soft" />
+                        <Circle size={20} className="text-[var(--tb-color-text-secondary)] shrink-0" />
+                        <div className="absolute inset-[4px] rounded-full bg-[var(--tb-color-icon-primary)] animate-pulse-soft" />
                       </div>
                     ) : (
                       <Circle size={20} className="text-[#e0e0e0] shrink-0" />
                     )}
                     {idx < reservation.timeline.length - 1 && (
-                      <div className={`w-[2px] h-[28px] ${step.done ? 'bg-[#0f0f0f]' : 'bg-[#e0e0e0]'}`} />
+                      <div className={`w-[2px] h-[28px] ${step.done ? 'bg-[var(--tb-color-text-primary)]' : 'bg-[var(--tb-color-border-disabled)]'}`} />
                     )}
                   </div>
                   <div className="pb-6">
-                    <span className={`text-[14px] ${step.current ? 'font-bold text-[#0f0f0f]' : step.done ? 'font-medium text-[#0f0f0f]' : 'font-medium text-[#AFAFAF]'}`}>
+                    <span className={`text-[14px] ${step.current ? 'font-bold text-[var(--tb-color-text-primary)]' : step.done ? 'font-medium text-[var(--tb-color-text-primary)]' : 'font-medium text-[var(--tb-color-text-disabled)]'}`}>
                       {step.step}
                     </span>
                   </div>
@@ -454,10 +366,10 @@ function ReservationDetail({
             <SectionCard hoverEffect={false}>
               <div className="flex flex-col gap-4 w-full">
                 <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                  <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)]">
+                  <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
                     Recommendation logic
                   </p>
-                  <p className="mt-2 text-[13px] leading-relaxed text-[#0f0f0f]">
+                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
                     {personalizationSummary.recommendationLogic}
                   </p>
                 </div>
@@ -468,39 +380,39 @@ function ReservationDetail({
                       key={guidance}
                       className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3"
                     >
-                      <p className="text-[13px] leading-relaxed text-[#0f0f0f]">{guidance}</p>
+                      <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">{guidance}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex flex-col gap-3 w-full mt-1">
-                  <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.5)]">
-                    이번 예약에서 참고 중인 조정 포인트
-                  </p>
-                {reservation.adjustments.map((adj, idx) => {
-                  const color = getTasteColor(adj.taste);
-                  const value = parseInt(adj.change);
-                  const absValue = Math.abs(value);
-                  return (
-                    <div key={idx} className="flex items-center gap-3 w-full">
-                      <div className="w-[6px] h-[32px] rounded-full" style={{ backgroundColor: color }} />
-                      <span className="font-medium text-[14px] text-[#0f0f0f] w-[50px]">{adj.taste}</span>
-                      <div className="flex-1 h-[8px] bg-[#e8e8e8] rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full animate-grow"
-                          style={{
-                            width: `${absValue * 5}%`,
-                            backgroundColor: color,
-                            animationDelay: `${idx * 200}ms`,
-                            animationFillMode: 'both',
-                          }}
-                        />
-                      </div>
-                      <span className="font-bold text-[13px] w-[40px] text-right" style={{ color }}>{adj.change}</span>
-                    </div>
-                  );
-                })}
-                </div>
+                {reservation.adjustments.length > 0 ? (
+                  <div className="flex flex-col gap-3 w-full mt-1">
+                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
+                      이번 예약에서 참고 중인 조정 포인트
+                    </p>
+                    {reservation.adjustments.map((adj, idx) => {
+                      const color = getTasteColor(adj.taste);
+                      return (
+                        <div key={idx} className="flex items-center gap-3 w-full">
+                          <div className="w-[6px] h-[32px] rounded-full" style={{ backgroundColor: color }} />
+                          <span className="font-medium text-[14px] text-[var(--tb-color-text-primary)] w-[50px]">{adj.taste}</span>
+                          <div className="flex-1 h-[8px] bg-[var(--tb-color-border-subtle)] rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full animate-grow"
+                              style={{
+                                width: '60%',
+                                backgroundColor: color,
+                                animationDelay: `${idx * 200}ms`,
+                                animationFillMode: 'both',
+                              }}
+                            />
+                          </div>
+                          <span className="font-bold text-[14px] w-[56px] text-right" style={{ color }}>{adj.direction}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </div>
             </SectionCard>
           </div>
@@ -510,14 +422,14 @@ function ReservationDetail({
               <div className="flex flex-col gap-3 w-full">
                 <div>
                   <SectionTitle size="md">다음 액션</SectionTitle>
-                  <p className="mt-2 text-[13px] leading-relaxed text-[rgba(15,15,15,0.6)]">
+                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
                     {personalizationSummary.nextStepCta}
                   </p>
                 </div>
                 <PrimaryButton onClick={onStartMeasurement}>
                   {needsMeasurementRefresh ? '현재 컨디션 다시 반영하기' : '현재 프로필 한 번 더 점검하기'}
                 </PrimaryButton>
-                <p className="text-[11px] leading-relaxed text-[rgba(15,15,15,0.45)]">
+                <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                   마지막 측정 {formatMeasurementDate(measurementSnapshot.measuredAt)} · {measurementAgeLabel}
                 </p>
               </div>
@@ -529,7 +441,7 @@ function ReservationDetail({
               <div className="flex items-start justify-between gap-4 w-full">
                 <div className="flex flex-col gap-2">
                   <SectionTitle size="md">다음 다이닝을 위한 식후 피드백</SectionTitle>
-                  <p className="text-[13px] leading-relaxed text-[rgba(15,15,15,0.6)]">
+                  <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
                     짧게 남겨주신 인상은 이번 다이닝에서 무엇이 잘 맞았는지 배우고, 다음 예약과 셰프용 캘리브레이션을 더 정교하게 만드는 데 바로 반영됩니다.
                   </p>
                 </div>
@@ -542,7 +454,7 @@ function ReservationDetail({
                   <button
                     type="button"
                     onClick={onOpenFeedback}
-                    className="self-center text-[12px] font-semibold text-[rgba(15,15,15,0.58)]"
+                    className="self-center text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
                   >
                     피드백 수정하기
                   </button>
@@ -561,21 +473,60 @@ function ReservationDetail({
 interface ReservationPageProps {
   measurementSnapshot: TasteMeasurementSnapshot;
   onStartMeasurement: () => void;
+  onOpenNotifications?: () => void;
+  onOpenMenu?: () => void;
+  hasUnreadNotifications?: boolean;
 }
 
 export default function ReservationPage({
   measurementSnapshot,
   onStartMeasurement,
+  onOpenNotifications,
+  onOpenMenu,
+  hasUnreadNotifications,
 }: ReservationPageProps) {
+  const [reservations, setReservations] = useState<Reservation[]>(
+    isSupabaseConfigured ? [] : RESERVATION_CATALOG,
+  );
+  const [isHydratingReservations, setIsHydratingReservations] = useState(isSupabaseConfigured);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedView, setSelectedView] = useState<ReservationView>('detail');
   const [feedbackByReservationId, setFeedbackByReservationId] = useState<Record<number, DiningFeedbackDraft>>({});
+  const [feedbackScenariosByReservationId, setFeedbackScenariosByReservationId] = useState<
+    Record<number, DiningFeedbackScenario>
+  >({});
   const selectedReservation = reservations.find(r => r.id === selectedId);
-  const selectedScenario = selectedReservation ? getDiningFeedbackScenario(selectedReservation.id) : null;
+  const selectedScenario = selectedReservation
+    ? feedbackScenariosByReservationId[selectedReservation.id] ?? null
+    : null;
   const activeFeedbackDraft =
     selectedReservation && selectedScenario
       ? feedbackByReservationId[selectedReservation.id] ?? createDiningFeedbackDraft(selectedScenario)
       : null;
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    void (async () => {
+      const hydratedData = await hydrateReservationPageData();
+
+      if (isCancelled) {
+        return;
+      }
+
+      setReservations(hydratedData.reservations);
+      setFeedbackByReservationId((current) => ({
+        ...hydratedData.feedbackByReservationId,
+        ...current,
+      }));
+      setFeedbackScenariosByReservationId(hydratedData.feedbackScenariosByReservationId);
+      setIsHydratingReservations(false);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   if (selectedReservation) {
     if (selectedView === 'feedback' && selectedScenario) {
@@ -590,11 +541,35 @@ export default function ReservationPage({
               [selectedReservation.id]: nextDraft,
             }))
           }
-          onSubmit={() => {
+          onSubmit={async () => {
+            const nextDraft = activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario);
+
             setFeedbackByReservationId((current) => ({
               ...current,
-              [selectedReservation.id]: activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario),
+              [selectedReservation.id]: nextDraft,
             }));
+
+            try {
+              await submitDiningFeedbackToSupabase({
+                draft: nextDraft,
+                reservation: {
+                  id: selectedReservation.id,
+                  restaurant: selectedReservation.restaurant,
+                  chef: selectedReservation.chef,
+                  date: selectedReservation.date,
+                  time: selectedReservation.time,
+                  guests: selectedReservation.guests,
+                  course: selectedReservation.course,
+                  externalRef: selectedReservation.externalRef,
+                  remoteId: selectedReservation.remoteId,
+                  status: selectedReservation.status,
+                },
+                scenario: selectedScenario,
+              });
+            } catch (error) {
+              console.warn('Failed to persist dining feedback to Supabase.', error);
+            }
+
             setSelectedView('analysis');
           }}
         />
@@ -615,6 +590,7 @@ export default function ReservationPage({
 
     return (
       <ReservationDetail
+        feedbackScenario={selectedScenario}
         reservation={selectedReservation}
         feedbackSubmitted={Boolean(feedbackByReservationId[selectedReservation.id])}
         measurementSnapshot={measurementSnapshot}
@@ -640,10 +616,10 @@ export default function ReservationPage({
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <TopAppBar onStartMeasurement={onStartMeasurement} />
+      <TopAppBar onStartMeasurement={onStartMeasurement} onOpenNotifications={onOpenNotifications} onOpenMenu={onOpenMenu} hasUnreadNotifications={hasUnreadNotifications} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="flex flex-col gap-8 p-5 animate-fadeIn">
-          <h1 className="font-bold text-[18px] text-[#0f0f0f] tracking-[-0.24px]">다이닝 예약</h1>
+          <h1 className="font-bold text-[18px] text-[var(--tb-color-text-primary)] tracking-[-0.24px]">다이닝 예약</h1>
 
           {featuredReservation && featuredSummary && (
             <SectionCard hoverEffect={false}>
@@ -653,16 +629,16 @@ export default function ReservationPage({
                     <StatusChip color="#0F0F0F" backgroundColor="white">
                       Reservation Personalization
                     </StatusChip>
-                    <h2 className="mt-3 text-[20px] font-bold leading-tight text-[#0f0f0f]">
+                    <h2 className="mt-3 text-[20px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
                       {featuredSummary.headline}
                     </h2>
                   </div>
-                  <span className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">
+                  <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
                     {featuredReservation.chef} 셰프
                   </span>
                 </div>
 
-                <p className="text-[13px] leading-relaxed text-[rgba(15,15,15,0.6)]">
+                <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
                   {featuredReservation.diningPromise}
                 </p>
 
@@ -688,7 +664,7 @@ export default function ReservationPage({
                   <button
                     type="button"
                     onClick={onStartMeasurement}
-                    className="self-center text-[12px] font-semibold text-[rgba(15,15,15,0.58)]"
+                    className="self-center text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
                   >
                     {needsMeasurementRefresh ? '현재 프로필 다시 반영하기' : '현재 컨디션 한 번 더 반영하기'}
                   </button>
@@ -715,7 +691,7 @@ export default function ReservationPage({
           {/* 다가오는 예약 */}
           {upcoming.length > 0 && (
             <div className="flex flex-col gap-3">
-              <SectionTitle as="h3" size="md" className="font-semibold text-[rgba(15,15,15,0.5)]">다가오는 다이닝</SectionTitle>
+              <SectionTitle as="h3" size="md" className="font-semibold text-[var(--tb-color-text-subtle)]">다가오는 다이닝</SectionTitle>
               {upcoming.map((r) => (
                 <ReservationCard
                   key={r.id}
@@ -732,7 +708,7 @@ export default function ReservationPage({
           {/* 지난 예약 */}
           {completed.length > 0 && (
             <div className="flex flex-col gap-3">
-              <SectionTitle as="h3" size="md" className="font-semibold text-[rgba(15,15,15,0.5)]">지난 다이닝</SectionTitle>
+              <SectionTitle as="h3" size="md" className="font-semibold text-[var(--tb-color-text-subtle)]">지난 다이닝</SectionTitle>
               {completed.map((r) => (
                 <ReservationCard
                   key={r.id}
@@ -744,6 +720,20 @@ export default function ReservationPage({
                 />
               ))}
             </div>
+          )}
+
+          {isHydratingReservations && reservations.length === 0 && (
+            <EmptyState
+              title="예약을 불러오는 중이에요"
+              description="현재 프로필과 연결된 다이닝 예약을 정리하고 있어요."
+            />
+          )}
+
+          {!isHydratingReservations && upcoming.length === 0 && completed.length === 0 && (
+            <EmptyState
+              title="아직 예약이 없어요"
+              description="프로필이 준비되면 맞춤 다이닝을 시작할 수 있어요."
+            />
           )}
 
           <div className="h-6" />

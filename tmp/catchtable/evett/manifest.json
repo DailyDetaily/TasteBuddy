@@ -1,0 +1,150 @@
+{
+  "fetchedAt": "2026-03-29T12:32:56.303Z",
+  "restaurant": {
+    "slug": "evett",
+    "displayName": "evett"
+  },
+  "source": {
+    "menusPageUrl": "https://www.catchtable.net/shop/evett/menus",
+    "mirrorUrl": "https://r.jina.ai/http://www.catchtable.net/shop/evett/menus",
+    "rawMarkdownRelativePath": "tmp/catchtable/evett/menus-page.md",
+    "lastUpdatedLabel": "Feb 03, 2026"
+  },
+  "notes": {
+    "imageGuessMethod": "Menu links are paired with image URLs by ordinal order from the mirrored Catchtable menus page. Review before generating final CSVs.",
+    "nextStep": "Review menu images, transcribe course text, then generate lunch/dinner intake CSVs."
+  },
+  "images": [],
+  "menus": [
+    {
+      "index": 1,
+      "rawTitle": "Lunch tasting menu ₩190,000",
+      "title": "Lunch tasting menu",
+      "priceLabel": "KRW 190,000",
+      "priceValue": 190000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1358109",
+      "foodMenuSeq": "1358109",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 2,
+      "rawTitle": "Valentine’s Lunch Tasting Menu This is a special course menu for Valentine’s Day on February 14. ₩300,000",
+      "title": "Valentine’s Lunch Tasting Menu This is a special course menu for Valentine’s Day on February 14.",
+      "priceLabel": "KRW 300,000",
+      "priceValue": 300000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1350218",
+      "foodMenuSeq": "1350218",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 3,
+      "rawTitle": "Dinner tasting menu ₩300,000",
+      "title": "Dinner tasting menu",
+      "priceLabel": "KRW 300,000",
+      "priceValue": 300000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1410617",
+      "foodMenuSeq": "1410617",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 4,
+      "rawTitle": "Valentine’s Dinner Tasting Menu This is a special course menu for Valentine’s Day on February 14. ₩400,000",
+      "title": "Valentine’s Dinner Tasting Menu This is a special course menu for Valentine’s Day on February 14.",
+      "priceLabel": "KRW 400,000",
+      "priceValue": 400000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1348986",
+      "foodMenuSeq": "1348986",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 5,
+      "rawTitle": "Dinner tasting menu(from April 1) ₩330,000",
+      "title": "Dinner tasting menu(from April 1)",
+      "priceLabel": "KRW 330,000",
+      "priceValue": 330000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1410620",
+      "foodMenuSeq": "1410620",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 6,
+      "rawTitle": "Dinner Wine Pairing ₩320,000",
+      "title": "Dinner Wine Pairing",
+      "priceLabel": "KRW 320,000",
+      "priceValue": 320000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1410619",
+      "foodMenuSeq": "1410619",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 7,
+      "rawTitle": "Dinner Korean Liquor Pairing ₩150,000",
+      "title": "Dinner Korean Liquor Pairing",
+      "priceLabel": "KRW 150,000",
+      "priceValue": 150000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1358112",
+      "foodMenuSeq": "1358112",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 8,
+      "rawTitle": "Lunch Korean Liquor Pairing ₩120,000",
+      "title": "Lunch Korean Liquor Pairing",
+      "priceLabel": "KRW 120,000",
+      "priceValue": 120000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1201400",
+      "foodMenuSeq": "1201400",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 9,
+      "rawTitle": "Lunch Wine Pairing ₩220,000",
+      "title": "Lunch Wine Pairing",
+      "priceLabel": "KRW 220,000",
+      "priceValue": 220000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1201401",
+      "foodMenuSeq": "1201401",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 10,
+      "rawTitle": "Wine Corkage (bottle) ₩100,000",
+      "title": "Wine Corkage (bottle)",
+      "priceLabel": "KRW 100,000",
+      "priceValue": 100000,
+      "url": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=4028",
+      "foodMenuSeq": "4028",
+      "menuType": "other",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    }
+  ]
+}

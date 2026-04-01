@@ -1,0 +1,600 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Catchtable seed generated from reviewed menu data for 모수.",
+    "generatedFrom": "tmp/public-sources/mosu-seoul/review-template.autofilled.json",
+    "generatedAt": "2026-03-29T14:42:38.964Z",
+    "notes": [
+      "Observed fields come from Catchtable menu images and reviewed OCR output.",
+      "Inferred fields remain hypotheses until a human reviews or enriches them."
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "mosu-seoul",
+      "name": "모수",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "모수 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "mosu-seoul",
+      "display_name": "안성재",
+      "bio": "캐치테이블 메뉴 워크플로우에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/mosu-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "mosu-seoul-dinner-source",
+      "restaurant_slug": "mosu-seoul",
+      "source_type": "menu",
+      "title": "Dinner-20250526060606.pdf",
+      "url": "https://cdn.data.mosuseoul.com/Dinner-20250526060606.pdf",
+      "excerpt": "작은 한입 요리 / 흑임자 두부 / 매생이 수프 / 더덕과 잣 / 옥돔, 단호박, 사프란 / 참나무 불향 도토리면",
+      "raw_text": "작은 한입 요리\n흑임자 두부\n매생이 수프\n더덕과 잣\n옥돔, 단호박, 사프란\n참나무 불향 도토리면\n한우 B.L.T\n작은 디저트",
+      "trust_score": 0.9
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "mosu-seoul-dinner-source-dish-01",
+      "restaurant_slug": "mosu-seoul",
+      "season_label": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "public_title": "작은 한입 요리",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mosu-seoul-dinner-source-dish-02",
+      "restaurant_slug": "mosu-seoul",
+      "season_label": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "public_title": "흑임자 두부",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mosu-seoul-dinner-source-dish-03",
+      "restaurant_slug": "mosu-seoul",
+      "season_label": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "public_title": "매생이 수프",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mosu-seoul-dinner-source-dish-04",
+      "restaurant_slug": "mosu-seoul",
+      "season_label": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "public_title": "더덕과 잣",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mosu-seoul-dinner-source-dish-05",
+      "restaurant_slug": "mosu-seoul",
+      "season_label": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "public_title": "옥돔, 단호박, 사프란",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "mosu-seoul-dinner-source-dish-06",
+      "restaurant_slug": "mosu-seoul",
+      "season_label": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "public_title": "참나무 불향 도토리면",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mosu-seoul-dinner-source-dish-07",
+      "restaurant_slug": "mosu-seoul",
+      "season_label": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "public_title": "한우 B.L.T",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mosu-seoul-dinner-source-dish-08",
+      "restaurant_slug": "mosu-seoul",
+      "season_label": "Mon, 29 Jul 2024 02:12:27 GMT",
+      "public_title": "작은 디저트",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-01",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "ingredients",
+      "value_text": "작은 한입 요리",
+      "value_json": {
+        "ingredients": [
+          "작은 한입 요리"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-01",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-01",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-01",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-02",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "ingredients",
+      "value_text": "흑임자 두부",
+      "value_json": {
+        "ingredients": [
+          "흑임자 두부"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-02",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-02",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-02",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-03",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "ingredients",
+      "value_text": "매생이 수프",
+      "value_json": {
+        "ingredients": [
+          "매생이 수프"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-03",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-03",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-03",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-04",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "ingredients",
+      "value_text": "더덕과 잣",
+      "value_json": {
+        "ingredients": [
+          "더덕과 잣"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-04",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-04",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-04",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-05",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "ingredients",
+      "value_text": "옥돔, 단호박, 사프란",
+      "value_json": {
+        "ingredients": [
+          "옥돔, 단호박, 사프란"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-05",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 생선 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 생선 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-05",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-05",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-06",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "ingredients",
+      "value_text": "참나무 불향 도토리면",
+      "value_json": {
+        "ingredients": [
+          "참나무 불향 도토리면"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-06",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-06",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-06",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-07",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "ingredients",
+      "value_text": "한우 B.L.T",
+      "value_json": {
+        "ingredients": [
+          "한우 B.L.T"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-07",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-07",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-07",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-08",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "ingredients",
+      "value_text": "작은 디저트",
+      "value_json": {
+        "ingredients": [
+          "작은 디저트"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-08",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 디저트 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 디저트 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-08",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-08",
+      "source_external_key": "mosu-seoul-dinner-source",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.9
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-01",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "mosu-seoul-dinner-source"
+      ]
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-02",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "mosu-seoul-dinner-source"
+      ]
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-03",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "mosu-seoul-dinner-source"
+      ]
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-04",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "mosu-seoul-dinner-source"
+      ]
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-05",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "mosu-seoul-dinner-source"
+      ]
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-06",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "mosu-seoul-dinner-source"
+      ]
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-07",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "mosu-seoul-dinner-source"
+      ]
+    },
+    {
+      "dish_external_key": "mosu-seoul-dinner-source-dish-08",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "mosu-seoul-dinner-source"
+      ]
+    }
+  ],
+  "research_rules": []
+}

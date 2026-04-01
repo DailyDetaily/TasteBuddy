@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T12:33:18.367Z",
+  "manifestRelativePath": "tmp/catchtable/soigneseoul/manifest.json",
+  "restaurant": {
+    "name": "스와니예",
+    "slug": "soigneseoul",
+    "chefName": "이준",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "menu",
+    "sourceTrustScore": 0.99,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "Mar 14, 2026 catchtable"
+  },
+  "instructions": {
+    "rowEditing": [
+      "rows 배열에 코스별 항목을 추가한다.",
+      "observed 값은 메뉴 이미지에 직접 보이는 정보만 적는다.",
+      "비공개 레시피를 사실처럼 쓰지 않는다.",
+      "inferred 값이 아직 없으면 빈 문자열로 두고 나중에 채운다."
+    ],
+    "coursePositionGuide": [
+      "amuse",
+      "starter",
+      "fish",
+      "main",
+      "dessert",
+      "other"
+    ]
+  },
+  "menus": [
+    {
+      "menuType": "lunch",
+      "menuTitle": "Lunch",
+      "rawTitle": "Lunch ₩240,000",
+      "priceLabel": "KRW 240,000",
+      "priceValue": 240000,
+      "foodMenuSeq": "1483368",
+      "sourceTitle": "Catchtable SOIGNE Lunch KRW 240,000 menu image (Last update: Mar 14, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1483368",
+      "localImageRelativePath": "tmp/catchtable/soigneseoul/images/01-soigneseoul.jpg",
+      "seasonLabel": "Mar 14, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner",
+      "rawTitle": "Dinner ₩380,000",
+      "priceLabel": "KRW 380,000",
+      "priceValue": 380000,
+      "foodMenuSeq": "1483369",
+      "sourceTitle": "Catchtable SOIGNE Dinner KRW 380,000 menu image (Last update: Mar 14, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1483369",
+      "localImageRelativePath": "tmp/catchtable/soigneseoul/images/02-soigneseoul.jpg",
+      "seasonLabel": "Mar 14, 2026 dinner",
+      "rows": []
+    },
+    {
+      "menuType": "lunch",
+      "menuTitle": "Lunch Wine Pairing ₩160,000~₩180,000",
+      "rawTitle": "Lunch Wine Pairing ₩160,000~₩180,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "foodMenuSeq": "1358207",
+      "sourceTitle": "Catchtable SOIGNE Lunch Wine Pairing ₩160,000~₩180,000 menu image (Last update: Mar 14, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1358207",
+      "localImageRelativePath": null,
+      "seasonLabel": "Mar 14, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner Wine Pairing ₩220,000~₩280,000",
+      "rawTitle": "Dinner Wine Pairing ₩220,000~₩280,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "foodMenuSeq": "1132768",
+      "sourceTitle": "Catchtable SOIGNE Dinner Wine Pairing ₩220,000~₩280,000 menu image (Last update: Mar 14, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1132768",
+      "localImageRelativePath": null,
+      "seasonLabel": "Mar 14, 2026 dinner",
+      "rows": []
+    }
+  ]
+}

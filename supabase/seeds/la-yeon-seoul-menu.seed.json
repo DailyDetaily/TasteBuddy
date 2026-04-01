@@ -1,0 +1,1467 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Seed generated from curated intake CSV files for 라연.",
+    "generatedAt": "2026-03-29T14:21:53.912Z",
+    "sourceFiles": [
+      "docs/mvp-content-intake-la-yeon-lunch.csv",
+      "docs/mvp-content-intake-la-yeon-dinner.csv"
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "la-yeon-seoul",
+      "name": "라연",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "라연 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "la-yeon-seoul",
+      "display_name": "Kim Sung-il",
+      "bio": "큐레이션 intake CSV에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/kim-sung-il.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "restaurant_slug": "la-yeon-seoul",
+      "source_type": "article",
+      "title": "La Yeon public dining guide overview (accessed 2026-03-29)",
+      "url": "https://kr.hotels.com/go/south-korea/la-yeon",
+      "excerpt": "닭고기와 생삼을 넣은 죽 / 채소를 말아 구운 소고기 롤 / 제철 생선 / 간장에 재운 한우 편육 / 차가운 메밀국수 / 전복과 채소 솥밥",
+      "raw_text": "닭고기와 생삼을 넣은 죽\n채소를 말아 구운 소고기 롤\n제철 생선\n간장에 재운 한우 편육\n차가운 메밀국수\n전복과 채소 솥밥\n구절판\n닭과 인삼을 넣은 차가운 두유 국물\n소고기와 버섯 만두\n장어구이\n숯불 한우 등심\n떡갈비\n갈비찜",
+      "trust_score": 0.86
+    },
+    {
+      "external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "restaurant_slug": "la-yeon-seoul",
+      "source_type": "article",
+      "title": "The Shilla Seoul La Yeon dining page (accessed 2026-03-29)",
+      "url": "https://www.shilla.net/seoul/dining/viewDining.do?contId=KRN",
+      "excerpt": "헤어룸 솥밥 / 진달래 셔벗 / 쑥 아이스크림",
+      "raw_text": "헤어룸 솥밥\n진달래 셔벗\n쑥 아이스크림",
+      "trust_score": 0.98
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "la-yeon-seoul-dish-001",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference lunch",
+      "public_title": "닭고기와 생삼을 넣은 죽",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-002",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference lunch",
+      "public_title": "채소를 말아 구운 소고기 롤",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-003",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference lunch",
+      "public_title": "제철 생선",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-004",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference lunch",
+      "public_title": "간장에 재운 한우 편육",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-005",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference lunch",
+      "public_title": "차가운 메밀국수",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-006",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference lunch",
+      "public_title": "전복과 채소 솥밥",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-007",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "구절판",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-008",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "닭과 인삼을 넣은 차가운 두유 국물",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-009",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "소고기와 버섯 만두",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-010",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "장어구이",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-011",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "숯불 한우 등심",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-012",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "떡갈비",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-013",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "갈비찜",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-014",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "헤어룸 솥밥",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-015",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "진달래 셔벗",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "la-yeon-seoul-dish-016",
+      "restaurant_slug": "la-yeon-seoul",
+      "season_label": "public reference dinner",
+      "public_title": "쑥 아이스크림",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "la-yeon-seoul-dish-001",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "닭고기, 생삼, 죽",
+      "value_json": {
+        "ingredients": [
+          "닭고기",
+          "생삼",
+          "죽"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-001",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "porridge, slow simmering",
+      "value_json": {
+        "techniques": [
+          "porridge",
+          "slow simmering"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-001",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "gentle ginseng aroma, warm savory comfort, soft opening",
+      "value_json": {
+        "sensory_words": [
+          "gentle ginseng aroma",
+          "warm savory comfort",
+          "soft opening"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-001",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-002",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "소고기, 채소",
+      "value_json": {
+        "ingredients": [
+          "소고기",
+          "채소"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-002",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "rolling, grilling",
+      "value_json": {
+        "techniques": [
+          "rolling",
+          "grilling"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-002",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "clean beef savoriness, vegetal lift, controlled richness",
+      "value_json": {
+        "sensory_words": [
+          "clean beef savoriness",
+          "vegetal lift",
+          "controlled richness"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-002",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-003",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "제철 생선",
+      "value_json": {
+        "ingredients": [
+          "제철 생선"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-003",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "seasonal fish preparation",
+      "value_json": {
+        "techniques": [
+          "seasonal fish preparation"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-003",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "clean marine line, seasonal delicacy, refined finish",
+      "value_json": {
+        "sensory_words": [
+          "clean marine line",
+          "seasonal delicacy",
+          "refined finish"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-003",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-004",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "한우, 간장",
+      "value_json": {
+        "ingredients": [
+          "한우",
+          "간장"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-004",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "soy marination, slicing",
+      "value_json": {
+        "techniques": [
+          "soy marination",
+          "slicing"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-004",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory depth, clean beef concentration, lingering umami",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory depth",
+          "clean beef concentration",
+          "lingering umami"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-004",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-005",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "메밀",
+      "value_json": {
+        "ingredients": [
+          "메밀"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-005",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "served chilled, noodle preparation",
+      "value_json": {
+        "techniques": [
+          "served chilled",
+          "noodle preparation"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-005",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "cool grain aroma, refreshing reset, light finish",
+      "value_json": {
+        "sensory_words": [
+          "cool grain aroma",
+          "refreshing reset",
+          "light finish"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-005",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-006",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "전복, 채소, 쌀",
+      "value_json": {
+        "ingredients": [
+          "전복",
+          "채소",
+          "쌀"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-006",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "sot-bap, rice cooking",
+      "value_json": {
+        "techniques": [
+          "sot-bap",
+          "rice cooking"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-006",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "marine umami, grain comfort, warm composed close",
+      "value_json": {
+        "sensory_words": [
+          "marine umami",
+          "grain comfort",
+          "warm composed close"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-006",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-007",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "구절판",
+      "value_json": {
+        "ingredients": [
+          "구절판"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-007",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "traditional platter service",
+      "value_json": {
+        "techniques": [
+          "traditional platter service"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-007",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "ceremonial composition, delicate variety, refined opening",
+      "value_json": {
+        "sensory_words": [
+          "ceremonial composition",
+          "delicate variety",
+          "refined opening"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-007",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-008",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "닭, 인삼, 두유",
+      "value_json": {
+        "ingredients": [
+          "닭",
+          "인삼",
+          "두유"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-008",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "chilled broth",
+      "value_json": {
+        "techniques": [
+          "chilled broth"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-008",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "soy softness, cool herbal lift, silky savory texture",
+      "value_json": {
+        "sensory_words": [
+          "soy softness",
+          "cool herbal lift",
+          "silky savory texture"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-008",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-009",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "소고기, 버섯, 만두",
+      "value_json": {
+        "ingredients": [
+          "소고기",
+          "버섯",
+          "만두"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-009",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "dumpling",
+      "value_json": {
+        "techniques": [
+          "dumpling"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-009",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "forest aroma, savory body, soft lingering warmth",
+      "value_json": {
+        "sensory_words": [
+          "forest aroma",
+          "savory body",
+          "soft lingering warmth"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-009",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-010",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "장어",
+      "value_json": {
+        "ingredients": [
+          "장어"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-010",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "grilling",
+      "value_json": {
+        "techniques": [
+          "grilling"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-010",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "glossy richness, sweet-savory glaze, marine depth",
+      "value_json": {
+        "sensory_words": [
+          "glossy richness",
+          "sweet-savory glaze",
+          "marine depth"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-010",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-011",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "한우 등심",
+      "value_json": {
+        "ingredients": [
+          "한우 등심"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-011",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "char-grilling",
+      "value_json": {
+        "techniques": [
+          "char-grilling"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-011",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "charred beef umami, fatty core, long warm finish",
+      "value_json": {
+        "sensory_words": [
+          "charred beef umami",
+          "fatty core",
+          "long warm finish"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-011",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-012",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "다진 한우, 양념",
+      "value_json": {
+        "ingredients": [
+          "다진 한우",
+          "양념"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-012",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "patty grilling",
+      "value_json": {
+        "techniques": [
+          "patty grilling"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-012",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory glaze, dense chew, comforting finish",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory glaze",
+          "dense chew",
+          "comforting finish"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-012",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-013",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "갈비",
+      "value_json": {
+        "ingredients": [
+          "갈비"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-013",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "braising",
+      "value_json": {
+        "techniques": [
+          "braising"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-013",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "deep soy richness, gelatinous texture, slow lingering finish",
+      "value_json": {
+        "sensory_words": [
+          "deep soy richness",
+          "gelatinous texture",
+          "slow lingering finish"
+        ]
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-013",
+      "source_external_key": "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.86
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-014",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "쌀",
+      "value_json": {
+        "ingredients": [
+          "쌀"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-014",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "sot-bap",
+      "value_json": {
+        "techniques": [
+          "sot-bap"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-014",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "grain comfort, quiet umami, warm composed close",
+      "value_json": {
+        "sensory_words": [
+          "grain comfort",
+          "quiet umami",
+          "warm composed close"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-014",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-015",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "진달래, 셔벗",
+      "value_json": {
+        "ingredients": [
+          "진달래",
+          "셔벗"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-015",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "sorbet",
+      "value_json": {
+        "techniques": [
+          "sorbet"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-015",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "floral brightness, icy refreshment, clean reset",
+      "value_json": {
+        "sensory_words": [
+          "floral brightness",
+          "icy refreshment",
+          "clean reset"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-015",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-016",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "ingredients",
+      "value_text": "쑥, 아이스크림",
+      "value_json": {
+        "ingredients": [
+          "쑥",
+          "아이스크림"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-016",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "techniques",
+      "value_text": "ice cream",
+      "value_json": {
+        "techniques": [
+          "ice cream"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-016",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "sensory_words",
+      "value_text": "herbal sweetness, cool lingering finish, earthy aroma",
+      "value_json": {
+        "sensory_words": [
+          "herbal sweetness",
+          "cool lingering finish",
+          "earthy aroma"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-016",
+      "source_external_key": "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.98
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "la-yeon-seoul-dish-001",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.1,
+        "umami": 0.42,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.14,
+        "cleanFinish": 0.62,
+        "linger": 0.2,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.28,
+        "thermalImpact": 0.34
+      },
+      "confidence": 0.76,
+      "rationale": "The opening porridge likely sets a calm, restorative tone with mild ginseng lift and restrained savory weight rather than dense richness.",
+      "uncertainty_notes": [
+        "The public guide describes Feast broadly and does not confirm exact garnish or stock concentration"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-002",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.12,
+        "umami": 0.56,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.28,
+        "heaviness": 0.22,
+        "cleanFinish": 0.56,
+        "linger": 0.3,
+        "smoke": 0.08,
+        "aromaIntensity": 0.3,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.3
+      },
+      "confidence": 0.74,
+      "rationale": "A grilled beef roll wrapped with vegetables should read as balanced and elegant, with beef umami moderated by fresh vegetal brightness.",
+      "uncertainty_notes": [
+        "Specific vegetables and sauce treatment are not disclosed in the public guide"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-003",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.5,
+        "fat": 0.14
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.18,
+        "cleanFinish": 0.64,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.28
+      },
+      "confidence": 0.7,
+      "rationale": "The fish course likely maintains La Yeon's polished restraint, emphasizing clean marine umami and a precise finish over heavy saucing.",
+      "uncertainty_notes": [
+        "Species, cooking method, and garnish are not public in the accessible guide text"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-004",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.16,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.2,
+        "umami": 0.82,
+        "fat": 0.2
+      },
+      "perceptual_vector": {
+        "brightness": 0.16,
+        "heaviness": 0.3,
+        "cleanFinish": 0.42,
+        "linger": 0.48,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.32,
+        "thermalImpact": 0.16
+      },
+      "confidence": 0.76,
+      "rationale": "Soy-marinated hanwoo should land as one of the more umami-forward lunch moments, but still with a composed and ceremonial texture.",
+      "uncertainty_notes": [
+        "The guide does not reveal the exact cut, cure time, or side accompaniments"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-005",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.22,
+        "bitter": 0.04,
+        "salty": 0.04,
+        "umami": 0.12,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.74,
+        "heaviness": 0.04,
+        "cleanFinish": 0.84,
+        "linger": 0.08,
+        "smoke": 0,
+        "aromaIntensity": 0.18,
+        "textureRichness": 0.12,
+        "thermalImpact": 0.04
+      },
+      "confidence": 0.8,
+      "rationale": "Chilled buckwheat noodles likely function as a palate-clearing interlude with cool grain aroma and a notably clean finish.",
+      "uncertainty_notes": [
+        "Broth seasoning and toppings are not specified in the public guide"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-006",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.1,
+        "umami": 0.64,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.2,
+        "cleanFinish": 0.68,
+        "linger": 0.24,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.32
+      },
+      "confidence": 0.78,
+      "rationale": "Abalone rice pot suggests a grain-centered close with marine umami and a calm, warm finish appropriate to La Yeon's ceremonial style.",
+      "uncertainty_notes": [
+        "The exact vegetable set and seasoning depth are not disclosed publicly"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-007",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.1,
+        "umami": 0.24,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.42,
+        "heaviness": 0.1,
+        "cleanFinish": 0.72,
+        "linger": 0.16,
+        "smoke": 0,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.72,
+      "rationale": "Gujeolpan reads as a ritualized opening course with many small bites, emphasizing balance and formal presentation over a single dominant taste.",
+      "uncertainty_notes": [
+        "The public guide confirms gujeolpan but not the exact fillings or sauces in the current menu"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-008",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.1,
+        "bitter": 0.04,
+        "salty": 0.08,
+        "umami": 0.36,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.54,
+        "heaviness": 0.12,
+        "cleanFinish": 0.7,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.12
+      },
+      "confidence": 0.74,
+      "rationale": "The cold soy broth with chicken and ginseng likely balances silky body with cooling herbal nuance, setting a more contemplative dinner rhythm.",
+      "uncertainty_notes": [
+        "The public guide does not disclose thickness, garnish, or exact chicken preparation"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-009",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.04,
+        "bitter": 0.04,
+        "salty": 0.12,
+        "umami": 0.58,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.18,
+        "cleanFinish": 0.54,
+        "linger": 0.28,
+        "smoke": 0,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.24
+      },
+      "confidence": 0.76,
+      "rationale": "Beef and mushroom dumplings suggest a warmer and more aromatic savory course than the opening bites, but still with controlled weight.",
+      "uncertainty_notes": [
+        "The wrapper style and broth or sauce accompaniment are not stated publicly"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-010",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.62,
+        "fat": 0.3
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.34,
+        "cleanFinish": 0.34,
+        "linger": 0.46,
+        "smoke": 0.1,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.36,
+        "thermalImpact": 0.38
+      },
+      "confidence": 0.78,
+      "rationale": "Grilled eel likely adds one of the richer marine moments in the dinner progression, with longer linger and more savory glaze character.",
+      "uncertainty_notes": [
+        "The guide does not confirm charcoal level, glaze sweetness, or supporting garnish"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-011",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.04,
+        "bitter": 0.04,
+        "salty": 0.18,
+        "umami": 0.88,
+        "fat": 0.52
+      },
+      "perceptual_vector": {
+        "brightness": 0.16,
+        "heaviness": 0.62,
+        "cleanFinish": 0.24,
+        "linger": 0.74,
+        "smoke": 0.18,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.46,
+        "thermalImpact": 0.54
+      },
+      "confidence": 0.82,
+      "rationale": "Char-grilled hanwoo sirloin should deliver the deepest beef umami and heaviest body in the dinner lineup.",
+      "uncertainty_notes": [
+        "Specific cut weight, sauce, and seasonal side vegetables are not public"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-012",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.74,
+        "fat": 0.3
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.44,
+        "cleanFinish": 0.3,
+        "linger": 0.58,
+        "smoke": 0.1,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.42,
+        "thermalImpact": 0.42
+      },
+      "confidence": 0.78,
+      "rationale": "Tteokgalbi likely reads sweeter and rounder than sirloin, with a compact texture and a familiar savory finish.",
+      "uncertainty_notes": [
+        "The public guide lists the choice but not the current garnish or exact seasoning ratio"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-013",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.2,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.2,
+        "umami": 0.82,
+        "fat": 0.38
+      },
+      "perceptual_vector": {
+        "brightness": 0.12,
+        "heaviness": 0.52,
+        "cleanFinish": 0.26,
+        "linger": 0.66,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.48,
+        "thermalImpact": 0.46
+      },
+      "confidence": 0.8,
+      "rationale": "Braised galbijjim suggests the softest and most deeply seasoned beef option, with strong linger and notable body.",
+      "uncertainty_notes": [
+        "The exact sauce reduction and plating format are not described publicly"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-la-yeon-public-dining-guide-overview-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-014",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.14,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.08,
+        "umami": 0.3,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.14,
+        "cleanFinish": 0.72,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.18,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.28
+      },
+      "confidence": 0.68,
+      "rationale": "The official page exposes Heirloom Sot-bap as a current-course label, implying a composed rice course that quiets the heavier mains.",
+      "uncertainty_notes": [
+        "The exact heirloom ingredient set is not visible beyond the English course label on the page"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-015",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.34,
+        "sour": 0.32,
+        "bitter": 0.02,
+        "salty": 0.02,
+        "umami": 0.04,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.86,
+        "heaviness": 0.02,
+        "cleanFinish": 0.88,
+        "linger": 0.08,
+        "smoke": 0,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.06,
+        "thermalImpact": 0.04
+      },
+      "confidence": 0.82,
+      "rationale": "Azalea sorbet appears on the official page as a floral and highly cleansing dessert course, likely designed to reset the palate cleanly.",
+      "uncertainty_notes": [
+        "The page shows only the course label and not the exact sweetness or garnish"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29"
+      ]
+    },
+    {
+      "dish_external_key": "la-yeon-seoul-dish-016",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.4,
+        "sour": 0.1,
+        "bitter": 0.1,
+        "salty": 0.02,
+        "umami": 0.04,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.18,
+        "cleanFinish": 0.54,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.44,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.8,
+      "rationale": "Mugwort ice cream likely closes with restrained sweetness and a distinctly herbal lingering note rather than bright fruit acidity.",
+      "uncertainty_notes": [
+        "Only the label is visible on the official page, so dairy richness and garnish remain inferred"
+      ],
+      "evidence_ids": [
+        "la-yeon-seoul-the-shilla-seoul-la-yeon-dining-page-accessed-2026-03-29"
+      ]
+    }
+  ],
+  "research_rules": []
+}

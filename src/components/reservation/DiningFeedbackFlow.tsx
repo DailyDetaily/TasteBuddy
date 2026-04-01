@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react';
-import { CheckCircle2, ChefHat, MessageSquareText, Sparkles } from 'lucide-react';
+import { CheckmarkCircleRegular, PersonRegular, ChatRegular, SparkleRegular } from '@fluentui/react-icons';
+const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
+const CheckCircle2 = wrapIcon(CheckmarkCircleRegular);
+const ChefHat = wrapIcon(PersonRegular);
+const MessageSquareText = wrapIcon(ChatRegular);
+const Sparkles = wrapIcon(SparkleRegular);
 
 import SectionCard from '../SectionCard';
 import TopAppBar from '../TopAppBar';
@@ -443,10 +448,10 @@ export function DiningAiAnalysisScreen({
                 <OutlineBadge>{summary.profileStage}</OutlineBadge>
                 <div>
                   <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
-                    프로필이 업데이트됐어요
+                    프로필이 업데이트됐습니다
                   </h1>
                   <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                    이번 인상은 현재 Taste Profile을 더 정교하게 만들었고, 다음 다이닝 준비에 바로 반영됩니다.
+                    다음 예약 추천에 반영할 수 있는 최신 프로필이 준비됐어요.
                   </p>
                 </div>
               </div>

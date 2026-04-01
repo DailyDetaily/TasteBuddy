@@ -1,0 +1,69 @@
+{
+  "fetchedAt": "2026-03-29T14:38:09.891Z",
+  "restaurant": {
+    "slug": "mitou-seoul",
+    "displayName": "미토우",
+    "chefName": "권영운 / 김보미",
+    "city": "Seoul"
+  },
+  "source": {
+    "mode": "public_fallback",
+    "outputDirRelativePath": "tmp/public-sources/mitou-seoul",
+    "nextStep": "Review source snippets, copy verified menu/course lines into review-template rows, then generate intake CSVs or seed JSON."
+  },
+  "documents": [
+    {
+      "index": 1,
+      "label": "MICHELIN Mitou feature",
+      "sourceType": "michelin_article",
+      "url": "https://guide.michelin.com/en/article/features/mitou-with-two-michelin-stars",
+      "fetchedUrl": "https://r.jina.ai/http://guide.michelin.com/en/article/features/mitou-with-two-michelin-stars",
+      "mirrorUrl": "https://r.jina.ai/http://guide.michelin.com/en/article/features/mitou-with-two-michelin-stars",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.9,
+      "title": "MICHELIN Mitou feature",
+      "publishedTime": null,
+      "blocked": true,
+      "contentRelativePath": "tmp/public-sources/mitou-seoul/01-michelin-mitou-feature.md",
+      "excerpt": [],
+      "courseTitleDrafts": []
+    },
+    {
+      "index": 2,
+      "label": "MICHELIN Young Chef Award article",
+      "sourceType": "michelin_article",
+      "url": "https://guide.michelin.com/kr/en/article/people/2022-michelin-seoul-young-chef-mitou-en",
+      "fetchedUrl": "https://r.jina.ai/http://guide.michelin.com/kr/en/article/people/2022-michelin-seoul-young-chef-mitou-en",
+      "mirrorUrl": "https://r.jina.ai/http://guide.michelin.com/kr/en/article/people/2022-michelin-seoul-young-chef-mitou-en",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.86,
+      "title": "MICHELIN Young Chef Award article",
+      "publishedTime": null,
+      "blocked": true,
+      "contentRelativePath": "tmp/public-sources/mitou-seoul/02-michelin-young-chef-award-article.md",
+      "excerpt": [],
+      "courseTitleDrafts": []
+    }
+  ],
+  "menuCandidates": [],
+  "requestedSources": [
+    {
+      "label": "MICHELIN Mitou feature",
+      "sourceType": "michelin_article",
+      "url": "https://guide.michelin.com/en/article/features/mitou-with-two-michelin-stars",
+      "trustScore": 0.9,
+      "menuType": null,
+      "createReferenceMenu": true
+    },
+    {
+      "label": "MICHELIN Young Chef Award article",
+      "sourceType": "michelin_article",
+      "url": "https://guide.michelin.com/kr/en/article/people/2022-michelin-seoul-young-chef-mitou-en",
+      "trustScore": 0.86,
+      "menuType": null,
+      "createReferenceMenu": true
+    }
+  ]
+}

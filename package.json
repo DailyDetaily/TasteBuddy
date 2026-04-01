@@ -30,6 +30,7 @@
             "@radix-ui/react-toggle": "^1.1.2",
             "@radix-ui/react-toggle-group": "^1.1.2",
             "@radix-ui/react-tooltip": "^1.1.8",
+            "@supabase/supabase-js": "^2.100.1",
             "class-variance-authority": "^0.7.1",
             "clsx": "*",
             "cmdk": "^1.1.1",
@@ -60,6 +61,21 @@
       },
       "scripts": {
             "dev": "vite",
-            "build": "vite build"
+            "build": "vite build",
+            "catchtable:fetch": "node scripts/fetch-catchtable-menu-assets.mjs",
+            "catchtable:batch": "node scripts/run-catchtable-batch.mjs",
+            "catchtable:bootstrap-review": "node scripts/bootstrap-catchtable-review.mjs",
+            "public-source:fetch": "node scripts/fetch-public-restaurant-sources.mjs",
+            "public-source:bootstrap-review": "node scripts/bootstrap-public-source-review.mjs",
+            "public-source:fill-review": "node scripts/fill-public-review-rows.mjs",
+            "catchtable:ocr": "node scripts/ocr-catchtable-menu-assets.mjs",
+            "catchtable:parse": "node scripts/parse-catchtable-menu-images.mjs",
+            "catchtable:generate-csv": "node scripts/generate-catchtable-intake-csv.mjs",
+            "catchtable:generate-seed": "node scripts/generate-catchtable-seed-json.mjs",
+            "catchtable:sync-review": "node scripts/sync-catchtable-review-to-supabase.mjs",
+            "intake:generate-seed": "node scripts/generate-intake-seed-json.mjs",
+            "content:normalize-korean": "node scripts/normalize-supabase-content-korean.mjs",
+            "seed:supabase": "node scripts/import-supabase-seed.mjs",
+            "seed:mingles:dinner": "node scripts/import-supabase-seed.mjs supabase/seeds/mingles-dinner-2026-01-08.seed.json"
       }
 }

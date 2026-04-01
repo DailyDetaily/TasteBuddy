@@ -1,0 +1,1864 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Seed generated from curated intake CSV files for 에빗.",
+    "generatedAt": "2026-03-29T15:12:13.521Z",
+    "sourceFiles": [
+      "docs/mvp-content-intake-evett-lunch.csv",
+      "docs/mvp-content-intake-evett-dinner.csv"
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "evett-seoul",
+      "name": "에빗",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "에빗 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "evett-seoul",
+      "display_name": "조셉 리저우드",
+      "bio": "큐레이션 intake CSV에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/evett-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "restaurant_slug": "evett-seoul",
+      "source_type": "article",
+      "title": "EVETT 런치 메뉴 PDF 2026-02-06",
+      "url": "https://www.restaurantevett.com/_files/ugd/612e5b_989b8343c41d4bf0ac3f8a1b5ffed044.pdf",
+      "excerpt": "나무 / 방어 / 생선 / 미각 / 전복 / 갈비",
+      "raw_text": "나무\n방어\n생선\n미각\n전복\n갈비\n버섯\n마지막 한 입",
+      "trust_score": 0.96
+    },
+    {
+      "external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "restaurant_slug": "evett-seoul",
+      "source_type": "article",
+      "title": "EVETT 디너 메뉴 PDF 2026-02-06",
+      "url": "https://www.restaurantevett.com/_files/ugd/612e5b_fcefb6bb26a94829a685dcc7596ded40.pdf",
+      "excerpt": "스낵 / 바다정원 / 메주도넛 / 돼지감자 / 방어 / 생선",
+      "raw_text": "스낵\n바다정원\n메주도넛\n돼지감자\n방어\n생선\n미각\n전복\n오리\n갈비\n딸기\n버섯\n마지막 한입",
+      "trust_score": 0.96
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "evett-seoul-dish-001",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 lunch",
+      "public_title": "나무",
+      "public_subtitle": null,
+      "course_position": "amuse",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-002",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 lunch",
+      "public_title": "방어",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-003",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 lunch",
+      "public_title": "생선",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-004",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 lunch",
+      "public_title": "미각",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-005",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 lunch",
+      "public_title": "전복",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-006",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 lunch",
+      "public_title": "갈비",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-007",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 lunch",
+      "public_title": "버섯",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-008",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 lunch",
+      "public_title": "마지막 한 입",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-009",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "스낵",
+      "public_subtitle": null,
+      "course_position": "amuse",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-010",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "바다정원",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-011",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "메주도넛",
+      "public_subtitle": null,
+      "course_position": "amuse",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-012",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "돼지감자",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-013",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "방어",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-014",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "생선",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-015",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "미각",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-016",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "전복",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-017",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "오리",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-018",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "갈비",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-019",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "딸기",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-020",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "버섯",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "evett-seoul-dish-021",
+      "restaurant_slug": "evett-seoul",
+      "season_label": "2026-02-06 dinner",
+      "public_title": "마지막 한입",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "evett-seoul-dish-001",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "ingredients",
+      "value_text": "나무",
+      "value_json": {
+        "ingredients": [
+          "나무"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-001",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-001",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "sensory_words",
+      "value_text": "woodsy opening, dry aroma",
+      "value_json": {
+        "sensory_words": [
+          "woodsy opening",
+          "dry aroma"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-001",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-002",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "ingredients",
+      "value_text": "방어",
+      "value_json": {
+        "ingredients": [
+          "방어"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-002",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-002",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "sensory_words",
+      "value_text": "clean marine tone, cool savory bite",
+      "value_json": {
+        "sensory_words": [
+          "clean marine tone",
+          "cool savory bite"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-002",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-003",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "ingredients",
+      "value_text": "생선",
+      "value_json": {
+        "ingredients": [
+          "생선"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-003",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-003",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "sensory_words",
+      "value_text": "seafood course, moderate savoriness",
+      "value_json": {
+        "sensory_words": [
+          "seafood course",
+          "moderate savoriness"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-003",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-004",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "ingredients",
+      "value_text": "미각",
+      "value_json": {
+        "ingredients": [
+          "미각"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-004",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-004",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "sensory_words",
+      "value_text": "palate reset, contrast point",
+      "value_json": {
+        "sensory_words": [
+          "palate reset",
+          "contrast point"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-004",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-005",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "ingredients",
+      "value_text": "전복",
+      "value_json": {
+        "ingredients": [
+          "전복"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-005",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-005",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "sensory_words",
+      "value_text": "dense shellfish umami, firm texture",
+      "value_json": {
+        "sensory_words": [
+          "dense shellfish umami",
+          "firm texture"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-005",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-006",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "ingredients",
+      "value_text": "갈비",
+      "value_json": {
+        "ingredients": [
+          "갈비"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-006",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-006",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory glaze, deep meat umami",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory glaze",
+          "deep meat umami"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-006",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-007",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "ingredients",
+      "value_text": "버섯",
+      "value_json": {
+        "ingredients": [
+          "버섯"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-007",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-007",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "sensory_words",
+      "value_text": "earthy aroma, soft umami",
+      "value_json": {
+        "sensory_words": [
+          "earthy aroma",
+          "soft umami"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-007",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-008",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "ingredients",
+      "value_text": "마지막 한 입",
+      "value_json": {
+        "ingredients": [
+          "마지막 한 입"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-008",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-008",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "sensory_words",
+      "value_text": "final bite, closing sweetness",
+      "value_json": {
+        "sensory_words": [
+          "final bite",
+          "closing sweetness"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-008",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-009",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "스낵",
+      "value_json": {
+        "ingredients": [
+          "스낵"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-009",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-009",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "small opening bite, crisp start",
+      "value_json": {
+        "sensory_words": [
+          "small opening bite",
+          "crisp start"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-009",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-010",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "바다정원",
+      "value_json": {
+        "ingredients": [
+          "바다정원"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-010",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-010",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "marine freshness, herbal salinity",
+      "value_json": {
+        "sensory_words": [
+          "marine freshness",
+          "herbal salinity"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-010",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-011",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "메주도넛",
+      "value_json": {
+        "ingredients": [
+          "메주도넛"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-011",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-011",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "fermented savoriness, fried bite",
+      "value_json": {
+        "sensory_words": [
+          "fermented savoriness",
+          "fried bite"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-011",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-012",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "돼지감자",
+      "value_json": {
+        "ingredients": [
+          "돼지감자"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-012",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-012",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "earthy sweetness, root aroma",
+      "value_json": {
+        "sensory_words": [
+          "earthy sweetness",
+          "root aroma"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-012",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-013",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "방어",
+      "value_json": {
+        "ingredients": [
+          "방어"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-013",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-013",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "clean marine tone, cool savoriness",
+      "value_json": {
+        "sensory_words": [
+          "clean marine tone",
+          "cool savoriness"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-013",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-014",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "생선",
+      "value_json": {
+        "ingredients": [
+          "생선"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-014",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-014",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "seafood course, warm savory profile",
+      "value_json": {
+        "sensory_words": [
+          "seafood course",
+          "warm savory profile"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-014",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-015",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "미각",
+      "value_json": {
+        "ingredients": [
+          "미각"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-015",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-015",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "contrast point, reset",
+      "value_json": {
+        "sensory_words": [
+          "contrast point",
+          "reset"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-015",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-016",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "전복",
+      "value_json": {
+        "ingredients": [
+          "전복"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-016",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-016",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "dense shellfish umami, firm texture",
+      "value_json": {
+        "sensory_words": [
+          "dense shellfish umami",
+          "firm texture"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-016",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-017",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "오리",
+      "value_json": {
+        "ingredients": [
+          "오리"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-017",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-017",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "rich poultry fat, aromatic savoriness",
+      "value_json": {
+        "sensory_words": [
+          "rich poultry fat",
+          "aromatic savoriness"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-017",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-018",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "갈비",
+      "value_json": {
+        "ingredients": [
+          "갈비"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-018",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-018",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory glaze, deep meat umami",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory glaze",
+          "deep meat umami"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-018",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-019",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "딸기",
+      "value_json": {
+        "ingredients": [
+          "딸기"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-019",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-019",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "bright fruit acidity, sweet finish",
+      "value_json": {
+        "sensory_words": [
+          "bright fruit acidity",
+          "sweet finish"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-019",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-020",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "버섯",
+      "value_json": {
+        "ingredients": [
+          "버섯"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-020",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-020",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "earthy aroma, soft umami",
+      "value_json": {
+        "sensory_words": [
+          "earthy aroma",
+          "soft umami"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-020",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-021",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "ingredients",
+      "value_text": "마지막 한입",
+      "value_json": {
+        "ingredients": [
+          "마지막 한입"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-021",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "techniques",
+      "value_text": "공식 PDF 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공식 PDF 기반 코스명"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-021",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "sensory_words",
+      "value_text": "closing petit four, small sweet finish",
+      "value_json": {
+        "sensory_words": [
+          "closing petit four",
+          "small sweet finish"
+        ]
+      },
+      "confidence": 0.96
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-021",
+      "source_external_key": "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.96
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "evett-seoul-dish-001",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.06,
+        "bitter": 0.1,
+        "salty": 0.08,
+        "umami": 0.14,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.2,
+        "cleanFinish": 0.44,
+        "linger": 0.18,
+        "smoke": 0.12,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.16,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.56,
+      "rationale": "The official lunch PDF lists a course named Tree, suggesting a conceptual opening bite with dry aromatic tones and restrained richness rather than overt sweetness.",
+      "uncertainty_notes": [
+        "The menu provides only course titles without ingredients or plating details",
+        "taste vector remains a conservative inference from the title alone"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-002",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.46,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.46,
+        "heaviness": 0.12,
+        "cleanFinish": 0.58,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.72,
+      "rationale": "Yellowtail generally reads as bright and clean with moderate salinity and marine umami, fitting an early-course seafood profile.",
+      "uncertainty_notes": [
+        "Exact garnish, acidity, and temperature are not disclosed in the PDF"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-003",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.54,
+        "fat": 0.14
+      },
+      "perceptual_vector": {
+        "brightness": 0.32,
+        "heaviness": 0.18,
+        "cleanFinish": 0.5,
+        "linger": 0.28,
+        "smoke": 0,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.66,
+      "rationale": "A fish course following yellowtail likely increases umami and warmth while remaining cleaner than a meat course.",
+      "uncertainty_notes": [
+        "Species, sauce, and cooking method are unknown"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-004",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.18,
+        "bitter": 0.04,
+        "salty": 0.08,
+        "umami": 0.16,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.62,
+        "heaviness": 0.08,
+        "cleanFinish": 0.7,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.5,
+      "rationale": "A course titled Palate most plausibly acts as a transition or calibration point, so the profile is biased toward brightness and cleaner finish.",
+      "uncertainty_notes": [
+        "This title is highly interpretive without ingredient disclosure"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-005",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.76,
+        "fat": 0.22
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.34,
+        "cleanFinish": 0.3,
+        "linger": 0.42,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.46,
+        "thermalImpact": 0.26
+      },
+      "confidence": 0.76,
+      "rationale": "Abalone usually signals pronounced umami and firmer texture with lingering savory depth.",
+      "uncertainty_notes": [
+        "Preparation style and broth or sauce are not visible"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-006",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.14,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.28,
+        "umami": 0.82,
+        "fat": 0.56
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.72,
+        "cleanFinish": 0.18,
+        "linger": 0.68,
+        "smoke": 0.1,
+        "aromaIntensity": 0.48,
+        "textureRichness": 0.7,
+        "thermalImpact": 0.42
+      },
+      "confidence": 0.82,
+      "rationale": "Galbi implies high umami, clear fat presence, and longer savory linger, making it the heaviest savory moment in the lunch flow.",
+      "uncertainty_notes": [
+        "Sauce balance and smoke level are inferred from a typical galbi presentation"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-007",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.08,
+        "salty": 0.1,
+        "umami": 0.58,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.12,
+        "heaviness": 0.3,
+        "cleanFinish": 0.36,
+        "linger": 0.3,
+        "smoke": 0.04,
+        "aromaIntensity": 0.54,
+        "textureRichness": 0.36,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.64,
+      "rationale": "A mushroom course likely leans earthy and aromatic with moderate umami and comparatively lower brightness.",
+      "uncertainty_notes": [
+        "Whether this is a garnish-focused or standalone course is not disclosed"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-008",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.34,
+        "sour": 0.1,
+        "bitter": 0.02,
+        "salty": 0.06,
+        "umami": 0.14,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.38,
+        "heaviness": 0.14,
+        "cleanFinish": 0.56,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.58,
+      "rationale": "A course titled Last bite usually functions as a small closing sweet or petit four with lighter texture and short finish.",
+      "uncertainty_notes": [
+        "The course could also be a savory bite, so sweetness remains a moderate inference rather than a certainty"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-989b8343c41d"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-009",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.1,
+        "umami": 0.18,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.36,
+        "heaviness": 0.12,
+        "cleanFinish": 0.5,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.6,
+      "rationale": "Snack is likely the dinner opener, so the profile assumes a compact, bright first bite with limited heaviness.",
+      "uncertainty_notes": [
+        "The PDF lists only the title and not the composition"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-010",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.12,
+        "bitter": 0.02,
+        "salty": 0.2,
+        "umami": 0.48,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.54,
+        "heaviness": 0.12,
+        "cleanFinish": 0.58,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.3,
+        "textureRichness": 0.2,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.66,
+      "rationale": "Sea garden suggests a bright marine course with seaweed or shellfish-like saline freshness and a comparatively clean finish.",
+      "uncertainty_notes": [
+        "Specific ingredients are not shown in the PDF"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-011",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.04,
+        "bitter": 0.06,
+        "salty": 0.18,
+        "umami": 0.64,
+        "fat": 0.28
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.34,
+        "cleanFinish": 0.26,
+        "linger": 0.4,
+        "smoke": 0.02,
+        "aromaIntensity": 0.4,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.74,
+      "rationale": "Meju donut implies fermentation-driven umami inside a fried or pastry-like bite, creating richer aroma and moderate fat.",
+      "uncertainty_notes": [
+        "Dough, filling, and fermentation intensity are inferred"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-012",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.22,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.08,
+        "umami": 0.18,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.26,
+        "heaviness": 0.2,
+        "cleanFinish": 0.48,
+        "linger": 0.2,
+        "smoke": 0,
+        "aromaIntensity": 0.3,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.14
+      },
+      "confidence": 0.62,
+      "rationale": "Jerusalem artichoke generally reads slightly sweet, earthy, and softer in weight than later protein dishes.",
+      "uncertainty_notes": [
+        "The title alone does not disclose whether this is roasted, pureed, or crisped"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-013",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.46,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.46,
+        "heaviness": 0.12,
+        "cleanFinish": 0.58,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.72,
+      "rationale": "Yellowtail keeps the dinner sequence bright and marine before heavier shellfish and meat moments.",
+      "uncertainty_notes": [
+        "Acid, curing, and seasoning remain unknown"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-014",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.54,
+        "fat": 0.14
+      },
+      "perceptual_vector": {
+        "brightness": 0.3,
+        "heaviness": 0.18,
+        "cleanFinish": 0.48,
+        "linger": 0.28,
+        "smoke": 0,
+        "aromaIntensity": 0.26,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.66,
+      "rationale": "A general fish course likely carries moderate umami with a cleaner finish than meat-based courses.",
+      "uncertainty_notes": [
+        "Species and sauce details are not visible"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-015",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.18,
+        "bitter": 0.04,
+        "salty": 0.08,
+        "umami": 0.16,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.62,
+        "heaviness": 0.08,
+        "cleanFinish": 0.7,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.5,
+      "rationale": "Like the lunch version, Palate is treated as a transition course aimed at resetting perception before the next savory push.",
+      "uncertainty_notes": [
+        "Interpretation remains tentative without ingredient disclosure"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-016",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.78,
+        "fat": 0.22
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.34,
+        "cleanFinish": 0.3,
+        "linger": 0.44,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.48,
+        "thermalImpact": 0.26
+      },
+      "confidence": 0.76,
+      "rationale": "Abalone generally increases density, savoriness, and textural weight in the middle of the tasting sequence.",
+      "uncertainty_notes": [
+        "Stock, grilling, or braising treatment is not specified"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-017",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.04,
+        "bitter": 0.06,
+        "salty": 0.18,
+        "umami": 0.62,
+        "fat": 0.48
+      },
+      "perceptual_vector": {
+        "brightness": 0.12,
+        "heaviness": 0.64,
+        "cleanFinish": 0.2,
+        "linger": 0.62,
+        "smoke": 0.04,
+        "aromaIntensity": 0.48,
+        "textureRichness": 0.6,
+        "thermalImpact": 0.3
+      },
+      "confidence": 0.74,
+      "rationale": "Duck implies a richer aromatic main-course profile with more fat and lingering depth than the seafood section.",
+      "uncertainty_notes": [
+        "Roast, sauce, and smoke level are inferred rather than observed"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-018",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.14,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.28,
+        "umami": 0.82,
+        "fat": 0.56
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.72,
+        "cleanFinish": 0.18,
+        "linger": 0.68,
+        "smoke": 0.1,
+        "aromaIntensity": 0.48,
+        "textureRichness": 0.7,
+        "thermalImpact": 0.42
+      },
+      "confidence": 0.82,
+      "rationale": "Galbi remains one of the heaviest savory peaks in the menu, with high umami, fat, and linger.",
+      "uncertainty_notes": [
+        "Marinade sweetness and char are inferred from a typical galbi reading"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-019",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.38,
+        "sour": 0.26,
+        "bitter": 0.02,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.04
+      },
+      "perceptual_vector": {
+        "brightness": 0.72,
+        "heaviness": 0.06,
+        "cleanFinish": 0.74,
+        "linger": 0.08,
+        "smoke": 0,
+        "aromaIntensity": 0.32,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.7,
+      "rationale": "Strawberry near the close of the menu strongly suggests a brighter, sweeter, fruit-led reset into dessert territory.",
+      "uncertainty_notes": [
+        "The course may include dairy or herbs, but those are not visible from the title alone"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-020",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.08,
+        "salty": 0.1,
+        "umami": 0.58,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.12,
+        "heaviness": 0.3,
+        "cleanFinish": 0.36,
+        "linger": 0.3,
+        "smoke": 0.04,
+        "aromaIntensity": 0.54,
+        "textureRichness": 0.36,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.64,
+      "rationale": "The mushroom course likely emphasizes earthy aroma and moderate umami, potentially bridging savory and sweet endings.",
+      "uncertainty_notes": [
+        "Placement relative to strawberry is inferred from the PDF token order"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    },
+    {
+      "dish_external_key": "evett-seoul-dish-021",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.34,
+        "sour": 0.1,
+        "bitter": 0.02,
+        "salty": 0.06,
+        "umami": 0.14,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.38,
+        "heaviness": 0.14,
+        "cleanFinish": 0.56,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.58,
+      "rationale": "The final bite is treated as a small closing sweet or petit four with modest weight and short finish.",
+      "uncertainty_notes": [
+        "This could be savory in practice, so the sweetness assumption remains moderate"
+      ],
+      "evidence_ids": [
+        "evett-seoul-evett-pdf-2026-02-06-https-www-restaurantevett-com-files-ugd-612e5b-fcefb6bb26a9"
+      ]
+    }
+  ],
+  "research_rules": []
+}

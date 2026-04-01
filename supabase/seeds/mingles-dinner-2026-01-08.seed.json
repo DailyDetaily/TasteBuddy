@@ -1,0 +1,1522 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Mingles dinner seed derived from the user-provided 2026-01-08 dinner menu image. Inferred fields remain hypotheses.",
+    "notes": [
+      "Observed fields come directly from the attached menu image text.",
+      "Mingling Pot keeps a course-level row and also separate component rows for finer-grained analysis."
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "mingles-seoul",
+      "name": "밍글스",
+      "timezone": "Asia/Seoul",
+      "city": "Seoul",
+      "intro": "Contemporary Korean fine dining tasting experience led by Chef Mingoo Kang."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "mingles-seoul",
+      "display_name": "강민구",
+      "bio": "Chef-owner of Mingles. Public-facing profile placeholder for MVP content seeds.",
+      "avatar_path": "chefs/kang-mingoo.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "restaurant_slug": "mingles-seoul",
+      "source_type": "menu",
+      "title": "Mingles Dinner Menu 2026-01-08 (user-provided image)",
+      "url": "user-provided-image",
+      "excerpt": "오늘의 스페셜 바이트 / 방어 & 캐비아 젓갈 / 감 & 한우 브레사올라 / 밍글링 팟 / 한우구이 / 스윗 비빔밥",
+      "raw_text": "오늘의 스페셜 바이트\n제주 구좌 당근 스프, 부라타 치즈와 참기름, 성게\n방어 & 캐비아 젓갈\n감 & 한우 브레사올라\n감태롤과 제주소산 금태\n한우 육회와 장어, 매실 고추장\n배와 배추를 겹겹이 쌓은 밀푀유, 캐비아, 오미자, 초고추장, 왕우럭조개\n밍글링 팟 : 2가지 만두 (생선, 배추 & 한우), 버섯 지단, 은행, 해삼 & 새우전, 한우 브로스\n제철 생선구이, 쌀 튀밥, 생선 보푸라기 죽, 캐비아 어란\n찹쌀밥, 벚꽃 새우, 서해안 대하구이, 막걸리 비스큐 소스\n딸기 장아찌, 들깨 무만두, 인삼 치킨 꼬치\n한우구이, 전복 한우 순대, 마, 맑은 비프 쥬, 산초 장아찌, 엔다이브 김치\n스윗 비빔밥 : 찹쌀밥 푸딩, 인삼 아이스크림, 밍글스 간장, 뿌리채소\n아이스 호떡 : 밤꿀 아이스크림, 생강청에 절인 브리오슈와 떡, 시나몬 튀일\nor\n장 트리오 : 된장 크림브륄레, 간장 피칸, 고추장 휘낭, 바닐라와 위스키\n아름다운 우리 다과\n커피 or 차",
+      "trust_score": 0.98
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "mingles-dinner-20260108-dish-01",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "오늘의 스페셜 바이트",
+      "public_subtitle": "제주 구좌 당근 스프, 부라타 치즈와 참기름, 성게",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-02",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "방어 & 캐비아 젓갈",
+      "public_subtitle": "Yellowtail with caviar jeotgal",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-03",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "감 & 한우 브레사올라",
+      "public_subtitle": "Persimmon and Hanwoo bresaola",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-04",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "감태롤",
+      "public_subtitle": "Gamtae roll",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-05",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "제주소산 금태",
+      "public_subtitle": "Jeju golden tilefish",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-06",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "한우 육회와 장어",
+      "public_subtitle": "매실 고추장",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-07",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "배와 배추를 겹겹이 쌓은 밀푀유",
+      "public_subtitle": "캐비아, 오미자, 초고추장, 왕우럭조개",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-08",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "밍글링 팟",
+      "public_subtitle": "2가지 만두, 버섯 지단, 은행, 해삼 & 새우전, 한우 브로스",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-09",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "생선 만두",
+      "public_subtitle": "밍글링 팟 구성: 생선 만두",
+      "course_position": "component",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-10",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "배추 & 한우 만두",
+      "public_subtitle": "밍글링 팟 구성: 배추와 한우 만두",
+      "course_position": "component",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-11",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "해삼",
+      "public_subtitle": "밍글링 팟 구성: 해삼",
+      "course_position": "component",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-12",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "새우전",
+      "public_subtitle": "밍글링 팟 구성: 새우전",
+      "course_position": "component",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-13",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "제철 생선구이",
+      "public_subtitle": "쌀 튀밥, 생선 보푸라기 죽, 캐비아 어란",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-14",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "찹쌀밥",
+      "public_subtitle": "벚꽃 새우, 서해안 대하구이, 막걸리 비스큐 소스",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-15",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "딸기 장아찌",
+      "public_subtitle": "Strawberry pickle",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-16",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "들깨 무만두",
+      "public_subtitle": "Perilla and radish mandu",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-17",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "인삼 치킨 꼬치",
+      "public_subtitle": "Ginseng chicken skewer",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-18",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "한우구이",
+      "public_subtitle": "전복 한우 순대, 마, 맑은 비프 쥬, 산초 장아찌, 엔다이브 김치",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-19",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "스윗 비빔밥",
+      "public_subtitle": "찹쌀밥 푸딩, 인삼 아이스크림, 밍글스 간장, 뿌리채소",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-20",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "아이스 호떡",
+      "public_subtitle": "밤꿀 아이스크림, 생강청에 절인 브리오슈와 떡, 시나몬 튀일",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-21",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "장 트리오",
+      "public_subtitle": "된장 크림브륄레, 간장 피칸, 고추장 휘낭, 바닐라와 위스키",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-22",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "아름다운 우리 다과",
+      "public_subtitle": "Petit four selection",
+      "course_position": "petitFour",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-23",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "커피",
+      "public_subtitle": "Coffee",
+      "course_position": "beverage",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-dinner-20260108-dish-24",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "차",
+      "public_subtitle": "Tea",
+      "course_position": "beverage",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-01",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "제주 구좌 당근",
+          "부라타 치즈",
+          "참기름",
+          "성게"
+        ],
+        "techniques": [
+          "soup"
+        ],
+        "sensoryWords": [
+          "sweet vegetal body",
+          "creamy richness",
+          "sea urchin umami"
+        ],
+        "temperatureBand": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-02",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "방어",
+          "캐비아 젓갈"
+        ],
+        "techniques": [
+          "raw or lightly cured seafood preparation"
+        ],
+        "sensoryWords": [
+          "briny marine intensity",
+          "clean fatty fish",
+          "salty lift"
+        ],
+        "temperatureBand": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-03",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "감",
+          "한우"
+        ],
+        "techniques": [
+          "cured beef preparation"
+        ],
+        "sensoryWords": [
+          "sweet-savory opening",
+          "light cured aroma"
+        ],
+        "temperatureBand": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-04",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "감태"
+        ],
+        "techniques": [
+          "roll construction"
+        ],
+        "sensoryWords": [
+          "seaweed aroma",
+          "clean marine savory note"
+        ],
+        "temperatureBand": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-05",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "금태"
+        ],
+        "techniques": [
+          "fish preparation"
+        ],
+        "sensoryWords": [
+          "soft fatty fish",
+          "delicate marine umami"
+        ],
+        "temperatureBand": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-06",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "한우 육회",
+          "장어",
+          "매실 고추장"
+        ],
+        "techniques": [
+          "raw beef preparation"
+        ],
+        "sensoryWords": [
+          "sweet-savory heat",
+          "fermented fruit acidity",
+          "dense umami"
+        ],
+        "temperatureBand": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-07",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "배",
+          "배추",
+          "캐비아",
+          "오미자",
+          "초고추장",
+          "왕우럭조개"
+        ],
+        "techniques": [
+          "layering"
+        ],
+        "sensoryWords": [
+          "bright acidity",
+          "briny lift",
+          "crisp layered texture"
+        ],
+        "temperatureBand": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-08",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "생선 만두",
+          "배추와 한우 만두",
+          "버섯 지단",
+          "은행",
+          "해삼",
+          "새우전",
+          "한우 브로스"
+        ],
+        "techniques": [
+          "broth concentration",
+          "dumpling course"
+        ],
+        "sensoryWords": [
+          "deep broth umami",
+          "layered Korean savory density",
+          "long finish"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-09",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "생선 만두"
+        ],
+        "techniques": [
+          "dumpling"
+        ],
+        "sensoryWords": [
+          "soft savory filling",
+          "broth-friendly texture",
+          "gentle marine umami"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-10",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "배추",
+          "한우 만두"
+        ],
+        "techniques": [
+          "dumpling"
+        ],
+        "sensoryWords": [
+          "cabbage sweetness",
+          "beefy savory core",
+          "soft juicy body"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-11",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "해삼"
+        ],
+        "techniques": [
+          "light poaching or broth service"
+        ],
+        "sensoryWords": [
+          "marine chew",
+          "mineral savoriness",
+          "clean saline note"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-12",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "새우전"
+        ],
+        "techniques": [
+          "jeon",
+          "pan-frying"
+        ],
+        "sensoryWords": [
+          "shrimp umami",
+          "light fried aroma",
+          "savory richness"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-13",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "제철 생선구이",
+          "쌀 튀밥",
+          "생선 보푸라기 죽",
+          "캐비아",
+          "어란"
+        ],
+        "techniques": [
+          "grilling",
+          "porridge accompaniment"
+        ],
+        "sensoryWords": [
+          "toasted grain note",
+          "marine salinity",
+          "soft savory finish"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-14",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "찹쌀밥",
+          "벚꽃 새우",
+          "서해안 대하구이",
+          "막걸리 비스큐"
+        ],
+        "techniques": [
+          "grilling",
+          "bisque sauce"
+        ],
+        "sensoryWords": [
+          "sweet shellfish richness",
+          "grainy body",
+          "fermented sauce depth"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-15",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "딸기"
+        ],
+        "techniques": [
+          "pickling"
+        ],
+        "sensoryWords": [
+          "acidic reset",
+          "fruity brightness"
+        ],
+        "temperatureBand": "cold"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-16",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "들깨",
+          "무만두"
+        ],
+        "techniques": [
+          "dumpling"
+        ],
+        "sensoryWords": [
+          "nutty softness",
+          "gentle savory body"
+        ],
+        "temperatureBand": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-17",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "인삼",
+          "치킨"
+        ],
+        "techniques": [
+          "skewer"
+        ],
+        "sensoryWords": [
+          "aromatic savory bite",
+          "light medicinal lift"
+        ],
+        "temperatureBand": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-18",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "한우구이",
+          "전복 한우 순대",
+          "마",
+          "맑은 비프 쥬",
+          "산초 장아찌",
+          "엔다이브 김치"
+        ],
+        "techniques": [
+          "grilling",
+          "clear jus"
+        ],
+        "sensoryWords": [
+          "dense beef umami",
+          "fatty core",
+          "pickled relief"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-19",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "찹쌀밥 푸딩",
+          "인삼 아이스크림",
+          "밍글스 간장",
+          "뿌리채소"
+        ],
+        "techniques": [
+          "dessert reinterpretation"
+        ],
+        "sensoryWords": [
+          "sweet-savory contrast",
+          "earthy aroma",
+          "layered dessert finish"
+        ],
+        "temperatureBand": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-20",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "밤꿀 아이스크림",
+          "생강청",
+          "브리오슈",
+          "떡",
+          "시나몬 튀일"
+        ],
+        "techniques": [
+          "frozen dessert",
+          "pickled ginger syrup"
+        ],
+        "sensoryWords": [
+          "honeyed sweetness",
+          "warm spice aroma",
+          "soft-rich dessert"
+        ],
+        "temperatureBand": "cold"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-21",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "된장 크림브륄레",
+          "간장 피칸",
+          "고추장 휘낭",
+          "바닐라",
+          "위스키"
+        ],
+        "techniques": [
+          "dessert reinterpretation",
+          "baking"
+        ],
+        "sensoryWords": [
+          "fermented savory depth",
+          "sweet finish",
+          "boozy aroma"
+        ],
+        "temperatureBand": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-22",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "다과"
+        ],
+        "techniques": [
+          "petit four service"
+        ],
+        "sensoryWords": [
+          "light finishing sweetness",
+          "varied texture"
+        ],
+        "temperatureBand": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-23",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "커피"
+        ],
+        "techniques": [
+          "beverage service"
+        ],
+        "sensoryWords": [
+          "bitter closing beverage",
+          "roasted aroma"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-24",
+      "source_external_key": "mingles-dinner-menu-2026-01-08-user-image",
+      "fact_type": "menu_observed",
+      "value_json": {
+        "ingredients": [
+          "차"
+        ],
+        "techniques": [
+          "beverage service"
+        ],
+        "sensoryWords": [
+          "gentle closing infusion"
+        ],
+        "temperatureBand": "hot"
+      },
+      "confidence": 0.98
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-01",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.46,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.64,
+        "fat": 0.44
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.52,
+        "cleanFinish": 0.24,
+        "linger": 0.54,
+        "smoke": 0.0,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.6,
+        "thermalImpact": 0.38
+      },
+      "confidence": 0.88,
+      "rationale": "The dinner image explicitly presents this as today's special bite with carrot soup, burrata, sesame oil, and sea urchin, indicating layered sweetness, dairy-fat richness, and marine umami in a compact opening course.",
+      "uncertainty_notes": [
+        "Broth base and acid balance are not listed",
+        "the exact serving size and temperature are inferred from soup format"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-02",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.34,
+        "umami": 0.62,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.44,
+        "heaviness": 0.14,
+        "cleanFinish": 0.54,
+        "linger": 0.28,
+        "smoke": 0.0,
+        "aromaIntensity": 0.36,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.12
+      },
+      "confidence": 0.82,
+      "rationale": "Yellowtail and caviar jeotgal strongly suggest a cool marine bite with pronounced salinity and umami while keeping a relatively clean finish from the fish's natural texture.",
+      "uncertainty_notes": [
+        "Exact treatment of the yellowtail and jeotgal ratio are not visible",
+        "fat and acidity remain inferred"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-03",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.42,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.28,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.3,
+        "heaviness": 0.18,
+        "cleanFinish": 0.44,
+        "linger": 0.26,
+        "smoke": 0.0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.76,
+      "rationale": "The menu explicitly names persimmon and Hanwoo bresaola, suggesting a lightly sweet, savory bite with moderate umami and clean finish.",
+      "uncertainty_notes": [
+        "Seasoning, garnish, and curing intensity are not shown on the menu image"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-04",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.44,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.1,
+        "cleanFinish": 0.6,
+        "linger": 0.2,
+        "smoke": 0.0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.62,
+      "rationale": "The menu explicitly names a gamtae roll, which suggests a seaweed-led aromatic bite with clean marine savoriness and relatively low heaviness.",
+      "uncertainty_notes": [
+        "Filling and seasoning are not shown on the menu image",
+        "salt and umami levels depend on the hidden interior components"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-05",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.62,
+        "fat": 0.26
+      },
+      "perceptual_vector": {
+        "brightness": 0.28,
+        "heaviness": 0.22,
+        "cleanFinish": 0.48,
+        "linger": 0.32,
+        "smoke": 0.0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.64,
+      "rationale": "Jeju kinmedai usually implies delicate fish oil richness and soft savory density, so the inferred profile emphasizes umami and moderate fat without excessive linger.",
+      "uncertainty_notes": [
+        "Cooking method is not shown in the image",
+        "temperature and sauce support remain inferred"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-06",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.24,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.76,
+        "fat": 0.34
+      },
+      "perceptual_vector": {
+        "brightness": 0.4,
+        "heaviness": 0.34,
+        "cleanFinish": 0.3,
+        "linger": 0.46,
+        "smoke": 0.0,
+        "aromaIntensity": 0.38,
+        "textureRichness": 0.4,
+        "thermalImpact": 0.16
+      },
+      "confidence": 0.84,
+      "rationale": "Hanwoo yukhoe and eel imply concentrated umami and fat, while plum gochujang likely adds brightness, acidity, and sweetness to keep the course from becoming too heavy.",
+      "uncertainty_notes": [
+        "Spice level and eel treatment are not visible",
+        "fat dominance depends on portion ratio"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-07",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.16,
+        "sour": 0.44,
+        "bitter": 0.02,
+        "salty": 0.28,
+        "umami": 0.58,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.72,
+        "heaviness": 0.12,
+        "cleanFinish": 0.56,
+        "linger": 0.28,
+        "smoke": 0.0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.9,
+      "rationale": "Pear, cabbage, omija, cho-gochujang, caviar, and shellfish point to a highly structured bright dish with acid lift, marine salinity, and low heaviness.",
+      "uncertainty_notes": [
+        "Exact shellfish preparation and sauce proportions are not public",
+        "sweetness depends on pear ripeness and omija balance"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-08",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.24,
+        "umami": 0.94,
+        "fat": 0.26
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.48,
+        "cleanFinish": 0.3,
+        "linger": 0.82,
+        "smoke": 0.0,
+        "aromaIntensity": 0.56,
+        "textureRichness": 0.54,
+        "thermalImpact": 0.62
+      },
+      "confidence": 0.95,
+      "rationale": "This dish explicitly includes Hanwoo broth, dumplings, seafood, mushrooms, and ginkgo, making it the clearest high-umami, long-linger signature course in the dinner sequence.",
+      "uncertainty_notes": [
+        "Broth reduction and dumpling filling ratios are not public",
+        "fat level may vary depending on broth concentration"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-09",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.58,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.16,
+        "cleanFinish": 0.5,
+        "linger": 0.26,
+        "smoke": 0.0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.24
+      },
+      "confidence": 0.68,
+      "rationale": "As a fish dumpling inside Mingling Pot, this component likely carries gentle marine umami and a soft texture that absorbs the Hanwoo broth rather than dominating it.",
+      "uncertainty_notes": [
+        "Exact fish species and seasoning are not listed",
+        "wrapper thickness and broth absorption are inferred"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-10",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.7,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.16,
+        "heaviness": 0.24,
+        "cleanFinish": 0.42,
+        "linger": 0.34,
+        "smoke": 0.0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.24
+      },
+      "confidence": 0.72,
+      "rationale": "Cabbage and Hanwoo dumpling suggests a sweeter and denser savory profile than the fish dumpling, with more umami and a slightly richer linger in broth.",
+      "uncertainty_notes": [
+        "Hanwoo fat ratio and cabbage sweetness are not visible on the menu image"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-11",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.5,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.28,
+        "heaviness": 0.08,
+        "cleanFinish": 0.58,
+        "linger": 0.22,
+        "smoke": 0.0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.36,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.62,
+      "rationale": "Sea cucumber in a broth-forward course usually contributes mineral marine savoriness and textural contrast more than overt fat or sweetness.",
+      "uncertainty_notes": [
+        "Preparation style is not public",
+        "texture intensity depends on cut and cooking time"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-12",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.62,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.22,
+        "cleanFinish": 0.42,
+        "linger": 0.3,
+        "smoke": 0.04,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.26
+      },
+      "confidence": 0.66,
+      "rationale": "A shrimp jeon component likely adds a slightly richer savory note and a mild pan-fried aroma compared with the other broth elements.",
+      "uncertainty_notes": [
+        "Batter thickness and oil level are not visible",
+        "the degree of crispness in broth service is inferred"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-13",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.34,
+        "umami": 0.78,
+        "fat": 0.2
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.3,
+        "cleanFinish": 0.34,
+        "linger": 0.58,
+        "smoke": 0.08,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.46,
+        "thermalImpact": 0.54
+      },
+      "confidence": 0.86,
+      "rationale": "Grilled seasonal fish with puffed rice, fish porridge, caviar, and bottarga suggests a savory marine profile with moderate salinity and warm lingering texture from the porridge element.",
+      "uncertainty_notes": [
+        "Fish species is not specified",
+        "smoke depends on grill intensity not visible in the image"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-14",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.1,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.82,
+        "fat": 0.36
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.42,
+        "cleanFinish": 0.26,
+        "linger": 0.64,
+        "smoke": 0.06,
+        "aromaIntensity": 0.46,
+        "textureRichness": 0.52,
+        "thermalImpact": 0.56
+      },
+      "confidence": 0.88,
+      "rationale": "Glutinous rice with sakura shrimp, grilled prawns, and makgeolli bisque implies shellfish umami, moderate richness, and a long creamy-fermented finish.",
+      "uncertainty_notes": [
+        "Makgeolli bisque acidity and sweetness are inferred",
+        "shellfish intensity depends on sauce concentration"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-15",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.26,
+        "sour": 0.48,
+        "bitter": 0.02,
+        "salty": 0.04,
+        "umami": 0.06,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.74,
+        "heaviness": 0.06,
+        "cleanFinish": 0.7,
+        "linger": 0.12,
+        "smoke": 0.0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.12,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.66,
+      "rationale": "Strawberry pickle reads as a palate-reset bite with high brightness and acidity, low heaviness, and short linger.",
+      "uncertainty_notes": [
+        "Pickling sugar ratio is unknown",
+        "spice or herb support is not visible on the menu"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-16",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.1,
+        "umami": 0.34,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.22,
+        "cleanFinish": 0.52,
+        "linger": 0.24,
+        "smoke": 0.0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.6,
+      "rationale": "Perilla and radish dumpling suggests a softer, nuttier savory interlude with relatively clean finish and low intensity compared with main courses.",
+      "uncertainty_notes": [
+        "Filling composition and broth or sauce support are not shown",
+        "fat and umami values are conservative inference"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-17",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.04,
+        "salty": 0.1,
+        "umami": 0.38,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.16,
+        "heaviness": 0.2,
+        "cleanFinish": 0.5,
+        "linger": 0.24,
+        "smoke": 0.0,
+        "aromaIntensity": 0.36,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.64,
+      "rationale": "A ginseng chicken skewer implies a compact savory bite with aromatic lift from ginseng and moderate umami from chicken.",
+      "uncertainty_notes": [
+        "Seasoning and glaze are not shown",
+        "ginseng bitterness may vary depending on preparation"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-18",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.18,
+        "bitter": 0.04,
+        "salty": 0.2,
+        "umami": 0.9,
+        "fat": 0.52
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.62,
+        "cleanFinish": 0.28,
+        "linger": 0.74,
+        "smoke": 0.1,
+        "aromaIntensity": 0.48,
+        "textureRichness": 0.58,
+        "thermalImpact": 0.6
+      },
+      "confidence": 0.92,
+      "rationale": "Beef, abalone-Hanwoo sundae, and clear beef jus imply the menu's heaviest umami and fat core, while sancho pickle and endive kimchi likely provide acidity and bitter relief.",
+      "uncertainty_notes": [
+        "Exact beef cut, jus reduction, and kimchi intensity are not specified",
+        "yam contributes texture but not a clear taste signal from the menu alone"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-19",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.58,
+        "sour": 0.08,
+        "bitter": 0.06,
+        "salty": 0.1,
+        "umami": 0.22,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.24,
+        "cleanFinish": 0.42,
+        "linger": 0.38,
+        "smoke": 0.0,
+        "aromaIntensity": 0.38,
+        "textureRichness": 0.32,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.86,
+      "rationale": "Sticky-rice pudding, ginseng ice cream, ganjang, and root vegetables indicate a sweet-savory dessert with earthy aromatics and moderate lingering finish.",
+      "uncertainty_notes": [
+        "Exact sweetness level and ganjang salinity are not shown",
+        "ginseng bitterness is inferred and may vary"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-20",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.74,
+        "sour": 0.12,
+        "bitter": 0.06,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.24
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.3,
+        "cleanFinish": 0.34,
+        "linger": 0.46,
+        "smoke": 0.0,
+        "aromaIntensity": 0.44,
+        "textureRichness": 0.36,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.82,
+      "rationale": "Chestnut honey ice cream, ginger preserve, brioche, rice cake, and cinnamon tuile suggest a sweeter warm-spiced dessert with moderate richness and aromatic lift.",
+      "uncertainty_notes": [
+        "This dessert is one of two options, so guest exposure is conditional",
+        "acidity depends on ginger preserve intensity"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-21",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.52,
+        "sour": 0.04,
+        "bitter": 0.06,
+        "salty": 0.14,
+        "umami": 0.36,
+        "fat": 0.22
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.22,
+        "cleanFinish": 0.4,
+        "linger": 0.42,
+        "smoke": 0.0,
+        "aromaIntensity": 0.52,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.9,
+      "rationale": "This is the clearest dessert built around Korean ferments on the menu, with doenjang, ganjang, and gochujang explicitly listed alongside vanilla and whisky, implying sweet-savory depth and aromatic complexity.",
+      "uncertainty_notes": [
+        "Guest chooses either this or Ice Hotteok",
+        "exact sweetness and alcohol intensity are not visible from the menu image"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-22",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.44,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.12,
+        "cleanFinish": 0.38,
+        "linger": 0.18,
+        "smoke": 0.0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.42,
+      "rationale": "The menu indicates a Korean petit four finale, which usually functions as a lighter closing sweet bite with limited intensity compared with plated desserts.",
+      "uncertainty_notes": [
+        "Specific components are not listed, so most of this row remains low-confidence inference"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-23",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.06,
+        "bitter": 0.32,
+        "salty": 0.02,
+        "umami": 0.02,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.08,
+        "heaviness": 0.06,
+        "cleanFinish": 0.44,
+        "linger": 0.18,
+        "smoke": 0.06,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.34
+      },
+      "confidence": 0.36,
+      "rationale": "Coffee is a distinct closing beverage with higher bitterness and roasted aroma than tea, so it should be modeled separately when a guest selects it.",
+      "uncertainty_notes": [
+        "Coffee origin, roast, and service style are unknown"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-dinner-20260108-dish-24",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.04,
+        "bitter": 0.08,
+        "salty": 0.02,
+        "umami": 0.02,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.02,
+        "cleanFinish": 0.56,
+        "linger": 0.1,
+        "smoke": 0.0,
+        "aromaIntensity": 0.16,
+        "textureRichness": 0.08,
+        "thermalImpact": 0.28
+      },
+      "confidence": 0.28,
+      "rationale": "Tea functions as a gentler closing beverage with cleaner finish and lower bitterness than coffee, so it should be represented as its own beverage entity.",
+      "uncertainty_notes": [
+        "Tea type is not specified",
+        "brightness and bitterness vary widely by actual selection"
+      ],
+      "evidence_ids": [
+        "mingles-dinner-menu-2026-01-08-user-image"
+      ]
+    }
+  ]
+}

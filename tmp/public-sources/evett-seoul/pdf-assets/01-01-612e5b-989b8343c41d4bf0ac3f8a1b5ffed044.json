@@ -1,0 +1,16 @@
+{
+  "pageCount": 2,
+  "pages": [
+    {
+      "imagePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/public-sources/evett-seoul/pdf-assets/01-01-612e5b-989b8343c41d4bf0ac3f8a1b5ffed044/01-01-612e5b-989b8343c41d4bf0ac3f8a1b5ffed044-page-01.png",
+      "pageNumber": 1,
+      "text": "나무 방어 생선 미각 전복 갈비 버섯 마지막 한 입"
+    },
+    {
+      "imagePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/public-sources/evett-seoul/pdf-assets/01-01-612e5b-989b8343c41d4bf0ac3f8a1b5ffed044/01-01-612e5b-989b8343c41d4bf0ac3f8a1b5ffed044-page-02.png",
+      "pageNumber": 2,
+      "text": "Tree Yellowtail Fish Palate Abalone Galbi Mushroom Last bite"
+    }
+  ],
+  "pdfPath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/public-sources/evett-seoul/pdf-assets/01-01-612e5b-989b8343c41d4bf0ac3f8a1b5ffed044.pdf"
+}

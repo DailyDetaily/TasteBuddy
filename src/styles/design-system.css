@@ -102,6 +102,8 @@
   --tb-taste-sweet-dark: #cc7a00;
   --tb-taste-sweet-light: #ffcc80;
   --tb-taste-sweet-bg: #ffd699;
+  --tb-taste-sweet-tint-sub-text: #896735;
+  --tb-taste-sweet-tint-text: #6f4609;
   --tb-taste-sweet-gradient: linear-gradient(135deg, #ff9900, #ffb84d);
   --tb-taste-sweet-accent: #ff9500;
   --tb-taste-sweet-ring-base: #ffebcc;
@@ -111,6 +113,8 @@
   --tb-taste-sour-dark: #c99a00;
   --tb-taste-sour-light: #fdd835;
   --tb-taste-sour-bg: #ffef99;
+  --tb-taste-sour-tint-sub-text: #897c35;
+  --tb-taste-sour-tint-text: #6f5f09;
   --tb-taste-sour-gradient: linear-gradient(135deg, #fbc02d, #ffd54f);
   --tb-taste-sour-accent: #ffd600;
   --tb-taste-sour-ring-base: #fff7cc;
@@ -120,6 +124,8 @@
   --tb-taste-bitter-dark: #6e9600;
   --tb-taste-bitter-light: #e6ee9c;
   --tb-taste-bitter-bg: #e0ebb4;
+  --tb-taste-bitter-tint-sub-text: #70794b;
+  --tb-taste-bitter-tint-text: #505b24;
   --tb-taste-bitter-gradient: linear-gradient(135deg, #95c900, #aed581);
   --tb-taste-bitter-accent: #8cc600;
   --tb-taste-bitter-ring-base: #eaf4cc;
@@ -129,6 +135,8 @@
   --tb-taste-salty-dark: #4a70cc;
   --tb-taste-salty-light: #90caf9;
   --tb-taste-salty-bg: #c6d6ff;
+  --tb-taste-salty-tint-sub-text: #5a6789;
+  --tb-taste-salty-tint-text: #36466f;
   --tb-taste-salty-gradient: linear-gradient(135deg, #7299ff, #9fbfff);
   --tb-taste-salty-accent: #5898ff;
   --tb-taste-salty-ring-base: #e3ebff;
@@ -138,6 +146,8 @@
   --tb-taste-umami-dark: #8a5490;
   --tb-taste-umami-light: #ce93d8;
   --tb-taste-umami-bg: #e1c7e1;
+  --tb-taste-umami-tint-sub-text: #705b70;
+  --tb-taste-umami-tint-text: #513751;
   --tb-taste-umami-gradient: linear-gradient(135deg, #b372b4, #ce93d8);
   --tb-taste-umami-accent: #af52de;
   --tb-taste-umami-ring-base: #f0e3f0;
@@ -147,6 +157,8 @@
   --tb-taste-fat-dark: #6b5e54;
   --tb-taste-fat-light: #bcaaa4;
   --tb-taste-fat-bg: #d5cfca;
+  --tb-taste-fat-tint-sub-text: #66625d;
+  --tb-taste-fat-tint-text: #453f3a;
   --tb-taste-fat-gradient: linear-gradient(135deg, #95867a, #b0a49a);
   --tb-taste-fat-accent: #8e8279;
   --tb-taste-fat-ring-base: #eae7e4;
@@ -240,7 +252,12 @@
 
   .tb-section-card--interactive:hover {
     background: var(--tb-color-surface-card-hover);
-    box-shadow: var(--tb-shadow-hover);
+    box-shadow: var(--tb-shadow-strong);
+    transform: translateY(-4px);
+  }
+
+  .tb-section-card--interactive:active {
+    transform: scale(0.99) translateY(-4px);
   }
 
   .tb-section-card__body {

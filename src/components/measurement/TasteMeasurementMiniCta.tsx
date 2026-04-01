@@ -1,4 +1,6 @@
-import { RefreshCcw } from 'lucide-react';
+import { ArrowCounterclockwiseRegular } from '@fluentui/react-icons';
+const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
+const RefreshCcw = wrapIcon(ArrowCounterclockwiseRegular);
 
 import PrimaryButton from '../system/PrimaryButton';
 

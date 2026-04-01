@@ -12,7 +12,21 @@ import chefLeeJun from "../assets/LeeJun.png";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
 import TasteChip from "../components/system/TasteChip";
 import TopAppBar from "../components/TopAppBar";
-import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, mixHexColors, TASTE_TYPES } from "../constants/tasteColors";
+import { TASTE_IDS, TASTE_TOKENS, type TasteId } from "../constants/designTokens";
+import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, getTasteBg, mixHexColors, TASTE_TYPES } from "../constants/tasteColors";
+import { type DiningFeedbackDraft } from "../constants/diningFeedbackData";
+import { type ReservationRecord } from "../constants/reservationCatalog";
+import {
+  TASTE_MEASUREMENT_AVERAGES,
+  getTasteMeasurementAgeLabel,
+  type TasteMeasurementSnapshot,
+} from "../constants/tasteMeasurementData";
+import {
+  hydrateRecentMeasurementSnapshots,
+  hydrateReservationPageData,
+  hydrateRestaurantContentCatalog,
+  type RestaurantContentDish,
+} from "../lib/tasteBuddySupabase";
 import {  
   StarRegular, StarHalfRegular, ClockRegular, SearchRegular,
   ChevronDownRegular, ChevronRightRegular, ChevronUpRegular 
@@ -31,6 +45,108 @@ const Search = wrapIcon(SearchRegular);
 const ChevronDown = wrapIcon(ChevronDownRegular);
 const ChevronRight = wrapIcon(ChevronRightRegular);
 const ChevronUp = wrapIcon(ChevronUpRegular);
+
+type HomeChefCardData = {
+  bgColor?: string;
+  image: string | null;
+  match: number;
+  name: string;
+  restaurant: string;
+  taste: string;
+};
+
+type HomeAdjustmentHistoryItem = {
+  adjustmentDetail: {
+    evaluation: {
+      options: {
+        negative1: string;
+        negative2: string;
+        positive: string;
+      };
+      question: string;
+    };
+    method: {
+      minus: {
+        desc: string;
+        icon: string;
+        name: string;
+      };
+      plus: {
+        desc: string;
+        icon: string;
+        name: string;
+      };
+    };
+    quote: string;
+    summary: Array<{
+      label: string;
+      taste: string;
+      value: number;
+    }>;
+  };
+  adjustments: Array<{
+    change: string;
+    taste: string;
+  }>;
+  badgeColor?: string;
+  chefName: string;
+  color?: string;
+  date: string;
+  duration: string;
+  feedbackLabel: string;
+  id: number;
+  image: string | null;
+  isExpanded: boolean;
+  likedTastes: string[];
+  menu: string;
+  neededAdjustments: string[];
+  restaurant: string;
+  satisfaction: number;
+  selectedIntensity: string | null;
+  time: string;
+};
+
+type HomeTrendDetail = {
+  cue: string;
+  detailLabel: string;
+  detailTypeLabel?: string;
+  history: string[];
+  parentTaste: string;
+  change: string;
+  trend: "increase" | "decrease";
+};
+
+type HomeTasteProfileCardData = {
+  details: HomeTrendDetail[];
+  keywords: string[];
+  periodLabel: string;
+  serviceHint: string;
+  summary: string;
+  title: string;
+};
+
+type HomeSpecialNoteCardData = {
+  confidenceLabel: string;
+  confidenceNote: string;
+  details: HomeTrendDetail[];
+  guidance: string[];
+  keywords: string[];
+  periodLabel: string;
+  reservationHint: string;
+  serviceHint: string;
+  summary: string;
+  title: string;
+  translationStatusLabel: string;
+};
+
+type HomeMeasurementSeriesPoint = {
+  label: string;
+} & Record<string, number | string>;
+
+type HomeMeasurementOverviewValue = {
+  change: number;
+  taste: string;
+};
 
 const HOME_TASTE_PROFILE_CARD = {
   details: [
@@ -127,6 +243,34 @@ const HOME_SPECIAL_NOTE_CIRCLE_GRADIENT = buildTasteAdjustmentGradient(
   })),
   { direction: "to bottom", useTint: false },
 );
+
+function cloneHomeTrendDetail(detail: HomeTrendDetail): HomeTrendDetail {
+  return {
+    ...detail,
+    history: [...detail.history],
+  };
+}
+
+function cloneHomeTasteProfileCardData(
+  cardData: typeof HOME_TASTE_PROFILE_CARD | HomeTasteProfileCardData,
+): HomeTasteProfileCardData {
+  return {
+    ...cardData,
+    details: cardData.details.map((detail) => cloneHomeTrendDetail(detail)),
+    keywords: [...cardData.keywords],
+  };
+}
+
+function cloneHomeSpecialNoteCardData(
+  cardData: typeof HOME_SPECIAL_NOTE_CARD | HomeSpecialNoteCardData,
+): HomeSpecialNoteCardData {
+  return {
+    ...cardData,
+    details: cardData.details.map((detail) => cloneHomeTrendDetail(detail)),
+    guidance: [...cardData.guidance],
+    keywords: [...cardData.keywords],
+  };
+}
 
 function parseTasteChangeValue(change: number | string) {
   if (typeof change === "number") {
@@ -234,302 +378,10 @@ function buildSpecialNoteTrendPath(points: Array<{ x: number; y: number }>) {
 
 
 
-function Ratio() {
-  return <div className="h-full w-0" data-name="Ratio" />;
-}
-
-function Ratio1() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[16px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "32" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[330deg]">
-          <Ratio />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Ratio2() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-start overflow-clip relative shrink-0" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[32px]" style={{ "--transform-inner-width": "16", "--transform-inner-height": "32" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[323.13deg]">
-          <Ratio1 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProfileImageResourcePlaceholderProfileInitials() {
-  return (
-    <div className="absolute bg-white inset-0" data-name="Profile-Image/_Resource/Placeholder/Profile-Initials">
-      <div className="absolute inset-0" style={{ "--fill-0": "rgba(255, 153, 0, 1)" } as React.CSSProperties}>
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 32 32">
-          <path d="M32 32H0V0H32V32Z" fill="var(--fill-0, #FF9900)" id="Subtract" opacity="0.2" />
-        </svg>
-      </div>
-      <p className="absolute font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[normal] left-[16px] text-[#0f0f0f] text-[14px] text-center text-nowrap top-[8px] translate-x-[-50%] whitespace-pre">JH</p>
-    </div>
-  );
-}
-
-function ProfileImageProfileImage() {
-  return (
-    <div className="relative rounded-[10000px] shrink-0 size-[32px]" data-name="Profile-Image/Profile-Image">
-      <div className="content-stretch flex items-center justify-center overflow-clip relative rounded-[inherit] size-[32px]">
-        <Ratio2 />
-        <ProfileImageResourcePlaceholderProfileInitials />
-      </div>
-      <div aria-hidden="true" className="absolute border border-[rgba(15,15,15,0.2)] border-solid inset-0 pointer-events-none rounded-[10000px]" />
-    </div>
-  );
-}
-
-function ProfileImage() {
-  return (
-    <div className="content-stretch flex items-center justify-center relative shrink-0" data-name="Profile-image">
-      <ProfileImageProfileImage />
-    </div>
-  );
-}
-
-function Left() {
-  return (
-    <div className="content-stretch flex items-center relative shrink-0" data-name="Left">
-      <ProfileImage />
-    </div>
-  );
-}
-
-function Ratio3() {
-  return <div className="h-full w-0" data-name="Ratio" />;
-}
-
-function Ratio4() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[330deg]">
-          <Ratio3 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Ratio5() {
-  return (
-    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[323.13deg]">
-          <Ratio4 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AlertUndefinedGlyphUndefined() {
-  return (
-    <div className="absolute left-0 size-[24px] top-0" data-name="Alert / undefined / Glyph: undefined">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
-        <g id="Alert / undefined / Glyph: undefined">
-          <path d={svgPaths.p10a17300} fill="var(--fill-0, #3F3F3F)" id="Union" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function Icons() {
-  return (
-    <div className="relative shrink-0 size-[24px]" data-name="Icons">
-      <Ratio5 />
-      <AlertUndefinedGlyphUndefined />
-    </div>
-  );
-}
-
-function Ratio6() {
-  return <div className="h-full w-0" data-name="Ratio" />;
-}
-
-function Ratio7() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[330deg]">
-          <Ratio6 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Ratio8() {
-  return (
-    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[323.13deg]">
-          <Ratio7 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AddCircleUndefinedGlyphUndefined() {
-  return (
-    <div className="absolute left-0 size-[24px] top-0" data-name="Add Circle / undefined / Glyph: undefined">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
-        <g id="Add Circle / undefined / Glyph: undefined">
-          <path d={svgPaths.p35731e80} fill="var(--fill-0, #3F3F3F)" id="Vector" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function Icons1() {
-  return (
-    <div className="relative shrink-0 size-[24px]" data-name="Icons">
-      <Ratio8 />
-      <AddCircleUndefinedGlyphUndefined />
-    </div>
-  );
-}
-
-function Ratio9() {
-  return <div className="h-full w-0" data-name="Ratio" />;
-}
-
-function Ratio10() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[330deg]">
-          <Ratio9 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Ratio11() {
-  return (
-    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[323.13deg]">
-          <Ratio10 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Group7() {
-  return (
-    <div className="absolute inset-[21.88%_9.38%]">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 14">
-        <g id="Group 151">
-          <path d={svgPaths.p184c1a00} fill="var(--fill-0, #3F3F3F)" id="Vector 229 (Stroke)" />
-          <path d={svgPaths.p22677180} fill="var(--fill-0, #3F3F3F)" id="Vector 231 (Stroke)" />
-          <path d={svgPaths.pa9da800} fill="var(--fill-0, #3F3F3F)" id="Vector 230 (Stroke)" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function NavigationUndefinedGlyphUndefined() {
-  return (
-    <div className="absolute left-0 overflow-clip size-[24px] top-0" data-name="Navigation / undefined / Glyph: undefined">
-      <Group7 />
-    </div>
-  );
-}
-
-function Icons2() {
-  return (
-    <div className="relative shrink-0 size-[24px]" data-name="Icons">
-      <Ratio11 />
-      <NavigationUndefinedGlyphUndefined />
-    </div>
-  );
-}
-
-function Icon() {
-  return (
-    <div className="box-border content-stretch flex gap-[16px] items-center justify-end px-0 py-[2px] relative shrink-0" data-name="Icon">
-      <Icons />
-      <Icons1 />
-      <Icons2 />
-    </div>
-  );
-}
-
-function Action() {
-  return (
-    <div className="content-stretch flex gap-[16px] items-center justify-center relative shrink-0" data-name="Action">
-      <Icon />
-    </div>
-  );
-}
-
-function Right() {
-  return (
-    <div className="content-stretch flex gap-[20px] items-center justify-center relative shrink-0" data-name="Right">
-      <Action />
-    </div>
-  );
-}
-
-function Content() {
-  return (
-    <div className="bg-white h-[56px] max-w-[1100px] relative shrink-0 w-full" data-name="Content">
-      <div className="flex flex-row items-center max-w-inherit overflow-clip rounded-[inherit] size-full">
-        <div className="box-border content-stretch flex h-[56px] items-center justify-between max-w-inherit pl-[20px] pr-[16px] py-[12px] relative w-full">
-          <Left />
-          <Right />
-        </div>
-      </div>
-      <div aria-hidden="true" className="absolute border-[0px_0px_1px] border-solid border-white inset-0 pointer-events-none" />
-    </div>
-  );
-}
-
-function Container() {
-  return (
-    <div className="backdrop-blur-[32px] backdrop-filter content-stretch flex flex-col items-center justify-center relative shrink-0 w-full" data-name="Container">
-      <div className="absolute bg-white inset-0 opacity-[0.74]" data-name="Background" />
-
-      <Content />
-    </div>
-  );
-}
-
-function TopAppBars() {
-  return (
-    <div className="bg-white content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Top App Bars">
-      <Container />
-    </div>
-  );
-}
-
-function OsBarTopNavigationResourceContents() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="OS/Bar/Top Navigation/Resource/Contents">
-      <TopAppBars />
-    </div>
-  );
-}
-
 function Heading() {
   return (
     <div className="basis-0 content-stretch flex gap-[10px] grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Heading">
-      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[1.4] min-h-px min-w-px relative shrink-0 text-[20px] text-black tracking-[-0.24px]">셰프 매칭</p>
+      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[1.4] min-h-px min-w-px relative shrink-0 text-[18px] text-black tracking-[-0.24px]">셰프 매칭</p>
     </div>
   );
 }
@@ -537,7 +389,7 @@ function Heading() {
 function Content1() {
   return (
     <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[grey] text-nowrap text-right tracking-[0.3421px] whitespace-pre">자세히 보기</p>
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[12px] text-[grey] text-nowrap text-right tracking-[0.3421px] whitespace-pre">자세히 보기</p>
       <div className="flex items-center justify-center relative shrink-0">
         <div className="flex-none rotate-[180deg]">
           <div className="h-[8px] relative w-[4px]">
@@ -583,8 +435,8 @@ function Heading1() {
 function Info() {
   return (
     <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0" data-name="Info">
-      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[#0f0f0f] text-[14px] w-full">황정인 셰프</p>
-      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] w-full">레스토랑 베누</p>
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[var(--tb-color-text-primary)] text-[14px] w-full">황정인 셰프</p>
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[var(--tb-color-text-muted)] w-full">레스토랑 베누</p>
     </div>
   );
 }
@@ -593,7 +445,7 @@ function Info1() {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start leading-[normal] relative shrink-0" data-name="Info">
       <Info />
-      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[#0f0f0f] text-[10px] text-nowrap whitespace-pre">매칭률 75%</p>
+      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[var(--tb-color-text-primary)] text-[10px] text-nowrap whitespace-pre">매칭률 75%</p>
     </div>
   );
 }
@@ -613,7 +465,7 @@ function Content2() {
 
 function Cards() {
   return (
-    <div className="bg-[#ffebcc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px]" data-name="Cards">
+    <div className="bg-[#ffebcc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer" data-name="Cards">
       <Content2 />
     </div>
   );
@@ -622,8 +474,8 @@ function Cards() {
 function Info2() {
   return (
     <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0" data-name="Info">
-      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[#0f0f0f] text-[14px] w-full">이은지 셰프</p>
-      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] w-full">숍 리제 (Lysée)</p>
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[var(--tb-color-text-primary)] text-[14px] w-full">이은지 셰프</p>
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[var(--tb-color-text-muted)] w-full">숍 리제 (Lysée)</p>
     </div>
   );
 }
@@ -632,7 +484,7 @@ function Info3() {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start leading-[normal] relative shrink-0" data-name="Info">
       <Info2 />
-      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[#0f0f0f] text-[10px] text-nowrap whitespace-pre">매칭률 72%</p>
+      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[var(--tb-color-text-primary)] text-[10px] text-nowrap whitespace-pre">매칭률 72%</p>
     </div>
   );
 }
@@ -652,7 +504,7 @@ function Content3() {
 
 function Cards1() {
   return (
-    <div className="bg-[#fff7cc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px]" data-name="Cards">
+    <div className="bg-[#fff7cc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer" data-name="Cards">
       <Content3 />
     </div>
   );
@@ -661,8 +513,8 @@ function Cards1() {
 function Info4() {
   return (
     <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0" data-name="Info">
-      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[#0f0f0f] text-[14px] w-full">임정식 셰프</p>
-      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[rgba(15,15,15,0.6)] w-full">정식당</p>
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold relative shrink-0 text-[var(--tb-color-text-primary)] text-[14px] w-full">임정식 셰프</p>
+      <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal relative shrink-0 text-[10px] text-[var(--tb-color-text-muted)] w-full">정식당</p>
     </div>
   );
 }
@@ -671,7 +523,7 @@ function Info5() {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start leading-[normal] relative shrink-0" data-name="Info">
       <Info4 />
-      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[#0f0f0f] text-[10px] text-nowrap whitespace-pre">매칭률 70%</p>
+      <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold relative shrink-0 text-[var(--tb-color-text-primary)] text-[10px] text-nowrap whitespace-pre">매칭률 70%</p>
     </div>
   );
 }
@@ -689,114 +541,965 @@ function Content4() {
 
 function Cards2() {
   return (
-    <div className="bg-[#eaf4cc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px]" data-name="Cards">
+    <div className="bg-[#eaf4cc] box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 size-[132px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer" data-name="Cards">
       <Content4 />
     </div>
   );
 }
 
-const chefData = [
-  {
-    name: "황정인 셰프",
-    restaurant: "레스토랑 베누",
-    match: 75,
-    image: chefHwangJeongin,
-    bgColor: "#ffebcc",
-    taste: "단맛",
-  },
-  {
-    name: "이은지 셰프",
-    restaurant: "숍 리제 (Lysée)",
-    match: 72,
-    image: chefLeeEunji,
-    bgColor: "#fff7cc",
-    taste: "신맛",
-  },
-  {
-    name: "임정식 셰프",
-    restaurant: "정식당",
-    match: 70,
-    image: chefLimJeongsik,
-    bgColor: "#eaf4cc",
-    taste: "쓴맛",
-  },
-  {
-    name: "최현석 셰프",
-    restaurant: "레스토랑 CHOI",
-    match: 68,
-    image: chefHyunseokChoi,
-    bgColor: "#E6F0FF",
-    taste: "짠맛",
-  },
-  {
-    name: "손종원 셰프",
-    restaurant: "이타닉가든",
-    match: 65,
-    image: chefSonJongwon,
-    bgColor: "#F0E3F0",
-    taste: "감칠맛",
-  },
-  {
-    name: "이준 셰프",
-    restaurant: "스와니예",
-    match: 62,
-    image: chefLeeJun,
-    bgColor: "#EAE7E4",
-    taste: "지방맛",
-  }
-];
+const CHEF_IMAGE_BY_NAME: Record<string, string> = {
+  "손종원": chefSonJongwon,
+  "이은지": chefLeeEunji,
+  "이준": chefLeeJun,
+  "임정식": chefLimJeongsik,
+  "최현석": chefHyunseokChoi,
+  "황정인": chefHwangJeongin,
+};
 
-function ChefCard({ chef }: { chef: typeof chefData[0] }) {
+function getChefImageByName(name: string) {
+  return CHEF_IMAGE_BY_NAME[name.replace(/\s*셰프$/, "")] ?? null;
+}
+
+function buildHomeChefCardsFromReservations(reservations: ReservationRecord[]) {
+  const tasteFallbacks = ["단맛", "신맛", "쓴맛", "짠맛", "감칠맛", "지방맛"];
+  const uniqueChefs = new Map<string, HomeChefCardData>();
+
+  for (const reservation of reservations) {
+    const key = `${reservation.chef}:${reservation.restaurant}`;
+
+    if (uniqueChefs.has(key)) {
+      continue;
+    }
+
+    uniqueChefs.set(key, {
+      name: reservation.chef.endsWith("셰프") ? reservation.chef : `${reservation.chef} 셰프`,
+      restaurant: reservation.restaurant,
+      match: reservation.matchRate,
+      image: reservation.chefImage ?? getChefImageByName(reservation.chef),
+      taste: reservation.adjustments[0]?.taste ?? tasteFallbacks[uniqueChefs.size % tasteFallbacks.length] ?? "감칠맛",
+    });
+  }
+
+  return Array.from(uniqueChefs.values())
+    .sort((left, right) => right.match - left.match)
+    .slice(0, 6);
+}
+
+function buildHomeChefCardsFromContent(dishes: RestaurantContentDish[]) {
+  if (dishes.length === 0) {
+    return [];
+  }
+
+  const groupedByRestaurant = new Map<
+    string,
+    {
+      chef: string;
+      dishCount: number;
+      match: number;
+      restaurant: string;
+      taste: string;
+    }
+  >();
+
+  for (const dish of dishes) {
+    const current = groupedByRestaurant.get(dish.restaurantSlug);
+    const match = 58 + Math.min(37, Math.round(dish.confidence * 35));
+
+    if (!current) {
+      groupedByRestaurant.set(dish.restaurantSlug, {
+        chef: dish.chef,
+        restaurant: dish.restaurant,
+        dishCount: 1,
+        match,
+        taste: TASTE_TOKENS[dish.dominantTaste].label,
+      });
+      continue;
+    }
+
+    current.dishCount += 1;
+    current.match = Math.max(current.match, match);
+  }
+
+  return [...groupedByRestaurant.values()]
+    .sort((left, right) => {
+      if (right.dishCount !== left.dishCount) {
+        return right.dishCount - left.dishCount;
+      }
+
+      return right.match - left.match;
+    })
+    .slice(0, 6)
+    .map((entry) => ({
+      name: entry.chef.endsWith("셰프") ? entry.chef : `${entry.chef} 셰프`,
+      restaurant: entry.restaurant,
+      match: entry.match,
+      image: getChefImageByName(entry.chef),
+      taste: entry.taste,
+    }));
+}
+
+function mergeHomeChefCards(
+  reservationCards: HomeChefCardData[],
+  contentCards: HomeChefCardData[],
+) {
+  const merged = new Map<string, HomeChefCardData>();
+
+  for (const card of [...reservationCards, ...contentCards]) {
+    const key = `${card.name}:${card.restaurant}`;
+    if (!merged.has(key)) {
+      merged.set(key, card);
+    }
+  }
+
+  return Array.from(merged.values())
+    .sort((left, right) => right.match - left.match)
+    .slice(0, 6);
+}
+
+function buildHomeReservationHint(reservations: ReservationRecord[]) {
+  const nextReservation =
+    reservations.find((reservation) => reservation.status !== "completed") ??
+    reservations[0] ??
+    null;
+
+  if (!nextReservation) {
+    return HOME_SPECIAL_NOTE_CARD.reservationHint;
+  }
+
+  if (nextReservation.status === "completed") {
+    return `${nextReservation.restaurant} 다이닝에서 남긴 반응은 다음 예약 셰프 메모에 함께 반영돼요. 메뉴 방향은 유지하되, 전달 강도와 마무리의 밀도를 더 편안하게 조정하는 기준으로 쓰입니다.`;
+  }
+
+  return `다음 예약인 ${nextReservation.restaurant} ${nextReservation.course}에는 이 신호가 셰프 메모에 함께 전달돼요. 메뉴 방향은 유지하되, 전달 강도와 풍미의 밀도를 더 부드럽게 조정하는 기준으로 반영됩니다.`;
+}
+
+function buildHistoryDuration(reservation: ReservationRecord) {
+  if (reservation.course.includes("디너")) {
+    return "1시간 50분";
+  }
+
+  if (reservation.course.includes("런치")) {
+    return "1시간 20분";
+  }
+
+  if (reservation.status === "completed") {
+    return "1시간 40분";
+  }
+
+  return "예상 1시간 30분";
+}
+
+function mapAdjustmentDirectionToChange(direction: string, index: number) {
+  const normalized = direction.trim();
+
+  if (normalized.includes("정리")) {
+    return `${-1 * Math.max(4, 8 - index * 2)}%`;
+  }
+
+  if (normalized.includes("살리")) {
+    return `+${Math.max(5, 10 - index * 2)}%`;
+  }
+
+  return index === 0 ? "+8%" : "+5%";
+}
+
+function buildHistoryAdjustments(reservation: ReservationRecord) {
+  if (reservation.adjustments.length > 0) {
+    return reservation.adjustments.slice(0, 3).map((adjustment, index) => ({
+      taste: adjustment.taste,
+      change: mapAdjustmentDirectionToChange(adjustment.direction, index),
+    }));
+  }
+
+  return [{ taste: "감칠맛", change: "+6%" }];
+}
+
+function buildHistoryFeedbackLabel(
+  reservation: ReservationRecord,
+  draft: DiningFeedbackDraft | undefined,
+) {
+  if (reservation.status === "completed") {
+    return draft ? "피드백 보기" : "피드백 작성하기";
+  }
+
+  if (reservation.status === "ready" || reservation.status === "preparing") {
+    return "다이닝 준비 중";
+  }
+
+  return "예약 예정";
+}
+
+function buildHistorySelectedIntensity(rating: number) {
+  if (rating >= 5) {
+    return "매우 만족했어요";
+  }
+
+  if (rating >= 4) {
+    return "적당했어요";
+  }
+
+  if (rating >= 3) {
+    return "조금 아쉬웠어요";
+  }
+
+  if (rating >= 1) {
+    return "다시 조정이 필요해요";
+  }
+
+  return null;
+}
+
+function buildHistoryLikedTastes(
+  reservation: ReservationRecord,
+  draft: DiningFeedbackDraft | undefined,
+) {
+  if (!draft || draft.overallRating < 4) {
+    return [];
+  }
+
+  return reservation.adjustments
+    .filter((adjustment) => adjustment.direction.includes("살리"))
+    .map((adjustment) => adjustment.taste);
+}
+
+function buildHistoryNeededAdjustments(
+  reservation: ReservationRecord,
+  draft: DiningFeedbackDraft | undefined,
+) {
+  if (!draft) {
+    return reservation.adjustments
+      .filter((adjustment) => adjustment.direction.includes("정리"))
+      .map((adjustment) => adjustment.taste);
+  }
+
+  if (draft.overallRating <= 3) {
+    return reservation.adjustments.map((adjustment) => adjustment.taste).slice(0, 2);
+  }
+
+  return reservation.adjustments
+    .filter((adjustment) => adjustment.direction.includes("정리"))
+    .map((adjustment) => adjustment.taste);
+}
+
+function buildHistoryAdjustmentDetail(
+  reservation: ReservationRecord,
+  adjustments: HomeAdjustmentHistoryItem["adjustments"],
+  draft: DiningFeedbackDraft | undefined,
+): HomeAdjustmentHistoryItem["adjustmentDetail"] {
+  const summary = adjustments.map((adjustment) => ({
+    taste: adjustment.taste,
+    value: Number.parseInt(adjustment.change.replace("%", ""), 10) || 0,
+    label: adjustment.taste,
+  }));
+  const firstPositive = summary.find((item) => item.value > 0) ?? summary[0] ?? {
+    taste: "감칠맛",
+    value: 6,
+    label: "감칠맛",
+  };
+  const firstNegative = summary.find((item) => item.value < 0) ?? null;
+  const minusTarget = firstNegative?.label ?? "직접적인 자극";
+  const plusTarget = firstPositive.label;
+  const quote = draft?.overallComment?.trim()
+    ? `"${draft.overallComment.trim()}"`
+    : reservation.status === "completed"
+      ? reservation.guestUnderstanding
+      : reservation.diningPromise;
+
+  return {
+    method: {
+      minus: {
+        name: firstNegative ? `${minusTarget} 전달 강도` : "첫 인상 자극",
+        desc: firstNegative
+          ? `${minusTarget}가 먼저 튀지 않도록 시작 강도를 한 단계 정리했어요.`
+          : "첫 인상이 과하게 밀려오지 않도록 전체 밸런스를 한 단계 부드럽게 정리했어요.",
+        icon: "📉",
+      },
+      plus: {
+        name: `${plusTarget} 여운`,
+        desc: `${plusTarget}의 존재감이 자연스럽게 남도록 밀도와 피니시를 보강했어요.`,
+        icon: "📈",
+      },
+    },
+    summary,
+    quote,
+    evaluation: reservation.status === "completed"
+      ? {
+          question: `이번 ${reservation.course} 조정이 전체 밸런스에 어떻게 느껴졌나요?`,
+          options: {
+            positive: "의도와 잘 맞았어요",
+            negative1: "조금 과했어요",
+            negative2: "보정이 더 필요해요",
+          },
+        }
+      : {
+          question: `다음 ${reservation.course}에서 이런 조정 방향이 기대되시나요?`,
+          options: {
+            positive: "기대돼요",
+            negative1: "조금 더 가볍게",
+            negative2: "조금 더 선명하게",
+          },
+        },
+  };
+}
+
+function buildHomeAdjustmentHistory(
+  reservations: ReservationRecord[],
+  feedbackByReservationId: Record<number, DiningFeedbackDraft>,
+) {
+  return [...reservations]
+    .map<HomeAdjustmentHistoryItem>((reservation, index) => {
+      const draft = feedbackByReservationId[reservation.id];
+      const adjustments = buildHistoryAdjustments(reservation);
+
+      return {
+        id: reservation.id,
+        menu: reservation.course,
+        chefName: reservation.chef,
+        restaurant: reservation.restaurant,
+        date: reservation.date,
+        time: reservation.time,
+        duration: buildHistoryDuration(reservation),
+        image: reservation.chefImage ?? getChefImageByName(reservation.chef),
+        satisfaction: reservation.status === "completed" ? draft?.overallRating ?? 0 : 0,
+        color: getTasteBg(adjustments[0]?.taste ?? "감칠맛"),
+        adjustments,
+        feedbackLabel: buildHistoryFeedbackLabel(reservation, draft),
+        badgeColor: getTasteColor(adjustments[0]?.taste ?? "감칠맛"),
+        isExpanded: false,
+        selectedIntensity: buildHistorySelectedIntensity(draft?.overallRating ?? 0),
+        likedTastes: buildHistoryLikedTastes(reservation, draft),
+        neededAdjustments: buildHistoryNeededAdjustments(reservation, draft),
+        adjustmentDetail: buildHistoryAdjustmentDetail(reservation, adjustments, draft),
+      };
+    })
+    .sort((left, right) => getHistoryTimestampValue(right) - getHistoryTimestampValue(left));
+}
+
+function buildContentHistoryDate(index: number) {
+  const baseDate = new Date("2026-03-29T12:00:00+09:00");
+  baseDate.setDate(baseDate.getDate() - index);
+  const year = baseDate.getFullYear();
+  const month = `${baseDate.getMonth() + 1}`.padStart(2, "0");
+  const day = `${baseDate.getDate()}`.padStart(2, "0");
+  return `${year}.${month}.${day}`;
+}
+
+function buildContentHistoryAdjustments(dish: RestaurantContentDish) {
+  return Object.entries(dish.tasteVector)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 2)
+    .map(([tasteId, value]) => ({
+      taste: TASTE_TOKENS[tasteId as TasteId].label,
+      change: `+${Math.max(4, Math.round(value * 18))}%`,
+    }));
+}
+
+function buildContentHistoryDetail(
+  dish: RestaurantContentDish,
+  adjustments: HomeAdjustmentHistoryItem["adjustments"],
+): HomeAdjustmentHistoryItem["adjustmentDetail"] {
+  const summary = adjustments.map((adjustment) => ({
+    taste: adjustment.taste,
+    value: Number.parseInt(adjustment.change.replace("%", ""), 10) || 0,
+    label: adjustment.taste,
+  }));
+  const leadIngredients = dish.ingredients.slice(0, 3).join(", ");
+
+  return {
+    method: {
+      minus: {
+        name: "직접적인 자극",
+        desc: `${dish.courseLabel} 코스의 결을 해치지 않으면서 첫 인상을 한 단계 정리하는 방향을 기준으로 봤어요.`,
+        icon: "📉",
+      },
+      plus: {
+        name: `${adjustments[0]?.taste ?? "감칠맛"} 전달`,
+        desc: `${dish.title}처럼 ${adjustments[0]?.taste ?? "감칠맛"} 축이 또렷한 메뉴는 현재 프로필에서 더 선명하게 읽힐 가능성이 있어요.`,
+        icon: "📈",
+      },
+    },
+    summary,
+    quote: leadIngredients
+      ? `"주재료 ${leadIngredients} 구성이 현재 반응 축과 비교적 잘 맞는 실제 메뉴 후보예요."`
+      : `"${dish.restaurant}의 ${dish.title}은 현재 프로필에서 주목해볼 실제 메뉴 후보예요."`,
+    evaluation: {
+      question: `${dish.restaurant}의 ${dish.title}을 다음 추천 후보로 보고 싶으신가요?`,
+      options: {
+        positive: "추천 후보로 좋아요",
+        negative1: "조금 더 가볍게",
+        negative2: "조금 더 선명하게",
+      },
+    },
+  };
+}
+
+function selectDiverseContentDishes(
+  dishes: RestaurantContentDish[],
+  limit: number,
+) {
+  const ranked = dishes.slice().sort((left, right) => {
+    const confidenceDelta = right.confidence - left.confidence;
+
+    if (confidenceDelta !== 0) {
+      return confidenceDelta;
+    }
+
+    return left.restaurant.localeCompare(right.restaurant, "ko");
+  });
+  const selected: RestaurantContentDish[] = [];
+  const seenRestaurants = new Set<string>();
+
+  for (const dish of ranked) {
+    if (seenRestaurants.has(dish.restaurant)) {
+      continue;
+    }
+
+    seenRestaurants.add(dish.restaurant);
+    selected.push(dish);
+
+    if (selected.length === limit) {
+      return selected;
+    }
+  }
+
+  for (const dish of ranked) {
+    if (selected.some((item) => item.id === dish.id)) {
+      continue;
+    }
+
+    selected.push(dish);
+
+    if (selected.length === limit) {
+      break;
+    }
+  }
+
+  return selected;
+}
+
+function buildHomeAdjustmentHistoryFromContent(dishes: RestaurantContentDish[]) {
+  return selectDiverseContentDishes(dishes, 5)
+    .map<HomeAdjustmentHistoryItem>((dish, index) => {
+      const adjustments = buildContentHistoryAdjustments(dish);
+
+      return {
+        id: 9000 + index,
+        menu: dish.title,
+        chefName: dish.chef,
+        restaurant: dish.restaurant,
+        date: buildContentHistoryDate(index),
+        time: `${dish.courseLabel} 코스`,
+        duration: dish.seasonLabel ?? "실제 메뉴 데이터",
+        image: getChefImageByName(dish.chef),
+        satisfaction: 0,
+        color: getTasteBg(adjustments[0]?.taste ?? "감칠맛"),
+        adjustments,
+        feedbackLabel: "실제 메뉴 데이터",
+        badgeColor: getTasteColor(adjustments[0]?.taste ?? "감칠맛"),
+        isExpanded: false,
+        selectedIntensity: null,
+        likedTastes: dish.ingredients.slice(0, 2),
+        neededAdjustments: [],
+        adjustmentDetail: buildContentHistoryDetail(dish, adjustments),
+      };
+    });
+}
+
+function mergeHomeAdjustmentHistory(
+  reservationHistory: HomeAdjustmentHistoryItem[],
+  contentHistory: HomeAdjustmentHistoryItem[],
+) {
+  if (contentHistory.length === 0) {
+    return reservationHistory;
+  }
+
+  const merged: HomeAdjustmentHistoryItem[] = [];
+  const seenKeys = new Set<string>();
+  const pushIfNeeded = (item: HomeAdjustmentHistoryItem | undefined) => {
+    if (!item) {
+      return;
+    }
+
+    const key = `${item.restaurant}:${item.menu}`;
+    if (seenKeys.has(key)) {
+      return;
+    }
+
+    seenKeys.add(key);
+    merged.push(item);
+  };
+
+  const maxLength = Math.max(reservationHistory.length, contentHistory.length);
+
+  for (let index = 0; index < maxLength; index += 1) {
+    pushIfNeeded(reservationHistory[index]);
+    pushIfNeeded(contentHistory[index]);
+  }
+
+  return merged;
+}
+
+function formatSignedPercent(value: number) {
+  const rounded = Number(value.toFixed(1));
+  return `${rounded > 0 ? "+" : ""}${rounded.toFixed(1)}%`;
+}
+
+function getHomeCardSummaryDetails(details: HomeTrendDetail[]) {
+  const detailsWithValue = details.map((detail) => ({
+    detail,
+    numericChange: parseTasteChangeValue(detail.change),
+  }));
+
+  const highestIncrease =
+    detailsWithValue
+      .filter((item) => item.numericChange > 0)
+      .sort((left, right) => right.numericChange - left.numericChange)[0] ??
+    [...detailsWithValue].sort((left, right) => right.numericChange - left.numericChange)[0];
+
+  const biggestDecrease =
+    detailsWithValue
+      .filter((item) => item.numericChange < 0)
+      .sort((left, right) => left.numericChange - right.numericChange)[0] ??
+    [...detailsWithValue].sort((left, right) => left.numericChange - right.numericChange)[0];
+
+  const summaryDetails: HomeTrendDetail[] = [];
+
+  if (highestIncrease?.detail) {
+    summaryDetails.push(highestIncrease.detail);
+  }
+
+  if (
+    biggestDecrease?.detail &&
+    biggestDecrease.detail.detailLabel !== highestIncrease?.detail?.detailLabel
+  ) {
+    summaryDetails.push(biggestDecrease.detail);
+  }
+
+  return summaryDetails;
+}
+
+function buildHomeCardCircleGradient(details: HomeTrendDetail[]) {
+  return buildTasteAdjustmentGradient(
+    details.map((detail) => ({
+      taste: detail.parentTaste,
+      change: detail.change,
+    })),
+    { direction: "to bottom", useTint: false },
+  );
+}
+
+function formatHomeShortDate(dateIso: string) {
+  const date = new Date(dateIso);
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+
+  return `${month}.${day}`;
+}
+
+function getTastePercentDelta(snapshot: TasteMeasurementSnapshot, tasteId: TasteId) {
+  const average = TASTE_MEASUREMENT_AVERAGES[tasteId];
+  const value = snapshot.results[tasteId] ?? average;
+
+  if (average === 0) {
+    return 0;
+  }
+
+  return Number((((value - average) / average) * 100).toFixed(1));
+}
+
+function mergeMeasurementSnapshots(
+  snapshots: TasteMeasurementSnapshot[],
+  latestSnapshot: TasteMeasurementSnapshot | null,
+) {
+  const mergedSnapshots = new Map<string, TasteMeasurementSnapshot>();
+
+  snapshots.forEach((snapshot) => {
+    mergedSnapshots.set(snapshot.measuredAt, snapshot);
+  });
+
+  if (latestSnapshot) {
+    mergedSnapshots.set(latestSnapshot.measuredAt, latestSnapshot);
+  }
+
+  return [...mergedSnapshots.values()].sort(
+    (left, right) =>
+      new Date(left.measuredAt).getTime() - new Date(right.measuredAt).getTime(),
+  );
+}
+
+function buildMeasurementSeriesFromSnapshots(
+  snapshots: TasteMeasurementSnapshot[],
+): HomeMeasurementSeriesPoint[] {
+  if (snapshots.length === 0) {
+    return HOME_TASTE_PROFILE_WEEKLY_SERIES.map((item) => ({ ...item }));
+  }
+
+  const sortedSnapshots = [...snapshots].sort(
+    (left, right) =>
+      new Date(left.measuredAt).getTime() - new Date(right.measuredAt).getTime(),
+  );
+
+  return sortedSnapshots.map((snapshot) => {
+    const point: HomeMeasurementSeriesPoint = {
+      label: formatHomeShortDate(snapshot.measuredAt),
+    };
+
+    TASTE_IDS.forEach((tasteId) => {
+      point[TASTE_TOKENS[tasteId].label] = getTastePercentDelta(snapshot, tasteId);
+    });
+
+    return point;
+  });
+}
+
+function buildMeasurementOverviewValues(
+  snapshots: TasteMeasurementSnapshot[],
+): HomeMeasurementOverviewValue[] {
+  const latestSnapshot = snapshots[snapshots.length - 1];
+
+  if (!latestSnapshot) {
+    return HOME_TASTE_PROFILE_OVERVIEW_VALUES.map((item) => ({ ...item }));
+  }
+
+  return TASTE_IDS.map((tasteId) => ({
+    taste: TASTE_TOKENS[tasteId].label,
+    change: getTastePercentDelta(latestSnapshot, tasteId),
+  }));
+}
+
+function buildMeasurementTrendDetail(
+  tasteId: TasteId,
+  series: HomeMeasurementSeriesPoint[],
+  numericChange: number,
+): HomeTrendDetail {
+  const label = TASTE_TOKENS[tasteId].label;
+  const hasTrendHistory = series.length > 1;
+
+  return {
+    detailLabel: label,
+    parentTaste: label,
+    trend: numericChange >= 0 ? "increase" : "decrease",
+    change: formatSignedPercent(numericChange),
+    history: series
+      .slice(0, -1)
+      .map((point) => formatSignedPercent(Number(point[label] ?? 0))),
+    cue:
+      hasTrendHistory
+        ? numericChange >= 0
+          ? `${label} 반응이 평균보다 더 빠르고 또렷하게 올라왔어요. 같은 강도에서도 ${label} 인상이 앞쪽으로 느껴질 수 있어요.`
+          : `${label} 반응이 평균보다 더 둔하게 내려와요. 깊이나 밀도를 살짝 더 보강할 때 만족이 높아질 가능성이 있어요.`
+        : numericChange >= 0
+          ? `${label} 반응이 평균보다 더 빠르고 또렷하게 나타났어요. 아직 첫 측정이라 추세보다 현재 기준값으로 이해하면 좋아요.`
+          : `${label} 반응이 평균보다 더 부드럽게 나타났어요. 아직 첫 측정이라 추세보다 현재 기준값으로 보는 단계예요.`,
+  };
+}
+
+function buildHomeTasteProfileFromMeasurements(
+  snapshots: TasteMeasurementSnapshot[],
+): {
+  cardData: HomeTasteProfileCardData;
+  overviewValues: HomeMeasurementOverviewValue[];
+  series: HomeMeasurementSeriesPoint[];
+} {
+  if (snapshots.length === 0) {
+    return {
+      cardData: cloneHomeTasteProfileCardData(HOME_TASTE_PROFILE_CARD),
+      overviewValues: HOME_TASTE_PROFILE_OVERVIEW_VALUES.map((item) => ({ ...item })),
+      series: HOME_TASTE_PROFILE_WEEKLY_SERIES.map((item) => ({ ...item })),
+    };
+  }
+
+  const latestSnapshot = snapshots[snapshots.length - 1];
+  const series = buildMeasurementSeriesFromSnapshots(snapshots);
+  const overviewValues = buildMeasurementOverviewValues(snapshots);
+  const sortedValues = [...overviewValues].sort((left, right) => right.change - left.change);
+  const strongestIncrease = sortedValues[0] ?? overviewValues[0];
+  const strongestDecrease =
+    [...overviewValues].sort((left, right) => left.change - right.change)[0] ??
+    overviewValues[overviewValues.length - 1];
+  const increaseTasteId =
+    TASTE_IDS.find((tasteId) => TASTE_TOKENS[tasteId].label === strongestIncrease?.taste) ??
+    "sweet";
+  const decreaseTasteId =
+    TASTE_IDS.find((tasteId) => TASTE_TOKENS[tasteId].label === strongestDecrease?.taste) ??
+    "umami";
+  const details = [
+    buildMeasurementTrendDetail(increaseTasteId, series, strongestIncrease?.change ?? 0),
+    buildMeasurementTrendDetail(decreaseTasteId, series, strongestDecrease?.change ?? 0),
+  ].filter((detail, index, array) =>
+    array.findIndex((candidate) => candidate.detailLabel === detail.detailLabel) === index,
+  );
+  const latestMeasurementAgeLabel = getTasteMeasurementAgeLabel(latestSnapshot);
+  const isFirstMeasurement = snapshots.length === 1;
+
+  return {
+    cardData: {
+      title: isFirstMeasurement
+        ? `이번 측정에서 ${strongestIncrease?.taste ?? "단맛"}은 또렷하고 ${strongestDecrease?.taste ?? "감칠맛"}은 부드럽게 느껴졌어요`
+        : `${strongestIncrease?.taste ?? "단맛"}은 또렷해지고 ${strongestDecrease?.taste ?? "감칠맛"}은 둔해졌어요`,
+      periodLabel:
+        snapshots.length > 1
+          ? `${formatHomeShortDate(snapshots[0].measuredAt)}-${formatHomeShortDate(latestSnapshot.measuredAt)}`
+          : latestMeasurementAgeLabel,
+      summary: isFirstMeasurement
+        ? `${latestMeasurementAgeLabel} 기준 첫 측정이에요. ${strongestIncrease?.taste ?? "단맛"}은 평균보다 더 또렷하게 느껴지고, ${strongestDecrease?.taste ?? "감칠맛"}은 더 부드럽게 받아들이는 편으로 확인됐어요. 아직 이전 측정과의 추세는 없어서 이번 값을 현재 기준선으로 저장했어요.`
+        : `${latestMeasurementAgeLabel} 기준으로 ${strongestIncrease?.taste ?? "단맛"}은 평균보다 빠르게 느껴지고, ${strongestDecrease?.taste ?? "감칠맛"}은 같은 강도에서도 인상이 덜 또렷해졌어요. 지금 변화는 취향이 바뀌었다기보다 최근 컨디션과 누적 반응의 차이에 가까워요.`,
+      serviceHint: isFirstMeasurement
+        ? `다음 추천과 셰프 메모에는 이번 측정 기준으로 ${strongestIncrease?.taste ?? "단맛"} 자극은 과하게 올리지 않고, ${strongestDecrease?.taste ?? "감칠맛"}은 밀도와 마무리를 부드럽게 맞추는 방향으로 반영됩니다.`
+        : `다음 추천과 셰프 메모에는 ${strongestIncrease?.taste ?? "단맛"} 자극은 과하게 올리지 않고, ${strongestDecrease?.taste ?? "감칠맛"}은 깊이보다 잔향과 밀도를 보강하는 방향으로 반영됩니다.`,
+      keywords: [
+        ...(isFirstMeasurement ? ["첫 측정"] : []),
+        `${strongestIncrease?.taste ?? "단맛"} 반응`,
+        `${strongestDecrease?.taste ?? "감칠맛"} 밀도`,
+        latestMeasurementAgeLabel,
+      ],
+      details,
+    },
+    overviewValues,
+    series,
+  };
+}
+
+function buildSpecialNoteDetailHistory(
+  reservations: ReservationRecord[],
+  taste: string,
+  preferredDirection: "increase" | "decrease",
+) {
+  const values = reservations.map((reservation) => {
+    const adjustment = reservation.adjustments.find((item) => item.taste === taste);
+
+    if (!adjustment) {
+      return 0;
+    }
+
+    const magnitude = reservation.status === "completed" ? 8 : 5;
+
+    if (adjustment.direction.includes("정리")) {
+      return preferredDirection === "decrease" ? -magnitude : magnitude * 0.4;
+    }
+
+    return preferredDirection === "increase" ? magnitude : -magnitude * 0.4;
+  });
+
+  return values.length === 0 ? ["0.0%"] : values.map((value) => formatSignedPercent(value));
+}
+
+function buildHomeSpecialNoteFromReservations(
+  reservations: ReservationRecord[],
+  feedbackByReservationId: Record<number, DiningFeedbackDraft>,
+  reservationHint: string,
+) {
+  if (reservations.length === 0) {
+    return cloneHomeSpecialNoteCardData(HOME_SPECIAL_NOTE_CARD);
+  }
+
+  const sortedReservations = [...reservations].sort(
+    (left, right) => getHistoryTimestampValue(left) - getHistoryTimestampValue(right),
+  );
+  const completedReservations = sortedReservations.filter(
+    (reservation) => reservation.status === "completed",
+  );
+  const adjustmentWeights = new Map<string, number>();
+  const adjustmentDirections = new Map<string, number>();
+
+  sortedReservations.forEach((reservation) => {
+    const draft = feedbackByReservationId[reservation.id];
+    const reservationWeight = draft ? (draft.overallRating <= 3 ? 1.35 : 1.1) : 1;
+
+    reservation.adjustments.forEach((adjustment) => {
+      adjustmentWeights.set(
+        adjustment.taste,
+        (adjustmentWeights.get(adjustment.taste) ?? 0) + reservationWeight,
+      );
+      adjustmentDirections.set(
+        adjustment.taste,
+        (adjustmentDirections.get(adjustment.taste) ?? 0) +
+          (adjustment.direction.includes("정리") ? -1 : 1) * reservationWeight,
+      );
+    });
+  });
+
+  const topAdjustmentTastes =
+    [...adjustmentWeights.entries()]
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 2)
+      .map(([taste]) => taste) || [];
+  const primaryTaste = topAdjustmentTastes[0] ?? "감칠맛";
+  const secondaryTaste = topAdjustmentTastes[1] ?? "지방맛";
+  const primaryDirection =
+    (adjustmentDirections.get(primaryTaste) ?? 0) >= 0 ? "increase" : "decrease";
+  const secondaryDirection =
+    (adjustmentDirections.get(secondaryTaste) ?? 0) >= 0 ? "increase" : "decrease";
+  const primaryStrength = Math.max(4.5, (adjustmentWeights.get(primaryTaste) ?? 1) * 2.4);
+  const secondaryStrength = Math.max(3.2, (adjustmentWeights.get(secondaryTaste) ?? 1) * 1.8);
+  const hasNextReservation = sortedReservations.some(
+    (reservation) => reservation.status !== "completed",
+  );
+
+  return {
+    confidenceLabel: `반복 관찰 ${Math.max(completedReservations.length, 1)}회`,
+    confidenceNote:
+      completedReservations.length > 0
+        ? "완료한 다이닝의 피드백과 예약별 조정 방향에서 비슷한 포인트가 반복됐어요."
+        : "아직 완료한 다이닝은 적지만, 예약별 조정 방향에서 같은 미각 포인트가 반복되고 있어요.",
+    details: [
+      {
+        detailLabel: primaryTaste,
+        detailTypeLabel: "반복 조정 포인트",
+        parentTaste: primaryTaste,
+        trend: primaryDirection,
+        change: formatSignedPercent(
+          primaryDirection === "increase" ? primaryStrength : primaryStrength * -1,
+        ),
+        history: buildSpecialNoteDetailHistory(
+          sortedReservations.slice(-6),
+          primaryTaste,
+          primaryDirection,
+        ),
+        cue:
+          primaryDirection === "increase"
+            ? `${primaryTaste} 축은 여러 예약에서 반복적으로 살리기 방향이 잡혔어요. 사용자는 이 포인트가 살아 있을 때 코스의 만족도가 더 높아질 가능성이 있어요.`
+            : `${primaryTaste} 축은 여러 예약에서 반복적으로 정리하기 방향이 잡혔어요. 이 포인트가 먼저 과해지면 전체 밸런스가 무거워질 수 있어요.`,
+      },
+      {
+        detailLabel: secondaryTaste,
+        detailTypeLabel: "마무리 조정 포인트",
+        parentTaste: secondaryTaste,
+        trend: secondaryDirection,
+        change: formatSignedPercent(
+          secondaryDirection === "increase" ? secondaryStrength : secondaryStrength * -1,
+        ),
+        history: buildSpecialNoteDetailHistory(
+          sortedReservations.slice(-6),
+          secondaryTaste,
+          secondaryDirection,
+        ),
+        cue:
+          secondaryDirection === "increase"
+            ? `${secondaryTaste} 포인트는 후반 인상을 조금 더 살려주는 편이 안정적이에요. 같은 코스라도 마무리 밀도를 보강하면 만족이 높아질 수 있어요.`
+            : `${secondaryTaste} 포인트는 후반으로 갈수록 정리감이 중요해졌어요. 강도보다 피니시를 다듬는 쪽이 더 자연스럽게 맞을 가능성이 커요.`,
+      },
+    ],
+    guidance: [
+      `${primaryTaste}은 시작부터 과하게 밀기보다 코스 중후반에 자연스럽게 드러나게 해주세요.`,
+      `${secondaryTaste}은 전체 볼륨보다 피니시와 잔향의 정돈감을 먼저 맞추는 편이 좋아요.`,
+    ],
+    keywords: [`${primaryTaste} 조정`, `${secondaryTaste} 마무리`, `${sortedReservations.length}회 예약`],
+    periodLabel:
+      sortedReservations.length > 1
+        ? `${sortedReservations[0]?.date.slice(5)}-${sortedReservations[sortedReservations.length - 1]?.date.slice(5)}`
+        : `${sortedReservations.length}회 예약`,
+    reservationHint,
+    serviceHint: `이 신호는 셰프의 의도를 바꾸기보다, ${primaryTaste}과 ${secondaryTaste} 전달이 더 편안하게 느껴지도록 조정 기준을 제공하는 데 쓰여요.`,
+    summary: `최근 예약과 피드백에서는 ${primaryTaste}과 ${secondaryTaste}이 반복적으로 조정 포인트로 나타났어요. 다음 예약 personalisation에는 이 두 축의 전달 강도와 마무리 밀도가 함께 반영됩니다.`,
+    title: `${primaryTaste}과 ${secondaryTaste} 전달이 자주 흔들려요`,
+    translationStatusLabel: hasNextReservation ? "다음 예약 반영 중" : "다음 추천 반영 중",
+  } satisfies HomeSpecialNoteCardData;
+}
+
+function ChefCard({ chef }: { chef: HomeChefCardData }) {
   return (
     <div
-      className="box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 w-[132px] h-[132px]"
+      className="box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 w-[132px] h-[132px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.98] cursor-pointer"
       style={{
-        backgroundColor: chef.bgColor,
-        border: `1px solid ${getTasteTint(chef.taste, 0.24)}`,
+        backgroundColor: getTasteBg(chef.taste),
+        border: `1px solid ${getTasteTint(chef.taste, 0.18)}`,
       }}
     >
       <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full h-full">
-        <div className="relative rounded-[8px] shrink-0 size-[48px] overflow-hidden bg-gray-200">
-          <img alt={chef.name} className="absolute inset-0 w-full h-full object-cover" src={chef.image} />
+        <div className="relative rounded-[8px] shrink-0 size-[48px] overflow-hidden bg-[var(--tb-color-surface-muted)]">
+          {chef.image ? (
+            <img alt={chef.name} className="absolute inset-0 w-full h-full object-cover" src={chef.image} />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-[14px] font-semibold text-[var(--tb-color-text-subtle)]">
+              {chef.name.slice(0, 1)}
+            </div>
+          )}
         </div>
 
         <div className="content-stretch flex flex-col justify-between items-start leading-[normal] relative shrink-0 w-full grow">
           <div className="content-stretch flex flex-col gap-[2px] items-start relative shrink-0 w-full">
-            <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold text-[#0f0f0f] text-[14px] w-full truncate">{chef.name}</p>
-            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal text-[10px] text-[rgba(15,15,15,0.6)] w-full truncate">{chef.restaurant}</p>
+            <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold text-[var(--tb-color-text-primary)] text-[14px] w-full truncate">{chef.name}</p>
+            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal text-[10px] text-[var(--tb-color-text-muted)] w-full truncate">{chef.restaurant}</p>
           </div>
-          <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold text-[#0f0f0f] text-[10px]">매칭률 {chef.match}%</p>
+          <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold text-[var(--tb-color-text-primary)] text-[10px]">매칭률 {chef.match}%</p>
         </div>
       </div>
     </div>
   );
 }
 
-function Content5() {
+function EmptyChefCard({ index }: { index: number }) {
   return (
-    <div className="content-stretch flex gap-3 items-start relative shrink-0 w-[calc(100%+40px)] mx-[-20px] px-[20px] overflow-x-auto pb-4 no-scrollbar" data-name="Content">
-      {chefData.map((chef, index) => (
+    <div
+      className="box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 w-[132px] h-[132px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-muted)]"
+      aria-hidden="true"
+    >
+      <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full h-full">
+        <div className="relative rounded-[8px] shrink-0 size-[48px] overflow-hidden bg-[var(--tb-color-bg-page)] border border-[var(--tb-color-border-subtle)]" />
+
+        <div className="content-stretch flex flex-col justify-between items-start leading-[normal] relative shrink-0 w-full grow">
+          <div className="content-stretch flex flex-col gap-[6px] items-start relative shrink-0 w-full">
+            <div
+              className="h-[14px] rounded-full bg-[var(--tb-color-border-subtle)]"
+              style={{ width: index === 1 ? '68px' : '74px' }}
+            />
+            <div
+              className="h-[10px] rounded-full bg-[var(--tb-color-border-disabled)]"
+              style={{ width: index === 2 ? '82px' : '76px' }}
+            />
+          </div>
+          <div className="h-[10px] rounded-full bg-[var(--tb-color-border-disabled)] w-[56px]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Content5({ featuredChefs }: { featuredChefs: HomeChefCardData[] }) {
+  if (featuredChefs.length === 0) {
+    return (
+      <div className="content-stretch flex flex-col gap-3 items-start relative shrink-0 w-full">
+        <div className="content-stretch flex gap-3 items-start relative shrink-0 w-[calc(100%+40px)] mx-[-20px] px-[20px] overflow-x-auto pt-2 pb-1 no-scrollbar">
+          {[0, 1, 2].map((index) => (
+            <EmptyChefCard key={index} index={index} />
+          ))}
+        </div>
+
+        <div className="w-full rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-muted)] px-[16px] py-[14px]">
+          <p className="text-[15px] font-bold text-[var(--tb-color-text-primary)]">셰프 매칭 대기중</p>
+          <p className="mt-[6px] text-[13px] leading-[1.5] text-[var(--tb-color-text-muted)]">
+            레스토랑 콘텐츠와 예약 데이터가 더 쌓이면 현재 프로필에 맞는 셰프 카드가 여기에 표시됩니다.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="content-stretch flex gap-3 items-start relative shrink-0 w-[calc(100%+40px)] mx-[-20px] px-[20px] overflow-x-auto pt-2 pb-4 no-scrollbar" data-name="Content">
+      {featuredChefs.map((chef, index) => (
         <ChefCard key={index} chef={chef} />
       ))}
     </div>
   );
 }
 
-function ChefList() {
+function ChefList({ featuredChefs }: { featuredChefs: HomeChefCardData[] }) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Chef List">
       <Heading1 />
-      <Content5 />
+      <Content5 featuredChefs={featuredChefs} />
     </div>
   );
 }
 
-function Section() {
+function Section({ featuredChefs }: { featuredChefs: HomeChefCardData[] }) {
   return (
     <div className="relative shrink-0 w-full" data-name="Section">
       <div className="size-full">
         <div className="box-border content-stretch flex flex-col items-start relative w-full">
-          <ChefList />
+          <ChefList featuredChefs={featuredChefs} />
         </div>
       </div>
     </div>
@@ -806,39 +1509,39 @@ function Section() {
 function Heading3() {
   return (
     <div className="flex justify-between items-start w-full" data-name="Heading">
-      <span className="text-[20px] font-bold text-[#0f0f0f] tracking-[-0.24px]">미각 프로필</span>
+      <span className="text-[18px] font-bold text-[var(--tb-color-text-primary)] tracking-[-0.24px]">미각 프로필</span>
       <button type="button" className="flex items-center gap-1 cursor-pointer">
-        <span className="text-[11px] text-[#808080]">이번 주</span>
-        <ChevronDown className="w-3 h-3 text-[#3F3F3F]" />
+        <span className="text-[12px] text-[var(--tb-color-text-hint)]">현재 기준</span>
+        <ChevronDown className="w-3 h-3 text-[var(--tb-color-text-secondary)]" />
       </button>
     </div>
   );
 }
 
-function TasteCircle() {
+function TasteCircle({ details }: { details: HomeTrendDetail[] }) {
   return (
     <div
       className="relative shrink-0 size-[16px] rounded-full"
       data-name="Taste Circle"
-      style={{ background: HOME_TASTE_PROFILE_CIRCLE_GRADIENT }}
+      style={{ background: buildHomeCardCircleGradient(details) }}
     />
   );
 }
 
-function Head() {
+function Head({ details }: { details: HomeTrendDetail[] }) {
   return (
     <div className="flex gap-[6px] items-center relative shrink-0" data-name="Head">
-      <TasteCircle />
-      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">미각변화</p>
+      <TasteCircle details={details} />
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[var(--tb-color-text-primary)] text-[14px] text-nowrap whitespace-pre">미각변화</p>
     </div>
   );
 }
 
-function Content7() {
+function Content7({ periodLabel }: { periodLabel: string }) {
   return (
     <div className="flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">
-        {HOME_TASTE_PROFILE_CARD.periodLabel}
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[12px] text-[var(--tb-color-text-muted)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">
+        {periodLabel}
       </p>
       <div className="flex items-center justify-center relative shrink-0">
         <div className="flex-none rotate-[180deg]">
@@ -855,35 +1558,41 @@ function Content7() {
   );
 }
 
-function MoreInfo4() {
+function MoreInfo4({ periodLabel }: { periodLabel: string }) {
   return (
     <div className="basis-0 flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
-      <Content7 />
+      <Content7 periodLabel={periodLabel} />
     </div>
   );
 }
 
-function Right1() {
+function Right1({ periodLabel }: { periodLabel: string }) {
   return (
     <div className="flex gap-[6px] items-center relative shrink-0 w-[59px]" data-name="Right">
-      <MoreInfo4 />
+      <MoreInfo4 periodLabel={periodLabel} />
     </div>
   );
 }
 
-function Heading4() {
+function Heading4({
+  details,
+  periodLabel,
+}: {
+  details: HomeTrendDetail[];
+  periodLabel: string;
+}) {
   return (
     <div className="flex gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
-      <Head />
-      <Right1 />
+      <Head details={details} />
+      <Right1 periodLabel={periodLabel} />
     </div>
   );
 }
 
-function TasteChangeMiniGraph() {
+function TasteChangeMiniGraph({ details }: { details: HomeTrendDetail[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [availableWidth, setAvailableWidth] = useState(128);
-  const graphEntries = HOME_TASTE_PROFILE_SUMMARY_DETAILS.map((detail) => ({
+  const graphEntries = getHomeCardSummaryDetails(details).map((detail) => ({
     ...detail,
     graphValues: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
   }));
@@ -1042,32 +1751,40 @@ function TasteChangeMiniGraph() {
   );
 }
 
-function Cards3({ onOpenDetail }: { onOpenDetail: () => void }) {
+function Cards3({
+  cardData,
+  onOpenDetail,
+}: {
+  cardData: HomeTasteProfileCardData;
+  onOpenDetail: () => void;
+}) {
+  const summaryDetails = getHomeCardSummaryDetails(cardData.details);
+
   return (
     <button
       type="button"
       onClick={onOpenDetail}
-      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-colors hover:bg-[#fafafa]"
+      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer"
       data-name="Cards"
     >
       <div className="overflow-clip rounded-[inherit] size-full">
         <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
-          <Heading4 />
+          <Heading4 details={cardData.details} periodLabel={cardData.periodLabel} />
 
           <div className="box-border content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full">
             <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
-              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
-                {HOME_TASTE_PROFILE_CARD.title}
+              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[var(--tb-color-text-primary)] text-[16px] w-full">
+                {cardData.title}
               </p>
             </div>
 
             <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
               <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
-                {HOME_TASTE_PROFILE_SUMMARY_DETAILS.map((detail) => (
+                {summaryDetails.map((detail) => (
                   <div key={detail.detailLabel} className="flex items-center gap-[8px] w-full">
                     <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
                     <div className="flex min-w-0 items-center gap-[6px]">
-                      <p className="truncate text-[13px] font-medium text-[rgba(15,15,15,0.72)]">
+                      <p className="truncate text-[14px] font-medium text-[var(--tb-color-text-secondary)]">
                         {detail.detailLabel}
                       </p>
                       <p
@@ -1081,15 +1798,15 @@ function Cards3({ onOpenDetail }: { onOpenDetail: () => void }) {
                 ))}
               </div>
               <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
-                <TasteChangeMiniGraph />
+                <TasteChangeMiniGraph details={cardData.details} />
               </div>
             </div>
 
             <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
-              {HOME_TASTE_PROFILE_CARD.keywords.map((keyword) => (
+              {cardData.keywords.map((keyword) => (
                 <span
                   key={keyword}
-                  className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-white px-[8px] py-[4px] text-[10px] font-semibold text-[rgba(15,15,15,0.62)]"
+                  className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-white px-[8px] py-[4px] text-[10px] font-semibold text-[var(--tb-color-text-muted)]"
                 >
                   {keyword}
                 </span>
@@ -1102,29 +1819,29 @@ function Cards3({ onOpenDetail }: { onOpenDetail: () => void }) {
   );
 }
 
-function TasteCircle1() {
+function TasteCircle1({ details }: { details: HomeTrendDetail[] }) {
   return (
     <div
       className="relative shrink-0 size-[16px] rounded-full"
       data-name="Taste Circle"
-      style={{ background: HOME_SPECIAL_NOTE_CIRCLE_GRADIENT }}
+      style={{ background: buildHomeCardCircleGradient(details) }}
     />
   );
 }
 
-function Head1() {
+function Head1({ details }: { details: HomeTrendDetail[] }) {
   return (
     <div className="flex gap-[6px] items-center relative shrink-0" data-name="Head">
-      <TasteCircle1 />
-      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[14px] text-nowrap whitespace-pre">특이사항</p>
+      <TasteCircle1 details={details} />
+      <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[var(--tb-color-text-primary)] text-[14px] text-nowrap whitespace-pre">특이사항</p>
     </div>
   );
 }
 
-function Content9() {
+function Content9({ periodLabel }: { periodLabel: string }) {
   return (
     <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.6)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">{HOME_SPECIAL_NOTE_CARD.periodLabel}</p>
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[12px] text-[var(--tb-color-text-muted)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">{periodLabel}</p>
       <div className="flex items-center justify-center relative shrink-0">
         <div className="flex-none rotate-[180deg]">
           <div className="h-[8px] relative w-[4px]">
@@ -1140,27 +1857,33 @@ function Content9() {
   );
 }
 
-function MoreInfo5() {
+function MoreInfo5({ periodLabel }: { periodLabel: string }) {
   return (
     <div className="basis-0 content-stretch flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
-      <Content9 />
+      <Content9 periodLabel={periodLabel} />
     </div>
   );
 }
 
-function Right3() {
+function Right3({ periodLabel }: { periodLabel: string }) {
   return (
     <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-[59px]" data-name="Right">
-      <MoreInfo5 />
+      <MoreInfo5 periodLabel={periodLabel} />
     </div>
   );
 }
 
-function Heading5() {
+function Heading5({
+  details,
+  periodLabel,
+}: {
+  details: HomeTrendDetail[];
+  periodLabel: string;
+}) {
   return (
     <div className="content-center flex flex-wrap gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
-      <Head1 />
-      <Right3 />
+      <Head1 details={details} />
+      <Right3 periodLabel={periodLabel} />
     </div>
   );
 }
@@ -1195,10 +1918,10 @@ function SpecialNoteArrowBox({
   );
 }
 
-function SpecialNoteMiniGraph() {
+function SpecialNoteMiniGraph({ details }: { details: HomeTrendDetail[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [availableWidth, setAvailableWidth] = useState(128);
-  const graphEntries = HOME_SPECIAL_NOTE_SUMMARY_DETAILS.map((detail) => ({
+  const graphEntries = getHomeCardSummaryDetails(details).map((detail) => ({
     ...detail,
     graphValues: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
   }));
@@ -1362,21 +2085,21 @@ function SpecialNoteMiniGraph() {
 function SpecialNoteInfo({
   item,
 }: {
-  item: (typeof HOME_SPECIAL_NOTE_CARD.details)[number];
+  item: HomeTrendDetail;
 }) {
   const accentColor = getTasteColor(item.parentTaste);
   const accentTint = getTasteTint(item.parentTaste, 0.12);
 
   return (
     <div
-      className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full rounded-[12px] bg-[#f7f7f7] px-[10px] py-[10px]"
+      className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full rounded-[12px] bg-[var(--tb-color-surface-muted)] px-[10px] py-[10px]"
       data-name="Info"
     >
       <SpecialNoteArrowBox parentTaste={item.parentTaste} trend={item.trend} />
       <div className="basis-0 content-stretch flex grow min-h-px min-w-px relative shrink-0">
         <div className="content-stretch flex flex-col gap-[4px] items-start relative w-full">
           <div className="flex flex-wrap items-center gap-[6px]">
-            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] text-[rgba(15,15,15,0.75)]">
+            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] text-[var(--tb-color-text-secondary)]">
               {item.detailLabel} {item.trend === "increase" ? "증가" : "감소"}
             </p>
             <span
@@ -1385,11 +2108,11 @@ function SpecialNoteInfo({
             >
               {item.detailTypeLabel}
             </span>
-            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.55)]">
+            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[10px] text-[var(--tb-color-text-subtle)]">
               {item.change}
             </p>
           </div>
-          <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.4] relative text-[11px] text-[rgba(15,15,15,0.6)]">
+          <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.4] relative text-[12px] text-[var(--tb-color-text-muted)]">
             {item.cue}
           </p>
           <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[normal] relative text-[10px]" style={{ color: accentColor }}>
@@ -1401,17 +2124,17 @@ function SpecialNoteInfo({
   );
 }
 
-function SpecialNoteGuidanceList() {
+function SpecialNoteGuidanceList({ guidance }: { guidance: string[] }) {
   return (
     <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
-      {HOME_SPECIAL_NOTE_CARD.guidance.map((guidance) => (
+      {guidance.map((guidanceItem) => (
         <div
-          key={guidance}
-          className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full rounded-[12px] bg-[#f7f7f7] px-[10px] py-[10px]"
+          key={guidanceItem}
+          className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full rounded-[12px] bg-[var(--tb-color-surface-muted)] px-[10px] py-[10px]"
         >
-          <div className="mt-[5px] size-[6px] rounded-full bg-[#0f0f0f]" />
-          <p className="basis-0 grow min-w-0 self-stretch font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] relative text-[12px] text-[rgba(15,15,15,0.65)] whitespace-normal break-keep text-left">
-            {guidance}
+          <div className="mt-[5px] size-[6px] rounded-full bg-[var(--tb-color-text-primary)]" />
+          <p className="basis-0 grow min-w-0 self-stretch font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] relative text-[12px] text-[var(--tb-color-text-muted)] whitespace-normal break-keep text-left">
+            {guidanceItem}
           </p>
         </div>
       ))}
@@ -1419,49 +2142,55 @@ function SpecialNoteGuidanceList() {
   );
 }
 
-function SpecialNoteFeatureBody() {
+function SpecialNoteFeatureBody({
+  cardData,
+  reservationHint,
+}: {
+  cardData: HomeSpecialNoteCardData;
+  reservationHint: string;
+}) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Special Note Feature">
       <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-white">
         <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
-          <span className="inline-flex items-center rounded-full bg-[#0f0f0f] px-[8px] py-[3px] text-[10px] font-semibold text-white">
+          <span className="inline-flex items-center rounded-full bg-[var(--tb-color-text-primary)] px-[8px] py-[3px] text-[10px] font-semibold text-white">
             셰프 전달 포인트
           </span>
-          <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f3f3f3] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
-            {HOME_SPECIAL_NOTE_CARD.confidenceLabel}
+          <span className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] px-[8px] py-[3px] text-[10px] font-semibold text-[var(--tb-color-text-secondary)]">
+            {cardData.confidenceLabel}
           </span>
         </div>
-        <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
-          {HOME_SPECIAL_NOTE_CARD.title}
+        <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[var(--tb-color-text-primary)] text-[16px] w-full">
+          {cardData.title}
         </p>
-        <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.5] relative shrink-0 text-[12px] text-[rgba(15,15,15,0.6)] w-full">
-          {HOME_SPECIAL_NOTE_CARD.summary}
+        <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.5] relative shrink-0 text-[12px] text-[var(--tb-color-text-muted)] w-full">
+          {cardData.summary}
         </p>
-        <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[normal] relative shrink-0 text-[11px] text-[rgba(15,15,15,0.5)] w-full">
-          {HOME_SPECIAL_NOTE_CARD.confidenceNote}
+        <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[normal] relative shrink-0 text-[12px] text-[var(--tb-color-text-subtle)] w-full">
+          {cardData.confidenceNote}
         </p>
       </div>
 
       <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
         <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-white">
           <div className="content-stretch flex flex-wrap gap-[8px] items-center justify-between relative shrink-0 w-full">
-            <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[12px]">
+            <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[var(--tb-color-text-primary)] text-[12px]">
               세부 미각 요소
             </p>
-            <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f3f3f3] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.65)]">
-              {HOME_SPECIAL_NOTE_CARD.translationStatusLabel}
+            <span className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] px-[8px] py-[3px] text-[10px] font-semibold text-[var(--tb-color-text-muted)]">
+              {cardData.translationStatusLabel}
             </span>
           </div>
-          <Info11 />
+          <Info11 details={cardData.details} />
         </div>
 
         <div className="box-border content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[14px] shrink-0 w-full bg-white">
-          <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[#0f0f0f] text-[12px]">
+          <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[var(--tb-color-text-primary)] text-[12px]">
             예약에 어떻게 반영되나요
           </p>
-          <SpecialNoteGuidanceList />
-          <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] relative min-w-0 self-stretch text-[11px] text-[rgba(15,15,15,0.55)] whitespace-normal break-keep text-left">
-            {HOME_SPECIAL_NOTE_CARD.reservationHint}
+          <SpecialNoteGuidanceList guidance={cardData.guidance} />
+          <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal leading-[1.45] relative min-w-0 self-stretch text-[12px] text-[var(--tb-color-text-subtle)] whitespace-normal break-keep text-left">
+            {reservationHint}
           </p>
         </div>
       </div>
@@ -1469,23 +2198,23 @@ function SpecialNoteFeatureBody() {
   );
 }
 
-function Info11() {
+function Info11({ details }: { details: HomeTrendDetail[] }) {
   return (
     <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-name="Info">
-      {HOME_SPECIAL_NOTE_CARD.details.map((detail) => (
+      {details.map((detail) => (
         <SpecialNoteInfo key={detail.detailLabel} item={detail} />
       ))}
     </div>
   );
 }
 
-function Right4() {
+function Right4({ cardData }: { cardData: HomeSpecialNoteCardData }) {
   return (
     <div className="basis-0 content-stretch flex flex-col gap-[12px] grow items-start min-h-px min-w-px relative shrink-0" data-name="Right">
-      <div className="flex flex-col font-['Pretendard_Variable:Bold',sans-serif] font-bold h-[14px] justify-center leading-[0] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
-        <p className="leading-[100.06%]">{HOME_SPECIAL_NOTE_CARD.title}</p>
+      <div className="flex flex-col font-['Pretendard_Variable:Bold',sans-serif] font-bold h-[14px] justify-center leading-[0] relative shrink-0 text-[var(--tb-color-text-primary)] text-[16px] w-full">
+        <p className="leading-[100.06%]">{cardData.title}</p>
       </div>
-      <Info11 />
+      <Info11 details={cardData.details} />
     </div>
   );
 }
@@ -1667,50 +2396,58 @@ function MeasureGraph1() {
   );
 }
 
-function Content10() {
+function Content10({ cardData }: { cardData: HomeSpecialNoteCardData }) {
   return (
     <div className="content-start flex flex-wrap gap-[12px] items-start justify-between min-w-[311px] relative shrink-0 w-full" data-name="Content">
-      <Right4 />
+      <Right4 cardData={cardData} />
       <MeasureGraph1 />
     </div>
   );
 }
 
-function Cards4({ onOpenDetail }: { onOpenDetail: () => void }) {
+function Cards4({
+  cardData,
+  onOpenDetail,
+}: {
+  cardData: HomeSpecialNoteCardData;
+  onOpenDetail: () => void;
+}) {
+  const summaryDetails = getHomeCardSummaryDetails(cardData.details);
+
   return (
     <button
       type="button"
       onClick={onOpenDetail}
-      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-colors hover:bg-[#fafafa]"
+      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer"
       data-name="Cards"
     >
       <div className="overflow-clip rounded-[inherit] size-full">
         <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
           <div className="content-center flex flex-wrap gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full">
-            <Head1 />
-            <div className="flex items-center gap-1 text-[#808080]">
-              <span className="text-[11px] font-medium">자세히</span>
-              <ChevronRight className="w-3 h-3 text-[#3F3F3F]" />
+            <Head1 details={cardData.details} />
+            <div className="flex items-center gap-1 text-[var(--tb-color-text-hint)]">
+              <span className="text-[12px] font-medium">자세히</span>
+              <ChevronRight className="w-3 h-3 text-[var(--tb-color-text-secondary)]" />
             </div>
           </div>
 
           <div className="box-border content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full">
             <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
-              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[#0f0f0f] text-[16px] w-full">
-                {HOME_SPECIAL_NOTE_CARD.title}
+              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[var(--tb-color-text-primary)] text-[16px] w-full">
+                {cardData.title}
               </p>
             </div>
 
             <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
               <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
-                {HOME_SPECIAL_NOTE_SUMMARY_DETAILS.map((detail) => (
+                {summaryDetails.map((detail) => (
                   <div
                     key={detail.detailLabel}
                     className="flex items-center gap-[8px] w-full"
                   >
                     <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
                     <div className="flex min-w-0 items-center gap-[6px]">
-                      <p className="truncate text-[13px] font-medium text-[rgba(15,15,15,0.72)]">
+                      <p className="truncate text-[14px] font-medium text-[var(--tb-color-text-secondary)]">
                         {detail.detailLabel}
                       </p>
                       <p
@@ -1724,15 +2461,15 @@ function Cards4({ onOpenDetail }: { onOpenDetail: () => void }) {
                 ))}
               </div>
               <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
-                <SpecialNoteMiniGraph />
+                <SpecialNoteMiniGraph details={cardData.details} />
               </div>
             </div>
 
             <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
-              {HOME_SPECIAL_NOTE_CARD.keywords.map((keyword) => (
+              {cardData.keywords.map((keyword) => (
                 <span
                   key={keyword}
-                  className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-white px-[8px] py-[4px] text-[10px] font-semibold text-[rgba(15,15,15,0.62)]"
+                  className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-white px-[8px] py-[4px] text-[10px] font-semibold text-[var(--tb-color-text-muted)]"
                 >
                   {keyword}
                 </span>
@@ -1748,7 +2485,7 @@ function Cards4({ onOpenDetail }: { onOpenDetail: () => void }) {
 function Head2() {
   return (
     <div className="basis-0 content-stretch flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="Head">
-      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[#0f0f0f] text-[14px]">모든 정보 보기</p>
+      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[normal] min-h-px min-w-px relative shrink-0 text-[var(--tb-color-text-primary)] text-[14px]">모든 정보 보기</p>
     </div>
   );
 }
@@ -1798,7 +2535,7 @@ function Heading6() {
 
 function Cards5() {
   return (
-    <div className="bg-[#f3f3f3] relative rounded-[20px] shrink-0 w-full" data-name="Cards">
+    <div className="bg-[var(--tb-color-bg-page)] relative rounded-[20px] shrink-0 w-full" data-name="Cards">
       <div className="overflow-clip rounded-[inherit] size-full">
         <div className="box-border content-stretch flex flex-col gap-[12px] items-start p-[12px] relative w-full">
           <Heading6 />
@@ -1809,36 +2546,61 @@ function Cards5() {
 }
 
 function Content12({
+  specialNoteCard,
+  tasteProfileCard,
   onOpenSpecialNote,
   onOpenTasteProfile,
 }: {
+  specialNoteCard: HomeSpecialNoteCardData;
+  tasteProfileCard: HomeTasteProfileCardData;
   onOpenSpecialNote: () => void;
   onOpenTasteProfile: () => void;
 }) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Content">
-      <Cards3 onOpenDetail={onOpenTasteProfile} />
-      <Cards4 onOpenDetail={onOpenSpecialNote} />
+      <Cards3 cardData={tasteProfileCard} onOpenDetail={onOpenTasteProfile} />
+      <Cards4 cardData={specialNoteCard} onOpenDetail={onOpenSpecialNote} />
     </div>
   );
 }
 
 function TasteProfile({
+  specialNoteCard,
+  tasteProfileCard,
   onOpenSpecialNote,
   onOpenTasteProfile,
 }: {
+  specialNoteCard: HomeSpecialNoteCardData;
+  tasteProfileCard: HomeTasteProfileCardData;
   onOpenSpecialNote: () => void;
   onOpenTasteProfile: () => void;
 }) {
   return (
     <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Taste Profile">
       <Heading3 />
-      <Content12 onOpenSpecialNote={onOpenSpecialNote} onOpenTasteProfile={onOpenTasteProfile} />
+      <Content12
+        specialNoteCard={specialNoteCard}
+        tasteProfileCard={tasteProfileCard}
+        onOpenSpecialNote={onOpenSpecialNote}
+        onOpenTasteProfile={onOpenTasteProfile}
+      />
     </div>
   );
 }
 
-function Section1() {
+function Section1({
+  reservationHint,
+  specialNoteCard,
+  tasteProfileCard,
+  tasteProfileOverviewValues,
+  tasteProfileSeries,
+}: {
+  reservationHint: string;
+  specialNoteCard: HomeSpecialNoteCardData;
+  tasteProfileCard: HomeTasteProfileCardData;
+  tasteProfileOverviewValues: HomeMeasurementOverviewValue[];
+  tasteProfileSeries: HomeMeasurementSeriesPoint[];
+}) {
   const [specialNoteOpen, setSpecialNoteOpen] = useState(false);
   const [tasteProfileOpen, setTasteProfileOpen] = useState(false);
 
@@ -1847,6 +2609,8 @@ function Section1() {
       <div className="size-full">
         <div className="box-border content-stretch flex flex-col items-start relative w-full">
           <TasteProfile
+            specialNoteCard={specialNoteCard}
+            tasteProfileCard={tasteProfileCard}
             onOpenSpecialNote={() => setSpecialNoteOpen(true)}
             onOpenTasteProfile={() => setTasteProfileOpen(true)}
           />
@@ -1854,14 +2618,23 @@ function Section1() {
       </div>
 
       {tasteProfileOpen ? (
-        <div className="fixed inset-0 z-[60] bg-[#f3f3f3]">
-          <TasteProfileDetailScreen onBack={() => setTasteProfileOpen(false)} />
+        <div className="fixed inset-0 z-[60] bg-[var(--tb-color-bg-page)]">
+          <TasteProfileDetailScreen
+            cardData={tasteProfileCard}
+            overviewValues={tasteProfileOverviewValues}
+            series={tasteProfileSeries}
+            onBack={() => setTasteProfileOpen(false)}
+          />
         </div>
       ) : null}
 
       {specialNoteOpen ? (
-        <div className="fixed inset-0 z-[70] bg-[#f3f3f3]">
-          <SpecialNoteDetailScreen onBack={() => setSpecialNoteOpen(false)} />
+        <div className="fixed inset-0 z-[70] bg-[var(--tb-color-bg-page)]">
+          <SpecialNoteDetailScreen
+            cardData={specialNoteCard}
+            onBack={() => setSpecialNoteOpen(false)}
+            reservationHint={reservationHint}
+          />
         </div>
       ) : null}
     </div>
@@ -1871,7 +2644,7 @@ function Section1() {
 function ContentAdjustmentViewAll() {
   return (
     <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[11px] text-[grey] text-nowrap text-right tracking-[0.3421px] whitespace-pre">전체 보기</p>
+      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[12px] text-[grey] text-nowrap text-right tracking-[0.3421px] whitespace-pre">전체 보기</p>
       <div className="flex items-center justify-center relative shrink-0">
         <div className="flex-none rotate-[270deg]">
           <ChevronDown className="w-3 h-3 text-gray-500" />
@@ -1892,7 +2665,7 @@ function MoreInfoAdjustment() {
 function HeadingAdjustment() {
   return (
     <div className="basis-0 content-stretch flex gap-[10px] grow items-center justify-center min-h-px min-w-px relative shrink-0" data-name="Heading">
-      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[1.4] min-h-px min-w-px relative shrink-0 text-[20px] text-black tracking-[-0.24px]">조정 히스토리</p>
+      <p className="basis-0 font-['Pretendard_Variable:Bold',sans-serif] font-bold grow leading-[1.4] min-h-px min-w-px relative shrink-0 text-[18px] text-black tracking-[-0.24px]">조정 히스토리</p>
     </div>
   );
 }
@@ -1919,7 +2692,7 @@ function HistoryCard({
 }) {
   return (
     <div
-      className={`bg-white relative rounded-[20px] shrink-0 w-full transition-all ${isSelectedForCompare ? 'ring-2 ring-[#0f0f0f] shadow-[0_8px_24px_rgba(15,15,15,0.08)]' : ''}`}
+      className={`bg-white relative rounded-[20px] shrink-0 w-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] ${isSelectedForCompare ? 'ring-2 ring-[#0f0f0f] shadow-[var(--tb-shadow-soft)]' : ''}`}
       data-name="History Card"
     >
       <div className="overflow-clip rounded-[inherit] size-full cursor-pointer" onClick={onClick}>
@@ -1937,24 +2710,30 @@ function HistoryCard({
             <div className="grow" />
             {isCompareMode ? (
               <div
-                className={`inline-flex items-center rounded-full px-[8px] py-[4px] text-[10px] font-semibold ${isSelectedForCompare ? 'bg-[#0f0f0f] text-white' : 'bg-[#f3f3f3] text-[#666666]'}`}
+                className={`inline-flex items-center rounded-full px-[8px] py-[4px] text-[10px] font-semibold ${isSelectedForCompare ? 'bg-[var(--tb-color-text-primary)] text-white' : 'bg-[var(--tb-color-bg-page)] text-[var(--tb-color-text-body)]'}`}
               >
                 {isSelectedForCompare ? `${compareSelectionOrder}번째 선택` : '비교 선택'}
               </div>
             ) : (
               <div className="flex items-center gap-1 cursor-pointer">
-                <span className="text-[11px] text-[#808080]">자세히</span>
-                <ChevronRight className="w-3 h-3 text-[#3F3F3F]" />
+                <span className="text-[12px] text-[var(--tb-color-text-hint)]">자세히</span>
+                <ChevronRight className="w-3 h-3 text-[var(--tb-color-text-secondary)]" />
               </div>
             )}
           </div>
 
           <div className="content-stretch flex items-start justify-between relative shrink-0 w-full gap-[8px]">
-            <img
-              src={history.image}
-              alt={history.menu}
-              className="relative rounded-[8px] shrink-0 size-[40px] object-cover"
-            />
+            {history.image ? (
+              <img
+                src={history.image}
+                alt={history.menu}
+                className="relative rounded-[8px] shrink-0 size-[40px] object-cover"
+              />
+            ) : (
+              <div className="relative flex shrink-0 size-[40px] items-center justify-center rounded-[8px] bg-[var(--tb-color-surface-muted)] text-[13px] font-semibold text-[var(--tb-color-text-subtle)]">
+                {String(history.chefName ?? history.restaurant).slice(0, 1)}
+              </div>
+            )}
             <div className="content-stretch flex flex-col gap-[2px] items-start relative grow">
               <p className="font-bold text-[14px]">{history.chefName} 셰프</p>
               <p className="text-[12px] text-gray-500">{history.restaurant}</p>
@@ -1964,12 +2743,12 @@ function HistoryCard({
 
           <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full flex-wrap">
             <div className="flex gap-[4px] items-center">
-              <Clock className="size-[12px] text-[rgba(15,15,15,0.6)]" />
-              <p className="font-normal text-[11px] text-[rgba(15,15,15,0.6)]">
+              <Clock className="size-[12px] text-[var(--tb-color-text-muted)]" />
+              <p className="font-normal text-[12px] text-[var(--tb-color-text-muted)]">
                 {history.date} {history.time}
               </p>
             </div>
-            <p className="font-normal text-[11px] text-[rgba(15,15,15,0.6)]">
+            <p className="font-normal text-[12px] text-[var(--tb-color-text-muted)]">
               • 사용 시간 {history.duration}
             </p>
           </div>
@@ -2013,7 +2792,7 @@ function getHistoryAdjustmentMagnitude(history: any) {
 }
 
 function isFeedbackPendingHistory(history: any) {
-  return history.feedbackLabel === '피드백 작성하기' || history.satisfaction === 0;
+  return history.feedbackLabel === '피드백 작성하기';
 }
 
 function getTopAdjustedTastes(historyData: any[]) {
@@ -2082,15 +2861,15 @@ function getComparisonSummary(histories: any[]) {
   const allTastes = Array.from(new Set([...firstMap.keys(), ...secondMap.keys()]));
 
   const sharedTastes = allTastes.filter((taste) => firstMap.has(taste) && secondMap.has(taste));
-  const mostDifferentTaste = allTastes.reduce((result, taste) => {
-    const difference = Math.abs((firstMap.get(taste) || 0) - (secondMap.get(taste) || 0));
+  const mostDifferentTaste = allTastes.reduce<{ taste: string; difference: number } | null>((result, taste) => {
+    const difference = Math.abs((Number(firstMap.get(taste)) || 0) - (Number(secondMap.get(taste)) || 0));
 
     if (!result || difference > result.difference) {
       return { taste, difference };
     }
 
     return result;
-  }, null as null | { taste: string; difference: number });
+  }, null);
 
   return {
     firstStrongest: getStrongestAdjustment(firstHistory),
@@ -2215,45 +2994,45 @@ function AdjustmentHistoryScreen({
   };
 
   return (
-    <div className="flex flex-col w-full h-full bg-[#f3f3f3] relative font-['Pretendard_Variable',sans-serif]">
-      <div className="sticky top-0 z-50 bg-[#f3f3f3] border-b border-[#ececec]">
+    <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)] relative font-['Pretendard_Variable',sans-serif]">
+      <div className="sticky top-0 z-50 bg-[var(--tb-color-bg-page)] border-b border-[var(--tb-color-border-subtle)]">
         <div className="flex items-center px-[20px] py-[12px] max-h-[56px]">
           <button
             onClick={onBack}
-            className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]"
+            className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[var(--tb-color-text-secondary)]"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">조정 히스토리</span>
+            <span className="font-bold text-[16px] text-[var(--tb-color-text-primary)] leading-[18px]">조정 히스토리</span>
             <span className="font-medium text-[12px] text-gray-500 leading-[14px]">{historyData.length}개의 조정 기록</span>
           </div>
           <button
             type="button"
             onClick={() => setIsSearchOpen((prev) => !prev)}
-            className={`ml-auto flex items-center justify-center size-[32px] rounded-full transition-colors z-20 ${isSearchOpen ? 'bg-white text-[#0f0f0f]' : 'hover:bg-gray-100 text-[#3F3F3F]'}`}
+            className={`ml-auto flex items-center justify-center size-[32px] rounded-full transition-colors z-20 ${isSearchOpen ? 'text-[var(--tb-color-text-primary)]' : 'hover:bg-gray-100 text-[var(--tb-color-text-secondary)]'}`}
             aria-label={isSearchOpen ? '검색창 닫기' : '검색 열기'}
           >
-            <Search size={18} />
+            <Search size={24} />
           </button>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
-        <div className="sticky top-0 z-40 border-b border-[#e3e3e3] bg-[#f3f3f3]">
+        <div className="sticky top-0 z-40 border-b border-[var(--tb-color-border-strong)] bg-[var(--tb-color-bg-page)]">
           <div className="flex flex-col gap-[8px] px-[20px] pt-[8px] pb-[10px]">
             {isSearchOpen ? (
-              <div className="flex items-center gap-[10px] rounded-[18px] bg-white px-[14px] py-[12px] shadow-[0_8px_24px_rgba(15,15,15,0.04)]">
-                <Search size={16} className="text-[rgba(15,15,15,0.38)]" />
+              <div className="flex items-center gap-[10px] rounded-[var(--tb-radius-20)] bg-white px-[14px] py-[12px] shadow-[var(--tb-shadow-soft)]">
+                <Search size={16} className="text-[var(--tb-color-icon-muted)]" />
                 <input
                   ref={searchInputRef}
                   type="search"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="메뉴명, 셰프명, 레스토랑 검색"
-                  className="w-full bg-transparent text-[14px] text-[#0f0f0f] outline-none placeholder:text-[rgba(15,15,15,0.38)]"
+                  className="w-full bg-transparent text-[14px] text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-icon-muted)]"
                 />
               </div>
             ) : null}
@@ -2286,12 +3065,12 @@ function AdjustmentHistoryScreen({
         </div>
 
         <div className="flex flex-col gap-[16px] px-[20px] pt-[10px]">
-          <div className="bg-white rounded-[24px] p-[16px] flex flex-col gap-[14px] shadow-[0_8px_24px_rgba(15,15,15,0.04)]">
+          <div className="bg-white rounded-[var(--tb-radius-24)] p-[16px] flex flex-col gap-[14px] shadow-[var(--tb-shadow-soft)]">
             <div className="flex items-start justify-between gap-[12px]">
               <div className="flex flex-col gap-[4px]">
-                <span className="text-[11px] font-semibold text-[rgba(15,15,15,0.5)] tracking-[0.2px]">최근 30일 요약</span>
-                <p className="text-[20px] font-bold text-[#0f0f0f] tracking-[-0.24px]">반복된 조정 패턴을 빠르게 찾으세요</p>
-                <p className="text-[13px] leading-[1.45] text-[rgba(15,15,15,0.62)]">
+                <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)] tracking-[0.2px]">최근 30일 요약</span>
+                <p className="text-[20px] font-bold text-[var(--tb-color-text-primary)] tracking-[-0.24px]">반복된 조정 패턴을 빠르게 찾으세요</p>
+                <p className="text-[14px] leading-[1.45] text-[var(--tb-color-text-muted)]">
                   가장 자주 조정된 포인트는{' '}
                   {topAdjustedTastes.map((taste, index) => (
                     <React.Fragment key={taste}>
@@ -2307,45 +3086,45 @@ function AdjustmentHistoryScreen({
               <button
                 type="button"
                 onClick={handleToggleCompareMode}
-                className={`shrink-0 rounded-full px-[12px] py-[8px] text-[12px] font-semibold transition-colors ${compareMode ? 'bg-[#0f0f0f] text-white' : 'bg-[#f3f3f3] text-[#0f0f0f]'}`}
+                className={`shrink-0 rounded-full px-[12px] py-[8px] text-[12px] font-semibold transition-colors ${compareMode ? 'bg-[var(--tb-color-text-primary)] text-white' : 'bg-[var(--tb-color-bg-page)] text-[var(--tb-color-text-primary)]'}`}
               >
                 {compareMode ? '비교 종료' : '비교 시작'}
               </button>
             </div>
             <div className="grid grid-cols-3 gap-[8px]">
-              <div className="rounded-[18px] bg-[#f7f7f7] px-[12px] py-[10px]">
-                <div className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">전체 기록</div>
-                <div className="mt-[4px] text-[18px] font-bold text-[#0f0f0f]">{historyData.length}개</div>
+              <div className="rounded-[var(--tb-radius-20)] bg-[var(--tb-color-surface-muted)] px-[12px] py-[10px]">
+                <div className="text-[12px] font-medium text-[var(--tb-color-text-subtle)]">전체 기록</div>
+                <div className="mt-[4px] text-[18px] font-bold text-[var(--tb-color-text-primary)]">{historyData.length}개</div>
               </div>
-              <div className="rounded-[18px] bg-[#f7f7f7] px-[12px] py-[10px]">
-                <div className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">자주 조정된 미각</div>
+              <div className="rounded-[var(--tb-radius-20)] bg-[var(--tb-color-surface-muted)] px-[12px] py-[10px]">
+                <div className="text-[12px] font-medium text-[var(--tb-color-text-subtle)]">자주 조정된 미각</div>
                 <div className="mt-[6px] text-[14px] font-bold leading-[1.35]">
                   {topAdjustedTastes.map((taste, index) => (
                     <React.Fragment key={taste}>
                       <span style={{ color: getTasteColor(taste) }}>{taste}</span>
-                      {index < topAdjustedTastes.length - 1 ? <span className="text-[#0f0f0f]"> · </span> : null}
+                      {index < topAdjustedTastes.length - 1 ? <span className="text-[var(--tb-color-text-primary)]"> · </span> : null}
                     </React.Fragment>
                   ))}
                 </div>
               </div>
-              <div className="rounded-[18px] bg-[#f7f7f7] px-[12px] py-[10px]">
-                <div className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">피드백 미작성</div>
-                <div className="mt-[4px] text-[18px] font-bold text-[#0f0f0f]">{pendingFeedbackCount}건</div>
+              <div className="rounded-[var(--tb-radius-20)] bg-[var(--tb-color-surface-muted)] px-[12px] py-[10px]">
+                <div className="text-[12px] font-medium text-[var(--tb-color-text-subtle)]">피드백 미작성</div>
+                <div className="mt-[4px] text-[18px] font-bold text-[var(--tb-color-text-primary)]">{pendingFeedbackCount}건</div>
               </div>
             </div>
           </div>
 
           {compareMode ? (
-            <div className="bg-white rounded-[24px] p-[16px] flex flex-col gap-[12px] shadow-[0_8px_24px_rgba(15,15,15,0.04)]">
+            <div className="bg-white rounded-[var(--tb-radius-24)] p-[16px] flex flex-col gap-[12px] shadow-[var(--tb-shadow-soft)]">
               <div className="flex items-center justify-between gap-[12px]">
                 <div>
-                  <p className="text-[16px] font-bold text-[#0f0f0f]">비교할 기록 선택</p>
-                  <p className="text-[12px] text-[rgba(15,15,15,0.56)]">카드 2개를 고르면 반복 포인트와 차이를 바로 볼 수 있어요.</p>
+                  <p className="text-[16px] font-bold text-[var(--tb-color-text-primary)]">비교할 기록 선택</p>
+                  <p className="text-[12px] text-[var(--tb-color-text-subtle)]">카드 2개를 고르면 반복 포인트와 차이를 바로 볼 수 있어요.</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedCompareIds([])}
-                  className="rounded-full bg-[#f3f3f3] px-[10px] py-[7px] text-[11px] font-semibold text-[#555555]"
+                  className="rounded-full bg-[var(--tb-color-bg-page)] px-[10px] py-[7px] text-[12px] font-semibold text-[var(--tb-color-text-tertiary)]"
                 >
                   선택 초기화
                 </button>
@@ -2353,44 +3132,44 @@ function AdjustmentHistoryScreen({
 
               <div className="flex gap-[8px] flex-wrap">
                 {selectedCompareHistories.length > 0 ? selectedCompareHistories.map((history) => (
-                  <span key={history.id} className="inline-flex items-center rounded-full bg-[#f3f3f3] px-[10px] py-[6px] text-[12px] font-semibold text-[#0f0f0f]">
+                  <span key={history.id} className="inline-flex items-center rounded-full bg-[var(--tb-color-bg-page)] px-[10px] py-[6px] text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
                     {history.menu}
                   </span>
                 )) : (
-                  <span className="inline-flex items-center rounded-full bg-[#f3f3f3] px-[10px] py-[6px] text-[12px] font-medium text-[#666666]">
+                  <span className="inline-flex items-center rounded-full bg-[var(--tb-color-bg-page)] px-[10px] py-[6px] text-[12px] font-medium text-[var(--tb-color-text-body)]">
                     아직 선택된 기록이 없어요
                   </span>
                 )}
               </div>
 
               {comparisonSummary ? (
-                <div className="flex flex-col gap-[10px] rounded-[18px] bg-[#f7f7f7] p-[12px]">
+                <div className="flex flex-col gap-[10px] rounded-[var(--tb-radius-20)] bg-[var(--tb-color-surface-muted)] p-[12px]">
                   <div className="grid grid-cols-2 gap-[8px]">
-                    <div className="rounded-[16px] bg-white p-[12px]">
-                      <p className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">{selectedCompareHistories[0].menu}</p>
-                      <p className="mt-[6px] text-[14px] font-bold text-[#0f0f0f]">
+                    <div className="rounded-[var(--tb-radius-14)] bg-white p-[12px]">
+                      <p className="text-[12px] font-medium text-[var(--tb-color-text-subtle)]">{selectedCompareHistories[0].menu}</p>
+                      <p className="mt-[6px] text-[14px] font-bold text-[var(--tb-color-text-primary)]">
                         {comparisonSummary.firstStrongest?.taste} {comparisonSummary.firstStrongest?.change}
                       </p>
                     </div>
-                    <div className="rounded-[16px] bg-white p-[12px]">
-                      <p className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">{selectedCompareHistories[1].menu}</p>
-                      <p className="mt-[6px] text-[14px] font-bold text-[#0f0f0f]">
+                    <div className="rounded-[var(--tb-radius-14)] bg-white p-[12px]">
+                      <p className="text-[12px] font-medium text-[var(--tb-color-text-subtle)]">{selectedCompareHistories[1].menu}</p>
+                      <p className="mt-[6px] text-[14px] font-bold text-[var(--tb-color-text-primary)]">
                         {comparisonSummary.secondStrongest?.taste} {comparisonSummary.secondStrongest?.change}
                       </p>
                     </div>
                   </div>
-                  <div className="rounded-[16px] bg-white p-[12px] flex flex-col gap-[4px]">
-                    <p className="text-[11px] font-medium text-[rgba(15,15,15,0.52)]">비교 요약</p>
-                    <p className="text-[13px] font-semibold text-[#0f0f0f]">
+                  <div className="rounded-[var(--tb-radius-14)] bg-white p-[12px] flex flex-col gap-[4px]">
+                    <p className="text-[12px] font-medium text-[var(--tb-color-text-subtle)]">비교 요약</p>
+                    <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                       공통 조정: {comparisonSummary.sharedTastes.length > 0 ? comparisonSummary.sharedTastes.join(' · ') : '겹치는 미각 없음'}
                     </p>
-                    <p className="text-[12px] text-[rgba(15,15,15,0.62)]">
+                    <p className="text-[12px] text-[var(--tb-color-text-muted)]">
                       가장 차이 큰 포인트는 {comparisonSummary.mostDifferentTaste?.taste}이고, 차이는 {comparisonSummary.mostDifferentTaste?.difference}%p예요.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="rounded-[18px] bg-[#f7f7f7] px-[12px] py-[10px] text-[12px] text-[rgba(15,15,15,0.62)]">
+                <div className="rounded-[var(--tb-radius-20)] bg-[var(--tb-color-surface-muted)] px-[12px] py-[10px] text-[12px] text-[var(--tb-color-text-muted)]">
                   두 개를 고르면 공통 조정과 가장 다른 포인트를 바로 보여드릴게요.
                 </div>
               )}
@@ -2399,8 +3178,8 @@ function AdjustmentHistoryScreen({
 
           <div className="flex items-start justify-between gap-[12px]">
             <div className="flex items-center gap-[8px]">
-              <p className="text-[18px] font-bold tracking-[-0.24px] text-[#0f0f0f]">조정 기록</p>
-              <p className="text-[12px] text-[rgba(15,15,15,0.48)]">{filteredHistoryData.length}개 표시</p>
+              <p className="text-[18px] font-bold tracking-[-0.24px] text-[var(--tb-color-text-primary)]">조정 기록</p>
+              <p className="text-[12px] text-[var(--tb-color-text-subtle)]">{filteredHistoryData.length}개 표시</p>
             </div>
             <div className="relative shrink-0 pt-[2px]">
               <button
@@ -2410,14 +3189,14 @@ function AdjustmentHistoryScreen({
                 aria-expanded={isSortMenuOpen}
                 aria-label="정렬 기준 열기"
               >
-                <span className="text-[11px] text-[#808080]">
+                <span className="text-[12px] text-[var(--tb-color-text-hint)]">
                   {sortOptions.find((option) => option.id === sortMode)?.label ?? '최신순'}
                 </span>
-                <ChevronDown className={`w-3 h-3 text-[#3F3F3F] transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3 h-3 text-[var(--tb-color-text-secondary)] transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isSortMenuOpen ? (
-                <div className="absolute right-0 top-[calc(100%+8px)] z-10 min-w-[148px] rounded-[18px] bg-white p-[6px] shadow-[0_16px_32px_rgba(15,15,15,0.12)]">
+                <div className="absolute right-0 top-[calc(100%+8px)] z-10 min-w-[148px] rounded-[var(--tb-radius-20)] bg-white p-[6px] shadow-[var(--tb-shadow-strong)]">
                   {sortOptions.map((option) => (
                     <button
                       key={option.id}
@@ -2426,10 +3205,10 @@ function AdjustmentHistoryScreen({
                         setSortMode(option.id);
                         setIsSortMenuOpen(false);
                       }}
-                      className={`flex w-full items-center justify-between rounded-[12px] px-[10px] py-[9px] text-left text-[12px] font-semibold transition-colors ${sortMode === option.id ? 'bg-[#0f0f0f] text-white' : 'text-[#555555] hover:bg-[#f5f5f5]'}`}
+                      className={`flex w-full items-center justify-between rounded-[12px] px-[10px] py-[9px] text-left text-[12px] font-semibold transition-colors ${sortMode === option.id ? 'bg-[var(--tb-color-text-primary)] text-white' : 'text-[var(--tb-color-text-tertiary)] hover:bg-[var(--tb-color-surface-muted)]'}`}
                     >
                       <span>{option.label}</span>
-                      {sortMode === option.id ? <span className="text-[11px]">적용 중</span> : null}
+                      {sortMode === option.id ? <span className="text-[12px]">적용 중</span> : null}
                     </button>
                   ))}
                 </div>
@@ -2449,9 +3228,9 @@ function AdjustmentHistoryScreen({
                 compareSelectionOrder={selectedCompareIds.indexOf(item.id) + 1}
               />
             )) : (
-              <div className="bg-white rounded-[24px] px-[16px] py-[20px] text-center shadow-[0_8px_24px_rgba(15,15,15,0.04)]">
-                <p className="text-[15px] font-bold text-[#0f0f0f]">조건에 맞는 기록이 없어요</p>
-                <p className="mt-[6px] text-[13px] leading-[1.45] text-[rgba(15,15,15,0.58)]">검색어나 필터를 조금 넓혀서 다시 찾아보세요.</p>
+              <div className="bg-white rounded-[var(--tb-radius-24)] px-[16px] py-[20px] text-center shadow-[var(--tb-shadow-soft)]">
+                <p className="text-[16px] font-bold text-[var(--tb-color-text-primary)]">조건에 맞는 기록이 없어요</p>
+                <p className="mt-[6px] text-[14px] leading-[1.45] text-[var(--tb-color-text-muted)]">검색어나 필터를 조금 넓혀서 다시 찾아보세요.</p>
               </div>
             )}
           </div>
@@ -2461,218 +3240,23 @@ function AdjustmentHistoryScreen({
   );
 }
 
-function SectionAdjustmentHistory() {
+function SectionAdjustmentHistory({
+  initialHistoryData,
+}: {
+  initialHistoryData?: HomeAdjustmentHistoryItem[];
+}) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [historyPageOpen, setHistoryPageOpen] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
-  const [historyData, setHistoryData] = useState([
-    {
-      id: 1,
-      menu: "트러플 파스타",
-      chefName: "김호윤",
-      restaurant: "더 이탈리안 클럽",
-      date: "2024.12.04",
-      time: "저녁 7:00",
-      duration: "1시간 50분",
-      image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=200&h=200&fit=crop",
-      satisfaction: 0,
-      color: "#E8D5E9",
-      adjustments: [
-        { taste: "감칠맛", change: "+10%" },
-        { taste: "지방맛", change: "+7%" },
-        { taste: "짠맛", change: "+3%" }
-      ],
-      feedbackLabel: "피드백 작성하기",
-      badgeColor: "#95A4FC", // Purple-ish
-      isExpanded: false,
-      selectedIntensity: null as string | null,
-      likedTastes: [] as string[],
-      neededAdjustments: [] as string[],
-      adjustmentDetail: {
-        method: {
-          minus: { name: "정제염 (Salt)", desc: "직접적인 짠맛을 줄였습니다 (-3g)", icon: "📉" },
-          plus: { name: "앤초비 파우더", desc: "깊은 감칠맛으로 대체했습니다 (+5g)", icon: "📈" }
-        },
-        summary: [
-          { taste: "짠맛", value: -15, label: "짠맛" },
-          { taste: "감칠맛", value: 10, label: "감칠맛" }
-        ],
-        quote: "소금의 날카로운 짠맛 대신,\n앤초비 파우더의 깊은 감칠맛으로 간을 맞춰 자극을 줄였습니다.",
-        evaluation: {
-          question: "오늘 셰프의 전략(소금 대신 앤초비 파우더)은 어땠나요?",
-          options: {
-            positive: "완벽한 밸런스였어요",
-            negative1: "조금 비릿했어요",
-            negative2: "여전히 짰어요"
-          }
-        }
-      }
-    },
-    {
-      id: 2,
-      menu: "송로버섯 리조또",
-      chefName: "박준우",
-      restaurant: "오트뤼",
-      date: "2024.12.01",
-      time: "점심 12:30",
-      duration: "1시간 20분",
-      image: "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=200&h=200&fit=crop",
-      satisfaction: 0,
-      color: "#FFE0B2", // Light Orange/Beige
-      adjustments: [
-        { taste: "단맛", change: "+15%" },
-        { taste: "감칠맛", change: "+8%" }
-      ],
-      feedbackLabel: "피드백 보기",
-      badgeColor: "#FFB26B", // Orange
-      isExpanded: false,
-      selectedIntensity: "적당했어요",
-      likedTastes: ["단맛", "감칠맛"],
-      neededAdjustments: [] as string[],
-      adjustmentDetail: {
-        method: {
-          minus: { name: "설탕 (Sugar)", desc: "인공적인 단맛을 줄였습니다 (-5g)", icon: "📉" },
-          plus: { name: "양파 캐러멜 (Onion Caramel)", desc: "자연스러운 단맛과 풍미를 더했습니다 (+10g)", icon: "📈" }
-        },
-        summary: [
-          { taste: "단맛", value: 15, label: "단맛" },
-          { taste: "감칠맛", value: 8, label: "감칠맛" }
-        ],
-        quote: "설탕의 인공적인 단맛 대신,\n양파 캐러멜의 깊은 풍미로 밸런스를 맞췄습니다.",
-        evaluation: {
-          question: "오늘 셰프의 전략(설탕 대신 양파 캐러멜)은 어땠나요?",
-          options: {
-            positive: "풍미가 훌륭해요",
-            negative1: "단맛이 부족해요",
-            negative2: "양파 향이 강해요"
-          }
-        }
-      }
-    },
-    {
-      id: 3,
-      menu: "한우 등심 스테이크",
-      chefName: "최현석",
-      restaurant: "레스토랑 CHOI",
-      date: "2024.12.02",
-      time: "점심 12:00",
-      duration: "1시간 45분",
-      image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=200&h=200&fit=crop",
-      satisfaction: 4,
-      color: "#E3F2FD", // Light Blue
-      adjustments: [
-        { taste: "짠맛", change: "+12%" },
-        { taste: "지방맛", change: "+5%" }
-      ],
-      feedbackLabel: "피드백 보기",
-      badgeColor: "#8FBFFF", // Blue
-      isExpanded: false,
-      selectedIntensity: "적당했어요",
-      likedTastes: ["짠맛"],
-      neededAdjustments: ["지방맛"],
-      adjustmentDetail: {
-        method: {
-          minus: { name: "소금 (Salt)", desc: "기본 시즈닝을 줄였습니다 (-2g)", icon: "📉" },
-          plus: { name: "트러플 소금 (Truffle Salt)", desc: "풍미 있는 짠맛으로 변경했습니다 (+3g)", icon: "📈" }
-        },
-        summary: [
-          { taste: "짠맛", value: 12, label: "짠맛" },
-          { taste: "지방맛", value: 5, label: "지방맛" }
-        ],
-        quote: "일반 소금 대신,\n트러플 소금의 풍미를 더해 나트륨은 줄이고 만족감은 높였습니다.",
-        evaluation: {
-          question: "오늘 셰프의 전략(일반 소금 대신 트러플 소금)은 어땠나요?",
-          options: {
-            positive: "고급스러운 맛이에요",
-            negative1: "향이 너무 강해요",
-            negative2: "덜 짠 것 같아요"
-          }
-        }
-      }
-    },
-    {
-      id: 4,
-      menu: "랍스터 비스크",
-      chefName: "황정인",
-      restaurant: "레스토랑 베누",
-      date: "2024.11.28",
-      time: "저녁 6:30",
-      duration: "1시간 30분",
-      image: "https://images.unsplash.com/photo-1551248429-40975aa4de74?w=200&h=200&fit=crop",
-      satisfaction: 3,
-      color: "#FFE0B2", // Light Orange/Beige
-      adjustments: [
-        { taste: "단맛", change: "+15%" },
-        { taste: "감칠맛", change: "+8%" }
-      ],
-      feedbackLabel: "피드백 보기",
-      badgeColor: "#FFB26B", // Orange
-      isExpanded: false,
-      selectedIntensity: "적당했어요",
-      likedTastes: ["단맛", "감칠맛"],
-      neededAdjustments: [] as string[],
-      adjustmentDetail: {
-        method: {
-          minus: { name: "크림 (Cream)", desc: "무거운 느낌을 줄였습니다 (-10ml)", icon: "📉" },
-          plus: { name: "조개 육수 (Clam Stock)", desc: "시원한 감칠맛을 더했습니다 (+20ml)", icon: "📈" }
-        },
-        summary: [
-          { taste: "단맛", value: 15, label: "단맛" },
-          { taste: "감칠맛", value: 8, label: "감칠맛" }
-        ],
-        quote: "무거운 크림 대신,\n조개 육수의 시원한 감칠맛을 더해 가볍지만 깊은 맛을 냈습니다.",
-        evaluation: {
-          question: "오늘 셰프의 전략(크림 대신 조개 육수)은 어땠나요?",
-          options: {
-            positive: "시원하고 깊어요",
-            negative1: "너무 가벼워요",
-            negative2: "비린 맛이 나요"
-          }
-        }
-      }
-    },
-    {
-      id: 5,
-      menu: "시트러스 타르트",
-      chefName: "이은지",
-      restaurant: "숍 리제",
-      date: "2024.11.28",
-      time: "저녁 6:30",
-      duration: "2시간",
-      image: "https://images.unsplash.com/photo-1519915028121-7d3463d20b13?w=200&h=200&fit=crop",
-      satisfaction: 5,
-      color: "#FFF9C4", // Light Yellow
-      adjustments: [
-        { taste: "신맛", change: "+10%" },
-        { taste: "쓴맛", change: "-5%" }
-      ],
-      feedbackLabel: "피드백 보기",
-      badgeColor: "#C0CA33", // Lime/Yellow-Green
-      isExpanded: false,
-      selectedIntensity: "적당했어요",
-      likedTastes: ["신맛"],
-      neededAdjustments: [] as string[],
-      adjustmentDetail: {
-        method: {
-          minus: { name: "레몬 제스트 (Lemon Zest)", desc: "쓴맛을 줄였습니다 (-2g)", icon: "📉" },
-          plus: { name: "유자청 (Yuzu)", desc: "달콤한 신맛을 더했습니다 (+5g)", icon: "📈" }
-        },
-        summary: [
-          { taste: "신맛", value: 10, label: "신맛" },
-          { taste: "쓴맛", value: -5, label: "쓴맛" }
-        ],
-        quote: "레몬 제스트의 쓴맛 대신,\n유자청의 향긋한 달콤함을 더해 산미를 부드럽게 잡았습니다.",
-        evaluation: {
-          question: "오늘 셰프의 전략(레몬 제스트 대신 유자청)은 어땠나요?",
-          options: {
-            positive: "향긋하고 좋아요",
-            negative1: "너무 달아요",
-            negative2: "신맛이 약해요"
-          }
-        }
-      }
+  const [historyData, setHistoryData] = useState<HomeAdjustmentHistoryItem[]>(initialHistoryData ?? []);
+
+  useEffect(() => {
+    if (!initialHistoryData) {
+      return;
     }
-  ]);
+
+    setHistoryData(initialHistoryData);
+  }, [initialHistoryData]);
 
   const handleRate = (id: number, rating: number, action?: boolean | "toggle" | "edit" | { type: string, value: any }) => {
     setHistoryData(prev => prev.map(item => {
@@ -2734,7 +3318,7 @@ function SectionAdjustmentHistory() {
         <div className="box-border content-stretch flex flex-col items-start gap-[12px] relative w-full">
           {/* Section Header */}
           <div className="flex justify-between items-start w-full mb-2">
-            <span className="text-[20px] font-bold text-[#0f0f0f] tracking-[-0.24px]">조정 히스토리</span>
+            <span className="text-[20px] font-bold text-[var(--tb-color-text-primary)] tracking-[-0.24px]">조정 히스토리</span>
             {hasHiddenHistory ? (
               <button
                 type="button"
@@ -2743,31 +3327,42 @@ function SectionAdjustmentHistory() {
                 aria-expanded={showAllHistory}
                 aria-label={showAllHistory ? "조정 히스토리 접기" : "조정 히스토리 전체 보기"}
               >
-                <span className="text-[11px] text-[#808080]">{showAllHistory ? "접기" : "전체 보기"}</span>
+                <span className="text-[12px] text-[var(--tb-color-text-hint)]">{showAllHistory ? "접기" : "전체 보기"}</span>
                 {showAllHistory ? (
-                  <ChevronUp className="w-3 h-3 text-[#3F3F3F]" />
+                  <ChevronUp className="w-3 h-3 text-[var(--tb-color-text-secondary)]" />
                 ) : (
-                  <ChevronDown className="w-3 h-3 text-[#3F3F3F]" />
+                  <ChevronDown className="w-3 h-3 text-[var(--tb-color-text-secondary)]" />
                 )}
               </button>
             ) : null}
           </div>
 
           {/* List */}
-          <div className="flex flex-col gap-3 w-full">
-            {visibleHistoryData.map((item, index) => (
-              <HistoryCard key={index} history={item} onRate={handleRate} onClick={() => setSelectedId(item.id)} />
-            ))}
-          </div>
+          {visibleHistoryData.length > 0 ? (
+            <div className="flex flex-col gap-3 w-full">
+              {visibleHistoryData.map((item, index) => (
+                <HistoryCard key={index} history={item} onRate={handleRate} onClick={() => setSelectedId(item.id)} />
+              ))}
+            </div>
+          ) : (
+            <div className="w-full rounded-[20px] bg-white px-[16px] py-[18px] text-center shadow-[var(--tb-shadow-soft)]">
+              <p className="text-[15px] font-bold text-[var(--tb-color-text-primary)]">아직 표시할 조정 히스토리가 없어요</p>
+              <p className="mt-[6px] text-[13px] leading-[1.5] text-[var(--tb-color-text-muted)]">
+                실제 예약과 메뉴 데이터가 연결되면 여기에서 레스토랑별 조정 기록을 바로 볼 수 있어요.
+              </p>
+            </div>
+          )}
 
-          <button
-            type="button"
-            className="w-full bg-white rounded-full p-[12px] mb-10 flex justify-between items-center cursor-pointer hover:bg-[#fafafa] transition-colors"
-            onClick={() => setHistoryPageOpen(true)}
-          >
-            <span className="font-bold text-[14px] text-[#0f0f0f]">모든 정보 보기</span>
-            <ChevronRight className="w-4 h-4 text-[#3F3F3F]" />
-          </button>
+          {historyData.length > 0 ? (
+            <button
+              type="button"
+              className="w-full bg-white rounded-full p-[12px] mb-10 flex justify-between items-center cursor-pointer transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.98]"
+              onClick={() => setHistoryPageOpen(true)}
+            >
+              <span className="font-bold text-[14px] text-[var(--tb-color-text-primary)]">모든 정보 보기</span>
+              <ChevronRight className="w-4 h-4 text-[var(--tb-color-text-secondary)]" />
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -2795,28 +3390,60 @@ function SectionAdjustmentHistory() {
   );
 }
 
-function Content13() {
+function Content13({
+  specialNoteCard,
+  tasteProfileCard,
+  tasteProfileOverviewValues,
+  tasteProfileSeries,
+  featuredChefs,
+  reservationHint,
+  adjustmentHistoryData,
+}: {
+  specialNoteCard: HomeSpecialNoteCardData;
+  tasteProfileCard: HomeTasteProfileCardData;
+  tasteProfileOverviewValues: HomeMeasurementOverviewValue[];
+  tasteProfileSeries: HomeMeasurementSeriesPoint[];
+  featuredChefs: HomeChefCardData[];
+  reservationHint: string;
+  adjustmentHistoryData?: HomeAdjustmentHistoryItem[];
+}) {
   return (
     <div className="basis-0 content-stretch flex flex-col gap-8 p-5 grow items-start min-h-px min-w-px relative shrink-0 w-full" data-name="Content">
-      <Section />
-      <Section1 />
-      <SectionAdjustmentHistory />
+      <Section featuredChefs={featuredChefs} />
+      <Section1
+        reservationHint={reservationHint}
+        specialNoteCard={specialNoteCard}
+        tasteProfileCard={tasteProfileCard}
+        tasteProfileOverviewValues={tasteProfileOverviewValues}
+        tasteProfileSeries={tasteProfileSeries}
+      />
+      <SectionAdjustmentHistory initialHistoryData={adjustmentHistoryData} />
 
     </div>
   );
 }
 
-function SpecialNoteDetailScreen({ onBack }: { onBack: () => void }) {
+function SpecialNoteDetailScreen({
+  cardData,
+  onBack,
+  reservationHint,
+}: {
+  cardData: HomeSpecialNoteCardData;
+  onBack: () => void;
+  reservationHint: string;
+}) {
+  const circleGradient = buildHomeCardCircleGradient(cardData.details);
+
   return (
-    <div className="flex flex-col w-full h-full bg-[#f3f3f3] relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
-      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-[#f3f3f3] border-b border-[#e7e7e7]">
-        <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]">
+    <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)] relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
+      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-[var(--tb-color-bg-page)] border-b border-[var(--tb-color-border-default)]">
+        <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[var(--tb-color-text-secondary)]">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">특이사항</span>
+          <span className="font-bold text-[16px] text-[var(--tb-color-text-primary)] leading-[18px]">특이사항</span>
           <span className="font-medium text-[12px] text-gray-500 leading-[14px]">세부 미각 요소 기반 전달 포인트</span>
         </div>
       </div>
@@ -2825,42 +3452,48 @@ function SpecialNoteDetailScreen({ onBack }: { onBack: () => void }) {
         <div className="bg-white rounded-[20px] p-[12px] flex items-start gap-[12px]">
           <div
             className="shrink-0 size-[42px] rounded-full"
-            style={{ background: HOME_SPECIAL_NOTE_CIRCLE_GRADIENT }}
+            style={{ background: circleGradient }}
           />
           <div className="flex flex-col gap-[6px] min-w-0">
             <div className="flex flex-wrap gap-[6px] items-center">
-              <span className="inline-flex items-center rounded-full bg-[#0f0f0f] px-[8px] py-[3px] text-[10px] font-semibold text-white">
+              <span className="inline-flex items-center rounded-full bg-[var(--tb-color-text-primary)] px-[8px] py-[3px] text-[10px] font-semibold text-white">
                 셰프 전달 포인트
               </span>
-              <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f3f3f3] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
-                {HOME_SPECIAL_NOTE_CARD.translationStatusLabel}
+              <span className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] px-[8px] py-[3px] text-[10px] font-semibold text-[var(--tb-color-text-secondary)]">
+                {cardData.translationStatusLabel}
               </span>
             </div>
-            <p className="font-bold text-[18px] leading-[1.25] text-[#0f0f0f]">
-              {HOME_SPECIAL_NOTE_CARD.title}
+            <p className="font-bold text-[18px] leading-[1.25] text-[var(--tb-color-text-primary)]">
+              {cardData.title}
             </p>
-            <p className="text-[13px] leading-[1.5] text-[rgba(15,15,15,0.62)]">
-              {HOME_SPECIAL_NOTE_CARD.serviceHint}
+            <p className="text-[14px] leading-[1.5] text-[var(--tb-color-text-muted)]">
+              {cardData.serviceHint}
             </p>
           </div>
         </div>
 
-        <SpecialNoteFeatureBody />
+        <SpecialNoteFeatureBody cardData={cardData} reservationHint={reservationHint} />
       </div>
     </div>
   );
 }
 
-function TasteProfileTrendChart() {
+function TasteProfileTrendChart({
+  series,
+  summaryDetails,
+}: {
+  series: HomeMeasurementSeriesPoint[];
+  summaryDetails: HomeTrendDetail[];
+}) {
   return (
     <div className="w-full">
       <div className="h-[180px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={HOME_TASTE_PROFILE_WEEKLY_SERIES}
+            data={series as any[]}
             margin={{ top: 12, right: 12, bottom: 12, left: 0 }}
           >
-            {HOME_TASTE_PROFILE_SUMMARY_DETAILS.map((detail) => {
+            {summaryDetails.map((detail) => {
               const strokeColor = getTasteColor(detail.parentTaste);
 
               return (
@@ -2880,12 +3513,12 @@ function TasteProfileTrendChart() {
       </div>
 
       <div className="mt-[2px] flex items-center justify-between px-[6px]">
-        {HOME_TASTE_PROFILE_WEEKLY_SERIES.map((item) => (
+        {series.map((item) => (
           <span
             key={item.label}
             className="text-[10px] font-medium text-[rgba(15,15,15,0.42)]"
           >
-            {item.label}
+            {String(item.label)}
           </span>
         ))}
       </div>
@@ -2893,25 +3526,41 @@ function TasteProfileTrendChart() {
   );
 }
 
-function TasteProfileDetailScreen({ onBack }: { onBack: () => void }) {
+function TasteProfileDetailScreen({
+  cardData,
+  onBack,
+  overviewValues,
+  series,
+}: {
+  cardData: HomeTasteProfileCardData;
+  onBack: () => void;
+  overviewValues: HomeMeasurementOverviewValue[];
+  series: HomeMeasurementSeriesPoint[];
+}) {
+  const summaryDetails = getHomeCardSummaryDetails(cardData.details);
+  const circleGradient = buildHomeCardCircleGradient(cardData.details);
+  const summaryTasteLabels = summaryDetails.map((detail) => detail.detailLabel);
+  const hasTrendHistory = series.length > 1;
   const maxAbsChange = Math.max(
-    ...HOME_TASTE_PROFILE_OVERVIEW_VALUES.map((item) => Math.abs(item.change)),
+    ...overviewValues.map((item) => Math.abs(item.change)),
   );
 
   return (
-    <div className="flex flex-col w-full h-full bg-[#f3f3f3] relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
-      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-[#f3f3f3] border-b border-[#e7e7e7]">
+    <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)] relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
+      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-[var(--tb-color-bg-page)] border-b border-[var(--tb-color-border-default)]">
         <button
           onClick={onBack}
-          className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]"
+          className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[var(--tb-color-text-secondary)]"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">미각변화</span>
-          <span className="font-medium text-[12px] text-gray-500 leading-[14px]">최근 6일 반응 추세</span>
+          <span className="font-bold text-[16px] text-[var(--tb-color-text-primary)] leading-[18px]">미각변화</span>
+          <span className="font-medium text-[12px] text-gray-500 leading-[14px]">
+            {hasTrendHistory ? "최근 측정 반응 추세" : "이번 측정 기준 반응"}
+          </span>
         </div>
       </div>
 
@@ -2919,22 +3568,22 @@ function TasteProfileDetailScreen({ onBack }: { onBack: () => void }) {
         <div className="bg-white rounded-[20px] p-[12px] flex items-start gap-[12px]">
           <div
             className="shrink-0 size-[42px] rounded-full"
-            style={{ background: HOME_TASTE_PROFILE_CIRCLE_GRADIENT }}
+            style={{ background: circleGradient }}
           />
           <div className="flex flex-col gap-[6px] min-w-0">
             <div className="flex flex-wrap gap-[6px] items-center">
-              <span className="inline-flex items-center rounded-full bg-[#0f0f0f] px-[8px] py-[3px] text-[10px] font-semibold text-white">
-                이번 주 요약
+              <span className="inline-flex items-center rounded-full bg-[var(--tb-color-text-primary)] px-[8px] py-[3px] text-[10px] font-semibold text-white">
+                {hasTrendHistory ? "최근 추세 요약" : "이번 측정 요약"}
               </span>
-              <span className="inline-flex items-center rounded-full border border-[#e7e7e7] bg-[#f3f3f3] px-[8px] py-[3px] text-[10px] font-semibold text-[rgba(15,15,15,0.7)]">
-                {HOME_TASTE_PROFILE_CARD.periodLabel}
+              <span className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] px-[8px] py-[3px] text-[10px] font-semibold text-[var(--tb-color-text-secondary)]">
+                {cardData.periodLabel}
               </span>
             </div>
-            <p className="font-bold text-[18px] leading-[1.25] text-[#0f0f0f]">
-              {HOME_TASTE_PROFILE_CARD.title}
+            <p className="font-bold text-[18px] leading-[1.25] text-[var(--tb-color-text-primary)]">
+              {cardData.title}
             </p>
-            <p className="text-[13px] leading-[1.5] text-[rgba(15,15,15,0.62)]">
-              {HOME_TASTE_PROFILE_CARD.summary}
+            <p className="text-[14px] leading-[1.5] text-[var(--tb-color-text-muted)]">
+              {cardData.summary}
             </p>
           </div>
         </div>
@@ -2942,32 +3591,42 @@ function TasteProfileDetailScreen({ onBack }: { onBack: () => void }) {
         <div className="bg-white rounded-[20px] p-[12px] flex flex-col gap-[12px]">
           <div className="flex items-center justify-between gap-[12px]">
             <div>
-              <p className="text-[14px] font-bold text-[#0f0f0f]">주간 추이</p>
-              <p className="mt-[3px] text-[11px] leading-[1.45] text-[rgba(15,15,15,0.55)]">
-                단맛과 감칠맛의 반응 변화가 가장 크게 흔들렸어요.
+              <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                {hasTrendHistory ? "주간 추이" : "현재 측정 포인트"}
+              </p>
+              <p className="mt-[3px] text-[12px] leading-[1.45] text-[var(--tb-color-text-subtle)]">
+                {hasTrendHistory
+                  ? summaryTasteLabels.length > 1
+                    ? `${summaryTasteLabels[0]}과 ${summaryTasteLabels[1]} 반응 변화가 가장 크게 흔들렸어요.`
+                    : `${summaryTasteLabels[0] ?? "미각"} 반응 변화가 가장 크게 흔들렸어요.`
+                  : summaryTasteLabels.length > 1
+                    ? `${summaryTasteLabels[0]}과 ${summaryTasteLabels[1]}이 이번 측정에서 평균과 가장 큰 차이를 보였어요.`
+                    : `${summaryTasteLabels[0] ?? "미각"} 반응이 이번 측정에서 평균과 가장 큰 차이를 보였어요.`}
               </p>
             </div>
           </div>
-          <TasteProfileTrendChart />
+          <TasteProfileTrendChart series={series} summaryDetails={summaryDetails} />
         </div>
 
         <div className="bg-white rounded-[20px] p-[12px] flex flex-col gap-[10px]">
           <div>
-            <p className="text-[14px] font-bold text-[#0f0f0f]">핵심 변화</p>
-            <p className="mt-[3px] text-[11px] leading-[1.45] text-[rgba(15,15,15,0.55)]">
-              현재 컨디션에서 가장 크게 바뀐 두 포인트만 먼저 보여드려요.
+            <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">핵심 변화</p>
+            <p className="mt-[3px] text-[12px] leading-[1.45] text-[var(--tb-color-text-subtle)]">
+              {hasTrendHistory
+                ? "현재 컨디션에서 가장 크게 바뀐 두 포인트만 먼저 보여드려요."
+                : "이번 측정에서 평균과 차이가 큰 두 포인트를 먼저 보여드려요."}
             </p>
           </div>
 
-          {HOME_TASTE_PROFILE_SUMMARY_DETAILS.map((detail) => (
+          {summaryDetails.map((detail) => (
             <div
               key={detail.detailLabel}
-              className="flex gap-[10px] items-start rounded-[12px] bg-[#f7f7f7] px-[10px] py-[10px]"
+              className="flex gap-[10px] items-start rounded-[12px] bg-[var(--tb-color-surface-muted)] px-[10px] py-[10px]"
             >
               <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
               <div className="flex min-w-0 flex-col gap-[4px]">
                 <div className="flex min-w-0 flex-wrap items-center gap-[6px]">
-                  <p className="text-[13px] font-semibold text-[#0f0f0f]">
+                  <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                     {detail.detailLabel}
                   </p>
                   <p
@@ -2977,28 +3636,30 @@ function TasteProfileDetailScreen({ onBack }: { onBack: () => void }) {
                     {detail.change}
                   </p>
                 </div>
-                <p className="text-[11px] leading-[1.45] text-[rgba(15,15,15,0.58)] break-keep">
+                <p className="text-[12px] leading-[1.45] text-[var(--tb-color-text-muted)] break-keep">
                   {detail.cue}
                 </p>
               </div>
             </div>
           ))}
 
-          <p className="text-[11px] leading-[1.45] text-[rgba(15,15,15,0.55)] break-keep">
-            {HOME_TASTE_PROFILE_CARD.serviceHint}
+          <p className="text-[12px] leading-[1.45] text-[var(--tb-color-text-subtle)] break-keep">
+            {cardData.serviceHint}
           </p>
         </div>
 
         <div className="bg-white rounded-[20px] p-[12px] flex flex-col gap-[12px] pb-[20px]">
           <div>
-            <p className="text-[14px] font-bold text-[#0f0f0f]">전체 미각 분포</p>
-            <p className="mt-[3px] text-[11px] leading-[1.45] text-[rgba(15,15,15,0.55)]">
-              모든 미각의 변화량을 함께 보면 이번 주 반응의 중심이 더 분명해져요.
+            <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">전체 미각 분포</p>
+            <p className="mt-[3px] text-[12px] leading-[1.45] text-[var(--tb-color-text-subtle)]">
+              {hasTrendHistory
+                ? "모든 미각의 변화량을 함께 보면 최근 반응의 중심이 더 분명해져요."
+                : "이번 측정값이 평균과 얼마나 차이 나는지 함께 보면 현재 반응의 중심이 더 분명해져요."}
             </p>
           </div>
 
           <div className="flex flex-col gap-[10px]">
-            {HOME_TASTE_PROFILE_OVERVIEW_VALUES.map((item) => {
+            {overviewValues.map((item) => {
               const barWidth = `${(Math.abs(item.change) / maxAbsChange) * 100}%`;
               const accentColor = getTasteColor(item.taste);
               const accentTint = getTasteTint(item.taste, 0.14);
@@ -3006,11 +3667,11 @@ function TasteProfileDetailScreen({ onBack }: { onBack: () => void }) {
               return (
                 <div key={item.taste} className="flex items-center gap-[10px]">
                   <div className="w-[46px] shrink-0">
-                    <span className="text-[12px] font-medium text-[rgba(15,15,15,0.72)]">
+                    <span className="text-[12px] font-medium text-[var(--tb-color-text-secondary)]">
                       {item.taste}
                     </span>
                   </div>
-                  <div className="flex-1 rounded-full bg-[#f3f3f3] h-[12px] overflow-hidden">
+                  <div className="flex-1 rounded-full bg-[var(--tb-color-bg-page)] h-[12px] overflow-hidden">
                     <div
                       className="h-full rounded-full"
                       style={{
@@ -3062,13 +3723,13 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
     <div className="flex flex-col w-full h-full bg-white relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
       {/* Header */}
       <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-white border-b border-[#f3f3f3]">
-        <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[#3F3F3F]">
+        <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[var(--tb-color-text-secondary)]">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="font-bold text-[15px] text-[#0f0f0f] leading-[18px]">{data.menu}</span>
+          <span className="font-bold text-[16px] text-[var(--tb-color-text-primary)] leading-[18px]">{data.menu}</span>
           <span className="font-medium text-[12px] text-gray-500 leading-[14px]">{data.chefName} 셰프 · {data.restaurant}</span>
         </div>
       </div>
@@ -3076,9 +3737,9 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
       <div className="flex flex-col gap-[24px] p-[20px]">
         {/* Section 1: Calibration Scope (Summary) */}
         <div className="flex flex-col gap-[12px]">
-          <h3 className="font-bold text-[20px] text-[#0f0f0f]">조정 범위</h3>
-          <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex flex-col gap-4">
-            <p className="text-[14px] text-[#0f0f0f] leading-snug font-medium">
+          <h3 className="font-bold text-[20px] text-[var(--tb-color-text-primary)]">조정 범위</h3>
+          <div className="bg-[var(--tb-color-bg-page)] rounded-[20px] p-[12px] flex flex-col gap-4">
+            <p className="text-[14px] text-[var(--tb-color-text-primary)] leading-snug font-medium">
               고객님의 <span className="font-bold">
                 '{summary.map((s: any, i: number) => (
                   <React.Fragment key={i}>
@@ -3087,7 +3748,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
                       {s.label}
                       {i === summary.length - 1 && " 민감도"}
                     </span>
-                    {i < summary.length - 1 && <span className="text-[#0f0f0f]">, </span>}
+                    {i < summary.length - 1 && <span className="text-[var(--tb-color-text-primary)]">, </span>}
                   </React.Fragment>
                 ))}'
               </span>를 고려해<br />전체적인 밸런스를 조정했습니다.
@@ -3107,7 +3768,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
                 return (
                   <div key={idx} className="flex flex-col items-center gap-2 relative z-10 w-[60px]">
                     <span
-                      className="text-[13px] font-bold"
+                      className="text-[14px] font-bold"
                       style={{ color: barColor }}
                     >
                       {isPositive ? '+' : ''}{item.value}%
@@ -3118,7 +3779,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
                         style={{ height: `${height}px`, backgroundColor: barColor }}
                       />
                     </div>
-                    <span className="text-[13px] text-[#555555] font-bold">{item.label}</span>
+                    <span className="text-[14px] text-[var(--tb-color-text-tertiary)] font-bold">{item.label}</span>
                   </div>
                 )
               })}
@@ -3129,12 +3790,12 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
         {/* Section 2: Chef's Solution (Method & Ingredients) */}
         <div className="flex flex-col gap-[16px]">
           <div className="flex justify-between items-center">
-            <h3 className="font-bold text-[20px] text-[#0f0f0f]">셰프의 솔루션</h3>
+            <h3 className="font-bold text-[20px] text-[var(--tb-color-text-primary)]">셰프의 솔루션</h3>
           </div>
 
           <div className="flex flex-col gap-3">
             {/* Minus Card */}
-            <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
+            <div className="bg-[var(--tb-color-bg-page)] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
               {/* Header: Icon + Label */}
               <div className="flex items-center gap-[6px]">
                 <div className="relative shrink-0 size-[18px]">
@@ -3144,27 +3805,27 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
                     </svg>
                   </div>
                 </div>
-                <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] text-[#0f0f0f] text-[14px]">줄였어요</p>
+                <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] text-[var(--tb-color-text-primary)] text-[14px]">줄였어요</p>
               </div>
 
               {/* Content: Text Left, Icon Right */}
               <div className="flex items-center justify-between w-full">
                 <div className="flex flex-col">
-                  <span className="font-bold text-[16px] text-[#0f0f0f] mb-1">{method.minus.name}</span>
-                  <p className="text-[13px] text-[#666666] leading-snug">{method.minus.desc}</p>
+                  <span className="font-bold text-[16px] text-[var(--tb-color-text-primary)] mb-1">{method.minus.name}</span>
+                  <p className="text-[14px] text-[var(--tb-color-text-body)] leading-snug">{method.minus.desc}</p>
                 </div>
               </div>
             </div>
 
             {/* Connection Arrow */}
             <div className="flex justify-center -my-3 z-10">
-              <div className="bg-white p-2 rounded-full text-[#3F3F3F] shadow-sm">
+              <div className="bg-white p-2 rounded-full text-[var(--tb-color-text-secondary)] shadow-sm">
                 <ChevronDown size={20} />
               </div>
             </div>
 
             {/* Plus Card */}
-            <div className="bg-[#f3f3f3] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
+            <div className="bg-[var(--tb-color-bg-page)] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
               {/* Header: Icon + Label */}
               <div className="flex items-center gap-[6px]">
                 <div className="relative shrink-0 size-[18px]">
@@ -3174,38 +3835,38 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
                     </svg>
                   </div>
                 </div>
-                <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] text-[#0f0f0f] text-[14px]">대신 넣었어요</p>
+                <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] text-[var(--tb-color-text-primary)] text-[14px]">대신 넣었어요</p>
               </div>
 
               {/* Content: Text Left, Icon Right */}
               <div className="flex items-center justify-between w-full">
                 <div className="flex flex-col">
-                  <span className="font-bold text-[16px] text-[#0f0f0f] mb-1">{method.plus.name}</span>
-                  <p className="text-[13px] text-[#666666] leading-snug">{method.plus.desc}</p>
+                  <span className="font-bold text-[16px] text-[var(--tb-color-text-primary)] mb-1">{method.plus.name}</span>
+                  <p className="text-[14px] text-[var(--tb-color-text-body)] leading-snug">{method.plus.desc}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-[#f3f3f3] p-4 rounded-[16px] mt-2">
-            <p className="text-[13px] text-[#444444] italic text-center font-medium whitespace-pre-wrap">{quote}</p>
+          <div className="bg-[var(--tb-color-bg-page)] p-4 rounded-[var(--tb-radius-14)] mt-2">
+            <p className="text-[14px] text-[var(--tb-color-text-tertiary)] italic text-center font-medium whitespace-pre-wrap">{quote}</p>
           </div>
         </div>
 
         {/* Section 3: Feedback Action */}
         <div className="flex flex-col gap-[16px] pb-10">
-          <h3 className="font-bold text-[20px] text-[#0f0f0f]">나의 평가</h3>
-          <p className="text-[14px] text-[#0f0f0f]">{evaluation.question}</p>
+          <h3 className="font-bold text-[20px] text-[var(--tb-color-text-primary)]">나의 평가</h3>
+          <p className="text-[14px] text-[var(--tb-color-text-primary)]">{evaluation.question}</p>
 
           <div className="flex flex-col gap-3">
-            <button className="w-full py-[12px] rounded-[10px] bg-[#0f0f0f] text-white font-medium text-[14px] leading-normal shadow-lg hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+            <button className="w-full py-[12px] rounded-[10px] bg-[var(--tb-color-text-primary)] text-white font-medium text-[14px] leading-normal shadow-lg hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2">
               {evaluation.options.positive}
             </button>
             <div className="flex gap-3">
-              <button className="flex-1 py-[12px] rounded-[10px] bg-[#f3f3f3] text-[#666666] font-medium text-[14px] leading-normal hover:bg-[#e0e0e0] transition-all">
+              <button className="flex-1 py-[12px] rounded-[10px] bg-[var(--tb-color-bg-page)] text-[var(--tb-color-text-body)] font-medium text-[14px] leading-normal hover:bg-[var(--tb-color-border-disabled)] transition-all">
                 {evaluation.options.negative1}
               </button>
-              <button className="flex-1 py-[12px] rounded-[10px] bg-[#f3f3f3] text-[#666666] font-medium text-[14px] leading-normal hover:bg-[#e0e0e0] transition-all">
+              <button className="flex-1 py-[12px] rounded-[10px] bg-[var(--tb-color-bg-page)] text-[var(--tb-color-text-body)] font-medium text-[14px] leading-normal hover:bg-[var(--tb-color-border-disabled)] transition-all">
                 {evaluation.options.negative2}
               </button>
             </div>
@@ -3217,385 +3878,77 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
   );
 }
 
-function Content14() {
+function Content14({
+  specialNoteCard,
+  tasteProfileCard,
+  tasteProfileOverviewValues,
+  tasteProfileSeries,
+  featuredChefs,
+  reservationHint,
+  adjustmentHistoryData,
+}: {
+  specialNoteCard: HomeSpecialNoteCardData;
+  tasteProfileCard: HomeTasteProfileCardData;
+  tasteProfileOverviewValues: HomeMeasurementOverviewValue[];
+  tasteProfileSeries: HomeMeasurementSeriesPoint[];
+  featuredChefs: HomeChefCardData[];
+  reservationHint: string;
+  adjustmentHistoryData?: HomeAdjustmentHistoryItem[];
+}) {
   return (
-    <div className="basis-0 bg-[#f3f3f3] content-stretch flex flex-col grow items-center min-h-px min-w-px overflow-y-auto no-scrollbar relative w-full h-full" data-name="Content">
-      <Content13 />
+    <div className="basis-0 bg-[var(--tb-color-bg-page)] content-stretch flex flex-col grow items-center min-h-px min-w-px overflow-y-auto no-scrollbar relative w-full h-full" data-name="Content">
+      <Content13
+        specialNoteCard={specialNoteCard}
+        tasteProfileCard={tasteProfileCard}
+        tasteProfileOverviewValues={tasteProfileOverviewValues}
+        tasteProfileSeries={tasteProfileSeries}
+        featuredChefs={featuredChefs}
+        reservationHint={reservationHint}
+        adjustmentHistoryData={adjustmentHistoryData}
+      />
     </div>
   );
 }
 
-function Viewport({ onStartMeasurement }: { onStartMeasurement?: () => void }) {
+function Viewport({
+  specialNoteCard,
+  tasteProfileCard,
+  tasteProfileOverviewValues,
+  tasteProfileSeries,
+  featuredChefs,
+  reservationHint,
+  adjustmentHistoryData,
+  onStartMeasurement,
+  onOpenNotifications,
+  onOpenMenu,
+  hasUnreadNotifications,
+}: {
+  specialNoteCard: HomeSpecialNoteCardData;
+  tasteProfileCard: HomeTasteProfileCardData;
+  tasteProfileOverviewValues: HomeMeasurementOverviewValue[];
+  tasteProfileSeries: HomeMeasurementSeriesPoint[];
+  featuredChefs: HomeChefCardData[];
+  reservationHint: string;
+  adjustmentHistoryData?: HomeAdjustmentHistoryItem[];
+  onStartMeasurement?: () => void;
+  onOpenNotifications?: () => void;
+  onOpenMenu?: () => void;
+  hasUnreadNotifications?: boolean;
+}) {
   return (
     <div className="basis-0 content-stretch flex flex-col grow items-start min-h-px min-w-px relative w-full h-full overflow-hidden" data-name="Viewport">
       <div className="shrink-0 w-full">
-        <TopAppBar onStartMeasurement={onStartMeasurement} />
+        <TopAppBar onStartMeasurement={onStartMeasurement} onOpenNotifications={onOpenNotifications} onOpenMenu={onOpenMenu} hasUnreadNotifications={hasUnreadNotifications} />
       </div>
-      <Content14 />
-    </div>
-  );
-}
-
-function Ratio12() {
-  return <div className="h-full w-0" data-name="Ratio" />;
-}
-
-function Ratio13() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[330deg]">
-          <Ratio12 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Ratio14() {
-  return (
-    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[323.13deg]">
-          <Ratio13 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Icons3() {
-  return (
-    <div className="relative shrink-0 size-[24px]" data-name="Icons">
-      <Ratio14 />
-      <div className="absolute inset-[8.33%_12.5%_12.49%_12.5%]" data-name="Vector">
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 19">
-          <path d={svgPaths.p3d342380} fill="var(--fill-0, #3F3F3F)" id="Vector" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function Contants() {
-  return (
-    <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-full" data-name="Contants">
-      <Icons3 />
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.429] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.8)] text-nowrap tracking-[0.145px] whitespace-pre">홈</p>
-    </div>
-  );
-}
-
-function Tab() {
-  return (
-    <div className="basis-0 box-border content-stretch flex flex-col gap-[10px] grow items-center justify-center min-h-px min-w-px px-0 py-[4px] relative shrink-0" data-name="Tab 1">
-      <Contants />
-    </div>
-  );
-}
-
-function Ratio15() {
-  return <div className="h-full w-0" data-name="Ratio" />;
-}
-
-function Ratio16() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[330deg]">
-          <Ratio15 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Ratio17() {
-  return (
-    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[323.13deg]">
-          <Ratio16 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Icons4() {
-  return (
-    <div className="relative shrink-0 size-[24px]" data-name="Icons">
-      <Ratio17 />
-      <div className="absolute inset-[12.5%_8.33%_8.33%_8.33%]" data-name="Union">
-        <div className="absolute inset-0" style={{ "--fill-0": "rgba(63, 63, 63, 1)" } as React.CSSProperties}>
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 19">
-            <g id="Union">
-              <path clipRule="evenodd" d={svgPaths.p28cd6d00} fill="#3F3F3F" fillRule="evenodd" />
-              <path d={svgPaths.p42b0300} fill="#3F3F3F" />
-              <path clipRule="evenodd" d={svgPaths.p3797e880} fill="#3F3F3F" fillRule="evenodd" />
-            </g>
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Contants1() {
-  return (
-    <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-full" data-name="Contants">
-      <Icons4 />
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.429] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.8)] text-nowrap tracking-[0.145px] whitespace-pre">분석</p>
-    </div>
-  );
-}
-
-function Tab1() {
-  return (
-    <div className="basis-0 box-border content-stretch flex flex-col gap-[10px] grow items-center justify-center min-h-px min-w-px px-0 py-[4px] relative shrink-0" data-name="Tab 2">
-      <Contants1 />
-    </div>
-  );
-}
-
-function Ratio18() {
-  return <div className="h-full w-0" data-name="Ratio" />;
-}
-
-function Ratio19() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[330deg]">
-          <Ratio18 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Ratio20() {
-  return (
-    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[323.13deg]">
-          <Ratio19 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Icons5() {
-  return (
-    <div className="relative shrink-0 size-[24px]" data-name="Icons">
-      <Ratio20 />
-      <div className="absolute h-[14px] left-[2px] top-[5px] w-[20px]" data-name="Union">
-        <div className="absolute inset-0" style={{ "--fill-0": "rgba(63, 63, 63, 1)" } as React.CSSProperties}>
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 14">
-            <path clipRule="evenodd" d={svgPaths.p2ac50a00} fill="var(--fill-0, #3F3F3F)" fillRule="evenodd" id="Union" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Contants2() {
-  return (
-    <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-full" data-name="Contants">
-      <Icons5 />
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.429] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.8)] text-nowrap tracking-[0.145px] whitespace-pre">메시지</p>
-    </div>
-  );
-}
-
-function Tab2() {
-  return (
-    <div className="basis-0 box-border content-stretch flex flex-col gap-[10px] grow items-center justify-center min-h-px min-w-px px-0 py-[4px] relative shrink-0" data-name="Tab 3">
-      <Contants2 />
-    </div>
-  );
-}
-
-function Ratio21() {
-  return <div className="h-full w-0" data-name="Ratio" />;
-}
-
-function Ratio22() {
-  return (
-    <div className="content-stretch flex flex-col h-full items-center justify-center relative" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[12px]" style={{ "--transform-inner-width": "0", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[330deg]">
-          <Ratio21 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Ratio23() {
-  return (
-    <div className="absolute content-stretch flex flex-col h-[24px] items-start left-0 overflow-clip top-0" data-name="Ratio">
-      <div className="basis-0 flex grow items-center justify-center min-h-px min-w-px relative shrink-0 w-[24px]" style={{ "--transform-inner-width": "12", "--transform-inner-height": "24" } as React.CSSProperties}>
-        <div className="flex-none h-full rotate-[323.13deg]">
-          <Ratio22 />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PersonUndefinedGlyphUndefined() {
-  return (
-    <div className="absolute left-0 size-[24px] top-0" data-name="Person / undefined / Glyph: undefined">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
-        <g id="Person / undefined / Glyph: undefined">
-          <path d={svgPaths.p242dc300} fill="var(--fill-0, #3F3F3F)" id="Vector" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function Icons6() {
-  return (
-    <div className="relative shrink-0 size-[24px]" data-name="Icons">
-      <Ratio23 />
-      <PersonUndefinedGlyphUndefined />
-    </div>
-  );
-}
-
-function Contants3() {
-  return (
-    <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-full" data-name="Contants">
-      <Icons6 />
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.429] relative shrink-0 text-[10px] text-[rgba(15,15,15,0.8)] text-nowrap tracking-[0.145px] whitespace-pre">프로필</p>
-    </div>
-  );
-}
-
-function Tab3() {
-  return (
-    <div className="basis-0 box-border content-stretch flex flex-col gap-[10px] grow items-center justify-center min-h-px min-w-px px-0 py-[4px] relative shrink-0" data-name="Tab 4">
-      <Contants3 />
-    </div>
-  );
-}
-
-function Contents() {
-  return (
-    <div className="box-border content-stretch flex gap-[26px] items-center justify-center px-0 py-[4px] relative shrink-0 w-full" data-name="Contents">
-      <Tab />
-      <Tab1 />
-      <Tab2 />
-      <Tab3 />
-    </div>
-  );
-}
-
-function SpacingBottomSafeArea() {
-  return (
-    <div className="content-stretch flex flex-col items-center relative shrink-0 w-full" data-name="Spacing/Bottom Safe Area">
-      <div className="h-[34px] shrink-0 w-full" data-name="Guide" />
-    </div>
-  );
-}
-
-function Container1() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="absolute bg-white inset-0" data-name="Background" />
-      <Contents />
-      <SpacingBottomSafeArea />
-    </div>
-  );
-}
-
-function OsBarBottomNavigationResourceContents() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="OS/Bar/Bottom Navigation/Resource/Contents">
-      <Container1 />
-    </div>
-  );
-}
-
-function Shape() {
-  return (
-    <div className="absolute bottom-[8px] h-[5px] left-[32.13%] right-[32.13%]" data-name="Shape">
-      <div className="absolute bottom-0 left-0 right-[-0.25%] top-0">
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 144 5">
-          <path d={svgPaths.p130c0400} data-figma-bg-blur-radius="44" fill="var(--fill-0, #0F0F0F)" id="Union" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function HomeBarHomeIndicator() {
-  return (
-    <div className="h-[34px] relative shrink-0 w-full" data-name=".Home Bar/Home Indicator">
-      <Shape />
-    </div>
-  );
-}
-
-function Content15() {
-  return (
-    <div className="content-stretch flex flex-col h-[34px] items-center justify-center relative shrink-0 w-full" data-name="Content">
-      <HomeBarHomeIndicator />
-    </div>
-  );
-}
-
-function HomeBar() {
-  return (
-    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 w-full" data-name="Home Bar">
-      <Content15 />
-    </div>
-  );
-}
-
-function Absolute() {
-  return (
-    <div className="content-stretch flex flex-col h-0 items-center justify-end relative shrink-0 w-full" data-name="Absolute">
-      <HomeBar />
-    </div>
-  );
-}
-
-function OsBarBottomNavigation() {
-  return (
-    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 w-full" data-name="OS/Bar/Bottom Navigation">
-      <Absolute />
-    </div>
-  );
-}
-
-function Container2() {
-  return (
-    <div className="backdrop-blur-[32px] backdrop-filter content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <OsBarBottomNavigationResourceContents />
-      <OsBarBottomNavigation />
-      <div className="h-0 shrink-0 w-full" data-name="Absolute" />
-    </div>
-  );
-}
-
-function BottomAppBars() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Bottom app bars">
-      <Container2 />
-      <div aria-hidden="true" className="absolute border-[#e7e7e7] border-[1px_0px_0px] border-solid bottom-0 left-0 pointer-events-none right-0 top-[-1px]" />
-    </div>
-  );
-}
-
-function OsBarBottomNavigation1() {
-  return (
-    <div className="content-stretch flex flex-col items-start justify-end relative shrink-0 w-full" data-name="OS/Bar/Bottom Navigation">
-      <BottomAppBars />
+      <Content14
+        specialNoteCard={specialNoteCard}
+        tasteProfileCard={tasteProfileCard}
+        tasteProfileOverviewValues={tasteProfileOverviewValues}
+        tasteProfileSeries={tasteProfileSeries}
+        featuredChefs={featuredChefs}
+        reservationHint={reservationHint}
+        adjustmentHistoryData={adjustmentHistoryData}
+      />
     </div>
   );
 }
@@ -3603,21 +3956,113 @@ function OsBarBottomNavigation1() {
 
 
 export default function Home({
+  hasMeasurementData,
+  measurementSnapshot,
   onGoToAnalysis,
   onStartMeasurement,
+  onOpenNotifications,
+  onOpenMenu,
+  hasUnreadNotifications,
 }: {
+  hasMeasurementData: boolean;
+  measurementSnapshot: TasteMeasurementSnapshot | null;
   onGoToAnalysis?: () => void;
   onStartMeasurement?: () => void;
+  onOpenNotifications?: () => void;
+  onOpenMenu?: () => void;
+  hasUnreadNotifications?: boolean;
 }) {
+  const [featuredChefs, setFeaturedChefs] = useState<HomeChefCardData[]>([]);
+  const [reservationHint, setReservationHint] = useState(HOME_SPECIAL_NOTE_CARD.reservationHint);
+  const [adjustmentHistoryData, setAdjustmentHistoryData] = useState<HomeAdjustmentHistoryItem[]>();
+  const [tasteProfileCard, setTasteProfileCard] = useState<HomeTasteProfileCardData>(() =>
+    cloneHomeTasteProfileCardData(HOME_TASTE_PROFILE_CARD),
+  );
+  const [specialNoteCard, setSpecialNoteCard] = useState<HomeSpecialNoteCardData>(() =>
+    cloneHomeSpecialNoteCardData(HOME_SPECIAL_NOTE_CARD),
+  );
+  const [tasteProfileSeries, setTasteProfileSeries] = useState<HomeMeasurementSeriesPoint[]>(
+    HOME_TASTE_PROFILE_WEEKLY_SERIES.map((item) => ({ ...item })),
+  );
+  const [tasteProfileOverviewValues, setTasteProfileOverviewValues] = useState<
+    HomeMeasurementOverviewValue[]
+  >(HOME_TASTE_PROFILE_OVERVIEW_VALUES.map((item) => ({ ...item })));
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    void (async () => {
+      const [hydratedData, recentMeasurements, contentCatalog] = await Promise.all([
+        hydrateReservationPageData(),
+        hydrateRecentMeasurementSnapshots(),
+        hydrateRestaurantContentCatalog(),
+      ]);
+
+      if (isCancelled) {
+        return;
+      }
+
+      const measurementTimeline = mergeMeasurementSnapshots(
+        recentMeasurements,
+        measurementSnapshot,
+      );
+      const nextReservationHint = buildHomeReservationHint(hydratedData.reservations);
+      const nextTasteProfile = buildHomeTasteProfileFromMeasurements(measurementTimeline);
+      const reservationChefCards = buildHomeChefCardsFromReservations(hydratedData.reservations);
+      const contentChefCards = buildHomeChefCardsFromContent(contentCatalog.dishes);
+      const reservationHistory = buildHomeAdjustmentHistory(
+        hydratedData.reservations,
+        hydratedData.feedbackByReservationId,
+      );
+      const contentHistory = buildHomeAdjustmentHistoryFromContent(contentCatalog.dishes);
+      const nextFeaturedChefs = hasMeasurementData
+        ? mergeHomeChefCards(reservationChefCards, contentChefCards)
+        : [];
+      const nextAdjustmentHistoryData = hasMeasurementData
+        ? mergeHomeAdjustmentHistory(reservationHistory, contentHistory)
+        : [];
+
+      setFeaturedChefs(nextFeaturedChefs);
+      setReservationHint(nextReservationHint);
+      setAdjustmentHistoryData(nextAdjustmentHistoryData);
+      setTasteProfileCard(nextTasteProfile.cardData);
+      setTasteProfileSeries(nextTasteProfile.series);
+      setTasteProfileOverviewValues(nextTasteProfile.overviewValues);
+      setSpecialNoteCard(
+        buildHomeSpecialNoteFromReservations(
+          hydratedData.reservations,
+          hydratedData.feedbackByReservationId,
+          nextReservationHint,
+        ),
+      );
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [hasMeasurementData, measurementSnapshot]);
+
   // Store the callback globally so deeply nested components can use it
   if (onGoToAnalysis) {
     (window as any).__goToAnalysis = onGoToAnalysis;
   }
 
   return (
-    <div className="w-full h-full bg-[#f3f3f3]">
-      <div className="bg-[#f3f3f3] content-stretch flex flex-col items-start relative w-full h-full overflow-hidden" data-name="Home">
-        <Viewport onStartMeasurement={onStartMeasurement} />
+    <div className="w-full h-full bg-[var(--tb-color-bg-page)]">
+      <div className="bg-[var(--tb-color-bg-page)] content-stretch flex flex-col items-start relative w-full h-full overflow-hidden" data-name="Home">
+        <Viewport
+          specialNoteCard={specialNoteCard}
+          tasteProfileCard={tasteProfileCard}
+          tasteProfileOverviewValues={tasteProfileOverviewValues}
+          tasteProfileSeries={tasteProfileSeries}
+          featuredChefs={featuredChefs}
+          reservationHint={reservationHint}
+          adjustmentHistoryData={adjustmentHistoryData}
+          onStartMeasurement={onStartMeasurement}
+          onOpenNotifications={onOpenNotifications}
+          onOpenMenu={onOpenMenu}
+          hasUnreadNotifications={hasUnreadNotifications}
+        />
       </div>
     </div>
   );

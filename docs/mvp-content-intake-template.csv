@@ -1,0 +1,3 @@
+priority,restaurant_name,restaurant_slug,chef_name,city,source_type,source_title,source_url,source_trust_score,season_label,course_position,dish_public_title,dish_public_subtitle,observed_ingredients,observed_techniques,observed_sensory_words,temperature_band,inferred_taste_sweet,inferred_taste_sour,inferred_taste_bitter,inferred_taste_salty,inferred_taste_umami,inferred_taste_fat,inferred_brightness,inferred_heaviness,inferred_clean_finish,inferred_linger,inferred_smoke,inferred_aroma_intensity,inferred_texture_richness,inferred_thermal_impact,inference_confidence,rationale,uncertainty_notes
+P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+

@@ -1,0 +1,59 @@
+{
+  "fetchedAt": "2026-03-29T12:33:13.881Z",
+  "restaurant": {
+    "slug": "kwonsooksoo",
+    "displayName": "Kwonsooksoo"
+  },
+  "source": {
+    "menusPageUrl": "https://www.catchtable.net/shop/kwonsooksoo/menus",
+    "mirrorUrl": "https://r.jina.ai/http://www.catchtable.net/shop/kwonsooksoo/menus",
+    "rawMarkdownRelativePath": "tmp/catchtable/kwonsooksoo/menus-page.md",
+    "lastUpdatedLabel": "Mar 17, 2026"
+  },
+  "notes": {
+    "imageGuessMethod": "Menu links are paired with image URLs by ordinal order from the mirrored Catchtable menus page. Review before generating final CSVs.",
+    "nextStep": "Review menu images, transcribe course text, then generate lunch/dinner intake CSVs."
+  },
+  "images": [],
+  "menus": [
+    {
+      "index": 1,
+      "rawTitle": "Lunch Course Room included 1 glass of wine. (280,000 KRW) ₩240,000",
+      "title": "Lunch Course Room included 1 glass of wine. (280,000 KRW)",
+      "priceLabel": "KRW 240,000",
+      "priceValue": 240000,
+      "url": "http://www.catchtable.net/shop/kwonsooksoo/menu?foodMenuSeq=1488097",
+      "foodMenuSeq": "1488097",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 2,
+      "rawTitle": "Weeknd and holiday lunch The course included 1 glass of aperitif. ₩280,000",
+      "title": "Weeknd and holiday lunch The course included 1 glass of aperitif.",
+      "priceLabel": "KRW 280,000",
+      "priceValue": 280000,
+      "url": "http://www.catchtable.net/shop/kwonsooksoo/menu?foodMenuSeq=1488098",
+      "foodMenuSeq": "1488098",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 3,
+      "rawTitle": "Dinner Course Room included 2 glasses of wine. (480,000 KRW) ₩360,000",
+      "title": "Dinner Course Room included 2 glasses of wine. (480,000 KRW)",
+      "priceLabel": "KRW 360,000",
+      "priceValue": 360000,
+      "url": "http://www.catchtable.net/shop/kwonsooksoo/menu?foodMenuSeq=1293529",
+      "foodMenuSeq": "1293529",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    }
+  ]
+}

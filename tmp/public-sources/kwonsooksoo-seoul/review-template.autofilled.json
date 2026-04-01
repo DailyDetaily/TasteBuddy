@@ -1,0 +1,842 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T14:38:35.944Z",
+  "manifestRelativePath": "tmp/public-sources/kwonsooksoo-seoul/manifest.json",
+  "collectionMode": "public_fallback",
+  "restaurant": {
+    "name": "권숙수",
+    "slug": "kwonsooksoo-seoul",
+    "chefName": "권우중",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "public_reference",
+    "sourceTrustScore": 0.9,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "public fallback source"
+  },
+  "instructions": {
+    "rowEditing": [
+      "sourceDocuments 와 courseTitleDrafts 를 먼저 확인한다.",
+      "공개 메뉴/공식 페이지에 직접 나온 정보만 observed 로 옮긴다.",
+      "courseTitleDrafts 는 초안이므로 검수 후 rows 배열에 수작업으로 옮긴다.",
+      "메뉴 후보가 reference 인 경우 설명형 source 문서로만 사용하고 코스 row 는 신중하게 만든다."
+    ],
+    "nextStep": [
+      "rows 를 채운 뒤 catchtable CSV 생성기 대신 intake CSV 템플릿을 수작업으로 채우거나 별도 seed 변환기로 넘긴다."
+    ]
+  },
+  "sourceDocuments": [
+    {
+      "index": 1,
+      "label": "Official menu page",
+      "sourceType": "official_menu_page",
+      "url": "https://www.kwonsooksoo.com/menu.asp",
+      "title": "Kwonsooksoo",
+      "publishedTime": null,
+      "trustScore": 0.99,
+      "contentRelativePath": "tmp/public-sources/kwonsooksoo-seoul/01-official-menu-page.md",
+      "excerpt": [
+        "Kwonsooksoo",
+        "homepeopleCUISINEmenugalleryreservationcontactpressenglish",
+        "!Image 2",
+        "lunchDINNER",
+        "점심상 Lunch Course / KRW 240,000",
+        "우리술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "능이 누룽지",
+        "꽃게찜"
+      ],
+      "courseTitleDrafts": [
+        "Kwonsooksoo",
+        "homepeopleCUISINEmenugalleryreservationcontactpressenglish",
+        "!Image 2",
+        "lunchDINNER",
+        "점심상 Lunch Course / KRW 240,000",
+        "우리술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "능이 누룽지",
+        "꽃게찜",
+        "겹김치",
+        "제주 아스파라거스 마늘 솥밥",
+        "or",
+        "어육된장 양갈비",
+        "한우 1++ 안심구이 +25,000",
+        "* 아카시아 페어링"
+      ]
+    },
+    {
+      "index": 2,
+      "label": "MICHELIN Genesis feature",
+      "sourceType": "michelin_article",
+      "url": "https://guide.michelin.com/kr/en/article/features/genesis_kwonsooksoo-en",
+      "title": "MICHELIN Genesis feature",
+      "publishedTime": null,
+      "trustScore": 0.9,
+      "contentRelativePath": "tmp/public-sources/kwonsooksoo-seoul/02-michelin-genesis-feature.md",
+      "excerpt": [],
+      "courseTitleDrafts": []
+    }
+  ],
+  "menus": [
+    {
+      "menuType": "lunch",
+      "menuTitle": "점심상 Lunch Course / KRW 240,000",
+      "rawTitle": "점심상 Lunch Course / KRW 240,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "sourceTitle": "Kwonsooksoo",
+      "sourceUrl": "https://www.kwonsooksoo.com/menu.asp",
+      "localImageRelativePath": null,
+      "seasonLabel": "public fallback source",
+      "courseTitleDrafts": [
+        "우리술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "능이 누룽지",
+        "꽃게찜",
+        "겹김치",
+        "제주 아스파라거스 마늘 솥밥",
+        "or",
+        "어육된장 양갈비",
+        "한우 1++ 안심구이 +25,000",
+        "* 아카시아 페어링"
+      ],
+      "rows": [
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "우리술과 작은 안주를 곁들인 주안상",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "우리술과 작은 안주를 곁들인 주안상"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "두릅육회",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "두릅육회"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "제철 생선찜",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "제철 생선찜"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "능이 누룽지",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "능이 누룽지"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "fish",
+          "dishPublicTitle": "꽃게찜",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "꽃게찜"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 생선 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "겹김치",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "겹김치"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "제주 아스파라거스 마늘 솥밥",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "제주 아스파라거스 마늘 솥밥"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "어육된장 양갈비",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "어육된장 양갈비"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "한우 1++ 안심구이 +25,000",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "한우 1++ 안심구이 +25,000"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        }
+      ]
+    },
+    {
+      "menuType": "lunch",
+      "menuTitle": "숙수상 Lunch Tasting Course / KRW 300,000",
+      "rawTitle": "숙수상 Lunch Tasting Course / KRW 300,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "sourceTitle": "Kwonsooksoo",
+      "sourceUrl": "https://www.kwonsooksoo.com/menu.asp",
+      "localImageRelativePath": null,
+      "seasonLabel": "public fallback source",
+      "courseTitleDrafts": [
+        "우리술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "46년 씨간장과 전복 캐비어",
+        "트러플 콩국수",
+        "꽃게찜",
+        "겹김치",
+        "제주 아스파라거스 마늘 솥밥",
+        "or",
+        "어육된장 양갈비",
+        "한우 1++ 안심구이"
+      ],
+      "rows": [
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "우리술과 작은 안주를 곁들인 주안상",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "우리술과 작은 안주를 곁들인 주안상"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "두릅육회",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "두릅육회"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "제철 생선찜",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "제철 생선찜"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "fish",
+          "dishPublicTitle": "46년 씨간장과 전복 캐비어",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "46년 씨간장과 전복 캐비어"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 생선 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "트러플 콩국수",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "트러플 콩국수"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "fish",
+          "dishPublicTitle": "꽃게찜",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "꽃게찜"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 생선 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "겹김치",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "겹김치"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "제주 아스파라거스 마늘 솥밥",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "제주 아스파라거스 마늘 솥밥"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "어육된장 양갈비",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "어육된장 양갈비"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "한우 1++ 안심구이",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "한우 1++ 안심구이"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        }
+      ]
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "저녁상 Dinner Course / KRW 360,000",
+      "rawTitle": "저녁상 Dinner Course / KRW 360,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "sourceTitle": "Kwonsooksoo",
+      "sourceUrl": "https://www.kwonsooksoo.com/menu.asp",
+      "localImageRelativePath": null,
+      "seasonLabel": "public fallback source",
+      "courseTitleDrafts": [
+        "김치 카트",
+        "우리 술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "능이 누룽지",
+        "남해 바다",
+        "꽃게찜",
+        "한우 1++ 안심구이",
+        "딸기 하모니",
+        "다과 카트",
+        "대표 메뉴",
+        "46년 씨간장을 곁들인 전복과 캐비어 +48,000"
+      ],
+      "rows": [
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "김치 카트",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "김치 카트"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "우리 술과 작은 안주를 곁들인 주안상",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "우리 술과 작은 안주를 곁들인 주안상"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "두릅육회",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "두릅육회"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "fish",
+          "dishPublicTitle": "제철 생선찜",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "제철 생선찜"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 생선 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "능이 누룽지",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "능이 누룽지"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "starter",
+          "dishPublicTitle": "남해 바다",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "남해 바다"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "fish",
+          "dishPublicTitle": "꽃게찜",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "꽃게찜"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 생선 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "main",
+          "dishPublicTitle": "한우 1++ 안심구이",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "한우 1++ 안심구이"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 메인 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "petit_four",
+          "dishPublicTitle": "딸기 하모니",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "딸기 하모니"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "petit_four",
+          "dishPublicTitle": "다과 카트",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "다과 카트"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 코스명"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "dessert",
+          "dishPublicTitle": "대표 메뉴",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "대표 메뉴"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 디저트 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        },
+        {
+          "priority": "P1",
+          "sourceType": "public_reference",
+          "sourceTrustScore": 0.9,
+          "seasonLabel": "public fallback source",
+          "coursePosition": "fish",
+          "dishPublicTitle": "46년 씨간장을 곁들인 전복과 캐비어 +48,000",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "46년 씨간장을 곁들인 전복과 캐비어 +48,000"
+          ],
+          "observedTechniques": [
+            "공개 메뉴 기반 생선 코스"
+          ],
+          "observedSensoryWords": [
+            "공개 메뉴 초안"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+          "uncertaintyNotes": "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+        }
+      ]
+    },
+    {
+      "menuType": "other",
+      "menuTitle": "미식상 Chef Tasting Course / KRW 430,000",
+      "rawTitle": "미식상 Chef Tasting Course / KRW 430,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "sourceTitle": "Kwonsooksoo",
+      "sourceUrl": "https://www.kwonsooksoo.com/menu.asp",
+      "localImageRelativePath": null,
+      "seasonLabel": "public fallback source",
+      "courseTitleDrafts": [
+        "김치 카트",
+        "우리 술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "장 테이스팅과 전복 캐비어",
+        "겨울바다맛",
+        "트러플 콩국수",
+        "꽃게찜",
+        "한우 1++ 안심구이",
+        "제주 아스파라거스 마늘 솥밥",
+        "딸기 하모니",
+        "다과 카트"
+      ],
+      "rows": []
+    }
+  ]
+}

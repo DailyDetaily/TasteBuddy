@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T12:33:16.246Z",
+  "manifestRelativePath": "tmp/catchtable/mitou/manifest.json",
+  "restaurant": {
+    "name": "미토우",
+    "slug": "mitou",
+    "chefName": "권영운 / 김보미",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "menu",
+    "sourceTrustScore": 0.99,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "Jan 06, 2025 catchtable"
+  },
+  "instructions": {
+    "rowEditing": [
+      "rows 배열에 코스별 항목을 추가한다.",
+      "observed 값은 메뉴 이미지에 직접 보이는 정보만 적는다.",
+      "비공개 레시피를 사실처럼 쓰지 않는다.",
+      "inferred 값이 아직 없으면 빈 문자열로 두고 나중에 채운다."
+    ],
+    "coursePositionGuide": [
+      "amuse",
+      "starter",
+      "fish",
+      "main",
+      "dessert",
+      "other"
+    ]
+  },
+  "menus": [
+    {
+      "menuType": "other",
+      "menuTitle": "Course",
+      "rawTitle": "Course ₩300,000",
+      "priceLabel": "KRW 300,000",
+      "priceValue": 300000,
+      "foodMenuSeq": "7877",
+      "sourceTitle": "Catchtable Mitou Course KRW 300,000 menu image (Last update: Jan 06, 2025)",
+      "sourceUrl": "http://www.catchtable.net/shop/mitou/menu?foodMenuSeq=7877",
+      "localImageRelativePath": null,
+      "seasonLabel": "Jan 06, 2025 other",
+      "rows": []
+    }
+  ]
+}

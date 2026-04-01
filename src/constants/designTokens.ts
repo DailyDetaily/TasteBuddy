@@ -275,6 +275,8 @@ interface TastePalette {
   gradient: string;
   light: string;
   main: string;
+  tintSubText: string;
+  tintText: string;
 }
 
 interface TasteMeasurementLoop {
@@ -302,7 +304,9 @@ export const TASTE_TOKENS = {
       main: '#FF9900',
       dark: '#CC7A00',
       light: '#FFCC80',
-      bg: '#FFD699',
+      bg: '#FFEBCC',
+      tintSubText: '#896735',
+      tintText: '#6F4609',
       gradient: 'linear-gradient(135deg, #FF9900, #FFB84D)',
     },
     measurement: {
@@ -334,7 +338,9 @@ export const TASTE_TOKENS = {
       main: '#FBC02D',
       dark: '#C99A00',
       light: '#FDD835',
-      bg: '#FFEF99',
+      bg: '#FFF7CC',
+      tintSubText: '#897C35',
+      tintText: '#6F5F09',
       gradient: 'linear-gradient(135deg, #FBC02D, #FFD54F)',
     },
     measurement: {
@@ -366,7 +372,9 @@ export const TASTE_TOKENS = {
       main: '#95C900',
       dark: '#6E9600',
       light: '#E6EE9C',
-      bg: '#E0EBB4',
+      bg: '#EAF4CC',
+      tintSubText: '#70794B',
+      tintText: '#505B24',
       gradient: 'linear-gradient(135deg, #95C900, #AED581)',
     },
     measurement: {
@@ -398,7 +406,9 @@ export const TASTE_TOKENS = {
       main: '#7299FF',
       dark: '#4A70CC',
       light: '#90CAF9',
-      bg: '#C6D6FF',
+      bg: '#E3EBFF',
+      tintSubText: '#5A6789',
+      tintText: '#36466F',
       gradient: 'linear-gradient(135deg, #7299FF, #9FBFFF)',
     },
     measurement: {
@@ -430,7 +440,9 @@ export const TASTE_TOKENS = {
       main: '#B372B4',
       dark: '#8A5490',
       light: '#CE93D8',
-      bg: '#E1C7E1',
+      bg: '#F0E3F0',
+      tintSubText: '#705B70',
+      tintText: '#513751',
       gradient: 'linear-gradient(135deg, #B372B4, #CE93D8)',
     },
     measurement: {
@@ -462,7 +474,9 @@ export const TASTE_TOKENS = {
       main: '#95867A',
       dark: '#6B5E54',
       light: '#BCAAA4',
-      bg: '#D5CFCA',
+      bg: '#EAE7E4',
+      tintSubText: '#66625D',
+      tintText: '#453F3A',
       gradient: 'linear-gradient(135deg, #95867A, #B0A49A)',
     },
     measurement: {

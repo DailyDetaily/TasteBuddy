@@ -8,8 +8,10 @@ import {
 } from '../constants/diningFeedbackData';
 import { createInitialTasteMeasurementSnapshot } from '../constants/tasteMeasurementData';
 import AnalysisPage from './AnalysisPage';
+import ImproveAccuracyScreen from './ImproveAccuracyScreen';
 import OnboardingScreen from './OnboardingScreen';
 import ProfilePage from './ProfilePage';
+import ReservationConfirmationScreen from './ReservationConfirmationScreen';
 import TeastickConnectScreen from './TeastickConnectScreen';
 
 interface OverlayNote {
@@ -214,6 +216,48 @@ export default function DesignSystemPreviewPage() {
             ]}
           >
             <ProfilePage measurementSnapshot={measurementSnapshot} onStartMeasurement={() => undefined} />
+          </ShowcaseSection>
+          )}
+
+          {(!focusSection || focusSection === 'improve-accuracy') && (
+            <ShowcaseSection
+            title="Improve Accuracy"
+            description="새로 추가된 정밀도 향상 플로우는 기존 카드, 배지, neutral surface 규칙을 유지하면서도 하나의 full-screen 설득 흐름으로 정리됐습니다."
+            overlayNotes={[
+              { id: '1', left: '50%', top: '20%' },
+              { id: '2', left: '50%', top: '38%' },
+              { id: '3', left: '50%', top: '72%' },
+            ]}
+            notes={[
+              { id: '1', text: 'hero 카드의 badge, 아이콘 박스, 본문 톤이 기존 shared card language를 그대로 따릅니다.' },
+              { id: '2', text: '정확도 단계 카드는 current / past / next 상태를 neutral border와 dashed border 규칙으로 분리했습니다.' },
+              { id: '3', text: 'benefit card와 reassurance card, 하단 CTA가 모두 공통 radius와 muted surface 계층 안에서 작동합니다.' },
+            ]}
+          >
+            <ImproveAccuracyScreen
+              currentProfileStage="Building"
+              onConnectDevice={() => undefined}
+              onSkip={() => undefined}
+            />
+          </ShowcaseSection>
+          )}
+
+          {(!focusSection || focusSection === 'reservation-confirmation') && (
+            <ShowcaseSection
+            title="Reservation Confirmation"
+            description="예약 확정 후 상태 진행을 보여주는 신규 composite flow입니다. 진행 단계, 완료 상태, 다음 액션이 모두 system card language 위에 올라갑니다."
+            overlayNotes={[
+              { id: '1', left: '50%', top: '18%' },
+              { id: '2', left: '28%', top: '40%' },
+              { id: '3', left: '50%', top: '78%' },
+            ]}
+            notes={[
+              { id: '1', text: '상단 success 카드가 muted surface와 success soft token을 조합해 상태 전환을 표현합니다.' },
+              { id: '2', text: '각 진행 단계 카드는 공통 SectionCard shell 안에서 아이콘 톤과 pulse 모션만 다르게 적용됩니다.' },
+              { id: '3', text: '완료 후 노출되는 하단 CTA와 보조 카피도 기존 full-screen flow spacing 규칙을 그대로 이어받습니다.' },
+            ]}
+          >
+            <ReservationConfirmationScreen onBack={() => undefined} onComplete={() => undefined} />
           </ShowcaseSection>
           )}
 

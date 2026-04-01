@@ -1,0 +1,33 @@
+{
+  "fetchedAt": "2026-03-29T12:33:15.726Z",
+  "restaurant": {
+    "slug": "mitou",
+    "displayName": "Mitou"
+  },
+  "source": {
+    "menusPageUrl": "https://www.catchtable.net/shop/mitou/menus",
+    "mirrorUrl": "https://r.jina.ai/http://www.catchtable.net/shop/mitou/menus",
+    "rawMarkdownRelativePath": "tmp/catchtable/mitou/menus-page.md",
+    "lastUpdatedLabel": "Jan 06, 2025"
+  },
+  "notes": {
+    "imageGuessMethod": "Menu links are paired with image URLs by ordinal order from the mirrored Catchtable menus page. Review before generating final CSVs.",
+    "nextStep": "Review menu images, transcribe course text, then generate lunch/dinner intake CSVs."
+  },
+  "images": [],
+  "menus": [
+    {
+      "index": 1,
+      "rawTitle": "Course ₩300,000",
+      "title": "Course",
+      "priceLabel": "KRW 300,000",
+      "priceValue": 300000,
+      "url": "http://www.catchtable.net/shop/mitou/menu?foodMenuSeq=7877",
+      "foodMenuSeq": "7877",
+      "menuType": "other",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    }
+  ]
+}

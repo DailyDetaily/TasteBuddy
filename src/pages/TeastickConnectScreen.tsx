@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, MoreHorizontal, Check } from 'lucide-react';
+import { ChevronLeftRegular, MoreHorizontalRegular, CheckmarkRegular } from '@fluentui/react-icons';
+const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
+const ChevronLeft = wrapIcon(ChevronLeftRegular);
+const MoreHorizontal = wrapIcon(MoreHorizontalRegular);
+const Check = wrapIcon(CheckmarkRegular);
 import { Drawer } from 'vaul';
 import { motion, AnimatePresence } from 'framer-motion';
 import powerOnImage from '../assets/Power On Instructions.png';

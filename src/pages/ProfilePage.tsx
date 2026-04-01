@@ -1,13 +1,14 @@
+import { useEffect, useState } from 'react';
 import {
   SettingsRegular, ChevronRightRegular, BluetoothRegular, Battery5Regular,
-  ArrowSyncRegular, AlertRegular, QuestionCircleRegular, InfoRegular
+  ArrowSyncRegular, AlertRegular, QuestionCircleRegular, InfoRegular,
+  TrophyRegular, ChatRegular, CalendarRegular, StarRegular
 } from '@fluentui/react-icons';
-import { Award, MessageCircle, Calendar, Star } from 'lucide-react';
 import React from 'react';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
-  return ({ size, style, ...props }: any) => (
-    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
+  return ({ size, style, className, ...props }: any) => (
+    <IconComponent {...props} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />
   );
 };
 
@@ -19,11 +20,18 @@ const RefreshCw = wrapIcon(ArrowSyncRegular);
 const Bell = wrapIcon(AlertRegular);
 const HelpCircle = wrapIcon(QuestionCircleRegular);
 const Info = wrapIcon(InfoRegular);
+const Award = wrapIcon(TrophyRegular);
+const MessageCircle = wrapIcon(ChatRegular);
+const Calendar = wrapIcon(CalendarRegular);
+const Star = wrapIcon(StarRegular);
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
 import OutlineBadge from '../components/system/OutlineBadge';
 import SectionTitle from '../components/system/SectionTitle';
+import {
+  type ReservationRecord,
+} from '../constants/reservationCatalog';
 import { getTasteColor } from '../constants/tasteColors';
 import {
   formatMeasurementDate,
@@ -35,25 +43,105 @@ import {
   isTasteMeasurementStale,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
+import { hydrateReservationPageData } from '../lib/tasteBuddySupabase';
 
-import chefHwangJeongin from '../assets/HwangJeongin.png';
-import chefLeeEunji from '../assets/LeeEunji.png';
-import chefLimJeongsik from '../assets/LimJeongsik.png';
+interface ProfileStat {
+  color: string;
+  icon: React.ElementType;
+  label: string;
+  value: string;
+}
 
-// 활동 통계
-const stats = [
-  { label: 'TCS 보정', value: '12회', icon: Award, color: '#FF9900' },
-  { label: '피드백', value: '8건', icon: MessageCircle, color: '#B372B4' },
-  { label: '이용 기간', value: '3개월', icon: Calendar, color: '#7299FF' },
-  { label: '평균 만족도', value: '4.5', icon: Star, color: '#FBC02D' },
-];
+interface FavoriteChef {
+  image: string | null;
+  matchRate: number;
+  name: string;
+  restaurant: string;
+}
 
-// 즐겨찾기 셰프
-const favoriteChefs = [
-  { name: '황정인 셰프', restaurant: '레스토랑 베누', image: chefHwangJeongin, matchRate: 75 },
-  { name: '이은지 셰프', restaurant: '숍 리제', image: chefLeeEunji, matchRate: 72 },
-  { name: '임정식 셰프', restaurant: '정식당', image: chefLimJeongsik, matchRate: 70 },
-];
+function formatChefName(name: string) {
+  return name.endsWith('셰프') ? name : `${name} 셰프`;
+}
+
+function parseReservationDisplayDate(dateText: string) {
+  const [year, month, day] = dateText.split('.');
+  if (!year || !month || !day) {
+    return null;
+  }
+
+  const parsedDate = new Date(`${year}-${month}-${day}T00:00:00+09:00`);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function deriveFavoriteChefs(reservations: ReservationRecord[]): FavoriteChef[] {
+  const chefMap = new Map<string, FavoriteChef>();
+
+  for (const reservation of reservations) {
+    const key = `${reservation.chef}:${reservation.restaurant}`;
+    const existing = chefMap.get(key);
+
+    if (!existing || reservation.matchRate > existing.matchRate) {
+      chefMap.set(key, {
+        name: reservation.chef,
+        restaurant: reservation.restaurant,
+        image: reservation.chefImage,
+        matchRate: reservation.matchRate,
+      });
+    }
+  }
+
+  return Array.from(chefMap.values())
+    .sort((left, right) => right.matchRate - left.matchRate)
+    .slice(0, 3);
+}
+
+function deriveProfileStats(
+  reservations: ReservationRecord[],
+  feedbackCount: number,
+  averageRating: number | null,
+): ProfileStat[] {
+  const reservationCount = reservations.length;
+  const reservationDates = reservations
+    .map((reservation) => parseReservationDisplayDate(reservation.date))
+    .filter((date): date is Date => date !== null)
+    .sort((left, right) => left.getTime() - right.getTime());
+  const firstReservationDate = reservationDates[0] ?? null;
+  const usageMonths = firstReservationDate
+    ? Math.max(
+        1,
+        Math.floor(
+          (Date.now() - firstReservationDate.getTime()) / (1000 * 60 * 60 * 24 * 30),
+        ),
+      )
+    : 0;
+
+  return [
+    {
+      label: 'TCS 보정',
+      value: `${reservationCount}회`,
+      icon: Award,
+      color: '#FF9900',
+    },
+    {
+      label: '피드백',
+      value: `${feedbackCount}건`,
+      icon: MessageCircle,
+      color: '#B372B4',
+    },
+    {
+      label: '이용 기간',
+      value: usageMonths > 0 ? `${usageMonths}개월` : '-',
+      icon: Calendar,
+      color: '#7299FF',
+    },
+    {
+      label: '평균 만족도',
+      value: averageRating !== null ? averageRating.toFixed(1) : '-',
+      icon: Star,
+      color: '#FBC02D',
+    },
+  ];
+}
 
 // 설정 메뉴
 const settingsSections = [
@@ -76,25 +164,73 @@ const settingsSections = [
 interface ProfilePageProps {
   measurementSnapshot: TasteMeasurementSnapshot;
   onStartMeasurement: () => void;
+  onNavigateToReservation?: (chefName: string) => void;
+  onOpenNotifications?: () => void;
+  onOpenMenu?: () => void;
+  hasUnreadNotifications?: boolean;
 }
 
 export default function ProfilePage({
   measurementSnapshot,
   onStartMeasurement,
+  onNavigateToReservation,
+  onOpenNotifications,
+  onOpenMenu,
+  hasUnreadNotifications,
 }: ProfilePageProps) {
-  const myTaste = getTasteMeasurementEntries(measurementSnapshot).map((entry) => ({
+  const myTasteEntries = getTasteMeasurementEntries(measurementSnapshot);
+  const myTaste = myTasteEntries.map((entry) => ({
     maxValue: 10,
     taste: entry.label,
     value: entry.valueMm,
+    qualitative: entry.valueMm >= entry.averageMm + 0.5
+      ? '반응 빠름'
+      : entry.valueMm <= entry.averageMm - 0.5
+        ? '부드럽게 반응'
+        : '균형적',
   }));
   const averageMeasurement = getAverageMeasurementMm(measurementSnapshot);
   const tasteProfileBadge = getTasteProfileBadge(averageMeasurement);
   const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
+  const [favoriteChefs, setFavoriteChefs] = useState<FavoriteChef[]>([]);
+  const [stats, setStats] = useState<ProfileStat[]>(() => deriveProfileStats([], 0, null));
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    void (async () => {
+      const hydratedData = await hydrateReservationPageData();
+
+      if (isCancelled) {
+        return;
+      }
+
+      const feedbackEntries = Object.values(hydratedData.feedbackByReservationId);
+      const averageRating =
+        feedbackEntries.length > 0
+          ? feedbackEntries.reduce((sum, feedback) => sum + feedback.overallRating, 0) /
+            feedbackEntries.length
+          : null;
+
+      setFavoriteChefs(deriveFavoriteChefs(hydratedData.reservations));
+      setStats(
+        deriveProfileStats(
+          hydratedData.reservations,
+          feedbackEntries.length,
+          averageRating,
+        ),
+      );
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <TopAppBar onStartMeasurement={onStartMeasurement} />
+      <TopAppBar onStartMeasurement={onStartMeasurement} onOpenNotifications={onOpenNotifications} onOpenMenu={onOpenMenu} hasUnreadNotifications={hasUnreadNotifications} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="flex flex-col gap-8 p-5 animate-fadeIn">
 
@@ -108,15 +244,19 @@ export default function ProfilePage({
             </div>
             <div className="flex flex-col gap-[2px]">
               <span className="text-[20px] font-bold text-[var(--tb-color-text-primary)]">신준호</span>
-              <div className="flex items-center gap-2">
-                <OutlineBadge>{tasteProfileBadge}</OutlineBadge>
-                <span className="text-[12px] text-[var(--tb-color-text-muted)]">
-                  평균 {formatMeasurementValue(averageMeasurement)}
-                </span>
-              </div>
+                <div className="flex items-center gap-2">
+                  <OutlineBadge>{tasteProfileBadge}</OutlineBadge>
+                  <span className="text-[12px] text-[var(--tb-color-text-muted)]">
+                    {averageMeasurement > 5 ? '평균보다 민감한 프로필' : '균형 잡힌 프로필'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[var(--tb-color-text-hint)] mt-[2px]">이 프로필은 다이닝 경험을 통해 더 정교해져요</p>
             </div>
             <div className="ml-auto">
-              <button className="rounded-full p-2 transition-colors hover:bg-[var(--tb-color-surface-card)]">
+              <button onClick={() => {
+                const settingsEl = document.getElementById('profile-settings');
+                settingsEl?.scrollIntoView({ behavior: 'smooth' });
+              }} className="rounded-full p-2 transition-colors hover:bg-[var(--tb-color-surface-card)]">
                 <Settings size={20} className="text-[var(--tb-color-icon-primary)]" />
               </button>
             </div>
@@ -126,8 +266,8 @@ export default function ProfilePage({
           <SectionCard>
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
-                <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[12px] bg-[var(--tb-color-text-primary)]">
-                  <span className="text-[10px] font-bold text-[var(--tb-color-text-inverse)]">TB</span>
+                <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[12px] bg-[var(--tb-color-surface-muted)]">
+                  <span className="text-[10px] font-bold text-[var(--tb-color-text-primary)]">TB</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">테이스틱</span>
@@ -188,8 +328,8 @@ export default function ProfilePage({
                           }}
                         />
                       </div>
-                      <span className="text-[12px] font-bold w-[56px] text-right" style={{ color }}>
-                        {item.value.toFixed(2)}
+                      <span className="text-[12px] font-semibold w-[72px] text-right" style={{ color }}>
+                        {item.qualitative}
                       </span>
                     </div>
                   );
@@ -229,15 +369,21 @@ export default function ProfilePage({
             <SectionTitle className="mb-3">즐겨찾기 셰프</SectionTitle>
             <div className="flex flex-col gap-3">
               {favoriteChefs.map((chef, idx) => (
-                <SectionCard key={idx}>
+                <SectionCard key={idx} onClick={() => onNavigateToReservation?.(chef.name)}>
                   <div className="flex items-center gap-3 w-full">
-                    <img
-                      src={chef.image}
-                      alt={chef.name}
-                      className="w-[40px] h-[40px] rounded-[10px] object-cover"
-                    />
+                    {chef.image ? (
+                      <img
+                        src={chef.image}
+                        alt={chef.name}
+                        className="w-[40px] h-[40px] rounded-[10px] object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[10px] bg-[var(--tb-color-surface-muted)] text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
+                        {chef.name.slice(0, 1)}
+                      </div>
+                    )}
                     <div className="flex flex-col flex-1">
-                      <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{chef.name}</span>
+                      <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{formatChefName(chef.name)}</span>
                       <span className="text-[11px] text-[var(--tb-color-text-muted)]">{chef.restaurant}</span>
                     </div>
                     <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{chef.matchRate}%</span>
@@ -250,13 +396,15 @@ export default function ProfilePage({
 
           {/* 설정 */}
           {settingsSections.map((section, sIdx) => (
-            <div key={sIdx}>
+            <div key={sIdx} id={sIdx === 0 ? 'profile-settings' : undefined}>
               <SectionTitle className="mb-3">{section.title}</SectionTitle>
               <div className="flex flex-col gap-3">
                 {section.items.map((item, idx) => {
                   const Icon = item.icon;
                   return (
-                    <SectionCard key={idx}>
+                    <SectionCard key={idx} onClick={
+                      item.label === '미각 재측정' ? onStartMeasurement : undefined
+                    }>
                       <div className="flex items-center gap-3 w-full">
                         <Icon size={18} className="shrink-0 text-[var(--tb-color-icon-primary)]" />
                         <div className="flex flex-col flex-1">

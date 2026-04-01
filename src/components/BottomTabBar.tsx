@@ -28,7 +28,7 @@ const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
 
 export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
   return (
-    <div className="w-full bg-[var(--tb-color-surface-base)] border-t border-[var(--tb-color-border-default)] relative shrink-0 z-50">
+    <div className="w-full bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md border-t border-[var(--tb-color-border-default)] relative shrink-0 z-50 supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70">
       <div className="flex items-center justify-around px-2 py-1">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -37,7 +37,7 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className="flex flex-col items-center justify-center gap-[2px] py-[6px] px-4 relative group transition-all duration-200"
+              className="flex flex-col items-center justify-center gap-[2px] py-[6px] px-4 relative group transition-all duration-200 active:scale-[0.92]"
             >
               <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}>
                 <Icon

@@ -1,0 +1,36 @@
+{
+  "fullText" : "EVETT\n전복\n갈비",
+  "imagePath" : "\/Users\/sinjunho\/Desktop\/Taste Buddy app\/tmp\/pdf-preview\/evett-lunch.png",
+  "lines" : [
+    {
+      "boundingBox" : {
+        "height" : 0.04577464788732388,
+        "width" : 0.28873239436619713,
+        "x" : 0.35915493118153363,
+        "y" : 0.8697183100352113
+      },
+      "confidence" : 1,
+      "text" : "EVETT"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.021126760563380254,
+        "width" : 0.06338028169014087,
+        "x" : 0.4718309860328639,
+        "y" : 0.38028168978873245
+      },
+      "confidence" : 0.5,
+      "text" : "전복"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.02464788732394363,
+        "width" : 0.07042253521126757,
+        "x" : 0.46478873197183107,
+        "y" : 0.27816901433098595
+      },
+      "confidence" : 0.5,
+      "text" : "갈비"
+    }
+  ]
+}

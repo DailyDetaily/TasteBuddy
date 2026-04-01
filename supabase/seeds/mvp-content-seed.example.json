@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Sample seed format for Taste Buddy MVP content. All inferred fields are hypotheses, not verified facts."
+  },
+  "restaurants": [
+    {
+      "slug": "jungsik-seoul",
+      "name": "정식당",
+      "timezone": "Asia/Seoul",
+      "city": "Seoul",
+      "intro": "Korean fine dining tasting experience."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "jungsik-seoul",
+      "display_name": "임정식",
+      "bio": "Chef profile summary placeholder.",
+      "avatar_path": "chefs/lim-jeongsik.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "jungsik-menu-spring-2026",
+      "restaurant_slug": "jungsik-seoul",
+      "source_type": "menu",
+      "title": "Spring 2026 tasting menu",
+      "url": "https://example.com/jungsik/menu/spring-2026",
+      "excerpt": "Public menu description excerpt.",
+      "raw_text": "Public menu text goes here.",
+      "trust_score": 0.95
+    },
+    {
+      "external_key": "jungsik-review-001",
+      "restaurant_slug": "jungsik-seoul",
+      "source_type": "review",
+      "title": "Reviewer notes on the spring course",
+      "url": "https://example.com/review/jungsik-spring",
+      "excerpt": "Review excerpt describing richness, acidity, and finish.",
+      "raw_text": "Reviewer text goes here.",
+      "trust_score": 0.68
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "dish-fish-kinmedai",
+      "restaurant_slug": "jungsik-seoul",
+      "season_label": "2026 Spring",
+      "public_title": "숯불 금태와 봄동",
+      "public_subtitle": "숯불 금태 · 봄동 · 조개 버터 소스",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "dish-dessert-black-sesame",
+      "restaurant_slug": "jungsik-seoul",
+      "season_label": "2026 Spring",
+      "public_title": "흑임자 아이스크림과 배 콩포트",
+      "public_subtitle": "흑임자 · 배 콩포트 · 메밀 튀일",
+      "course_position": "dessert",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "dish-fish-kinmedai",
+      "source_external_key": "jungsik-menu-spring-2026",
+      "fact_type": "ingredients",
+      "value_json": {
+        "ingredients": ["금태", "봄동", "조개", "버터"]
+      },
+      "confidence": 0.94
+    },
+    {
+      "dish_external_key": "dish-fish-kinmedai",
+      "source_external_key": "jungsik-menu-spring-2026",
+      "fact_type": "techniques",
+      "value_json": {
+        "techniques": ["숯불 굽기", "버터 소스"]
+      },
+      "confidence": 0.88
+    },
+    {
+      "dish_external_key": "dish-dessert-black-sesame",
+      "source_external_key": "jungsik-review-001",
+      "fact_type": "sensory_words",
+      "value_json": {
+        "sensory_words": ["고소함", "부드러운 단맛", "차가운 마무리"]
+      },
+      "confidence": 0.66
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "dish-fish-kinmedai",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.18,
+        "bitter": 0.05,
+        "salty": 0.42,
+        "umami": 0.82,
+        "fat": 0.74
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.71,
+        "cleanFinish": 0.31,
+        "linger": 0.67,
+        "smoke": 0.08,
+        "aromaIntensity": 0.52,
+        "textureRichness": 0.74,
+        "thermalImpact": 0.58
+      },
+      "confidence": 0.63,
+      "rationale": "Public menu and review suggest a rich butter-forward fish course with strong umami and lingering finish.",
+      "uncertainty_notes": [
+        "Butter reduction level is inferred, not verified.",
+        "Acidity support is review-based, not confirmed by recipe."
+      ],
+      "evidence_ids": ["jungsik-menu-spring-2026", "jungsik-review-001"]
+    },
+    {
+      "dish_external_key": "dish-dessert-black-sesame",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.68,
+        "sour": 0.16,
+        "bitter": 0.04,
+        "salty": 0.06,
+        "umami": 0.08,
+        "fat": 0.46
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.41,
+        "cleanFinish": 0.36,
+        "linger": 0.44,
+        "smoke": 0.0,
+        "aromaIntensity": 0.38,
+        "textureRichness": 0.48,
+        "thermalImpact": 0.32
+      },
+      "confidence": 0.57,
+      "rationale": "Public dessert description suggests a sweet, nutty finish with moderate richness and soft acidity relief.",
+      "uncertainty_notes": [
+        "Sugar intensity is estimated from public description.",
+        "Fruit acidity contribution is review-based."
+      ],
+      "evidence_ids": ["jungsik-review-001"]
+    }
+  ],
+  "research_rules": [
+    {
+      "rule_code": "fat_needs_relief",
+      "label": "High fat dishes need relief",
+      "summary": "When fat intensity is high, brightness and clean finish become more important for perceived balance.",
+      "trigger_features": {
+        "tasteFloor": {
+          "fat": 0.55
+        }
+      },
+      "effect_taste_delta": {},
+      "effect_perceptual_delta": {
+        "heaviness": 0.18,
+        "linger": 0.14,
+        "cleanFinish": -0.12
+      },
+      "evidence_strength": 0.77,
+      "source_url": "https://example.com/research/fat-needs-relief"
+    },
+    {
+      "rule_code": "umami_synergy",
+      "label": "Umami synergy",
+      "summary": "Glutamate and nucleotide combinations can increase perceived umami and salt-like fullness.",
+      "trigger_features": {
+        "tasteFloor": {
+          "umami": 0.45
+        }
+      },
+      "effect_taste_delta": {
+        "umami": 0.15,
+        "salty": 0.04
+      },
+      "effect_perceptual_delta": {},
+      "evidence_strength": 0.83,
+      "source_url": "https://example.com/research/umami-synergy"
+    }
+  ]
+}

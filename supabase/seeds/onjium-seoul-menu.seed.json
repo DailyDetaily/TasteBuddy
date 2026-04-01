@@ -1,0 +1,667 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Seed generated from curated intake CSV files for 온지음.",
+    "generatedAt": "2026-03-29T11:47:30.038Z",
+    "sourceFiles": [
+      "docs/mvp-content-intake-onjium-lunch.csv",
+      "docs/mvp-content-intake-onjium-dinner.csv"
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "onjium-seoul",
+      "name": "온지음",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "온지음 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "onjium-seoul",
+      "display_name": "조은희 / 박성배",
+      "bio": "큐레이션 intake CSV에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/onjium-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "restaurant_slug": "onjium-seoul",
+      "source_type": "menu",
+      "title": "Onjium September~October Menu (user-provided image)",
+      "url": "user-provided-image",
+      "excerpt": "송이만두 / 겨자채 / 녹두전과 즙장 / 맥적갈비 / 백화반 / 향설빙",
+      "raw_text": "송이만두\n겨자채\n녹두전과 즙장\n맥적갈비\n백화반\n향설빙\n송이만두\n겨자채\n능이전복탕\n녹두전과 즙장\n맥적갈비\n백화반\n향설빙",
+      "trust_score": 0.98
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "onjium-seoul-dish-001",
+      "restaurant_slug": "onjium-seoul",
+      "season_label": "September-October menu",
+      "public_title": "송이만두",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "onjium-seoul-dish-002",
+      "restaurant_slug": "onjium-seoul",
+      "season_label": "September-October menu",
+      "public_title": "겨자채",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "onjium-seoul-dish-003",
+      "restaurant_slug": "onjium-seoul",
+      "season_label": "September-October menu",
+      "public_title": "녹두전과 즙장",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "onjium-seoul-dish-004",
+      "restaurant_slug": "onjium-seoul",
+      "season_label": "September-October menu",
+      "public_title": "맥적갈비",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "onjium-seoul-dish-005",
+      "restaurant_slug": "onjium-seoul",
+      "season_label": "September-October menu",
+      "public_title": "백화반",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "onjium-seoul-dish-006",
+      "restaurant_slug": "onjium-seoul",
+      "season_label": "September-October menu",
+      "public_title": "향설빙",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "onjium-seoul-dish-007",
+      "restaurant_slug": "onjium-seoul",
+      "season_label": "September-October menu",
+      "public_title": "능이전복탕",
+      "public_subtitle": null,
+      "course_position": "other",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "onjium-seoul-dish-001",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "송이, 만두",
+      "value_json": {
+        "ingredients": [
+          "송이",
+          "만두"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-001",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dumpling",
+      "value_json": {
+        "techniques": [
+          "dumpling"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-001",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "forest aroma, delicate umami, soft warm body",
+      "value_json": {
+        "sensory_words": [
+          "forest aroma",
+          "delicate umami",
+          "soft warm body"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-001",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-002",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "겨자채, 채소",
+      "value_json": {
+        "ingredients": [
+          "겨자채",
+          "채소"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-002",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "mixed vegetable preparation",
+      "value_json": {
+        "techniques": [
+          "mixed vegetable preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-002",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "bright mustard sharpness, clean vegetable finish, cool composure",
+      "value_json": {
+        "sensory_words": [
+          "bright mustard sharpness",
+          "clean vegetable finish",
+          "cool composure"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-002",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-003",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "녹두전, 즙장",
+      "value_json": {
+        "ingredients": [
+          "녹두전",
+          "즙장"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-003",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "jeon, sauce service",
+      "value_json": {
+        "techniques": [
+          "jeon",
+          "sauce service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-003",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "bean nuttiness, savory warmth, gentle lingering finish",
+      "value_json": {
+        "sensory_words": [
+          "bean nuttiness",
+          "savory warmth",
+          "gentle lingering finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-003",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-004",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "갈비, 간장 양념",
+      "value_json": {
+        "ingredients": [
+          "갈비",
+          "간장 양념"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-004",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "braising, soy marination",
+      "value_json": {
+        "techniques": [
+          "braising",
+          "soy marination"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-004",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "deep soy umami, sweet-savory glaze, dense main-course finish",
+      "value_json": {
+        "sensory_words": [
+          "deep soy umami",
+          "sweet-savory glaze",
+          "dense main-course finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-004",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-005",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "쌀, 계절 재료",
+      "value_json": {
+        "ingredients": [
+          "쌀",
+          "계절 재료"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-005",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "seasonal rice dish",
+      "value_json": {
+        "techniques": [
+          "seasonal rice dish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-005",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "balanced grain comfort, seasonal savory layering, quiet close",
+      "value_json": {
+        "sensory_words": [
+          "balanced grain comfort",
+          "seasonal savory layering",
+          "quiet close"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-005",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-006",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "배, 셔벗",
+      "value_json": {
+        "ingredients": [
+          "배",
+          "셔벗"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-006",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "sherbet",
+      "value_json": {
+        "techniques": [
+          "sherbet"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-006",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "pear brightness, refreshing close, clean cold finish",
+      "value_json": {
+        "sensory_words": [
+          "pear brightness",
+          "refreshing close",
+          "clean cold finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-006",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-007",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "능이, 전복, 간장",
+      "value_json": {
+        "ingredients": [
+          "능이",
+          "전복",
+          "간장"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-007",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "steaming, soy sauce service",
+      "value_json": {
+        "techniques": [
+          "steaming",
+          "soy sauce service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-007",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "deep mushroom umami, marine richness, warmer long finish",
+      "value_json": {
+        "sensory_words": [
+          "deep mushroom umami",
+          "marine richness",
+          "warmer long finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-007",
+      "source_external_key": "onjium-seoul-onjium-september-october-menu-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "onjium-seoul-dish-001",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.04,
+        "bitter": 0.06,
+        "salty": 0.1,
+        "umami": 0.54,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.14,
+        "cleanFinish": 0.54,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.46,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.22
+      },
+      "confidence": 0.82,
+      "rationale": "Pine mushroom dumplings likely highlight restrained umami and high aroma rather than weight, matching Onjium's court-cuisine-inspired refinement.",
+      "uncertainty_notes": [
+        "The image does not disclose filling ratios, broth, or dipping sauce"
+      ],
+      "evidence_ids": [
+        "onjium-seoul-onjium-september-october-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-002",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.22,
+        "bitter": 0.06,
+        "salty": 0.04,
+        "umami": 0.1,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.76,
+        "heaviness": 0.02,
+        "cleanFinish": 0.84,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.12,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.84,
+      "rationale": "Mustard greens with vegetables strongly suggests a bright, cooling, palate-cleansing course with minimal heaviness and strong clean-finish character.",
+      "uncertainty_notes": [
+        "The exact dressing, garnish, and whether seafood is included are not shown on the menu image"
+      ],
+      "evidence_ids": [
+        "onjium-seoul-onjium-september-october-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-003",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.1,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.34,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.16,
+        "cleanFinish": 0.48,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.24
+      },
+      "confidence": 0.8,
+      "rationale": "Mung bean pancake with sauce likely offers nutty warmth and a controlled savory finish, functioning as a textural and grounding mid-course.",
+      "uncertainty_notes": [
+        "Oil level, filling, and sauce salinity are not visible on the menu image"
+      ],
+      "evidence_ids": [
+        "onjium-seoul-onjium-september-october-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-004",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.24,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.82,
+        "fat": 0.32
+      },
+      "perceptual_vector": {
+        "brightness": 0.16,
+        "heaviness": 0.42,
+        "cleanFinish": 0.28,
+        "linger": 0.62,
+        "smoke": 0.04,
+        "aromaIntensity": 0.3,
+        "textureRichness": 0.42,
+        "thermalImpact": 0.44
+      },
+      "confidence": 0.86,
+      "rationale": "Braised short ribs with soy marinade imply the menu's strongest sweet-savory density and a fuller lingering finish than the preceding courses.",
+      "uncertainty_notes": [
+        "The image does not reveal garnish, char level, or exact marinade sweetness"
+      ],
+      "evidence_ids": [
+        "onjium-seoul-onjium-september-october-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-005",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.16,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.08,
+        "umami": 0.28,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.12,
+        "cleanFinish": 0.66,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.18,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.22
+      },
+      "confidence": 0.74,
+      "rationale": "A seasonal assorted rice dish likely functions as a composed grain-focused course that emphasizes balance and seasonal nuance rather than a single dominant taste.",
+      "uncertainty_notes": [
+        "The exact seasonal ingredients are not listed on the menu image"
+      ],
+      "evidence_ids": [
+        "onjium-seoul-onjium-september-october-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-006",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.36,
+        "sour": 0.3,
+        "bitter": 0.02,
+        "salty": 0.02,
+        "umami": 0.04,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.84,
+        "heaviness": 0.02,
+        "cleanFinish": 0.86,
+        "linger": 0.08,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.08,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.84,
+      "rationale": "Asian pear sherbet is modeled as a very clean and bright ending with modest sweetness and a quick finish suited to closing a structured Korean course.",
+      "uncertainty_notes": [
+        "The image does not show added aromatics or garnish, so sweetness and acidity remain approximate"
+      ],
+      "evidence_ids": [
+        "onjium-seoul-onjium-september-october-menu-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "onjium-seoul-dish-007",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.06,
+        "bitter": 0.04,
+        "salty": 0.18,
+        "umami": 0.82,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.26,
+        "cleanFinish": 0.42,
+        "linger": 0.52,
+        "smoke": 0,
+        "aromaIntensity": 0.4,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.4
+      },
+      "confidence": 0.88,
+      "rationale": "The menu explicitly marks this abalone course as dinner-only, and pine mushroom plus abalone with soy sauce strongly suggests a deeper, more luxurious umami course than the lunch flow.",
+      "uncertainty_notes": [
+        "The Korean and English labels differ slightly, and the image does not clarify broth thickness or exact sauce application"
+      ],
+      "evidence_ids": [
+        "onjium-seoul-onjium-september-october-menu-user-provided-image"
+      ]
+    }
+  ],
+  "research_rules": []
+}

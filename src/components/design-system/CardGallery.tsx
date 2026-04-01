@@ -520,10 +520,10 @@ export default function CardGallery({
               <div className="flex flex-col gap-2">
                 <div>
                   <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
-                    프로필이 업데이트됐어요
+                    프로필이 업데이트됐습니다
                   </h1>
                   <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                    이번 인상은 현재 Taste Profile을 더 정교하게 만들었고, 다음 다이닝 준비에 바로 반영됩니다.
+                    다음 예약 추천에 반영할 수 있는 최신 프로필이 준비됐어요.
                   </p>
                 </div>
               </div>

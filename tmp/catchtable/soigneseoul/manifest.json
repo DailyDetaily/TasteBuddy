@@ -1,0 +1,87 @@
+{
+  "fetchedAt": "2026-03-29T12:33:18.015Z",
+  "restaurant": {
+    "slug": "soigneseoul",
+    "displayName": "SOIGNE"
+  },
+  "source": {
+    "menusPageUrl": "https://www.catchtable.net/shop/soigneseoul/menus",
+    "mirrorUrl": "https://r.jina.ai/http://www.catchtable.net/shop/soigneseoul/menus",
+    "rawMarkdownRelativePath": "tmp/catchtable/soigneseoul/menus-page.md",
+    "lastUpdatedLabel": "Mar 14, 2026"
+  },
+  "notes": {
+    "imageGuessMethod": "Menu links are paired with image URLs by ordinal order from the mirrored Catchtable menus page. Review before generating final CSVs.",
+    "nextStep": "Review menu images, transcribe course text, then generate lunch/dinner intake CSVs."
+  },
+  "images": [
+    {
+      "index": 1,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/8fd1bcd9b4464e69b6183e0a7b1e3f83?details500",
+      "contentType": "",
+      "absolutePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/catchtable/soigneseoul/images/01-soigneseoul.jpg",
+      "relativePath": "tmp/catchtable/soigneseoul/images/01-soigneseoul.jpg"
+    },
+    {
+      "index": 2,
+      "sourceUrl": "https://ugc-images.catchtable.co.kr/shop/manager/images/2c20922126954c0d9710fa25a2fae809?details500",
+      "contentType": "",
+      "absolutePath": "/Users/sinjunho/Desktop/Taste Buddy app/tmp/catchtable/soigneseoul/images/02-soigneseoul.jpg",
+      "relativePath": "tmp/catchtable/soigneseoul/images/02-soigneseoul.jpg"
+    }
+  ],
+  "menus": [
+    {
+      "index": 1,
+      "rawTitle": "Lunch ₩240,000",
+      "title": "Lunch",
+      "priceLabel": "KRW 240,000",
+      "priceValue": 240000,
+      "url": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1483368",
+      "foodMenuSeq": "1483368",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": "https://ugc-images.catchtable.co.kr/shop/manager/images/8fd1bcd9b4464e69b6183e0a7b1e3f83?details500",
+      "imageGuessMethod": "ordinal-order",
+      "localImageRelativePathGuess": "tmp/catchtable/soigneseoul/images/01-soigneseoul.jpg"
+    },
+    {
+      "index": 2,
+      "rawTitle": "Dinner ₩380,000",
+      "title": "Dinner",
+      "priceLabel": "KRW 380,000",
+      "priceValue": 380000,
+      "url": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1483369",
+      "foodMenuSeq": "1483369",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": "https://ugc-images.catchtable.co.kr/shop/manager/images/2c20922126954c0d9710fa25a2fae809?details500",
+      "imageGuessMethod": "ordinal-order",
+      "localImageRelativePathGuess": "tmp/catchtable/soigneseoul/images/02-soigneseoul.jpg"
+    },
+    {
+      "index": 3,
+      "rawTitle": "Lunch Wine Pairing ₩160,000~₩180,000",
+      "title": "Lunch Wine Pairing ₩160,000~₩180,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "url": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1358207",
+      "foodMenuSeq": "1358207",
+      "menuType": "lunch",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    },
+    {
+      "index": 4,
+      "rawTitle": "Dinner Wine Pairing ₩220,000~₩280,000",
+      "title": "Dinner Wine Pairing ₩220,000~₩280,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "url": "http://www.catchtable.net/shop/soigneseoul/menu?foodMenuSeq=1132768",
+      "foodMenuSeq": "1132768",
+      "menuType": "dinner",
+      "imageSourceUrlGuess": null,
+      "imageGuessMethod": null,
+      "localImageRelativePathGuess": null
+    }
+  ]
+}

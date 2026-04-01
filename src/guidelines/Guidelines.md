@@ -90,8 +90,8 @@
 - 대부분의 화면은 `white -> light gray card -> taste accent` 순서로 계층을 만든다.
 - taste color는 제목 전체보다 값, 그래프, 변화량, 상태 포인트에 쓰는 것이 기본이다.
 - 본문 문단을 taste color로 길게 쓰지 않는다.
+- **포인트 카드(Point Card) 예외 규칙**: 특정 미각 요소(예: 셰프 매칭, 세부 분석 정사각형 메뉴 등)를 강조해야 하는 소형 카드 그룹의 경우, 각 미각의 `Background` 컬러를 전체 카드 배경으로 허용한다. 이때 내부 텍스트 및 레이아웃은 임상적 감성을 해치지 않게 여백을 유지한다.
 - 맛 배경색 위 텍스트는 가능한 한 해당 taste의 dark tone을 먼저 쓰고, 대비가 부족하면 `#0F0F0F`로 내린다.
-- 분석 탭 세부 분석 카드는 각 taste palette의 `Background` 값을 그대로 사용한다.
 - 차트와 링에서는 맛의 정체성을 유지하되, 격자와 기준선은 반드시 뉴트럴 그레이로 남긴다.
 - success / warning은 상태 chip, 진행 상태, 짧은 피드백에만 제한적으로 쓴다.
 - 상태색을 새로 만들기 전에는 neutral scale, success, warning, taste palette 순서로 먼저 검토한다.
@@ -237,12 +237,12 @@ Pretendard를 전 화면 기본 서체로 사용한다. 헤드라인은 촘촘�
 
 - 높이 `56px`
 - 좌우 여백 `20px`
-- white surface 유지
+- `bg-page` 반투명(약 85 %) + `backdrop-blur-md` glassmorphism 유지
 - 좌측은 profile avatar 또는 back affordance, 우측은 24px line icon 2~3개
 
 ### 9-3. Bottom Tab Bar
 
-- white background + subtle top border
+- `bg-page` 반투명(약 85 %) + `backdrop-blur-md` glassmorphism + subtle top border
 - 아이콘 크기 `24px`, 라벨 `10px`
 - inactive는 muted gray, active는 black
 - 하단 home indicator는 항상 black pill

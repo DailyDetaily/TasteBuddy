@@ -1,0 +1,121 @@
+{
+  "fetchedAt": "2026-03-29T14:16:24.090Z",
+  "restaurant": {
+    "slug": "sosuheon-seoul",
+    "displayName": "소수헌",
+    "chefName": "박경재",
+    "city": "Seoul"
+  },
+  "source": {
+    "mode": "public_fallback",
+    "outputDirRelativePath": "tmp/public-sources/sosuheon-seoul",
+    "nextStep": "Review source snippets, copy verified menu/course lines into review-template rows, then generate intake CSVs or seed JSON."
+  },
+  "documents": [
+    {
+      "index": 1,
+      "label": "Cook&Chef Sosuheon profile",
+      "sourceType": "news_article",
+      "url": "https://cooknchefnews.com/news/view/1065590534958931",
+      "fetchedUrl": "https://r.jina.ai/http://cooknchefnews.com/news/view/1065590534958931",
+      "mirrorUrl": "https://r.jina.ai/http://cooknchefnews.com/news/view/1065590534958931",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.94,
+      "title": "[미슐랭 스토리] ‘한옥서 즐기는 스시 한 점’ 미쉐린 1스타 스시 오마카세 ‘소수헌’",
+      "publishedTime": "2025-12-09T23:49:12+09:00",
+      "blocked": false,
+      "contentRelativePath": "tmp/public-sources/sosuheon-seoul/01-cook-chef-sosuheon-profile.md",
+      "excerpt": [
+        "쿡앤셰프(Cook&Chef)",
+        "!Image 5: 구름많음상주 14.0℃",
+        "!Image 6: 맑음서귀포 15.9℃",
+        "!Image 7: 맑음진주 11.3℃",
+        "!Image 8: 맑음천안 10.2℃",
+        "!Image 9: 맑음울릉도 10.7℃",
+        "!Image 10: 맑음춘천 10.2℃",
+        "!Image 11: 맑음목포 14.1℃",
+        "!Image 12: 맑음임실 10.0℃",
+        "!Image 13: 맑음고창 11.4℃"
+      ],
+      "courseTitleDrafts": [
+        "구름많음",
+        "맑음",
+        "흐림",
+        "naver Post",
+        "쿡앤셰프(Cook&Chef)",
+        "2안 건강한 아이 가지기 배너 300x80",
+        "김성은 전문기자",
+        "흙이 생명이다 PC",
+        "쿡앤셰프",
+        "Opt out of the sale or sharing of personal information",
+        "!Image 5: 구름많음상주 14.0℃",
+        "!Image 6: 맑음서귀포 15.9℃",
+        "!Image 7: 맑음진주 11.3℃",
+        "!Image 8: 맑음천안 10.2℃",
+        "!Image 9: 맑음울릉도 10.7℃",
+        "!Image 10: 맑음춘천 10.2℃"
+      ]
+    }
+  ],
+  "menuCandidates": [
+    {
+      "id": "sosuheon-seoul-01-1",
+      "sourceIndex": 1,
+      "sourceLabel": "Cook&Chef Sosuheon profile",
+      "sourceType": "news_article",
+      "sourceTitle": "[미슐랭 스토리] ‘한옥서 즐기는 스시 한 점’ 미쉐린 1스타 스시 오마카세 ‘소수헌’",
+      "sourceUrl": "https://cooknchefnews.com/news/view/1065590534958931",
+      "menuType": "lunch",
+      "menuTitle": "소수헌 런치 오마카세 개요",
+      "priceLabel": "KRW 300,000",
+      "priceValue": 300000,
+      "seasonLabel": "2025-12-09T23:49:12+09:00",
+      "courseTitleDrafts": [
+        "제철 작은 요리",
+        "대게",
+        "벚꽃도미 찜",
+        "갈치구이",
+        "전갱이 니기리",
+        "참치 니기리",
+        "말차 마무리"
+      ]
+    },
+    {
+      "id": "sosuheon-seoul-01-2",
+      "sourceIndex": 1,
+      "sourceLabel": "Cook&Chef Sosuheon profile",
+      "sourceType": "news_article",
+      "sourceTitle": "[미슐랭 스토리] ‘한옥서 즐기는 스시 한 점’ 미쉐린 1스타 스시 오마카세 ‘소수헌’",
+      "sourceUrl": "https://cooknchefnews.com/news/view/1065590534958931",
+      "menuType": "dinner",
+      "menuTitle": "소수헌 디너 오마카세 개요",
+      "priceLabel": "KRW 500,000",
+      "priceValue": 500000,
+      "seasonLabel": "2025-12-09T23:49:12+09:00",
+      "courseTitleDrafts": [
+        "제철 작은 요리",
+        "대게",
+        "벚꽃도미 찜",
+        "갈치구이",
+        "전어 니기리",
+        "갑오징어 니기리",
+        "전복 니기리",
+        "전갱이 니기리",
+        "방어 니기리",
+        "참치 니기리",
+        "말차 마무리"
+      ]
+    }
+  ],
+  "requestedSources": [
+    {
+      "label": "Cook&Chef Sosuheon profile",
+      "sourceType": "news_article",
+      "url": "https://cooknchefnews.com/news/view/1065590534958931",
+      "trustScore": 0.94,
+      "menuType": null,
+      "createReferenceMenu": false
+    }
+  ]
+}

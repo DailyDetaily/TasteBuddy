@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, MoreHorizontal, Check } from 'lucide-react';
+import { ChevronLeftRegular, MoreHorizontalRegular, CheckmarkRegular } from '@fluentui/react-icons';
+const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
+const ChevronLeft = wrapIcon(ChevronLeftRegular);
+const MoreHorizontal = wrapIcon(MoreHorizontalRegular);
+const Check = wrapIcon(CheckmarkRegular);
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Using the closest available assets as placeholders
@@ -221,7 +225,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                         >
                             <div className="mt-8 mb-12 text-center">
                                 <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight">체크리스트</h1>
-                                <p className="text-[#666666] text-[14px]">
+                                <p className="text-[var(--tb-color-text-body)] text-[14px]">
                                     정확한 미각 측정을 위해, 아래 단계를 먼저 준비해주세요.
                                 </p>
                             </div>
@@ -232,7 +236,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                     '30분 이내 음식 섭취 여부 확인',
                                     '조용하고 집중 가능한 상태인지 확인'
                                 ].map((text, i) => (
-                                    <div key={i} className="w-full bg-[#F5F5F5] rounded-[20px] p-3 flex items-center gap-3">
+                                    <div key={i} className="w-full bg-[var(--tb-color-surface-muted)] rounded-[20px] p-3 flex items-center gap-3">
                                         <div className="w-6 h-6 rounded-[8px] bg-black flex items-center justify-center shrink-0">
                                             <Check size={16} color="white" strokeWidth={3} />
                                         </div>
@@ -257,7 +261,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                 <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight">
                                     이제, 당신의 미각을<br />만나볼 시간입니다.
                                 </h1>
-                                <p className="text-[#666666] text-[14px]">
+                                <p className="text-[var(--tb-color-text-body)] text-[14px]">
                                     총 6가지 기본 맛에 대한 민감도를 측정합니다.<br />약 3분 정도 소요되니, 잠시 집중해주세요.
                                 </p>
                             </div>
@@ -291,13 +295,13 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                 <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight" style={{ color: currentTaste.measurement.accent }}>
                                     <span className="text-black">{currentTaste.measurement.ordinal}, {currentTaste.label} 측정</span>
                                 </h1>
-                                <p className="text-[#666666] text-[14px]">
+                                <p className="text-[var(--tb-color-text-body)] text-[14px]">
                                     지금부터 테이스틱이 10단계로 농도를 높여가며 용액을 분사합니다.<br />준비가 완료되면 테이스틱을 입에 물고 뒷면의 버튼을 눌러주세요.
                                 </p>
                             </div>
 
                             <div className="flex-1 w-full flex items-center justify-center mb-6">
-                                <div className="aspect-square w-full max-w-[440px] bg-[#f4f4f4] rounded-[24px] flex items-center justify-center relative overflow-hidden shadow-sm border border-[#F0F0F0]">
+                                <div className="aspect-square w-full max-w-[440px] bg-[var(--tb-color-bg-page)] rounded-[var(--tb-radius-20)] flex items-center justify-center relative overflow-hidden shadow-sm border border-[var(--tb-color-border-card)]">
                                     {/* Image of person using the tastick */}
                                     <img
                                         src={personUsingTastickImage}
@@ -305,7 +309,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                         className="absolute inset-0 h-full w-full origin-bottom translate-y-[12%] scale-[1.9] object-cover object-center will-change-transform"
                                     />
                                     
-                                    <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-[12px] font-bold text-[#888]">
+                                    <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-[12px] font-bold text-[var(--tb-color-text-hint)]">
                                         {tasteIndex + 1} / 6
                                     </div>
                                 </div>
@@ -327,7 +331,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                 <h1 className="text-[18px] font-bold leading-tight mb-3 tracking-tight">
                                     <span style={{ color: currentTaste.measurement.accent }}>{currentTaste.label}</span> 민감도를 측정 중입니다...
                                 </h1>
-                                <p className="text-[#666666] text-[14px]">
+                                <p className="text-[var(--tb-color-text-body)] text-[14px]">
                                     {currentTaste.label}이(가) 느껴지면 즉시 버튼을 눌러주세요.
                                 </p>
                             </div>
@@ -363,47 +367,47 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                 <h1 className="text-[28px] font-bold leading-tight mb-3 tracking-tight">
                                     미각 측정이<br />완료되었어요
                                 </h1>
-                                <p className="text-[#666666] text-[15px] leading-relaxed">
+                                <p className="text-[var(--tb-color-text-body)] text-[15px] leading-relaxed">
                                     방금 측정한 결과를 바탕으로 미각 프로필을 업데이트했어요.<br />
                                     프로필에서 이번 측정값과 세부 분석을 바로 확인할 수 있습니다.
                                 </p>
                             </div>
 
-                            <div className="rounded-[20px] bg-[#F3F3F3] p-3 flex flex-col gap-3 mb-4">
+                            <div className="rounded-[20px] bg-[var(--tb-color-bg-page)] p-3 flex flex-col gap-3 mb-4">
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
-                                        <p className="text-[12px] font-semibold text-[rgba(15,15,15,0.45)]">이번 측정 요약</p>
-                                        <h2 className="text-[24px] font-bold text-[#0F0F0F] mt-1">
+                                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">이번 측정 요약</p>
+                                        <h2 className="text-[24px] font-bold text-[var(--tb-color-text-primary)] mt-1">
                                             평균 {formatMeasurementValue(averageMeasurement)}
                                         </h2>
                                     </div>
-                                    <span className="rounded-full bg-white px-3 py-2 text-[12px] font-semibold text-[#0F0F0F] border border-[rgba(15,15,15,0.08)]">
+                                    <span className="rounded-full bg-white px-3 py-2 text-[12px] font-semibold text-[var(--tb-color-text-primary)] border border-[var(--tb-color-border-subtle)]">
                                         {tasteProfileBadge}
                                     </span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="rounded-[8px] bg-white p-3">
-                                        <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)] mb-2">가장 민감한 맛</p>
+                                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)] mb-2">가장 민감한 맛</p>
                                         <p
                                             className="text-[18px] font-bold"
                                             style={{ color: TASTE_TOKENS[strongestTaste.id].measurement.accent }}
                                         >
                                             {strongestTaste.label}
                                         </p>
-                                        <p className="text-[13px] font-semibold text-[#0F0F0F] mt-1">
+                                        <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)] mt-1">
                                             {formatMeasurementValue(strongestTaste.valueMm)}
                                         </p>
                                     </div>
                                     <div className="rounded-[8px] bg-white p-3">
-                                        <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)] mb-2">가장 둔감한 맛</p>
+                                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)] mb-2">가장 둔감한 맛</p>
                                         <p
                                             className="text-[18px] font-bold"
                                             style={{ color: TASTE_TOKENS[weakestTaste.id].measurement.accent }}
                                         >
                                             {weakestTaste.label}
                                         </p>
-                                        <p className="text-[13px] font-semibold text-[#0F0F0F] mt-1">
+                                        <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)] mt-1">
                                             {formatMeasurementValue(weakestTaste.valueMm)}
                                         </p>
                                     </div>
@@ -411,19 +415,19 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
 
                                 <div className="flex items-center justify-between gap-3 rounded-[8px] bg-white px-3 py-3">
                                     <div>
-                                        <p className="text-[11px] font-semibold text-[rgba(15,15,15,0.45)]">프로필 반영 시점</p>
-                                        <p className="text-[13px] font-semibold text-[#0F0F0F] mt-1">
+                                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">프로필 반영 시점</p>
+                                        <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)] mt-1">
                                             {formatMeasurementDate(displaySnapshot.measuredAt)}
                                         </p>
                                     </div>
-                                    <span className="text-[12px] font-semibold text-[#0F0F0F]">
+                                    <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
                                         6개 맛 측정 완료
                                     </span>
                                 </div>
                             </div>
 
                             <div className="mb-4">
-                                <h2 className="text-[16px] font-bold text-[#0F0F0F] mb-3">세부 측정값</h2>
+                                <h2 className="text-[16px] font-bold text-[var(--tb-color-text-primary)] mb-3">세부 측정값</h2>
                                 <div className="grid grid-cols-2 gap-3">
                                     {completedEntries.map((entry) => (
                                         <div
@@ -453,7 +457,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                             >
                                                 {entry.valueMm.toFixed(2)}
                                             </p>
-                                            <p className="text-[11px] font-medium text-[rgba(15,15,15,0.5)] mt-1">
+                                            <p className="text-[12px] font-medium text-[var(--tb-color-text-subtle)] mt-1">
                                                 기준 평균 {formatMeasurementValue(entry.averageMm)}
                                             </p>
                                                     </>

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T12:33:10.187Z",
+  "manifestRelativePath": "tmp/public-sources/la-yeon-seoul/manifest.json",
+  "collectionMode": "public_fallback",
+  "restaurant": {
+    "name": "라연",
+    "slug": "la-yeon-seoul",
+    "chefName": "김성일",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "public_reference",
+    "sourceTrustScore": 0.9,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "public fallback source"
+  },
+  "instructions": {
+    "rowEditing": [
+      "sourceDocuments 와 courseTitleDrafts 를 먼저 확인한다.",
+      "공개 메뉴/공식 페이지에 직접 나온 정보만 observed 로 옮긴다.",
+      "courseTitleDrafts 는 초안이므로 검수 후 rows 배열에 수작업으로 옮긴다.",
+      "메뉴 후보가 reference 인 경우 설명형 source 문서로만 사용하고 코스 row 는 신중하게 만든다."
+    ],
+    "nextStep": [
+      "rows 를 채운 뒤 catchtable CSV 생성기 대신 intake CSV 템플릿을 수작업으로 채우거나 별도 seed 변환기로 넘긴다."
+    ]
+  },
+  "sourceDocuments": [
+    {
+      "index": 1,
+      "label": "The Shilla Seoul dining page",
+      "sourceType": "official_page",
+      "url": "https://www.shilla.net/seoul/dining/viewDining.do?contId=KRN",
+      "title": "Dining | La Yeon | The Shilla Seoul",
+      "publishedTime": null,
+      "trustScore": 0.98,
+      "contentRelativePath": "tmp/public-sources/la-yeon-seoul/01-the-shilla-seoul-dining-page.md",
+      "excerpt": [
+        "Dining | La Yeon | The Shilla Seoul",
+        "Shortcut to THE SHILLA Shortcut to textShortcut to main menu",
+        "LoginJoin",
+        "* Accommodation",
+        "* Dining",
+        "Logout;)My Page",
+        "* Accommodation",
+        "* Dining",
+        "* 한국어",
+        "* 日本語"
+      ],
+      "courseTitleDrafts": [
+        "La Yeon",
+        "La Yeon Room",
+        "Keen’s Gaper Pyeon",
+        "Spring Aromatic Eungi",
+        "Yuma Myeon",
+        "Geumtang",
+        "Korean Beef Galbi-Jjim",
+        "Heirloom Sot-bap",
+        "Azalea Sorbet",
+        "Mugwort Ice Cream",
+        "Traditional, High-End Korean Restaurant La Yeon(See details at the bottom)",
+        "Royal Casserole / Platter of Nine Delicacies",
+        "La Yeon Introduction (see details at the bottom)",
+        "2nd Floor, The Shilla Seoul",
+        "Open / Close",
+        "Lunch :"
+      ]
+    }
+  ],
+  "menus": [
+    {
+      "menuType": "other",
+      "menuTitle": "라연 다이닝 안내",
+      "rawTitle": "라연 다이닝 안내",
+      "priceLabel": null,
+      "priceValue": null,
+      "sourceTitle": "Dining | La Yeon | The Shilla Seoul",
+      "sourceUrl": "https://www.shilla.net/seoul/dining/viewDining.do?contId=KRN",
+      "localImageRelativePath": null,
+      "seasonLabel": "public fallback source",
+      "courseTitleDrafts": [
+        "La Yeon",
+        "La Yeon Room",
+        "Keen’s Gaper Pyeon",
+        "Spring Aromatic Eungi",
+        "Yuma Myeon",
+        "Geumtang",
+        "Korean Beef Galbi-Jjim",
+        "Heirloom Sot-bap",
+        "Azalea Sorbet",
+        "Mugwort Ice Cream",
+        "Traditional, High-End Korean Restaurant La Yeon(See details at the bottom)",
+        "Royal Casserole / Platter of Nine Delicacies",
+        "La Yeon Introduction (see details at the bottom)",
+        "2nd Floor, The Shilla Seoul",
+        "Open / Close",
+        "Lunch :"
+      ],
+      "rows": []
+    }
+  ]
+}

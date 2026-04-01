@@ -1,0 +1,1311 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T10:09:35.466Z",
+  "manifestRelativePath": "tmp/catchtable/jungsik/manifest.json",
+  "restaurant": {
+    "name": "JUNGSIK",
+    "slug": "jungsik",
+    "chefName": "Yim Jung-sik",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "menu",
+    "sourceTrustScore": 0.99,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "Feb 28, 2026 catchtable"
+  },
+  "instructions": {
+    "rowEditing": [
+      "rows 배열에 코스별 항목을 추가한다.",
+      "observed 값은 메뉴 이미지에 직접 보이는 정보만 적는다.",
+      "비공개 레시피를 사실처럼 쓰지 않는다.",
+      "inferred 값이 아직 없으면 빈 문자열로 두고 나중에 채운다."
+    ],
+    "coursePositionGuide": [
+      "amuse",
+      "starter",
+      "fish",
+      "main",
+      "dessert",
+      "other"
+    ]
+  },
+  "menus": [
+    {
+      "menuType": "lunch",
+      "menuTitle": "Lunch Signature",
+      "rawTitle": "Lunch Signature ₩230,000",
+      "priceLabel": "KRW 230,000",
+      "priceValue": 230000,
+      "foodMenuSeq": "1444674",
+      "sourceTitle": "Catchtable JUNGSIK Lunch Signature KRW 230,000 menu image (Last update: Feb 28, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/jungsik/menu?foodMenuSeq=1444674",
+      "localImageRelativePath": "tmp/catchtable/jungsik/images/01-jungsik.jpg",
+      "seasonLabel": "Feb 28, 2026 lunch",
+      "rows": [
+        {
+          "priority": "P1",
+          "coursePosition": "amuse",
+          "dishPublicTitle": "BANCHAN",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "BANCHAN"
+          ],
+          "observedTechniques": [
+            "menu image OCR"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "starter",
+          "dishPublicTitle": "TRUFFLE MUGUK",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "TRUFFLE MUGUK"
+          ],
+          "observedTechniques": [
+            "named course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "starter",
+          "dishPublicTitle": "ABALONE",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "ABALONE"
+          ],
+          "observedTechniques": [
+            "named course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "fish",
+          "dishPublicTitle": "JUNGSIK SALMON",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "JUNGSIK SALMON"
+          ],
+          "observedTechniques": [
+            "seafood or fish course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "main",
+          "dishPublicTitle": "DUCK OR HANWOO GALBI",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "DUCK OR HANWOO GALBI"
+          ],
+          "observedTechniques": [
+            "main course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "GAMTAE GUKSU",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "GAMTAE GUKSU"
+          ],
+          "observedTechniques": [
+            "menu image OCR"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "dessert",
+          "dishPublicTitle": "HWACHAE",
+          "dishPublicSubtitle": "ADD SEA URCHIN + 40.00",
+          "observedIngredients": [
+            "HWACHAE"
+          ],
+          "observedTechniques": [
+            "dessert course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "dessert",
+          "dishPublicTitle": "DOLHAREUBANG OR NY-SEOUL",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "DOLHAREUBANG OR NY-SEOUL"
+          ],
+          "observedTechniques": [
+            "dessert course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "dessert",
+          "dishPublicTitle": "GOGUMA",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "GOGUMA"
+          ],
+          "observedTechniques": [
+            "dessert course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "ALL IN ONE GIMBAP",
+          "dishPublicSubtitle": "KRW 200,000",
+          "observedIngredients": [
+            "ALL IN ONE GIMBAP"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "URCHIN GUJEOLPAN",
+          "dishPublicSubtitle": "KRW 200000",
+          "observedIngredients": [
+            "URCHIN GUJEOLPAN"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "URCHIN BIBIMBAP",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "URCHIN BIBIMBAP"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "GIMBAP",
+          "dishPublicSubtitle": "KRW 39,000",
+          "observedIngredients": [
+            "GIMBAP"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "YELLOWTAIL GIMBAP",
+          "dishPublicSubtitle": "KRW 28,000",
+          "observedIngredients": [
+            "YELLOWTAIL GIMBAP"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "ULLEUNGDO MAPLE",
+          "dishPublicSubtitle": "KRW 33,000",
+          "observedIngredients": [
+            "ULLEUNGDO MAPLE"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        }
+      ],
+      "ocr": {
+        "sourceImageRelativePath": "tmp/catchtable/jungsik/images/01-jungsik.jpg",
+        "fullText": "JUNGSIK\nLUNCH SIGNATURE\nPAIRING\nKRW 230,000\n+ GLASS\n100.000\nBANCHAN\n7 GLASS\n240,000\nTRUFFLE MUGUK\nDom Perigan\n50,000\nPREMIUM\nS GLASS\n700.000\nABALONE\nJUNGSIK SALMON\nSUPPLEMENT\nDUCK OR HANWOO GALBI\nFALL IN ONE GIMBAP 200,000\nSAMTAE GUKSU\nDO SEA URCHIN + 40.00\nURCHIN GUJEOLPAN 200.000\nHWACHAE\nURCHIN BIBIMBAP\n39,000\nGIMBAP\n28,000\nDOLHAREUBANG OR NY-SEOUL\nYELLOWTAIL GIMBAP\n33,000\nGOGUMA\nSELEUNGDO MAPLE\n30.000\n정식 당",
+        "lines": [
+          {
+            "boundingBox": {
+              "height": 0.02399999999999991,
+              "width": 0.25,
+              "x": 0.374999999715909,
+              "y": 0.9280000000272728
+            },
+            "confidence": 1,
+            "text": "JUNGSIK"
+          },
+          {
+            "boundingBox": {
+              "height": 0.028000000000000025,
+              "width": 0.3409090692346746,
+              "x": 0.09090909701145074,
+              "y": 0.7960000004666666
+            },
+            "confidence": 1,
+            "text": "LUNCH SIGNATURE"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02399999999999991,
+              "width": 0.15909090909090917,
+              "x": 0.5909090928977272,
+              "y": 0.7960000002000001
+            },
+            "confidence": 1,
+            "text": "PAIRING"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.13068181818181812,
+              "x": 0.29545454382102276,
+              "y": 0.77599999985
+            },
+            "confidence": 1,
+            "text": "KRW 230,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.028000000000000025,
+              "width": 0.11363636363636365,
+              "x": 0.5909090900568181,
+              "y": 0.73599999965
+            },
+            "confidence": 1,
+            "text": "+ GLASS"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.09090908549048682,
+              "x": 0.7500000042244536,
+              "y": 0.7440000002
+            },
+            "confidence": 1,
+            "text": "100.000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.13068181818181818,
+              "x": 0.08522727490530296,
+              "y": 0.7160000001333333
+            },
+            "confidence": 1,
+            "text": "BANCHAN"
+          },
+          {
+            "boundingBox": {
+              "height": 0.03200000000000003,
+              "width": 0.11931818181818188,
+              "x": 0.5852272713778409,
+              "y": 0.7040000004
+            },
+            "confidence": 1,
+            "text": "7 GLASS"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.09090908549048682,
+              "x": 0.7500000042244536,
+              "y": 0.7080000002
+            },
+            "confidence": 1,
+            "text": "240,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.19318181818181818,
+              "x": 0.08522726950757585,
+              "y": 0.6519999998
+            },
+            "confidence": 1,
+            "text": "TRUFFLE MUGUK"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02399999999999991,
+              "width": 0.13068181818181812,
+              "x": 0.5795454523674243,
+              "y": 0.6519999998666667
+            },
+            "confidence": 1,
+            "text": "Dom Perigan"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.07954545454545459,
+              "x": 0.7613636361013986,
+              "y": 0.652000000076923
+            },
+            "confidence": 1,
+            "text": "50,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.11363636363636365,
+              "x": 0.5909090911782297,
+              "y": 0.6119999999473684
+            },
+            "confidence": 1,
+            "text": "PREMIUM"
+          },
+          {
+            "boundingBox": {
+              "height": 0.016000000000000014,
+              "width": 0.11363636363636365,
+              "x": 0.590909090625,
+              "y": 0.5960000000400001
+            },
+            "confidence": 1,
+            "text": "S GLASS"
+          },
+          {
+            "boundingBox": {
+              "height": 0.019999999999999907,
+              "width": 0.09090909090909094,
+              "x": 0.7499999988636364,
+              "y": 0.5999999998500001
+            },
+            "confidence": 1,
+            "text": "700.000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.11931818181818182,
+              "x": 0.0909090928977272,
+              "y": 0.5840000002
+            },
+            "confidence": 1,
+            "text": "ABALONE"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.21590909090909088,
+              "x": 0.09090909450757566,
+              "y": 0.5160000001333334
+            },
+            "confidence": 1,
+            "text": "JUNGSIK SALMON"
+          },
+          {
+            "boundingBox": {
+              "height": 0.027999999999999914,
+              "width": 0.25,
+              "x": 0.6022727297727272,
+              "y": 0.4680000002000001
+            },
+            "confidence": 1,
+            "text": "SUPPLEMENT"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.3181818181818182,
+              "x": 0.09090909409090903,
+              "y": 0.44800000015999997
+            },
+            "confidence": 1,
+            "text": "DUCK OR HANWOO GALBI"
+          },
+          {
+            "boundingBox": {
+              "height": 0.03200000000000003,
+              "width": 0.34090909090909094,
+              "x": 0.5965909133522725,
+              "y": 0.41200000009999993
+            },
+            "confidence": 1,
+            "text": "FALL IN ONE GIMBAP 200,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.1647727164355191,
+              "x": 0.10227272994511932,
+              "y": 0.3839999998000001
+            },
+            "confidence": 0.5,
+            "text": "SAMTAE GUKSU"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.20454545454545453,
+              "x": 0.10227272982954538,
+              "y": 0.36800000015
+            },
+            "confidence": 1,
+            "text": "DO SEA URCHIN + 40.00"
+          },
+          {
+            "boundingBox": {
+              "height": 0.039999999999999925,
+              "width": 0.34659090909090906,
+              "x": 0.5909090943749998,
+              "y": 0.3600000000800001
+            },
+            "confidence": 1,
+            "text": "URCHIN GUJEOLPAN 200.000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.13068181818181818,
+              "x": 0.08522727054924249,
+              "y": 0.31599999980000004
+            },
+            "confidence": 0.5,
+            "text": "HWACHAE"
+          },
+          {
+            "boundingBox": {
+              "height": 0.024961467742919963,
+              "width": 0.21160342476584704,
+              "x": 0.5959028350875323,
+              "y": 0.3195192667417741
+            },
+            "confidence": 1,
+            "text": "URCHIN BIBIMBAP"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.07386363636363635,
+              "x": 0.8636363646780303,
+              "y": 0.3199999996666667
+            },
+            "confidence": 1,
+            "text": "39,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.10227272727272729,
+              "x": 0.5965909088235294,
+              "y": 0.2760000000588235
+            },
+            "confidence": 1,
+            "text": "GIMBAP"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.07386363636363635,
+              "x": 0.863636363375947,
+              "y": 0.27600000008333336
+            },
+            "confidence": 1,
+            "text": "28,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.3522727272727273,
+              "x": 0.0909090953124999,
+              "y": 0.24800000015
+            },
+            "confidence": 1,
+            "text": "DOLHAREUBANG OR NY-SEOUL"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.23295454545454553,
+              "x": 0.5965909129734848,
+              "y": 0.22800000026666667
+            },
+            "confidence": 1,
+            "text": "YELLOWTAIL GIMBAP"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.07386363636363646,
+              "x": 0.8636363627130682,
+              "y": 0.22799999984999997
+            },
+            "confidence": 1,
+            "text": "33,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.10795454545454543,
+              "x": 0.09090909251893935,
+              "y": 0.17999999960000002
+            },
+            "confidence": 1,
+            "text": "GOGUMA"
+          },
+          {
+            "boundingBox": {
+              "height": 0.040000000000000036,
+              "width": 0.24431818181818188,
+              "x": 0.5909090939630681,
+              "y": 0.17600000010000005
+            },
+            "confidence": 1,
+            "text": "SELEUNGDO MAPLE"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.07954545454545459,
+              "x": 0.857954544128788,
+              "y": 0.1799999998666667
+            },
+            "confidence": 1,
+            "text": "30.000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.11363636363636359,
+              "x": 0.4431818178977273,
+              "y": 0.05200000006000005
+            },
+            "confidence": 0.5,
+            "text": "정식 당"
+          }
+        ]
+      },
+      "autoParseNotes": {
+        "generatedFromOcr": true,
+        "rowCount": 15,
+        "needsHumanReview": true
+      }
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner Signature",
+      "rawTitle": "Dinner Signature ₩330,000",
+      "priceLabel": "KRW 330,000",
+      "priceValue": 330000,
+      "foodMenuSeq": "1444675",
+      "sourceTitle": "Catchtable JUNGSIK Dinner Signature KRW 330,000 menu image (Last update: Feb 28, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/jungsik/menu?foodMenuSeq=1444675",
+      "localImageRelativePath": "tmp/catchtable/jungsik/images/02-jungsik.jpg",
+      "seasonLabel": "Feb 28, 2026 dinner",
+      "rows": [
+        {
+          "priority": "P1",
+          "coursePosition": "amuse",
+          "dishPublicTitle": "BANCHAN",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "BANCHAN"
+          ],
+          "observedTechniques": [
+            "menu image OCR"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "starter",
+          "dishPublicTitle": "TRUFFLE MUGUK",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "TRUFFLE MUGUK"
+          ],
+          "observedTechniques": [
+            "named course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "starter",
+          "dishPublicTitle": "ABALONE",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "ABALONE"
+          ],
+          "observedTechniques": [
+            "named course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "GIMBAP",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "GIMBAP"
+          ],
+          "observedTechniques": [
+            "menu image OCR"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "fish",
+          "dishPublicTitle": "JUNGSIK SALMON",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "JUNGSIK SALMON"
+          ],
+          "observedTechniques": [
+            "seafood or fish course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "main",
+          "dishPublicTitle": "SUCK OR HANWOO GALB",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "SUCK OR HANWOO GALB"
+          ],
+          "observedTechniques": [
+            "main course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "mixed",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "dessert",
+          "dishPublicTitle": "HWACHAE",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "HWACHAE"
+          ],
+          "observedTechniques": [
+            "dessert course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "dessert",
+          "dishPublicTitle": "DOLHAREUBANG OR ULLEUNGDO",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "DOLHAREUBANG OR ULLEUNGDO"
+          ],
+          "observedTechniques": [
+            "dessert course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "dessert",
+          "dishPublicTitle": "MAPLE",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "MAPLE"
+          ],
+          "observedTechniques": [
+            "dessert course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P1",
+          "coursePosition": "dessert",
+          "dishPublicTitle": "GOGUMA",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "GOGUMA"
+          ],
+          "observedTechniques": [
+            "dessert course from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived menu title"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated from Catchtable OCR output. Review and refine before seed generation.",
+          "uncertaintyNotes": "OCR-derived row. Confirm spelling, order, and course type against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "ALL IN ONE GIMBAP",
+          "dishPublicSubtitle": "KRW 200,000",
+          "observedIngredients": [
+            "ALL IN ONE GIMBAP"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "URCHIN GUJEOLPAN",
+          "dishPublicSubtitle": "KRW 200000",
+          "observedIngredients": [
+            "URCHIN GUJEOLPAN"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "URCHIN BIBIMBAP",
+          "dishPublicSubtitle": "",
+          "observedIngredients": [
+            "URCHIN BIBIMBAP"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "GIMBAP",
+          "dishPublicSubtitle": "KRW 89,000",
+          "observedIngredients": [
+            "GIMBAP"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        },
+        {
+          "priority": "P2",
+          "coursePosition": "other",
+          "dishPublicTitle": "NY-SEOUL",
+          "dishPublicSubtitle": "KRW 28,000",
+          "observedIngredients": [
+            "NY-SEOUL"
+          ],
+          "observedTechniques": [
+            "supplement item from menu image"
+          ],
+          "observedSensoryWords": [
+            "OCR-derived supplement label"
+          ],
+          "temperatureBand": "room",
+          "rationale": "Auto-generated supplement row from Catchtable OCR output. Review before seed generation.",
+          "uncertaintyNotes": "OCR-derived supplement. Confirm title spelling and price against the menu image."
+        }
+      ],
+      "ocr": {
+        "sourceImageRelativePath": "tmp/catchtable/jungsik/images/02-jungsik.jpg",
+        "fullText": "JUNGSIK\nDINNER SIGNATURE\nPAIRING\nKRW 330,000\n5 GLASS\n210.000\nBANCHAN\n8 GLASS\n290,000\nTRUFFLE MUGUK\nDon Perigan\n100,000\nABALONE\nPREMIUM\n700,000\nGIMBAP\nJUNGSIK SALMON\nSUCK OR HANWOO GALB\nSUPPLEMENT\nFALL IN ONE GIMBAP 200,000\nURCHIN GUJEOLPAN 200.000\nHWACHAE\nURCHIN BIBIMBAP\n89,000\nDOLHAREUBANG OR ULLEUNGDO\nMAPLE\nGIMBAP\n28,000\nGOGUMA\nNY-SEOUL\n23,000\n정식 당",
+        "lines": [
+          {
+            "boundingBox": {
+              "height": 0.02399999999999991,
+              "width": 0.25,
+              "x": 0.374999999715909,
+              "y": 0.9280000000272728
+            },
+            "confidence": 1,
+            "text": "JUNGSIK"
+          },
+          {
+            "boundingBox": {
+              "height": 0.028000000000000025,
+              "width": 0.3522727272727273,
+              "x": 0.0909090880681819,
+              "y": 0.80800000035
+            },
+            "confidence": 1,
+            "text": "DINNER SIGNATURE"
+          },
+          {
+            "boundingBox": {
+              "height": 0.028626531600952076,
+              "width": 0.1706600080836903,
+              "x": 0.5851245435422399,
+              "y": 0.8076867343573584
+            },
+            "confidence": 1,
+            "text": "PAIRING"
+          },
+          {
+            "boundingBox": {
+              "height": 0.019999999999999907,
+              "width": 0.13636363636363635,
+              "x": 0.30681818409090905,
+              "y": 0.7880000002
+            },
+            "confidence": 1,
+            "text": "KRW 330,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.11931818181818177,
+              "x": 0.5909090889204547,
+              "y": 0.7559999998666667
+            },
+            "confidence": 1,
+            "text": "5 GLASS"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02399999999999991,
+              "width": 0.0852272673086687,
+              "x": 0.7556818217433929,
+              "y": 0.7560000004
+            },
+            "confidence": 1,
+            "text": "210.000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020360820770263688,
+              "width": 0.13079228184439917,
+              "x": 0.0851720387190834,
+              "y": 0.7318195894088535
+            },
+            "confidence": 1,
+            "text": "BANCHAN"
+          },
+          {
+            "boundingBox": {
+              "height": 0.024379792213439888,
+              "width": 0.11947118152271619,
+              "x": 0.5908325898283464,
+              "y": 0.7198101030125259
+            },
+            "confidence": 1,
+            "text": "8 GLASS"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.08522727272727271,
+              "x": 0.7556818179180195,
+              "y": 0.7240000000714285
+            },
+            "confidence": 1,
+            "text": "290,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.19318181818181818,
+              "x": 0.09090909412878778,
+              "y": 0.6720000002
+            },
+            "confidence": 1,
+            "text": "TRUFFLE MUGUK"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.14204545454545447,
+              "x": 0.5795454569128787,
+              "y": 0.6640000001333333
+            },
+            "confidence": 1,
+            "text": "Don Perigan"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.09659090909090917,
+              "x": 0.7500000016098484,
+              "y": 0.6680000001999999
+            },
+            "confidence": 1,
+            "text": "100,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.019999999999999907,
+              "width": 0.11931818181818182,
+              "x": 0.0909090928977272,
+              "y": 0.6120000002
+            },
+            "confidence": 1,
+            "text": "ABALONE"
+          },
+          {
+            "boundingBox": {
+              "height": 0.019999999999999907,
+              "width": 0.10227272727272729,
+              "x": 0.6022727289772726,
+              "y": 0.6200000002
+            },
+            "confidence": 1,
+            "text": "PREMIUM"
+          },
+          {
+            "boundingBox": {
+              "height": 0.019999999999999907,
+              "width": 0.0852272673086687,
+              "x": 0.7556818194706658,
+              "y": 0.6119999998000001
+            },
+            "confidence": 1,
+            "text": "700,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.10227272727272729,
+              "x": 0.2954545437500001,
+              "y": 0.5319999998
+            },
+            "confidence": 1,
+            "text": "GIMBAP"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.21590909090909088,
+              "x": 0.09090909063267816,
+              "y": 0.48000000002702703
+            },
+            "confidence": 1,
+            "text": "JUNGSIK SALMON"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.29545454545454547,
+              "x": 0.10227272755681817,
+              "y": 0.4199999999807692
+            },
+            "confidence": 1,
+            "text": "SUCK OR HANWOO GALB"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.2556818181818181,
+              "x": 0.5795454577414773,
+              "y": 0.42000000019999995
+            },
+            "confidence": 1,
+            "text": "SUPPLEMENT"
+          },
+          {
+            "boundingBox": {
+              "height": 0.028000000000000025,
+              "width": 0.34090909090909094,
+              "x": 0.5795454504261365,
+              "y": 0.3640000003499999
+            },
+            "confidence": 1,
+            "text": "FALL IN ONE GIMBAP 200,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.028000000000000025,
+              "width": 0.34090906923467457,
+              "x": 0.5795454710644807,
+              "y": 0.3160000000666666
+            },
+            "confidence": 1,
+            "text": "URCHIN GUJEOLPAN 200.000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.019999999999999907,
+              "width": 0.12499999999999997,
+              "x": 0.09090909247159087,
+              "y": 0.30000000015000006
+            },
+            "confidence": 0.5,
+            "text": "HWACHAE"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.2102272727272727,
+              "x": 0.5795454571732954,
+              "y": 0.2680000001999999
+            },
+            "confidence": 1,
+            "text": "URCHIN BIBIMBAP"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.07386363636363635,
+              "x": 0.8465909086174243,
+              "y": 0.2679999996
+            },
+            "confidence": 1,
+            "text": "89,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.3693181818181819,
+              "x": 0.09090909552556808,
+              "y": 0.24000000015
+            },
+            "confidence": 1,
+            "text": "DOLHAREUBANG OR ULLEUNGDO"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.07954545454545453,
+              "x": 0.32386363503787885,
+              "y": 0.21999999980000007
+            },
+            "confidence": 1,
+            "text": "MAPLE"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.10227272727272729,
+              "x": 0.5795454547940341,
+              "y": 0.22799999993749998
+            },
+            "confidence": 1,
+            "text": "GIMBAP"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.07386363636363635,
+              "x": 0.8465909100142045,
+              "y": 0.22800000015
+            },
+            "confidence": 1,
+            "text": "28,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02042120552062987,
+              "width": 0.11378446492281827,
+              "x": 0.08515322019162913,
+              "y": 0.17978939703266317
+            },
+            "confidence": 1,
+            "text": "GOGUMA"
+          },
+          {
+            "boundingBox": {
+              "height": 0.028000000000000025,
+              "width": 0.13068181818181812,
+              "x": 0.5795454567234848,
+              "y": 0.1800000000666666
+            },
+            "confidence": 1,
+            "text": "NY-SEOUL"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.07386363636363635,
+              "x": 0.8465909088068183,
+              "y": 0.18000000007692296
+            },
+            "confidence": 1,
+            "text": "23,000"
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.11363636363636359,
+              "x": 0.4431818178977273,
+              "y": 0.05200000006000005
+            },
+            "confidence": 0.5,
+            "text": "정식 당"
+          }
+        ]
+      },
+      "autoParseNotes": {
+        "generatedFromOcr": true,
+        "rowCount": 15,
+        "needsHumanReview": true
+      }
+    },
+    {
+      "menuType": "other",
+      "menuTitle": "JUNGSIK Space Menu The JUNGSIK Space is a dedicated venue operated by a formal dining establishment, designed to accommodate a variety of occasions including small weddings, first birthday celebrations, private parties, corporate events, and brand showcases. For reservations and inquiries, please contact us via the email address below. event@jungsik.kr",
+      "rawTitle": "JUNGSIK Space Menu The JUNGSIK Space is a dedicated venue operated by a formal dining establishment, designed to accommodate a variety of occasions including small weddings, first birthday celebrations, private parties, corporate events, and brand showcases. For reservations and inquiries, please contact us via the email address below. event@jungsik.kr",
+      "priceLabel": null,
+      "priceValue": null,
+      "foodMenuSeq": "974858",
+      "sourceTitle": "Catchtable JUNGSIK JUNGSIK Space Menu The JUNGSIK Space is a dedicated venue operated by a formal dining establishment, designed to accommodate a variety of occasions including small weddings, first birthday celebrations, private parties, corporate events, and brand showcases. For reservations and inquiries, please contact us via the email address below. event@jungsik.kr menu image (Last update: Feb 28, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/jungsik/menu?foodMenuSeq=974858",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 28, 2026 other",
+      "rows": []
+    }
+  ],
+  "ocrGeneratedAt": "2026-03-29T10:22:51.171Z",
+  "parsedAt": "2026-03-29T10:24:52.055Z"
+}

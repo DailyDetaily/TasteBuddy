@@ -11,13 +11,13 @@ export default function DeviceMockupGraphic() {
                 </div>
                 <div className="w-1 h-1 bg-gray-300 rounded-full mt-4"></div>
                 <div className="flex-1 w-full bg-white relative mt-2 flex flex-col items-center">
-                    <div className="w-1.5 h-1.5 bg-[#FF9900] rounded-full mt-10"></div>
+                    <div className="w-1.5 h-1.5 bg-[var(--tb-taste-sweet-main)] rounded-full mt-10"></div>
                     <div className="mt-4 text-[6px] text-gray-300 font-serif">* TasteBuddy</div>
                 </div>
             </div>
 
             {/* Back Device */}
-            <div className="w-[70px] h-[220px] bg-[#f8f8f8] rounded-t-full rounded-b-[4px] shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex flex-col items-center p-2 border border-gray-100 animate-[slide-up_0.8s_ease-out_forwards] [animation-delay:0.1s]">
+            <div className="w-[70px] h-[220px] bg-[var(--tb-color-surface-muted)] rounded-t-full rounded-b-[4px] shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex flex-col items-center p-2 border border-gray-100 animate-[slide-up_0.8s_ease-out_forwards] [animation-delay:0.1s]">
                 <div className="w-[54px] h-[120px] rounded-t-full rounded-b-[16px] bg-gradient-to-b from-gray-200 to-gray-400 shadow-inner p-1 flex items-center justify-center">
                     <div className="w-[12px] h-[90%] bg-black rounded-full shadow-inner flex flex-col items-center justify-evenly py-2">
                         {[...Array(20)].map((_, i) => <div key={i} className="w-[2px] h-[2px] bg-gray-700 rounded-full"></div>)}

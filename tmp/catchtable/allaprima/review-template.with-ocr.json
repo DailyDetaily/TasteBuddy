@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T12:33:20.118Z",
+  "manifestRelativePath": "tmp/catchtable/allaprima/manifest.json",
+  "restaurant": {
+    "name": "알라프리마",
+    "slug": "allaprima",
+    "chefName": "김진혁",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "menu",
+    "sourceTrustScore": 0.99,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "Mar 08, 2026 catchtable"
+  },
+  "instructions": {
+    "rowEditing": [
+      "rows 배열에 코스별 항목을 추가한다.",
+      "observed 값은 메뉴 이미지에 직접 보이는 정보만 적는다.",
+      "비공개 레시피를 사실처럼 쓰지 않는다.",
+      "inferred 값이 아직 없으면 빈 문자열로 두고 나중에 채운다."
+    ],
+    "coursePositionGuide": [
+      "amuse",
+      "starter",
+      "fish",
+      "main",
+      "dessert",
+      "other"
+    ]
+  },
+  "menus": [
+    {
+      "menuType": "lunch",
+      "menuTitle": "LUNCH Price Variable. Please note , since all menus are subject to change according to seasonality and availability, the amount of exact expanse of the course might differ from the day you contact us. Thank you for your understanding.",
+      "rawTitle": "LUNCH Price Variable. Please note , since all menus are subject to change according to seasonality and availability, the amount of exact expanse of the course might differ from the day you contact us. Thank you for your understanding. ₩190,000",
+      "priceLabel": "KRW 190,000",
+      "priceValue": 190000,
+      "foodMenuSeq": "1457718",
+      "sourceTitle": "Catchtable alla prima LUNCH Price Variable. Please note , since all menus are subject to change according to seasonality and availability, the amount of exact expanse of the course might differ from the day you contact us. Thank you for your understanding. KRW 190,000 menu image (Last update: Mar 08, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/allaprima/menu?foodMenuSeq=1457718",
+      "localImageRelativePath": "tmp/catchtable/allaprima/images/01-allaprima.jpg",
+      "seasonLabel": "Mar 08, 2026 lunch",
+      "rows": [],
+      "ocr": {
+        "sourceImageRelativePath": "tmp/catchtable/allaprima/images/03-allaprima.jpg",
+        "fullText": "LUNCH\nComorer. Scolop\nTeng rioh Coa\nra Lotus roct Cherry bicasom\nม. 82. สบ\nCOMe TOO",
+        "lines": [
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.07499999999999996,
+              "x": 0.45000000124999995,
+              "y": 0.8480000002
+            },
+            "confidence": 1,
+            "text": "LUNCH"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.16250000000000003,
+              "x": 0.4062499972916667,
+              "y": 0.6439999998
+            },
+            "confidence": 0.5,
+            "text": "Comorer. Scolop"
+          },
+          {
+            "boundingBox": {
+              "height": 0.03599999999999992,
+              "width": 0.22499999999999998,
+              "x": 0.3750000028124999,
+              "y": 0.54400000035
+            },
+            "confidence": 0.30000001192092896,
+            "text": "Teng rioh Coa"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.275,
+              "x": 0.3499999954166668,
+              "y": 0.4919999998
+            },
+            "confidence": 1,
+            "text": "ra Lotus roct Cherry bicasom"
+          },
+          {
+            "boundingBox": {
+              "height": 0.020000000000000018,
+              "width": 0.10624999999999996,
+              "x": 0.43750000177083326,
+              "y": 0.48000000006666665
+            },
+            "confidence": 0.5,
+            "text": "ม. 82. สบ"
+          },
+          {
+            "boundingBox": {
+              "height": 0.03600000000000003,
+              "width": 0.11249999999999993,
+              "x": 0.43125,
+              "y": 0.12399999954999996
+            },
+            "confidence": 0.30000001192092896,
+            "text": "COMe TOO"
+          }
+        ]
+      }
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "DINNER Price Variable. We may not be able to offer the course if you have some food allergies or dietary restriction. Therefore, when you are unable or have difficulty to consume such as raw seafood, lamb, pork, coriander, cucumber, flour, dairy-products and etc, please make sure reservation is available via phone-call only. If not, we will not be able to serve you any other alternatives. Thank you for your understanding.",
+      "rawTitle": "DINNER Price Variable. We may not be able to offer the course if you have some food allergies or dietary restriction. Therefore, when you are unable or have difficulty to consume such as raw seafood, lamb, pork, coriander, cucumber, flour, dairy-products and etc, please make sure reservation is available via phone-call only. If not, we will not be able to serve you any other alternatives. Thank you for your understanding. ₩350,000",
+      "priceLabel": "KRW 350,000",
+      "priceValue": 350000,
+      "foodMenuSeq": "1457719",
+      "sourceTitle": "Catchtable alla prima DINNER Price Variable. We may not be able to offer the course if you have some food allergies or dietary restriction. Therefore, when you are unable or have difficulty to consume such as raw seafood, lamb, pork, coriander, cucumber, flour, dairy-products and etc, please make sure reservation is available via phone-call only. If not, we will not be able to serve you any other alternatives. Thank you for your understanding. KRW 350,000 menu image (Last update: Mar 08, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/allaprima/menu?foodMenuSeq=1457719",
+      "localImageRelativePath": "tmp/catchtable/allaprima/images/02-allaprima.jpg",
+      "seasonLabel": "Mar 08, 2026 dinner",
+      "rows": [],
+      "ocr": {
+        "sourceImageRelativePath": "tmp/catchtable/allaprima/images/02-allaprima.jpg",
+        "fullText": "Nor Ter\nLoww.mes.to\nvenous com oro\nเออกน.\n8g...). 38.29808",
+        "lines": [
+          {
+            "boundingBox": {
+              "height": 0.03600000000000003,
+              "width": 0.13157894736842102,
+              "x": 0.4210526308270677,
+              "y": 0.5840000002571428
+            },
+            "confidence": 0.30000001192092896,
+            "text": "Nor Ter"
+          },
+          {
+            "boundingBox": {
+              "height": 0.03200000000000003,
+              "width": 0.27631578947368424,
+              "x": 0.3486842101893453,
+              "y": 0.5320000000390244
+            },
+            "confidence": 0.30000001192092896,
+            "text": "Loww.mes.to"
+          },
+          {
+            "boundingBox": {
+              "height": 0.016000000000000014,
+              "width": 0.16447368421052627,
+              "x": 0.40789473651315794,
+              "y": 0.424000000032
+            },
+            "confidence": 1,
+            "text": "venous com oro"
+          },
+          {
+            "boundingBox": {
+              "height": 0.040000000000000036,
+              "width": 0.19736842105263158,
+              "x": 0.39473684175696594,
+              "y": 0.388000000117647
+            },
+            "confidence": 0.30000001192092896,
+            "text": "เออกน."
+          },
+          {
+            "boundingBox": {
+              "height": 0.02400000000000002,
+              "width": 0.23026315789473684,
+              "x": 0.3749999996498302,
+              "y": 0.33200000003870966
+            },
+            "confidence": 1,
+            "text": "8g...). 38.29808"
+          }
+        ]
+      }
+    }
+  ],
+  "ocrGeneratedAt": "2026-03-29T15:05:19.838Z"
+}

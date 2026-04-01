@@ -11,13 +11,32 @@ import OnboardingScreen from './pages/OnboardingScreen';
 import QuickTasteCalibrationScreen from './pages/QuickTasteCalibrationScreen';
 import TeastickConnectScreen from './pages/TeastickConnectScreen';
 import TasteMeasurementScreen from './pages/TasteMeasurementScreen';
+import ImproveAccuracyScreen from './pages/ImproveAccuracyScreen';
 import BottomTabBar, { type TabType } from './components/BottomTabBar';
+import NotificationPanel from './components/NotificationPanel';
+import AppMenuDrawer from './components/AppMenuDrawer';
 import { type TasteMeasurementSnapshot } from './constants/tasteMeasurementData';
+import {
+  getFallbackNotifications,
+  hydrateNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+  type AppNotification,
+} from './lib/notificationsSupabase';
+import {
+  hydrateLatestMeasurementSnapshot,
+  persistTasteMeasurementSnapshot,
+} from './lib/tasteBuddySupabase';
+import { ensureSupabaseSession, isSupabaseConfigured } from './lib/supabase';
 
-type AppState = 'splash' | 'onboarding' | 'calibration' | 'teastick' | 'measurement' | 'main';
+type AppState = 'splash' | 'onboarding' | 'calibration' | 'teastick' | 'measurement' | 'improve-accuracy' | 'main';
 type MeasurementEntryPoint = 'initial' | 'main';
 
-const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v1';
+const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v3';
+const LEGACY_USER_STATE_STORAGE_KEYS = [
+  'tastebuddy-user-state-v1',
+  'tastebuddy-user-state-v2',
+] as const;
 
 interface PersistedUserState {
   hasCompletedInitialMeasurement: boolean;
@@ -46,6 +65,10 @@ function loadPersistedUserState(): PersistedUserState {
     const rawValue = window.localStorage.getItem(USER_STATE_STORAGE_KEY);
 
     if (!rawValue) {
+      LEGACY_USER_STATE_STORAGE_KEYS.forEach((storageKey) => {
+        window.localStorage.removeItem(storageKey);
+      });
+
       return {
         hasCompletedInitialMeasurement: false,
         latestTasteMeasurementSnapshot: null,
@@ -85,6 +108,15 @@ function MainApp() {
   const [latestTasteMeasurementSnapshot, setLatestTasteMeasurementSnapshot] = useState<
     TasteMeasurementSnapshot | null
   >(persistedUserState.latestTasteMeasurementSnapshot);
+  const [hasSplashDelayCompleted, setHasSplashDelayCompleted] = useState(false);
+  const [hasHydratedRemoteMeasurement, setHasHydratedRemoteMeasurement] = useState(
+    !isSupabaseConfigured,
+  );
+  const [notifications, setNotifications] = useState<AppNotification[]>(getFallbackNotifications);
+
+  // Overlay states
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -96,14 +128,65 @@ function MainApp() {
     );
   }, [hasCompletedInitialMeasurement, latestTasteMeasurementSnapshot]);
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    void (async () => {
+      if (!isSupabaseConfigured) {
+        setHasHydratedRemoteMeasurement(true);
+        return;
+      }
+
+      await ensureSupabaseSession();
+      const remoteSnapshot = await hydrateLatestMeasurementSnapshot();
+
+      if (isCancelled) {
+        return;
+      }
+
+      if (remoteSnapshot) {
+        setLatestTasteMeasurementSnapshot(remoteSnapshot);
+        setHasCompletedInitialMeasurement(true);
+      }
+
+      setHasHydratedRemoteMeasurement(true);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    void (async () => {
+      const nextNotifications = await hydrateNotifications();
+
+      if (isCancelled) {
+        return;
+      }
+
+      setNotifications(nextNotifications);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
   const hasMeasurementData =
     hasCompletedInitialMeasurement && latestTasteMeasurementSnapshot !== null;
 
-  const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
-  };
+  useEffect(() => {
+    if (
+      appState !== 'splash' ||
+      !hasSplashDelayCompleted ||
+      !hasHydratedRemoteMeasurement
+    ) {
+      return;
+    }
 
-  const handleSplashComplete = () => {
     if (hasMeasurementData) {
       setActiveTab('home');
       setAppState('main');
@@ -111,6 +194,26 @@ function MainApp() {
     }
 
     setAppState('onboarding');
+  }, [
+    appState,
+    hasHydratedRemoteMeasurement,
+    hasMeasurementData,
+    hasSplashDelayCompleted,
+  ]);
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+  };
+
+  const handlePersistedMeasurement = (
+    snapshot: TasteMeasurementSnapshot,
+    source: 'quick_calibration' | 'teastick',
+  ) => {
+    void persistTasteMeasurementSnapshot(snapshot, source);
+  };
+
+  const handleSplashComplete = () => {
+    setHasSplashDelayCompleted(true);
   };
 
   const handleStartInitialMeasurementFlow = () => {
@@ -133,6 +236,42 @@ function MainApp() {
     setAppState('onboarding');
   };
 
+  const handleOpenImproveAccuracy = () => {
+    setMeasurementEntryPoint('main');
+    setMeasurementReturnTab(activeTab);
+    setAppState('improve-accuracy');
+  };
+
+  const handleMarkNotificationAsRead = (notificationId: string) => {
+    setNotifications((current) =>
+      current.map((notification) =>
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification,
+      ),
+    );
+
+    void markNotificationAsRead(notificationId);
+  };
+
+  const handleMarkAllNotificationsAsRead = () => {
+    setNotifications((current) =>
+      current.map((notification) => ({
+        ...notification,
+        read: true,
+      })),
+    );
+
+    void markAllNotificationsAsRead();
+  };
+
+  // Common overlay props
+  const overlayProps = {
+    onOpenNotifications: () => setIsNotificationOpen(true),
+    onOpenMenu: () => setIsMenuOpen(true),
+    hasUnreadNotifications: notifications.some((notification) => !notification.read),
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--tb-color-bg-page)]">
       <div className="relative flex h-screen w-full max-w-[1440px] flex-col overflow-hidden bg-[var(--tb-color-bg-page)] font-sans shadow-2xl">
@@ -148,6 +287,7 @@ function MainApp() {
               setHasCompletedInitialMeasurement(true);
               setActiveTab('analysis');
               setAppState('main');
+              handlePersistedMeasurement(snapshot, 'quick_calibration');
             }}
           />
         )}
@@ -164,14 +304,29 @@ function MainApp() {
               setHasCompletedInitialMeasurement(true);
               setActiveTab('analysis');
               setAppState('main');
+              handlePersistedMeasurement(snapshot, 'teastick');
             }}
             onBack={() => setAppState('teastick')}
+          />
+        )}
+        {appState === 'improve-accuracy' && (
+          <ImproveAccuracyScreen
+            onConnectDevice={() => setAppState('teastick')}
+            onSkip={() => {
+              setActiveTab(measurementReturnTab);
+              setAppState('main');
+            }}
           />
         )}
 
         <div className={`flex-1 overflow-hidden ${appState === 'main' ? 'block' : 'hidden'}`}>
           <div className={activeTab === 'home' ? 'h-full w-full' : 'hidden'}>
-            <Home onStartMeasurement={() => handleStartMeasurementFromMain('home')} />
+            <Home
+              hasMeasurementData={hasMeasurementData}
+              measurementSnapshot={latestTasteMeasurementSnapshot}
+              onStartMeasurement={() => handleStartMeasurementFromMain('home')}
+              {...overlayProps}
+            />
           </div>
           <div
             className={
@@ -184,6 +339,7 @@ function MainApp() {
               <AnalysisPage
                 measurementSnapshot={latestTasteMeasurementSnapshot}
                 onStartMeasurement={() => handleStartMeasurementFromMain('analysis')}
+                {...overlayProps}
               />
             ) : null}
           </div>
@@ -198,6 +354,7 @@ function MainApp() {
               <ReservationPage
                 measurementSnapshot={latestTasteMeasurementSnapshot}
                 onStartMeasurement={() => handleStartMeasurementFromMain('reservation')}
+                {...overlayProps}
               />
             ) : null}
           </div>
@@ -212,6 +369,10 @@ function MainApp() {
               <ProfilePage
                 measurementSnapshot={latestTasteMeasurementSnapshot}
                 onStartMeasurement={() => handleStartMeasurementFromMain('profile')}
+                onNavigateToReservation={(chefName: string) => {
+                  setActiveTab('reservation');
+                }}
+                {...overlayProps}
               />
             ) : null}
           </div>
@@ -220,6 +381,21 @@ function MainApp() {
         {appState === 'main' && (
           <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
         )}
+
+        {/* Global Overlays */}
+        <NotificationPanel
+          isOpen={isNotificationOpen}
+          onClose={() => setIsNotificationOpen(false)}
+          notifications={notifications}
+          onMarkAsRead={handleMarkNotificationAsRead}
+          onMarkAllAsRead={handleMarkAllNotificationsAsRead}
+        />
+        <AppMenuDrawer
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
+          onImproveAccuracy={handleOpenImproveAccuracy}
+        />
       </div>
     </div>
   );

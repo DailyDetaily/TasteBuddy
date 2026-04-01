@@ -228,8 +228,29 @@ export function getDiningFeedbackScenario(reservationId: number) {
 export function createDiningFeedbackDraft(
   scenario: DiningFeedbackScenario,
 ): DiningFeedbackDraft {
+  const defaultDishResponses = scenario.dishes.reduce<Record<string, DiningDishFeedbackDraft>>(
+    (responses, dish) => {
+      responses[dish.id] = {
+        rating: 3,
+        selectedChoiceId: dish.feedbackChoices[0]?.id ?? null,
+      };
+      return responses;
+    },
+    {},
+  );
+
+  if (scenario.reservationId !== 3) {
+    return {
+      dishResponses: defaultDishResponses,
+      overallComment: '',
+      overallRating: 3,
+      returnIntent: 'maybe',
+    };
+  }
+
   return {
     dishResponses: {
+      ...defaultDishResponses,
       'amuse-oyster-tart': {
         rating: 4,
         selectedChoiceId: 'starter-balanced',

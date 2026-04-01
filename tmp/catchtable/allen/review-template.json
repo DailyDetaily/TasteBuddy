@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T12:33:12.612Z",
+  "manifestRelativePath": "tmp/catchtable/allen/manifest.json",
+  "restaurant": {
+    "name": "레스토랑 알렌",
+    "slug": "allen",
+    "chefName": "서현민",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "menu",
+    "sourceTrustScore": 0.99,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "Mar 01, 2026 catchtable"
+  },
+  "instructions": {
+    "rowEditing": [
+      "rows 배열에 코스별 항목을 추가한다.",
+      "observed 값은 메뉴 이미지에 직접 보이는 정보만 적는다.",
+      "비공개 레시피를 사실처럼 쓰지 않는다.",
+      "inferred 값이 아직 없으면 빈 문자열로 두고 나중에 채운다."
+    ],
+    "coursePositionGuide": [
+      "amuse",
+      "starter",
+      "fish",
+      "main",
+      "dessert",
+      "other"
+    ]
+  },
+  "menus": [
+    {
+      "menuType": "lunch",
+      "menuTitle": "Lunch tasting course menu We have one kind meal per season, and extra cost may apply for certain main dish.",
+      "rawTitle": "Lunch tasting course menu We have one kind meal per season, and extra cost may apply for certain main dish. ₩220,000",
+      "priceLabel": "KRW 220,000",
+      "priceValue": 220000,
+      "foodMenuSeq": "1444983",
+      "sourceTitle": "Catchtable Restaurant Allen Lunch tasting course menu We have one kind meal per season, and extra cost may apply for certain main dish. KRW 220,000 menu image (Last update: Mar 01, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/allen/menu?foodMenuSeq=1444983",
+      "localImageRelativePath": null,
+      "seasonLabel": "Mar 01, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner tasting course menu We have one kind meal per season, and extra cost may apply for certain main dish.",
+      "rawTitle": "Dinner tasting course menu We have one kind meal per season, and extra cost may apply for certain main dish. ₩350,000",
+      "priceLabel": "KRW 350,000",
+      "priceValue": 350000,
+      "foodMenuSeq": "1444984",
+      "sourceTitle": "Catchtable Restaurant Allen Dinner tasting course menu We have one kind meal per season, and extra cost may apply for certain main dish. KRW 350,000 menu image (Last update: Mar 01, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/allen/menu?foodMenuSeq=1444984",
+      "localImageRelativePath": null,
+      "seasonLabel": "Mar 01, 2026 dinner",
+      "rows": []
+    }
+  ]
+}

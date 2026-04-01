@@ -1,0 +1,114 @@
+# Supabase 연결과 Seed 넣기
+
+이 프로젝트는 현재 `Supabase + anonymous auth + seed JSON import script` 기준으로 맞춰져 있습니다.
+
+## 1. Supabase에서 필요한 값
+
+Supabase 프로젝트를 만든 뒤 아래 3가지를 준비하면 됩니다.
+
+- `Project URL`
+- `Publishable key` 또는 `anon key`
+- `Secret key` 또는 `service_role key`
+
+주의:
+- `Publishable key / anon key`는 앱 브라우저 연결용입니다.
+- `Secret key / service_role key`는 seed import 스크립트용입니다.
+- `Secret key / service_role key`는 절대 `VITE_`로 시작하면 안 됩니다.
+
+## 2. 로컬 env 파일 만들기
+
+프로젝트 루트에 `.env.local` 파일을 만들고 이렇게 넣으면 됩니다.
+
+```bash
+VITE_SUPABASE_URL="https://your-project-ref.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="your-supabase-publishable-key"
+# Legacy fallback
+VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
+
+# Server-side only
+SUPABASE_SECRET_KEY="your-supabase-secret-key"
+# Legacy fallback
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
+
+VITE_SUPABASE_USE_ANONYMOUS_AUTH="true"
+```
+
+지금 앱은 `VITE_SUPABASE_PUBLISHABLE_KEY`를 먼저 읽고, 없으면 `VITE_SUPABASE_ANON_KEY`를 fallback으로 사용합니다.
+
+## 3. DB 스키마 적용
+
+아직 테이블이 없다면 Supabase Dashboard의 SQL Editor에서 아래 파일 내용을 실행하면 됩니다.
+
+- [20260326_taste_buddy_mvp.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260326_taste_buddy_mvp.sql#L1)
+
+이 파일이 만들어주는 것:
+- `restaurants`
+- `chefs`
+- `source_documents`
+- `dish_entities`
+- `dish_observed_facts`
+- `dish_inference_profiles`
+- 앱에서 쓰는 예약/측정/피드백 관련 테이블들
+
+## 4. Anonymous auth 사용 여부
+
+지금 앱은 기본적으로 익명 세션을 만들어서 데이터를 저장합니다.
+
+- 유지하려면: Supabase Auth 설정에서 anonymous sign-in을 켭니다.
+- 끄려면: `.env.local`에서 `VITE_SUPABASE_USE_ANONYMOUS_AUTH="false"`로 바꿉니다.
+
+초기 MVP에서는 anonymous auth를 켜두는 편이 가장 간단합니다.
+
+## 5. seed JSON 넣기
+
+이미 만들어둔 Mingles 디너 seed는 여기 있습니다.
+
+- [mingles-dinner-2026-01-08.seed.json](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/seeds/mingles-dinner-2026-01-08.seed.json#L1)
+
+먼저 dry-run으로 형식만 확인할 수 있습니다.
+
+```bash
+npm run seed:supabase -- supabase/seeds/mingles-dinner-2026-01-08.seed.json --dry-run
+```
+
+실제로 Supabase에 넣을 때는:
+
+```bash
+npm run seed:mingles:dinner
+```
+
+또는 일반 명령으로:
+
+```bash
+npm run seed:supabase -- supabase/seeds/mingles-dinner-2026-01-08.seed.json
+```
+
+이 스크립트가 하는 일:
+- `restaurants` upsert
+- `chefs` upsert
+- `source_documents` insert/update
+- `dish_entities` insert/update
+- 해당 dish의 기존 `dish_observed_facts`, `dish_inference_profiles` 삭제 후 다시 insert
+
+즉, 같은 seed를 다시 넣어도 완전히 중복만 쌓이지 않도록 설계되어 있습니다.
+
+## 6. 앱 실행
+
+seed가 들어간 뒤에는 앱을 이렇게 실행하면 됩니다.
+
+```bash
+npm run dev
+```
+
+## 7. 처음에 가장 자주 막히는 부분
+
+- 앱은 켜지는데 저장이 안 됨
+  - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` 또는 `VITE_SUPABASE_ANON_KEY` 확인
+  - anonymous auth 사용 시 anonymous sign-in 설정 확인
+
+- seed script가 실패함
+  - `SUPABASE_SECRET_KEY` 또는 `SUPABASE_SERVICE_ROLE_KEY`가 없는 경우가 가장 많음
+  - 마이그레이션이 아직 적용되지 않은 경우도 많음
+
+- seed JSON의 course position이 안 맞음
+  - import script가 `petitFour -> petit_four`, `component -> other`로 자동 정규화합니다.

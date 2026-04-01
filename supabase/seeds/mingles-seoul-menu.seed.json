@@ -1,0 +1,3392 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Seed generated from curated intake CSV files for 밍글스.",
+    "generatedAt": "2026-03-29T11:47:30.029Z",
+    "sourceFiles": [
+      "docs/mvp-content-intake-mingles-lunch.csv",
+      "docs/mvp-content-intake-mingles-dinner.csv"
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "mingles-seoul",
+      "name": "밍글스",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "밍글스 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "mingles-seoul",
+      "display_name": "강민구",
+      "bio": "큐레이션 intake CSV에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/mingles-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "restaurant_slug": "mingles-seoul",
+      "source_type": "menu",
+      "title": "Mingles Lunch Menu 2026-01-08 (user-provided image)",
+      "url": "user-provided-image",
+      "excerpt": "감 & 한우 브레사올라 / 제주 구좌 당근 스프 · 부라타 치즈와 참기름, 성게 / 한국식 계절 생선회 / 한우 육회와 장어 · 매실 고추장 / 배와 배추를 겹겹이 쌓은 밀푀유 · 캐비아, 오미자, 초고추장, 왕우럭조개 / 밍글링 팟 · 2가지 만두, 버섯 지단, 은행, 해삼 & 새우전, 한우 브로스",
+      "raw_text": "감 & 한우 브레사올라\n제주 구좌 당근 스프 — 부라타 치즈와 참기름, 성게\n한국식 계절 생선회\n한우 육회와 장어 — 매실 고추장\n배와 배추를 겹겹이 쌓은 밀푀유 — 캐비아, 오미자, 초고추장, 왕우럭조개\n밍글링 팟 — 2가지 만두, 버섯 지단, 은행, 해삼 & 새우전, 한우 브로스\n생선구이 — 쌀 튀밥, 생선 보푸라기 죽, 캐비아 어란\n찹쌀밥 — 벚꽃 새우, 서해안 대하구이, 막걸리 비스큐 소스\n한우구이 — 전복 한우 순대, 맑은 비프 쥬, 산초 장아찌, 엔다이브 김치\n스윗 비빔밥 — 찹쌀밥 푸딩, 인삼 아이스크림, 밍글스 간장, 뿌리채소\n아이스 호떡 — 밤꿀 아이스크림, 생강청에 절인 브리오슈와 떡, 시나몬 튀일\n장 트리오 — 된장 크림브륄레, 간장 피칸, 고추장 휘낭, 바닐라와 위스키\n아름다운 우리 다과",
+      "trust_score": 0.98
+    },
+    {
+      "external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "restaurant_slug": "mingles-seoul",
+      "source_type": "menu",
+      "title": "Mingles Dinner Menu 2026-01-08 (user-provided image)",
+      "url": "user-provided-image",
+      "excerpt": "오늘의 스페셜 바이트 · 제주 구좌 당근 스프, 부라타 치즈와 참기름, 성게 / 방어 & 캐비아 젓갈 / 감 & 한우 브레사올라 / 감태롤 / 제주소산 금태 / 한우 육회와 장어 · 매실 고추장",
+      "raw_text": "오늘의 스페셜 바이트 — 제주 구좌 당근 스프, 부라타 치즈와 참기름, 성게\n방어 & 캐비아 젓갈\n감 & 한우 브레사올라\n감태롤\n제주소산 금태\n한우 육회와 장어 — 매실 고추장\n배와 배추를 겹겹이 쌓은 밀푀유 — 캐비아, 오미자, 초고추장, 왕우럭조개\n밍글링 팟 — 2가지 만두, 버섯 지단, 은행, 해삼 & 새우전, 한우 브로스\n생선 만두 — 밍글링 팟 구성: 생선 만두\n배추 & 한우 만두 — 밍글링 팟 구성: 배추와 한우 만두\n해삼 — 밍글링 팟 구성: 해삼\n새우전 — 밍글링 팟 구성: 새우전\n제철 생선구이 — 쌀 튀밥, 생선 보푸라기 죽, 캐비아 어란\n찹쌀밥 — 벚꽃 새우, 서해안 대하구이, 막걸리 비스큐 소스\n딸기 장아찌\n들깨 무만두\n인삼 치킨 꼬치\n한우구이 — 전복 한우 순대, 마, 맑은 비프 쥬, 산초 장아찌, 엔다이브 김치\n스윗 비빔밥 — 찹쌀밥 푸딩, 인삼 아이스크림, 밍글스 간장, 뿌리채소\n아이스 호떡 — 밤꿀 아이스크림, 생강청에 절인 브리오슈와 떡, 시나몬 튀일\n장 트리오 — 된장 크림브륄레, 간장 피칸, 고추장 휘낭, 바닐라와 위스키\n아름다운 우리 다과\n커피\n차",
+      "trust_score": 0.98
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "mingles-seoul-dish-001",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "감 & 한우 브레사올라",
+      "public_subtitle": null,
+      "course_position": "amuse",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-002",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "제주 구좌 당근 스프",
+      "public_subtitle": "부라타 치즈와 참기름, 성게",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-003",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "한국식 계절 생선회",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-004",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "한우 육회와 장어",
+      "public_subtitle": "매실 고추장",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-005",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "배와 배추를 겹겹이 쌓은 밀푀유",
+      "public_subtitle": "캐비아, 오미자, 초고추장, 왕우럭조개",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-006",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "밍글링 팟",
+      "public_subtitle": "2가지 만두, 버섯 지단, 은행, 해삼 & 새우전, 한우 브로스",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-007",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "생선구이",
+      "public_subtitle": "쌀 튀밥, 생선 보푸라기 죽, 캐비아 어란",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-008",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "찹쌀밥",
+      "public_subtitle": "벚꽃 새우, 서해안 대하구이, 막걸리 비스큐 소스",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-009",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "한우구이",
+      "public_subtitle": "전복 한우 순대, 맑은 비프 쥬, 산초 장아찌, 엔다이브 김치",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-010",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "스윗 비빔밥",
+      "public_subtitle": "찹쌀밥 푸딩, 인삼 아이스크림, 밍글스 간장, 뿌리채소",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-011",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "아이스 호떡",
+      "public_subtitle": "밤꿀 아이스크림, 생강청에 절인 브리오슈와 떡, 시나몬 튀일",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-012",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "장 트리오",
+      "public_subtitle": "된장 크림브륄레, 간장 피칸, 고추장 휘낭, 바닐라와 위스키",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-013",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 lunch",
+      "public_title": "아름다운 우리 다과",
+      "public_subtitle": null,
+      "course_position": "petit_four",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-014",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "오늘의 스페셜 바이트",
+      "public_subtitle": "제주 구좌 당근 스프, 부라타 치즈와 참기름, 성게",
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-015",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "방어 & 캐비아 젓갈",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-016",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "감 & 한우 브레사올라",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-017",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "감태롤",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-018",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "제주소산 금태",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-019",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "한우 육회와 장어",
+      "public_subtitle": "매실 고추장",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-020",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "배와 배추를 겹겹이 쌓은 밀푀유",
+      "public_subtitle": "캐비아, 오미자, 초고추장, 왕우럭조개",
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-021",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "밍글링 팟",
+      "public_subtitle": "2가지 만두, 버섯 지단, 은행, 해삼 & 새우전, 한우 브로스",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-022",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "생선 만두",
+      "public_subtitle": "밍글링 팟 구성: 생선 만두",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-023",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "배추 & 한우 만두",
+      "public_subtitle": "밍글링 팟 구성: 배추와 한우 만두",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-024",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "해삼",
+      "public_subtitle": "밍글링 팟 구성: 해삼",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-025",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "새우전",
+      "public_subtitle": "밍글링 팟 구성: 새우전",
+      "course_position": "other",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-026",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "제철 생선구이",
+      "public_subtitle": "쌀 튀밥, 생선 보푸라기 죽, 캐비아 어란",
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-027",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "찹쌀밥",
+      "public_subtitle": "벚꽃 새우, 서해안 대하구이, 막걸리 비스큐 소스",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-028",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "딸기 장아찌",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-029",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "들깨 무만두",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-030",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "인삼 치킨 꼬치",
+      "public_subtitle": null,
+      "course_position": "snack",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-031",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "한우구이",
+      "public_subtitle": "전복 한우 순대, 마, 맑은 비프 쥬, 산초 장아찌, 엔다이브 김치",
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-032",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "스윗 비빔밥",
+      "public_subtitle": "찹쌀밥 푸딩, 인삼 아이스크림, 밍글스 간장, 뿌리채소",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-033",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "아이스 호떡",
+      "public_subtitle": "밤꿀 아이스크림, 생강청에 절인 브리오슈와 떡, 시나몬 튀일",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-034",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "장 트리오",
+      "public_subtitle": "된장 크림브륄레, 간장 피칸, 고추장 휘낭, 바닐라와 위스키",
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-035",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "아름다운 우리 다과",
+      "public_subtitle": null,
+      "course_position": "petit_four",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-036",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "커피",
+      "public_subtitle": null,
+      "course_position": "beverage",
+      "status": "active"
+    },
+    {
+      "external_key": "mingles-seoul-dish-037",
+      "restaurant_slug": "mingles-seoul",
+      "season_label": "2026-01-08 dinner",
+      "public_title": "차",
+      "public_subtitle": null,
+      "course_position": "beverage",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "mingles-seoul-dish-001",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "감, 한우",
+      "value_json": {
+        "ingredients": [
+          "감",
+          "한우"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-001",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "cured beef preparation",
+      "value_json": {
+        "techniques": [
+          "cured beef preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-001",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory opening, light cured aroma",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory opening",
+          "light cured aroma"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-001",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-002",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "제주 구좌 당근, 부라타 치즈, 참기름, 성게",
+      "value_json": {
+        "ingredients": [
+          "제주 구좌 당근",
+          "부라타 치즈",
+          "참기름",
+          "성게"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-002",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "soup",
+      "value_json": {
+        "techniques": [
+          "soup"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-002",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet vegetal body, creamy richness, sea urchin umami",
+      "value_json": {
+        "sensory_words": [
+          "sweet vegetal body",
+          "creamy richness",
+          "sea urchin umami"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-002",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-003",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "계절 생선",
+      "value_json": {
+        "ingredients": [
+          "계절 생선"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-003",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "raw slicing",
+      "value_json": {
+        "techniques": [
+          "raw slicing"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-003",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "clean marine tone, seasonal delicacy, fresh finish",
+      "value_json": {
+        "sensory_words": [
+          "clean marine tone",
+          "seasonal delicacy",
+          "fresh finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-003",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-004",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "한우 육회, 장어, 매실 고추장",
+      "value_json": {
+        "ingredients": [
+          "한우 육회",
+          "장어",
+          "매실 고추장"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-004",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "raw beef preparation",
+      "value_json": {
+        "techniques": [
+          "raw beef preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-004",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory heat, fermented fruit acidity, dense umami",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory heat",
+          "fermented fruit acidity",
+          "dense umami"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-004",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-005",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "배, 배추, 캐비아, 오미자, 초고추장, 왕우럭조개",
+      "value_json": {
+        "ingredients": [
+          "배",
+          "배추",
+          "캐비아",
+          "오미자",
+          "초고추장",
+          "왕우럭조개"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-005",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "layering",
+      "value_json": {
+        "techniques": [
+          "layering"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-005",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "bright acidity, briny lift, crisp layered texture",
+      "value_json": {
+        "sensory_words": [
+          "bright acidity",
+          "briny lift",
+          "crisp layered texture"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-005",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-006",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "생선 만두, 배추와 한우 만두, 버섯 지단, 은행, 해삼, 새우전, 한우 브로스",
+      "value_json": {
+        "ingredients": [
+          "생선 만두",
+          "배추와 한우 만두",
+          "버섯 지단",
+          "은행",
+          "해삼",
+          "새우전",
+          "한우 브로스"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-006",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "broth concentration, dumpling course",
+      "value_json": {
+        "techniques": [
+          "broth concentration",
+          "dumpling course"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-006",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "deep broth umami, layered Korean savory density, long finish",
+      "value_json": {
+        "sensory_words": [
+          "deep broth umami",
+          "layered Korean savory density",
+          "long finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-006",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-007",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "생선구이, 쌀 튀밥, 생선 보푸라기 죽, 캐비아, 어란",
+      "value_json": {
+        "ingredients": [
+          "생선구이",
+          "쌀 튀밥",
+          "생선 보푸라기 죽",
+          "캐비아",
+          "어란"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-007",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "grilling, porridge accompaniment",
+      "value_json": {
+        "techniques": [
+          "grilling",
+          "porridge accompaniment"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-007",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "toasted grain note, marine salinity, soft savory finish",
+      "value_json": {
+        "sensory_words": [
+          "toasted grain note",
+          "marine salinity",
+          "soft savory finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-007",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-008",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "찹쌀밥, 벚꽃 새우, 서해안 대하구이, 막걸리 비스큐",
+      "value_json": {
+        "ingredients": [
+          "찹쌀밥",
+          "벚꽃 새우",
+          "서해안 대하구이",
+          "막걸리 비스큐"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-008",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "grilling, bisque sauce",
+      "value_json": {
+        "techniques": [
+          "grilling",
+          "bisque sauce"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-008",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet shellfish richness, grainy body, fermented sauce depth",
+      "value_json": {
+        "sensory_words": [
+          "sweet shellfish richness",
+          "grainy body",
+          "fermented sauce depth"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-008",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-009",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "한우구이, 전복 한우 순대, 비프 쥬, 산초 장아찌, 엔다이브 김치",
+      "value_json": {
+        "ingredients": [
+          "한우구이",
+          "전복 한우 순대",
+          "비프 쥬",
+          "산초 장아찌",
+          "엔다이브 김치"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-009",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "grilling, clear jus",
+      "value_json": {
+        "techniques": [
+          "grilling",
+          "clear jus"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-009",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "dense beef umami, fatty core, pickled relief",
+      "value_json": {
+        "sensory_words": [
+          "dense beef umami",
+          "fatty core",
+          "pickled relief"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-009",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-010",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "찹쌀밥 푸딩, 인삼 아이스크림, 간장, 뿌리채소",
+      "value_json": {
+        "ingredients": [
+          "찹쌀밥 푸딩",
+          "인삼 아이스크림",
+          "간장",
+          "뿌리채소"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-010",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dessert reinterpretation",
+      "value_json": {
+        "techniques": [
+          "dessert reinterpretation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-010",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory contrast, earthy aroma, layered dessert finish",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory contrast",
+          "earthy aroma",
+          "layered dessert finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-010",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-011",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "밤꿀 아이스크림, 생강청, 브리오슈, 떡, 시나몬 튀일",
+      "value_json": {
+        "ingredients": [
+          "밤꿀 아이스크림",
+          "생강청",
+          "브리오슈",
+          "떡",
+          "시나몬 튀일"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-011",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "frozen dessert, pickled ginger syrup",
+      "value_json": {
+        "techniques": [
+          "frozen dessert",
+          "pickled ginger syrup"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-011",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "honeyed sweetness, warm spice aroma, soft-rich dessert",
+      "value_json": {
+        "sensory_words": [
+          "honeyed sweetness",
+          "warm spice aroma",
+          "soft-rich dessert"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-011",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-012",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "된장 크림브륄레, 간장 피칸, 고추장 휘낭, 바닐라, 위스키",
+      "value_json": {
+        "ingredients": [
+          "된장 크림브륄레",
+          "간장 피칸",
+          "고추장 휘낭",
+          "바닐라",
+          "위스키"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-012",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dessert reinterpretation, baking",
+      "value_json": {
+        "techniques": [
+          "dessert reinterpretation",
+          "baking"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-012",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "fermented savory depth, sweet finish, boozy aroma",
+      "value_json": {
+        "sensory_words": [
+          "fermented savory depth",
+          "sweet finish",
+          "boozy aroma"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-012",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-013",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "다과",
+      "value_json": {
+        "ingredients": [
+          "다과"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-013",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "petit four service",
+      "value_json": {
+        "techniques": [
+          "petit four service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-013",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "light finishing sweetness, varied texture",
+      "value_json": {
+        "sensory_words": [
+          "light finishing sweetness",
+          "varied texture"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-013",
+      "source_external_key": "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-014",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "제주 구좌 당근, 부라타 치즈, 참기름, 성게",
+      "value_json": {
+        "ingredients": [
+          "제주 구좌 당근",
+          "부라타 치즈",
+          "참기름",
+          "성게"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-014",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "soup",
+      "value_json": {
+        "techniques": [
+          "soup"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-014",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet vegetal body, creamy richness, sea urchin umami",
+      "value_json": {
+        "sensory_words": [
+          "sweet vegetal body",
+          "creamy richness",
+          "sea urchin umami"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-014",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-015",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "방어, 캐비아 젓갈",
+      "value_json": {
+        "ingredients": [
+          "방어",
+          "캐비아 젓갈"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-015",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "raw or lightly cured seafood preparation",
+      "value_json": {
+        "techniques": [
+          "raw or lightly cured seafood preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-015",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "briny marine intensity, clean fatty fish, salty lift",
+      "value_json": {
+        "sensory_words": [
+          "briny marine intensity",
+          "clean fatty fish",
+          "salty lift"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-015",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-016",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "감, 한우",
+      "value_json": {
+        "ingredients": [
+          "감",
+          "한우"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-016",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "cured beef preparation",
+      "value_json": {
+        "techniques": [
+          "cured beef preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-016",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory opening, light cured aroma",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory opening",
+          "light cured aroma"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-016",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-017",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "감태",
+      "value_json": {
+        "ingredients": [
+          "감태"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-017",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "roll construction",
+      "value_json": {
+        "techniques": [
+          "roll construction"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-017",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "seaweed aroma, clean marine savory note",
+      "value_json": {
+        "sensory_words": [
+          "seaweed aroma",
+          "clean marine savory note"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-017",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-018",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "금태",
+      "value_json": {
+        "ingredients": [
+          "금태"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-018",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "fish preparation",
+      "value_json": {
+        "techniques": [
+          "fish preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-018",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "soft fatty fish, delicate marine umami",
+      "value_json": {
+        "sensory_words": [
+          "soft fatty fish",
+          "delicate marine umami"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-018",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-019",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "한우 육회, 장어, 매실 고추장",
+      "value_json": {
+        "ingredients": [
+          "한우 육회",
+          "장어",
+          "매실 고추장"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-019",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "raw beef preparation",
+      "value_json": {
+        "techniques": [
+          "raw beef preparation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-019",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory heat, fermented fruit acidity, dense umami",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory heat",
+          "fermented fruit acidity",
+          "dense umami"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-019",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-020",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "배, 배추, 캐비아, 오미자, 초고추장, 왕우럭조개",
+      "value_json": {
+        "ingredients": [
+          "배",
+          "배추",
+          "캐비아",
+          "오미자",
+          "초고추장",
+          "왕우럭조개"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-020",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "layering",
+      "value_json": {
+        "techniques": [
+          "layering"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-020",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "bright acidity, briny lift, crisp layered texture",
+      "value_json": {
+        "sensory_words": [
+          "bright acidity",
+          "briny lift",
+          "crisp layered texture"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-020",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-021",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "생선 만두, 배추와 한우 만두, 버섯 지단, 은행, 해삼, 새우전, 한우 브로스",
+      "value_json": {
+        "ingredients": [
+          "생선 만두",
+          "배추와 한우 만두",
+          "버섯 지단",
+          "은행",
+          "해삼",
+          "새우전",
+          "한우 브로스"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-021",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "broth concentration, dumpling course",
+      "value_json": {
+        "techniques": [
+          "broth concentration",
+          "dumpling course"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-021",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "deep broth umami, layered Korean savory density, long finish",
+      "value_json": {
+        "sensory_words": [
+          "deep broth umami",
+          "layered Korean savory density",
+          "long finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-021",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-022",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "생선 만두",
+      "value_json": {
+        "ingredients": [
+          "생선 만두"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-022",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dumpling",
+      "value_json": {
+        "techniques": [
+          "dumpling"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-022",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "soft savory filling, broth-friendly texture, gentle marine umami",
+      "value_json": {
+        "sensory_words": [
+          "soft savory filling",
+          "broth-friendly texture",
+          "gentle marine umami"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-022",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-023",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "배추, 한우 만두",
+      "value_json": {
+        "ingredients": [
+          "배추",
+          "한우 만두"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-023",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dumpling",
+      "value_json": {
+        "techniques": [
+          "dumpling"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-023",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "cabbage sweetness, beefy savory core, soft juicy body",
+      "value_json": {
+        "sensory_words": [
+          "cabbage sweetness",
+          "beefy savory core",
+          "soft juicy body"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-023",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-024",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "해삼",
+      "value_json": {
+        "ingredients": [
+          "해삼"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-024",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "light poaching or broth service",
+      "value_json": {
+        "techniques": [
+          "light poaching or broth service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-024",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "marine chew, mineral savoriness, clean saline note",
+      "value_json": {
+        "sensory_words": [
+          "marine chew",
+          "mineral savoriness",
+          "clean saline note"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-024",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-025",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "새우전",
+      "value_json": {
+        "ingredients": [
+          "새우전"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-025",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "jeon, pan-frying",
+      "value_json": {
+        "techniques": [
+          "jeon",
+          "pan-frying"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-025",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "shrimp umami, light fried aroma, savory richness",
+      "value_json": {
+        "sensory_words": [
+          "shrimp umami",
+          "light fried aroma",
+          "savory richness"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-025",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-026",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "제철 생선구이, 쌀 튀밥, 생선 보푸라기 죽, 캐비아, 어란",
+      "value_json": {
+        "ingredients": [
+          "제철 생선구이",
+          "쌀 튀밥",
+          "생선 보푸라기 죽",
+          "캐비아",
+          "어란"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-026",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "grilling, porridge accompaniment",
+      "value_json": {
+        "techniques": [
+          "grilling",
+          "porridge accompaniment"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-026",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "toasted grain note, marine salinity, soft savory finish",
+      "value_json": {
+        "sensory_words": [
+          "toasted grain note",
+          "marine salinity",
+          "soft savory finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-026",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-027",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "찹쌀밥, 벚꽃 새우, 서해안 대하구이, 막걸리 비스큐",
+      "value_json": {
+        "ingredients": [
+          "찹쌀밥",
+          "벚꽃 새우",
+          "서해안 대하구이",
+          "막걸리 비스큐"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-027",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "grilling, bisque sauce",
+      "value_json": {
+        "techniques": [
+          "grilling",
+          "bisque sauce"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-027",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet shellfish richness, grainy body, fermented sauce depth",
+      "value_json": {
+        "sensory_words": [
+          "sweet shellfish richness",
+          "grainy body",
+          "fermented sauce depth"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-027",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-028",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "딸기",
+      "value_json": {
+        "ingredients": [
+          "딸기"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-028",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "pickling",
+      "value_json": {
+        "techniques": [
+          "pickling"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-028",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "acidic reset, fruity brightness",
+      "value_json": {
+        "sensory_words": [
+          "acidic reset",
+          "fruity brightness"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-028",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-029",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "들깨, 무만두",
+      "value_json": {
+        "ingredients": [
+          "들깨",
+          "무만두"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-029",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dumpling",
+      "value_json": {
+        "techniques": [
+          "dumpling"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-029",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "nutty softness, gentle savory body",
+      "value_json": {
+        "sensory_words": [
+          "nutty softness",
+          "gentle savory body"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-029",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-030",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "인삼, 치킨",
+      "value_json": {
+        "ingredients": [
+          "인삼",
+          "치킨"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-030",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "skewer",
+      "value_json": {
+        "techniques": [
+          "skewer"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-030",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "aromatic savory bite, light medicinal lift",
+      "value_json": {
+        "sensory_words": [
+          "aromatic savory bite",
+          "light medicinal lift"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-030",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "warm",
+      "value_json": {
+        "temperature_band": "warm"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-031",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "한우구이, 전복 한우 순대, 마, 맑은 비프 쥬, 산초 장아찌, 엔다이브 김치",
+      "value_json": {
+        "ingredients": [
+          "한우구이",
+          "전복 한우 순대",
+          "마",
+          "맑은 비프 쥬",
+          "산초 장아찌",
+          "엔다이브 김치"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-031",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "grilling, clear jus",
+      "value_json": {
+        "techniques": [
+          "grilling",
+          "clear jus"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-031",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "dense beef umami, fatty core, pickled relief",
+      "value_json": {
+        "sensory_words": [
+          "dense beef umami",
+          "fatty core",
+          "pickled relief"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-031",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-032",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "찹쌀밥 푸딩, 인삼 아이스크림, 밍글스 간장, 뿌리채소",
+      "value_json": {
+        "ingredients": [
+          "찹쌀밥 푸딩",
+          "인삼 아이스크림",
+          "밍글스 간장",
+          "뿌리채소"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-032",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dessert reinterpretation",
+      "value_json": {
+        "techniques": [
+          "dessert reinterpretation"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-032",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "sweet-savory contrast, earthy aroma, layered dessert finish",
+      "value_json": {
+        "sensory_words": [
+          "sweet-savory contrast",
+          "earthy aroma",
+          "layered dessert finish"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-032",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-033",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "밤꿀 아이스크림, 생강청, 브리오슈, 떡, 시나몬 튀일",
+      "value_json": {
+        "ingredients": [
+          "밤꿀 아이스크림",
+          "생강청",
+          "브리오슈",
+          "떡",
+          "시나몬 튀일"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-033",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "frozen dessert, pickled ginger syrup",
+      "value_json": {
+        "techniques": [
+          "frozen dessert",
+          "pickled ginger syrup"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-033",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "honeyed sweetness, warm spice aroma, soft-rich dessert",
+      "value_json": {
+        "sensory_words": [
+          "honeyed sweetness",
+          "warm spice aroma",
+          "soft-rich dessert"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-033",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cold",
+      "value_json": {
+        "temperature_band": "cold"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-034",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "된장 크림브륄레, 간장 피칸, 고추장 휘낭, 바닐라, 위스키",
+      "value_json": {
+        "ingredients": [
+          "된장 크림브륄레",
+          "간장 피칸",
+          "고추장 휘낭",
+          "바닐라",
+          "위스키"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-034",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "dessert reinterpretation, baking",
+      "value_json": {
+        "techniques": [
+          "dessert reinterpretation",
+          "baking"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-034",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "fermented savory depth, sweet finish, boozy aroma",
+      "value_json": {
+        "sensory_words": [
+          "fermented savory depth",
+          "sweet finish",
+          "boozy aroma"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-034",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "cool",
+      "value_json": {
+        "temperature_band": "cool"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-035",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "다과",
+      "value_json": {
+        "ingredients": [
+          "다과"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-035",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "petit four service",
+      "value_json": {
+        "techniques": [
+          "petit four service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-035",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "light finishing sweetness, varied texture",
+      "value_json": {
+        "sensory_words": [
+          "light finishing sweetness",
+          "varied texture"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-035",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-036",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "커피",
+      "value_json": {
+        "ingredients": [
+          "커피"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-036",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "beverage service",
+      "value_json": {
+        "techniques": [
+          "beverage service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-036",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "bitter closing beverage, roasted aroma",
+      "value_json": {
+        "sensory_words": [
+          "bitter closing beverage",
+          "roasted aroma"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-036",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-037",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "ingredients",
+      "value_text": "차",
+      "value_json": {
+        "ingredients": [
+          "차"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-037",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "techniques",
+      "value_text": "beverage service",
+      "value_json": {
+        "techniques": [
+          "beverage service"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-037",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "sensory_words",
+      "value_text": "gentle closing infusion",
+      "value_json": {
+        "sensory_words": [
+          "gentle closing infusion"
+        ]
+      },
+      "confidence": 0.98
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-037",
+      "source_external_key": "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image",
+      "fact_type": "temperature_band",
+      "value_text": "hot",
+      "value_json": {
+        "temperature_band": "hot"
+      },
+      "confidence": 0.98
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "mingles-seoul-dish-001",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.42,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.28,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.3,
+        "heaviness": 0.18,
+        "cleanFinish": 0.44,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.72,
+      "rationale": "The menu explicitly names persimmon and Hanwoo bresaola, suggesting a lightly sweet, savory opening bite with moderate umami and relatively clean finish.",
+      "uncertainty_notes": [
+        "Seasoning, garnish, and serving temperature are not shown on the menu",
+        "fat intensity is inferred from bresaola-style preparation"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-002",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.46,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.64,
+        "fat": 0.44
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.52,
+        "cleanFinish": 0.24,
+        "linger": 0.54,
+        "smoke": 0,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.6,
+        "thermalImpact": 0.38
+      },
+      "confidence": 0.84,
+      "rationale": "Carrot soup with burrata, sesame oil, and sea urchin implies high sweetness from carrot, rich dairy-fat texture, and pronounced marine umami layered over a warm soup base.",
+      "uncertainty_notes": [
+        "Exact stock, dairy ratio, and finishing acid are not listed",
+        "salinity is inferred from sea urchin and seasoning assumptions"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-003",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.46,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.42,
+        "heaviness": 0.1,
+        "cleanFinish": 0.62,
+        "linger": 0.2,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.12
+      },
+      "confidence": 0.68,
+      "rationale": "The menu clearly identifies a Korean-style seasonal raw fish course, which usually reads as delicate, bright, and cleaner than later hot courses.",
+      "uncertainty_notes": [
+        "Specific fish species, seasoning, and sauce are not disclosed",
+        "brightness and salinity are inferred from typical sashimi-style service"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-004",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.24,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.76,
+        "fat": 0.34
+      },
+      "perceptual_vector": {
+        "brightness": 0.4,
+        "heaviness": 0.34,
+        "cleanFinish": 0.3,
+        "linger": 0.46,
+        "smoke": 0,
+        "aromaIntensity": 0.38,
+        "textureRichness": 0.4,
+        "thermalImpact": 0.16
+      },
+      "confidence": 0.82,
+      "rationale": "Hanwoo yukhoe and eel already suggest concentrated umami and fat, while plum gochujang likely adds acidity, sweetness, and a brighter fermented finish.",
+      "uncertainty_notes": [
+        "Spice level and eel preparation are not visible on the menu",
+        "bitterness remains inferred near zero"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-005",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.16,
+        "sour": 0.44,
+        "bitter": 0.02,
+        "salty": 0.28,
+        "umami": 0.58,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.72,
+        "heaviness": 0.12,
+        "cleanFinish": 0.56,
+        "linger": 0.28,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.88,
+      "rationale": "Pear, cabbage, omija, cho-gochujang, caviar, and shellfish indicate a highly structured bright dish with acid lift, marine salinity, and relatively low heaviness.",
+      "uncertainty_notes": [
+        "Exact shellfish cooking and sauce proportions are unknown",
+        "sweetness depends on pear ripeness and omija balance"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-006",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.24,
+        "umami": 0.94,
+        "fat": 0.26
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.48,
+        "cleanFinish": 0.3,
+        "linger": 0.82,
+        "smoke": 0,
+        "aromaIntensity": 0.56,
+        "textureRichness": 0.54,
+        "thermalImpact": 0.62
+      },
+      "confidence": 0.94,
+      "rationale": "This course explicitly includes Hanwoo broth, dumplings, seafood, mushrooms, and ginkgo, making it the clearest high-umami, long-linger signature course on the menu.",
+      "uncertainty_notes": [
+        "Broth salt concentration and dumpling filling ratios are not public",
+        "fat level may vary depending on broth reduction"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-007",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.34,
+        "umami": 0.78,
+        "fat": 0.2
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.3,
+        "cleanFinish": 0.34,
+        "linger": 0.58,
+        "smoke": 0.08,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.46,
+        "thermalImpact": 0.54
+      },
+      "confidence": 0.83,
+      "rationale": "Grilled fish with puffed rice, fish porridge, caviar, and bottarga suggests a strong marine savory profile, moderate salinity, and soft lingering warmth from the porridge element.",
+      "uncertainty_notes": [
+        "Fish species and exact broth/liquid composition are unspecified",
+        "smoke depends on grill intensity not shown in the menu"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-008",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.1,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.82,
+        "fat": 0.36
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.42,
+        "cleanFinish": 0.26,
+        "linger": 0.64,
+        "smoke": 0.06,
+        "aromaIntensity": 0.46,
+        "textureRichness": 0.52,
+        "thermalImpact": 0.56
+      },
+      "confidence": 0.86,
+      "rationale": "Glutinous rice with sakura shrimp, grilled prawns, and a makgeolli bisque points to shellfish umami, moderate richness, and a long, creamy-fermented finish.",
+      "uncertainty_notes": [
+        "Makgeolli bisque acidity and sweetness are inferred",
+        "shellfish intensity depends on sauce concentration"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-009",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.18,
+        "bitter": 0.04,
+        "salty": 0.2,
+        "umami": 0.9,
+        "fat": 0.52
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.62,
+        "cleanFinish": 0.28,
+        "linger": 0.74,
+        "smoke": 0.1,
+        "aromaIntensity": 0.48,
+        "textureRichness": 0.58,
+        "thermalImpact": 0.6
+      },
+      "confidence": 0.9,
+      "rationale": "Beef, abalone-Hanwoo sundae, and clear beef jus imply the menu's heaviest umami and fat core, while sancho pickle and endive kimchi likely provide acidity and bitterness for relief.",
+      "uncertainty_notes": [
+        "Exact beef cut, jus reduction, and kimchi intensity are not specified",
+        "bitterness may be higher if endive dominates"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-010",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.58,
+        "sour": 0.08,
+        "bitter": 0.06,
+        "salty": 0.1,
+        "umami": 0.22,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.24,
+        "cleanFinish": 0.42,
+        "linger": 0.38,
+        "smoke": 0,
+        "aromaIntensity": 0.38,
+        "textureRichness": 0.32,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.84,
+      "rationale": "The course explicitly combines sticky-rice pudding, ginseng ice cream, ganjang, and root vegetables, indicating a sweet-savory dessert with earthy aromatics and moderate lingering finish.",
+      "uncertainty_notes": [
+        "Exact sweetness level and ganjang salinity are not shown",
+        "ginseng bitterness is inferred and may vary"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-011",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.74,
+        "sour": 0.12,
+        "bitter": 0.06,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.24
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.3,
+        "cleanFinish": 0.34,
+        "linger": 0.46,
+        "smoke": 0,
+        "aromaIntensity": 0.44,
+        "textureRichness": 0.36,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.8,
+      "rationale": "Chestnut honey ice cream, ginger preserve, brioche, rice cake, and cinnamon tuile suggest a sweeter, warmer-spiced dessert with moderate richness and aromatic lift.",
+      "uncertainty_notes": [
+        "This dessert is one of two options, so guest exposure is conditional",
+        "acidity depends on ginger preserve intensity"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-012",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.52,
+        "sour": 0.04,
+        "bitter": 0.06,
+        "salty": 0.14,
+        "umami": 0.36,
+        "fat": 0.22
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.22,
+        "cleanFinish": 0.4,
+        "linger": 0.42,
+        "smoke": 0,
+        "aromaIntensity": 0.52,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.88,
+      "rationale": "This is the clearest dessert built around Korean ferments on the menu, with doenjang, ganjang, and gochujang explicitly listed alongside vanilla and whisky, implying sweet-savory depth and aromatic complexity.",
+      "uncertainty_notes": [
+        "Guest chooses either this or Ice Hotteok",
+        "exact sweetness and alcohol intensity are not visible from the menu image"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-013",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.44,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.12,
+        "cleanFinish": 0.38,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.42,
+      "rationale": "The menu indicates a Korean petit four finale, which usually functions as a lighter closing sweet bite with limited intensity compared with plated desserts.",
+      "uncertainty_notes": [
+        "Specific components are not listed, so most of this row remains low-confidence inference"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-lunch-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-014",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.46,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.64,
+        "fat": 0.44
+      },
+      "perceptual_vector": {
+        "brightness": 0.2,
+        "heaviness": 0.52,
+        "cleanFinish": 0.24,
+        "linger": 0.54,
+        "smoke": 0,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.6,
+        "thermalImpact": 0.38
+      },
+      "confidence": 0.88,
+      "rationale": "The dinner image explicitly presents this as today's special bite with carrot soup, burrata, sesame oil, and sea urchin, indicating layered sweetness, dairy-fat richness, and marine umami in a compact opening course.",
+      "uncertainty_notes": [
+        "Broth base and acid balance are not listed",
+        "the exact serving size and temperature are inferred from soup format"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-015",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.08,
+        "bitter": 0.02,
+        "salty": 0.34,
+        "umami": 0.62,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.44,
+        "heaviness": 0.14,
+        "cleanFinish": 0.54,
+        "linger": 0.28,
+        "smoke": 0,
+        "aromaIntensity": 0.36,
+        "textureRichness": 0.24,
+        "thermalImpact": 0.12
+      },
+      "confidence": 0.82,
+      "rationale": "Yellowtail and caviar jeotgal strongly suggest a cool marine bite with pronounced salinity and umami while keeping a relatively clean finish from the fish's natural texture.",
+      "uncertainty_notes": [
+        "Exact treatment of the yellowtail and jeotgal ratio are not visible",
+        "fat and acidity remain inferred"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-016",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.42,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.28,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.3,
+        "heaviness": 0.18,
+        "cleanFinish": 0.44,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.22,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.76,
+      "rationale": "The menu explicitly names persimmon and Hanwoo bresaola, suggesting a lightly sweet, savory bite with moderate umami and clean finish.",
+      "uncertainty_notes": [
+        "Seasoning, garnish, and curing intensity are not shown on the menu image"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-017",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.12,
+        "umami": 0.44,
+        "fat": 0.08
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.1,
+        "cleanFinish": 0.6,
+        "linger": 0.2,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.18,
+        "thermalImpact": 0.08
+      },
+      "confidence": 0.62,
+      "rationale": "The menu explicitly names a gamtae roll, which suggests a seaweed-led aromatic bite with clean marine savoriness and relatively low heaviness.",
+      "uncertainty_notes": [
+        "Filling and seasoning are not shown on the menu image",
+        "salt and umami levels depend on the hidden interior components"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-018",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.62,
+        "fat": 0.26
+      },
+      "perceptual_vector": {
+        "brightness": 0.28,
+        "heaviness": 0.22,
+        "cleanFinish": 0.48,
+        "linger": 0.32,
+        "smoke": 0,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.64,
+      "rationale": "Jeju kinmedai usually implies delicate fish oil richness and soft savory density, so the inferred profile emphasizes umami and moderate fat without excessive linger.",
+      "uncertainty_notes": [
+        "Cooking method is not shown in the image",
+        "temperature and sauce support remain inferred"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-019",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.18,
+        "sour": 0.24,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.76,
+        "fat": 0.34
+      },
+      "perceptual_vector": {
+        "brightness": 0.4,
+        "heaviness": 0.34,
+        "cleanFinish": 0.3,
+        "linger": 0.46,
+        "smoke": 0,
+        "aromaIntensity": 0.38,
+        "textureRichness": 0.4,
+        "thermalImpact": 0.16
+      },
+      "confidence": 0.84,
+      "rationale": "Hanwoo yukhoe and eel imply concentrated umami and fat, while plum gochujang likely adds brightness, acidity, and sweetness to keep the course from becoming too heavy.",
+      "uncertainty_notes": [
+        "Spice level and eel treatment are not visible",
+        "fat dominance depends on portion ratio"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-020",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.16,
+        "sour": 0.44,
+        "bitter": 0.02,
+        "salty": 0.28,
+        "umami": 0.58,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.72,
+        "heaviness": 0.12,
+        "cleanFinish": 0.56,
+        "linger": 0.28,
+        "smoke": 0,
+        "aromaIntensity": 0.34,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.9,
+      "rationale": "Pear, cabbage, omija, cho-gochujang, caviar, and shellfish point to a highly structured bright dish with acid lift, marine salinity, and low heaviness.",
+      "uncertainty_notes": [
+        "Exact shellfish preparation and sauce proportions are not public",
+        "sweetness depends on pear ripeness and omija balance"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-021",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.24,
+        "umami": 0.94,
+        "fat": 0.26
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.48,
+        "cleanFinish": 0.3,
+        "linger": 0.82,
+        "smoke": 0,
+        "aromaIntensity": 0.56,
+        "textureRichness": 0.54,
+        "thermalImpact": 0.62
+      },
+      "confidence": 0.95,
+      "rationale": "This dish explicitly includes Hanwoo broth, dumplings, seafood, mushrooms, and ginkgo, making it the clearest high-umami, long-linger signature course in the dinner sequence.",
+      "uncertainty_notes": [
+        "Broth reduction and dumpling filling ratios are not public",
+        "fat level may vary depending on broth concentration"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-022",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.58,
+        "fat": 0.12
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.16,
+        "cleanFinish": 0.5,
+        "linger": 0.26,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.24
+      },
+      "confidence": 0.68,
+      "rationale": "As a fish dumpling inside Mingling Pot, this component likely carries gentle marine umami and a soft texture that absorbs the Hanwoo broth rather than dominating it.",
+      "uncertainty_notes": [
+        "Exact fish species and seasoning are not listed",
+        "wrapper thickness and broth absorption are inferred"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-023",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.08,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.14,
+        "umami": 0.7,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.16,
+        "heaviness": 0.24,
+        "cleanFinish": 0.42,
+        "linger": 0.34,
+        "smoke": 0,
+        "aromaIntensity": 0.24,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.24
+      },
+      "confidence": 0.72,
+      "rationale": "Cabbage and Hanwoo dumpling suggests a sweeter and denser savory profile than the fish dumpling, with more umami and a slightly richer linger in broth.",
+      "uncertainty_notes": [
+        "Hanwoo fat ratio and cabbage sweetness are not visible on the menu image"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-024",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.18,
+        "umami": 0.5,
+        "fat": 0.06
+      },
+      "perceptual_vector": {
+        "brightness": 0.28,
+        "heaviness": 0.08,
+        "cleanFinish": 0.58,
+        "linger": 0.22,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.36,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.62,
+      "rationale": "Sea cucumber in a broth-forward course usually contributes mineral marine savoriness and textural contrast more than overt fat or sweetness.",
+      "uncertainty_notes": [
+        "Preparation style is not public",
+        "texture intensity depends on cut and cooking time"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-025",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.16,
+        "umami": 0.62,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.22,
+        "cleanFinish": 0.42,
+        "linger": 0.3,
+        "smoke": 0.04,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.3,
+        "thermalImpact": 0.26
+      },
+      "confidence": 0.66,
+      "rationale": "A shrimp jeon component likely adds a slightly richer savory note and a mild pan-fried aroma compared with the other broth elements.",
+      "uncertainty_notes": [
+        "Batter thickness and oil level are not visible",
+        "the degree of crispness in broth service is inferred"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-026",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.08,
+        "bitter": 0.04,
+        "salty": 0.34,
+        "umami": 0.78,
+        "fat": 0.2
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.3,
+        "cleanFinish": 0.34,
+        "linger": 0.58,
+        "smoke": 0.08,
+        "aromaIntensity": 0.42,
+        "textureRichness": 0.46,
+        "thermalImpact": 0.54
+      },
+      "confidence": 0.86,
+      "rationale": "Grilled seasonal fish with puffed rice, fish porridge, caviar, and bottarga suggests a savory marine profile with moderate salinity and warm lingering texture from the porridge element.",
+      "uncertainty_notes": [
+        "Fish species is not specified",
+        "smoke depends on grill intensity not visible in the image"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-027",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.12,
+        "sour": 0.1,
+        "bitter": 0.02,
+        "salty": 0.22,
+        "umami": 0.82,
+        "fat": 0.36
+      },
+      "perceptual_vector": {
+        "brightness": 0.22,
+        "heaviness": 0.42,
+        "cleanFinish": 0.26,
+        "linger": 0.64,
+        "smoke": 0.06,
+        "aromaIntensity": 0.46,
+        "textureRichness": 0.52,
+        "thermalImpact": 0.56
+      },
+      "confidence": 0.88,
+      "rationale": "Glutinous rice with sakura shrimp, grilled prawns, and makgeolli bisque implies shellfish umami, moderate richness, and a long creamy-fermented finish.",
+      "uncertainty_notes": [
+        "Makgeolli bisque acidity and sweetness are inferred",
+        "shellfish intensity depends on sauce concentration"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-028",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.26,
+        "sour": 0.48,
+        "bitter": 0.02,
+        "salty": 0.04,
+        "umami": 0.06,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.74,
+        "heaviness": 0.06,
+        "cleanFinish": 0.7,
+        "linger": 0.12,
+        "smoke": 0,
+        "aromaIntensity": 0.22,
+        "textureRichness": 0.12,
+        "thermalImpact": 0.06
+      },
+      "confidence": 0.66,
+      "rationale": "Strawberry pickle reads as a palate-reset bite with high brightness and acidity, low heaviness, and short linger.",
+      "uncertainty_notes": [
+        "Pickling sugar ratio is unknown",
+        "spice or herb support is not visible on the menu"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-029",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.06,
+        "bitter": 0.02,
+        "salty": 0.1,
+        "umami": 0.34,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.22,
+        "cleanFinish": 0.52,
+        "linger": 0.24,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.6,
+      "rationale": "Perilla and radish dumpling suggests a softer, nuttier savory interlude with relatively clean finish and low intensity compared with main courses.",
+      "uncertainty_notes": [
+        "Filling composition and broth or sauce support are not shown",
+        "fat and umami values are conservative inference"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-030",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.04,
+        "sour": 0.04,
+        "bitter": 0.04,
+        "salty": 0.1,
+        "umami": 0.38,
+        "fat": 0.16
+      },
+      "perceptual_vector": {
+        "brightness": 0.16,
+        "heaviness": 0.2,
+        "cleanFinish": 0.5,
+        "linger": 0.24,
+        "smoke": 0,
+        "aromaIntensity": 0.36,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.64,
+      "rationale": "A ginseng chicken skewer implies a compact savory bite with aromatic lift from ginseng and moderate umami from chicken.",
+      "uncertainty_notes": [
+        "Seasoning and glaze are not shown",
+        "ginseng bitterness may vary depending on preparation"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-031",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.06,
+        "sour": 0.18,
+        "bitter": 0.04,
+        "salty": 0.2,
+        "umami": 0.9,
+        "fat": 0.52
+      },
+      "perceptual_vector": {
+        "brightness": 0.34,
+        "heaviness": 0.62,
+        "cleanFinish": 0.28,
+        "linger": 0.74,
+        "smoke": 0.1,
+        "aromaIntensity": 0.48,
+        "textureRichness": 0.58,
+        "thermalImpact": 0.6
+      },
+      "confidence": 0.92,
+      "rationale": "Beef, abalone-Hanwoo sundae, and clear beef jus imply the menu's heaviest umami and fat core, while sancho pickle and endive kimchi likely provide acidity and bitter relief.",
+      "uncertainty_notes": [
+        "Exact beef cut, jus reduction, and kimchi intensity are not specified",
+        "yam contributes texture but not a clear taste signal from the menu alone"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-032",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.58,
+        "sour": 0.08,
+        "bitter": 0.06,
+        "salty": 0.1,
+        "umami": 0.22,
+        "fat": 0.18
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.24,
+        "cleanFinish": 0.42,
+        "linger": 0.38,
+        "smoke": 0,
+        "aromaIntensity": 0.38,
+        "textureRichness": 0.32,
+        "thermalImpact": 0.2
+      },
+      "confidence": 0.86,
+      "rationale": "Sticky-rice pudding, ginseng ice cream, ganjang, and root vegetables indicate a sweet-savory dessert with earthy aromatics and moderate lingering finish.",
+      "uncertainty_notes": [
+        "Exact sweetness level and ganjang salinity are not shown",
+        "ginseng bitterness is inferred and may vary"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-033",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.74,
+        "sour": 0.12,
+        "bitter": 0.06,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.24
+      },
+      "perceptual_vector": {
+        "brightness": 0.24,
+        "heaviness": 0.3,
+        "cleanFinish": 0.34,
+        "linger": 0.46,
+        "smoke": 0,
+        "aromaIntensity": 0.44,
+        "textureRichness": 0.36,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.82,
+      "rationale": "Chestnut honey ice cream, ginger preserve, brioche, rice cake, and cinnamon tuile suggest a sweeter warm-spiced dessert with moderate richness and aromatic lift.",
+      "uncertainty_notes": [
+        "This dessert is one of two options, so guest exposure is conditional",
+        "acidity depends on ginger preserve intensity"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-034",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.52,
+        "sour": 0.04,
+        "bitter": 0.06,
+        "salty": 0.14,
+        "umami": 0.36,
+        "fat": 0.22
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.22,
+        "cleanFinish": 0.4,
+        "linger": 0.42,
+        "smoke": 0,
+        "aromaIntensity": 0.52,
+        "textureRichness": 0.34,
+        "thermalImpact": 0.18
+      },
+      "confidence": 0.9,
+      "rationale": "This is the clearest dessert built around Korean ferments on the menu, with doenjang, ganjang, and gochujang explicitly listed alongside vanilla and whisky, implying sweet-savory depth and aromatic complexity.",
+      "uncertainty_notes": [
+        "Guest chooses either this or Ice Hotteok",
+        "exact sweetness and alcohol intensity are not visible from the menu image"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-035",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.44,
+        "sour": 0.04,
+        "bitter": 0.02,
+        "salty": 0.04,
+        "umami": 0.08,
+        "fat": 0.1
+      },
+      "perceptual_vector": {
+        "brightness": 0.18,
+        "heaviness": 0.12,
+        "cleanFinish": 0.38,
+        "linger": 0.18,
+        "smoke": 0,
+        "aromaIntensity": 0.2,
+        "textureRichness": 0.26,
+        "thermalImpact": 0.1
+      },
+      "confidence": 0.42,
+      "rationale": "The menu indicates a Korean petit four finale, which usually functions as a lighter closing sweet bite with limited intensity compared with plated desserts.",
+      "uncertainty_notes": [
+        "Specific components are not listed, so most of this row remains low-confidence inference"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-036",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.06,
+        "bitter": 0.32,
+        "salty": 0.02,
+        "umami": 0.02,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.08,
+        "heaviness": 0.06,
+        "cleanFinish": 0.44,
+        "linger": 0.18,
+        "smoke": 0.06,
+        "aromaIntensity": 0.28,
+        "textureRichness": 0.1,
+        "thermalImpact": 0.34
+      },
+      "confidence": 0.36,
+      "rationale": "Coffee is a distinct closing beverage with higher bitterness and roasted aroma than tea, so it should be modeled separately when a guest selects it.",
+      "uncertainty_notes": [
+        "Coffee origin, roast, and service style are unknown"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    },
+    {
+      "dish_external_key": "mingles-seoul-dish-037",
+      "version": 1,
+      "taste_vector": {
+        "sweet": 0.02,
+        "sour": 0.04,
+        "bitter": 0.08,
+        "salty": 0.02,
+        "umami": 0.02,
+        "fat": 0.02
+      },
+      "perceptual_vector": {
+        "brightness": 0.14,
+        "heaviness": 0.02,
+        "cleanFinish": 0.56,
+        "linger": 0.1,
+        "smoke": 0,
+        "aromaIntensity": 0.16,
+        "textureRichness": 0.08,
+        "thermalImpact": 0.28
+      },
+      "confidence": 0.28,
+      "rationale": "Tea functions as a gentler closing beverage with cleaner finish and lower bitterness than coffee, so it should be represented as its own beverage entity.",
+      "uncertainty_notes": [
+        "Tea type is not specified",
+        "brightness and bitterness vary widely by actual selection"
+      ],
+      "evidence_ids": [
+        "mingles-seoul-mingles-dinner-menu-2026-01-08-user-provided-image"
+      ]
+    }
+  ],
+  "research_rules": []
+}

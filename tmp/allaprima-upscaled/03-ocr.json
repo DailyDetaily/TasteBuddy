@@ -1,0 +1,146 @@
+{
+  "fullText" : "LUNCH\nChicken game. ma. m\nCamaroll Scollop\n베로나콜리, 관자, 높이\nump. Lotus root. Cherry biossom leo\n조세일. 연근, 빛나무\n5000\ncorpon cockal\n스파게티.\nManchurion angers\nico. Yuzu\n매지\n羽期\n門期.期",
+  "imagePath" : "\/Users\/sinjunho\/Desktop\/Taste Buddy app\/tmp\/allaprima-upscaled\/03-allaprima-upscaled.png",
+  "lines" : [
+    {
+      "boundingBox" : {
+        "height" : 0.0159883718490601,
+        "width" : 0.0718954220704589,
+        "x" : 0.45533769232352145,
+        "y" : 0.8488372092910708
+      },
+      "confidence" : 1,
+      "text" : "LUNCH"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.02761627960205082,
+        "width" : 0.20479303500105417,
+        "x" : 0.32244008234385513,
+        "y" : 0.7659883718372636
+      },
+      "confidence" : 0.5,
+      "text" : "Chicken game. ma. m"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.013197674274444515,
+        "width" : 0.15468409822798557,
+        "x" : 0.40958605700801154,
+        "y" : 0.6468023257248032
+      },
+      "confidence" : 1,
+      "text" : "Camaroll Scollop"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.013220930099487327,
+        "width" : 0.16993464022383337,
+        "x" : 0.35294117874429237,
+        "y" : 0.616279069958088
+      },
+      "confidence" : 0.5,
+      "text" : "베로나콜리, 관자, 높이"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.013220930099487327,
+        "width" : 0.3246187270134464,
+        "x" : 0.3289760354856516,
+        "y" : 0.49549999997876193
+      },
+      "confidence" : 1,
+      "text" : "ump. Lotus root. Cherry biossom leo"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.010232558250427237,
+        "width" : 0.150326798880833,
+        "x" : 0.4117647063874702,
+        "y" : 0.48249999987204517
+      },
+      "confidence" : 0.5,
+      "text" : "조세일. 연근, 빛나무"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.013081395149230901,
+        "width" : 0.050108931053882255,
+        "x" : 0.376906319413146,
+        "y" : 0.4244186048054718
+      },
+      "confidence" : 1,
+      "text" : "5000"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.011627906799316357,
+        "width" : 0.11328976014922226,
+        "x" : 0.4836601317627163,
+        "y" : 0.42587209318464414
+      },
+      "confidence" : 1,
+      "text" : "corpon cockal"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.013738170146942119,
+        "width" : 0.07215789268756734,
+        "x" : 0.37241778489603644,
+        "y" : 0.3950204502193986
+      },
+      "confidence" : 0.5,
+      "text" : "스파게티."
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.023856180191040077,
+        "width" : 0.16325158801214623,
+        "x" : 0.3740002464343668,
+        "y" : 0.39972974222817903
+      },
+      "confidence" : 1,
+      "text" : "Manchurion angers"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.011627906799316468,
+        "width" : 0.0806100207647642,
+        "x" : 0.5250544675479012,
+        "y" : 0.40843023273406276
+      },
+      "confidence" : 1,
+      "text" : "ico. Yuzu"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.011651162624359168,
+        "width" : 0.032679736524865,
+        "x" : 0.5686274516722081,
+        "y" : 0.3953488372398767
+      },
+      "confidence" : 0.30000001192092896,
+      "text" : "매지"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.013162790775299138,
+        "width" : 0.030370435972085053,
+        "x" : 0.42278860420082565,
+        "y" : 0.2629999999860897
+      },
+      "confidence" : 0.30000001192092896,
+      "text" : "羽期"
+    },
+    {
+      "boundingBox" : {
+        "height" : 0.010186046600341836,
+        "width" : 0.05228758072745854,
+        "x" : 0.46405228754476757,
+        "y" : 0.13081395349332225
+      },
+      "confidence" : 0.30000001192092896,
+      "text" : "門期.期"
+    }
+  ]
+}

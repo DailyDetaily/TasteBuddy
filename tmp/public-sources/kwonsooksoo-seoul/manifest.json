@@ -1,0 +1,204 @@
+{
+  "fetchedAt": "2026-03-29T14:38:01.660Z",
+  "restaurant": {
+    "slug": "kwonsooksoo-seoul",
+    "displayName": "권숙수",
+    "chefName": "권우중",
+    "city": "Seoul"
+  },
+  "source": {
+    "mode": "public_fallback",
+    "outputDirRelativePath": "tmp/public-sources/kwonsooksoo-seoul",
+    "nextStep": "Review source snippets, copy verified menu/course lines into review-template rows, then generate intake CSVs or seed JSON."
+  },
+  "documents": [
+    {
+      "index": 1,
+      "label": "Official menu page",
+      "sourceType": "official_menu_page",
+      "url": "https://www.kwonsooksoo.com/menu.asp",
+      "fetchedUrl": "https://r.jina.ai/http://www.kwonsooksoo.com/menu.asp",
+      "mirrorUrl": "https://r.jina.ai/http://www.kwonsooksoo.com/menu.asp",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.99,
+      "title": "Kwonsooksoo",
+      "publishedTime": null,
+      "blocked": false,
+      "contentRelativePath": "tmp/public-sources/kwonsooksoo-seoul/01-official-menu-page.md",
+      "excerpt": [
+        "Kwonsooksoo",
+        "homepeopleCUISINEmenugalleryreservationcontactpressenglish",
+        "!Image 2",
+        "lunchDINNER",
+        "점심상 Lunch Course / KRW 240,000",
+        "우리술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "능이 누룽지",
+        "꽃게찜"
+      ],
+      "courseTitleDrafts": [
+        "Kwonsooksoo",
+        "homepeopleCUISINEmenugalleryreservationcontactpressenglish",
+        "!Image 2",
+        "lunchDINNER",
+        "점심상 Lunch Course / KRW 240,000",
+        "우리술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "능이 누룽지",
+        "꽃게찜",
+        "겹김치",
+        "제주 아스파라거스 마늘 솥밥",
+        "or",
+        "어육된장 양갈비",
+        "한우 1++ 안심구이 +25,000",
+        "* 아카시아 페어링"
+      ]
+    },
+    {
+      "index": 2,
+      "label": "MICHELIN Genesis feature",
+      "sourceType": "michelin_article",
+      "url": "https://guide.michelin.com/kr/en/article/features/genesis_kwonsooksoo-en",
+      "fetchedUrl": "https://r.jina.ai/http://guide.michelin.com/kr/en/article/features/genesis_kwonsooksoo-en",
+      "mirrorUrl": "https://r.jina.ai/http://guide.michelin.com/kr/en/article/features/genesis_kwonsooksoo-en",
+      "usedMirror": true,
+      "mirrorError": null,
+      "trustScore": 0.9,
+      "title": "MICHELIN Genesis feature",
+      "publishedTime": null,
+      "blocked": true,
+      "contentRelativePath": "tmp/public-sources/kwonsooksoo-seoul/02-michelin-genesis-feature.md",
+      "excerpt": [],
+      "courseTitleDrafts": []
+    }
+  ],
+  "menuCandidates": [
+    {
+      "id": "kwonsooksoo-seoul-01-1",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Kwonsooksoo",
+      "sourceUrl": "https://www.kwonsooksoo.com/menu.asp",
+      "menuType": "lunch",
+      "menuTitle": "점심상 Lunch Course / KRW 240,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "우리술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "능이 누룽지",
+        "꽃게찜",
+        "겹김치",
+        "제주 아스파라거스 마늘 솥밥",
+        "or",
+        "어육된장 양갈비",
+        "한우 1++ 안심구이 +25,000",
+        "* 아카시아 페어링"
+      ]
+    },
+    {
+      "id": "kwonsooksoo-seoul-01-2",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Kwonsooksoo",
+      "sourceUrl": "https://www.kwonsooksoo.com/menu.asp",
+      "menuType": "lunch",
+      "menuTitle": "숙수상 Lunch Tasting Course / KRW 300,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "우리술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "46년 씨간장과 전복 캐비어",
+        "트러플 콩국수",
+        "꽃게찜",
+        "겹김치",
+        "제주 아스파라거스 마늘 솥밥",
+        "or",
+        "어육된장 양갈비",
+        "한우 1++ 안심구이"
+      ]
+    },
+    {
+      "id": "kwonsooksoo-seoul-01-3",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Kwonsooksoo",
+      "sourceUrl": "https://www.kwonsooksoo.com/menu.asp",
+      "menuType": "dinner",
+      "menuTitle": "저녁상 Dinner Course / KRW 360,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "김치 카트",
+        "우리 술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "능이 누룽지",
+        "남해 바다",
+        "꽃게찜",
+        "한우 1++ 안심구이",
+        "딸기 하모니",
+        "다과 카트",
+        "대표 메뉴",
+        "46년 씨간장을 곁들인 전복과 캐비어 +48,000"
+      ]
+    },
+    {
+      "id": "kwonsooksoo-seoul-01-4",
+      "sourceIndex": 1,
+      "sourceLabel": "Official menu page",
+      "sourceType": "official_menu_page",
+      "sourceTitle": "Kwonsooksoo",
+      "sourceUrl": "https://www.kwonsooksoo.com/menu.asp",
+      "menuType": "other",
+      "menuTitle": "미식상 Chef Tasting Course / KRW 430,000",
+      "priceLabel": null,
+      "priceValue": null,
+      "seasonLabel": null,
+      "courseTitleDrafts": [
+        "김치 카트",
+        "우리 술과 작은 안주를 곁들인 주안상",
+        "두릅육회",
+        "제철 생선찜",
+        "장 테이스팅과 전복 캐비어",
+        "겨울바다맛",
+        "트러플 콩국수",
+        "꽃게찜",
+        "한우 1++ 안심구이",
+        "제주 아스파라거스 마늘 솥밥",
+        "딸기 하모니",
+        "다과 카트"
+      ]
+    }
+  ],
+  "requestedSources": [
+    {
+      "label": "Official menu page",
+      "sourceType": "official_menu_page",
+      "url": "https://www.kwonsooksoo.com/menu.asp",
+      "trustScore": 0.99,
+      "menuType": null,
+      "createReferenceMenu": false
+    },
+    {
+      "label": "MICHELIN Genesis feature",
+      "sourceType": "michelin_article",
+      "url": "https://guide.michelin.com/kr/en/article/features/genesis_kwonsooksoo-en",
+      "trustScore": 0.9,
+      "menuType": null,
+      "createReferenceMenu": true
+    }
+  ]
+}

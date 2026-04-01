@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T12:33:14.366Z",
+  "manifestRelativePath": "tmp/catchtable/kwonsooksoo/manifest.json",
+  "restaurant": {
+    "name": "권숙수",
+    "slug": "kwonsooksoo",
+    "chefName": "권우중",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "menu",
+    "sourceTrustScore": 0.99,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "Mar 17, 2026 catchtable"
+  },
+  "instructions": {
+    "rowEditing": [
+      "rows 배열에 코스별 항목을 추가한다.",
+      "observed 값은 메뉴 이미지에 직접 보이는 정보만 적는다.",
+      "비공개 레시피를 사실처럼 쓰지 않는다.",
+      "inferred 값이 아직 없으면 빈 문자열로 두고 나중에 채운다."
+    ],
+    "coursePositionGuide": [
+      "amuse",
+      "starter",
+      "fish",
+      "main",
+      "dessert",
+      "other"
+    ]
+  },
+  "menus": [
+    {
+      "menuType": "lunch",
+      "menuTitle": "Lunch Course Room included 1 glass of wine. (280,000 KRW)",
+      "rawTitle": "Lunch Course Room included 1 glass of wine. (280,000 KRW) ₩240,000",
+      "priceLabel": "KRW 240,000",
+      "priceValue": 240000,
+      "foodMenuSeq": "1488097",
+      "sourceTitle": "Catchtable Kwonsooksoo Lunch Course Room included 1 glass of wine. (280,000 KRW) KRW 240,000 menu image (Last update: Mar 17, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/kwonsooksoo/menu?foodMenuSeq=1488097",
+      "localImageRelativePath": null,
+      "seasonLabel": "Mar 17, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "lunch",
+      "menuTitle": "Weeknd and holiday lunch The course included 1 glass of aperitif.",
+      "rawTitle": "Weeknd and holiday lunch The course included 1 glass of aperitif. ₩280,000",
+      "priceLabel": "KRW 280,000",
+      "priceValue": 280000,
+      "foodMenuSeq": "1488098",
+      "sourceTitle": "Catchtable Kwonsooksoo Weeknd and holiday lunch The course included 1 glass of aperitif. KRW 280,000 menu image (Last update: Mar 17, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/kwonsooksoo/menu?foodMenuSeq=1488098",
+      "localImageRelativePath": null,
+      "seasonLabel": "Mar 17, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner Course Room included 2 glasses of wine. (480,000 KRW)",
+      "rawTitle": "Dinner Course Room included 2 glasses of wine. (480,000 KRW) ₩360,000",
+      "priceLabel": "KRW 360,000",
+      "priceValue": 360000,
+      "foodMenuSeq": "1293529",
+      "sourceTitle": "Catchtable Kwonsooksoo Dinner Course Room included 2 glasses of wine. (480,000 KRW) KRW 360,000 menu image (Last update: Mar 17, 2026)",
+      "sourceUrl": "http://www.catchtable.net/shop/kwonsooksoo/menu?foodMenuSeq=1293529",
+      "localImageRelativePath": null,
+      "seasonLabel": "Mar 17, 2026 dinner",
+      "rows": []
+    }
+  ]
+}

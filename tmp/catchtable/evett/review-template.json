@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-03-29T12:32:56.850Z",
+  "manifestRelativePath": "tmp/catchtable/evett/manifest.json",
+  "restaurant": {
+    "name": "에빗",
+    "slug": "evett",
+    "chefName": "조셉 리저우드",
+    "city": "Seoul"
+  },
+  "defaults": {
+    "priority": "P1",
+    "sourceType": "menu",
+    "sourceTrustScore": 0.99,
+    "temperatureBand": "room",
+    "seasonLabelFallback": "Feb 03, 2026 catchtable"
+  },
+  "instructions": {
+    "rowEditing": [
+      "rows 배열에 코스별 항목을 추가한다.",
+      "observed 값은 메뉴 이미지에 직접 보이는 정보만 적는다.",
+      "비공개 레시피를 사실처럼 쓰지 않는다.",
+      "inferred 값이 아직 없으면 빈 문자열로 두고 나중에 채운다."
+    ],
+    "coursePositionGuide": [
+      "amuse",
+      "starter",
+      "fish",
+      "main",
+      "dessert",
+      "other"
+    ]
+  },
+  "menus": [
+    {
+      "menuType": "lunch",
+      "menuTitle": "Lunch tasting menu",
+      "rawTitle": "Lunch tasting menu ₩190,000",
+      "priceLabel": "KRW 190,000",
+      "priceValue": 190000,
+      "foodMenuSeq": "1358109",
+      "sourceTitle": "Catchtable evett Lunch tasting menu KRW 190,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1358109",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "lunch",
+      "menuTitle": "Valentine’s Lunch Tasting Menu This is a special course menu for Valentine’s Day on February 14.",
+      "rawTitle": "Valentine’s Lunch Tasting Menu This is a special course menu for Valentine’s Day on February 14. ₩300,000",
+      "priceLabel": "KRW 300,000",
+      "priceValue": 300000,
+      "foodMenuSeq": "1350218",
+      "sourceTitle": "Catchtable evett Valentine’s Lunch Tasting Menu This is a special course menu for Valentine’s Day on February 14. KRW 300,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1350218",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner tasting menu",
+      "rawTitle": "Dinner tasting menu ₩300,000",
+      "priceLabel": "KRW 300,000",
+      "priceValue": 300000,
+      "foodMenuSeq": "1410617",
+      "sourceTitle": "Catchtable evett Dinner tasting menu KRW 300,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1410617",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 dinner",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Valentine’s Dinner Tasting Menu This is a special course menu for Valentine’s Day on February 14.",
+      "rawTitle": "Valentine’s Dinner Tasting Menu This is a special course menu for Valentine’s Day on February 14. ₩400,000",
+      "priceLabel": "KRW 400,000",
+      "priceValue": 400000,
+      "foodMenuSeq": "1348986",
+      "sourceTitle": "Catchtable evett Valentine’s Dinner Tasting Menu This is a special course menu for Valentine’s Day on February 14. KRW 400,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1348986",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 dinner",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner tasting menu(from April 1)",
+      "rawTitle": "Dinner tasting menu(from April 1) ₩330,000",
+      "priceLabel": "KRW 330,000",
+      "priceValue": 330000,
+      "foodMenuSeq": "1410620",
+      "sourceTitle": "Catchtable evett Dinner tasting menu(from April 1) KRW 330,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1410620",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 dinner",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner Wine Pairing",
+      "rawTitle": "Dinner Wine Pairing ₩320,000",
+      "priceLabel": "KRW 320,000",
+      "priceValue": 320000,
+      "foodMenuSeq": "1410619",
+      "sourceTitle": "Catchtable evett Dinner Wine Pairing KRW 320,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1410619",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 dinner",
+      "rows": []
+    },
+    {
+      "menuType": "dinner",
+      "menuTitle": "Dinner Korean Liquor Pairing",
+      "rawTitle": "Dinner Korean Liquor Pairing ₩150,000",
+      "priceLabel": "KRW 150,000",
+      "priceValue": 150000,
+      "foodMenuSeq": "1358112",
+      "sourceTitle": "Catchtable evett Dinner Korean Liquor Pairing KRW 150,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1358112",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 dinner",
+      "rows": []
+    },
+    {
+      "menuType": "lunch",
+      "menuTitle": "Lunch Korean Liquor Pairing",
+      "rawTitle": "Lunch Korean Liquor Pairing ₩120,000",
+      "priceLabel": "KRW 120,000",
+      "priceValue": 120000,
+      "foodMenuSeq": "1201400",
+      "sourceTitle": "Catchtable evett Lunch Korean Liquor Pairing KRW 120,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1201400",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "lunch",
+      "menuTitle": "Lunch Wine Pairing",
+      "rawTitle": "Lunch Wine Pairing ₩220,000",
+      "priceLabel": "KRW 220,000",
+      "priceValue": 220000,
+      "foodMenuSeq": "1201401",
+      "sourceTitle": "Catchtable evett Lunch Wine Pairing KRW 220,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=1201401",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 lunch",
+      "rows": []
+    },
+    {
+      "menuType": "other",
+      "menuTitle": "Wine Corkage (bottle)",
+      "rawTitle": "Wine Corkage (bottle) ₩100,000",
+      "priceLabel": "KRW 100,000",
+      "priceValue": 100000,
+      "foodMenuSeq": "4028",
+      "sourceTitle": "Catchtable evett Wine Corkage (bottle) KRW 100,000 menu image (Last update: Feb 03, 2026)",
+      "sourceUrl": "https://www.catchtable.net/shop/evett/menu?foodMenuSeq=4028",
+      "localImageRelativePath": null,
+      "seasonLabel": "Feb 03, 2026 other",
+      "rows": []
+    }
+  ]
+}

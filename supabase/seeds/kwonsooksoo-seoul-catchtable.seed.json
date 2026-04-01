@@ -1,0 +1,2276 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Catchtable seed generated from reviewed menu data for 권숙수.",
+    "generatedFrom": "tmp/public-sources/kwonsooksoo-seoul/review-template.autofilled.json",
+    "generatedAt": "2026-03-29T14:44:28.086Z",
+    "notes": [
+      "Observed fields come from Catchtable menu images and reviewed OCR output.",
+      "Inferred fields remain hypotheses until a human reviews or enriches them."
+    ]
+  },
+  "restaurants": [
+    {
+      "slug": "kwonsooksoo-seoul",
+      "name": "권숙수",
+      "timezone": "Asia/Seoul",
+      "city": "서울",
+      "intro": "권숙수 큐레이션 메뉴 시드 데이터입니다."
+    }
+  ],
+  "chefs": [
+    {
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "display_name": "권우중",
+      "bio": "캐치테이블 메뉴 워크플로우에서 가져온 셰프 프로필 placeholder입니다.",
+      "avatar_path": "chefs/kwonsooksoo-seoul.png"
+    }
+  ],
+  "source_documents": [
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "source_type": "menu",
+      "title": "Kwonsooksoo",
+      "url": "https://www.kwonsooksoo.com/menu.asp",
+      "excerpt": "우리술과 작은 안주를 곁들인 주안상 / 두릅육회 / 제철 생선찜 / 능이 누룽지 / 꽃게찜 / 겹김치",
+      "raw_text": "우리술과 작은 안주를 곁들인 주안상\n두릅육회\n제철 생선찜\n능이 누룽지\n꽃게찜\n겹김치\n제주 아스파라거스 마늘 솥밥\n어육된장 양갈비\n한우 1++ 안심구이 +25,000\n아카시아 페어링",
+      "trust_score": 0.9
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "source_type": "menu",
+      "title": "Kwonsooksoo",
+      "url": "https://www.kwonsooksoo.com/menu.asp",
+      "excerpt": "우리술과 작은 안주를 곁들인 주안상 / 두릅육회 / 제철 생선찜 / 46년 씨간장과 전복 캐비어 / 트러플 콩국수 / 꽃게찜",
+      "raw_text": "우리술과 작은 안주를 곁들인 주안상\n두릅육회\n제철 생선찜\n46년 씨간장과 전복 캐비어\n트러플 콩국수\n꽃게찜\n겹김치\n제주 아스파라거스 마늘 솥밥\n어육된장 양갈비\n한우 1++ 안심구이",
+      "trust_score": 0.9
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "source_type": "menu",
+      "title": "Kwonsooksoo",
+      "url": "https://www.kwonsooksoo.com/menu.asp",
+      "excerpt": "김치 카트 / 우리 술과 작은 안주를 곁들인 주안상 / 두릅육회 / 제철 생선찜 / 능이 누룽지 / 남해 바다",
+      "raw_text": "김치 카트\n우리 술과 작은 안주를 곁들인 주안상\n두릅육회\n제철 생선찜\n능이 누룽지\n남해 바다\n꽃게찜\n한우 1++ 안심구이\n딸기 하모니\n다과 카트\n대표 메뉴\n46년 씨간장을 곁들인 전복과 캐비어 +48,000",
+      "trust_score": 0.9
+    }
+  ],
+  "dish_entities": [
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-01",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "우리술과 작은 안주를 곁들인 주안상",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-02",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "두릅육회",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-03",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "제철 생선찜",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-04",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "능이 누룽지",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-05",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "꽃게찜",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-06",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "겹김치",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-07",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "제주 아스파라거스 마늘 솥밥",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-08",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "어육된장 양갈비",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-09",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "한우 1++ 안심구이 +25,000",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-10",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "아카시아 페어링",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-01",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "우리술과 작은 안주를 곁들인 주안상",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-02",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "두릅육회",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-03",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "제철 생선찜",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-04",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "46년 씨간장과 전복 캐비어",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-05",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "트러플 콩국수",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-06",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "꽃게찜",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-07",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "겹김치",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-08",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "제주 아스파라거스 마늘 솥밥",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-09",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "어육된장 양갈비",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-10",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "한우 1++ 안심구이",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-01",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "김치 카트",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-02",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "우리 술과 작은 안주를 곁들인 주안상",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-03",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "두릅육회",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-04",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "제철 생선찜",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-05",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "능이 누룽지",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-06",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "남해 바다",
+      "public_subtitle": null,
+      "course_position": "starter",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-07",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "꽃게찜",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-08",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "한우 1++ 안심구이",
+      "public_subtitle": null,
+      "course_position": "main",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-09",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "딸기 하모니",
+      "public_subtitle": null,
+      "course_position": "petit_four",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-10",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "다과 카트",
+      "public_subtitle": null,
+      "course_position": "petit_four",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-11",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "대표 메뉴",
+      "public_subtitle": null,
+      "course_position": "dessert",
+      "status": "active"
+    },
+    {
+      "external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-12",
+      "restaurant_slug": "kwonsooksoo-seoul",
+      "season_label": "public fallback source",
+      "public_title": "46년 씨간장을 곁들인 전복과 캐비어 +48,000",
+      "public_subtitle": null,
+      "course_position": "fish",
+      "status": "active"
+    }
+  ],
+  "dish_observed_facts": [
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "우리술과 작은 안주를 곁들인 주안상",
+      "value_json": {
+        "ingredients": [
+          "우리술과 작은 안주를 곁들인 주안상"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "두릅육회",
+      "value_json": {
+        "ingredients": [
+          "두릅육회"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "제철 생선찜",
+      "value_json": {
+        "ingredients": [
+          "제철 생선찜"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "능이 누룽지",
+      "value_json": {
+        "ingredients": [
+          "능이 누룽지"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "꽃게찜",
+      "value_json": {
+        "ingredients": [
+          "꽃게찜"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 생선 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 생선 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "겹김치",
+      "value_json": {
+        "ingredients": [
+          "겹김치"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "제주 아스파라거스 마늘 솥밥",
+      "value_json": {
+        "ingredients": [
+          "제주 아스파라거스 마늘 솥밥"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "어육된장 양갈비",
+      "value_json": {
+        "ingredients": [
+          "어육된장 양갈비"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "한우 1++ 안심구이 +25,000",
+      "value_json": {
+        "ingredients": [
+          "한우 1++ 안심구이 +25,000"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "ingredients",
+      "value_text": "아카시아 페어링",
+      "value_json": {
+        "ingredients": [
+          "아카시아 페어링"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 디저트 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 디저트 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "우리술과 작은 안주를 곁들인 주안상",
+      "value_json": {
+        "ingredients": [
+          "우리술과 작은 안주를 곁들인 주안상"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "두릅육회",
+      "value_json": {
+        "ingredients": [
+          "두릅육회"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "제철 생선찜",
+      "value_json": {
+        "ingredients": [
+          "제철 생선찜"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "46년 씨간장과 전복 캐비어",
+      "value_json": {
+        "ingredients": [
+          "46년 씨간장과 전복 캐비어"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 생선 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 생선 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "트러플 콩국수",
+      "value_json": {
+        "ingredients": [
+          "트러플 콩국수"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "꽃게찜",
+      "value_json": {
+        "ingredients": [
+          "꽃게찜"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 생선 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 생선 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "겹김치",
+      "value_json": {
+        "ingredients": [
+          "겹김치"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "제주 아스파라거스 마늘 솥밥",
+      "value_json": {
+        "ingredients": [
+          "제주 아스파라거스 마늘 솥밥"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "어육된장 양갈비",
+      "value_json": {
+        "ingredients": [
+          "어육된장 양갈비"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "ingredients",
+      "value_text": "한우 1++ 안심구이",
+      "value_json": {
+        "ingredients": [
+          "한우 1++ 안심구이"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "김치 카트",
+      "value_json": {
+        "ingredients": [
+          "김치 카트"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-01",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "우리 술과 작은 안주를 곁들인 주안상",
+      "value_json": {
+        "ingredients": [
+          "우리 술과 작은 안주를 곁들인 주안상"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-02",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "두릅육회",
+      "value_json": {
+        "ingredients": [
+          "두릅육회"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-03",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "제철 생선찜",
+      "value_json": {
+        "ingredients": [
+          "제철 생선찜"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 생선 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 생선 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-04",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "능이 누룽지",
+      "value_json": {
+        "ingredients": [
+          "능이 누룽지"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-05",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "남해 바다",
+      "value_json": {
+        "ingredients": [
+          "남해 바다"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-06",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "꽃게찜",
+      "value_json": {
+        "ingredients": [
+          "꽃게찜"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 생선 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 생선 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-07",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "한우 1++ 안심구이",
+      "value_json": {
+        "ingredients": [
+          "한우 1++ 안심구이"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 메인 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 메인 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-08",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "딸기 하모니",
+      "value_json": {
+        "ingredients": [
+          "딸기 하모니"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-09",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "다과 카트",
+      "value_json": {
+        "ingredients": [
+          "다과 카트"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 코스명",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 코스명"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-10",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-11",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "대표 메뉴",
+      "value_json": {
+        "ingredients": [
+          "대표 메뉴"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-11",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 디저트 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 디저트 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-11",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-11",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "room",
+      "value_json": {
+        "temperature_band": "room"
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-12",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "ingredients",
+      "value_text": "46년 씨간장을 곁들인 전복과 캐비어 +48,000",
+      "value_json": {
+        "ingredients": [
+          "46년 씨간장을 곁들인 전복과 캐비어 +48,000"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-12",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "techniques",
+      "value_text": "공개 메뉴 기반 생선 코스",
+      "value_json": {
+        "techniques": [
+          "공개 메뉴 기반 생선 코스"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-12",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "sensory_words",
+      "value_text": "공개 메뉴 초안",
+      "value_json": {
+        "sensory_words": [
+          "공개 메뉴 초안"
+        ]
+      },
+      "confidence": 0.9
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-12",
+      "source_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000",
+      "fact_type": "temperature_band",
+      "value_text": "mixed",
+      "value_json": {
+        "temperature_band": "mixed"
+      },
+      "confidence": 0.9
+    }
+  ],
+  "dish_inference_profiles": [
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-01",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-02",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-03",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-04",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-05",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-06",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-07",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-08",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-09",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000-dish-10",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-course-krw-240-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-01",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-02",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-03",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-04",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-05",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-06",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-07",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-08",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-09",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000-dish-10",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-lunch-lunch-tasting-course-krw-300-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-01",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-02",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-03",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-04",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-05",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-06",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-07",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-08",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-09",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-10",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-11",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    },
+    {
+      "dish_external_key": "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000-dish-12",
+      "version": 1,
+      "taste_vector": {},
+      "perceptual_vector": {},
+      "confidence": 0.15,
+      "rationale": "Auto-generated from public source courseTitleDrafts. Review and refine before production use.",
+      "uncertainty_notes": [
+        "공개 소스 courseTitleDrafts 기반 자동 행입니다. 실제 메뉴 순서와 표기를 검수하세요."
+      ],
+      "evidence_ids": [
+        "kwonsooksoo-seoul-dinner-dinner-course-krw-360-000"
+      ]
+    }
+  ],
+  "research_rules": []
+}
