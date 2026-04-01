@@ -18,7 +18,7 @@ import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
 import OutlineBadge from '../components/system/OutlineBadge';
 import SectionTitle from '../components/system/SectionTitle';
-import { DATA_VIZ_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_LABEL_TO_ID, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
+import { DATA_VIZ_TOKENS, MOTION_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_LABEL_TO_ID, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
 import { TASTE_COLORS, getTasteColor, getTasteTint, getTasteTintSubText, mixHexColors } from '../constants/tasteColors';
 import {
   formatMeasurementDate,
@@ -1378,6 +1378,39 @@ function trianglePolygon(
   }).join(' ');
 }
 
+function movePointTowardCenter(
+  cx: number,
+  cy: number,
+  x: number,
+  y: number,
+  offset: number,
+): [number, number] {
+  const dx = cx - x;
+  const dy = cy - y;
+  const distance = Math.hypot(dx, dy);
+  const safeOffset = Math.min(offset, distance);
+
+  if (distance === 0 || safeOffset === 0) {
+    return [x, y];
+  }
+
+  return [
+    x + (dx / distance) * safeOffset,
+    y + (dy / distance) * safeOffset,
+  ];
+}
+
+function clampUnit(value: number) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function getBloomProgress(progress: number, delay: number) {
+  const localProgress = clampUnit((progress - delay) / 0.88);
+  const petalEase = 0.5 - Math.cos(localProgress * Math.PI) / 2;
+
+  return petalEase * petalEase * (3 - 2 * petalEase);
+}
+
 function getRoundedClosedCorners(
   points: ReadonlyArray<readonly [number, number]>,
   cornerRadius: number,
@@ -1467,32 +1500,93 @@ function buildRoundedClosedSegmentPaths(
 }
 
 // 커스텀 6각형 레이더 차트
-function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }) {
+function HexRadarChart({
+  myTasteData,
+  shouldAnimate = true,
+}: {
+  myTasteData: TasteMeasurementEntry[];
+  shouldAnimate?: boolean;
+}) {
   const cx = 160;
   const cy = 145;
   const maxR = 100;
   const gridLevels = [0.25, 0.5, 0.75, 1];
   const gridStrokeColor = mixHexColors(RADAR_CHART.gridColor, '#FFFFFF', 0.45);
+  const profileBloomDuration = (MOTION_TOKENS.durationMs.slowest + 220) * 2;
   const centerStarRadius = 18 * (25 / 27);
   const centerStarUp = trianglePolygon(cx, cy, centerStarRadius, -90);
   const centerStarDown = trianglePolygon(cx, cy, centerStarRadius, 90);
   const gradientIdPrefix = React.useId().replace(/:/g, '');
+  const radarMotionFrameRef = useRef<number | null>(null);
+  const [profileMotionProgress, setProfileMotionProgress] = useState(0);
+  const tasteProfileAnimationKey = myTasteData
+    .map(({ label, score, averageScore }) => `${label}:${score}:${averageScore}`)
+    .join('|');
+
+  useEffect(() => {
+    if (radarMotionFrameRef.current !== null) {
+      cancelAnimationFrame(radarMotionFrameRef.current);
+      radarMotionFrameRef.current = null;
+    }
+
+    if (!shouldAnimate) {
+      setProfileMotionProgress(0);
+      return;
+    }
+
+    if (
+      typeof window !== 'undefined'
+      && typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      setProfileMotionProgress(1);
+      return;
+    }
+
+    setProfileMotionProgress(0);
+    let animationStart: number | null = null;
+    const animateProfile = (timestamp: number) => {
+      if (animationStart === null) {
+        animationStart = timestamp;
+      }
+
+      const elapsed = timestamp - animationStart;
+      const rawProgress = Math.min(elapsed / profileBloomDuration, 1);
+
+      setProfileMotionProgress(rawProgress);
+
+      if (rawProgress < 1) {
+        radarMotionFrameRef.current = requestAnimationFrame(animateProfile);
+        return;
+      }
+
+      radarMotionFrameRef.current = null;
+    };
+
+    radarMotionFrameRef.current = requestAnimationFrame(animateProfile);
+
+    return () => {
+      if (radarMotionFrameRef.current !== null) {
+        cancelAnimationFrame(radarMotionFrameRef.current);
+        radarMotionFrameRef.current = null;
+      }
+    };
+  }, [shouldAnimate, tasteProfileAnimationKey]);
+
+  const bloomStageDelays = [0, 0.024, 0.048, 0.072, 0.096, 0.12];
+  const pointBloomProgresses = myTasteData.map((_, index) =>
+    getBloomProgress(profileMotionProgress, bloomStageDelays[index] ?? 0),
+  );
+  const overallBloomProgress = getBloomProgress(profileMotionProgress, 0.02);
 
   // 나의 민감도 폴리곤 좌표
   const myPoints = myTasteData.map((d, i) => {
-    const r = (d.score / 100) * maxR;
+    const r = (d.score / 100) * maxR * (pointBloomProgresses[i] ?? overallBloomProgress);
     return hexPoint(cx, cy, r, i);
   });
-  const myNodePoints = myPoints.map(([x, y]) => {
-    const dx = cx - x;
-    const dy = cy - y;
-    const distance = Math.hypot(dx, dy) || 1;
-
-    return [
-      x + (dx / distance) * 10,
-      y + (dy / distance) * 10,
-    ] as const;
-  });
+  const myNodePoints = myPoints.map(([x, y], index) =>
+    movePointTowardCenter(cx, cy, x, y, 10 * (pointBloomProgresses[index] ?? overallBloomProgress)),
+  );
   const mySegmentPaths = buildRoundedClosedSegmentPaths(myPoints, 8);
 
   // 평균 민감도 폴리곤 좌표
@@ -1650,6 +1744,7 @@ function HexRadarChart({ myTasteData }: { myTasteData: TasteMeasurementEntry[] }
 }
 
 interface AnalysisPageProps {
+  isActive?: boolean;
   measurementSnapshot: TasteMeasurementSnapshot;
   onStartMeasurement: () => void;
   onOpenNotifications?: () => void;
@@ -1658,6 +1753,7 @@ interface AnalysisPageProps {
 }
 
 export default function AnalysisPage({
+  isActive = true,
   measurementSnapshot,
   onStartMeasurement,
   onOpenNotifications,
@@ -2089,7 +2185,7 @@ export default function AnalysisPage({
               </div>
 
               <div className="flex w-full flex-col items-center animate-slideUp">
-                <HexRadarChart myTasteData={myTasteData} />
+                <HexRadarChart myTasteData={myTasteData} shouldAnimate={isActive} />
 
                 <div className="mt-2 flex items-end gap-0">
                   <div className="flex flex-col items-center gap-[4px]">

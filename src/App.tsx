@@ -337,6 +337,7 @@ function MainApp() {
           >
             {latestTasteMeasurementSnapshot ? (
               <AnalysisPage
+                isActive={activeTab === 'analysis'}
                 measurementSnapshot={latestTasteMeasurementSnapshot}
                 onStartMeasurement={() => handleStartMeasurementFromMain('analysis')}
                 {...overlayProps}
