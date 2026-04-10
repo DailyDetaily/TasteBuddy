@@ -1,7 +1,48 @@
 import {
-  ChevronLeftRegular, ChevronRightRegular, InfoRegular
+  ChevronLeftRegular, ChevronRightRegular
 } from '@fluentui/react-icons';
 import React, { useEffect, useRef, useState } from 'react';
+import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  buildHomeReservationHint,
+  buildHomeSpecialNoteFromReservations,
+  buildHomeTasteProfileFromMeasurements,
+  LegacyHomeSpecialNoteCard,
+  LegacyHomeTasteProfileCard,
+} from '../imports/Home';
+import PalateSignatureHeroCard from '../components/analysis/PalateSignatureHeroCard';
+import RealMenuRecommendationCard from '../components/analysis/RealMenuRecommendationCard';
+import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
+import TopAppBar from '../components/TopAppBar';
+import SectionCard from '../components/SectionCard';
+import InsightCard from '../components/system/InsightCard';
+import PageSection from '../components/system/PageSection';
+import ProfileConfidenceCard, {
+  type ProfileConfidenceStage,
+} from '../components/system/ProfileConfidenceCard';
+import SectionTitle from '../components/system/SectionTitle';
+import { DATA_VIZ_TOKENS, ICON_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_LABEL_TO_ID, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
+import { TASTE_COLORS, buildTasteAdjustmentGradient, getTasteColor, getTasteTint, getTasteTintSubText, mixHexColors } from '../constants/tasteColors';
+import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
+import {
+  formatMeasurementDate,
+  getAverageMeasurementMm,
+  getTasteMeasurementAgeLabel,
+  getAverageReferenceMeasurementMm,
+  getStrongestTasteMeasurement,
+  getTasteMeasurementEntries,
+  getWeakestTasteMeasurement,
+  isTasteMeasurementStale,
+  type TasteMeasurementEntry,
+  type TasteMeasurementSnapshot,
+} from '../constants/tasteMeasurementData';
+import {
+  hydrateRecentMeasurementSnapshots,
+  hydrateReservationPageData,
+  hydrateRestaurantContentCatalog,
+  type RestaurantContentDish,
+} from '../lib/tasteBuddySupabase';
+import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reservationCatalog';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, ...props }: any) => (
@@ -11,33 +52,6 @@ const wrapIcon = (IconComponent: React.ElementType) => {
 
 const ChevronLeft = wrapIcon(ChevronLeftRegular);
 const ChevronRight = wrapIcon(ChevronRightRegular);
-const Info = wrapIcon(InfoRegular);
-import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
-import TopAppBar from '../components/TopAppBar';
-import SectionCard from '../components/SectionCard';
-import OutlineBadge from '../components/system/OutlineBadge';
-import SectionTitle from '../components/system/SectionTitle';
-import { DATA_VIZ_TOKENS, MOTION_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_LABEL_TO_ID, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
-import { TASTE_COLORS, getTasteColor, getTasteTint, getTasteTintSubText, mixHexColors } from '../constants/tasteColors';
-import {
-  formatMeasurementDate,
-  getAverageMeasurementMm,
-  getTasteMeasurementAgeLabel,
-  getAverageReferenceMeasurementMm,
-  getStrongestTasteMeasurement,
-  getTasteMeasurementEntries,
-  getTasteProfileBadge,
-  getWeakestTasteMeasurement,
-  isTasteMeasurementStale,
-  type TasteMeasurementEntry,
-  type TasteMeasurementSnapshot,
-} from '../constants/tasteMeasurementData';
-import {
-  hydrateRecentMeasurementSnapshots,
-  hydrateRestaurantContentCatalog,
-  type RestaurantContentDish,
-} from '../lib/tasteBuddySupabase';
 
 const RADAR_CHART = DATA_VIZ_TOKENS.radar;
 const TREND_TINT_LINE_STROKE_WIDTH = 10;
@@ -52,6 +66,7 @@ const TREND_GUIDE_BOTTOM_TAIL = 8;
 const TREND_CHART_TOP_MARGIN = 10;
 const TREND_CHART_X_AXIS_HEIGHT = 18;
 const TREND_CHART_Y_AXIS_WIDTH = 34;
+const TREND_WINDOW_NAV_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const GRAPH_TASTE_ORDER = TASTE_LABELS;
 const TREND_RANGE_OPTIONS = [
   { id: 'week', label: '주', days: 7 },
@@ -64,14 +79,31 @@ const TREND_TASTE_OPTIONS = ['모든맛', ...GRAPH_TASTE_ORDER] as const;
 const TREND_GRID_HORIZONTAL_STROKE = '#E2E5EA';
 const TREND_GRID_VERTICAL_STROKE = '#E6E8ED';
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const CHEF_TRANSLATION_COPY =
+  '단맛과 신맛이 현재 더 빠르게 반응하는 포인트이므로, 코스 구성 시 너무 밀도 있게 겹치지 않도록 조절하면 전반적 밸런스가 한층 여유롭게 맞춰집니다.';
+const CHEF_TRANSLATION_ACCENT_COLOR = mixHexColors(
+  getTasteColor('단맛'),
+  getTasteColor('신맛'),
+  0.5,
+);
 
 function formatTasteDeltaSummary(deltaMm: number) {
-  if (Math.abs(deltaMm) < 0.01) {
-    return '기준과 유사';
+  if (Math.abs(deltaMm) < 0.5) {
+    return '평균과 유사한 반응';
+  }
+  return deltaMm > 0 ? '더 또렷하게 감지' : '더 부드럽게 필요';
+}
+
+function deriveProfileConfidenceStage(measurementCount: number): ProfileConfidenceStage {
+  if (measurementCount >= 4) {
+    return 'Refined';
   }
 
-  const signedDelta = `${deltaMm > 0 ? '+' : ''}${deltaMm.toFixed(2)}mM`;
-  return `기준 대비 ${signedDelta}`;
+  if (measurementCount >= 2) {
+    return 'Building';
+  }
+
+  return 'Starter';
 }
 
 type ProfileChangeTrendPoint = {
@@ -1404,11 +1436,67 @@ function clampUnit(value: number) {
   return Math.max(0, Math.min(1, value));
 }
 
-function getBloomProgress(progress: number, delay: number) {
-  const localProgress = clampUnit((progress - delay) / 0.88);
-  const petalEase = 0.5 - Math.cos(localProgress * Math.PI) / 2;
+function solveCubicBezierY(
+  progress: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+) {
+  const clampedProgress = clampUnit(progress);
 
-  return petalEase * petalEase * (3 - 2 * petalEase);
+  if (clampedProgress === 0 || clampedProgress === 1) {
+    return clampedProgress;
+  }
+
+  const cx = 3 * x1;
+  const bx = 3 * (x2 - x1) - cx;
+  const ax = 1 - cx - bx;
+  const cy = 3 * y1;
+  const by = 3 * (y2 - y1) - cy;
+  const ay = 1 - cy - by;
+  const sampleCurveX = (t: number) => ((ax * t + bx) * t + cx) * t;
+  const sampleCurveY = (t: number) => ((ay * t + by) * t + cy) * t;
+  const sampleCurveDerivativeX = (t: number) => (3 * ax * t + 2 * bx) * t + cx;
+
+  let t = clampedProgress;
+
+  for (let iteration = 0; iteration < 5; iteration += 1) {
+    const currentX = sampleCurveX(t) - clampedProgress;
+    const currentSlope = sampleCurveDerivativeX(t);
+
+    if (Math.abs(currentX) < 0.0001 || Math.abs(currentSlope) < 0.000001) {
+      break;
+    }
+
+    t -= currentX / currentSlope;
+  }
+
+  let lowerBound = 0;
+  let upperBound = 1;
+  t = clampUnit(t);
+
+  for (let iteration = 0; iteration < 8; iteration += 1) {
+    const currentX = sampleCurveX(t);
+
+    if (Math.abs(currentX - clampedProgress) < 0.00001) {
+      break;
+    }
+
+    if (currentX > clampedProgress) {
+      upperBound = t;
+    } else {
+      lowerBound = t;
+    }
+
+    t = (lowerBound + upperBound) / 2;
+  }
+
+  return sampleCurveY(t);
+}
+
+function getRadarAnimationProgress(progress: number) {
+  return solveCubicBezierY(progress, 0.3, 0, 0.1, 1);
 }
 
 function getRoundedClosedCorners(
@@ -1512,7 +1600,7 @@ function HexRadarChart({
   const maxR = 100;
   const gridLevels = [0.25, 0.5, 0.75, 1];
   const gridStrokeColor = mixHexColors(RADAR_CHART.gridColor, '#FFFFFF', 0.45);
-  const profileBloomDuration = (MOTION_TOKENS.durationMs.slowest + 220) * 2;
+  const profileAnimationDurationMs = (60 / 60) * 1000;
   const centerStarRadius = 18 * (25 / 27);
   const centerStarUp = trianglePolygon(cx, cy, centerStarRadius, -90);
   const centerStarDown = trianglePolygon(cx, cy, centerStarRadius, 90);
@@ -1551,7 +1639,7 @@ function HexRadarChart({
       }
 
       const elapsed = timestamp - animationStart;
-      const rawProgress = Math.min(elapsed / profileBloomDuration, 1);
+      const rawProgress = Math.min(elapsed / profileAnimationDurationMs, 1);
 
       setProfileMotionProgress(rawProgress);
 
@@ -1571,21 +1659,17 @@ function HexRadarChart({
         radarMotionFrameRef.current = null;
       }
     };
-  }, [shouldAnimate, tasteProfileAnimationKey]);
+  }, [profileAnimationDurationMs, shouldAnimate, tasteProfileAnimationKey]);
 
-  const bloomStageDelays = [0, 0.024, 0.048, 0.072, 0.096, 0.12];
-  const pointBloomProgresses = myTasteData.map((_, index) =>
-    getBloomProgress(profileMotionProgress, bloomStageDelays[index] ?? 0),
-  );
-  const overallBloomProgress = getBloomProgress(profileMotionProgress, 0.02);
+  const animatedProfileProgress = getRadarAnimationProgress(profileMotionProgress);
 
   // 나의 민감도 폴리곤 좌표
   const myPoints = myTasteData.map((d, i) => {
-    const r = (d.score / 100) * maxR * (pointBloomProgresses[i] ?? overallBloomProgress);
+    const r = (d.score / 100) * maxR * animatedProfileProgress;
     return hexPoint(cx, cy, r, i);
   });
-  const myNodePoints = myPoints.map(([x, y], index) =>
-    movePointTowardCenter(cx, cy, x, y, 10 * (pointBloomProgresses[index] ?? overallBloomProgress)),
+  const myNodePoints = myPoints.map(([x, y]) =>
+    movePointTowardCenter(cx, cy, x, y, 10 * animatedProfileProgress),
   );
   const mySegmentPaths = buildRoundedClosedSegmentPaths(myPoints, 8);
 
@@ -1765,6 +1849,8 @@ export default function AnalysisPage({
   const initialTrendDataBounds = getTrendDataBounds(initialTimeline, measurementSnapshot);
   const initialTrendNavigationBounds = getTrendNavigationBounds(initialTrendDataBounds);
   const [measurementTimeline, setMeasurementTimeline] = useState<TasteMeasurementSnapshot[]>(initialTimeline);
+  const [reservations, setReservations] = useState<ReservationRecord[]>(RESERVATION_CATALOG);
+  const [feedbackByReservationId, setFeedbackByReservationId] = useState<Record<number, DiningFeedbackDraft>>({});
   const [selectedTrendRange, setSelectedTrendRange] = useState<TrendRangeId>('all');
   const [trendViewWindow, setTrendViewWindow] = useState<TrendViewWindow>(
     createTrendViewWindowFromRange('all', initialTrendDataBounds, initialTrendNavigationBounds),
@@ -1791,18 +1877,31 @@ export default function AnalysisPage({
   const myTasteData = getTasteMeasurementEntries(measurementSnapshot);
   const totalSensitivity = getAverageMeasurementMm(measurementSnapshot);
   const avgSensitivity = getAverageReferenceMeasurementMm();
-  const strongestTaste = getStrongestTasteMeasurement(measurementSnapshot);
-  const weakestTaste = getWeakestTasteMeasurement(measurementSnapshot);
-  const tasteProfileBadge = getTasteProfileBadge(totalSensitivity);
   const insights = buildInsights(myTasteData, totalSensitivity, avgSensitivity);
   const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
+  const chefTranslationIndicatorBackground = buildTasteAdjustmentGradient(
+    myTasteData
+      .filter((entry) => CHEF_TRANSLATION_COPY.includes(entry.label))
+      .map((entry) => ({
+        change: entry.score,
+        taste: entry.label,
+      })),
+    'to bottom',
+  );
   const realMenuRecommendations = buildRealMenuRecommendations(measurementSnapshot, contentDishes);
   const trendDataBounds = getTrendDataBounds(measurementTimeline, measurementSnapshot);
   const trendNavigationBounds = getTrendNavigationBounds(trendDataBounds);
   const activeTrendRange = selectedTrendRange;
   const filteredMeasurements = filterMeasurementsByWindow(measurementTimeline, trendViewWindow);
   const trendData = buildProfileChangeTrendData(filteredMeasurements, trendViewWindow, activeTrendRange);
+  const profileConfidenceStage = deriveProfileConfidenceStage(measurementTimeline.length);
+  const legacyTasteProfileCard = buildHomeTasteProfileFromMeasurements(measurementTimeline).cardData;
+  const legacySpecialNoteCard = buildHomeSpecialNoteFromReservations(
+    reservations,
+    feedbackByReservationId,
+    buildHomeReservationHint(reservations),
+  );
   const hasTrendHistory = filteredMeasurements.length > 1;
   const totalTasteScore = Math.round(totalSensitivity * 10);
   const totalTasteDelta = Number((totalSensitivity - avgSensitivity).toFixed(2));
@@ -1950,9 +2049,10 @@ export default function AnalysisPage({
     let isCancelled = false;
 
     void (async () => {
-      const [recentMeasurements, contentCatalog] = await Promise.all([
+      const [recentMeasurements, contentCatalog, reservationPageData] = await Promise.all([
         hydrateRecentMeasurementSnapshots(),
         hydrateRestaurantContentCatalog(),
+        hydrateReservationPageData(),
       ]);
 
       if (isCancelled) {
@@ -1963,6 +2063,12 @@ export default function AnalysisPage({
 
       setMeasurementTimeline(mergedMeasurements.length > 0 ? mergedMeasurements : [measurementSnapshot]);
       setContentDishes(contentCatalog.dishes);
+      setReservations(
+        reservationPageData.reservations.length > 0
+          ? reservationPageData.reservations
+          : RESERVATION_CATALOG,
+      );
+      setFeedbackByReservationId(reservationPageData.feedbackByReservationId);
     })();
 
     return () => {
@@ -2133,35 +2239,36 @@ export default function AnalysisPage({
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
       <TopAppBar onStartMeasurement={onStartMeasurement} onOpenNotifications={onOpenNotifications} onOpenMenu={onOpenMenu} hasUnreadNotifications={hasUnreadNotifications} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
-        <div className="flex flex-col gap-8 p-5 animate-fadeIn">
-          {/* 페이지 타이틀 */}
-          <div>
-            <h1 className="text-[18px] font-bold tracking-[-0.24px] text-[var(--tb-color-text-primary)]">미각 프로필</h1>
-            <OutlineBadge className="mt-2">{tasteProfileBadge}</OutlineBadge>
-            <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-hint)]">이 프로필은 식사와 피드백을 통해 더 정교해져요</p>
-          </div>
+        <div className="tb-section-stack p-5 animate-fadeIn">
+          <PageSection title="나의 미각" titleAs="h1" titleSize="lg" contentClassName="flex flex-col gap-3">
+            <PalateSignatureHeroCard
+              measurementAgeLabel={measurementAgeLabel}
+              tasteEntries={myTasteData}
+            />
 
-          <div className="flex flex-col gap-3">
-            {/* 슈퍼 테이스터 요약 */}
-            <SectionCard>
-              <div className="flex items-start justify-between w-full">
-                <div className="flex flex-col gap-1">
-                  <p className="text-[16px] font-bold text-[var(--tb-color-text-primary)]">슈퍼 테이스터</p>
-                  <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                    {strongestTaste.label}에 빠르게 반응하고, {weakestTaste.label}은 부드럽게 받아들이는 프로필이에요.<br />
-                    {totalSensitivity > avgSensitivity
-                      ? '전체적으로 평균보다 민감한 편이라, 풍미의 디테일을 더 잘 느낄 수 있어요.'
-                      : '전체적으로 균형 잡힌 프로필이에요. 대부분의 맛을 고르게 즐길 수 있어요.'}
-                  </p>
-                </div>
-                <button className="flex size-[18px] shrink-0 items-center justify-center text-[var(--tb-color-icon-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]">
-                  <Info size={18} />
-                </button>
-              </div>
-            </SectionCard>
+            <InsightCard
+              description={CHEF_TRANSLATION_COPY}
+              eyebrow="셰프는 이렇게 참고합니다 (Chef Translation)"
+              indicatorBackground={chefTranslationIndicatorBackground}
+            />
+
+            <ProfileConfidenceCard
+              measurementAgeLabel={measurementAgeLabel}
+              measurementCount={measurementTimeline.length}
+              needsMeasurementRefresh={needsMeasurementRefresh}
+              stage={profileConfidenceStage}
+              strongestTasteLabel={getStrongestTasteMeasurement(measurementSnapshot).label}
+              weakestTasteLabel={getWeakestTasteMeasurement(measurementSnapshot).label}
+            />
 
             <TasteMeasurementMiniCta
+              accentTaste={
+                needsMeasurementRefresh
+                  ? undefined
+                  : getStrongestTasteMeasurement(measurementSnapshot).label
+              }
               title={needsMeasurementRefresh ? '프로필 업데이트 추천' : '현재 컨디션 다시 측정'}
+              actionFullWidth={!needsMeasurementRefresh}
               description={
                 needsMeasurementRefresh
                   ? `${measurementAgeLabel} 데이터예요. 다시 측정하면 분석 결과를 더 현재 입맛에 맞게 볼 수 있어요.`
@@ -2170,17 +2277,18 @@ export default function AnalysisPage({
               meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
               actionLabel={needsMeasurementRefresh ? '재측정' : '다시 측정'}
               onAction={onStartMeasurement}
+              padding={needsMeasurementRefresh ? 'default' : 'compact'}
               tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
             />
 
             <SectionCard hoverEffect={false}>
               <div className="flex items-center justify-between w-full">
                 <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-muted)]">
-                  <ChevronLeft size={20} className="text-[var(--tb-color-icon-primary)]" />
+                  <ChevronLeft size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
                 </button>
                 <span className="text-[15px] font-semibold text-[var(--tb-color-text-primary)]">{period}</span>
                 <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-muted)]">
-                  <ChevronRight size={20} className="text-[var(--tb-color-icon-primary)]" />
+                  <ChevronRight size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
                 </button>
               </div>
 
@@ -2204,11 +2312,20 @@ export default function AnalysisPage({
                 </div>
               </div>
             </SectionCard>
-          </div>
 
-          <div>
-            <SectionTitle size="md" className="mb-3">세부 분석</SectionTitle>
-            <div className="flex gap-[10px] overflow-x-auto no-scrollbar pt-2 pb-4 w-[calc(100%+40px)] mx-[-20px] px-[20px]">
+            <LegacyHomeTasteProfileCard
+              cardData={legacyTasteProfileCard}
+              onOpenDetail={() => undefined}
+            />
+
+            <LegacyHomeSpecialNoteCard
+              cardData={legacySpecialNoteCard}
+              onOpenDetail={() => undefined}
+            />
+          </PageSection>
+
+          <PageSection title="세부 분석" titleSize="md">
+            <div className="mx-[-20px] flex w-[calc(100%+40px)] gap-[10px] overflow-x-auto px-[20px] pb-4 no-scrollbar">
               {myTasteData.map((item, idx) => {
                 const colors = TASTE_COLORS[item.label as keyof typeof TASTE_COLORS];
                 const tasteId = TASTE_LABEL_TO_ID[item.label as keyof typeof TASTE_LABEL_TO_ID];
@@ -2255,14 +2372,21 @@ export default function AnalysisPage({
                 );
               })}
             </div>
-          </div>
+          </PageSection>
 
           {/* 측정/피드백 변화 차트 */}
-          <div className="flex flex-col gap-3">
-            <div>
-              <SectionTitle size="md" className="mb-3">
-                {hasTrendHistory ? '측정·피드백 기반 미각 변화 추이' : '현재 측정 기준 미각 분포'}
-              </SectionTitle>
+          <details className="group flex flex-col gap-3 pb-6">
+            <summary className="list-none flex cursor-pointer w-full items-center justify-between rounded-[20px] bg-[var(--tb-color-surface-base)] border border-[var(--tb-color-border-default)] p-4 transition-all duration-300 hover:bg-[var(--tb-color-surface-muted)] active:scale-[0.98]">
+              <div className="flex flex-col gap-1">
+                <SectionTitle size="md" className="mb-0">
+                  {hasTrendHistory ? '과거 측정 및 미각 변화 추이' : '현재 측정 기준 미각 분포 차트'}
+                </SectionTitle>
+                <p className="text-[12px] text-[var(--tb-color-text-subtle)] font-normal">전문가용 데이터 대시보드 열기</p>
+              </div>
+              <ChevronRight size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)] transition-transform duration-300 group-open:rotate-90" />
+            </summary>
+            
+            <div className="mt-4 flex flex-col gap-3 animate-fadeIn">
               <SectionCard>
                 <div className="mb-0 w-full">
                   <div className="flex w-full justify-center gap-[8px]">
@@ -2283,15 +2407,19 @@ export default function AnalysisPage({
                   ))}
                   </div>
                 </div>
-              <div className="mb-0 grid w-full grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3 pt-0">
+              <div className="mb-0 grid w-full grid-cols-[40px_minmax(0,1fr)_40px] items-center gap-3 pt-0">
                 <button
                   type="button"
                   disabled={!canShiftTrendWindowBackward}
                   onClick={() => handleShiftTrendWindow(-1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white disabled:cursor-default disabled:border-[var(--tb-color-border-subtle)] disabled:bg-transparent disabled:text-[var(--tb-color-text-disabled)]"
+                  className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white disabled:cursor-default disabled:border-[var(--tb-color-border-subtle)] disabled:bg-transparent disabled:text-[var(--tb-color-text-disabled)]"
+                  style={{
+                    width: TREND_WINDOW_NAV_BUTTON_SIZE,
+                    height: TREND_WINDOW_NAV_BUTTON_SIZE,
+                  }}
                   aria-label="이전 기간 보기"
                 >
-                  <ChevronLeft size={18} />
+                  <ChevronLeft size={ICON_TOKENS.size.lg} />
                 </button>
                 <div className="flex min-w-0 items-center justify-center text-center">
                   <p className="truncate text-[15px] font-semibold leading-none text-[var(--tb-color-text-primary)]">
@@ -2301,10 +2429,14 @@ export default function AnalysisPage({
                 <button
                   type="button"
                   onClick={() => handleShiftTrendWindow(1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white"
+                  className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white"
+                  style={{
+                    width: TREND_WINDOW_NAV_BUTTON_SIZE,
+                    height: TREND_WINDOW_NAV_BUTTON_SIZE,
+                  }}
                   aria-label="다음 기간 보기"
                 >
-                  <ChevronRight size={18} />
+                  <ChevronRight size={ICON_TOKENS.size.lg} />
                 </button>
               </div>
               <div className="mb-0 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -2326,7 +2458,7 @@ export default function AnalysisPage({
                   <TasteDirectionIcon
                     taste={selectedTaste}
                     trend={selectedTasteMeta.trend}
-                    size={32}
+                    size={ICON_TOKENS.size.lg}
                   />
                   <div className="flex min-w-0 flex-col items-start">
                     <span className="truncate text-[14px] font-semibold leading-none text-[var(--tb-color-text-primary)]">
@@ -2487,86 +2619,30 @@ export default function AnalysisPage({
               </div>
             </SectionCard>
             </div>
-
-            {/* 모든 정보 보기 버튼 */}
-            <div className="flex w-full cursor-pointer items-center justify-between rounded-full bg-[var(--tb-color-surface-card)] p-[12px] transition-all duration-300 hover:bg-[var(--tb-color-surface-muted)] active:scale-[0.98]">
-              <span className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">모든 정보 보기</span>
-              <ChevronRight size={16} className="text-[var(--tb-color-icon-primary)]" />
-            </div>
-          </div>
+          </details>
 
           {realMenuRecommendations.length > 0 ? (
-            <div>
-              <SectionTitle size="md" className="mb-3">지금 프로필에 맞는 실제 메뉴</SectionTitle>
+            <PageSection title="지금 프로필에 맞는 실제 메뉴" titleSize="md">
               <div className="flex flex-col gap-3">
                 {realMenuRecommendations.map((menu) => (
-                  <SectionCard key={menu.id}>
-                    <div className="flex w-full flex-col gap-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-[12px] font-medium text-[var(--tb-color-text-hint)]">
-                            {menu.restaurant} · {menu.chef}
-                          </p>
-                          <h3 className="mt-1 text-[16px] font-bold text-[var(--tb-color-text-primary)]">
-                            {menu.title}
-                          </h3>
-                          <p className="mt-1 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                            {menu.subtitle || menu.ingredients.slice(0, 4).join(' · ') || `${menu.courseLabel} 코스`}
-                          </p>
-                        </div>
-                        <OutlineBadge className="shrink-0">{menu.fitScore}% 적합</OutlineBadge>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <span
-                          className="rounded-full px-[10px] py-[5px] text-[12px] font-semibold"
-                          style={{
-                            backgroundColor: getTasteTint(menu.tasteLabel, 0.16),
-                            color: getTasteColor(menu.tasteLabel),
-                          }}
-                        >
-                          {menu.tasteLabel}
-                        </span>
-                        <span className="rounded-full bg-[var(--tb-color-surface-muted)] px-[10px] py-[5px] text-[12px] font-medium text-[var(--tb-color-text-secondary)]">
-                          {menu.courseLabel}
-                        </span>
-                        {menu.ingredients.slice(0, 2).map((ingredient) => (
-                          <span
-                            key={`${menu.id}:${ingredient}`}
-                            className="rounded-full bg-[var(--tb-color-surface-card)] px-[10px] py-[5px] text-[12px] font-medium text-[var(--tb-color-text-subtle)]"
-                          >
-                            {ingredient}
-                          </span>
-                        ))}
-                      </div>
-
-                      <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                        {menu.reason}
-                      </p>
-                    </div>
-                  </SectionCard>
+                  <RealMenuRecommendationCard key={menu.id} menu={menu} />
                 ))}
               </div>
-            </div>
+            </PageSection>
           ) : null}
 
           {/* 인사이트 */}
-          <div className="pb-6">
-            <SectionTitle size="md" className="mb-3">인사이트</SectionTitle>
-            <div className="flex flex-col gap-2">
+          <PageSection title="인사이트" titleSize="md" className="pb-6">
+            <div className="flex flex-col gap-3">
               {insights.map((item, idx) => (
-                <SectionCard key={idx}>
-                  <div className="flex items-center gap-3 w-full">
-                    <div
-                      className="shrink-0 w-[8px] h-[36px] rounded-full"
-                      style={{ backgroundColor: getTasteColor(item.taste) }}
-                    />
-                    <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">{item.text}</p>
-                  </div>
-                </SectionCard>
+                <InsightCard
+                  key={idx}
+                  accentColor={getTasteColor(item.taste)}
+                  description={item.text}
+                />
               ))}
             </div>
-          </div>
+          </PageSection>
         </div>
       </div>
     </div>

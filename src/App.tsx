@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import Home from './imports/Home';
+import Home from './pages/HomePage';
 import AnalysisPage from './pages/AnalysisPage';
 import DesignSystemPage from './pages/DesignSystemPage';
 import DesignSystemPreviewPage from './pages/DesignSystemPreviewPage';
+import FigmaWorksPreviewPage from './pages/FigmaWorksPreviewPage';
 import ReservationPage from './pages/ReservationPage';
 import ProfilePage from './pages/ProfilePage';
 import SplashScreen from './pages/SplashScreen';
@@ -16,6 +17,7 @@ import BottomTabBar, { type TabType } from './components/BottomTabBar';
 import NotificationPanel from './components/NotificationPanel';
 import AppMenuDrawer from './components/AppMenuDrawer';
 import { type TasteMeasurementSnapshot } from './constants/tasteMeasurementData';
+import { clearAppliedDesignTokenRuntimeState } from './lib/designTokenRuntime';
 import {
   getFallbackNotifications,
   hydrateNotifications,
@@ -226,6 +228,12 @@ function MainApp() {
     setAppState('teastick');
   };
 
+  const handleStartRemeasurementFromMain = (originTab: TabType) => {
+    setMeasurementEntryPoint('main');
+    setMeasurementReturnTab(originTab);
+    setAppState('calibration');
+  };
+
   const handleExitMeasurementFlow = () => {
     if (measurementEntryPoint === 'main') {
       setActiveTab(measurementReturnTab);
@@ -281,11 +289,18 @@ function MainApp() {
         )}
         {appState === 'calibration' && (
           <QuickTasteCalibrationScreen
-            onBack={() => setAppState('onboarding')}
+            onBack={() => {
+              if (measurementEntryPoint === 'main') {
+                handleExitMeasurementFlow();
+                return;
+              }
+
+              setAppState('onboarding');
+            }}
             onComplete={(snapshot) => {
               setLatestTasteMeasurementSnapshot(snapshot);
               setHasCompletedInitialMeasurement(true);
-              setActiveTab('analysis');
+              setActiveTab(measurementEntryPoint === 'main' ? measurementReturnTab : 'home');
               setAppState('main');
               handlePersistedMeasurement(snapshot, 'quick_calibration');
             }}
@@ -302,7 +317,7 @@ function MainApp() {
             onComplete={(snapshot) => {
               setLatestTasteMeasurementSnapshot(snapshot);
               setHasCompletedInitialMeasurement(true);
-              setActiveTab('analysis');
+              setActiveTab('home');
               setAppState('main');
               handlePersistedMeasurement(snapshot, 'teastick');
             }}
@@ -325,6 +340,7 @@ function MainApp() {
               hasMeasurementData={hasMeasurementData}
               measurementSnapshot={latestTasteMeasurementSnapshot}
               onStartMeasurement={() => handleStartMeasurementFromMain('home')}
+              onStartRemeasurement={() => handleStartRemeasurementFromMain('home')}
               {...overlayProps}
             />
           </div>
@@ -402,7 +418,7 @@ function MainApp() {
   );
 }
 
-type InternalRoute = 'app' | 'design-system' | 'design-system-updates';
+type InternalRoute = 'app' | 'design-system' | 'design-system-updates' | 'figma-works';
 
 function getInternalRoute(): InternalRoute {
   if (typeof window === 'undefined') {
@@ -417,8 +433,12 @@ function getInternalRoute(): InternalRoute {
     return 'design-system';
   }
 
-  if (previewMode === 'design-system-updates') {
+  if (previewMode === 'design-system-updates' || normalizedPath === '/design-system-updates') {
     return 'design-system-updates';
+  }
+
+  if (previewMode === 'figma-works' || normalizedPath === '/figma-works') {
+    return 'figma-works';
   }
 
   return 'app';
@@ -439,12 +459,22 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (internalRoute !== 'design-system') {
+      clearAppliedDesignTokenRuntimeState();
+    }
+  }, [internalRoute]);
+
   if (internalRoute === 'design-system') {
     return <DesignSystemPage />;
   }
 
   if (internalRoute === 'design-system-updates') {
     return <DesignSystemPreviewPage />;
+  }
+
+  if (internalRoute === 'figma-works') {
+    return <FigmaWorksPreviewPage />;
   }
 
   return <MainApp />;

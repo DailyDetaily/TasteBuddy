@@ -41,8 +41,13 @@
 
   --tb-shadow-hover: 0 1px 3px rgba(15, 15, 15, 0.06);
   --tb-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --tb-shadow-strong: 0 12px 32px rgba(15, 15, 15, 0.12);
   --tb-shadow-button: 0 8px 20px rgba(0, 0, 0, 0.1);
   --tb-shadow-drawer: 0 20px 60px rgba(0, 0, 0, 0.24);
+  --tb-shadow-badge-elevated:
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 
   --tb-motion-duration-fast: 180ms;
   --tb-motion-duration-normal: 300ms;
@@ -192,10 +197,10 @@
   --tb-font-size-15: 15px;
   --tb-font-size-16: 16px;
   --tb-font-size-18: 18px;
-  --tb-font-size-20: 20px;
-  --tb-font-size-22: 22px;
-  --tb-font-size-24: 24px;
-  --tb-font-size-28: 28px;
+  --tb-font-size-20: 18px;
+  --tb-font-size-22: 18px;
+  --tb-font-size-24: 18px;
+  --tb-font-size-28: 18px;
 
   --tb-font-weight-regular: 400;
   --tb-font-weight-medium: 500;
@@ -212,7 +217,8 @@
 
   --tb-layout-screen-max-width: 1440px;
   --tb-layout-page-gutter: 20px;
-  --tb-layout-section-gap: 32px;
+  --tb-layout-section-gap: 20px;
+  --tb-layout-card-stack-gap: 12px;
   --tb-layout-card-padding: 12px;
   --tb-size-top-app-bar-height: 56px;
   --tb-size-primary-button-height: 48px;
@@ -240,6 +246,18 @@
 }
 
 @layer components {
+  .tb-section-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-layout-section-gap);
+  }
+
+  .tb-card-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-layout-card-stack-gap);
+  }
+
   .tb-section-card {
     width: 100%;
     border-radius: var(--tb-radius-20);
@@ -252,7 +270,6 @@
 
   .tb-section-card--interactive:hover {
     background: var(--tb-color-surface-card-hover);
-    box-shadow: var(--tb-shadow-strong);
     transform: translateY(-4px);
   }
 
@@ -310,11 +327,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--tb-color-text-tertiary);
+    width: fit-content;
+    max-width: 100%;
+    align-self: flex-start;
+    border: 1px solid var(--tb-color-border-subtle);
     border-radius: var(--tb-radius-6);
-    padding: var(--tb-space-2) var(--tb-space-8);
+    padding: var(--tb-space-2) var(--tb-space-6);
     color: var(--tb-color-text-tertiary);
-    font-size: var(--tb-font-size-12);
+    font-size: var(--tb-font-size-10);
     font-weight: var(--tb-font-weight-semibold);
     line-height: var(--tb-line-height-normal);
   }
@@ -328,10 +348,10 @@
     padding: 2px 6px;
     font-size: 10px;
     font-weight: var(--tb-font-weight-bold);
-    box-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.1),
-      0 1px 2px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  .tb-badge-elevated {
+    box-shadow: var(--tb-shadow-badge-elevated);
   }
 
   .tb-bottom-fade {

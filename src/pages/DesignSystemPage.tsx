@@ -33,6 +33,8 @@ import AppMenuDrawer from "../components/AppMenuDrawer";
 import BottomTabBar, { type TabType } from "../components/BottomTabBar";
 import CardGallery from "../components/design-system/CardGallery";
 import ComponentStyleSpecCard from "../components/design-system/ComponentStyleSpecCard";
+import CurrentHomeCardArchive from "../components/design-system/CurrentHomeCardArchive";
+import LegacyHomeCardArchive from "../components/design-system/LegacyHomeCardArchive";
 import PlaygroundSection from "../components/design-system/PlaygroundSection";
 import {
   buildComponentCodexPrompt,
@@ -142,6 +144,7 @@ import {
   persistDesignTokenRuntimeState,
   type DesignTokenRuntimeState,
 } from "../lib/designTokenRuntime";
+import { getFallbackNotifications, type AppNotification } from "../lib/notificationsSupabase";
 import ImproveAccuracyScreen from "./ImproveAccuracyScreen";
 import ReservationConfirmationScreen from "./ReservationConfirmationScreen";
 
@@ -229,13 +232,13 @@ const STATUS_CONFIG: Record<AppStatus, { bg: string; color: string; label: strin
   upcoming: { label: "예약 확정", color: "#3F3F3F", bg: "#F3F3F3" },
   preparing: {
     label: "TCS 준비 중",
-    color: COLOR_TOKENS.state.warning,
-    bg: COLOR_TOKENS.state.warningSoft,
+    color: COLOR_TOKENS.text.secondary,
+    bg: COLOR_TOKENS.surface.muted,
   },
   ready: {
     label: "준비 완료",
-    color: COLOR_TOKENS.state.success,
-    bg: COLOR_TOKENS.state.successSoft,
+    color: COLOR_TOKENS.text.primary,
+    bg: COLOR_TOKENS.surface.muted,
   },
   completed: { label: "완료", color: "#AFAFAF", bg: "#F3F3F3" },
 };
@@ -274,6 +277,35 @@ const lucideIcons = [
   { name: "MessageCircle", library: "Lucide", Component: MessageCircle },
 ];
 
+const ICON_PREVIEW_SIZE = {
+  size: ICON_TOKENS.size.md,
+  container: ICON_TOKENS.container.md,
+} as const;
+
+const ICON_SIZE_RULES = [
+  {
+    id: "s",
+    label: "S",
+    size: ICON_TOKENS.size.sm,
+    container: ICON_TOKENS.container.sm,
+    usage: "보조 정보, 리스트 보조 표시, 밀도 높은 행 안의 서브 액션",
+  },
+  {
+    id: "m",
+    label: "M",
+    size: ICON_TOKENS.size.md,
+    container: ICON_TOKENS.container.md,
+    usage: "기본 액션, 검색 결과 액션, 대부분의 일반 카드/리스트 아이콘",
+  },
+  {
+    id: "l",
+    label: "L",
+    size: ICON_TOKENS.size.lg,
+    container: ICON_TOKENS.container.lg,
+    usage: "back/close, 탭 아이콘, 기간 이동, 더 강한 네비게이션 버튼",
+  },
+] as const;
+
 function HomeTcsBadge({
   adjustments,
 }: {
@@ -281,7 +313,7 @@ function HomeTcsBadge({
 }) {
   return (
     <span
-      className="relative inline-flex items-center rounded-[6px] px-[6px] py-[2px] text-[10px] font-bold text-white shadow-[0_2px_8px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.3)]"
+      className="tb-badge-elevated relative inline-flex items-center rounded-[6px] px-[6px] py-[2px] text-[10px] font-bold text-white"
       style={{ background: buildTasteAdjustmentGradient(adjustments) }}
     >
       TCS
@@ -448,7 +480,10 @@ function ComponentPreviewUnit({
   name: string;
 }) {
   return (
-    <div className="grid gap-2 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 py-3">
+    <div
+      className="grid gap-2 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 py-3"
+      data-component-preview={name}
+    >
       <div>
         <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{name}</p>
         {hint ? (
@@ -459,6 +494,38 @@ function ComponentPreviewUnit({
         {children}
       </div>
     </div>
+  );
+}
+
+function findComponentPreviewTarget(componentName: string) {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const exactMatch = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-component-preview]'),
+  ).find((element) => element.dataset.componentPreview === componentName);
+
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  return (
+    Array.from(
+      document.querySelectorAll<HTMLElement>('[data-component-preview-list]'),
+    ).find((element) => {
+      const rawList = element.dataset.componentPreviewList;
+
+      if (!rawList) {
+        return false;
+      }
+
+      try {
+        return (JSON.parse(rawList) as string[]).includes(componentName);
+      } catch {
+        return false;
+      }
+    }) ?? null
   );
 }
 
@@ -559,7 +626,6 @@ export default function DesignSystemPage() {
   const [sectionGap, setSectionGap] = useState(initialRuntimeTokenState.sectionGap);
   const [borderWidth, setBorderWidth] = useState(1);
   const [shadowKey, setShadowKey] = useState<keyof typeof SHADOW_TOKENS>(initialRuntimeTokenState.shadowKey);
-  const [iconSize, setIconSize] = useState(PLAYGROUND_DEFAULTS.iconSize);
   const [iconStroke, setIconStroke] = useState(ICON_TOKENS.strokeWidth.regular);
   const [buttonFamily, setButtonFamily] = useState<ButtonFamily>("system");
   const [buttonState, setButtonState] = useState<ButtonState>("default");
@@ -588,6 +654,9 @@ export default function DesignSystemPage() {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [menuDrawerOpen, setMenuDrawerOpen] = useState(false);
+  const [previewNotifications, setPreviewNotifications] = useState<AppNotification[]>(() =>
+    getFallbackNotifications(),
+  );
   const [accentTaste, setAccentTaste] = useState<TasteId>(PLAYGROUND_DEFAULTS.accentTaste);
   const [statusKey, setStatusKey] = useState<AppStatus>("preparing");
   const [ctaTone, setCtaTone] = useState<"neutral" | "alert">("alert");
@@ -856,6 +925,21 @@ export default function DesignSystemPage() {
   };
 
   const handleComponentNavigate = (sectionId: string, componentName: string) => {
+    const componentTarget = findComponentPreviewTarget(componentName);
+
+    if (componentTarget) {
+      componentTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", `#${sectionId}`);
+      }
+      setSectionJumpMenuOpen(false);
+      setApplyFeedback({
+        message: `${componentName} 위치로 이동했습니다.`,
+        tone: "note",
+      });
+      return;
+    }
+
     if (!SECTION_NAV.some((section) => section.id === sectionId)) {
       return;
     }
@@ -865,6 +949,20 @@ export default function DesignSystemPage() {
       message: `${componentName} 위치로 이동했습니다.`,
       tone: "note",
     });
+  };
+
+  const handlePreviewNotificationRead = (id: string) => {
+    setPreviewNotifications((previous) =>
+      previous.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification,
+      ),
+    );
+  };
+
+  const handlePreviewNotificationsReadAll = () => {
+    setPreviewNotifications((previous) =>
+      previous.map((notification) => ({ ...notification, read: true })),
+    );
   };
 
   useEffect(() => {
@@ -992,10 +1090,15 @@ export default function DesignSystemPage() {
         "--tb-radius-14": `${Math.max(controlRadius + 4, controlRadius)}px`,
         "--tb-radius-12": `${Math.max(controlRadius + 2, controlRadius)}px`,
         "--tb-radius-10": `${controlRadius}px`,
+        "--tb-layout-section-gap": `${sectionGap}px`,
         "--tb-space-12": `${gap}px`,
         "--tb-space-16": `${sectionGap}px`,
         "--tb-space-20": `${sectionGap}px`,
+        "--tb-layout-card-stack-gap": `${gap}px`,
         "--tb-font-size-28": `${displaySize}px`,
+        "--tb-font-size-24": `${displaySize}px`,
+        "--tb-font-size-22": `${displaySize}px`,
+        "--tb-font-size-20": `${displaySize}px`,
         "--tb-font-size-18": `${titleSize}px`,
         "--tb-font-size-14": `${bodySize}px`,
         "--tb-font-size-12": `${captionSize}px`,
@@ -1003,6 +1106,7 @@ export default function DesignSystemPage() {
         "--tb-line-height-relaxed": `${lineHeight}`,
         "--tb-shadow-button": SHADOW_TOKENS[shadowKey],
         "--tb-shadow-soft": SHADOW_TOKENS.soft,
+        "--tb-shadow-strong": SHADOW_TOKENS.strong,
       }) as CSSProperties,
     [
       background,
@@ -1145,14 +1249,14 @@ export default function DesignSystemPage() {
                   Main App
                 </a>
                 <a
-                  href="/?preview=design-system-updates"
+                  href="/design-system-updates"
                   className="inline-flex w-fit items-center rounded-full border border-[var(--tb-color-border-default)] bg-white px-3 py-1.5 text-[12px] font-medium text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-base)]"
                 >
                   Existing Update Preview
                 </a>
               </div>
               <div className="max-w-[780px]">
-                <h1 className="text-[30px] font-bold leading-tight tracking-tight">
+                <h1 className="text-[18px] font-bold leading-tight tracking-tight">
                   Design System / UI Playground
                 </h1>
                 <p className="mt-3 text-[15px] leading-relaxed text-[var(--tb-color-text-body)]">
@@ -1179,22 +1283,22 @@ export default function DesignSystemPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-[24px] border border-[var(--tb-color-border-default)] bg-white px-4 py-4">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--tb-color-text-hint)]">Shared app components</p>
-                <p className="mt-2 text-[28px] font-bold">{AUDIT_SUMMARY.componentCount}</p>
+                <p className="mt-2 text-[18px] font-bold">{AUDIT_SUMMARY.componentCount}</p>
                 <p className="mt-1 text-[12px] text-[var(--tb-color-text-body)]">currently used across active screens</p>
               </div>
               <div className="rounded-[24px] border border-[var(--tb-color-border-default)] bg-white px-4 py-4">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--tb-color-text-hint)]">Defined UI primitives</p>
-                <p className="mt-2 text-[28px] font-bold">{AUDIT_SUMMARY.definedPrimitiveCount}</p>
+                <p className="mt-2 text-[18px] font-bold">{AUDIT_SUMMARY.definedPrimitiveCount}</p>
                 <p className="mt-1 text-[12px] text-[var(--tb-color-text-body)]">present in code, mostly unused before this page</p>
               </div>
               <div className="rounded-[24px] border border-[var(--tb-color-border-default)] bg-white px-4 py-4">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--tb-color-text-hint)]">Button height</p>
-                <p className="mt-2 text-[22px] font-bold">{AUDIT_SUMMARY.sharedButtonHeight}</p>
+                <p className="mt-2 text-[18px] font-bold">{AUDIT_SUMMARY.sharedButtonHeight}</p>
                 <p className="mt-1 text-[12px] text-[var(--tb-color-text-body)]">source of truth in the current app shell</p>
               </div>
               <div className="rounded-[24px] border border-[var(--tb-color-border-default)] bg-white px-4 py-4">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--tb-color-text-hint)]">Screen shell</p>
-                <p className="mt-2 text-[22px] font-bold">{AUDIT_SUMMARY.screenMaxWidth}</p>
+                <p className="mt-2 text-[18px] font-bold">{AUDIT_SUMMARY.screenMaxWidth}</p>
                 <p className="mt-1 text-[12px] text-[var(--tb-color-text-body)]">single-column app container</p>
               </div>
             </div>
@@ -1238,6 +1342,7 @@ export default function DesignSystemPage() {
                 <ul className="mt-3 grid gap-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                   <li>App shell colors, spacing, motion, and radius live in <span className="font-mono">design-system.css</span>.</li>
                   <li>Typed mirrors for charts, taste palettes, and component specs live in <span className="font-mono">designTokens.ts</span>.</li>
+                  <li>Layout, shell, and typography rules live in <span className="font-mono">DESIGN.md</span>.</li>
                   <li>Dark mode exists only for the generic semantic layer in <span className="font-mono">globals.css</span>.</li>
                 </ul>
               </div>
@@ -1330,11 +1435,11 @@ export default function DesignSystemPage() {
         <PlaygroundSection
           id="typography"
           title="Typography"
-          description="Pretendard-based hierarchy extracted from current screens and the repo guideline. Live controls update the sample sizes and weights so you can compare roles quickly."
+          description="Pretendard-based hierarchy extracted from current screens and DESIGN.md. The live controls stay within the 18px ceiling so roles can be compared without breaking the system."
           controls={
             <>
-              <SliderControl label="Display size" value={displaySize} min={22} max={40} onChange={setDisplaySize} />
-              <SliderControl label="Title size" value={titleSize} min={14} max={28} onChange={setTitleSize} />
+              <SliderControl label="Display size" value={displaySize} min={16} max={18} onChange={setDisplaySize} />
+              <SliderControl label="Title size" value={titleSize} min={14} max={18} onChange={setTitleSize} />
               <SliderControl label="Body size" value={bodySize} min={12} max={18} onChange={setBodySize} />
               <SliderControl label="Caption size" value={captionSize} min={10} max={14} onChange={setCaptionSize} />
               <SliderControl label="Font weight" value={fontWeight} min={400} max={700} step={100} unit="" onChange={setFontWeight} />
@@ -1398,7 +1503,7 @@ export default function DesignSystemPage() {
         <PlaygroundSection
           id="spacing"
           title="Spacing & Radius"
-          description="The current app rhythm is compact and mobile-first. These scales are the values repeatedly used in the active screens and shared component shells."
+          description="The current app rhythm is compact and mobile-first. Active screens now treat 12px (`gap-3`) as the default card-to-card stack rule, and these scales show the tokens behind that rhythm."
           controls={
             <>
               <SliderControl label="Card radius" value={cardRadius} min={8} max={32} onChange={setCardRadius} />
@@ -1429,6 +1534,28 @@ export default function DesignSystemPage() {
                   </div>
                 );
               })}
+              <div className={cn(previewCardClass, "p-4")}>
+                <div className="tb-card-stack">
+                  <div className={cn(previewInsetClass, "px-3 py-3")}>
+                    <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">Hero card</p>
+                    <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">대표 예약 준비 또는 요약 카드</p>
+                  </div>
+                  <div className={cn(previewInsetClass, "px-3 py-3")}>
+                    <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">Supporting card</p>
+                    <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">신뢰도, 인사이트, CTA 카드</p>
+                  </div>
+                  <div className={cn(previewInsetClass, "px-3 py-3")}>
+                    <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">Follow-up card</p>
+                    <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">최근 변화, 셰프 요약, 상태 카드</p>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                <span className="font-semibold text-[var(--tb-color-text-primary)]">Card stack rule:</span>{" "}
+                stacked cards in active screens use <span className="font-mono">var(--tb-layout-card-stack-gap)</span>, which maps to{" "}
+                <span className="font-mono">{previewSpacingValue("space-12", "12px")}</span> and the Tailwind utility{" "}
+                <span className="font-mono">gap-3</span>.
+              </div>
             </div>
             <div className="grid gap-3">
               <h3 className="text-[15px] font-semibold text-[var(--tb-color-text-primary)]">Radius scale</h3>
@@ -1524,8 +1651,26 @@ export default function DesignSystemPage() {
           description="현재 실제 앱은 Fluent 아이콘을 메인 언어로 사용하고, Lucide는 디자인 시스템 문서와 보조 샘플, generic primitive 안에 일부 남아 있습니다."
           controls={
             <>
-              <SliderControl label="Icon size" value={iconSize} min={12} max={32} onChange={setIconSize} />
               <SliderControl label="Stroke width" value={Math.round(iconStroke * 10)} min={15} max={30} step={1} unit="" onChange={(value) => setIconStroke(value / 10)} />
+              <div className="rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+                <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">Size rules</p>
+                <div className="mt-2 grid gap-2">
+                  {ICON_SIZE_RULES.map((preset) => (
+                    <div key={preset.id} className="flex items-center justify-between gap-3 rounded-[12px] bg-[var(--tb-color-surface-base)] px-3 py-2">
+                      <div>
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{preset.label}</p>
+                        <p className="mt-1 text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">{preset.usage}</p>
+                      </div>
+                      <p className="font-mono text-[11px] text-[var(--tb-color-text-muted)]">
+                        {preset.size}px / {preset.container}px
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">
+                  이제 제품 아이콘은 `S 14/18`, `M 18/24`, `L 24/32`만 사용합니다.
+                </p>
+              </div>
               <div className="rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
                 <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">Icon rules</p>
                 <div className="mt-2 grid gap-2">
@@ -1552,7 +1697,15 @@ export default function DesignSystemPage() {
                     return (
                       <div key={icon.name} className={cn(previewCardClass, "p-3")}>
                         <div className="flex h-20 items-center justify-center rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-icon-primary)]">
-                          <Icon size={iconSize} strokeWidth={iconStroke} />
+                          <div
+                            className="flex items-center justify-center rounded-full bg-[var(--tb-color-surface-base)]"
+                            style={{
+                              width: ICON_PREVIEW_SIZE.container,
+                              height: ICON_PREVIEW_SIZE.container,
+                            }}
+                          >
+                            <Icon size={ICON_PREVIEW_SIZE.size} strokeWidth={iconStroke} />
+                          </div>
                         </div>
                         <p className="mt-2 text-[13px] font-semibold text-[var(--tb-color-text-primary)]">{icon.name}</p>
                         <p className="mt-1 text-[12px] text-[var(--tb-color-text-muted)]">{icon.library}</p>
@@ -2053,6 +2206,10 @@ export default function DesignSystemPage() {
           previewStyle={previewStyle}
         >
           <div style={{ ["--tb-space-12" as string]: `${gap}px`, ["--tb-radius-20" as string]: `${cardRadius}px` }}>
+            <div className="mb-3 rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+              <span className="font-semibold text-[var(--tb-color-text-primary)]">Current rule:</span>{" "}
+              active card stacks use <span className="font-mono">12px / gap-3</span> between cards. The gallery below is tightened to that same rhythm.
+            </div>
             <CardGallery
               accentTaste={accentTaste}
               ctaTone={ctaTone}
@@ -2061,6 +2218,47 @@ export default function DesignSystemPage() {
               statusColor={STATUS_CONFIG[statusKey].color}
               statusBackgroundColor={STATUS_CONFIG[statusKey].bg}
             />
+          </div>
+          <div className="mt-6 grid gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                  Current home cards
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                  지금 HomePage에 실제로 쓰이는 카드들을 개별 컴포넌트와 스택 프리뷰로 함께 보관합니다.
+                </p>
+              </div>
+              <StatusTag tone="used">Currently used</StatusTag>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <SectionEyebrow>HomeDiningPreparationCard</SectionEyebrow>
+              <SectionEyebrow>ProfileConfidenceCard</SectionEyebrow>
+              <SectionEyebrow>HomeChefMatchCard</SectionEyebrow>
+              <SectionEyebrow>HomeRecentProfileChangeCard</SectionEyebrow>
+              <SectionEyebrow>TasteMeasurementMiniCta</SectionEyebrow>
+            </div>
+            <CurrentHomeCardArchive onNavigateToSection={handleComponentNavigate} />
+          </div>
+          <div className="mt-6 grid gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                  Archived legacy home cards
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                  예전에 사용하던 홈 카드들을 개별 컴포넌트와 섹션 단위로 따로 보관해 두었습니다.
+                </p>
+              </div>
+              <StatusTag tone="note">Archived for reuse</StatusTag>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <SectionEyebrow>LegacyHomeChefCard</SectionEyebrow>
+              <SectionEyebrow>LegacyHomeTasteProfileCard</SectionEyebrow>
+              <SectionEyebrow>LegacyHomeSpecialNoteCard</SectionEyebrow>
+              <SectionEyebrow>LegacyHomeHistoryCard</SectionEyebrow>
+            </div>
+            <LegacyHomeCardArchive />
           </div>
         </PlaygroundSection>
 
@@ -2279,7 +2477,7 @@ export default function DesignSystemPage() {
                     <EmptyState
                       title="아직 예약이 없어요"
                       description="프로필이 준비되면 맞춤 다이닝을 시작할 수 있어요."
-                      icon={<Calendar size={20} />}
+                      icon={<Calendar size={ICON_TOKENS.size.lg} />}
                     />
                   </div>
                   <div className={cn(previewPanelClass, "p-2")}>
@@ -2288,7 +2486,7 @@ export default function DesignSystemPage() {
                       description="다음 측정과 예약 데이터를 쌓으면 더 잘 맞는 다이닝 후보를 추천할 수 있어요."
                       actionLabel="예약 추천 보기"
                       onAction={() => undefined}
-                      icon={<ChefHat size={20} />}
+                      icon={<ChefHat size={ICON_TOKENS.size.lg} />}
                     />
                   </div>
                 </div>
@@ -2306,7 +2504,7 @@ export default function DesignSystemPage() {
                 </div>
                 <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-4 py-3 shadow-[var(--tb-shadow-soft)]">
                   <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--tb-color-text-primary)] text-white">
-                    <CheckCircle2 size={16} />
+                    <CheckCircle2 size={ICON_TOKENS.size.md} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">프로필이 저장되었습니다</p>
@@ -2541,7 +2739,7 @@ export default function DesignSystemPage() {
                         className="flex h-12 w-12 items-center justify-center rounded-[14px]"
                         style={{ background: accentPalette.bg, color: accentPalette.dark }}
                       >
-                        <Sparkles size={18} />
+                        <Sparkles size={ICON_TOKENS.size.md} />
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -2739,6 +2937,9 @@ export default function DesignSystemPage() {
       <NotificationPanel
         isOpen={notificationPanelOpen}
         onClose={() => setNotificationPanelOpen(false)}
+        notifications={previewNotifications}
+        onMarkAllAsRead={handlePreviewNotificationsReadAll}
+        onMarkAsRead={handlePreviewNotificationRead}
       />
       <AppMenuDrawer
         isOpen={menuDrawerOpen}
@@ -2776,7 +2977,7 @@ export default function DesignSystemPage() {
                   className="inline-flex items-center justify-between rounded-[14px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 py-2.5 text-left text-[12px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
                 >
                   <span>{section.label}</span>
-                  <ChevronRight size={14} className="text-[var(--tb-color-text-muted)]" />
+                  <ChevronRight size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-text-muted)]" />
                 </button>
               ))}
             </div>
@@ -2798,9 +2999,13 @@ export default function DesignSystemPage() {
                 type="button"
                 onClick={handleDismissFloatingMenus}
                 aria-label="플로팅 메뉴 접기"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-muted)] transition-colors hover:bg-[var(--tb-color-surface-base)]"
+                className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-muted)] transition-colors hover:bg-[var(--tb-color-surface-base)]"
+                style={{
+                  width: ICON_TOKENS.container.lg,
+                  height: ICON_TOKENS.container.lg,
+                }}
               >
-                <ChevronRight size={16} className="rotate-90" />
+                <ChevronRight size={ICON_TOKENS.size.lg} className="rotate-90" />
               </button>
             </div>
 
@@ -2935,9 +3140,13 @@ export default function DesignSystemPage() {
           onClick={() => setSectionJumpMenuOpen((previous) => !previous)}
           aria-label={sectionJumpMenuOpen ? "섹션 바로가기 닫기" : "섹션 이동 메뉴 열기"}
           title={sectionJumpMenuOpen ? "섹션 바로가기 닫기" : "섹션 이동 메뉴 열기"}
-          className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] shadow-[0_18px_48px_rgba(15,15,15,0.14)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+          className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] shadow-[0_18px_48px_rgba(15,15,15,0.14)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+          style={{
+            width: ICON_TOKENS.container.lg,
+            height: ICON_TOKENS.container.lg,
+          }}
         >
-          <NavigationRegular fontSize={18} />
+          <NavigationRegular fontSize={ICON_TOKENS.size.lg} />
         </button>
 
         <button
@@ -2945,9 +3154,13 @@ export default function DesignSystemPage() {
           onClick={() => setFloatingMenuOpen((previous) => !previous)}
           aria-label={floatingMenuOpen ? "실반영 메뉴 닫기" : "실반영 메뉴 열기"}
           title={floatingMenuOpen ? "실반영 메뉴 닫기" : "실반영 메뉴 열기"}
-          className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-text-primary)] text-white shadow-[0_18px_48px_rgba(15,15,15,0.22)] transition-colors hover:bg-[var(--tb-color-text-secondary)]"
+          className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-text-primary)] text-white shadow-[0_18px_48px_rgba(15,15,15,0.22)] transition-colors hover:bg-[var(--tb-color-text-secondary)]"
+          style={{
+            width: ICON_TOKENS.container.lg,
+            height: ICON_TOKENS.container.lg,
+          }}
         >
-          <Settings size={18} />
+          <Settings size={ICON_TOKENS.size.lg} />
         </button>
       </div>
     </div>

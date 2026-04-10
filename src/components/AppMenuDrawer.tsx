@@ -9,6 +9,7 @@ import {
   ChevronRightRegular,
 } from '@fluentui/react-icons';
 import React from 'react';
+import { ICON_TOKENS } from '../constants/designTokens';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, ...props }: any) => (
@@ -23,6 +24,8 @@ const Info = wrapIcon(InfoRegular);
 const LogOut = wrapIcon(SignOutRegular);
 const Shield = wrapIcon(ShieldCheckmarkRegular);
 const ChevronRight = wrapIcon(ChevronRightRegular);
+const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
+const CHROME_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 
 interface MenuItem {
   icon: ReturnType<typeof wrapIcon>;
@@ -100,9 +103,13 @@ export default function AppMenuDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="flex items-center justify-center size-[32px] rounded-full hover:bg-[var(--tb-color-surface-muted)] transition-colors text-[var(--tb-color-icon-primary)]"
+              className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+              style={{
+                width: CHROME_ICON_BUTTON_SIZE,
+                height: CHROME_ICON_BUTTON_SIZE,
+              }}
             >
-              <DismissRegular className="text-[18px]" />
+              <DismissRegular fontSize={ICON_TOKENS.size.lg} />
             </button>
           </div>
 
@@ -146,7 +153,10 @@ export default function AppMenuDrawer({
                               </span>
                             )}
                           </div>
-                          <ChevronRight size={14} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
+                          <ChevronRight
+                            size={CARD_TRAILING_ICON_SIZE}
+                            className="shrink-0 text-[var(--tb-color-icon-muted)]"
+                          />
                         </button>
                       );
                     })}

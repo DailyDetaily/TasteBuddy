@@ -8,6 +8,7 @@ const CalendarCheck = wrapIcon(CalendarCheckmarkRegular);
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
 import PrimaryButton from '../components/system/PrimaryButton';
+import { ICON_TOKENS } from '../constants/designTokens';
 
 interface ReservationConfirmationScreenProps {
   onComplete: () => void;
@@ -66,7 +67,7 @@ export default function ReservationConfirmationScreen({
       <TopAppBar title="예약 확정" showBack onBack={onBack} />
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="flex flex-col gap-6 px-5 pt-6 pb-[168px]">
+        <div className="flex flex-col gap-3 px-5 pt-6 pb-[168px]">
           {/* Success top card */}
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex flex-col items-center gap-4 py-4">
@@ -77,12 +78,12 @@ export default function ReservationConfirmationScreen({
                   color: isComplete ? 'var(--tb-color-success)' : 'var(--tb-color-text-hint)',
                 }}
               >
-                <CheckCircle2 size={32} className="transition-transform duration-500" style={{
+                <CheckCircle2 size={ICON_TOKENS.size.lg} className="transition-transform duration-500" style={{
                   transform: isComplete ? 'scale(1)' : 'scale(0.8)',
                 }} />
               </div>
               <div className="text-center">
-                <h1 className="text-[20px] font-bold text-[var(--tb-color-text-primary)]">
+                <h1 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">
                   {isComplete ? '모든 준비가 시작됐어요' : '예약을 확정하고 있어요'}
                 </h1>
                 <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
@@ -111,7 +112,7 @@ export default function ReservationConfirmationScreen({
                   <SectionCard hoverEffect={false}>
                     <div className="flex items-start gap-3">
                       <div
-                        className={`flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] transition-all duration-500 ${
+                        className={`flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] transition-all duration-500 ${
                           isCurrent ? 'animate-pulse' : ''
                         }`}
                         style={{
@@ -119,7 +120,7 @@ export default function ReservationConfirmationScreen({
                           color: step.iconColor,
                         }}
                       >
-                        <Icon size={18} />
+                        <Icon size={ICON_TOKENS.size.md} />
                       </div>
                       <div className="flex flex-col gap-1 flex-1">
                         <div className="flex items-center gap-2">
@@ -127,7 +128,7 @@ export default function ReservationConfirmationScreen({
                             {step.title}
                           </span>
                           {isActive && !isCurrent && (
-                            <CheckCircle2 size={14} className="text-[var(--tb-color-success)]" />
+                            <CheckCircle2 size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-success)]" />
                           )}
                         </div>
                         <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-body)]">

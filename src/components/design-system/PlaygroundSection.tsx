@@ -34,7 +34,7 @@ export default function PlaygroundSection({
             {title}
           </div>
           <div>
-            <h2 className="text-[22px] font-bold tracking-tight text-[var(--tb-color-text-primary)]">
+            <h2 className="text-[18px] font-bold tracking-tight text-[var(--tb-color-text-primary)]">
               {title}
             </h2>
             <p className="mt-2 max-w-[72ch] text-[14px] leading-relaxed text-[var(--tb-color-text-subtle)]">

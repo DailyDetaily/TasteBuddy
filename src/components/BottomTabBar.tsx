@@ -1,5 +1,6 @@
 import { HomeRegular, DataBarVerticalRegular, CalendarCheckmarkRegular, PersonRegular } from '@fluentui/react-icons';
 import React from 'react';
+import { ICON_TOKENS } from '../constants/designTokens';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, ...props }: any) => (
@@ -21,8 +22,8 @@ interface BottomTabBarProps {
 
 const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
   { id: 'home', label: '홈', icon: Home },
-  { id: 'analysis', label: '분석', icon: BarChart3 },
-  { id: 'reservation', label: '예약', icon: CalendarCheck },
+  { id: 'analysis', label: '나의 미각', icon: BarChart3 },
+  { id: 'reservation', label: '다이닝', icon: CalendarCheck },
   { id: 'profile', label: '프로필', icon: User },
 ];
 
@@ -41,7 +42,7 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
             >
               <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}>
                 <Icon
-                  size={24}
+                  size={ICON_TOKENS.size.lg}
                   className={`transition-colors duration-300 ${
                     isActive
                       ? 'text-[var(--tb-color-text-primary)]'

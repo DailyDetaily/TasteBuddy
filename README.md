@@ -6,11 +6,25 @@
   ## Documentation
 
   - Product experience source of truth: [src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md](./src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
-  - Visual design system reference: [src/guidelines/Guidelines.md](./src/guidelines/Guidelines.md)
+  - Current visual design source of truth: [DESIGN.md](./DESIGN.md)
+  - Supporting docs index: [docs/README.md](./docs/README.md)
 
   ## Running the code
 
   Run `npm i` to install the dependencies.
 
   Run `npm run dev` to start the development server.
+
+  The local app is pinned to `http://127.0.0.1:3001`.
+
+  Direct design system routes:
+
+  - App shell: `http://127.0.0.1:3001/`
+  - Design system: `http://127.0.0.1:3001/design-system`
+  - Design system update preview: `http://127.0.0.1:3001/design-system-updates`
+
+  To open the app directly in Chrome, run `npm run dev:app`.
+  If you want to jump straight into the design system, run `npm run dev:design-system`.
+  That command reuses an existing server on `3001` when it is already running, and starts Vite for you when it is not.
+  For the update preview, run `npm run dev:design-system-updates`.
   

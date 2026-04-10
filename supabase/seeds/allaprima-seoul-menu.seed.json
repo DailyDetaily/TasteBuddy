@@ -4,8 +4,8 @@
     "description": "Seed generated from curated intake CSV files for 알라프리마.",
     "generatedAt": "2026-03-29T15:25:00.710Z",
     "sourceFiles": [
-      "docs/mvp-content-intake-allaprima-lunch.csv",
-      "docs/mvp-content-intake-allaprima-dinner.csv"
+      "docs/content/intake/mvp-content-intake-allaprima-lunch.csv",
+      "docs/content/intake/mvp-content-intake-allaprima-dinner.csv"
     ]
   },
   "restaurants": [

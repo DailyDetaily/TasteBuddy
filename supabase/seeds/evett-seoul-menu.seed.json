@@ -4,8 +4,8 @@
     "description": "Seed generated from curated intake CSV files for 에빗.",
     "generatedAt": "2026-03-29T15:12:13.521Z",
     "sourceFiles": [
-      "docs/mvp-content-intake-evett-lunch.csv",
-      "docs/mvp-content-intake-evett-dinner.csv"
+      "docs/content/intake/mvp-content-intake-evett-lunch.csv",
+      "docs/content/intake/mvp-content-intake-evett-dinner.csv"
     ]
   },
   "restaurants": [

@@ -14,3 +14,18 @@ command = "npm run"
 name = "Run Dev Server"
 icon = "tool"
 command = "npm run dev"
+
+[[actions]]
+name = "Open App in Chrome"
+icon = "tool"
+command = "npm run dev:app"
+
+[[actions]]
+name = "Open Design System"
+icon = "tool"
+command = "npm run dev:design-system"
+
+[[actions]]
+name = "Open Design Updates"
+icon = "tool"
+command = "npm run dev:design-system-updates"

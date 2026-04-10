@@ -12,10 +12,20 @@ import chefLeeJun from "../assets/LeeJun.png";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
 import TasteChip from "../components/system/TasteChip";
 import TopAppBar from "../components/TopAppBar";
+import ChefAvatar from "../components/system/ChefAvatar";
 import { TASTE_IDS, TASTE_TOKENS, type TasteId } from "../constants/designTokens";
-import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, getTasteBg, mixHexColors, TASTE_TYPES } from "../constants/tasteColors";
+import {
+  buildTasteAdjustmentGradient,
+  getTasteBg,
+  getTasteColor,
+  getTasteTint,
+  getTasteTintSubText,
+  getTasteTintText,
+  mixHexColors,
+  TASTE_TYPES,
+} from "../constants/tasteColors";
 import { type DiningFeedbackDraft } from "../constants/diningFeedbackData";
-import { type ReservationRecord } from "../constants/reservationCatalog";
+import { RESERVATION_CATALOG, type ReservationRecord } from "../constants/reservationCatalog";
 import {
   TASTE_MEASUREMENT_AVERAGES,
   getTasteMeasurementAgeLabel,
@@ -656,7 +666,7 @@ function mergeHomeChefCards(
     .slice(0, 6);
 }
 
-function buildHomeReservationHint(reservations: ReservationRecord[]) {
+export function buildHomeReservationHint(reservations: ReservationRecord[]) {
   const nextReservation =
     reservations.find((reservation) => reservation.status !== "completed") ??
     reservations[0] ??
@@ -1194,7 +1204,7 @@ function buildMeasurementTrendDetail(
   };
 }
 
-function buildHomeTasteProfileFromMeasurements(
+export function buildHomeTasteProfileFromMeasurements(
   snapshots: TasteMeasurementSnapshot[],
 ): {
   cardData: HomeTasteProfileCardData;
@@ -1284,7 +1294,7 @@ function buildSpecialNoteDetailHistory(
   return values.length === 0 ? ["0.0%"] : values.map((value) => formatSignedPercent(value));
 }
 
-function buildHomeSpecialNoteFromReservations(
+export function buildHomeSpecialNoteFromReservations(
   reservations: ReservationRecord[],
   feedbackByReservationId: Record<number, DiningFeedbackDraft>,
   reservationHint: string,
@@ -1397,32 +1407,79 @@ function buildHomeSpecialNoteFromReservations(
   } satisfies HomeSpecialNoteCardData;
 }
 
-function ChefCard({ chef }: { chef: HomeChefCardData }) {
+export function getLegacyHomeCardArchiveData() {
+  const reservationHint = buildHomeReservationHint(RESERVATION_CATALOG);
+  const tasteProfile = buildHomeTasteProfileFromMeasurements([]);
+
+  return {
+    adjustmentHistoryData: buildHomeAdjustmentHistory(RESERVATION_CATALOG, {}),
+    featuredChefs: buildHomeChefCardsFromReservations(RESERVATION_CATALOG),
+    reservationHint,
+    specialNoteCard: buildHomeSpecialNoteFromReservations(
+      RESERVATION_CATALOG,
+      {},
+      reservationHint,
+    ),
+    tasteProfileCard: tasteProfile.cardData,
+    tasteProfileOverviewValues: tasteProfile.overviewValues,
+    tasteProfileSeries: tasteProfile.series,
+  };
+}
+
+function ChefCard({
+  chef,
+  hoverShadow = true,
+  hoverMotion = true,
+}: {
+  chef: HomeChefCardData;
+  hoverShadow?: boolean;
+  hoverMotion?: boolean;
+}) {
+  const chefNameColor = getTasteTintText(chef.taste);
+  const chefMetaColor = getTasteTintSubText(chef.taste);
+  const chefMatchColor = getTasteTintText(chef.taste);
+
   return (
     <div
-      className="box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 w-[132px] h-[132px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.98] cursor-pointer"
+      className={`box-border content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[12px] relative rounded-[20px] shrink-0 w-[132px] h-[132px] cursor-pointer ${
+        hoverMotion ? 'transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]' : ''
+      } ${
+        hoverShadow ? 'hover:shadow-[var(--tb-shadow-strong)]' : ''
+      }`}
       style={{
         backgroundColor: getTasteBg(chef.taste),
         border: `1px solid ${getTasteTint(chef.taste, 0.18)}`,
       }}
     >
       <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full h-full">
-        <div className="relative rounded-[8px] shrink-0 size-[48px] overflow-hidden bg-[var(--tb-color-surface-muted)]">
-          {chef.image ? (
-            <img alt={chef.name} className="absolute inset-0 w-full h-full object-cover" src={chef.image} />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-[14px] font-semibold text-[var(--tb-color-text-subtle)]">
-              {chef.name.slice(0, 1)}
-            </div>
-          )}
-        </div>
+        <ChefAvatar
+          alt={chef.name}
+          className="relative shrink-0 size-[48px] rounded-[8px]"
+          imageSrc={chef.image}
+          taste={chef.taste}
+        />
 
         <div className="content-stretch flex flex-col justify-between items-start leading-[normal] relative shrink-0 w-full grow">
           <div className="content-stretch flex flex-col gap-[2px] items-start relative shrink-0 w-full">
-            <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold text-[var(--tb-color-text-primary)] text-[14px] w-full truncate">{chef.name}</p>
-            <p className="font-['Pretendard_Variable:Regular',sans-serif] font-normal text-[10px] text-[var(--tb-color-text-muted)] w-full truncate">{chef.restaurant}</p>
+            <p
+              className="font-['Pretendard_Variable:Bold',sans-serif] font-bold text-[14px] w-full truncate"
+              style={{ color: chefNameColor }}
+            >
+              {chef.name}
+            </p>
+            <p
+              className="font-['Pretendard_Variable:Regular',sans-serif] font-normal text-[10px] w-full truncate"
+              style={{ color: chefMetaColor }}
+            >
+              {chef.restaurant}
+            </p>
           </div>
-          <p className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold text-[var(--tb-color-text-primary)] text-[10px]">매칭률 {chef.match}%</p>
+          <p
+            className="font-['Pretendard_Variable:SemiBold',sans-serif] font-semibold text-[10px]"
+            style={{ color: chefMatchColor }}
+          >
+            매칭률 {chef.match}%
+          </p>
         </div>
       </div>
     </div>
@@ -2699,7 +2756,7 @@ function HistoryCard({
         <div className="box-border content-stretch flex flex-col gap-[12px] items-start p-[12px] relative w-full">
           <div className="flex items-center gap-2 w-full">
             <span
-              className="text-white text-[10px] px-[6px] py-[2px] rounded-[6px] font-bold relative shadow-[0_2px_8px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.3)]"
+              className="tb-badge-elevated text-white text-[10px] px-[6px] py-[2px] rounded-[6px] font-bold relative"
               style={{
                 background: buildTasteAdjustmentGradient(history.adjustments),
               }}
@@ -2723,17 +2780,14 @@ function HistoryCard({
           </div>
 
           <div className="content-stretch flex items-start justify-between relative shrink-0 w-full gap-[8px]">
-            {history.image ? (
-              <img
-                src={history.image}
-                alt={history.menu}
-                className="relative rounded-[8px] shrink-0 size-[40px] object-cover"
-              />
-            ) : (
-              <div className="relative flex shrink-0 size-[40px] items-center justify-center rounded-[8px] bg-[var(--tb-color-surface-muted)] text-[13px] font-semibold text-[var(--tb-color-text-subtle)]">
-                {String(history.chefName ?? history.restaurant).slice(0, 1)}
-              </div>
-            )}
+            <ChefAvatar
+              alt={String(history.chefName ?? history.restaurant)}
+              className="relative shrink-0 size-[40px] rounded-[8px]"
+              iconSize={28}
+              imageSrc={history.image}
+              taste={history.adjustments[0]?.taste ?? history.adjustmentDetail.summary[0]?.taste}
+              variant="neutral"
+            />
             <div className="content-stretch flex flex-col gap-[2px] items-start relative grow">
               <p className="font-bold text-[14px]">{history.chefName} 셰프</p>
               <p className="text-[12px] text-gray-500">{history.restaurant}</p>
@@ -3069,7 +3123,7 @@ function AdjustmentHistoryScreen({
             <div className="flex items-start justify-between gap-[12px]">
               <div className="flex flex-col gap-[4px]">
                 <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)] tracking-[0.2px]">최근 30일 요약</span>
-                <p className="text-[20px] font-bold text-[var(--tb-color-text-primary)] tracking-[-0.24px]">반복된 조정 패턴을 빠르게 찾으세요</p>
+                <p className="text-[18px] font-bold text-[var(--tb-color-text-primary)] tracking-[-0.24px]">반복된 조정 패턴을 빠르게 찾으세요</p>
                 <p className="text-[14px] leading-[1.45] text-[var(--tb-color-text-muted)]">
                   가장 자주 조정된 포인트는{' '}
                   {topAdjustedTastes.map((taste, index) => (
@@ -3318,7 +3372,7 @@ function SectionAdjustmentHistory({
         <div className="box-border content-stretch flex flex-col items-start gap-[12px] relative w-full">
           {/* Section Header */}
           <div className="flex justify-between items-start w-full mb-2">
-            <span className="text-[20px] font-bold text-[var(--tb-color-text-primary)] tracking-[-0.24px]">조정 히스토리</span>
+            <span className="text-[18px] font-bold text-[var(--tb-color-text-primary)] tracking-[-0.24px]">조정 히스토리</span>
             {hasHiddenHistory ? (
               <button
                 type="button"
@@ -3737,7 +3791,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
       <div className="flex flex-col gap-[24px] p-[20px]">
         {/* Section 1: Calibration Scope (Summary) */}
         <div className="flex flex-col gap-[12px]">
-          <h3 className="font-bold text-[20px] text-[var(--tb-color-text-primary)]">조정 범위</h3>
+          <h3 className="font-bold text-[18px] text-[var(--tb-color-text-primary)]">조정 범위</h3>
           <div className="bg-[var(--tb-color-bg-page)] rounded-[20px] p-[12px] flex flex-col gap-4">
             <p className="text-[14px] text-[var(--tb-color-text-primary)] leading-snug font-medium">
               고객님의 <span className="font-bold">
@@ -3790,7 +3844,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
         {/* Section 2: Chef's Solution (Method & Ingredients) */}
         <div className="flex flex-col gap-[16px]">
           <div className="flex justify-between items-center">
-            <h3 className="font-bold text-[20px] text-[var(--tb-color-text-primary)]">셰프의 솔루션</h3>
+            <h3 className="font-bold text-[18px] text-[var(--tb-color-text-primary)]">셰프의 솔루션</h3>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -3855,7 +3909,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
 
         {/* Section 3: Feedback Action */}
         <div className="flex flex-col gap-[16px] pb-10">
-          <h3 className="font-bold text-[20px] text-[var(--tb-color-text-primary)]">나의 평가</h3>
+          <h3 className="font-bold text-[18px] text-[var(--tb-color-text-primary)]">나의 평가</h3>
           <p className="text-[14px] text-[var(--tb-color-text-primary)]">{evaluation.question}</p>
 
           <div className="flex flex-col gap-3">
@@ -3953,7 +4007,15 @@ function Viewport({
   );
 }
 
-
+export {
+  Cards3 as LegacyHomeTasteProfileCard,
+  Cards4 as LegacyHomeSpecialNoteCard,
+  ChefCard as LegacyHomeChefCard,
+  EmptyChefCard as LegacyHomeEmptyChefCard,
+  HistoryCard as LegacyHomeHistoryCard,
+  Section1 as LegacyHomeTasteSummarySection,
+  SectionAdjustmentHistory as LegacyHomeAdjustmentHistorySection,
+};
 
 export default function Home({
   hasMeasurementData,

@@ -58,7 +58,14 @@ export default defineConfig({
     outDir: 'dist',
   },
   server: {
-    port: 3000,
+    host: '127.0.0.1',
+    port: 3001,
+    strictPort: true,
     open: true,
+  },
+  preview: {
+    host: '127.0.0.1',
+    port: 3001,
+    strictPort: true,
   },
 });

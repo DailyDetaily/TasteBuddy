@@ -10,6 +10,7 @@ import {
   formatNotificationRelativeTime,
   type AppNotification,
 } from '../lib/notificationsSupabase';
+import { ICON_TOKENS } from '../constants/designTokens';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, ...props }: any) => (
@@ -21,6 +22,10 @@ const CalendarCheck = wrapIcon(CalendarCheckmarkRegular);
 const Bell = wrapIcon(AlertRegular);
 const Utensils = wrapIcon(FoodRegular);
 const CheckCircle = wrapIcon(CheckmarkCircleRegular);
+const PANEL_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
+const PANEL_ACTION_BUTTON_SIZE = ICON_TOKENS.container.lg;
+const NOTIFICATION_ITEM_ICON_SIZE = ICON_TOKENS.size.md;
+const NOTIFICATION_ITEM_ICON_CONTAINER_SIZE = ICON_TOKENS.container.lg;
 
 interface NotificationPanelProps {
   isOpen: boolean;
@@ -107,9 +112,13 @@ export default function NotificationPanel({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex items-center justify-center size-[28px] rounded-full hover:bg-[var(--tb-color-surface-muted)] transition-colors text-[var(--tb-color-icon-primary)]"
+                  className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                  style={{
+                    width: PANEL_ACTION_BUTTON_SIZE,
+                    height: PANEL_ACTION_BUTTON_SIZE,
+                  }}
                 >
-                  <DismissRegular className="text-[16px]" />
+                  <DismissRegular fontSize={PANEL_ACTION_ICON_SIZE} />
                 </button>
               </div>
             </div>
@@ -130,13 +139,15 @@ export default function NotificationPanel({
                     }`}
                   >
                     <div
-                      className="flex size-[36px] shrink-0 items-center justify-center rounded-[var(--tb-radius-10)]"
+                      className="flex shrink-0 items-center justify-center rounded-[var(--tb-radius-10)]"
                       style={{
                         backgroundColor: iconBg,
                         color: iconColor,
+                        width: NOTIFICATION_ITEM_ICON_CONTAINER_SIZE,
+                        height: NOTIFICATION_ITEM_ICON_CONTAINER_SIZE,
                       }}
                     >
-                      <Icon size={16} />
+                      <Icon size={NOTIFICATION_ITEM_ICON_SIZE} />
                     </div>
                     <div className="flex flex-col gap-[2px] flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ICON_TOKENS } from '../../constants/designTokens';
 
 interface EmptyStateProps {
   /** Main title shown in empty state */
@@ -23,7 +24,13 @@ export default function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-12 px-6 text-center animate-fadeIn">
       {icon && (
-        <div className="flex items-center justify-center size-[48px] rounded-[14px] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-icon-muted)]">
+        <div
+          className="flex items-center justify-center rounded-[14px] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-icon-muted)]"
+          style={{
+            width: ICON_TOKENS.container.lg,
+            height: ICON_TOKENS.container.lg,
+          }}
+        >
           {icon}
         </div>
       )}

@@ -1,43 +1,48 @@
-import { ArrowCounterclockwiseRegular } from '@fluentui/react-icons';
-const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
-const RefreshCcw = wrapIcon(ArrowCounterclockwiseRegular);
-
+import { getTasteColor, getTasteDark, mixHexColors } from '../../constants/tasteColors';
 import PrimaryButton from '../system/PrimaryButton';
 
 interface TasteMeasurementMiniCtaProps {
+  accentTaste?: string;
   actionLabel: string;
+  actionFullWidth?: boolean;
+  actionPlacement?: 'bottom' | 'right';
   description: string;
   meta?: string;
   onAction: () => void;
+  padding?: 'compact' | 'default';
   title: string;
   tone?: 'alert' | 'neutral';
 }
 
 export default function TasteMeasurementMiniCta({
+  accentTaste,
   actionLabel,
+  actionFullWidth = false,
+  actionPlacement = 'bottom',
   description,
   meta,
   onAction,
+  padding = 'default',
   title,
   tone = 'neutral',
 }: TasteMeasurementMiniCtaProps) {
+  const isRightAction = actionPlacement === 'right';
+  const paddingClass = padding === 'compact' ? 'p-3' : 'p-4';
   const accentClass =
     tone === 'alert'
       ? 'border-[var(--tb-taste-sweet-light)] bg-[linear-gradient(135deg,var(--tb-taste-sweet-bg)_0%,var(--tb-color-surface-base)_100%)]'
       : 'border-[var(--tb-color-border-card)] bg-[var(--tb-color-surface-card)]';
-  const iconClass =
-    tone === 'alert'
-      ? 'bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
-      : 'bg-[var(--tb-color-surface-base)] text-[var(--tb-color-icon-primary)]';
+  const actionButtonStyle = accentTaste
+    ? {
+        background: mixHexColors(getTasteColor(accentTaste), '#FFFFFF', 0.76),
+        border: 'none',
+        color: getTasteDark(accentTaste),
+      }
+    : undefined;
 
   return (
-    <div className={`rounded-[var(--tb-radius-20)] border p-4 ${accentClass}`}>
-      <div className="flex items-start gap-3">
-        <div
-          className={`flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-10)] ${iconClass}`}
-        >
-          <RefreshCcw size={14} strokeWidth={1.8} />
-        </div>
+    <div className={`rounded-[var(--tb-radius-20)] border ${paddingClass} ${accentClass}`}>
+      <div className={isRightAction ? 'flex items-end justify-between gap-3' : undefined}>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
           <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
@@ -47,12 +52,17 @@ export default function TasteMeasurementMiniCta({
             <p className="mt-1 text-[11px] font-medium text-[var(--tb-color-text-faint)]">{meta}</p>
           ) : null}
         </div>
-      </div>
 
-      <div className="mt-3">
-        <PrimaryButton onClick={onAction} size="compact" fullWidth={false}>
-          {actionLabel}
-        </PrimaryButton>
+        <div className={isRightAction ? 'shrink-0' : 'mt-3'}>
+          <PrimaryButton
+            onClick={onAction}
+            size="compact"
+            fullWidth={actionFullWidth}
+            style={actionButtonStyle}
+          >
+            {actionLabel}
+          </PrimaryButton>
+        </div>
       </div>
     </div>
   );

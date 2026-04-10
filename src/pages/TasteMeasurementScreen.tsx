@@ -14,6 +14,7 @@ import TasteCircularLoop from '../components/graphics/TasteCircularLoop';
 import { TASTE_CIRCULAR_LOOP_STEP_ADVANCE_MS } from '../components/graphics/tasteCircularLoopMotion';
 import PrimaryButton from '../components/system/PrimaryButton';
 import {
+    DEFAULT_TASTE_MEASUREMENT_RESULTS,
     createInitialTasteMeasurementResults,
     createTasteMeasurementSnapshot,
     formatMeasurementDate,
@@ -23,13 +24,18 @@ import {
     getTasteMeasurementEntries,
     getTasteProfileBadge,
     getWeakestTasteMeasurement,
+    type TasteMeasurementResults,
     type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
-import { TASTE_IDS, TASTE_TOKENS } from '../constants/designTokens';
+import { ICON_TOKENS, TASTE_IDS, TASTE_TOKENS } from '../constants/designTokens';
 
 interface TasteMeasurementScreenProps {
     onComplete: (snapshot: TasteMeasurementSnapshot) => void;
     onBack: () => void;
+    initialActiveLevel?: number;
+    initialMeasurementResults?: TasteMeasurementResults;
+    initialPhase?: MeasurementPhase;
+    initialTasteIndex?: number;
 }
 
 type MeasurementPhase = 'checklist' | 'intro' | 'prep' | 'active' | 'finished';
@@ -90,14 +96,30 @@ function getAccessibleTasteLabelColor(backgroundColor: string, baseColor: string
     return '#0F0F0F';
 }
 
-export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeasurementScreenProps) {
-    const [phase, setPhase] = useState<MeasurementPhase>('checklist');
-    const [tasteIndex, setTasteIndex] = useState(0);
-    const [activeLevel, setActiveLevel] = useState(0);
-    const [measurementResults, setMeasurementResults] = useState(
-        createInitialTasteMeasurementResults,
+export default function TasteMeasurementScreen({
+    initialActiveLevel = 0,
+    initialMeasurementResults,
+    initialPhase = 'checklist',
+    initialTasteIndex = 0,
+    onComplete,
+    onBack,
+}: TasteMeasurementScreenProps) {
+    const [phase, setPhase] = useState<MeasurementPhase>(initialPhase);
+    const [tasteIndex, setTasteIndex] = useState(initialTasteIndex);
+    const [activeLevel, setActiveLevel] = useState(initialActiveLevel);
+    const [measurementResults, setMeasurementResults] = useState(() =>
+        initialMeasurementResults
+            ? { ...initialMeasurementResults }
+            : createInitialTasteMeasurementResults(),
     );
-    const [completedSnapshot, setCompletedSnapshot] = useState<TasteMeasurementSnapshot | null>(null);
+    const [completedSnapshot, setCompletedSnapshot] = useState<TasteMeasurementSnapshot | null>(() =>
+        initialPhase === 'finished'
+            ? createTasteMeasurementSnapshot(
+                initialMeasurementResults ?? DEFAULT_TASTE_MEASUREMENT_RESULTS,
+                '2026-03-08T15:20:00+09:00',
+            )
+            : null,
+    );
     const measurementStartedAtRef = useRef<number | null>(null);
 
     const currentTasteId = TASTE_IDS[tasteIndex];
@@ -203,10 +225,10 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
             {/* Header */}
             <header className="flex items-center justify-between px-4 h-14 bg-[var(--tb-color-bg-page)] z-10">
                 <button onClick={handleBack} className="p-2 -ml-2 text-black active:opacity-70 transition-opacity">
-                    {phase === 'checklist' ? <span className="text-[20px] font-light px-1">✕</span> : <ChevronLeft strokeWidth={1.5} size={28} />}
+                    {phase === 'checklist' ? <span className="px-1 text-[18px] font-light">✕</span> : <ChevronLeft strokeWidth={1.5} size={ICON_TOKENS.size.lg} />}
                 </button>
                 <button className="p-2 -mr-2 text-black active:opacity-70 transition-opacity">
-                    <MoreHorizontal strokeWidth={1.5} size={24} />
+                    <MoreHorizontal strokeWidth={1.5} size={ICON_TOKENS.size.lg} />
                 </button>
             </header>
 
@@ -238,7 +260,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                 ].map((text, i) => (
                                     <div key={i} className="w-full bg-[var(--tb-color-surface-muted)] rounded-[20px] p-3 flex items-center gap-3">
                                         <div className="w-6 h-6 rounded-[8px] bg-black flex items-center justify-center shrink-0">
-                                            <Check size={16} color="white" strokeWidth={3} />
+                                            <Check size={ICON_TOKENS.size.md} color="white" strokeWidth={3} />
                                         </div>
                                         <span className="text-[15px] font-bold text-black">{text}</span>
                                     </div>
@@ -361,10 +383,10 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                             className="absolute inset-0 flex flex-col px-5 pt-8 pb-[160px] overflow-y-auto no-scrollbar"
                         >
                             <div className="mx-auto w-24 h-24 bg-black rounded-full flex items-center justify-center mb-6 shadow-2xl">
-                                <Check size={48} color="white" strokeWidth={3} />
+                                <Check size={ICON_TOKENS.size.lg} color="white" strokeWidth={3} />
                             </div>
                             <div className="text-center mb-8">
-                                <h1 className="text-[28px] font-bold leading-tight mb-3 tracking-tight">
+                                <h1 className="mb-3 text-[18px] font-bold leading-tight tracking-tight">
                                     미각 측정이<br />완료되었어요
                                 </h1>
                                 <p className="text-[var(--tb-color-text-body)] text-[15px] leading-relaxed">
@@ -373,11 +395,11 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                 </p>
                             </div>
 
-                            <div className="rounded-[20px] bg-[var(--tb-color-bg-page)] p-3 flex flex-col gap-3 mb-4">
+                            <div className="mb-3 rounded-[20px] bg-[var(--tb-color-bg-page)] p-3 flex flex-col gap-3">
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
                                         <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">이번 측정 요약</p>
-                                        <h2 className="text-[24px] font-bold text-[var(--tb-color-text-primary)] mt-1">
+                                        <h2 className="mt-1 text-[18px] font-bold text-[var(--tb-color-text-primary)]">
                                             평균 {formatMeasurementValue(averageMeasurement)}
                                         </h2>
                                     </div>
@@ -452,7 +474,7 @@ export default function TasteMeasurementScreen({ onComplete, onBack }: TasteMeas
                                                 {entry.label}
                                             </p>
                                             <p
-                                                className="text-[20px] font-bold mt-2"
+                                                className="mt-2 text-[18px] font-bold"
                                                 style={{ color: TASTE_TOKENS[entry.id].palette.dark }}
                                             >
                                                 {entry.valueMm.toFixed(2)}

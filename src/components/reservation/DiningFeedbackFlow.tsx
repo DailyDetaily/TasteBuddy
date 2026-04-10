@@ -9,8 +9,8 @@ const Sparkles = wrapIcon(SparkleRegular);
 import SectionCard from '../SectionCard';
 import TopAppBar from '../TopAppBar';
 import OutlineBadge from '../system/OutlineBadge';
+import PageSection from '../system/PageSection';
 import PrimaryButton from '../system/PrimaryButton';
-import SectionTitle from '../system/SectionTitle';
 import TasteChip from '../system/TasteChip';
 import {
   type DiningDishMetadata,
@@ -23,6 +23,7 @@ import {
   getWeakestTasteMeasurement,
   type TasteMeasurementSnapshot,
 } from '../../constants/tasteMeasurementData';
+import { ICON_TOKENS } from '../../constants/designTokens';
 import { cn } from '../ui/utils';
 
 const returnIntentOptions = [
@@ -266,7 +267,7 @@ export function DiningFeedbackScreen({
     <div className="relative flex h-full w-full flex-col bg-[var(--tb-color-bg-page)] animate-slideIn">
       <TopAppBar title="식후 피드백" showBack onBack={onBack} />
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="flex flex-col gap-6 px-5 pt-6 pb-[168px]">
+        <div className="tb-section-stack px-5 pt-6 pb-[168px]">
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-3">
@@ -290,14 +291,13 @@ export function DiningFeedbackScreen({
                   {scenario.courseName} · {scenario.restaurant}
                 </p>
               </div>
-              <div className="flex size-[48px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-                <MessageSquareText size={22} />
+              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+                <MessageSquareText size={ICON_TOKENS.size.lg} />
               </div>
             </div>
           </SectionCard>
 
-          <div>
-            <SectionTitle className="mb-3">짧은 전체 인상</SectionTitle>
+          <PageSection title="짧은 전체 인상" titleSize="md">
             <SectionCard hoverEffect={false}>
               <div className="w-full">
                 <p className={feedbackSectionLabelClass}>이번 식사는 전반적으로 어땠나요?</p>
@@ -340,16 +340,15 @@ export function DiningFeedbackScreen({
                 />
               </div>
             </SectionCard>
-          </div>
+          </PageSection>
 
-          <div>
-            <SectionTitle className="mb-3">코스별 짧은 반영</SectionTitle>
+          <PageSection title="코스별 짧은 반영" titleSize="md">
             <p className="mb-3 text-[12px] leading-relaxed text-[var(--tb-color-text-faint)]">
               모든 코스를 길게 평가할 필요는 없어요. 각 코스에서 가장 가까운 인상만 골라주시면
               다음 다이닝을 더 잘 맞출 수 있습니다.
             </p>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {scenario.dishes.map((dish) => {
                 const response = draft.dishResponses[dish.id];
 
@@ -403,7 +402,7 @@ export function DiningFeedbackScreen({
                 );
               })}
             </div>
-          </div>
+          </PageSection>
         </div>
       </div>
 
@@ -438,7 +437,7 @@ export function DiningAiAnalysisScreen({
     <div className="relative flex h-full w-full flex-col bg-[var(--tb-color-bg-page)] animate-slideIn">
       <TopAppBar title="프로필 정교화" showBack onBack={onBack} />
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="flex flex-col gap-6 px-5 pt-6 pb-[168px]">
+        <div className="tb-section-stack px-5 pt-6 pb-[168px]">
           <SectionCard
             hoverEffect={false}
             className="bg-[var(--tb-color-surface-muted)]"
@@ -455,8 +454,8 @@ export function DiningAiAnalysisScreen({
                   </p>
                 </div>
               </div>
-              <div className="flex size-[48px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-                <CheckCircle2 size={22} />
+              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+                <CheckCircle2 size={ICON_TOKENS.size.lg} />
               </div>
             </div>
 
@@ -466,8 +465,7 @@ export function DiningAiAnalysisScreen({
             </div>
           </SectionCard>
 
-          <div>
-            <SectionTitle className="mb-3">프로필 변화 요약</SectionTitle>
+          <PageSection title="프로필 변화 요약" titleSize="md">
             <div className="grid grid-cols-1 gap-3">
               {summary.changes.map((note, index) => {
                 const Icon = index === 0 ? Sparkles : index === 1 ? ChefHat : MessageSquareText;
@@ -483,11 +481,11 @@ export function DiningAiAnalysisScreen({
                     <div className="flex items-start gap-3">
                       <div
                         className={cn(
-                          'flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)]',
+                          'flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)]',
                           iconClass,
                         )}
                       >
-                        <Icon size={18} />
+                        <Icon size={ICON_TOKENS.size.md} />
                       </div>
                       <div className="flex flex-col gap-1">
                         <p className={feedbackHintClass}>{note.title}</p>
@@ -500,7 +498,7 @@ export function DiningAiAnalysisScreen({
                 );
               })}
             </div>
-          </div>
+          </PageSection>
 
           <SectionCard hoverEffect={false}>
             <div className="flex flex-col gap-4">
@@ -520,7 +518,7 @@ export function DiningAiAnalysisScreen({
                       className={cn(
                         'rounded-[16px] border px-3 py-3',
                         isCurrent
-                          ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-surface-muted)]'
+                          ? 'border-[var(--tb-color-text-secondary)] bg-[var(--tb-color-surface-muted)]'
                           : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)]',
                       )}
                     >
@@ -542,8 +540,8 @@ export function DiningAiAnalysisScreen({
 
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start gap-3">
-              <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-                <ChefHat size={18} />
+              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+                <ChefHat size={ICON_TOKENS.size.md} />
               </div>
               <div className="flex flex-col gap-1">
                 <p className={feedbackHintClass}>셰프용 현재 요약</p>

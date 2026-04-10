@@ -1,5 +1,6 @@
 import { AlertRegular, AddCircleRegular, NavigationRegular } from '@fluentui/react-icons';
 import React from 'react';
+import { ICON_TOKENS } from '../constants/designTokens';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, ...props }: any) => (
@@ -10,6 +11,8 @@ const wrapIcon = (IconComponent: React.ElementType) => {
 const Bell = wrapIcon(AlertRegular);
 const PlusCircle = wrapIcon(AddCircleRegular);
 const Menu = wrapIcon(NavigationRegular);
+const APP_SHELL_ICON_SIZE = ICON_TOKENS.size.lg;
+const APP_SHELL_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 
 interface TopAppBarProps {
   title?: string;
@@ -38,9 +41,22 @@ export default function TopAppBar({
           {showBack ? (
             <button
               onClick={onBack}
-              className="flex items-center justify-center size-[32px] rounded-full hover:bg-[var(--tb-color-surface-card)] transition-colors text-[var(--tb-color-icon-primary)]"
+              className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-card)]"
+              style={{
+                width: APP_SHELL_ICON_BUTTON_SIZE,
+                height: APP_SHELL_ICON_BUTTON_SIZE,
+              }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width={APP_SHELL_ICON_SIZE}
+                height={APP_SHELL_ICON_SIZE}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -62,14 +78,18 @@ export default function TopAppBar({
         )}
 
         {/* Right */}
-        <div className="flex items-center gap-[16px]">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onOpenNotifications}
             aria-label="알림"
-            className="relative text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors"
+            className="relative flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-card)] hover:text-[var(--tb-color-text-primary)]"
+            style={{
+              width: APP_SHELL_ICON_BUTTON_SIZE,
+              height: APP_SHELL_ICON_BUTTON_SIZE,
+            }}
           >
-            <Bell size={24} strokeWidth={1.8} />
+            <Bell size={APP_SHELL_ICON_SIZE} strokeWidth={1.8} />
             {hasUnreadNotifications && (
               <div className="absolute top-[2px] right-[2px] size-[6px] rounded-full bg-[var(--tb-taste-sweet-main)]" />
             )}
@@ -79,17 +99,25 @@ export default function TopAppBar({
             onClick={onStartMeasurement}
             aria-label="미각 측정 시작"
             title="미각 측정"
-            className="text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors"
+            className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-card)] hover:text-[var(--tb-color-text-primary)]"
+            style={{
+              width: APP_SHELL_ICON_BUTTON_SIZE,
+              height: APP_SHELL_ICON_BUTTON_SIZE,
+            }}
           >
-            <PlusCircle size={24} strokeWidth={1.8} />
+            <PlusCircle size={APP_SHELL_ICON_SIZE} strokeWidth={1.8} />
           </button>
           <button
             type="button"
             onClick={onOpenMenu}
             aria-label="메뉴 열기"
-            className="text-[var(--tb-color-icon-primary)] hover:text-[var(--tb-color-text-primary)] transition-colors"
+            className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-card)] hover:text-[var(--tb-color-text-primary)]"
+            style={{
+              width: APP_SHELL_ICON_BUTTON_SIZE,
+              height: APP_SHELL_ICON_BUTTON_SIZE,
+            }}
           >
-            <Menu size={24} strokeWidth={1.8} />
+            <Menu size={APP_SHELL_ICON_SIZE} strokeWidth={1.8} />
           </button>
         </div>
       </div>

@@ -12,6 +12,7 @@ export default function TasteChip({ className, style, taste, value, ...props }: 
   const color = getTasteColor(taste);
   const backgroundColor = getTasteTint(taste, 0.05);
   const borderColor = getTasteTint(taste, 0.18);
+  const tasteLabelColor = value ? 'var(--tb-color-text-primary)' : color;
 
   return (
     <span
@@ -22,7 +23,7 @@ export default function TasteChip({ className, style, taste, value, ...props }: 
       style={{ backgroundColor, border: `1px solid ${borderColor}`, ...style }}
       {...props}
     >
-      <span className="text-[var(--tb-color-text-primary)]">{taste}</span>
+      <span style={{ color: tasteLabelColor }}>{taste}</span>
       {value ? (
         <span className="font-semibold" style={{ color }}>
           {value}

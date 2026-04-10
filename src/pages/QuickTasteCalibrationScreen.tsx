@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckmarkRegular, ChevronLeftRegular, MoreHorizontalRegular, SparkleRegular } from '@fluentui/react-icons';
+import { CheckmarkRegular, ChevronLeftRegular, MoreHorizontalRegular } from '@fluentui/react-icons';
 const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
 const Check = wrapIcon(CheckmarkRegular);
 const ChevronLeft = wrapIcon(ChevronLeftRegular);
 const MoreHorizontal = wrapIcon(MoreHorizontalRegular);
-const Sparkles = wrapIcon(SparkleRegular);
 
 import tasteCircleVideo from '../assets/video/Taste circle.mp4';
 import SectionCard from '../components/SectionCard';
+import QuickCalibrationHintCard from '../components/system/QuickCalibrationHintCard';
 import OutlineBadge from '../components/system/OutlineBadge';
 import PrimaryButton from '../components/system/PrimaryButton';
 import TasteChip from '../components/system/TasteChip';
-import { MOTION_TOKENS, TASTE_TOKENS } from '../constants/designTokens';
+import { ICON_TOKENS, MOTION_TOKENS, TASTE_TOKENS } from '../constants/designTokens';
 import {
   QUICK_TASTE_CALIBRATION_QUESTIONS,
   createQuickTasteCalibrationSnapshot,
@@ -135,13 +135,13 @@ export default function QuickTasteCalibrationScreen({
           className="p-2 -ml-2 text-black transition-opacity active:opacity-70"
         >
           {phase === 'intro' ? (
-            <span className="px-1 text-[20px] font-light">✕</span>
+            <span className="px-1 text-[18px] font-light">✕</span>
           ) : (
-            <ChevronLeft strokeWidth={1.5} size={28} />
+            <ChevronLeft strokeWidth={1.5} size={ICON_TOKENS.size.lg} />
           )}
         </button>
         <button className="p-2 -mr-2 text-black transition-opacity active:opacity-70">
-          <MoreHorizontal strokeWidth={1.5} size={24} />
+          <MoreHorizontal strokeWidth={1.5} size={ICON_TOKENS.size.lg} />
         </button>
       </header>
 
@@ -158,7 +158,7 @@ export default function QuickTasteCalibrationScreen({
             >
               <div className="text-center">
                 <OutlineBadge>Quick Taste Calibration</OutlineBadge>
-                <h1 className="mt-4 whitespace-pre-line text-[26px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
+                <h1 className="mt-4 whitespace-pre-line text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
                   몇 가지 선택만으로{'\n'}현재 프로필을 시작합니다
                 </h1>
                 <p className="mt-3 whitespace-pre-line text-[14px] leading-relaxed text-[var(--tb-color-text-body)]">
@@ -180,22 +180,11 @@ export default function QuickTasteCalibrationScreen({
                 </div>
               </div>
 
-              <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
-                <div className="flex items-start gap-3">
-                  <div className="flex size-[36px] shrink-0 items-center justify-center rounded-[12px] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-                    <Sparkles size={16} strokeWidth={1.8} />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                      1분 안에 끝나는 시작 단계예요
-                    </p>
-                    <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                      정답을 맞추는 과정이 아니라, 지금 더 자연스럽게 맞는 방향을 찾는 가벼운
-                      보정 단계입니다. 프로필은 예약과 식후 피드백을 통해 더 정교해집니다.
-                    </p>
-                  </div>
-                </div>
-              </SectionCard>
+              <QuickCalibrationHintCard
+                size="md"
+                title="1분 안에 끝나는 시작 단계예요"
+                description="정답을 맞추는 과정이 아니라, 지금 더 자연스럽게 맞는 방향을 찾는 가벼운 보정 단계입니다. 프로필은 예약과 식후 피드백을 통해 더 정교해집니다."
+              />
             </motion.div>
           )}
 
@@ -227,16 +216,10 @@ export default function QuickTasteCalibrationScreen({
                 </p>
               </div>
 
-              <SectionCard hoverEffect={false} className="mt-5 bg-[var(--tb-color-surface-muted)]">
-                <div className="flex items-start gap-3">
-                  <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[10px] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-                    <Sparkles size={14} strokeWidth={1.8} />
-                  </div>
-                  <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                    {currentQuestion.calibrationHint}
-                  </p>
-                </div>
-              </SectionCard>
+              <QuickCalibrationHintCard
+                className="mt-5"
+                description={currentQuestion.calibrationHint}
+              />
 
               <div className="mt-5 flex flex-col gap-3">
                 {currentQuestion.options.map((option) => {
@@ -267,7 +250,7 @@ export default function QuickTasteCalibrationScreen({
                           }`}
                         >
                           {isSelected ? (
-                            <Check size={12} strokeWidth={3} className="text-white" />
+                            <Check size={ICON_TOKENS.size.sm} strokeWidth={3} className="text-white" />
                           ) : null}
                         </div>
                         <div className="flex flex-col gap-1">
@@ -296,12 +279,12 @@ export default function QuickTasteCalibrationScreen({
               className="absolute inset-0 overflow-y-auto px-5 pt-8 pb-[170px] no-scrollbar"
             >
               <div className="mx-auto flex size-[88px] items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] shadow-[var(--tb-shadow-strong)]">
-                <Check size={42} strokeWidth={3} className="text-white" />
+                <Check size={ICON_TOKENS.size.lg} strokeWidth={3} className="text-white" />
               </div>
 
               <div className="mt-6 text-center">
                 <OutlineBadge>Starter Profile</OutlineBadge>
-                <h1 className="mt-4 text-[28px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
+                <h1 className="mt-4 text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
                   현재 프로필이 준비됐어요
                 </h1>
                 <p className="mt-3 whitespace-pre-line text-[14px] leading-relaxed text-[var(--tb-color-text-body)]">
@@ -310,14 +293,14 @@ export default function QuickTasteCalibrationScreen({
                 </p>
               </div>
 
-              <SectionCard hoverEffect={false} className="mt-6 bg-[var(--tb-color-surface-base)]">
+              <SectionCard hoverEffect={false} className="mt-3 bg-[var(--tb-color-surface-base)]">
                 <div className="flex flex-col gap-4">
                   <div>
                     <div>
                       <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
                         현재 프로필 해석
                       </p>
-                      <h2 className="mt-2 text-[20px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
+                      <h2 className="mt-2 text-[18px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
                         {starterProfile.headline}
                       </h2>
                     </div>
@@ -358,7 +341,7 @@ export default function QuickTasteCalibrationScreen({
                 </div>
               </SectionCard>
 
-              <div className="mt-6">
+              <div className="mt-3">
                 <h2 className="mb-3 text-[16px] font-bold text-[var(--tb-color-text-primary)]">
                   이번 보정에 반영된 단서
                 </h2>
@@ -381,7 +364,7 @@ export default function QuickTasteCalibrationScreen({
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="mt-3">
                 <h2 className="mb-3 text-[16px] font-bold text-[var(--tb-color-text-primary)]">
                   현재 프로필 포인트
                 </h2>

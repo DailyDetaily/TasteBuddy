@@ -16,10 +16,14 @@ import {
 import chefHwangJeongin from "../../assets/HwangJeongin.png";
 import chefLeeEunji from "../../assets/LeeEunji.png";
 import chefLimJeongsik from "../../assets/LimJeongsik.png";
-import { TASTE_TOKENS, type TasteId } from "../../constants/designTokens";
+import { ICON_TOKENS, TASTE_TOKENS, type TasteId } from "../../constants/designTokens";
+import { buildTasteAdjustmentGradient } from "../../constants/tasteColors";
 import TasteMeasurementMiniCta from "../measurement/TasteMeasurementMiniCta";
 import SectionCard from "../SectionCard";
+import InspectableComponent from "../system/InspectableComponent";
+import InsightCard from "../system/InsightCard";
 import OutlineBadge from "../system/OutlineBadge";
+import QuickCalibrationHintCard from "../system/QuickCalibrationHintCard";
 import SectionTitle from "../system/SectionTitle";
 import StatusChip from "../system/StatusChip";
 import TasteChip from "../system/TasteChip";
@@ -40,35 +44,6 @@ interface CardGalleryProps {
   statusLabel: string;
 }
 
-function InspectableComponent({
-  children,
-  componentName,
-  onNavigate,
-  sectionId,
-}: {
-  children: ReactNode;
-  componentName: string;
-  onNavigate?: (sectionId: string, componentName: string) => void;
-  sectionId: string;
-}) {
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      title={`${componentName} 컴포넌트 위치로 이동하려면 더블 클릭`}
-      onDoubleClick={() => onNavigate?.(sectionId, componentName)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          onNavigate?.(sectionId, componentName);
-        }
-      }}
-      className="inline-flex cursor-pointer rounded-[10px] outline-none transition-transform hover:scale-[1.01] focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)]"
-    >
-      {children}
-    </div>
-  );
-}
-
 function SampleBlock({
   badge = "실사용",
   children,
@@ -85,7 +60,11 @@ function SampleBlock({
   title: string;
 }) {
   return (
-    <div className="grid gap-3 rounded-[var(--tb-radius-20)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)] p-4">
+    <div
+      className="grid gap-3 rounded-[var(--tb-radius-20)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)] p-4"
+      data-component-preview={componentNames?.length === 1 ? componentNames[0] : undefined}
+      data-component-preview-list={componentNames?.length ? JSON.stringify(componentNames) : undefined}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
@@ -127,14 +106,14 @@ function GallerySection({
   title: string;
 }) {
   return (
-    <section className="grid gap-4">
+    <section className="grid gap-3">
       <div>
         <h3 className="text-[15px] font-semibold text-[var(--tb-color-text-primary)]">{title}</h3>
         <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
           {description}
         </p>
       </div>
-      <div className="grid gap-4 xl:grid-cols-2">{children}</div>
+      <div className="grid gap-3 xl:grid-cols-2">{children}</div>
     </section>
   );
 }
@@ -166,10 +145,19 @@ export default function CardGallery({
   statusLabel,
 }: CardGalleryProps) {
   const accentLabel = TASTE_TOKENS[accentTaste].label;
+  const chefTranslationSampleCopy =
+    "단맛과 신맛이 현재 더 빠르게 반응하는 포인트이므로, 코스 구성 시 너무 밀도 있게 겹치지 않도록 조절하면 전반적 밸런스가 한층 여유롭게 맞춰집니다.";
+  const chefTranslationSampleIndicator = buildTasteAdjustmentGradient(
+    [
+      { change: 86, taste: "단맛" },
+      { change: 74, taste: "신맛" },
+    ],
+    "to bottom",
+  );
   const accentPalette = TASTE_TOKENS[accentTaste].palette;
 
   return (
-    <div className="grid gap-8">
+    <div className="tb-section-stack">
       <GallerySection
         title="공용 카드"
         description="여러 화면에서 바로 재사용할 수 있는 공용 카드와 시스템 프리미티브입니다."
@@ -299,7 +287,7 @@ export default function CardGallery({
                 </InspectableComponent>
                 <span className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">레스토랑 베누</span>
               </div>
-              <ChevronRight size={16} className="text-[var(--tb-color-icon-muted)]" />
+              <ChevronRight size={ICON_TOKENS.size.md} className="text-[var(--tb-color-icon-muted)]" />
             </div>
 
             <div className="flex w-full items-center gap-3">
@@ -316,17 +304,17 @@ export default function CardGallery({
 
             <div className="flex w-full flex-wrap gap-x-4 gap-y-1">
               <div className="flex items-center gap-1">
-                <Calendar size={12} className="text-[var(--tb-color-text-faint)]" />
+                <Calendar size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-text-faint)]" />
                 <span className="text-[11px] text-[var(--tb-color-text-subtle)]">4월 4일 오후 7:30</span>
               </div>
               <div className="flex items-center gap-1">
-                <ChefHat size={12} className="text-[var(--tb-color-text-faint)]" />
+                <ChefHat size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-text-faint)]" />
                 <span className="text-[11px] text-[var(--tb-color-text-subtle)]">시그니처 코스</span>
               </div>
             </div>
 
             <div className="flex w-full items-center gap-2 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-2">
-              <Sparkles size={14} style={{ color: statusColor }} />
+              <Sparkles size={ICON_TOKENS.size.sm} style={{ color: statusColor }} />
               <span className="text-[12px] text-[var(--tb-color-text-primary)]">다음 다이닝 전에 TCS 보정을 권장해요.</span>
             </div>
 
@@ -404,11 +392,11 @@ export default function CardGallery({
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
-                  <Bluetooth size={14} className="text-[var(--tb-color-icon-primary)]" />
+                  <Bluetooth size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
                   <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">연결됨</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Battery size={14} className="text-[var(--tb-color-icon-primary)]" />
+                  <Battery size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
                   <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">87%</span>
                 </div>
               </div>
@@ -438,7 +426,7 @@ export default function CardGallery({
                       className="flex h-[40px] w-[40px] items-center justify-center rounded-[var(--tb-radius-10)]"
                       style={{ backgroundColor: `${stat.color}20` }}
                     >
-                      <Icon size={18} strokeWidth={1.5} style={{ color: stat.color }} />
+                      <Icon size={ICON_TOKENS.size.md} strokeWidth={1.5} style={{ color: stat.color }} />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[11px] text-[var(--tb-color-text-muted)]">{stat.label}</span>
@@ -471,7 +459,7 @@ export default function CardGallery({
                     <span className="text-[11px] text-[var(--tb-color-text-muted)]">{chef.restaurant}</span>
                   </div>
                   <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{chef.matchRate}%</span>
-                  <ChevronRight size={16} className="text-[var(--tb-color-icon-muted)]" />
+                  <ChevronRight size={ICON_TOKENS.size.md} className="text-[var(--tb-color-icon-muted)]" />
                 </div>
               </SectionCard>
             ))}
@@ -491,12 +479,12 @@ export default function CardGallery({
               return (
                 <SectionCard key={item.label} hoverEffect={false}>
                   <div className="flex w-full items-center gap-3">
-                    <Icon size={18} className="shrink-0 text-[var(--tb-color-icon-primary)]" />
+                    <Icon size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-primary)]" />
                     <div className="flex min-w-0 flex-1 flex-col">
                       <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{item.label}</span>
                       <span className="text-[11px] text-[var(--tb-color-text-muted)]">{item.desc}</span>
                     </div>
-                    <ChevronRight size={16} className="text-[var(--tb-color-icon-muted)]" />
+                    <ChevronRight size={ICON_TOKENS.size.md} className="text-[var(--tb-color-icon-muted)]" />
                   </div>
                 </SectionCard>
               );
@@ -559,8 +547,8 @@ export default function CardGallery({
             ].map((item) => (
               <SectionCard key={item.title} hoverEffect={false}>
                 <div className="flex items-start gap-3">
-                  <div className={`flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] ${item.iconClass}`}>
-                    <Sparkles size={18} />
+                  <div className={`flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] ${item.iconClass}`}>
+                    <Sparkles size={ICON_TOKENS.size.md} />
                   </div>
                   <div className="flex flex-col gap-1">
                     <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">{item.title}</p>
@@ -596,7 +584,7 @@ export default function CardGallery({
                     key={step.label}
                     className={`rounded-[16px] border px-3 py-3 ${
                       index === 1
-                        ? "border-[var(--tb-color-text-primary)] bg-[var(--tb-color-surface-muted)]"
+                        ? "border-[var(--tb-color-text-secondary)] bg-[var(--tb-color-surface-muted)]"
                         : "border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)]"
                     }`}
                   >
@@ -617,8 +605,8 @@ export default function CardGallery({
         >
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start gap-3">
-              <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-                <ChefHat size={18} />
+              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+                <ChefHat size={ICON_TOKENS.size.md} />
               </div>
               <div className="flex flex-col gap-1">
                 <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">셰프용 현재 요약</p>
@@ -649,19 +637,29 @@ export default function CardGallery({
         <SampleBlock
           title="빠른 보정 힌트 카드"
           description="질문 단계에서 현재 선택 맥락을 짧게 안내하는 카드입니다."
-          componentNames={["SectionCard"]}
-          source="src/pages/QuickTasteCalibrationScreen.tsx"
+          componentNames={["QuickCalibrationHintCard"]}
+          source="src/components/system/QuickCalibrationHintCard.tsx"
         >
-          <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
-            <div className="flex items-start gap-3">
-              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-10)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-                <Sparkles size={14} strokeWidth={1.8} />
-              </div>
-              <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                정답을 맞추는 과정이 아니라, 지금 더 자연스럽게 맞는 방향을 찾는 가벼운 보정 단계입니다.
-              </p>
-            </div>
-          </SectionCard>
+          <QuickCalibrationHintCard description="정답을 맞추는 과정이 아니라, 지금 더 자연스럽게 맞는 방향을 찾는 가벼운 보정 단계입니다." />
+        </SampleBlock>
+
+        <SampleBlock
+          title="인사이트 카드"
+          description="분석 화면의 인사이트와 셰프 번역 요약에 공통으로 쓰이는 카드 형태입니다."
+          componentNames={["InsightCard"]}
+          source="src/components/system/InsightCard.tsx"
+        >
+          <div className="grid gap-3">
+            <InsightCard
+              accentColor={`var(--tb-taste-${accentTaste}-main)`}
+              description={`${accentLabel} 쪽이 현재 더 빠르게 반응하는 포인트라, 다음 코스에서는 한 번에 밀도 높게 겹치지 않게 조정하는 편이 더 편안합니다.`}
+            />
+            <InsightCard
+              description={chefTranslationSampleCopy}
+              eyebrow="셰프는 이렇게 참고합니다 (Chef Translation)"
+              indicatorBackground={chefTranslationSampleIndicator}
+            />
+          </div>
         </SampleBlock>
 
         <SampleBlock
@@ -674,7 +672,7 @@ export default function CardGallery({
             <div className="flex flex-col gap-4">
               <div>
                 <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">현재 프로필 해석</p>
-                <h2 className="mt-2 text-[20px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
+                <h2 className="mt-2 text-[18px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
                   {accentLabel}이 먼저 열리고 짠맛이 뒤에서 정리되는 흐름
                 </h2>
               </div>

@@ -370,15 +370,20 @@ export const TYPOGRAPHY_SPECS: TypographySpec[] = [
   {
     name: "디스플레이",
     sample: "한눈에 들어오는 결과 헤드라인",
-    source: "src/styles/design-system.css / src/guidelines/Guidelines.md",
+    source: "DESIGN.md / src/styles/design-system.css",
     usage: "완료 / 성공 헤드라인",
-    cssVars: ["--tb-font-size-28", "--tb-font-weight-bold", "--tb-line-height-tight"],
+    cssVars: [
+      "--tb-font-size-18",
+      "--tb-font-size-28",
+      "--tb-font-weight-bold",
+      "--tb-line-height-tight",
+    ],
     value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[28], fontWeight: 700, lineHeight: 1.2 },
   },
   {
     name: "헤딩",
     sample: "프로필은 조금씩 더 정교해집니다",
-    source: "src/pages/OnboardingScreen.tsx / src/pages/TeastickConnectScreen.tsx",
+    source: "DESIGN.md / src/pages/OnboardingScreen.tsx / src/pages/TeastickConnectScreen.tsx",
     usage: "온보딩과 드로어 타이틀",
     cssVars: ["--tb-font-size-22", "--tb-font-weight-bold", "--tb-line-height-snug"],
     value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[22], fontWeight: 700, lineHeight: 1.35 },
@@ -530,6 +535,12 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     status: "currently-used",
   },
   {
+    name: "InsightCard",
+    source: "src/components/system/InsightCard.tsx",
+    note: "분석 인사이트와 셰프 번역 요약에 공통으로 쓰이는 카드입니다.",
+    status: "currently-used",
+  },
+  {
     name: "SectionTitle",
     source: "src/components/system/SectionTitle.tsx",
     note: "가이드라인 기반 heading helper로, 분석과 다이닝 피드백에서 쓰입니다.",
@@ -637,6 +648,10 @@ export const TODO_ITEMS: InventoryEntry[] = [
 
 export const SOURCE_REFERENCES: SourceReference[] = [
   {
+    file: "DESIGN.md",
+    note: "프로젝트의 현재 디자인 시스템 기준 문서입니다.",
+  },
+  {
     file: "src/index.css",
     note: "Tailwind와 두 토큰 레이어를 함께 불러옵니다.",
   },
@@ -680,22 +695,26 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
   ],
   typography: [
     {
-      file: "src/styles/design-system.css",
-      note: "font size, weight, line-height, letter-spacing 변수가 있습니다.",
+      file: "DESIGN.md",
+      note: "현재 프로젝트의 타이포 ceiling과 shell 원칙을 정의합니다.",
     },
     {
-      file: "src/guidelines/Guidelines.md",
-      note: "토큰 크기를 현재 앱의 시각적 역할에 매핑합니다.",
+      file: "src/styles/design-system.css",
+      note: "font size, weight, line-height, letter-spacing 변수가 있습니다.",
     },
   ],
   spacing: [
     {
       file: "src/styles/design-system.css",
-      note: "spacing, radius, layout, shadow 토큰이 정의됩니다.",
+      note: "spacing, radius, layout, shadow 토큰과 card stack gap 의미 토큰이 정의됩니다.",
     },
     {
       file: "src/constants/designTokens.ts",
       note: "SPACING_TOKENS, RADIUS_TOKENS, SHADOW_TOKENS, LAYOUT_TOKENS가 있습니다.",
+    },
+    {
+      file: "src/components/system/PageSection.tsx",
+      note: "섹션 타이틀과 카드 스택을 묶을 때 공통 gap-3 리듬을 적용하는 래퍼입니다.",
     },
   ],
   icons: [
@@ -760,8 +779,20 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
   ],
   cards: [
     {
+      file: "src/components/system/PageSection.tsx",
+      note: "현재 메인 탭의 섹션 타이틀과 카드 스택이 card stack gap 규칙을 공유하는 공용 래퍼입니다.",
+    },
+    {
       file: "src/components/SectionCard.tsx",
       note: "현재 화면에서 쓰이는 메인 공용 card shell입니다.",
+    },
+    {
+      file: "src/components/home/HomeCards.tsx",
+      note: "현재 홈 화면에서 쓰이는 예약 준비, 셰프 매칭, 변화 요약 카드가 공유 컴포넌트로 정리되어 있습니다.",
+    },
+    {
+      file: "src/components/design-system/CurrentHomeCardArchive.tsx",
+      note: "현재 홈 카드들을 디자인 시스템에서 다시 확인할 수 있는 보관용 프리뷰입니다.",
     },
     {
       file: "src/components/measurement/TasteMeasurementMiniCta.tsx",
@@ -786,6 +817,14 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     {
       file: "src/pages/QuickTasteCalibrationScreen.tsx",
       note: "빠른 보정 힌트 카드와 스타터 프로필 결과 카드 패턴입니다.",
+    },
+    {
+      file: "src/components/system/QuickCalibrationHintCard.tsx",
+      note: "빠른 보정 힌트 카드를 공용 컴포넌트로 재사용합니다.",
+    },
+    {
+      file: "src/components/system/InsightCard.tsx",
+      note: "분석 인사이트와 셰프 번역 요약의 공통 카드 형태를 재사용합니다.",
     },
     {
       file: "src/pages/ImproveAccuracyScreen.tsx",
@@ -908,8 +947,8 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
   ],
   auditNotes: [
     {
-      file: "src/guidelines/Guidelines.md",
-      note: "저장소에 이미 있는 디자인 시스템 가이드입니다.",
+      file: "DESIGN.md",
+      note: "현재 기준으로 사용하는 디자인 시스템 문서입니다.",
     },
     {
       file: "src/pages/OnboardingScreen.tsx",

@@ -7,6 +7,7 @@ import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
 import PrimaryButton from '../components/system/PrimaryButton';
 import OutlineBadge from '../components/system/OutlineBadge';
+import { ICON_TOKENS } from '../constants/designTokens';
 
 interface ImproveAccuracyScreenProps {
   onConnectDevice: () => void;
@@ -55,7 +56,7 @@ export default function ImproveAccuracyScreen({
       <TopAppBar title="프로필 정확도 향상" showBack onBack={onSkip} />
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="flex flex-col gap-6 px-5 pt-6 pb-[168px]">
+        <div className="flex flex-col gap-3 px-5 pt-6 pb-[168px]">
           {/* Hero card */}
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start justify-between gap-4">
@@ -73,8 +74,8 @@ export default function ImproveAccuracyScreen({
                   </p>
                 </div>
               </div>
-              <div className="flex size-[48px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-                <Sparkles size={22} />
+              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+                <Sparkles size={ICON_TOKENS.size.lg} />
               </div>
             </div>
           </SectionCard>
@@ -117,7 +118,7 @@ export default function ImproveAccuracyScreen({
                       </p>
                       {isNext && (
                         <div className="mt-1.5 flex items-center gap-1">
-                          <ArrowRight size={10} className="text-[var(--tb-taste-sweet-main)]" />
+                          <ArrowRight size={ICON_TOKENS.size.sm} className="text-[var(--tb-taste-sweet-main)]" />
                           <span className="text-[10px] font-medium text-[var(--tb-taste-sweet-main)]">
                             다음 목표
                           </span>
@@ -139,13 +140,13 @@ export default function ImproveAccuracyScreen({
               <SectionCard key={benefit.title} hoverEffect={false}>
                 <div className="flex items-start gap-3">
                   <div
-                    className="flex size-[40px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)]"
+                    className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)]"
                     style={{
                       backgroundColor: benefit.iconBg,
                       color: benefit.iconColor,
                     }}
                   >
-                    <Sparkles size={18} />
+                    <Sparkles size={ICON_TOKENS.size.md} />
                   </div>
                   <div className="flex flex-col gap-1">
                     <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
@@ -179,7 +180,7 @@ export default function ImproveAccuracyScreen({
       <div className="tb-bottom-fade absolute bottom-0 left-0 right-0 z-20 flex min-h-[140px] w-full flex-col items-center justify-end gap-2 px-5 pb-10">
         <PrimaryButton onClick={onConnectDevice}>
           <div className="flex items-center gap-2">
-            <Bluetooth size={16} />
+            <Bluetooth size={ICON_TOKENS.size.md} />
             <span>테이스틱 연결하기</span>
           </div>
         </PrimaryButton>

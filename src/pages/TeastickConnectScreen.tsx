@@ -10,11 +10,12 @@ import powerOnImage from '../assets/Power On Instructions.png';
 import tastickConnectImage from '../assets/Tastick Connect.png';
 import tbFeedbackVideo from '../assets/video/TB Feedback [Custom].mp4';
 import PrimaryButton from '../components/system/PrimaryButton';
-import { MOTION_TOKENS } from '../constants/designTokens';
+import { ICON_TOKENS, MOTION_TOKENS } from '../constants/designTokens';
 
 interface TeastickConnectScreenProps {
     onConnect: () => void;
     onSkip: () => void;
+    disableAutoAdvance?: boolean;
     initialDrawerOpen?: boolean;
     initialDrawerStep?: DrawerStep;
     initialMainStep?: number;
@@ -35,6 +36,7 @@ const BACKGROUND_CARD_TRANSITION = [
 ].join(', ');
 
 export default function TeastickConnectScreen({
+    disableAutoAdvance = false,
     initialDrawerOpen = false,
     initialDrawerStep = 'power',
     initialMainStep = 1,
@@ -70,14 +72,14 @@ export default function TeastickConnectScreen({
     // Drawer connection sequence simulation
     useEffect(() => {
         let timer: NodeJS.Timeout;
-        if (isDrawerOpen && drawerStep === 'connecting') {
+        if (!disableAutoAdvance && isDrawerOpen && drawerStep === 'connecting') {
             const randomTime = Math.floor(Math.random() * (8000 - 2000 + 1)) + 2000;
             timer = setTimeout(() => {
                 setDrawerStep('connected');
             }, randomTime);
         }
         return () => clearTimeout(timer);
-    }, [isDrawerOpen, drawerStep]);
+    }, [disableAutoAdvance, isDrawerOpen, drawerStep]);
 
     useEffect(() => {
         applyBackgroundCardProgress(isDrawerOpen ? 1 : 0);
@@ -116,10 +118,10 @@ export default function TeastickConnectScreen({
                 {/* Header */}
                 <header className="flex items-center justify-between px-4 h-14 bg-[var(--tb-color-bg-page)] z-10">
                     <button onClick={onSkip} className="p-2 -ml-2 text-black active:opacity-70 transition-opacity">
-                        <ChevronLeft strokeWidth={1.5} size={28} />
+                        <ChevronLeft strokeWidth={1.5} size={ICON_TOKENS.size.lg} />
                     </button>
                     <button className="p-2 -mr-2 text-black active:opacity-70 transition-opacity">
-                        <MoreHorizontal strokeWidth={1.5} size={24} />
+                        <MoreHorizontal strokeWidth={1.5} size={ICON_TOKENS.size.lg} />
                     </button>
                 </header>
 
@@ -150,7 +152,7 @@ export default function TeastickConnectScreen({
                                         <div
                                             className={`flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-[8px] ${isCompleted || isActive ? 'bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]' : 'bg-[var(--tb-color-text-disabled)] text-[var(--tb-color-text-inverse)]'}`}
                                         >
-                                            {isCompleted ? <Check size={14} strokeWidth={3} /> : <span className="text-[13px] font-bold">{step.id}</span>}
+                                            {isCompleted ? <Check size={ICON_TOKENS.size.sm} strokeWidth={3} /> : <span className="text-[13px] font-bold">{step.id}</span>}
                                         </div>
                                         <div className="flex-1">
                                             <h3 className={`text-[14px] font-bold tracking-tight ${(isActive) ? 'text-[var(--tb-color-text-primary)]' : 'text-[var(--tb-color-text-tertiary)]'}`}>
@@ -199,10 +201,10 @@ export default function TeastickConnectScreen({
                         {/* Drawer Header */}
                         <div className="flex items-center justify-between px-4 pb-4">
                             <button onClick={() => setIsDrawerOpen(false)} className="p-2 text-black">
-                                <span className="text-[20px] font-light">✕</span>
+                                <span className="text-[18px] font-light">✕</span>
                             </button>
                             <button className="p-2 text-black">
-                                <MoreHorizontal strokeWidth={1.5} size={24} />
+                                <MoreHorizontal strokeWidth={1.5} size={ICON_TOKENS.size.lg} />
                             </button>
                         </div>
 
@@ -218,7 +220,7 @@ export default function TeastickConnectScreen({
                                         transition={{ duration: MOTION_TOKENS.durationMs.normal / 1000 }}
                                         className="absolute inset-0 flex flex-col items-center px-5 pt-10"
                                     >
-                                        <h2 className="mb-2 text-[22px] font-bold text-[var(--tb-color-text-primary)]">테이스틱의 전원을 켭니다</h2>
+                                        <h2 className="mb-2 text-[18px] font-bold text-[var(--tb-color-text-primary)]">테이스틱의 전원을 켭니다</h2>
                                         <p className="text-[14px] text-[var(--tb-color-text-body)]">밑면의 버튼을 2초간 길게 누르세요.</p>
                                         <div className="flex-1 w-full bg-white rounded-[24px] mt-10 mb-6 flex items-center justify-center relative overflow-hidden">
                                             <img src={powerOnImage} alt="Power On Instructions" className="w-[85%] h-[85%] object-contain" />
@@ -235,7 +237,7 @@ export default function TeastickConnectScreen({
                                         transition={{ duration: MOTION_TOKENS.durationMs.normal / 1000 }}
                                         className="absolute inset-0 flex flex-col items-center px-5 pt-10"
                                     >
-                                        <h2 className="mb-2 text-[22px] font-bold text-[var(--tb-color-text-primary)]">기기를 연결중입니다</h2>
+                                        <h2 className="mb-2 text-[18px] font-bold text-[var(--tb-color-text-primary)]">기기를 연결중입니다</h2>
                                         <p className="text-[14px] text-[var(--tb-color-text-body)]">연결이 완료되면 녹색 점등이 반짝입니다.</p>
 
                                         <div className="flex-1 w-full bg-white rounded-[24px] mt-10 mb-6 flex items-center justify-center relative overflow-hidden">
@@ -260,7 +262,7 @@ export default function TeastickConnectScreen({
                                         transition={{ duration: MOTION_TOKENS.durationMs.normal / 1000 }}
                                         className="absolute inset-0 flex flex-col items-center px-5 pt-10"
                                     >
-                                        <h2 className="mb-2 text-[22px] font-bold text-[var(--tb-color-text-primary)]">테이스틱 연결 완료</h2>
+                                        <h2 className="mb-2 text-[18px] font-bold text-[var(--tb-color-text-primary)]">테이스틱 연결 완료</h2>
                                         <p className="text-[14px] text-[var(--tb-color-text-body)]">테이스틱을 통해 미각 분석을 시작해보세요.</p>
 
                                         <div className="flex-1 w-full bg-white rounded-[24px] mt-10 mb-6 flex items-center justify-center relative overflow-hidden">

@@ -35,10 +35,10 @@ export const TYPOGRAPHY_TOKENS = {
     15: '15px',
     16: '16px',
     18: '18px',
-    20: '20px',
-    22: '22px',
-    24: '24px',
-    28: '28px',
+    20: '18px',
+    22: '18px',
+    24: '18px',
+    28: '18px',
   },
   fontWeight: {
     regular: 400,
@@ -62,6 +62,7 @@ export const TYPOGRAPHY_TOKENS = {
 export const SHADOW_TOKENS = {
   hover: '0 1px 3px rgba(15, 15, 15, 0.06)',
   soft: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  strong: '0 12px 32px rgba(15, 15, 15, 0.12)',
   button: '0 8px 20px rgba(0, 0, 0, 0.1)',
   drawer: '0 20px 60px rgba(0, 0, 0, 0.24)',
 } as const;
@@ -105,11 +106,11 @@ export const ICON_TOKENS = {
   size: {
     xs: 12,
     sm: 14,
-    md: 16,
-    lg: 18,
-    xl: 20,
+    md: 18,
+    lg: 24,
+    xl: 24,
     touch: 24,
-    hero: 28,
+    hero: 24,
   },
   strokeWidth: {
     thin: 1.5,
@@ -119,10 +120,10 @@ export const ICON_TOKENS = {
     emphasis: 3,
   },
   container: {
-    sm: 28,
-    md: 32,
-    lg: 40,
-    xl: 48,
+    sm: 18,
+    md: 24,
+    lg: 32,
+    xl: 32,
   },
 } as const;
 
@@ -209,7 +210,8 @@ export const COLOR_TOKENS = {
 export const LAYOUT_TOKENS = {
   screenMaxWidth: '1440px',
   pageGutter: '20px',
-  sectionGap: '32px',
+  sectionGap: SPACING_TOKENS[20],
+  cardStackGap: SPACING_TOKENS[12],
   cardPadding: '12px',
   topAppBarHeight: '56px',
   primaryButtonHeight: '48px',

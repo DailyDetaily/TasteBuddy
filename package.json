@@ -61,7 +61,12 @@
       },
       "scripts": {
             "dev": "vite",
+            "dev:app": "node scripts/open-design-system.mjs /",
+            "dev:design-system": "node scripts/open-design-system.mjs",
+            "dev:design-system-updates": "node scripts/open-design-system.mjs /design-system-updates",
             "build": "vite build",
+            "preview": "vite preview",
+            "preview:design-system": "vite preview --open /design-system",
             "catchtable:fetch": "node scripts/fetch-catchtable-menu-assets.mjs",
             "catchtable:batch": "node scripts/run-catchtable-batch.mjs",
             "catchtable:bootstrap-review": "node scripts/bootstrap-catchtable-review.mjs",

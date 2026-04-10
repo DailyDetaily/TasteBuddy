@@ -95,7 +95,7 @@ Usage:
   node scripts/generate-intake-seed-json.mjs --output-dir supabase/seeds <csv-path> [...]
 
 Examples:
-  npm run intake:generate-seed -- docs/mvp-content-intake-mingles-lunch.csv docs/mvp-content-intake-mingles-dinner.csv
+  npm run intake:generate-seed -- docs/content/intake/mvp-content-intake-mingles-lunch.csv docs/content/intake/mvp-content-intake-mingles-dinner.csv
 `.trim());
 }
 

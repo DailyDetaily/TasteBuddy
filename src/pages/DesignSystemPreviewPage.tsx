@@ -6,12 +6,14 @@ import {
   getDiningFeedbackScenario,
   type DiningFeedbackDraft,
 } from '../constants/diningFeedbackData';
+import { RESERVATION_CATALOG } from '../constants/reservationCatalog';
 import { createInitialTasteMeasurementSnapshot } from '../constants/tasteMeasurementData';
 import AnalysisPage from './AnalysisPage';
 import ImproveAccuracyScreen from './ImproveAccuracyScreen';
 import OnboardingScreen from './OnboardingScreen';
 import ProfilePage from './ProfilePage';
 import ReservationConfirmationScreen from './ReservationConfirmationScreen';
+import ReservationPage from './ReservationPage';
 import TeastickConnectScreen from './TeastickConnectScreen';
 
 interface OverlayNote {
@@ -120,7 +122,7 @@ export default function DesignSystemPreviewPage() {
                 <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-white/70">
                   Design System Update Preview
                 </p>
-                <h1 className="text-[28px] font-bold leading-tight">
+                <h1 className="text-[18px] font-bold leading-tight">
                   변경된 요소를 실제 화면 위에 표시한 미리보기
                 </h1>
                 <p className="max-w-[720px] text-[14px] leading-relaxed text-white/78">
@@ -197,6 +199,30 @@ export default function DesignSystemPreviewPage() {
             ]}
           >
             <AnalysisPage measurementSnapshot={measurementSnapshot} onStartMeasurement={() => undefined} />
+          </ShowcaseSection>
+          )}
+
+          {(!focusSection || focusSection === 'reservation') && (
+            <ShowcaseSection
+            title="Reservation"
+            description="예약 hero, 셰프용 해석, empty state를 더 설득력 있는 hospitality 흐름으로 정리했습니다."
+            overlayNotes={[
+              { id: '1', left: '50%', top: '17%' },
+              { id: '2', left: '50%', top: '34%' },
+              { id: '3', left: '50%', top: '58%' },
+            ]}
+            notes={[
+              { id: '1', text: '상단 hero가 레스토랑, 셰프, match, 개인화 headline을 한 장으로 묶어 예약 가치가 더 빨리 보이도록 정리됐습니다.' },
+              { id: '2', text: '게스트 관점과 셰프 관점을 white inset card로 분리해 읽는 방향이 더 선명해졌습니다.' },
+              { id: '3', text: '예약이 없을 때도 다음 가치와 학습 루프가 보이도록 hospitality형 empty state 컴포넌트를 추가했습니다.' },
+            ]}
+          >
+            <ReservationPage
+              disableHydration
+              initialReservations={RESERVATION_CATALOG}
+              measurementSnapshot={measurementSnapshot}
+              onStartMeasurement={() => undefined}
+            />
           </ShowcaseSection>
           )}
 

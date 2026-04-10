@@ -128,7 +128,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         </div>
 
         <div className="flex min-h-[100px] flex-col items-center px-5 text-center">
-          <h2 className="mb-2 whitespace-pre-line text-center text-[22px] font-bold leading-snug tracking-tight text-[var(--tb-color-text-primary)]">
+          <h2 className="mb-2 whitespace-pre-line text-center text-[18px] font-bold leading-snug tracking-tight text-[var(--tb-color-text-primary)]">
             {stepData.title}
           </h2>
           <p className="whitespace-pre-line text-center text-[14px] leading-relaxed text-[var(--tb-color-text-tertiary)]">

@@ -60,7 +60,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
     selector: "src/imports/Home.tsx > HistoryCard > span",
     sources: [
       { file: "src/imports/Home.tsx", note: "홈 탭 카드 상단의 실제 one-off 배지 원본입니다." },
-      { file: "src/guidelines/Guidelines.md", note: "StatusChip spec의 기준 컴포넌트로 문서화되어 있습니다." },
+      { file: "DESIGN.md", note: "현재 시스템의 배지 계층과 tone 기준을 정의합니다." },
     ],
     values: [
       { label: "display", value: "inline-flex" },
@@ -183,6 +183,27 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
       { label: "body padding", value: "var(--tb-space-12)" },
       { label: "interactive default", value: "hoverEffect는 onClick이 있을 때 기본 true" },
       { label: "transition", value: "background-color, box-shadow, transform" },
+    ],
+  },
+  {
+    id: "page-section",
+    name: "PageSection",
+    group: "카드",
+    status: "currently-used",
+    description: "섹션 타이틀과 카드 스택을 함께 묶는 공용 레이아웃 래퍼입니다.",
+    selector: "src/components/system/PageSection.tsx root div",
+    sources: [
+      { file: "src/components/system/PageSection.tsx", note: "title, titleAs, contentClassName을 받아 섹션 구조를 통일합니다." },
+      { file: "src/components/system/SectionTitle.tsx", note: "섹션 타이틀의 실제 타이포그래피를 담당합니다." },
+      { file: "src/pages/AnalysisPage.tsx", note: "나의 미각, 세부 분석, 인사이트 섹션에 실제로 연결되어 있습니다." },
+    ],
+    values: [
+      { label: "layout", value: "flex column" },
+      { label: "stack gap", value: "var(--tb-layout-card-stack-gap)", note: "기본값 12px / gap-3" },
+      { label: "title component", value: "SectionTitle" },
+      { label: "default title size", value: "lg = 18px / md = 16px" },
+      { label: "content stack rule", value: "stacked cards should use flex/grid gap-3", note: "contentClassName으로 명시" },
+      { label: "usage", value: "main tabs section title + card stack rhythm" },
     ],
   },
   {

@@ -30,7 +30,7 @@ export const DESIGN_TOKEN_RUNTIME_DEFAULTS: DesignTokenRuntimeState = {
   cardRadius: 20,
   cardSurface: COLOR_TOKENS.surface.card,
   controlRadius: 10,
-  displaySize: 28,
+  displaySize: 18,
   fontWeight: 600,
   gap: 12,
   lineHeight: 1.45,
@@ -42,6 +42,14 @@ export const DESIGN_TOKEN_RUNTIME_DEFAULTS: DesignTokenRuntimeState = {
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function clampTypographySize(value: unknown, fallback: number): number {
+  if (!isFiniteNumber(value)) {
+    return fallback;
+  }
+
+  return Math.min(18, Math.max(10, Math.round(value)));
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -70,18 +78,17 @@ export function loadPersistedDesignTokenRuntimeState(): DesignTokenRuntimeState 
       background: isNonEmptyString(parsedValue.background)
         ? parsedValue.background
         : DESIGN_TOKEN_RUNTIME_DEFAULTS.background,
-      bodySize: isFiniteNumber(parsedValue.bodySize)
-        ? parsedValue.bodySize
-        : DESIGN_TOKEN_RUNTIME_DEFAULTS.bodySize,
+      bodySize: clampTypographySize(parsedValue.bodySize, DESIGN_TOKEN_RUNTIME_DEFAULTS.bodySize),
       bodyText: isNonEmptyString(parsedValue.bodyText)
         ? parsedValue.bodyText
         : DESIGN_TOKEN_RUNTIME_DEFAULTS.bodyText,
       border: isNonEmptyString(parsedValue.border)
         ? parsedValue.border
         : DESIGN_TOKEN_RUNTIME_DEFAULTS.border,
-      captionSize: isFiniteNumber(parsedValue.captionSize)
-        ? parsedValue.captionSize
-        : DESIGN_TOKEN_RUNTIME_DEFAULTS.captionSize,
+      captionSize: clampTypographySize(
+        parsedValue.captionSize,
+        DESIGN_TOKEN_RUNTIME_DEFAULTS.captionSize,
+      ),
       cardRadius: isFiniteNumber(parsedValue.cardRadius)
         ? parsedValue.cardRadius
         : DESIGN_TOKEN_RUNTIME_DEFAULTS.cardRadius,
@@ -91,9 +98,10 @@ export function loadPersistedDesignTokenRuntimeState(): DesignTokenRuntimeState 
       controlRadius: isFiniteNumber(parsedValue.controlRadius)
         ? parsedValue.controlRadius
         : DESIGN_TOKEN_RUNTIME_DEFAULTS.controlRadius,
-      displaySize: isFiniteNumber(parsedValue.displaySize)
-        ? parsedValue.displaySize
-        : DESIGN_TOKEN_RUNTIME_DEFAULTS.displaySize,
+      displaySize: clampTypographySize(
+        parsedValue.displaySize,
+        DESIGN_TOKEN_RUNTIME_DEFAULTS.displaySize,
+      ),
       fontWeight: isFiniteNumber(parsedValue.fontWeight)
         ? parsedValue.fontWeight
         : DESIGN_TOKEN_RUNTIME_DEFAULTS.fontWeight,
@@ -110,9 +118,7 @@ export function loadPersistedDesignTokenRuntimeState(): DesignTokenRuntimeState 
       shadowKey: isShadowKey(parsedValue.shadowKey)
         ? parsedValue.shadowKey
         : DESIGN_TOKEN_RUNTIME_DEFAULTS.shadowKey,
-      titleSize: isFiniteNumber(parsedValue.titleSize)
-        ? parsedValue.titleSize
-        : DESIGN_TOKEN_RUNTIME_DEFAULTS.titleSize,
+      titleSize: clampTypographySize(parsedValue.titleSize, DESIGN_TOKEN_RUNTIME_DEFAULTS.titleSize),
     };
   } catch {
     return DESIGN_TOKEN_RUNTIME_DEFAULTS;
@@ -130,6 +136,14 @@ export function hasPersistedDesignTokenRuntimeState(): boolean {
 export function buildDesignTokenRuntimeOverrides(
   state: DesignTokenRuntimeState,
 ): Record<string, string> {
+  const captionSize = clampTypographySize(state.captionSize, DESIGN_TOKEN_RUNTIME_DEFAULTS.captionSize);
+  const bodySize = clampTypographySize(state.bodySize, DESIGN_TOKEN_RUNTIME_DEFAULTS.bodySize);
+  const titleSize = clampTypographySize(state.titleSize, DESIGN_TOKEN_RUNTIME_DEFAULTS.titleSize);
+  const displaySize = clampTypographySize(
+    state.displaySize,
+    DESIGN_TOKEN_RUNTIME_DEFAULTS.displaySize,
+  );
+
   return {
     "--background": state.background,
     "--foreground": state.primaryText,
@@ -167,16 +181,22 @@ export function buildDesignTokenRuntimeOverrides(
     "--tb-radius-14": `${Math.max(state.controlRadius + 4, state.controlRadius)}px`,
     "--tb-radius-12": `${Math.max(state.controlRadius + 2, state.controlRadius)}px`,
     "--tb-radius-10": `${state.controlRadius}px`,
+    "--tb-layout-section-gap": `${state.sectionGap}px`,
+    "--tb-layout-card-stack-gap": `${state.gap}px`,
     "--tb-space-12": `${state.gap}px`,
     "--tb-space-16": `${state.sectionGap}px`,
     "--tb-space-20": `${state.sectionGap}px`,
-    "--tb-font-size-28": `${state.displaySize}px`,
-    "--tb-font-size-18": `${state.titleSize}px`,
-    "--tb-font-size-14": `${state.bodySize}px`,
-    "--tb-font-size-12": `${state.captionSize}px`,
+    "--tb-font-size-28": `${displaySize}px`,
+    "--tb-font-size-24": `${displaySize}px`,
+    "--tb-font-size-22": `${displaySize}px`,
+    "--tb-font-size-20": `${displaySize}px`,
+    "--tb-font-size-18": `${titleSize}px`,
+    "--tb-font-size-14": `${bodySize}px`,
+    "--tb-font-size-12": `${captionSize}px`,
     "--tb-font-weight-semibold": `${state.fontWeight}`,
     "--tb-line-height-relaxed": `${state.lineHeight}`,
     "--tb-shadow-button": SHADOW_TOKENS[state.shadowKey],
+    "--tb-shadow-strong": SHADOW_TOKENS.strong,
   };
 }
 
@@ -240,6 +260,13 @@ export function countDesignTokenRuntimeDifferences(
 export function buildDesignSystemCssSnippet(state: DesignTokenRuntimeState): string {
   const controlRadius14 = Math.max(state.controlRadius + 4, state.controlRadius);
   const controlRadius12 = Math.max(state.controlRadius + 2, state.controlRadius);
+  const captionSize = clampTypographySize(state.captionSize, DESIGN_TOKEN_RUNTIME_DEFAULTS.captionSize);
+  const bodySize = clampTypographySize(state.bodySize, DESIGN_TOKEN_RUNTIME_DEFAULTS.bodySize);
+  const titleSize = clampTypographySize(state.titleSize, DESIGN_TOKEN_RUNTIME_DEFAULTS.titleSize);
+  const displaySize = clampTypographySize(
+    state.displaySize,
+    DESIGN_TOKEN_RUNTIME_DEFAULTS.displaySize,
+  );
 
   return [
     "/* Paste into :root in src/styles/design-system.css */",
@@ -258,12 +285,16 @@ export function buildDesignSystemCssSnippet(state: DesignTokenRuntimeState): str
     `--tb-space-12: ${state.gap}px;`,
     `--tb-space-16: ${state.sectionGap}px;`,
     `--tb-space-20: ${state.sectionGap}px;`,
-    `--tb-font-size-12: ${state.captionSize}px;`,
-    `--tb-font-size-14: ${state.bodySize}px;`,
-    `--tb-font-size-18: ${state.titleSize}px;`,
-    `--tb-font-size-28: ${state.displaySize}px;`,
+    `--tb-font-size-12: ${captionSize}px;`,
+    `--tb-font-size-14: ${bodySize}px;`,
+    `--tb-font-size-18: ${titleSize}px;`,
+    `--tb-font-size-20: ${displaySize}px;`,
+    `--tb-font-size-22: ${displaySize}px;`,
+    `--tb-font-size-24: ${displaySize}px;`,
+    `--tb-font-size-28: ${displaySize}px;`,
     `--tb-font-weight-semibold: ${state.fontWeight};`,
     `--tb-line-height-relaxed: ${state.lineHeight};`,
+    `--tb-shadow-strong: ${SHADOW_TOKENS.strong};`,
     `--tb-shadow-button: ${SHADOW_TOKENS[state.shadowKey]};`,
   ].join("\n");
 }
@@ -271,6 +302,13 @@ export function buildDesignSystemCssSnippet(state: DesignTokenRuntimeState): str
 export function buildDesignTokensTsSnippet(state: DesignTokenRuntimeState): string {
   const controlRadius14 = Math.max(state.controlRadius + 4, state.controlRadius);
   const controlRadius12 = Math.max(state.controlRadius + 2, state.controlRadius);
+  const captionSize = clampTypographySize(state.captionSize, DESIGN_TOKEN_RUNTIME_DEFAULTS.captionSize);
+  const bodySize = clampTypographySize(state.bodySize, DESIGN_TOKEN_RUNTIME_DEFAULTS.bodySize);
+  const titleSize = clampTypographySize(state.titleSize, DESIGN_TOKEN_RUNTIME_DEFAULTS.titleSize);
+  const displaySize = clampTypographySize(
+    state.displaySize,
+    DESIGN_TOKEN_RUNTIME_DEFAULTS.displaySize,
+  );
 
   return [
     "/* Paste the matching values into src/constants/designTokens.ts */",
@@ -289,10 +327,13 @@ export function buildDesignTokensTsSnippet(state: DesignTokenRuntimeState): stri
     "",
     "export const TYPOGRAPHY_TOKENS = {",
     "  fontSize: {",
-    `    12: '${state.captionSize}px',`,
-    `    14: '${state.bodySize}px',`,
-    `    18: '${state.titleSize}px',`,
-    `    28: '${state.displaySize}px',`,
+    `    12: '${captionSize}px',`,
+    `    14: '${bodySize}px',`,
+    `    18: '${titleSize}px',`,
+    `    20: '${displaySize}px',`,
+    `    22: '${displaySize}px',`,
+    `    24: '${displaySize}px',`,
+    `    28: '${displaySize}px',`,
     "  },",
     "  fontWeight: {",
     `    semibold: ${state.fontWeight},`,
@@ -303,6 +344,7 @@ export function buildDesignTokensTsSnippet(state: DesignTokenRuntimeState): stri
     "} as const;",
     "",
     "export const SHADOW_TOKENS = {",
+    `  strong: '${SHADOW_TOKENS.strong}',`,
     `  button: '${SHADOW_TOKENS[state.shadowKey]}',`,
     "} as const;",
     "",
