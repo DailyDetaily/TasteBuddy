@@ -18,7 +18,12 @@ import {
   type TasteMeasurementEntry,
 } from '../../src/constants/tasteMeasurementData';
 import { TASTE_TOKENS } from '../../src/constants/designTokens';
-import { TASTE_COLORS, getTasteTint, getTasteTintSubText } from '../../src/constants/tasteColors';
+import {
+  TASTE_COLORS,
+  getTasteTint,
+  getTasteTintSurface,
+  getTasteTintSurfaceSubText,
+} from '../../src/constants/tasteColors';
 
 import chefHwangJeongin from '../../src/assets/HwangJeongin.png';
 import chefLeeEunji from '../../src/assets/LeeEunji.png';
@@ -294,15 +299,15 @@ export default function StaticHomePage({
               {PREVIEW_CHEFS.map((chef, index) => {
                 const dominantTasteLabel = TASTE_TOKENS[chef.tasteId].label;
                 const colors = TASTE_COLORS[dominantTasteLabel];
-                const tintTextColor = `var(--tb-taste-${chef.tasteId}-tint-text)`;
-                const tintSubTextColor = `var(--tb-taste-${chef.tasteId}-tint-sub-text)`;
+                const tintSurfaceTextColor = `var(--tb-taste-${chef.tasteId}-tint-surface-text)`;
+                const tintSurfaceSubTextColor = `var(--tb-taste-${chef.tasteId}-tint-surface-sub-text)`;
 
                 return (
                   <div
                     key={`${chef.chef}-${index}`}
                     className="box-border flex h-[132px] w-[132px] shrink-0 flex-col gap-[12px] overflow-clip rounded-[20px] p-[12px]"
                     style={{
-                      backgroundColor: colors.bg,
+                      backgroundColor: getTasteTintSurface(dominantTasteLabel),
                       border: `1px solid ${getTasteTint(dominantTasteLabel, 0.18)}`,
                     }}
                   >
@@ -318,13 +323,17 @@ export default function StaticHomePage({
                       <div className="flex flex-col gap-[2px]">
                         <p
                           className="w-full truncate text-[14px] font-bold"
-                          style={{ color: tintTextColor }}
+                          style={{ color: tintSurfaceTextColor }}
                         >
                           {chef.chef} 셰프
                         </p>
                         <p
                           className="w-full truncate text-[10px] font-normal"
-                          style={{ color: tintSubTextColor || getTasteTintSubText(dominantTasteLabel) }}
+                          style={{
+                            color:
+                              tintSurfaceSubTextColor ||
+                              getTasteTintSurfaceSubText(dominantTasteLabel),
+                          }}
                         >
                           {chef.restaurant}
                         </p>

@@ -1,0 +1,269 @@
+{
+  "version": "2026-04-13",
+  "purpose": "Fast machine-readable snapshot for AI agents that need to understand the Taste Buddy design system before making UI changes.",
+  "source_of_truth": [
+    {
+      "priority": 1,
+      "label": "product_experience",
+      "path": "src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md",
+      "role": "Top-level product and UX direction"
+    },
+    {
+      "priority": 2,
+      "label": "design_system_doc",
+      "path": "DESIGN.md",
+      "role": "Visual system explanation, usage rules, and rationale"
+    },
+    {
+      "priority": 3,
+      "label": "typed_tokens",
+      "path": "src/constants/designTokens.ts",
+      "role": "Typed token source of truth"
+    },
+    {
+      "priority": 4,
+      "label": "css_tokens",
+      "path": "src/styles/design-system.css",
+      "role": "CSS variable mirror of app tokens"
+    },
+    {
+      "priority": 5,
+      "label": "inventory",
+      "path": "src/components/design-system/inventory.ts",
+      "role": "Preview inventory, audit notes, and token groupings"
+    },
+    {
+      "priority": 6,
+      "label": "component_specs",
+      "path": "src/components/design-system/componentStyleSpecs.ts",
+      "role": "Representative component style snapshots"
+    }
+  ],
+  "read_order": [
+    "docs/AI_DESIGN_SYSTEM.md",
+    "src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md",
+    "DESIGN.md",
+    "src/constants/designTokens.ts",
+    "src/styles/design-system.css",
+    "src/components/design-system/inventory.ts"
+  ],
+  "mental_model": {
+    "product_positioning": "Premium dining personalization service that translates palate data into chef-usable guidance.",
+    "color_layers": [
+      "neutral_system",
+      "taste_palette",
+      "warm_hospitality_layer"
+    ],
+    "default_start_point": "neutral_system",
+    "mobile_first": true,
+    "max_product_font_px": 18
+  },
+  "terminology": {
+    "bg": {
+      "meaning": "Stronger taste fill",
+      "preferred_usage": [
+        "quick_stat",
+        "calibration_highlight",
+        "measurement_emphasis"
+      ]
+    },
+    "tintSurface": {
+      "meaning": "Soft taste card background",
+      "preferred_usage": [
+        "chef_matching_card",
+        "detail_analysis_card"
+      ]
+    },
+    "tintSurfaceText": {
+      "meaning": "Primary text on tintSurface"
+    },
+    "tintSurfaceSubText": {
+      "meaning": "Secondary text on tintSurface"
+    },
+    "main": {
+      "meaning": "Taste signal color for value, node, chip, chart, and semantic emphasis"
+    },
+    "ringBaseColor": {
+      "meaning": "Measurement loop implementation token",
+      "note": "Do not prefer this for new card semantics when tintSurface exists."
+    }
+  },
+  "core_tokens": {
+    "layout": {
+      "pageGutter": "20px",
+      "sectionGap": "20px",
+      "cardStackGap": "12px",
+      "primaryButtonHeight": "48px",
+      "topAppBarHeight": "56px",
+      "screenMaxWidth": "1440px"
+    },
+    "radius": {
+      "badge": "6px",
+      "control": "10px",
+      "insetSupport": [
+        "12px",
+        "14px"
+      ],
+      "card": "20px",
+      "pill": "9999px"
+    },
+    "typography": {
+      "fontFamily": "Pretendard",
+      "display": "18px",
+      "heading": "18px",
+      "body": "14px",
+      "caption": "12px",
+      "micro": [
+        "10px",
+        "11px"
+      ]
+    },
+    "surfaces": {
+      "page": "#F3F3F3",
+      "base": "#FFFFFF",
+      "card": "#FFFFFF",
+      "muted": "#F7F7F7",
+      "elevated": "#FCFCFC",
+      "overlay": "rgba(255, 255, 255, 0.8)"
+    },
+    "state": {
+      "success": "#2F8F5B",
+      "successSoft": "#E6F4EC",
+      "warning": "#A8661A",
+      "warningSoft": "#FFF1DE"
+    }
+  },
+  "taste_palette": {
+    "sweet": {
+      "label": "단맛",
+      "main": "#FF9900",
+      "bg": "#FFD699",
+      "tintSurface": "#FFEBCC",
+      "tintSurfaceText": "#6F4609",
+      "tintSurfaceSubText": "#896735"
+    },
+    "sour": {
+      "label": "신맛",
+      "main": "#FBC02D",
+      "bg": "#FFEF99",
+      "tintSurface": "#FFF7CC",
+      "tintSurfaceText": "#6F5F09",
+      "tintSurfaceSubText": "#897C35"
+    },
+    "bitter": {
+      "label": "쓴맛",
+      "main": "#95C900",
+      "bg": "#E0EBB4",
+      "tintSurface": "#EAF4CC",
+      "tintSurfaceText": "#505B24",
+      "tintSurfaceSubText": "#70794B"
+    },
+    "salty": {
+      "label": "짠맛",
+      "main": "#7299FF",
+      "bg": "#C6D6FF",
+      "tintSurface": "#E3EBFF",
+      "tintSurfaceText": "#36466F",
+      "tintSurfaceSubText": "#5A6789"
+    },
+    "umami": {
+      "label": "감칠맛",
+      "main": "#B372B4",
+      "bg": "#E1C7E1",
+      "tintSurface": "#F0E3F0",
+      "tintSurfaceText": "#513751",
+      "tintSurfaceSubText": "#705B70"
+    },
+    "fat": {
+      "label": "지방맛",
+      "main": "#95867A",
+      "bg": "#D5CFCA",
+      "tintSurface": "#EAE7E4",
+      "tintSurfaceText": "#453F3A",
+      "tintSurfaceSubText": "#66625D"
+    }
+  },
+  "component_recipes": [
+    {
+      "id": "chef_matching_card",
+      "source": "src/imports/Home.tsx",
+      "usage": "Taste-context chef recommendation card",
+      "recipe": {
+        "background": "getTasteTintSurface(taste)",
+        "border": "getTasteTint(taste, 0.18)",
+        "titleColor": "getTasteTintSurfaceText(taste)",
+        "metaColor": "getTasteTintSurfaceSubText(taste)",
+        "matchColor": "getTasteTintSurfaceText(taste)",
+        "radius": "20px",
+        "padding": "12px",
+        "size": "132px x 132px"
+      }
+    },
+    {
+      "id": "detail_analysis_card",
+      "source": "src/pages/AnalysisPage.tsx",
+      "usage": "Taste detail analysis summary card",
+      "recipe": {
+        "background": "getTasteTintSurface(taste)",
+        "border": "getTasteTint(taste, 0.18)",
+        "titleColorVar": "--tb-taste-{tasteId}-tint-surface-text",
+        "summaryColorVar": "--tb-taste-{tasteId}-tint-surface-sub-text",
+        "radius": "20px",
+        "padding": "12px",
+        "size": "132px x 132px"
+      }
+    },
+    {
+      "id": "taste_chip",
+      "source": "src/components/system/TasteChip.tsx",
+      "usage": "Small taste tag",
+      "recipe": {
+        "border": "rgba(getTasteColor(taste), 0.18)",
+        "background": "rgba(getTasteColor(taste), 0.05)",
+        "labelColor": "var(--tb-color-text-primary)",
+        "valueColor": "getTasteColor(taste)",
+        "radius": "9999px"
+      }
+    },
+    {
+      "id": "section_card",
+      "source": "src/components/SectionCard.tsx",
+      "usage": "Default reusable card shell",
+      "recipe": {
+        "background": "surface-card",
+        "radius": "20px",
+        "padding": "12px",
+        "hoverTranslateY": "-4px"
+      }
+    }
+  ],
+  "hard_rules": [
+    "Do not exceed 18px font size in product UI.",
+    "Do not use taste colors for long body copy.",
+    "Do not strongly present all six tastes inside one dense block.",
+    "Start default UI states from neutral, success, or warning before taste tokens.",
+    "Use taste palette only when taste meaning is the point.",
+    "If a reusable visual pattern is added, reflect it in the design system preview."
+  ],
+  "anti_patterns": [
+    "generic_booking_app_layout",
+    "lab_like_measurement_ui",
+    "purple_startup_gradient",
+    "decorative_chart_without_interpretation",
+    "giant_display_typography",
+    "new_card_using_ringBaseColor_as_primary_semantic_token"
+  ],
+  "sync_contract": {
+    "must_update_together_when_tokens_change": [
+      "DESIGN.md",
+      "src/constants/designTokens.ts",
+      "src/styles/design-system.css",
+      "src/components/design-system/inventory.ts"
+    ],
+    "sometimes_update": [
+      "src/components/design-system/componentStyleSpecs.ts",
+      "docs/AI_DESIGN_SYSTEM.md",
+      "docs/design-system.snapshot.json"
+    ]
+  }
+}

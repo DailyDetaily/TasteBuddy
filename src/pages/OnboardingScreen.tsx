@@ -12,6 +12,7 @@ import onboardingRender2 from '../assets/onboarding_render_2.png';
 import onboardingRender3 from '../assets/onboarding_render_3.png';
 import onboardingRender4 from '../assets/onboarding_render_4.png';
 import PrimaryButton from '../components/system/PrimaryButton';
+import StepIndicator from '../components/system/StepIndicator';
 import { MOTION_TOKENS } from '../constants/designTokens';
 
 interface OnboardingScreenProps {
@@ -272,17 +273,11 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             className="tb-bottom-fade relative flex min-h-[140px] w-full flex-col items-center justify-end px-5 pb-10"
             style={{ paddingBottom: 'var(--tb-safe-area-bottom)' }}
           >
-            <div className="mb-8 flex items-center gap-[6px]">
-              {onboardingSteps.map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-[6px] rounded-full transition-all duration-300 ${index === currentStep
-                      ? 'w-[16px] bg-[var(--tb-color-text-primary)]'
-                      : 'w-[6px] bg-[var(--tb-color-border-strong)]'
-                    }`}
-                />
-              ))}
-            </div>
+            <StepIndicator
+              className="mb-8"
+              currentIndex={currentStep}
+              total={onboardingSteps.length}
+            />
 
             <PrimaryButton className="mb-10" onClick={handleNext}>
               {currentStep === totalSteps - 1 ? '시작하기' : '다음'}

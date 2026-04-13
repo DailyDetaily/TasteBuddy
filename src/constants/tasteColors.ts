@@ -61,7 +61,11 @@ export function getTasteTint(taste: string, alpha: number): string {
 }
 
 export function getTasteBg(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.bg || '#FFEBCC';
+  return (TASTE_COLORS as any)[taste]?.bg || '#FFD699';
+}
+
+export function getTasteTintSurface(taste: string): string {
+  return (TASTE_COLORS as any)[taste]?.tintSurface || '#FFEBCC';
 }
 
 export function getTasteDark(taste: string): string {
@@ -72,12 +76,12 @@ export function getTasteLight(taste: string): string {
   return (TASTE_COLORS as any)[taste]?.light || '#E0E0E0';
 }
 
-export function getTasteTintText(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.tintText || getTasteDark(taste);
+export function getTasteTintSurfaceText(taste: string): string {
+  return (TASTE_COLORS as any)[taste]?.tintSurfaceText || getTasteDark(taste);
 }
 
-export function getTasteTintSubText(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.tintSubText || getTasteTintText(taste);
+export function getTasteTintSurfaceSubText(taste: string): string {
+  return (TASTE_COLORS as any)[taste]?.tintSurfaceSubText || getTasteTintSurfaceText(taste);
 }
 
 function parseTasteAdjustmentWeight(change: number | string): number {

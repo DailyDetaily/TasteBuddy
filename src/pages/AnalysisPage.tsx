@@ -21,7 +21,7 @@ import ProfileConfidenceCard, {
 } from '../components/system/ProfileConfidenceCard';
 import SectionTitle from '../components/system/SectionTitle';
 import { DATA_VIZ_TOKENS, ICON_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_LABEL_TO_ID, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
-import { TASTE_COLORS, buildTasteAdjustmentGradient, getTasteColor, getTasteTint, getTasteTintSubText, mixHexColors } from '../constants/tasteColors';
+import { TASTE_COLORS, buildTasteAdjustmentGradient, getTasteColor, getTasteTint, getTasteTintSurface, getTasteTintSurfaceSubText, mixHexColors } from '../constants/tasteColors';
 import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
 import {
   formatMeasurementDate,
@@ -2327,16 +2327,21 @@ export default function AnalysisPage({
               {myTasteData.map((item, idx) => {
                 const colors = TASTE_COLORS[item.label as keyof typeof TASTE_COLORS];
                 const tasteId = TASTE_LABEL_TO_ID[item.label as keyof typeof TASTE_LABEL_TO_ID];
-                const tintTextColor = tasteId ? `var(--tb-taste-${tasteId}-tint-text)` : colors.tintText;
-                const tintSubTextColor = tasteId
-                  ? `var(--tb-taste-${tasteId}-tint-sub-text)`
-                  : getTasteTintSubText(item.label);
+                const tintBackgroundColor = tasteId
+                  ? getTasteTintSurface(item.label)
+                  : colors.bg;
+                const tintSurfaceTextColor = tasteId
+                  ? `var(--tb-taste-${tasteId}-tint-surface-text)`
+                  : colors.tintSurfaceText;
+                const tintSurfaceSubTextColor = tasteId
+                  ? `var(--tb-taste-${tasteId}-tint-surface-sub-text)`
+                  : getTasteTintSurfaceSubText(item.label);
                 return (
                   <div
                     key={idx}
                     className="shrink-0 w-[132px] h-[132px] rounded-[20px] p-3 flex flex-col gap-2 animate-slideUp transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.98] cursor-pointer"
                     style={{
-                      backgroundColor: colors.bg,
+                      backgroundColor: tintBackgroundColor,
                       border: `1px solid ${getTasteTint(item.label, 0.18)}`,
                       animationDelay: `${idx * 80}ms`,
                       animationFillMode: 'both',
@@ -2361,8 +2366,8 @@ export default function AnalysisPage({
                       )}
                     </div>
                     <div className="flex flex-col gap-[1px]">
-                      <p className="font-bold text-[14px]" style={{ color: tintTextColor }}>{item.label}</p>
-                      <p className="font-medium text-[12px]" style={{ color: tintSubTextColor }}>
+                      <p className="font-bold text-[14px]" style={{ color: tintSurfaceTextColor }}>{item.label}</p>
+                      <p className="font-medium text-[12px]" style={{ color: tintSurfaceSubTextColor }}>
                         {formatTasteDeltaSummary(item.deltaMm)}
                       </p>
                     </div>

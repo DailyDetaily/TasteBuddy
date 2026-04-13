@@ -23,7 +23,7 @@ const Bell = wrapIcon(AlertRegular);
 const Utensils = wrapIcon(FoodRegular);
 const CheckCircle = wrapIcon(CheckmarkCircleRegular);
 const PANEL_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
-const PANEL_ACTION_BUTTON_SIZE = ICON_TOKENS.container.lg;
+const PANEL_ACTION_BUTTON_SIZE = ICON_TOKENS.container.md;
 const NOTIFICATION_ITEM_ICON_SIZE = ICON_TOKENS.size.md;
 const NOTIFICATION_ITEM_ICON_CONTAINER_SIZE = ICON_TOKENS.container.lg;
 
@@ -90,7 +90,7 @@ export default function NotificationPanel({
         <div className="w-full max-w-[1440px] relative">
           <div className="absolute top-[56px] right-0 left-0 mx-5 max-h-[70vh] overflow-y-auto no-scrollbar rounded-[var(--tb-radius-20)] bg-white/85 supports-[backdrop-filter:blur(0px)]:bg-white/85 backdrop-blur-xl shadow-[var(--tb-shadow-drawer)] animate-slideIn">
             {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between bg-[var(--tb-color-surface-card)] px-5 pt-5 pb-3">
+            <div className="sticky top-0 z-10 flex items-center justify-between bg-[var(--tb-color-surface-base)] p-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-[16px] font-bold text-[var(--tb-color-text-primary)]">알림</h2>
                 {unreadCount > 0 && (
@@ -112,7 +112,7 @@ export default function NotificationPanel({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                  className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors ]"
                   style={{
                     width: PANEL_ACTION_BUTTON_SIZE,
                     height: PANEL_ACTION_BUTTON_SIZE,
@@ -124,7 +124,7 @@ export default function NotificationPanel({
             </div>
 
             {/* Notification List */}
-            <div className="flex flex-col px-3 pb-4">
+            <div className="flex flex-col gap-2 p-2">
               {notifications.map((notification) => {
                 const { icon: Icon, iconBg, iconColor } = getNotificationPresentation(notification);
                 return (
@@ -132,14 +132,13 @@ export default function NotificationPanel({
                     key={notification.id}
                     type="button"
                     onClick={() => onMarkAsRead(notification.id)}
-                    className={`flex items-start gap-3 rounded-[var(--tb-radius-14)] px-3 py-3 text-left transition-colors ${
-                      notification.read
-                        ? 'opacity-60'
-                        : 'bg-[var(--tb-color-surface-muted)]'
-                    }`}
+                    className={`flex items-start gap-3 rounded-[var(--tb-radius-20)] px-3 py-3 text-left transition-colors ${notification.read
+                      ? 'opacity-60'
+                      : 'bg-[var(--tb-color-surface-card)]'
+                      }`}
                   >
                     <div
-                      className="flex shrink-0 items-center justify-center rounded-[var(--tb-radius-10)]"
+                      className="flex shrink-0 items-center justify-center rounded-[var(--tb-radius-8)]"
                       style={{
                         backgroundColor: iconBg,
                         color: iconColor,
@@ -150,7 +149,7 @@ export default function NotificationPanel({
                       <Icon size={NOTIFICATION_ITEM_ICON_SIZE} />
                     </div>
                     <div className="flex flex-col gap-[2px] flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-top justify-between gap-2">
                         <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)] truncate">
                           {notification.title}
                         </span>

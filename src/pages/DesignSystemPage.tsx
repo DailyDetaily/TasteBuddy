@@ -67,6 +67,7 @@ import EmptyState from "../components/system/EmptyState";
 import OutlineBadge from "../components/system/OutlineBadge";
 import PrimaryButton from "../components/system/PrimaryButton";
 import SectionTitle from "../components/system/SectionTitle";
+import StepIndicator from "../components/system/StepIndicator";
 import StatusChip from "../components/system/StatusChip";
 import TasteChip from "../components/system/TasteChip";
 import {
@@ -2439,6 +2440,27 @@ export default function DesignSystemPage() {
                   <span className="text-[12px] text-[var(--tb-color-text-muted)]">{progress}%</span>
                 </div>
                 <Progress className="mt-3" value={progress} />
+              </div>
+              <div className={cn(previewCardClass, "p-4")}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">Step indicator</span>
+                  <span className="text-[12px] text-[var(--tb-color-text-muted)]">Onboarding / Quick calibration</span>
+                </div>
+                <div className="mt-4 grid gap-4">
+                  <div className="rounded-[16px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] px-4 py-4">
+                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-faint)]">Default</p>
+                    <StepIndicator className="mt-3" currentIndex={1} total={4} />
+                  </div>
+                  <div className="rounded-[16px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] px-4 py-4">
+                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-faint)]">Taste accent</p>
+                    <StepIndicator
+                      className="mt-3"
+                      currentIndex={2}
+                      total={6}
+                      activeColor={TASTE_TOKENS.sweet.palette.main}
+                    />
+                  </div>
+                </div>
               </div>
               <div className={cn(previewCardClass, "p-4")}>
                 <div className="flex items-center gap-3">

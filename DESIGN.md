@@ -1,985 +1,813 @@
 # Taste Buddy Design System
 
-## Source Of Truth
+## 문서 목적
 
-This file is the current product design source of truth for Taste Buddy.
+이 문서는 Taste Buddy의 현재 시각 시스템을 한곳에서 읽을 수 있게 정리한 운영 문서다.
 
-- `DESIGN.md` defines the product-level visual system, market position, safe choices, and deliberate risks.
-- `src/styles/design-system.css` and `src/constants/designTokens.ts` are the implementation source of truth for tokens.
-- This file replaces the old split between "design direction" and "design system guidelines." There should be one living visual system document.
-- All product-facing color guidance should be readable from this file alone, including neutrals, taste colors, and hospitality support colors.
-- No typography in product UI may exceed `18px`.
+- 제품 경험의 상위 기준은 `src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`
+- 현재 시각 시스템의 설명 기준은 이 `DESIGN.md`
+- 실제 구현 토큰의 원본은 `src/styles/design-system.css` 와 `src/constants/designTokens.ts`
+- `/design-system` 과 `/design-system-updates` 프리뷰는 이 문서가 코드에 반영된 현재 상태를 검증하는 화면
 
-## What This Product Is
+이 문서의 역할은 두 가지다.
 
-Taste Buddy is not a generic booking app.
+1. Taste Buddy가 어떤 미감과 제품 톤을 유지해야 하는지 설명한다.
+2. 현재 프리뷰에 정리된 토큰, 컴포넌트, 규칙, 불일치 항목을 다시 문서화한다.
 
-It is a premium dining personalization service. The job is simple to say and hard to do well:
+---
 
-1. understand a diner's palate
-2. translate it into something a chef can actually use
-3. make the next dining experience feel better matched
+## 제품 컨텍스트
 
-That means the UI cannot feel like a medical dashboard.
+### What This Product Is
 
-It also cannot feel like a social restaurant feed.
+Taste Buddy는 일반적인 예약 앱이 아니다.
 
-It needs to feel like a calm hospitality instrument.
+이 제품의 핵심은 사용자의 미각 프로필을 해석해서 셰프가 실제로 활용할 수 있는 형태로 번역하는 것이다.
 
-## Market Read, April 2026
+이 제품은 다음의 서비스 루프를 전제로 한다.
 
-I looked at the closest products and adjacent leaders.
+1. Quick Taste Calibration
+2. Taste Profile Creation
+3. Reservation Personalization
+4. Chef Calibration Guidance
+5. Dining Experience
+6. Post-Dining Feedback
+7. Profile Refinement
+8. Optional Precision Calibration
 
-### Reservation / Discovery
+### What This Product Is Not
 
-- [OpenTable new look](https://www.opentable.com/m/otnewlook/) says its redesign is "clean, crisp, contemporary" and "airy," with stronger menus, photos, and visible verified reviews.
-- [OpenTable + Perplexity](https://www.opentable.com/restaurant-solutions/resources/perplexity/) shows where the market is heading: AI-assisted restaurant discovery tied directly to reservation inventory.
-- [Resy Android relaunch, April 20, 2025](https://blog.resy.com/newsroom/resy-relaunches-resy-for-android/) emphasizes discovery, editorial collections, map filters, Notify, and access to over 20,000 restaurants.
-- [Tock's new app](https://www.exploretock.com/join/resources/tock-app-store-ios/) pushes discovery harder and lets guests personalize profiles with dietary restrictions, allergies, special occasions, and wine preferences.
+- 의료 진단 도구가 아니다.
+- 실험실 장비 UI처럼 보이면 안 된다.
+- 일반적인 레스토랑 피드나 소셜 앱처럼 보이면 안 된다.
+- "재미있는 맛 테스트" 같은 가벼운 퀴즈 톤이면 안 된다.
 
-### Taste / Preference / Recommendation
+### 현재 제품 포지셔닝
 
-- [Beli](https://beliapp.com/Beli) is built around track, share, discover. Its app store page adds `Taste Profile` and `Match Score` as core features.
-- [Vivino](https://apps.apple.com/us/app/vivino-drink-the-right-wine/id414461255) centers scanning, pairing, personal taste memory, and a `Match for You` score, backed by 70 million users.
+Taste Buddy는 프리미엄 다이닝 개인화 서비스다.
 
-### Accessibility / Product Maturity
+사용자에게는 "내 입맛이 이해되고 있다"는 감각을 주고, 셰프에게는 "이 손님에게 어떤 식으로 경험을 전달해야 하는지"를 더 정확하게 읽게 해줘야 한다.
 
-- [OpenTable accessibility statement, June 2025](https://www.opentable.com/c/legal/accessibility-statement/) explicitly aligns to WCAG 2.2 AA, zoom support, responsive font scaling, and not relying on color alone.
+그래서 UI는 세 가지를 동시에 만족해야 한다.
 
-## Three-Layer Synthesis
+- 프리미엄 다이닝 서비스처럼 차분하고 정제되어야 한다.
+- 해석 도구처럼 명확해야 한다.
+- 학습 시스템처럼 점진적인 진화를 보여줘야 한다.
 
-### Layer 1, table stakes
+---
 
-Every serious product in this space converges on the same basics:
+## 디자인 방향
 
-- bright, airy surfaces
-- quick search and filtering
-- strong restaurant imagery
-- obvious reservation actions
-- profile data folded into the booking flow
-- post-visit feedback loops
-
-If Taste Buddy ignores these, it looks underbuilt.
-
-### Layer 2, current direction of the market
-
-The category is moving toward:
-
-- AI-assisted discovery
-- richer guest profiles
-- explainable personalization
-- lightweight social proof
-- more useful post-visit memory
-
-Not just "book a table." More "help me choose well."
-
-### Layer 3, first-principles read for Taste Buddy
-
-This is the interesting part.
-
-Everyone else is optimizing for discovery, reviews, and convenience.
-
-Taste Buddy has a more unusual asset: measured or learned palate data that can be turned into chef-usable context.
-
-That is the whole game.
-
-The UI should not present taste data as trivia.
-
-It should present it as translation.
-
-## Eureka
-
-The market assumes a diner's main problem is picking the right place.
-
-Taste Buddy's user has a deeper problem: "Will this dining experience actually land well for me, and can the chef understand why?"
-
-So the visual system should sit between premium reservation UX and calm interpretation UX.
-
-Less feed.
-
-Less lab.
-
-More trusted translation layer.
-
-## Design Direction
-
-### Name
+### Direction Name
 
 Quiet Hospitality Intelligence
 
-### Aesthetic
+### 핵심 인상
 
-Restrained, premium, readable.
+- 차분하다
+- 프리미엄이다
+- 읽기 쉽다
+- 과장하지 않는다
+- 해석 중심이다
 
-Not flashy. Not playful. Not cold.
+### Safe Choices
 
-Think modern dining service with just enough sensory warmth to feel human.
+- 밝고 공기감 있는 중립 배경을 유지한다.
+- 모바일 우선 레이아웃을 유지한다.
+- 예약, 프로필, 피드백 흐름에서 명확한 CTA와 카드 구조를 유지한다.
+- Pretendard 단일 폰트 체계를 유지한다.
 
-### Decoration
+### Deliberate Risks
 
-Intentional, not empty.
+- 맛 컬러를 단순 장식이 아니라 제품 의미 체계로 사용한다.
+- 일반 예약 앱보다 더 절제된 타이포 ceiling을 둔다. 제품 전체에서 `18px`를 넘기지 않는다.
+- 화려한 브랜드 컬러 대신 중립 구조 위에 미각 컬러와 hospitality warmth를 선택적으로 얹는다.
 
-Use very light atmosphere:
+### Hard Rules
 
-- soft stage gradients
-- faint warmth in reservation and chef-facing moments
-- controlled taste-color glows
-- image crops that feel editorial, not marketing-stock
+- 제품 UI의 텍스트는 `18px`를 넘기지 않는다.
+- Pretendard 단일 폰트 체계를 유지한다.
+- 모바일이 기본 조형 모델이다. 큰 화면에서는 넓히는 대신 stage에 올린다.
+- 맛 컬러는 의미용이다. 장식용으로 남발하지 않는다.
+- 데이터 시각화는 해석을 돕기 위한 것이어야지, 보기 좋은 배경 장식이어서는 안 된다.
+- 여백, 대비, 그룹핑으로 위계를 만든다. 큰 제목으로 위계를 해결하려고 하지 않는다.
 
-No ornamental clutter.
+---
 
-### Layout
+## 프리뷰 기준 화면
 
-Phone-first, framed on larger screens.
+현재 디자인 시스템 문서화의 기준은 아래 프리뷰다.
 
-Mobile should remain the primary composition model. Tablet and desktop should feel like the phone UI placed on a well-designed stage, not stretched until it looks unfinished.
+- 앱 쉘: `http://localhost:3001/`
+- 디자인 시스템: `http://localhost:3001/design-system`
+- 업데이트 프리뷰: `http://localhost:3001/design-system-updates`
 
-### Color
+실행 명령:
 
-Keep the current neutral system. It is already close to where it should be.
+- `npm run dev`
+- `npm run dev:design-system`
+- `npm run dev:design-system-updates`
 
-Do not replace the taste palette. Keep it.
+보조 스크립트:
 
-Add one secondary warmth layer for hospitality moments.
+- `scripts/open-design-system.mjs`
 
-The color system should be read as one stack:
+### 프리뷰 섹션 구조
 
-1. neutral system for most UI structure
-2. taste palette for meaning
-3. warm hospitality layer for selective emotional tone
+`src/pages/DesignSystemPage.tsx` 의 내비게이션 섹션 순서를 기준으로 문서도 같은 구조를 따른다.
 
-#### Core neutrals, stable
+1. Audit
+2. Colors
+3. Typography
+4. Spacing
+5. Shadows
+6. Icons
+7. Buttons
+8. Badges
+9. Fields
+10. Cards
+11. Navigation
+12. Feedback
+13. Overlay
+14. App Specific
+15. Component Specs
+16. Audit Notes
 
-- Page: `#F3F3F3`
-- Surface: `#FFFFFF`
-- Primary text: `#0F0F0F`
-- Body text: `#666666`
-- Default border: `#E7E7E7`
+### 현재 감사 요약
 
-#### Taste palette, core product meaning
+`src/components/design-system/inventory.ts` 의 `AUDIT_SUMMARY` 기준:
 
-These remain first-class product colors.
+| 항목 | 현재 값 |
+| --- | --- |
+| Currently used component count | `16` |
+| Defined primitive count | `20` |
+| Shared motion duration | `300ms` |
+| Screen max width | `1440px` |
+| Shared button height | `48px` |
 
-They are not decorative accents. They are the semantic language of the product.
+---
 
-| Taste | Main | Light | Background | Use |
-| --- | --- | --- | --- | --- |
-| Sweet / 단맛 | `#FF9900` | `#FFCC80` | `#FFEBCC` | strongest highlight, active taste comparison, radar emphasis |
-| Sour / 신맛 | `#FBC02D` | `#FDD835` | `#FFF7CC` | brightness, finish, lift, freshness cues |
-| Bitter / 쓴맛 | `#95C900` | `#E6EE9C` | `#EAF4CC` | contrast, bitterness, roast-like friction notes |
-| Salty / 짠맛 | `#7299FF` | `#90CAF9` | `#E3EBFF` | structure, edge definition, sharper delivery notes |
-| Umami / 감칠맛 | `#B372B4` | `#CE93D8` | `#F0E3F0` | depth, savoriness, core body, longer flavor arc |
-| Fat / 지방맛 | `#95867A` | `#BCAAA4` | `#EAE7E4` | richness, texture, roundness, lingering finish |
+## Source Of Truth Map
 
-Taste palette rules:
+| 파일 | 역할 |
+| --- | --- |
+| `src/index.css` | Tailwind, globals, 앱 토큰 시트를 한곳에서 불러오는 전역 진입점 |
+| `src/styles/design-system.css` | 실제 앱 shell과 컴포넌트가 참조하는 `tb-*` 토큰과 공용 클래스 |
+| `src/constants/designTokens.ts` | CSS 변수를 TS 객체로 미러링한 타입 기반 토큰 |
+| `src/styles/globals.css` | shadcn 계열 generic semantic theme와 일부 dark mode 토큰 |
+| `src/components/design-system/inventory.ts` | 프리뷰에서 쓰는 인벤토리, 감사 요약, 불일치, TODO, 소스 맵 |
+| `src/components/design-system/componentStyleSpecs.ts` | 컴포넌트별 스타일값 스냅샷과 프롬프트 템플릿 |
+| `src/lib/designTokenRuntime.ts` | 프리뷰에서 로컬 runtime override를 적용하는 편집 레이어 |
+| `DESIGN.md` | 제품 관점의 시각 규칙과 현재 시스템 정리 문서 |
 
-- taste color is for meaning, not decoration
-- use taste color on values, nodes, labels, chips, delta indicators, and chart signals
-- do not set long body paragraphs in taste color
-- do not flood a single dense block with all six taste colors at once
-- default UI states should still start from neutral, success, warning, then taste palette when taste meaning is the point
+### 소스 우선순위
 
-#### Warm hospitality extension, new
+1. 제품 성격과 방향은 `src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`
+2. 현재 시각 규칙과 시스템 해석은 `DESIGN.md`
+3. 실제 토큰 값은 `src/styles/design-system.css` 와 `src/constants/designTokens.ts`
+4. 현재 컴포넌트 상태와 감사 노트는 `src/components/design-system/inventory.ts`
 
-These are not primary brand colors. They are support tones.
+---
 
-- Linen: `#F7F3EC`
-- Sand: `#EFE7DA`
-- Bronze: `#9A6B34`
-- Roast: `#5C4738`
-
-Use them only in:
-
-- reservation promise cards
-- chef translation cards
-- empty states that need warmth
-- confidence / refinement moments
-
-Never let the warmth layer overpower the taste palette.
-
-Practical hierarchy:
-
-- if the UI is explaining taste, use the taste palette
-- if the UI is framing care, anticipation, or hospitality, use the warm layer
-- if the UI is doing neither, stay neutral
-
-### Typography
-
-Keep a one-font product UI.
-
-That is the right call here.
-
-Pretendard stays the primary family because it is readable, fast to implement, stable in Korean product UI, and already deeply present in the app.
-
-Do not add a display serif to the product app.
-
-That would be a design move in search of a product reason.
-
-#### Type roles
-
-| Role | Size | Weight | Line Height | Use |
-| --- | --- | --- | --- | --- |
-| Hero | 18px | 700 | 1.2 | completion, key intro, strongest card title |
-| Heading | 18px | 700 | 1.35 | section title, flow title |
-| Section | 16px | 700 | 1.35 | local subsection heading |
-| Body | 14px | 400 | 1.5 | default copy |
-| Body Strong | 14px | 600 | 1.45 | emphasis inside body |
-| Caption | 12px | 600 | 1.4 | meta, badge, helper |
-| Micro | 10px to 11px | 500 to 600 | 1.3 to 1.4 | tiny labels only |
-
-#### Type rules
-
-- Nothing above `18px`
-- One screen gets at most two real heading levels
-- Numeric readouts use tabular figures where possible
-- Hierarchy comes from grouping, spacing, contrast, and placement, not giant text
-
-### Spacing
-
-The current rhythm is good. Keep it tight.
-
-- Base inset: `12px`
-- Page gutter: `20px`
-- Section gap: `24px` standard, `32px` only for major transitions
-- Sticky action reserve zone: minimum `140px`
-
-### Radius
-
-Keep the current radius family. It is already distinctive without being toy-like.
-
-- Primary card shell: `20px`
-- Internal support surfaces: `12px` to `14px`
-- Media / immersive sheet: `24px`
-
-### Motion
-
-Keep calm motion. Tighten intent.
-
-- `180ms` to `300ms` for interaction feedback
-- `500ms` to `620ms` for screen or sheet state changes
-- no bounce for decision-making flows
-- looped motion only when it teaches device state or taste activity
-
-## Shell System
+## 셸 시스템
 
 ### Tab Shell
 
-Use for `Home`, `Analysis`, `Reservation`, `Profile`.
+대상: `Home`, `Analysis`, `Reservation`, `Profile`
 
-- background stays gray
-- content sits in white cards
-- large-screen container max: `1160px`
-- main content rail: `420px` to `560px`
-- support rail: `280px` to `360px`
-
-Do not just widen every card.
+- 배경은 `#F3F3F3`
+- 핵심 콘텐츠는 흰 카드 위에 얹는다
+- 큰 화면에서도 카드와 레일 구조를 유지한다
+- 그냥 전체 폭을 늘리지 않는다
 
 ### Flow Shell
 
-Use for onboarding, calibration, connect, measurement.
+대상: 온보딩, calibration, connect, measurement
 
-- white stage
-- max readable width: `440px`
-- hero, explanation, proof, CTA
-- minimal chrome
+- 흰 stage
+- 읽기 쉬운 단일 컬럼
+- 설명, 증거, CTA 순서가 분명해야 한다
 
 ### Conversion Shell
 
-Use for improve-accuracy, confirmation, upsell moments.
+대상: improve accuracy, confirmation, upsell
 
-- white or linen stage
-- max content width: `520px`
-- one dominant promise block
-- one proof stack
-- one strong action
+- 강한 약속 블록 하나
+- proof stack 하나
+- 강한 액션 하나
 
-### Drawer / Sheet Shell
+### Drawer / Overlay Shell
 
-Use for menus, connection steps, quick branching tasks.
+대상: 메뉴, 알림, 분기형 보조 작업
 
-- sheet surface: white
-- clear top handle
-- no dashboard chrome inside
-- titles stay short
+- 반투명 흰 서피스
+- blur 사용 가능
+- 내부는 대시보드처럼 복잡해지지 않게 유지
 
-## Product Patterns That Must Exist
+---
 
-These are missing or underdeveloped in the current app.
+## 제품 패턴
+
+이 패턴들은 Taste Buddy가 generic 예약 앱처럼 보이지 않게 만드는 핵심 구조다.
 
 ### 1. Explainable Personalization
 
-Every major recommendation should answer:
+모든 주요 추천이나 결과 카드는 아래를 설명해야 한다.
 
 - what we know
 - what it means
 - what happens next
 
-This should be a repeatable card pattern.
-
 ### 2. Confidence Visibility
 
-The profile should clearly show whether it is:
+프로필은 완성 / 미완성이 아니라 점진적 정교화로 보여야 한다.
+
+권장 상태 언어:
 
 - Starter
 - Building
 - Refined
 
-Not as a warning. As progress.
-
 ### 3. Chef Translation
 
-This is the unique product pattern.
+Taste Buddy만의 고유 패턴이다.
 
-A card or block that turns taste data into chef-usable framing:
+미각 데이터를 그대로 보여주는 대신 아래 구조로 번역해야 한다.
 
 - likely sensitivity
 - dining implication
-- gentle calibration hint
+- chef-usable hint
 
 ### 4. Empty State With Momentum
 
-Empty screens should never stop at "nothing here yet."
+빈 화면은 "아직 없음"으로 끝나면 안 된다.
 
-They should always show:
-
-- what this screen will become
-- how to get there
-- one next action
+- 이 화면이 앞으로 무엇이 될지
+- 사용자가 왜 여기에 다시 오게 될지
+- 지금 할 수 있는 다음 액션 하나
 
 ### 5. Post-Dining Learning Loop
 
-Feedback should feel like investing in a better next meal, not filling out admin.
+피드백은 설문 제출처럼 보여서는 안 된다.
 
-## Component System
+다음 식사를 더 잘 맞추기 위한 투자처럼 보여야 한다.
 
-Build around these shared product components:
+---
 
-1. `AppShell`
-2. `FlowShell`
-3. `BottomStickyAction`
-4. `ScreenHero`
-5. `SystemEmptyState`
-6. `ProfileConfidenceCard`
-7. `ChefTranslationCard`
-8. `ReservationPromiseCard`
-9. `TasteEvidenceCard`
-10. `InsightCard`
-11. `MetricDeltaCard`
-12. `StageProgressCard`
-13. `DeviceStatusCard`
-14. `PostDiningFeedbackPrompt`
+## 색상 시스템
 
-## Data Visualization Rules
+### 색상 구조 원칙
 
-Taste Buddy should not use data-viz for decoration.
+Taste Buddy의 색상은 세 층으로 읽혀야 한다.
 
-Use charts only when they do one of three jobs:
+1. neutral system
+2. taste palette
+3. warm hospitality layer
 
-1. show relative taste balance
-2. show change over time
-3. show confidence and refinement
+중립 레이어가 구조를 만들고, 맛 컬러가 의미를 만들고, warmth는 care와 anticipation이 필요한 순간에만 감정을 보완한다.
 
-Rules:
+### Background & Surface
 
-- keep grid lines neutral
-- use taste colors as signals, not as full chart backgrounds
-- put interpretation next to every chart
-- never force the user to decode raw numbers alone
+| Token | Value | 역할 |
+| --- | --- | --- |
+| `--tb-color-bg-page` | `#F3F3F3` | 앱 전체 배경 |
+| `--tb-color-surface-base` | `#FFFFFF` | 기본 서피스, 상단 바, 기본 컨테이너 |
+| `--tb-color-surface-card` | `#FFFFFF` | 기본 카드 |
+| `--tb-color-surface-card-hover` | `#FAFAFA` | 인터랙티브 카드 hover |
+| `--tb-color-surface-muted` | `#F7F7F7` | 보조 블록, muted panel |
+| `--tb-color-surface-elevated` | `#FCFCFC` | 올라온 보조 서피스 |
+| `--tb-color-surface-disabled` | `#EFEFEF` | disabled fill |
+| `--tb-color-surface-overlay` | `rgba(255,255,255,0.8)` | 반투명 overlay 서피스 |
 
-## Imagery Rules
+### Text & Icon
 
-The category winners all lean heavily on photography.
+| Token | Value | 역할 |
+| --- | --- | --- |
+| `--tb-color-text-primary` | `#0F0F0F` | 가장 강한 텍스트 |
+| `--tb-color-text-secondary` | `#3F3F3F` | 서브 헤딩, 강조 메타 |
+| `--tb-color-text-tertiary` | `#535353` | 세 번째 단계 라벨 |
+| `--tb-color-text-body` | `#666666` | 기본 본문 |
+| `--tb-color-text-hint` | `#888888` | 힌트, 차트 라벨 |
+| `--tb-color-text-disabled` | `#AFAFAF` | disabled 텍스트 |
+| `--tb-color-text-inverse` | `#FFFFFF` | 어두운 배경 위 텍스트 |
+| `--tb-color-icon-primary` | `#3F3F3F` | 기본 아이콘 |
+| `--tb-color-icon-hover` | `#6F6F6F` | hover 아이콘 |
+| `--tb-color-icon-muted` | `#AFAFAF` | 비활성 / 보조 아이콘 |
 
-Taste Buddy should use imagery differently.
+### Border & State
 
-Use:
+| Token | Value | 역할 |
+| --- | --- | --- |
+| `--tb-color-border-card` | `#F0F0F0` | 카드 edge |
+| `--tb-color-border-subtle` | `#E8E8E8` | 차트 grid, 보조 구분선 |
+| `--tb-color-border-default` | `#E7E7E7` | 기본 border |
+| `--tb-color-border-strong` | `#E5E5E5` | 더 강한 구분선 |
+| `--tb-color-border-disabled` | `#E0E0E0` | disabled border |
+| `--tb-color-success` | `#2F8F5B` | success foreground |
+| `--tb-color-success-soft` | `#E6F4EC` | success soft fill |
+| `--tb-color-warning` | `#A8661A` | warning foreground |
+| `--tb-color-warning-soft` | `#FFF1DE` | warning soft fill |
 
-- plated details
-- hands, tools, textures
-- close crops that suggest craft
+### Taste Palette
+
+맛 컬러는 장식 컬러가 아니다. 제품 의미를 전달하는 domain token이다.
+
+| Taste | Main | Dark | Light | BG | Tint Surface | Gradient |
+| --- | --- | --- | --- | --- | --- | --- |
+| Sweet / 단맛 | `#FF9900` | `#CC7A00` | `#FFCC80` | `#FFD699` | `#FFEBCC` | `linear-gradient(135deg, #FF9900, #FFB84D)` |
+| Sour / 신맛 | `#FBC02D` | `#C99A00` | `#FDD835` | `#FFEF99` | `#FFF7CC` | `linear-gradient(135deg, #FBC02D, #FFD54F)` |
+| Bitter / 쓴맛 | `#95C900` | `#6E9600` | `#E6EE9C` | `#E0EBB4` | `#EAF4CC` | `linear-gradient(135deg, #95C900, #AED581)` |
+| Salty / 짠맛 | `#7299FF` | `#4A70CC` | `#90CAF9` | `#C6D6FF` | `#E3EBFF` | `linear-gradient(135deg, #7299FF, #9FBFFF)` |
+| Umami / 감칠맛 | `#B372B4` | `#8A5490` | `#CE93D8` | `#E1C7E1` | `#F0E3F0` | `linear-gradient(135deg, #B372B4, #CE93D8)` |
+| Fat / 지방맛 | `#95867A` | `#6B5E54` | `#BCAAA4` | `#D5CFCA` | `#EAE7E4` | `linear-gradient(135deg, #95867A, #B0A49A)` |
+
+### Taste Surface Roles
+
+| Token | 역할 | 대표 예시 |
+| --- | --- | --- |
+| `BG` | 맛 신호를 더 또렷하게 보여줘야 하는 fill. quick stat, calibration highlight, 더 직접적인 시선 유도에 사용 | 측정/보정 계열 강조 블록, taste fill |
+| `Tint Surface` | 한 가지 맛 맥락을 유지하되 카드가 과하게 외치지 않게 만드는 부드러운 해석형 배경 | `셰프 매칭`, `세부 분석` 카드 |
+
+### Taste Palette Rules
+
+- 맛 컬러는 값, node, chip, delta, chart signal에 쓴다.
+- `Tint Surface`는 taste 의미를 담는 카드 배경에 우선 사용하고, 텍스트는 `Tint Surface Text` / `Tint Surface Sub Text` 조합으로 맞춘다.
+- `BG`는 `Tint Surface`보다 한 단계 강한 fill이다. 카드 전체 바탕보다는 stat, emphasis, 측정 결과 강조에 더 잘 맞는다.
+- 긴 본문을 taste color로 세팅하지 않는다.
+- 한 블록 안에 여섯 맛을 동시에 강하게 펼치지 않는다.
+- 기본 상태는 neutral, success, warning으로 시작한다.
+- "맛의 의미"가 핵심일 때만 taste palette를 전면에 올린다.
+
+### Hospitality Warmth
+
+현재 구현에는 전용 warmth token 세트가 독립 토큰으로 자리잡지는 않았지만, 문서 기준으로는 아래 역할을 유지한다.
+
+- linen tone: 약속, 기대, care를 주는 카드
+- sand tone: 부드러운 분리감
+- bronze / roast tone: premium hospitality signal
+
+warmth는 taste palette보다 앞에 나오면 안 된다.
+
+---
+
+## 타이포그래피 시스템
+
+### Font Family
+
+- 기본 폰트: `Pretendard`
+- 로드 토큰: `--tb-font-family-sans`
+
+제품 앱은 단일 폰트 전략을 유지한다. 별도 display serif를 추가하지 않는다.
+
+### Type Scale
+
+| Role | Token / Value | Weight | Line Height | 용도 |
+| --- | --- | --- | --- | --- |
+| Display | `18px` | `700` | `1.2` | completion, strongest headline |
+| Heading | `18px` | `700` | `1.35` | flow title, drawer title |
+| Title | `18px` | `700` | `1.2` | section title, key card title |
+| Section | `16px` | `700` | `1.35` | local subsection heading |
+| Body | `14px` | `400` | `1.5` | 기본 본문 |
+| Body Strong | `14px` | `600` | `1.45` | inline 강조 |
+| Caption | `12px` | `600` | `1.4` | badge, helper, meta |
+| Micro | `10px` to `11px` | `500` to `600` | `1.3` to `1.4` | 아주 작은 라벨 |
+
+### Raw Token Scale
+
+| Token | Value |
+| --- | --- |
+| `--tb-font-size-10` | `10px` |
+| `--tb-font-size-11` | `11px` |
+| `--tb-font-size-12` | `12px` |
+| `--tb-font-size-13` | `13px` |
+| `--tb-font-size-14` | `14px` |
+| `--tb-font-size-15` | `15px` |
+| `--tb-font-size-16` | `16px` |
+| `--tb-font-size-18` | `18px` |
+| `--tb-font-size-20` | `18px` |
+| `--tb-font-size-22` | `18px` |
+| `--tb-font-size-24` | `18px` |
+| `--tb-font-size-28` | `18px` |
+
+### Typography Rules
+
+- 제품 UI는 `18px` ceiling을 유지한다.
+- 한 화면에서 실질적인 heading level은 최대 두 단계까지만 쓴다.
+- 숫자 읽기가 중요한 경우 tabular figure를 우선한다.
+- 위계는 크기보다 grouping, spacing, contrast로 만든다.
+
+---
+
+## 간격, 반경, 그림자
+
+### Spacing Scale
+
+| Token | Value |
+| --- | --- |
+| `--tb-space-2` | `2px` |
+| `--tb-space-4` | `4px` |
+| `--tb-space-6` | `6px` |
+| `--tb-space-8` | `8px` |
+| `--tb-space-10` | `10px` |
+| `--tb-space-12` | `12px` |
+| `--tb-space-16` | `16px` |
+| `--tb-space-20` | `20px` |
+| `--tb-space-24` | `24px` |
+| `--tb-space-40` | `40px` |
+
+### Radius Scale
+
+| Token | Value | 역할 |
+| --- | --- | --- |
+| `--tb-radius-6` | `6px` | 작은 badge, compact control |
+| `--tb-radius-8` | `8px` | small surface |
+| `--tb-radius-10` | `10px` | 기본 CTA, icon box |
+| `--tb-radius-12` | `12px` | row, tab, selectable card |
+| `--tb-radius-14` | `14px` | profile block, empty state icon box |
+| `--tb-radius-20` | `20px` | 기본 카드 shell |
+| `--tb-radius-24` | `24px` | immersive / media shell |
+| `--tb-radius-full` | `9999px` | chip, pill |
+
+### Shadow Tokens
+
+| Token | Value | 용도 |
+| --- | --- | --- |
+| `--tb-shadow-hover` | `0 1px 3px rgba(15, 15, 15, 0.06)` | 가벼운 hover |
+| `--tb-shadow-soft` | `0 4px 20px rgba(0, 0, 0, 0.1)` | 가벼운 floating surface |
+| `--tb-shadow-strong` | `0 12px 32px rgba(15, 15, 15, 0.12)` | interactive card hover |
+| `--tb-shadow-button` | `0 8px 20px rgba(0, 0, 0, 0.1)` | primary CTA |
+| `--tb-shadow-drawer` | `0 20px 60px rgba(0, 0, 0, 0.24)` | drawer, notification overlay |
+| `--tb-shadow-badge-elevated` | layered shadow | gradient TCS badge |
+
+### Layout Tokens
+
+| Token | Value |
+| --- | --- |
+| `--tb-layout-screen-max-width` | `1440px` |
+| `--tb-layout-page-gutter` | `20px` |
+| `--tb-layout-section-gap` | `20px` |
+| `--tb-layout-card-stack-gap` | `12px` |
+| `--tb-layout-card-padding` | `12px` |
+| `--tb-size-top-app-bar-height` | `56px` |
+| `--tb-size-bottom-tab-bar-height` | `78px` |
+| `--tb-size-primary-button-height` | `48px` |
+| `--tb-size-bottom-fade-min-height` | `140px` |
+| `--tb-size-bottom-indicator-width` | `134px` |
+
+### Layout Rules
+
+- 기본 page gutter는 `20px`
+- 카드 내부 기본 padding은 `12px`
+- 카드 스택 기본 gap은 `12px`
+- 큰 섹션 전환은 `20px` 이상으로만 벌린다
+- sticky action reserve zone은 최소 `140px` 확보한다
+
+---
+
+## 모션, 아이콘, 데이터 시각화
+
+### Motion Tokens
+
+| Token | Value |
+| --- | --- |
+| `--tb-motion-duration-fast` | `180ms` |
+| `--tb-motion-duration-normal` | `300ms` |
+| `--tb-motion-duration-medium` | `500ms` |
+| `--tb-motion-duration-slow` | `620ms` |
+| `--tb-motion-duration-slowest` | `720ms` |
+| `--tb-motion-duration-loop-pulse` | `1600ms` |
+| `--tb-motion-duration-splash` | `2500ms` |
+
+Easing:
+
+- standard: `ease`
+- entrance: `cubic-bezier(0.22, 1, 0.36, 1)`
+- exit: `ease-out`
+
+Scale:
+
+- press: `0.98`
+- tab hover: `1.05`
+- tab active: `1.1`
+- loop node pulse: `1.28`
+- loop label pulse: `1.06`
+
+### Motion Rules
+
+- 대부분의 인터랙션 피드백은 `180ms` 에서 `300ms`
+- 화면 전환이나 큰 shell 변화는 `500ms` 에서 `620ms`
+- bounce는 쓰지 않는다
+- 반복 애니메이션은 device state나 taste activity를 설명할 때만 허용
+
+### Icon Rules
+
+- 메인 앱의 실제 아이콘 언어는 `@fluentui/react-icons`
+- `lucide-react` 는 디자인 시스템 문서나 보조 샘플에 제한적으로 사용
+
+현재 메인 앱 컴포넌트는 대부분 `ICON_TOKENS.size` 를 직접 읽는다.
+
+현재 아이콘 크기 시스템은 CSS 변수와 TS 미러가 같은 값을 보도록 정렬한다.
+
+| Token | Value |
+| --- | --- |
+| `xs` | `12` |
+| `sm` | `14` |
+| `md` | `18` |
+| `lg` | `24` |
+| `xl` | `24` |
+| `touch` | `24` |
+| `hero` | `24` |
+
+### Data Visualization Rules
+
+- 차트는 세 가지 목적일 때만 쓴다.
+- relative taste balance
+- change over time
+- confidence and refinement
+
+세부 규칙:
+
+- grid line은 neutral로 유지한다
+- taste color는 signal로만 사용한다
+- 해석 텍스트를 항상 옆에 둔다
+- raw number만으로 읽게 만들지 않는다
+
+주요 data-viz token:
+
+| 항목 | 값 |
+| --- | --- |
+| Progress bar height | `8px` |
+| Radar size | `320px` |
+| Radar label size | `9px` |
+| Trend dot size | `4px` |
+| Orbit outer ring thickness | `24px` |
+| Orbit guide radius | `138px` |
+
+---
+
+## 현재 사용 중인 컴포넌트
+
+`src/components/design-system/inventory.ts` 의 `CURRENTLY_USED_COMPONENTS` 기준.
+
+| Group | Component | 역할 | Source |
+| --- | --- | --- | --- |
+| Card | `SectionCard` | 리스트 섹션, 통계 타일, 요약 카드의 기본 shell | `src/components/SectionCard.tsx` |
+| Button | `PrimaryButton` | 온보딩, 측정, 예약, 피드백 전반의 메인 CTA | `src/components/system/PrimaryButton.tsx` |
+| Navigation | `TopAppBar` | 공용 상단 내비게이션 shell | `src/components/TopAppBar.tsx` |
+| Navigation | `BottomTabBar` | 메인 플로우 하단 탭 바 | `src/components/BottomTabBar.tsx` |
+| Overlay | `NotificationPanel` | 상단 알림 overlay | `src/components/NotificationPanel.tsx` |
+| Overlay | `AppMenuDrawer` | 우측 메뉴 drawer | `src/components/AppMenuDrawer.tsx` |
+| Badge | `OutlineBadge` | 프로필 단계, 섹션 라벨 | `src/components/system/OutlineBadge.tsx` |
+| Badge | `StatusChip` | 예약 상태 메타데이터 | `src/components/system/StatusChip.tsx` |
+| Badge | `Home TCS Badge` | 홈 히스토리 카드의 gradient TCS 배지 | `src/imports/Home.tsx` |
+| Badge | `TasteChip` | 맛 포인트 전용 pill | `src/components/system/TasteChip.tsx` |
+| Card | `InsightCard` | 분석 인사이트와 셰프 번역 요약 카드 | `src/components/system/InsightCard.tsx` |
+| Typography Helper | `SectionTitle` | 섹션 제목 helper | `src/components/system/SectionTitle.tsx` |
+| App Specific | `TasteMeasurementMiniCta` | 여러 탭에서 재사용되는 inline CTA 카드 | `src/components/measurement/TasteMeasurementMiniCta.tsx` |
+| Feedback | `EmptyState` | 비어 있는 상태 안내 블록 | `src/components/system/EmptyState.tsx` |
+| App Specific Screen | `ImproveAccuracyScreen` | 정밀도 향상 설명 full-screen composite | `src/pages/ImproveAccuracyScreen.tsx` |
+| App Specific Flow | `DiningFeedbackFlow` | 피드백 전용 flow, choice, summary 카드 집합 | `src/components/reservation/DiningFeedbackFlow.tsx` |
+
+---
+
+## 핵심 컴포넌트 스타일 스냅샷
+
+프리뷰의 `componentSpecs` 섹션에서 바로 확인할 수 있는 핵심 스타일값만 다시 적는다.
+
+### Buttons & Badges
+
+| Component | 현재 규칙 |
+| --- | --- |
+| `PrimaryButton` | 높이 `48px`, radius `10px`, background `--tb-color-text-primary`, text `--tb-color-text-inverse`, shadow `--tb-shadow-button`, active scale `0.98` |
+| `PrimaryButton compact` | 최소 높이 `40px`, `16px` 좌우 여백, `12px` 글자, `600` 굵기, shadow 없음 |
+| `OutlineBadge` | `1px solid --tb-color-text-tertiary`, radius `6px`, padding `2px 8px`, `12px / 600` |
+| `StatusChip` | radius `6px`, padding `2px 6px`, `10px / 700`, 색상은 prop으로 주입 |
+| `HomeTcsBadge` | radius `6px`, padding `2px 6px`, `10px / 700`, weighted taste-light gradient + badge elevated shadow |
+| `TasteChip` | full pill, border taste tint `18%`, bg taste tint `5%`, `10px / 500`, value는 taste color `600` |
+
+### Cards
+
+| Component | 현재 규칙 |
+| --- | --- |
+| `SectionCard` | radius `20px`, background `surface-card`, body gap `12px`, body padding `12px`, hover 시 `translateY(-4px)`, interactive면 active 시 `scale(0.99)` |
+| `PageSection` | title + card stack wrapper, 기본 stack gap `12px`, `SectionTitle` 사용 |
+| `TasteMeasurementMiniCta` | radius `20px`, padding `16px`, neutral / alert tone 분기, alert는 sweet bg 기반 gradient, title `13px / 600`, desc `12px`, meta `11px`, action은 compact `PrimaryButton` |
+| `EmptyState` | centered layout, gap `16px`, padding `48px 24px`, icon box `48px / radius 14px`, title `16px / 700`, desc `13px`, CTA radius `10px` |
+
+### Navigation & Overlay
+
+| Component | 현재 규칙 |
+| --- | --- |
+| `TopAppBar` | `bg-page` 85% + blur `12px`, padding `20px 12px`, 높이 `56px`, avatar `32px`, icon `24px`, unread dot `6px` |
+| `BottomTabBar` | `bg-page` 85% + blur `12px`, border-top default, tab padding `6px 16px`, label `10px`, active scale `1.1`, indicator `134px x 5px` |
+| `NotificationPanel` | top `56px`, horizontal margin `20px`, max-height `70vh`, radius `20px`, white 85% + blur, shadow `drawer`, unread row는 muted surface |
+| `AppMenuDrawer` | width `300px`, max-width `85vw`, white 85% + blur, backdrop `black/30 + blur(2px)`, transition `300ms entrance easing`, row radius `12px` |
+
+### 현재 캡처된 스타일 스펙 목록
+
+`src/components/design-system/componentStyleSpecs.ts` 기준:
+
+- Currently used: `TasteChip`, `HomeTcsBadge`, `StatusChip`, `OutlineBadge`, `PrimaryButton`, `SectionCard`, `PageSection`, `TasteMeasurementMiniCta`, `TopAppBar`, `BottomTabBar`, `NotificationPanel`, `AppMenuDrawer`, `EmptyState`
+- Defined but unused: `Badge`, `Button`, `Input`, `Textarea`, `SelectTrigger`, `Tabs`, `DialogContent`, `SheetContent`, `PopoverContent`, `TooltipContent`
+
+---
+
+## 현재 정의만 되어 있고 메인 앱에서는 거의 쓰지 않는 프리미티브
+
+`src/components/ui` 아래의 shadcn / Radix 계열 프리미티브가 존재하지만, 메인 앱 플로우에서는 아직 많이 쓰이지 않는다.
+
+### Buttons / Feedback
+
+- `Button`
+- `Badge`
+- `Alert`
+- `Progress`
+- `Skeleton`
+- `Toast` wrapper
+
+### Fields
+
+- `Input`
+- `Textarea`
+- `Select`
+- `Checkbox`
+- `RadioGroup`
+- `Switch`
+- `Slider`
+
+### Layout / Navigation
+
+- `Tabs`
+- `Card`
+
+### Overlay
+
+- `Dialog`
+- `Sheet`
+- `Popover`
+- `Tooltip`
+- `Drawer`
+
+### 사용 원칙
+
+- 새 화면을 만든다고 해서 자동으로 이 프리미티브를 가져다 쓰지 않는다.
+- 먼저 `tb-*` 토큰과 현재 앱 shell 규칙에 맞는지 본다.
+- 도입한다면 generic theme가 아니라 Taste Buddy 토큰에 맞게 매핑해야 한다.
+
+---
+
+## 알려진 불일치와 리스크
+
+`src/components/design-system/inventory.ts` 의 `INCONSISTENCIES` 기준.
+
+### 1. 토큰 레이어가 두 갈래로 병존
+
+- 위치: `src/styles/globals.css`, `src/styles/design-system.css`
+- 설명: generic semantic theme와 `tb-*` 앱 토큰이 함께 존재한다.
+- 현재 판단: 실제 앱 shell은 `tb-*` 가 주도한다.
+- 규칙: 제품 UI를 건드릴 때는 `tb-*` 를 우선 사용한다.
+
+### 2. 기능 페이지에 raw utility 값이 남아 있음
+
+- 위치: `src/pages/ReservationPage.tsx`, `src/pages/ProfilePage.tsx`, `src/components/reservation/DiningFeedbackFlow.tsx`
+- 설명: 시각적으로는 토큰과 맞지만, raw arbitrary value가 반복된다.
+- 규칙: 같은 값이 두 번 이상 반복되면 토큰 또는 공용 컴포넌트로 승격한다.
+
+### 3. `SectionTitle` 채택이 일관되지 않음
+
+- 위치: `src/components/system/SectionTitle.tsx`, `src/pages/AnalysisPage.tsx`, `src/pages/ProfilePage.tsx`
+- 설명: 같은 역할의 heading이 helper 없이 ad hoc class로 남아 있다.
+- 규칙: 새로운 섹션 heading은 `SectionTitle` 을 우선 사용한다.
+
+### 4. 다크 모드 적용 범위가 부분적
+
+- 위치: `src/styles/globals.css`, `src/styles/design-system.css`
+- 설명: `.dark` override는 generic token에만 있고 앱 shell `tb-*` 레이어에는 없다.
+- 현재 판단: 다크 모드는 실제 제품 기준 완성 상태가 아니다.
+
+### 5. 상태 색상 체계가 아직 완전하지 않음
+
+- 위치: `src/styles/design-system.css`, `src/pages/ReservationPage.tsx`
+- 설명: success / warning은 `tb-*` 에 들어왔지만, error는 아직 generic destructive token에 기대는 부분이 있다.
+- 규칙: 새 에러 UI를 만들 때는 error를 `tb-*` 레이어에 정식 편입하는 쪽을 우선 검토한다.
+
+---
+
+## 정리 우선순위
+
+`src/components/design-system/inventory.ts` 의 `TODO_ITEMS` 기준.
+
+### 1. 공용 폼 필드 추출
+
+- 대상: 검색 행, textarea shell, choice selector
+- 관련 파일: `src/components/reservation/DiningFeedbackFlow.tsx`, `src/pages/ReservationPage.tsx`
+
+### 2. 리스트 아이템 프리미티브 추출
+
+- 대상: 예약 행, 셰프 행, 설정 행
+- 관련 파일: `src/pages/ProfilePage.tsx`, `src/pages/ReservationPage.tsx`
+
+### 3. 오버레이 전략 통합
+
+- 대상: custom drawer와 Radix / Vaul 계열 overlay 정리
+- 관련 파일: `src/pages/TeastickConnectScreen.tsx`, `src/components/ui/dialog.tsx`, `src/components/ui/sheet.tsx`, `src/components/ui/drawer.tsx`
+
+### 4. 지속형 디자인 토큰 편집기 보강
+
+- 현재 상태: `src/lib/designTokenRuntime.ts` 로 로컬 runtime override는 가능
+- 한계: source-of-truth 코드를 직접 갱신하지는 않는다
+
+---
+
+## 런타임 프리뷰 규칙
+
+`src/lib/designTokenRuntime.ts` 는 디자인 시스템 프리뷰에서 다음 값을 로컬로 조절하게 해준다.
+
+- background
+- primaryText
+- bodyText
+- border
+- cardSurface
+- cardRadius
+- controlRadius
+- gap
+- sectionGap
+- titleSize
+- displaySize
+- bodySize
+- captionSize
+- fontWeight
+- lineHeight
+- shadowKey
+
+### Runtime Override Rules
+
+- runtime override는 프리뷰 검증용이다.
+- 최종 source-of-truth 수정은 반드시 `src/styles/design-system.css` 와 `src/constants/designTokens.ts` 에 반영한다.
+- 프리뷰에서 괜찮아 보인 값을 그대로 shipping decision으로 간주하지 않는다.
+
+---
+
+## 향후 UI 작업 규칙
+
+- 제품 UI는 `tb-*` 토큰을 우선 사용한다.
+- 새로운 토큰은 같은 예외가 최소 두 번 이상 반복될 때만 만든다.
+- reusable pattern이면 `src/components/system` 또는 적절한 앱 전용 컴포넌트로 추출한다.
+- generic primitive를 도입할 때는 Taste Buddy의 spacing, radius, color, motion 규칙에 먼저 맞춘다.
+- 새 컴포넌트가 재사용 대상이라면 `/design-system` 프리뷰에서 확인 가능하도록 인벤토리 또는 스펙에 편입한다.
+- 데이터 시각화는 설명 문구와 함께 배치한다.
+- empty state는 반드시 다음 액션을 포함한다.
+- hardware나 measurement mechanics보다 "더 잘 맞는 다이닝 경험"을 먼저 보여준다.
+
+---
+
+## 접근성 규칙
+
+- WCAG 2.2 AA 기준으로 본다.
+- taste color만으로 의미를 전달하지 않는다.
+- zoom, dynamic font scaling을 깨지 않게 유지한다.
+- 최소 tap target은 `44px`
+- focus state는 항상 보여야 한다.
+- success, error, warning은 텍스트로도 명시한다.
+- 차트에는 해석 텍스트를 함께 둔다.
+
+---
+
+## 이미지 사용 규칙
+
+- plated detail
+- hands, tools, texture
+- close crop
 - restaurant atmosphere as support
 
-Avoid:
+피해야 하는 것:
 
-- generic smiling diners
-- lifestyle hero shots
-- saturated food posters
-- giant full-bleed imagery inside dense product tasks
+- generic smiling diner photo
+- stock-style hero
+- saturated food poster look
+- 밀도 높은 작업 화면 안의 giant full-bleed photo
 
-## Accessibility Rules
+---
 
-Taste Buddy should match current category maturity here, not lag behind it.
+## 참고 소스
 
-- design against WCAG 2.2 AA
-- never rely on taste color alone
-- preserve zoom and font scaling
-- minimum tap target `44px`
-- visible focus states
-- clear error and success language
-- charts must have text interpretation
-
-## Implementation Specification
-
-This section absorbs the old implementation-side design system rules into the same document.
-
-Use it when turning the product direction above into code.
-
-### Token Model
-
-- semantic UI tokens use `--tb-color-*`, `--tb-space-*`, `--tb-radius-*`, `--tb-font-size-*`, `--tb-motion-*`
-- domain-specific taste tokens use `--tb-taste-{taste}-{role}` plus `TASTE_TOKENS` and `TASTE_COLORS`
-- token source files are:
-  - `src/constants/designTokens.ts`
-  - `src/styles/design-system.css`
-  - `src/constants/tasteColors.ts`
-- UI-common values should be semantic tokens first
-- taste colors are product-domain tokens, not generic semantic state colors
-- before adding a new token, solve it with the current token set unless the same exception appears at least twice
-- legacy display aliases `20`, `22`, `24`, and `28` are intentionally mapped to `18px`
-
-#### Semantic Color Tokens
-
-Surface and background tokens:
-
-| Token | Value | Role |
-| --- | --- | --- |
-| `--tb-color-bg-page` | `#F3F3F3` | page background |
-| `--tb-color-surface-base` | `#FFFFFF` | app bar, drawer, primary surface |
-| `--tb-color-surface-card` | `#FFFFFF` | default card shell |
-| `--tb-color-surface-card-hover` | `#FAFAFA` | interactive card hover |
-| `--tb-color-surface-muted` | `#F7F7F7` | muted support block |
-| `--tb-color-surface-elevated` | `#FCFCFC` | raised support surface |
-| `--tb-color-surface-disabled` | `#EFEFEF` | disabled fill |
-| `--tb-color-surface-overlay` | `rgba(255, 255, 255, 0.8)` | glass overlay surface |
-
-Text tokens:
-
-| Token | Value | Role |
-| --- | --- | --- |
-| `--tb-color-text-primary` | `#0F0F0F` | strongest text |
-| `--tb-color-text-secondary` | `#3F3F3F` | secondary heading and icon pair |
-| `--tb-color-text-tertiary` | `#535353` | tertiary label |
-| `--tb-color-text-body` | `#666666` | body copy |
-| `--tb-color-text-hint` | `#888888` | hint, helper, chart label |
-| `--tb-color-text-disabled` | `#AFAFAF` | disabled text |
-| `--tb-color-text-inverse` | `#FFFFFF` | text on dark fill |
-| `--tb-color-text-subtle` | `rgba(15, 15, 15, 0.6)` | softened explanatory text |
-| `--tb-color-text-muted` | `rgba(15, 15, 15, 0.5)` | muted support text |
-| `--tb-color-text-faint` | `rgba(15, 15, 15, 0.4)` | faint metadata |
-
-Border and icon tokens:
-
-| Token | Value | Role |
-| --- | --- | --- |
-| `--tb-color-border-card` | `#F0F0F0` | image or framed card edge |
-| `--tb-color-border-subtle` | `#E8E8E8` | chart grid, bar track |
-| `--tb-color-border-default` | `#E7E7E7` | default divider or border |
-| `--tb-color-border-strong` | `#E5E5E5` | stronger rail, handle, active support edge |
-| `--tb-color-border-disabled` | `#E0E0E0` | disabled border |
-| `--tb-color-border-avatar` | `rgba(15, 15, 15, 0.2)` | avatar border |
-| `--tb-color-border-avatar-soft` | `rgba(15, 15, 15, 0.15)` | softer avatar border |
-| `--tb-color-icon-primary` | `#3F3F3F` | default icon |
-| `--tb-color-icon-hover` | `#6F6F6F` | hover icon |
-| `--tb-color-icon-muted` | `#AFAFAF` | muted icon |
-
-State tokens:
-
-| Token | Value | Role |
-| --- | --- | --- |
-| `--tb-color-success` | `#2F8F5B` | positive state |
-| `--tb-color-success-soft` | `#E6F4EC` | soft positive fill |
-| `--tb-color-warning` | `#A8661A` | progress / caution state |
-| `--tb-color-warning-soft` | `#FFF1DE` | soft warning fill |
-
-### Type Implementation Notes
-
-Current implementation scale:
-
-| Token | Value | Role |
-| --- | --- | --- |
-| `--tb-font-size-10` | `10px` | tab labels, micro metadata |
-| `--tb-font-size-11` | `11px` | dates, small subtitles |
-| `--tb-font-size-12` | `12px` | badges, helper text |
-| `--tb-font-size-13` | `13px` | card body copy |
-| `--tb-font-size-14` | `14px` | default buttons, rows |
-| `--tb-font-size-15` | `15px` | emphasized small heading |
-| `--tb-font-size-16` | `16px` | section heading |
-| `--tb-font-size-18` | `18px` | page / hero / key card heading |
-
-Implementation rules:
-
-- use `700` for page heading and the strongest card title
-- use `600` for section titles, active labels, and emphasized inline copy
-- use `500` for buttons and secondary actions
-- use `400` for body and metadata
-- keep page hierarchy to two heading levels max
-
-### Spacing And Radius Specification
-
-Implementation tokens:
-
-- spacing: `2`, `4`, `6`, `8`, `10`, `12`, `16`, `20`, `24`, `40`
-- radius: `6`, `8`, `10`, `12`, `14`, `20`, `24`, `full`
-
-Rules:
-
-- default page gutter is `20px`
-- primary card inset is `12px`
-- standard section rhythm is `24px`
-- `32px` is reserved for major transitions only
-- sticky action areas keep a minimum `140px` reserve zone
-- `20px` is the signature shell radius
-- `24px` is reserved for media frames, drawers, or immersive sheets
-
-### Shadow Specification
-
-| Token | Value | Role |
-| --- | --- | --- |
-| `--tb-shadow-hover` | `0 1px 3px rgba(15, 15, 15, 0.06)` | subtle card lift |
-| `--tb-shadow-soft` | `0 4px 20px rgba(0, 0, 0, 0.1)` | standard floating surface |
-| `--tb-shadow-strong` | `0 12px 32px rgba(15, 15, 15, 0.12)` | stronger emphasis lift |
-| `--tb-shadow-button` | `0 8px 20px rgba(0, 0, 0, 0.1)` | primary button |
-| `--tb-shadow-drawer` | `0 20px 60px rgba(0, 0, 0, 0.24)` | drawer or deep overlay |
-
-Rules:
-
-- prefer tone contrast before shadow
-- cards should not feel permanently elevated
-- use strong shadow only when the layer relationship is truly important
-
-### Motion Implementation Notes
-
-Motion token table:
-
-| Token | Value | Use |
-| --- | --- | --- |
-| `--tb-motion-duration-fast` | `180ms` | press, hover, color transition |
-| `--tb-motion-duration-normal` | `300ms` | card and indicator transition |
-| `--tb-motion-duration-medium` | `500ms` | medium state transition |
-| `--tb-motion-duration-slow` | `620ms` | screen or drawer-linked transition |
-| `--tb-motion-duration-slowest` | `720ms` | large radius transform |
-| `--tb-motion-duration-loop-pulse` | `1600ms` | taste pulse |
-| `--tb-motion-duration-splash` | `2500ms` | splash reveal |
-
-Motion scales and distances:
-
-- `press`: `0.98`
-- `tabHover`: `1.05`
-- `tabActive`: `1.1`
-- `loopNodePulse`: `1.28`
-- `loopLabelPulse`: `1.06`
-- `xSmall`: `8px`
-- `small`: `12px`
-- `medium`: `20px`
-- `large`: `40px`
-- `onboardingSwipe`: `100px`
-
-Spring defaults:
-
-- `screenDamping`: `25`
-- `screenStiffness`: `200`
-
-Implementation rules:
-
-- default interaction easing is `ease`
-- entry / expand easing uses `cubic-bezier(0.22, 1, 0.36, 1)`
-- common movement distances are `8px`, `12px`, and `20px`
-- press scale must not exceed `0.98`
-- tab / icon hover scale should cap around `1.05`, active around `1.1`
-- looped pulse is reserved for taste activity or device-state teaching
-- data and analysis motion must not use bounce, elastic, or overshoot
-
-Keyframe guidance:
-
-- prefer simple two-keyframe reveal motion
-- plan animation in both frames and milliseconds when documenting it
-- use `60fps` as the mental model
-- analysis and chart reveals should complete together unless there is a strong comprehension reason not to
-
-### Core Component Specification
-
-#### App Shell
-
-- overall app frame max width: `1440px`
-- composition stays mobile-first even on larger screens
-- desktop should feel framed, not stretched
-
-#### Top App Bar
-
-- height: `56px`
-- horizontal inset: `20px`
-- translucent page-tone background with blur is allowed
-- left side holds avatar or back affordance
-- right side holds 2 to 3 line icons
-- preferred visual treatment is page-tone glass with roughly `0.8` alpha
-
-#### Bottom Tab Bar
-
-- translucent page-tone background with subtle top border
-- icon size: `24px`
-- label size: `10px`
-- inactive uses muted gray, active uses black
-- the home indicator remains a black pill unless the shell system is redesigned more broadly
-- bottom indicator width is currently `134px`
-
-#### Cards
-
-- `SectionCard` is the default shell
-- shell radius: `20px`
-- internal support surfaces use white or muted neutral surfaces at `12px` to `14px`
-- only interactive cards get hover tone changes
-- card background token is `surface.card`
-- default internal padding token is `12px`
-
-#### Buttons
-
-- primary button uses black fill, white text, `48px` height, `10px` radius
-- compact button must still stay at least `40px` tall
-- disabled buttons drop to surface gray and lose strong shadow
-- primary button token pair is `text.primary` on `text.inverse`
-
-#### Chips And Badges
-
-- `OutlineBadge`: `12px`, `6px` radius, thin border
-- `StatusChip`: fixed typography and size, state changes through fill and text color only
-- home `TCS` badge can use weighted taste gradients based on adjustment ratios
-- `TasteChip` uses very light taste tint fills and restrained borders
-- badge padding uses `8px` inline and `2px` block
-- pill radius uses `9999px`
-- home `TCS` gradient should use each taste `light` color mixed with white by about `25%`
-- weighted gradient boundaries should be soft, not hard-cut
-
-#### Section Title
-
-- repeated in-screen headings should use `SectionTitle`
-- `md` is `16px`
-- `lg` is `18px`
-
-#### Sticky Bottom CTA
-
-- use a bottom fade to signal action zone, not content ending
-- reserve at least `140px` for safe CTA landing
-
-### Icon Specification
-
-- primary icon families are `@fluentui/react-icons` and `lucide-react`
-- icon size system:
-  - `S`: `14`
-  - `M`: `18`
-  - `L`: `24`
-- stroke weights:
-  - thin: `1.5`
-  - regular: `1.8`
-  - medium: `2`
-  - strong: `2.2`
-  - completion / check emphasis: `3`
-- icons should usually pair with text
-- use taste color on icons only when the icon is communicating taste meaning
-- icon containers:
-  - `S`: `18`
-  - `M`: `24`
-  - `L`: `32`
-- product UI should stay inside this `S/M/L` system by default
-
-Default icon container sizes:
-
-- `sm`: `18`
-- `md`: `24`
-- `lg`: `32`
-- `xl`: `32`
-- routine card, list, and inline actions should usually use `S` or `M`
-- `L` is for back, close, tab, and stronger navigation affordances
-
-### Data Visualization Specification
-
-Shared rules:
-
-- neutral gray builds the chart structure
-- taste color carries the meaning layer
-- readability beats ornament every time
-
-#### Progress Bars
-
-- height: `8px`
-- track: neutral gray
-- fill: taste main color
-- value labels align right and can inherit the taste color
-- track token is `#E8E8E8`
-
-#### Radar Chart
-
-- fixed six-axis hexagon structure
-- chart size: `320px`
-- grid: `#E8E8E8`
-- reference / average area stays neutral gray
-- current user area uses a Sweet-based highlight fill and stroke
-- outer taste dots may use each taste color
-- labels stay visually quiet
-- average fill: `rgba(240, 240, 240, 0.6)`
-- average stroke: `#D0D0D0`
-- highlight fill: `rgba(255, 153, 0, 0.12)`
-- highlight stroke: `#FF9900`
-- label size: `9px`
-- label color: `#888888`
-- node size: `3`
-- outer dot size: `8`
-
-#### Weekly Trend Chart
-
-- line width: `1px`
-- dot size: `4px`
-- active dot size: `5px`
-- line colors can use the taste palette directly
-- grid and tooltip treatment should stay neutral
-
-#### Circular Taste Ring
-
-- max size: `320px`
-- outer ring thickness: `24px`
-- node radius: `12px`
-- step count: `10`
-- guide dot size: `1`
-- default pulse step count: `1`
-- each taste owns its loop gradient, guide dot color, and node scale
-- ring geometry should stay stable across tastes; change the color system, not the shape system
-
-Layout geometry tokens:
-
-- guide radius: `138`
-- ring radius: `138`
-- outer ring inset: `10`
-- label offset: `4`
-- guide dot gap: `3`
-
-Taste loop palette appendix:
-
-| Taste | Accent | Ordinal | Guide / ring base |
-| --- | --- | --- | --- |
-| Sweet / 단맛 | `#FF9500` | 첫 번째 | `#FF9900` on `#FFEBCC` |
-| Sour / 신맛 | `#FFD600` | 두 번째 | `#FFD600` on `#FFF7CC` |
-| Bitter / 쓴맛 | `#8CC600` | 세 번째 | `#95C900` on `#EAF4CC` |
-| Salty / 짠맛 | `#5898FF` | 네 번째 | `#7299FF` on `#E3EBFF` |
-| Umami / 감칠맛 | `#AF52DE` | 다섯 번째 | `#B372B4` on `#F0E3F0` |
-| Fat / 지방맛 | `#8E8279` | 여섯 번째 | `#95867A` on `#EAE7E4` |
-
-### Layout Token Appendix
-
-| Token | Value | Role |
-| --- | --- | --- |
-| `screenMaxWidth` | `1440px` | overall app frame |
-| `pageGutter` | `20px` | standard page inset |
-| `sectionGap` | `32px` | large section separation token |
-| `cardPadding` | `12px` | default card inset |
-| `topAppBarHeight` | `56px` | app bar height |
-| `primaryButtonHeight` | `48px` | primary button height |
-| `bottomFadeMinHeight` | `140px` | sticky action reserve |
-| `bottomIndicatorWidth` | `134px` | bottom home indicator |
-
-### Quality Guardrails
-
-- tinted taste surfaces with colored text must maintain at least `3:1` contrast
-- dense cards should separate information with spacing before adding more borders
-- one card should usually contain one taste accent layer, at most two
-- charts, profile summaries, and analysis blocks must include text interpretation
-
-### Source Files
-
-Implementation references live in:
-
-- `src/constants/designTokens.ts`
+- `DESIGN.md`
+- `src/index.css`
+- `src/styles/globals.css`
 - `src/styles/design-system.css`
-- `src/constants/tasteColors.ts`
-- `src/components/system/*`
-- `src/components/graphics/*`
-
-## Safe Choices
-
-These are the category-baseline choices. Users already expect them.
-
-1. Airy white surfaces with strong photography support
-Why: OpenTable, Resy, and Tock all converge here. It signals trust and ease.
-
-2. Discovery and reservation in one continuous flow
-Why: the market is collapsing the gap between browsing and booking.
-
-3. Profiles inside the booking journey, not in a separate settings graveyard
-Why: personalization only matters when it changes the next reservation.
-
-4. Calm, obvious CTA hierarchy
-Why: this category loses users fast when actions feel hidden or too clever.
-
-## Risks Worth Taking
-
-These are the moves that make Taste Buddy feel like itself.
-
-### Risk 1, make chef translation a first-class surface
-
-What it is:
-Show palate interpretation and chef-usable guidance on Home, Reservation, and Analysis, not buried behind details.
-
-Why it works:
-No other product in this set owns this space clearly.
-
-What you gain:
-A distinct product story.
-
-What it costs:
-You have to design the explanations very carefully so they do not sound bossy or pseudo-medical.
-
-### Risk 2, add a warm hospitality layer without changing the whole palette
-
-What it is:
-Introduce linen, sand, and bronze only in select moments.
-
-Why it works:
-It adds dining warmth without wrecking the current neutral system.
-
-What you gain:
-A more premium and memorable feeling.
-
-What it costs:
-The rules have to stay strict or the app turns muddy.
-
-### Risk 3, frame large screens like a menu folio, not a stretched dashboard
-
-What it is:
-On larger screens, stage the phone-like flow inside a composed container with a support rail.
-
-Why it works:
-The current app feels stretched on tablet and desktop.
-
-What you gain:
-Higher craft, less dead space.
-
-What it costs:
-You need deliberate layout rules, not just `max-width` patches.
-
-### Risk 4, replace empty states with future-state previews
-
-What it is:
-Show what the screen becomes once the loop starts working.
-
-Why it works:
-Taste Buddy sells a better next meal, not static information.
-
-What you gain:
-More momentum on first use.
-
-What it costs:
-More content and component work.
-
-## Creative Experiments Worth Prototyping
-
-These are not mandatory. They are good bets.
-
-### 1. Reservation Promise Card
-
-A hero card on reservation screens:
-
-- what your current palate suggests
-- what this restaurant can likely deliver well
-- one chef-facing note
-
-### 2. Taste Passport
-
-A compact profile block that feels like a hospitality credential, not a quiz result.
-
-### 3. Refinement Timeline
-
-A small journey strip showing:
-
-- starter profile
-- first personalized booking
-- first post-dining feedback
-- refined profile
-
-### 4. Why This Match
-
-A short expandable explainer under chef or restaurant recommendations.
-
-Not just "recommended for you."
-
-More "recommended because your profile tends to respond well to..."
-
-## Screen Priorities
-
-### Home
-
-Needs a stronger first read.
-
-- show profile confidence clearly
-- replace weak empty-loading states
-- elevate the chef translation idea
-
-### Analysis
-
-Needs tighter hierarchy.
-
-- fewer equally loud blocks
-- one dominant interpretation card
-- supporting charts after meaning
-
-### Reservation
-
-This is the biggest gap.
-
-- build a pre-booking promise state
-- show what gets personalized
-- make empty states feel valuable
-
-### Profile
-
-Needs summary first, detail second.
-
-- identity
-- confidence
-- latest measurement
-- next refinement action
-
-## Implementation Order
-
-### Phase 1, low-risk system cleanup
-
-- keep existing tokens
-- add hospitality extension tokens
-- standardize shell rules
-- standardize empty state rules
-
-### Phase 2, shared product components
-
-- extract the 14 product components listed above
-- break down `Home.tsx` and `AnalysisPage.tsx`
-
-### Phase 3, high-impact screens
-
-- redesign `Home`
-- redesign `Reservation`
-- rebalance `Analysis`
-
-### Phase 4, large-screen pass
-
-- apply framed desktop composition
-- add support rails where useful
-
-## Anti-Patterns
-
-Do not do these.
-
-- text larger than `18px`
-- purple startup gradients
-- decorative charts with no interpretation
-- generic social-feed layouts
-- medicalized language for taste data
-- empty states that only say "nothing yet"
-- stretched mobile cards on desktop
-- using all six taste colors at once in a single dense block
-
-## Practical Rule
-
-If a new UI element makes the app look more like a booking app, it needs to prove why.
-
-If it makes the app look more like a lab app, same problem.
-
-Taste Buddy should feel like a premium dining service that happens to be powered by taste intelligence.
-
-Not the other way around.
+- `src/constants/designTokens.ts`
+- `src/components/system`
+- `src/components/ui`
+- `src/pages/DesignSystemPage.tsx`
+- `src/components/design-system/inventory.ts`
+- `src/components/design-system/componentStyleSpecs.ts`
+
+---
+
+## Decisions Log
+
+| Date | Decision | Rationale |
+| --- | --- | --- |
+| 2026-04-07 | Quiet Hospitality Intelligence 방향 유지 | 예약 앱과 실험실 UI 사이에서 Taste Buddy만의 해석 중심 톤을 유지하기 위해 |
+| 2026-04-13 | `DESIGN.md` 를 디자인 시스템 프리뷰 기준으로 재구성 | 프리뷰에 이미 정리된 토큰, 컴포넌트, 불일치, TODO를 문서와 동일한 구조로 맞추기 위해 |
+| 2026-04-13 | taste background와 icon size의 CSS/TS 미러 값을 정렬 | 실제 UI와 프리뷰, 문서가 서로 다른 값을 말하지 않게 하기 위해 |

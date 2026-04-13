@@ -19,8 +19,9 @@ import {
   getTasteBg,
   getTasteColor,
   getTasteTint,
-  getTasteTintSubText,
-  getTasteTintText,
+  getTasteTintSurface,
+  getTasteTintSurfaceSubText,
+  getTasteTintSurfaceText,
   mixHexColors,
   TASTE_TYPES,
 } from "../constants/tasteColors";
@@ -1435,9 +1436,10 @@ function ChefCard({
   hoverShadow?: boolean;
   hoverMotion?: boolean;
 }) {
-  const chefNameColor = getTasteTintText(chef.taste);
-  const chefMetaColor = getTasteTintSubText(chef.taste);
-  const chefMatchColor = getTasteTintText(chef.taste);
+  const chefTintBackgroundColor = getTasteTintSurface(chef.taste);
+  const chefNameColor = getTasteTintSurfaceText(chef.taste);
+  const chefMetaColor = getTasteTintSurfaceSubText(chef.taste);
+  const chefMatchColor = getTasteTintSurfaceText(chef.taste);
 
   return (
     <div
@@ -1447,7 +1449,7 @@ function ChefCard({
         hoverShadow ? 'hover:shadow-[var(--tb-shadow-strong)]' : ''
       }`}
       style={{
-        backgroundColor: getTasteBg(chef.taste),
+        backgroundColor: chefTintBackgroundColor,
         border: `1px solid ${getTasteTint(chef.taste, 0.18)}`,
       }}
     >

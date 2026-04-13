@@ -11,6 +11,7 @@ import QuickCalibrationHintCard from '../components/system/QuickCalibrationHintC
 import SectionTitle from '../components/system/SectionTitle';
 import OutlineBadge from '../components/system/OutlineBadge';
 import PrimaryButton from '../components/system/PrimaryButton';
+import StepIndicator from '../components/system/StepIndicator';
 import TasteChip from '../components/system/TasteChip';
 import { ICON_TOKENS, MOTION_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
 import {
@@ -295,14 +296,14 @@ function CalibrationQuestionHeader({
 
 function getHeaderTitle(phase: CalibrationPhase, tasteLabel?: string) {
   if (phase === 'result') {
-    return 'Taste DNA';
+    return 'Taste Profile';
   }
 
   if (phase === 'questions' && tasteLabel) {
     return `${tasteLabel} 측정`;
   }
 
-  return '빠른 미각 보정';
+  return '미각 측정';
 }
 
 export default function QuickTasteCalibrationScreen({
@@ -382,10 +383,10 @@ export default function QuickTasteCalibrationScreen({
 
   const buttonLabel =
     phase === 'intro'
-      ? '영점 맞추기 시작'
+      ? '측정 시작'
       : phase === 'questions'
         ? questionIndex === QUICK_TASTE_CALIBRATION_QUESTIONS.length - 1
-          ? 'Taste DNA 보기'
+          ? 'Taste Profile 보기'
           : '다음 질문'
         : '프로필 저장하고 시작하기';
 
@@ -450,7 +451,7 @@ export default function QuickTasteCalibrationScreen({
               <div className="relative mx-auto flex w-full max-w-[980px] flex-col gap-3 pb-8">
                 <SectionCard
                   hoverEffect={false}
-                  className="bg-[var(--tb-color-surface-muted)]"
+                  className="bg-[var(--tb-color-surface-card)]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex flex-col gap-3">
@@ -465,9 +466,7 @@ export default function QuickTasteCalibrationScreen({
                         </p>
                       </div>
                     </div>
-                    <div className="rounded-full border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] px-3 py-1.5 text-[12px] font-semibold text-[var(--tb-color-text-secondary)]">
-                      보통 1분 이내
-                    </div>
+                    <OutlineBadge>보통 1분 이내</OutlineBadge>
                   </div>
                 </SectionCard>
 
@@ -517,12 +516,6 @@ export default function QuickTasteCalibrationScreen({
                     </div>
                   </div>
                 </SectionCard>
-
-                <QuickCalibrationHintCard
-                  className="w-full text-left"
-                  title="문진표처럼 느껴지지 않게"
-                  description="기준 음식이 지금 내 입에 어떻게 읽히는지만 고르면 첫 Taste DNA가 바로 만들어집니다."
-                />
               </div>
             </motion.div>
           )}
@@ -914,25 +907,12 @@ export default function QuickTasteCalibrationScreen({
             }}
           >
             {phase === 'questions' ? (
-              <div className="mb-8 flex items-center gap-[8px]">
-                {QUICK_TASTE_CALIBRATION_QUESTIONS.map((question, index) => {
-                  const isCurrent = index === questionIndex;
-                  const taste = TASTE_TOKENS[question.tasteId];
-
-                  return (
-                    <div
-                      key={question.id}
-                      className="h-[6px] rounded-full transition-all duration-300"
-                      style={{
-                        width: isCurrent ? '26px' : '10px',
-                        backgroundColor: isCurrent
-                          ? taste.palette.main
-                          : 'rgba(15, 15, 15, 0.12)',
-                      }}
-                    />
-                  );
-                })}
-              </div>
+              <StepIndicator
+                className="mb-8"
+                currentIndex={questionIndex}
+                total={QUICK_TASTE_CALIBRATION_QUESTIONS.length}
+                activeColor={(currentTaste ?? TASTE_TOKENS.salty).palette.main}
+              />
             ) : null}
             <PrimaryButton className="mb-10" onClick={handleContinue}>
               {buttonLabel}

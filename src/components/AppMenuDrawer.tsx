@@ -84,26 +84,24 @@ export default function AppMenuDrawer({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[60] bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-[60] bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-[300px] max-w-[85vw] bg-white/85 supports-[backdrop-filter:blur(0px)]:bg-white/85 backdrop-blur-xl shadow-[var(--tb-shadow-drawer)] transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed inset-y-0 right-0 z-[70] w-[300px] max-w-[85vw] bg-white/85 supports-[backdrop-filter:blur(0px)]:bg-white/85 backdrop-blur-xl shadow-[var(--tb-shadow-drawer)] transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-4">
+          <div className="flex items-center justify-between px-5 py-4">
             <h2 className="text-[16px] font-bold text-[var(--tb-color-text-primary)]">메뉴</h2>
             <button
               type="button"
               onClick={onClose}
-              className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+              className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors]"
               style={{
                 width: CHROME_ICON_BUTTON_SIZE,
                 height: CHROME_ICON_BUTTON_SIZE,
@@ -114,7 +112,7 @@ export default function AppMenuDrawer({
           </div>
 
           {/* Profile Summary */}
-          <div className="mx-5 mb-4 flex items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-muted)] p-3">
+          <div className="mx-5 mb-4 flex items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-card)] p-3">
             <div className="flex items-center justify-center rounded-full size-[40px] bg-[var(--tb-taste-sweet-bg)]">
               <span className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">JH</span>
             </div>
@@ -140,7 +138,7 @@ export default function AppMenuDrawer({
                           key={item.action}
                           type="button"
                           onClick={() => handleAction(item.action)}
-                          className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                          className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 text-left transition-colors bg-[var(--tb-color-surface-card)]"
                         >
                           <Icon size={18} className="shrink-0 text-[var(--tb-color-icon-primary)]" />
                           <div className="flex flex-col flex-1 min-w-0">
@@ -167,7 +165,7 @@ export default function AppMenuDrawer({
           </div>
 
           {/* Footer */}
-          <div className="px-5 py-4 border-t border-[var(--tb-color-border-default)]">
+          <div className="px-4 py-4 border-t border-[var(--tb-color-border-default)]">
             <button
               type="button"
               className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 w-full text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
