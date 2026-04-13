@@ -43,10 +43,12 @@ import {
   formatMeasurementDate,
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
+  isBroadStarterMeasurementSnapshot,
   isTasteMeasurementStale,
   type TasteMeasurementEntry,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
+import { type RestaurantReadyGuidance } from '../constants/quickTasteCalibrationData';
 import {
   RESERVATION_CATALOG,
   type ReservationRecord as Reservation,
@@ -90,6 +92,7 @@ interface ReservationPersonalizationSummary {
 function buildReservationPersonalizationSummary(
   measurementSnapshot: TasteMeasurementSnapshot,
   reservation: Reservation,
+  starterGuidance?: RestaurantReadyGuidance | null,
 ): ReservationPersonalizationSummary {
   const entries = getTasteMeasurementEntries(measurementSnapshot).sort(
     (left, right) => right.valueMm - left.valueMm,
@@ -103,8 +106,10 @@ function buildReservationPersonalizationSummary(
   });
 
   return {
-    headline: `${reservation.restaurant} 예약은 ${topTasteLabels} 중심의 현재 프로필을 바탕으로 더 잘 맞춰집니다.`,
-    guestMessage: reservation.guestUnderstanding,
+    headline: starterGuidance
+      ? `${reservation.restaurant}에서도 바로 참고할 시작 기준이 준비됐어요.`
+      : `${reservation.restaurant} 예약은 ${topTasteLabels} 중심의 현재 프로필을 바탕으로 더 잘 맞춰집니다.`,
+    guestMessage: starterGuidance?.summaryLine ?? reservation.guestUnderstanding,
     nextStepCta:
       reservation.status === 'completed'
         ? '이번 다이닝 피드백으로 다음 예약을 더 정교하게 만들기'
@@ -112,7 +117,9 @@ function buildReservationPersonalizationSummary(
     primary,
     softest,
     chefGuidance,
-    recommendationLogic: `${topTasteLabels}이 현재 더 또렷하게 반응하는 포인트로 읽히고, ${softest.label}은 한 번에 강하게 밀기보다 여유 있게 연결될 때 더 편안할 가능성이 있어요. 예약 화면의 추천은 이 현재 프로필과 예약 코스 특성을 함께 반영해 정리됩니다.`,
+    recommendationLogic:
+      starterGuidance?.summaryLine ??
+      `${topTasteLabels}이 현재 더 또렷하게 반응하는 포인트로 읽히고, ${softest.label}은 한 번에 강하게 밀기보다 여유 있게 연결될 때 더 편안할 가능성이 있어요. 예약 화면의 추천은 이 현재 프로필과 예약 코스 특성을 함께 반영해 정리됩니다.`,
   };
 }
 
@@ -198,6 +205,7 @@ function ReservationDetail({
   onOpenFeedback,
   onStartMeasurement,
   reservation,
+  starterGuidance,
 }: {
   feedbackScenario: DiningFeedbackScenario | null;
   feedbackSubmitted: boolean;
@@ -207,13 +215,16 @@ function ReservationDetail({
   onOpenFeedback: () => void;
   onStartMeasurement: () => void;
   reservation: Reservation;
+  starterGuidance: RestaurantReadyGuidance | null;
 }) {
   const status = statusConfig[reservation.status];
   const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
+  const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
   const personalizationSummary = buildReservationPersonalizationSummary(
     measurementSnapshot,
     reservation,
+    starterGuidance,
   );
 
   return (
@@ -310,7 +321,7 @@ function ReservationDetail({
             <SectionCard hoverEffect={false}>
               <div className="flex flex-col gap-4 w-full">
                 <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                  Taste Buddy는 레시피를 바꾸라고 지시하지 않고, 현재 프로필이 더 편안하게 받아들일 수 있는 전달 강도와 마무리 방향을 셰프가 참고할 수 있게 정리합니다.
+                  Taste Buddy는 레시피를 바꾸라고 지시하지 않고, 현재 프로필이 더 편안하게 받아들여질 수 있는 방향을 매장과 주방이 참고할 수 있게 정리합니다.
                 </p>
 
                 <div className="grid grid-cols-1 gap-3">
@@ -321,9 +332,9 @@ function ReservationDetail({
                     </p>
                   </div>
                   <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">셰프 관점</p>
+                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">매장 전달 포인트</p>
                     <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                      셰프는 코스의 의도는 유지한 채, 어느 포인트를 더 선명하게 전달하고 어디를 더 부드럽게 정리할지 참고할 수 있어요.
+                      파인다이닝에서는 셰프용 가이드로, 일반 매장에서는 메뉴 추천과 간 방향 참고용으로 같은 기준을 쓸 수 있어요.
                     </p>
                   </div>
                 </div>
@@ -367,7 +378,7 @@ function ReservationDetail({
               <div className="flex flex-col gap-4 w-full">
                 <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
                   <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
-                    Recommendation logic
+                    매장 공통 한 줄 가이드
                   </p>
                   <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
                     {personalizationSummary.recommendationLogic}
@@ -431,6 +442,7 @@ function ReservationDetail({
                 </PrimaryButton>
                 <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                   마지막 측정 {formatMeasurementDate(measurementSnapshot.measuredAt)} · {measurementAgeLabel}
+                  {isBroadStarterProfile ? ' · 질문 기반 스타터 프로필' : ''}
                 </p>
               </div>
             </SectionCard>
@@ -474,6 +486,8 @@ interface ReservationPageProps {
   disableHydration?: boolean;
   initialReservations?: Reservation[];
   measurementSnapshot: TasteMeasurementSnapshot;
+  starterGuidance?: RestaurantReadyGuidance | null;
+  onRootViewChange?: (isRootView: boolean) => void;
   onStartMeasurement: () => void;
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
@@ -484,6 +498,8 @@ export default function ReservationPage({
   disableHydration = false,
   initialReservations,
   measurementSnapshot,
+  starterGuidance = null,
+  onRootViewChange,
   onStartMeasurement,
   onOpenNotifications,
   onOpenMenu,
@@ -511,6 +527,10 @@ export default function ReservationPage({
     selectedReservation && selectedScenario
       ? feedbackByReservationId[selectedReservation.id] ?? createDiningFeedbackDraft(selectedScenario)
       : null;
+
+  useEffect(() => {
+    onRootViewChange?.(!selectedReservation);
+  }, [onRootViewChange, selectedReservation]);
 
   useEffect(() => {
     if (disableHydration) {
@@ -613,6 +633,7 @@ export default function ReservationPage({
         onOpenFeedback={() => setSelectedView('feedback')}
         onOpenAnalysis={() => setSelectedView('analysis')}
         onStartMeasurement={onStartMeasurement}
+        starterGuidance={starterGuidance}
       />
     );
   }
@@ -623,8 +644,13 @@ export default function ReservationPage({
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
   const featuredReservation = upcoming[0] ?? null;
   const featuredSummary = featuredReservation
-    ? buildReservationPersonalizationSummary(measurementSnapshot, featuredReservation)
+    ? buildReservationPersonalizationSummary(
+        measurementSnapshot,
+        featuredReservation,
+        starterGuidance,
+      )
     : null;
+  const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
   const measurementHighlights = getTasteMeasurementEntries(measurementSnapshot).sort(
     (left, right) => right.valueMm - left.valueMm,
   );
@@ -632,7 +658,6 @@ export default function ReservationPage({
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <TopAppBar onStartMeasurement={onStartMeasurement} onOpenNotifications={onOpenNotifications} onOpenMenu={onOpenMenu} hasUnreadNotifications={hasUnreadNotifications} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="tb-section-stack p-5 animate-fadeIn">
           <div className="tb-card-stack">
@@ -645,7 +670,7 @@ export default function ReservationPage({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusChip color="#0F0F0F" backgroundColor="white">
-                        Chef-ready Personalization
+                        {starterGuidance ? 'Restaurant-ready Profile' : 'Chef-ready Personalization'}
                       </StatusChip>
                       <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
                         {featuredReservation.date}
@@ -688,7 +713,7 @@ export default function ReservationPage({
                 </h2>
 
                 <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                  {featuredReservation.diningPromise}
+                  {starterGuidance?.summaryLine ?? featuredReservation.diningPromise}
                 </p>
 
                 <div className="grid gap-2">
@@ -703,7 +728,7 @@ export default function ReservationPage({
 
                   <div className="rounded-[8px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
                     <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
-                      셰프가 참고하는 포인트
+                      {starterGuidance ? '매장이 참고하는 포인트' : '셰프가 참고하는 포인트'}
                     </p>
                     <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
                       {featuredSummary.chefGuidance[0] ?? featuredSummary.recommendationLogic}
@@ -744,11 +769,23 @@ export default function ReservationPage({
 
             {upcoming.length > 0 && (
               <TasteMeasurementMiniCta
-                title={needsMeasurementRefresh ? '예약 개인화 정확도 업데이트 추천' : '현재 컨디션 반영하기'}
+                title={
+                  needsMeasurementRefresh
+                    ? isBroadStarterProfile
+                      ? '스타터 프로필 업데이트 추천'
+                      : '예약 개인화 정확도 업데이트 추천'
+                    : isBroadStarterProfile
+                      ? '현재 식사 취향 다시 반영하기'
+                      : '현재 컨디션 반영하기'
+                }
                 description={
                   needsMeasurementRefresh
-                    ? `${measurementAgeLabel} 데이터예요. 예약 전에 갱신해두면 셰프용 캘리브레이션 가이드가 이번 식사에 더 잘 맞아져요.`
-                    : '다가오는 식사 전에 한 번 더 측정하면 현재 컨디션까지 반영된 개인화 가이드를 준비할 수 있어요.'
+                    ? isBroadStarterProfile
+                      ? `${measurementAgeLabel} 질문 기반 스타터 프로필이에요. 다시 점검해두면 이번 식사 메뉴 선택과 매장 전달 포인트가 더 자연스러워져요.`
+                      : `${measurementAgeLabel} 데이터예요. 예약 전에 갱신해두면 셰프용 캘리브레이션 가이드가 이번 식사에 더 잘 맞아져요.`
+                    : isBroadStarterProfile
+                      ? '다가오는 식사 전에 한 번 더 점검하면 지금 취향에 맞는 시작 기준을 더 자연스럽게 맞출 수 있어요.'
+                      : '다가오는 식사 전에 한 번 더 측정하면 현재 컨디션까지 반영된 개인화 가이드를 준비할 수 있어요.'
                 }
                 meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
                 actionLabel={needsMeasurementRefresh ? '프로필 업데이트' : '현재 컨디션 반영'}

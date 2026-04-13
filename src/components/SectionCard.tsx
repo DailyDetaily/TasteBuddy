@@ -1,25 +1,26 @@
-import React from 'react';
+import React, { type HTMLAttributes } from 'react';
 
-interface SectionCardProps {
-  children: React.ReactNode;
-  className?: string;
+interface SectionCardProps extends HTMLAttributes<HTMLDivElement> {
   onClick?: () => void;
   hoverEffect?: boolean;
 }
 
-export default function SectionCard({ children, className = '', onClick, hoverEffect = !!onClick }: SectionCardProps) {
+export default function SectionCard({
+  children,
+  className = '',
+  onClick,
+  hoverEffect = !!onClick,
+  ...props
+}: SectionCardProps) {
   return (
     <div
       className={`tb-section-card ${
         hoverEffect ? 'tb-section-card--interactive' : ''
       } ${onClick ? 'cursor-pointer' : ''} ${className}`}
       onClick={onClick}
+      {...props}
     >
-      <div className="overflow-clip rounded-[inherit] size-full">
-        <div className="tb-section-card__body">
-          {children}
-        </div>
-      </div>
+      {children}
     </div>
   );
 }

@@ -13,7 +13,6 @@ import {
 import PalateSignatureHeroCard from '../components/analysis/PalateSignatureHeroCard';
 import RealMenuRecommendationCard from '../components/analysis/RealMenuRecommendationCard';
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
-import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
 import InsightCard from '../components/system/InsightCard';
 import PageSection from '../components/system/PageSection';
@@ -2237,7 +2236,6 @@ export default function AnalysisPage({
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <TopAppBar onStartMeasurement={onStartMeasurement} onOpenNotifications={onOpenNotifications} onOpenMenu={onOpenMenu} hasUnreadNotifications={hasUnreadNotifications} />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="tb-section-stack p-5 animate-fadeIn">
           <PageSection title="나의 미각" titleAs="h1" titleSize="lg" contentClassName="flex flex-col gap-3">

@@ -550,7 +550,9 @@ function PhonePreviewFrame({
         <div className="pointer-events-none flex justify-center pt-3">
           <div className="h-1.5 w-24 rounded-full bg-[var(--tb-color-border-strong)]" />
         </div>
-        <div className="h-[844px] overflow-hidden bg-[var(--tb-color-bg-page)]">{children}</div>
+        <div className="h-[844px] overflow-y-auto overflow-x-hidden bg-[var(--tb-color-bg-page)]">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -1230,8 +1232,8 @@ export default function DesignSystemPage() {
     );
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_18%,#f6f6f6_100%)] px-4 py-6">
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 pb-28">
+    <div className="h-full overflow-y-auto overflow-x-hidden bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_18%,#f6f6f6_100%)] px-4 py-6">
+      <div className="mx-auto flex min-h-full w-full max-w-[1440px] flex-col gap-6 pb-28">
         <header
           style={headerBackgroundStyle}
           className="overflow-hidden rounded-[36px] border border-[var(--tb-color-border-default)] text-[var(--tb-color-text-primary)] shadow-[0_24px_64px_rgba(15,15,15,0.08)]"
@@ -3142,8 +3144,8 @@ export default function DesignSystemPage() {
           title={sectionJumpMenuOpen ? "섹션 바로가기 닫기" : "섹션 이동 메뉴 열기"}
           className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] shadow-[0_18px_48px_rgba(15,15,15,0.14)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
           style={{
-            width: ICON_TOKENS.container.lg,
-            height: ICON_TOKENS.container.lg,
+            width: ICON_TOKENS.container.lg * 2,
+            height: ICON_TOKENS.container.lg * 2,
           }}
         >
           <NavigationRegular fontSize={ICON_TOKENS.size.lg} />
@@ -3156,8 +3158,8 @@ export default function DesignSystemPage() {
           title={floatingMenuOpen ? "실반영 메뉴 닫기" : "실반영 메뉴 열기"}
           className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-text-primary)] text-white shadow-[0_18px_48px_rgba(15,15,15,0.22)] transition-colors hover:bg-[var(--tb-color-text-secondary)]"
           style={{
-            width: ICON_TOKENS.container.lg,
-            height: ICON_TOKENS.container.lg,
+            width: ICON_TOKENS.container.lg * 2,
+            height: ICON_TOKENS.container.lg * 2,
           }}
         >
           <Settings size={ICON_TOKENS.size.lg} />

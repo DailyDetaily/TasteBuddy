@@ -36,16 +36,16 @@ const PROFILE_COPY: Record<
   Starter: {
     title: '첫 기준으로 다음 식사를 맞추기 시작한 Starter 단계예요',
     description:
-      '첫 측정으로 현재 컨디션과 취향의 기본 윤곽이 만들어졌어요. 지금도 예약 개인화에는 바로 활용할 수 있고, 한두 번 더 쌓이면 셰프가 참고할 포인트가 훨씬 선명해져요.',
+      '첫 기준으로 현재 취향의 기본 윤곽이 만들어졌어요. 지금도 메뉴 선택과 매장 전달에는 바로 활용할 수 있고, 한두 번 더 쌓이면 더 안정적인 가이드가 됩니다.',
     nextStep:
-      '한 번 더 측정하거나 첫 다이닝 피드백이 쌓이면 다음 예약에 반영되는 기준이 더 자연스러워져요.',
+      '한 번 더 점검하거나 첫 식사 피드백이 쌓이면 다음 식사에 반영되는 기준이 더 자연스러워져요.',
   },
   Building: {
     title: '다음 식사를 더 안정적으로 맞춰가는 Building 단계예요',
     description:
-      '측정과 다이닝 피드백이 겹치며 무엇이 잘 맞고 어디에서 조정이 필요한지 읽히기 시작했어요. 현재도 충분히 유용하고, 반복될수록 다음 예약에 더 정교하게 반영됩니다.',
+      '측정과 식사 피드백이 겹치며 무엇이 잘 맞고 어디에서 조정이 필요한지 읽히기 시작했어요. 현재도 충분히 유용하고, 반복될수록 다음 식사에 더 정교하게 반영됩니다.',
     nextStep:
-      '이번 다이닝의 짧은 피드백 한 줄이 다음 예약과 셰프용 가이드를 더 안정적으로 맞춰줘요.',
+      '이번 식사의 짧은 피드백 한 줄이 다음 식사와 매장 전달 가이드를 더 안정적으로 맞춰줘요.',
   },
   Refined: {
     title: '다음 식사에 안정적으로 반영되는 Refined 단계예요',
@@ -151,7 +151,7 @@ export default function ProfileConfidenceCard({
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div className="px-1 py-1">
             <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
-              지금 예약에 먼저 반영되는 포인트
+              지금 식사에 먼저 반영되는 포인트
             </p>
             <p className="mt-1 text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
               지금 프로필에서 비교적 먼저 읽히는 축이에요.

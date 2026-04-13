@@ -35,10 +35,12 @@ const SEARCH_BAR_ICON_BUTTON_CLASS_NAME =
   'flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[#303946] transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
 const APP_LUCIDE_ICON_SIZE_S = ICON_TOKENS.size.sm;
 const APP_LUCIDE_ICON_SIZE_M = ICON_TOKENS.size.md;
-const SEARCH_BAR_ICON_SIZE = ICON_TOKENS.size.lg;
+const SEARCH_BAR_ICON_SIZE = ICON_TOKENS.size.md;
 const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 const SEARCH_RESULT_ACTION_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const SEARCH_RESULT_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
+const SEARCH_OVERLAY_TOP_OFFSET =
+  'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 
 type SearchResultType = 'restaurant' | 'chef' | 'menu';
 
@@ -405,7 +407,7 @@ function SearchSuggestionChip({
         'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-medium transition-colors',
         tone === 'recent'
           ? 'border-[var(--tb-color-border-default)] bg-white text-[var(--tb-color-text-primary)] hover:bg-[var(--tb-color-surface-muted)]'
-          : 'border-transparent bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-body)] hover:bg-[var(--tb-color-surface-disabled)]',
+          : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-body)] hover:bg-[var(--tb-color-surface-disabled)]',
       )}
     >
       {tone === 'recent' ? (
@@ -782,10 +784,16 @@ export default function HomeUnifiedSearch({
 
       {isOpen ? (
         <>
-          <div className="fixed inset-x-0 top-[56px] bottom-0 z-[55] bg-[var(--tb-color-bg-page)]/92 backdrop-blur-[14px] animate-fadeIn" />
-          <div className="fixed inset-x-0 top-[56px] bottom-0 z-[56] flex justify-center">
+          <div
+            className="fixed inset-x-0 bottom-0 z-[55] bg-[var(--tb-color-bg-page)]/92 backdrop-blur-[14px] animate-fadeIn"
+            style={{ top: SEARCH_OVERLAY_TOP_OFFSET }}
+          />
+          <div
+            className="fixed inset-x-0 bottom-0 z-[56] flex justify-center"
+            style={{ top: SEARCH_OVERLAY_TOP_OFFSET }}
+          >
             <div className="flex h-full w-full max-w-[1440px] flex-col">
-              <div className="border-b border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/95 px-5 pb-4 pt-3 backdrop-blur-sm">
+              <div className="border-b border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/95 px-5 pb-4 pt-1 backdrop-blur-sm">
                 <form className="flex items-center gap-3" onSubmit={handleSubmit}>
                   <div
                     className={cn(

@@ -34,14 +34,17 @@ export default function TopAppBar({
   hasUnreadNotifications,
 }: TopAppBarProps) {
   return (
-    <div className="bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md border-b border-transparent w-full shrink-0 z-40 supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70">
-      <div className="flex items-center justify-between px-[20px] py-[12px] max-h-[56px]">
+    <div
+      className="w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70"
+      style={{ paddingTop: 'var(--tb-safe-area-top)' }}
+    >
+      <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-[20px] py-[12px]">
         {/* Left */}
         <div className="flex items-center">
           {showBack ? (
             <button
               onClick={onBack}
-              className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-card)]"
+              className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors"
               style={{
                 width: APP_SHELL_ICON_BUTTON_SIZE,
                 height: APP_SHELL_ICON_BUTTON_SIZE,
@@ -83,7 +86,7 @@ export default function TopAppBar({
             type="button"
             onClick={onOpenNotifications}
             aria-label="알림"
-            className="relative flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-card)] hover:text-[var(--tb-color-text-primary)]"
+            className="relative flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
             style={{
               width: APP_SHELL_ICON_BUTTON_SIZE,
               height: APP_SHELL_ICON_BUTTON_SIZE,
@@ -99,7 +102,7 @@ export default function TopAppBar({
             onClick={onStartMeasurement}
             aria-label="미각 측정 시작"
             title="미각 측정"
-            className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-card)] hover:text-[var(--tb-color-text-primary)]"
+            className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
             style={{
               width: APP_SHELL_ICON_BUTTON_SIZE,
               height: APP_SHELL_ICON_BUTTON_SIZE,
@@ -111,7 +114,7 @@ export default function TopAppBar({
             type="button"
             onClick={onOpenMenu}
             aria-label="메뉴 열기"
-            className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-card)] hover:text-[var(--tb-color-text-primary)]"
+            className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
             style={{
               width: APP_SHELL_ICON_BUTTON_SIZE,
               height: APP_SHELL_ICON_BUTTON_SIZE,

@@ -40,11 +40,11 @@ const Star = wrapIcon(StarRegular);
 const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
-import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
 import ChefAvatar from '../components/system/ChefAvatar';
 import OutlineBadge from '../components/system/OutlineBadge';
 import PageSection from '../components/system/PageSection';
+import TasteChip from '../components/system/TasteChip';
 import { ICON_TOKENS } from '../constants/designTokens';
 import { type ReservationRecord } from '../constants/reservationCatalog';
 import { getTasteColor } from '../constants/tasteColors';
@@ -55,9 +55,14 @@ import {
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
   getTasteProfileBadge,
+  isBroadStarterMeasurementSnapshot,
   isTasteMeasurementStale,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
+import {
+  getStarterAxisDisplayLabel,
+  type RestaurantReadyGuidance,
+} from '../constants/quickTasteCalibrationData';
 import { hydrateReservationPageData } from '../lib/tasteBuddySupabase';
 
 interface ProfileStat {
@@ -179,6 +184,7 @@ const settingsSections = [
 
 interface ProfilePageProps {
   measurementSnapshot: TasteMeasurementSnapshot;
+  starterGuidance?: RestaurantReadyGuidance | null;
   onStartMeasurement: () => void;
   onNavigateToReservation?: (chefName: string) => void;
   onOpenNotifications?: () => void;
@@ -188,23 +194,27 @@ interface ProfilePageProps {
 
 export default function ProfilePage({
   measurementSnapshot,
+  starterGuidance = null,
   onStartMeasurement,
   onNavigateToReservation,
   onOpenNotifications,
   onOpenMenu,
   hasUnreadNotifications,
 }: ProfilePageProps) {
+  const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
   const myTasteEntries = getTasteMeasurementEntries(measurementSnapshot);
   const myTaste = myTasteEntries.map((entry) => ({
     maxValue: 10,
     taste: entry.label,
     value: entry.valueMm,
     qualitative:
-      entry.valueMm >= entry.averageMm + 0.5
-        ? '반응 빠름'
-        : entry.valueMm <= entry.averageMm - 0.5
-          ? '부드럽게 반응'
-          : '균형적',
+      isBroadStarterProfile
+        ? getStarterAxisDisplayLabel(entry.valueMm)
+        : entry.valueMm >= entry.averageMm + 0.5
+          ? '반응 빠름'
+          : entry.valueMm <= entry.averageMm - 0.5
+            ? '부드럽게 반응'
+            : '균형적',
   }));
   const averageMeasurement = getAverageMeasurementMm(measurementSnapshot);
   const tasteProfileBadge = getTasteProfileBadge(averageMeasurement);
@@ -247,12 +257,6 @@ export default function ProfilePage({
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <TopAppBar
-        onStartMeasurement={onStartMeasurement}
-        onOpenNotifications={onOpenNotifications}
-        onOpenMenu={onOpenMenu}
-        hasUnreadNotifications={hasUnreadNotifications}
-      />
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         <div className="tb-section-stack p-5 animate-fadeIn">
           <div className="tb-card-stack">
@@ -266,9 +270,13 @@ export default function ProfilePage({
               <div className="flex flex-col gap-[2px]">
                 <span className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">신준호</span>
                 <div className="flex items-center gap-2">
-                  <OutlineBadge>{tasteProfileBadge}</OutlineBadge>
+                  <OutlineBadge>{isBroadStarterProfile ? 'Starter Profile' : tasteProfileBadge}</OutlineBadge>
                   <span className="text-[12px] text-[var(--tb-color-text-muted)]">
-                    {averageMeasurement > 5 ? '평균보다 민감한 프로필' : '균형 잡힌 프로필'}
+                    {isBroadStarterProfile
+                      ? '일반 식당에서도 바로 쓰는 질문 기반 시작 프로필'
+                      : averageMeasurement > 5
+                        ? '평균보다 민감한 프로필'
+                        : '균형 잡힌 프로필'}
                   </span>
                 </div>
                 <p className="mt-[2px] text-[11px] text-[var(--tb-color-text-hint)]">
@@ -324,20 +332,53 @@ export default function ProfilePage({
             </SectionCard>
 
             <TasteMeasurementMiniCta
-              title={needsMeasurementRefresh ? '미각 재측정이 필요해 보여요' : '프로필을 한 번 더 점검할 수 있어요'}
+              title={
+                needsMeasurementRefresh
+                  ? isBroadStarterProfile
+                    ? '스타터 프로필을 다시 점검해보세요'
+                    : '미각 재측정이 필요해 보여요'
+                  : isBroadStarterProfile
+                    ? '프로필을 한 번 더 점검할 수 있어요'
+                    : '프로필을 한 번 더 점검할 수 있어요'
+              }
               description={
                 needsMeasurementRefresh
-                  ? `${measurementAgeLabel} 상태예요. 최신 데이터로 갱신하면 추천과 보정 정확도가 더 좋아져요.`
-                  : '입맛이 달라졌다면 지금 다시 측정해서 내 프로필을 더 정확하게 유지할 수 있어요.'
+                  ? isBroadStarterProfile
+                    ? `${measurementAgeLabel} 질문 기반 시작 프로필이에요. 다시 점검하거나 식사 기록이 쌓이면 추천과 매장 전달 포인트가 더 자연스러워져요.`
+                    : `${measurementAgeLabel} 상태예요. 최신 데이터로 갱신하면 추천과 보정 정확도가 더 좋아져요.`
+                  : isBroadStarterProfile
+                    ? '입맛이 달라졌다면 지금 다시 점검해서 시작 프로필을 더 자연스럽게 유지할 수 있어요.'
+                    : '입맛이 달라졌다면 지금 다시 측정해서 내 프로필을 더 정확하게 유지할 수 있어요.'
               }
               meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
               actionLabel={needsMeasurementRefresh ? '재측정' : '다시 측정'}
               onAction={onStartMeasurement}
               tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
             />
+
+            {starterGuidance ? (
+              <SectionCard hoverEffect={false}>
+                <div className="flex flex-col gap-3 w-full">
+                  <div>
+                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                      {starterGuidance.surfaceLabel}
+                    </p>
+                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                      {starterGuidance.summaryLine}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {starterGuidance.topLabels.map((label) => (
+                      <TasteChip key={label} taste={label} value="잘 맞는 쪽" />
+                    ))}
+                    <TasteChip taste={starterGuidance.cautionLabel} value="조심할 포인트" />
+                  </div>
+                </div>
+              </SectionCard>
+            ) : null}
           </div>
 
-          <PageSection title="나의 미각">
+          <PageSection title={isBroadStarterProfile ? '지금 잘 받는 맛 강도' : '나의 미각'}>
             <SectionCard>
               <div className="flex flex-col gap-3 w-full">
                 {myTaste.map((item, index) => {

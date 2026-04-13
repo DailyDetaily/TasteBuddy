@@ -66,7 +66,9 @@ function ArchivePhoneFrame({
         <div className="pointer-events-none flex justify-center pt-3">
           <div className="h-1.5 w-24 rounded-full bg-[var(--tb-color-border-strong)]" />
         </div>
-        <div className="h-[844px] overflow-hidden bg-[var(--tb-color-bg-page)]">{children}</div>
+        <div className="h-[844px] overflow-y-auto overflow-x-hidden bg-[var(--tb-color-bg-page)]">
+          {children}
+        </div>
       </div>
     </div>
   );

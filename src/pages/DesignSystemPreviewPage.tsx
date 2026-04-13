@@ -59,7 +59,7 @@ function ShowcaseSection({
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center pt-3">
           <div className="h-1.5 w-24 rounded-full bg-[var(--tb-color-border-strong)]" />
         </div>
-        <div className="relative h-[844px] overflow-hidden bg-white">
+        <div className="relative h-[844px] overflow-y-auto overflow-x-hidden overscroll-contain bg-white">
           {overlayNotes.map((note) => (
             <OverlayBadge key={`${title}-${note.id}-${note.left}-${note.top}`} {...note} />
           ))}
@@ -100,7 +100,7 @@ export default function DesignSystemPreviewPage() {
 
   if (!diningScenario || !draft) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--tb-color-surface-muted)] p-6">
+      <div className="flex h-full overflow-y-auto items-center justify-center bg-[var(--tb-color-surface-muted)] p-6">
         <p className="text-[14px] text-[var(--tb-color-text-primary)]">
           디자인 시스템 미리보기를 준비할 수 없습니다.
         </p>
@@ -109,9 +109,9 @@ export default function DesignSystemPreviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#F7F7F7_0%,#FFFFFF_22%,#F7F7F7_100%)] px-4 py-6">
+    <div className="h-full overflow-y-auto overflow-x-hidden bg-[linear-gradient(180deg,#F7F7F7_0%,#FFFFFF_22%,#F7F7F7_100%)] px-4 py-6">
       <div
-        className={`mx-auto flex w-full flex-col gap-6 ${
+        className={`mx-auto flex min-h-full w-full flex-col gap-6 ${
           isFocusedView ? 'max-w-[480px]' : 'max-w-[1480px]'
         }`}
       >

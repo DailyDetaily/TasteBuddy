@@ -14,9 +14,16 @@ import TeastickConnectScreen from './pages/TeastickConnectScreen';
 import TasteMeasurementScreen from './pages/TasteMeasurementScreen';
 import ImproveAccuracyScreen from './pages/ImproveAccuracyScreen';
 import BottomTabBar, { type TabType } from './components/BottomTabBar';
+import TopAppBar from './components/TopAppBar';
 import NotificationPanel from './components/NotificationPanel';
 import AppMenuDrawer from './components/AppMenuDrawer';
 import { type TasteMeasurementSnapshot } from './constants/tasteMeasurementData';
+import {
+  createFallbackRestaurantReadyGuidance,
+  isRestaurantReadyGuidance,
+  mergeRestaurantReadyGuidanceWithSnapshot,
+  type RestaurantReadyGuidance,
+} from './constants/quickTasteCalibrationData';
 import { clearAppliedDesignTokenRuntimeState } from './lib/designTokenRuntime';
 import {
   getFallbackNotifications,
@@ -33,15 +40,20 @@ import { ensureSupabaseSession, isSupabaseConfigured } from './lib/supabase';
 
 type AppState = 'splash' | 'onboarding' | 'calibration' | 'teastick' | 'measurement' | 'improve-accuracy' | 'main';
 type MeasurementEntryPoint = 'initial' | 'main';
+const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
+const MAIN_APP_BOTTOM_OFFSET =
+  'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
 
-const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v3';
+const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v4';
 const LEGACY_USER_STATE_STORAGE_KEYS = [
   'tastebuddy-user-state-v1',
   'tastebuddy-user-state-v2',
+  'tastebuddy-user-state-v3',
 ] as const;
 
 interface PersistedUserState {
   hasCompletedInitialMeasurement: boolean;
+  latestRestaurantReadyGuidance: RestaurantReadyGuidance | null;
   latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
 }
 
@@ -59,12 +71,18 @@ function loadPersistedUserState(): PersistedUserState {
   if (typeof window === 'undefined') {
     return {
       hasCompletedInitialMeasurement: false,
+      latestRestaurantReadyGuidance: null,
       latestTasteMeasurementSnapshot: null,
     };
   }
 
   try {
-    const rawValue = window.localStorage.getItem(USER_STATE_STORAGE_KEY);
+    const rawValue =
+      window.localStorage.getItem(USER_STATE_STORAGE_KEY) ??
+      LEGACY_USER_STATE_STORAGE_KEYS.map((storageKey) =>
+        window.localStorage.getItem(storageKey),
+      ).find(Boolean) ??
+      null;
 
     if (!rawValue) {
       LEGACY_USER_STATE_STORAGE_KEYS.forEach((storageKey) => {
@@ -73,6 +91,7 @@ function loadPersistedUserState(): PersistedUserState {
 
       return {
         hasCompletedInitialMeasurement: false,
+        latestRestaurantReadyGuidance: null,
         latestTasteMeasurementSnapshot: null,
       };
     }
@@ -83,15 +102,24 @@ function loadPersistedUserState(): PersistedUserState {
     )
       ? parsedValue.latestTasteMeasurementSnapshot
       : null;
+    const latestRestaurantReadyGuidance = isRestaurantReadyGuidance(
+      parsedValue.latestRestaurantReadyGuidance,
+    )
+      ? parsedValue.latestRestaurantReadyGuidance
+      : latestTasteMeasurementSnapshot
+        ? createFallbackRestaurantReadyGuidance(latestTasteMeasurementSnapshot)
+        : null;
 
     return {
       hasCompletedInitialMeasurement:
         Boolean(parsedValue.hasCompletedInitialMeasurement) && latestTasteMeasurementSnapshot !== null,
+      latestRestaurantReadyGuidance,
       latestTasteMeasurementSnapshot,
     };
   } catch {
     return {
       hasCompletedInitialMeasurement: false,
+      latestRestaurantReadyGuidance: null,
       latestTasteMeasurementSnapshot: null,
     };
   }
@@ -110,6 +138,8 @@ function MainApp() {
   const [latestTasteMeasurementSnapshot, setLatestTasteMeasurementSnapshot] = useState<
     TasteMeasurementSnapshot | null
   >(persistedUserState.latestTasteMeasurementSnapshot);
+  const [latestRestaurantReadyGuidance, setLatestRestaurantReadyGuidance] =
+    useState<RestaurantReadyGuidance | null>(persistedUserState.latestRestaurantReadyGuidance);
   const [hasSplashDelayCompleted, setHasSplashDelayCompleted] = useState(false);
   const [hasHydratedRemoteMeasurement, setHasHydratedRemoteMeasurement] = useState(
     !isSupabaseConfigured,
@@ -119,16 +149,22 @@ function MainApp() {
   // Overlay states
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isReservationRootView, setIsReservationRootView] = useState(true);
 
   useEffect(() => {
     window.localStorage.setItem(
       USER_STATE_STORAGE_KEY,
       JSON.stringify({
         hasCompletedInitialMeasurement,
+        latestRestaurantReadyGuidance,
         latestTasteMeasurementSnapshot,
       } satisfies PersistedUserState),
     );
-  }, [hasCompletedInitialMeasurement, latestTasteMeasurementSnapshot]);
+  }, [
+    hasCompletedInitialMeasurement,
+    latestRestaurantReadyGuidance,
+    latestTasteMeasurementSnapshot,
+  ]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -149,6 +185,11 @@ function MainApp() {
       if (remoteSnapshot) {
         setLatestTasteMeasurementSnapshot(remoteSnapshot);
         setHasCompletedInitialMeasurement(true);
+        setLatestRestaurantReadyGuidance((current) =>
+          current
+            ? mergeRestaurantReadyGuidanceWithSnapshot(current, remoteSnapshot)
+            : createFallbackRestaurantReadyGuidance(remoteSnapshot),
+        );
       }
 
       setHasHydratedRemoteMeasurement(true);
@@ -280,9 +321,45 @@ function MainApp() {
     hasUnreadNotifications: notifications.some((notification) => !notification.read),
   };
 
+  const isImmersiveWhiteShell =
+    appState === 'onboarding' || appState === 'calibration';
+  const shouldShowMainShell =
+    appState === 'main' && (activeTab !== 'reservation' || isReservationRootView);
+
+  useEffect(() => {
+    const nextBackgroundColor = isImmersiveWhiteShell ? '#ffffff' : '#f3f3f3';
+    const rootElement = document.documentElement;
+    const bodyElement = document.body;
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+    rootElement.style.backgroundColor = nextBackgroundColor;
+    bodyElement.style.backgroundColor = nextBackgroundColor;
+
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', nextBackgroundColor);
+    }
+
+    return () => {
+      rootElement.style.backgroundColor = '';
+      bodyElement.style.backgroundColor = '';
+
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#ffffff');
+      }
+    };
+  }, [isImmersiveWhiteShell]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--tb-color-bg-page)]">
-      <div className="relative flex h-screen w-full max-w-[1440px] flex-col overflow-hidden bg-[var(--tb-color-bg-page)] font-sans shadow-2xl">
+    <div
+      className={`flex min-h-[100dvh] items-center justify-center overflow-hidden ${
+        isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+      }`}
+    >
+      <div
+        className={`relative flex h-[100dvh] w-full max-w-[1440px] flex-col overflow-hidden font-sans shadow-2xl ${
+          isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+        }`}
+      >
         {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}
         {appState === 'onboarding' && (
           <OnboardingScreen onComplete={handleStartInitialMeasurementFlow} />
@@ -297,8 +374,9 @@ function MainApp() {
 
               setAppState('onboarding');
             }}
-            onComplete={(snapshot) => {
+            onComplete={({ snapshot, starterGuidance }) => {
               setLatestTasteMeasurementSnapshot(snapshot);
+              setLatestRestaurantReadyGuidance(starterGuidance);
               setHasCompletedInitialMeasurement(true);
               setActiveTab(measurementEntryPoint === 'main' ? measurementReturnTab : 'home');
               setAppState('main');
@@ -316,6 +394,11 @@ function MainApp() {
           <TasteMeasurementScreen
             onComplete={(snapshot) => {
               setLatestTasteMeasurementSnapshot(snapshot);
+              setLatestRestaurantReadyGuidance((current) =>
+                current
+                  ? mergeRestaurantReadyGuidanceWithSnapshot(current, snapshot, 'Building')
+                  : createFallbackRestaurantReadyGuidance(snapshot),
+              );
               setHasCompletedInitialMeasurement(true);
               setActiveTab('home');
               setAppState('main');
@@ -334,11 +417,42 @@ function MainApp() {
           />
         )}
 
-        <div className={`flex-1 overflow-hidden ${appState === 'main' ? 'block' : 'hidden'}`}>
+        {shouldShowMainShell ? (
+          <>
+            <div className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center">
+              <div className="pointer-events-auto w-full max-w-[1440px]">
+                <TopAppBar
+                  onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
+                  onOpenNotifications={overlayProps.onOpenNotifications}
+                  onOpenMenu={overlayProps.onOpenMenu}
+                  hasUnreadNotifications={overlayProps.hasUnreadNotifications}
+                />
+              </div>
+            </div>
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center">
+              <div className="pointer-events-auto w-full max-w-[1440px]">
+                <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        <div
+          className={`relative flex-1 overflow-hidden ${appState === 'main' ? 'block' : 'hidden'}`}
+          style={
+            appState === 'main'
+              ? {
+                  paddingTop: shouldShowMainShell ? MAIN_APP_TOP_OFFSET : undefined,
+                  paddingBottom: shouldShowMainShell ? MAIN_APP_BOTTOM_OFFSET : undefined,
+                }
+              : undefined
+          }
+        >
           <div className={activeTab === 'home' ? 'h-full w-full' : 'hidden'}>
             <Home
               hasMeasurementData={hasMeasurementData}
               measurementSnapshot={latestTasteMeasurementSnapshot}
+              starterGuidance={latestRestaurantReadyGuidance}
               onStartMeasurement={() => handleStartMeasurementFromMain('home')}
               onStartRemeasurement={() => handleStartRemeasurementFromMain('home')}
               {...overlayProps}
@@ -370,6 +484,8 @@ function MainApp() {
             {latestTasteMeasurementSnapshot ? (
               <ReservationPage
                 measurementSnapshot={latestTasteMeasurementSnapshot}
+                starterGuidance={latestRestaurantReadyGuidance}
+                onRootViewChange={setIsReservationRootView}
                 onStartMeasurement={() => handleStartMeasurementFromMain('reservation')}
                 {...overlayProps}
               />
@@ -385,6 +501,7 @@ function MainApp() {
             {latestTasteMeasurementSnapshot ? (
               <ProfilePage
                 measurementSnapshot={latestTasteMeasurementSnapshot}
+                starterGuidance={latestRestaurantReadyGuidance}
                 onStartMeasurement={() => handleStartMeasurementFromMain('profile')}
                 onNavigateToReservation={(chefName: string) => {
                   setActiveTab('reservation');
@@ -394,10 +511,6 @@ function MainApp() {
             ) : null}
           </div>
         </div>
-
-        {appState === 'main' && (
-          <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
-        )}
 
         {/* Global Overlays */}
         <NotificationPanel

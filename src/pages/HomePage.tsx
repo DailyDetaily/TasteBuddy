@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import TopAppBar from '../components/TopAppBar';
 import {
   type HomeChefMatchCardData,
   HomeCardStack,
@@ -14,6 +13,7 @@ import {
   isTasteMeasurementStale,
   getTasteMeasurementAgeLabel,
 } from '../constants/tasteMeasurementData';
+import { type RestaurantReadyGuidance } from '../constants/quickTasteCalibrationData';
 import {
   hydrateReservationPageData,
   hydrateRestaurantContentCatalog,
@@ -26,6 +26,7 @@ interface HomePageProps {
   disableHydration?: boolean;
   hasMeasurementData: boolean;
   measurementSnapshot: TasteMeasurementSnapshot | null;
+  starterGuidance?: RestaurantReadyGuidance | null;
   onStartMeasurement: () => void;
   onStartRemeasurement: () => void;
   onOpenNotifications?: () => void;
@@ -37,6 +38,7 @@ export default function HomePage({
   disableHydration = false,
   hasMeasurementData,
   measurementSnapshot,
+  starterGuidance = null,
   onStartMeasurement,
   onStartRemeasurement,
   onOpenNotifications,
@@ -77,7 +79,11 @@ export default function HomePage({
   const upcomingReservations = reservations.filter((reservation) => reservation.status !== 'completed');
   const featuredReservation = upcomingReservations[0] ?? null;
   const featuredSummary = featuredReservation
-    ? buildReservationPersonalizationSummary(measurementSnapshot, featuredReservation)
+    ? buildReservationPersonalizationSummary(
+        measurementSnapshot,
+        featuredReservation,
+        starterGuidance,
+      )
     : null;
 
   const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
@@ -105,13 +111,7 @@ export default function HomePage({
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <TopAppBar
-        onStartMeasurement={onStartMeasurement}
-        onOpenNotifications={onOpenNotifications}
-        onOpenMenu={onOpenMenu}
-        hasUnreadNotifications={hasUnreadNotifications}
-      />
-      <div className="shrink-0 px-5 pb-4 pt-3">
+      <div className="shrink-0 px-5 pb-4 pt-1">
         <HomeUnifiedSearch catalog={contentCatalog} reservations={reservations} />
       </div>
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">

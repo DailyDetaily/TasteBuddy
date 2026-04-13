@@ -29,7 +29,10 @@ const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
 
 export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
   return (
-    <div className="w-full bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md border-t border-[var(--tb-color-border-default)] relative shrink-0 z-50 supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70">
+    <div
+      className="relative min-h-[var(--tb-size-bottom-tab-bar-height)] w-full shrink-0 border-t border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70"
+      style={{ paddingBottom: 'var(--tb-safe-area-bottom)' }}
+    >
       <div className="flex items-center justify-around px-2 py-1">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;

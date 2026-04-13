@@ -20,6 +20,7 @@ import { ICON_TOKENS, TASTE_TOKENS, type TasteId } from "../../constants/designT
 import { buildTasteAdjustmentGradient } from "../../constants/tasteColors";
 import TasteMeasurementMiniCta from "../measurement/TasteMeasurementMiniCta";
 import SectionCard from "../SectionCard";
+import CardIconBox from "../system/CardIconBox";
 import InspectableComponent from "../system/InspectableComponent";
 import InsightCard from "../system/InsightCard";
 import OutlineBadge from "../system/OutlineBadge";
@@ -49,6 +50,7 @@ function SampleBlock({
   children,
   componentNames,
   description,
+  previewBackgroundClass = "bg-[var(--tb-color-surface-muted)]",
   source,
   title,
 }: {
@@ -56,6 +58,7 @@ function SampleBlock({
   children: ReactNode;
   componentNames?: string[];
   description: string;
+  previewBackgroundClass?: string;
   source: string;
   title: string;
 }) {
@@ -89,7 +92,7 @@ function SampleBlock({
           {badge}
         </span>
       </div>
-      <div className="rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-muted)] p-3">
+      <div className={`rounded-[var(--tb-radius-14)] p-3 ${previewBackgroundClass}`.trim()}>
         {children}
       </div>
     </div>
@@ -501,6 +504,7 @@ export default function CardGallery({
           title="피드백 요약 히어로 카드"
           description="피드백 결과를 가장 먼저 전달하는 대표 카드입니다."
           componentNames={["SectionCard"]}
+          previewBackgroundClass="bg-[var(--tb-color-surface-base)]"
           source="src/components/reservation/DiningFeedbackFlow.tsx"
         >
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
@@ -547,9 +551,9 @@ export default function CardGallery({
             ].map((item) => (
               <SectionCard key={item.title} hoverEffect={false}>
                 <div className="flex items-start gap-3">
-                  <div className={`flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] ${item.iconClass}`}>
+                  <CardIconBox className={item.iconClass}>
                     <Sparkles size={ICON_TOKENS.size.md} />
-                  </div>
+                  </CardIconBox>
                   <div className="flex flex-col gap-1">
                     <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">{item.title}</p>
                     <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-tertiary)]">{item.body}</p>
@@ -582,11 +586,10 @@ export default function CardGallery({
                 ].map((step, index) => (
                   <div
                     key={step.label}
-                    className={`rounded-[16px] border px-3 py-3 ${
-                      index === 1
+                    className={`rounded-[16px] border px-3 py-3 ${index === 1
                         ? "border-[var(--tb-color-text-secondary)] bg-[var(--tb-color-surface-muted)]"
                         : "border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)]"
-                    }`}
+                      }`}
                   >
                     <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{step.label}</p>
                     <p className="mt-1 text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">{step.caption}</p>
@@ -601,13 +604,14 @@ export default function CardGallery({
           title="셰프용 요약 카드"
           description="셰프가 빠르게 읽을 수 있는 현재 프로필 요약 카드입니다."
           componentNames={["SectionCard", "TasteChip"]}
+          previewBackgroundClass="bg-[var(--tb-color-surface-base)]"
           source="src/components/reservation/DiningFeedbackFlow.tsx"
         >
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start gap-3">
-              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+              <CardIconBox className="bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
                 <ChefHat size={ICON_TOKENS.size.md} />
-              </div>
+              </CardIconBox>
               <div className="flex flex-col gap-1">
                 <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">셰프용 현재 요약</p>
                 <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-tertiary)]">
@@ -638,6 +642,7 @@ export default function CardGallery({
           title="빠른 보정 힌트 카드"
           description="질문 단계에서 현재 선택 맥락을 짧게 안내하는 카드입니다."
           componentNames={["QuickCalibrationHintCard"]}
+          previewBackgroundClass="bg-[var(--tb-color-surface-base)]"
           source="src/components/system/QuickCalibrationHintCard.tsx"
         >
           <QuickCalibrationHintCard description="정답을 맞추는 과정이 아니라, 지금 더 자연스럽게 맞는 방향을 찾는 가벼운 보정 단계입니다." />

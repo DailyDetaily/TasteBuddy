@@ -1,10 +1,12 @@
 import { TASTE_IDS, TASTE_TOKENS, type TasteId } from './designTokens';
 
 export type TasteMeasurementResults = Record<TasteId, number | null>;
+export type TasteMeasurementSource = 'broad-starter' | 'measured';
 
 export interface TasteMeasurementSnapshot {
   measuredAt: string;
   results: TasteMeasurementResults;
+  source?: TasteMeasurementSource;
 }
 
 export interface TasteMeasurementEntry {
@@ -46,17 +48,26 @@ export function createInitialTasteMeasurementSnapshot(): TasteMeasurementSnapsho
   return {
     measuredAt: '2026-03-08T15:20:00+09:00',
     results: DEFAULT_TASTE_MEASUREMENT_RESULTS,
+    source: 'measured',
   };
 }
 
 export function createTasteMeasurementSnapshot(
   results: TasteMeasurementResults,
   measuredAt = new Date().toISOString(),
+  source: TasteMeasurementSource = 'measured',
 ): TasteMeasurementSnapshot {
   return {
     measuredAt,
     results: { ...results },
+    source,
   };
+}
+
+export function isBroadStarterMeasurementSnapshot(
+  snapshot: TasteMeasurementSnapshot,
+) {
+  return snapshot.source === 'broad-starter';
 }
 
 export function resolveTasteMeasurementValue(

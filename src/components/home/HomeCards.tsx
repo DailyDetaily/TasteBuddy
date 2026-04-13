@@ -19,10 +19,12 @@ import {
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
   getWeakestTasteMeasurement,
+  isBroadStarterMeasurementSnapshot,
   isTasteMeasurementStale,
   type TasteMeasurementEntry,
   type TasteMeasurementSnapshot,
 } from '../../constants/tasteMeasurementData';
+import { type RestaurantReadyGuidance } from '../../constants/quickTasteCalibrationData';
 import {
   buildTasteAdjustmentGradient,
   getTasteColor,
@@ -96,6 +98,7 @@ export interface HomeCardPreviewData {
   measurementSnapshot: TasteMeasurementSnapshot;
   needsMeasurementRefresh: boolean;
   recentChangeText: string;
+  starterGuidance: RestaurantReadyGuidance | null;
 }
 
 interface HomeDiningPreparationCardProps {
@@ -130,6 +133,7 @@ export function getChefImageByName(name: string) {
 export function buildReservationPersonalizationSummary(
   measurementSnapshot: TasteMeasurementSnapshot,
   reservation: ReservationRecord,
+  starterGuidance?: RestaurantReadyGuidance | null,
 ): ReservationPersonalizationSummary {
   const entries = getTasteMeasurementEntries(measurementSnapshot).sort(
     (left, right) => right.valueMm - left.valueMm,
@@ -144,14 +148,18 @@ export function buildReservationPersonalizationSummary(
 
   return {
     chefGuidance,
-    guestMessage: reservation.guestUnderstanding,
-    headline: `${reservation.restaurant} 예약은 ${topTasteLabels} 중심의 현재 프로필을 바탕으로 더 잘 맞춰집니다.`,
+    guestMessage: starterGuidance?.summaryLine ?? reservation.guestUnderstanding,
+    headline: starterGuidance
+      ? `${reservation.restaurant}에서도 바로 참고할 시작 기준이 준비됐어요.`
+      : `${reservation.restaurant} 예약은 ${topTasteLabels} 중심의 현재 프로필을 바탕으로 더 잘 맞춰집니다.`,
     nextStepCta:
       reservation.status === 'completed'
         ? '이번 다이닝 피드백으로 다음 예약을 더 정교하게 만들기'
         : '이 프로필을 이번 예약에 반영해 더 맞춤화된 다이닝 준비하기',
     primary,
-    recommendationLogic: `${topTasteLabels}이 현재 더 또렷하게 반응하는 포인트로 읽히고, ${softest.label}은 한 번에 강하게 밀기보다 여유 있게 연결될 때 더 편안할 가능성이 있어요. 예약 화면의 추천은 이 현재 프로필과 예약 코스 특성을 함께 반영해 정리됩니다.`,
+    recommendationLogic:
+      starterGuidance?.summaryLine ??
+      `${topTasteLabels}이 현재 더 또렷하게 반응하는 포인트로 읽히고, ${softest.label}은 한 번에 강하게 밀기보다 여유 있게 연결될 때 더 편안할 가능성이 있어요. 예약 화면의 추천은 이 현재 프로필과 예약 코스 특성을 함께 반영해 정리됩니다.`,
     softest,
   };
 }
@@ -207,13 +215,14 @@ export function getCurrentHomeCardPreviewData(): HomeCardPreviewData {
     confidenceStage: deriveProfileConfidenceStage(measurementCount),
     featuredReservation,
     featuredSummary: featuredReservation
-      ? buildReservationPersonalizationSummary(measurementSnapshot, featuredReservation)
+      ? buildReservationPersonalizationSummary(measurementSnapshot, featuredReservation, null)
       : null,
     measurementAgeLabel: getTasteMeasurementAgeLabel(measurementSnapshot),
     measurementCount,
     measurementSnapshot,
     needsMeasurementRefresh: isTasteMeasurementStale(measurementSnapshot),
     recentChangeText: getRecentChangeSummary(measurementSnapshot),
+    starterGuidance: null,
   };
 }
 
@@ -444,6 +453,7 @@ export function HomeCardStack({
   const weakestTasteLabel = getWeakestTasteMeasurement(measurementSnapshot).label;
   const recentChangeTasteLabel = getRecentChangeTasteMeasurement(measurementSnapshot).label;
   const remeasurementAccentTaste = strongestTasteLabel;
+  const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
 
   return (
     <div className="tb-section-stack">
@@ -484,13 +494,23 @@ export function HomeCardStack({
       >
         <TasteMeasurementMiniCta
           accentTaste={remeasurementAccentTaste}
-          title={needsMeasurementRefresh ? '미각 갱신 추천' : '현재 프로필 반영 완료'}
+          title={
+            needsMeasurementRefresh
+              ? isBroadStarterProfile
+                ? '스타터 프로필을 더 정교하게 만들 수 있어요'
+                : '미각 갱신 추천'
+              : '현재 프로필 반영 완료'
+          }
           actionFullWidth={!needsMeasurementRefresh}
           padding={needsMeasurementRefresh ? 'default' : 'compact'}
           description={
             needsMeasurementRefresh
-              ? `${measurementAgeLabel} 데이터예요. 예약 전에 갱신해두면 셰프용 캘리브레이션 가이드가 더 정밀해집니다.`
-              : '가장 최근 입맛 상태가 반영되어 있습니다. 다시 측정할 수도 있어요.'
+              ? isBroadStarterProfile
+                ? `${measurementAgeLabel} 질문 기반 스타터 프로필이에요. 다시 점검하거나 식사 기록이 쌓이면 메뉴 추천과 매장 전달 포인트가 더 자연스러워집니다.`
+                : `${measurementAgeLabel} 데이터예요. 예약 전에 갱신해두면 셰프용 캘리브레이션 가이드가 더 정밀해집니다.`
+              : isBroadStarterProfile
+                ? '질문 기반 시작 프로필이 반영되어 있어요. 식사 기록이 쌓일수록 더 정교해집니다.'
+                : '가장 최근 입맛 상태가 반영되어 있습니다. 다시 측정할 수도 있어요.'
           }
           meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
           actionLabel={needsMeasurementRefresh ? '프로필 업데이트' : '다시 측정'}

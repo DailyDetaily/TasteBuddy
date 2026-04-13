@@ -102,6 +102,7 @@ interface FeedbackSubmissionQueryRow {
 interface MeasurementSessionQueryRow {
   completed_at: string | null;
   id: string;
+  source?: MeasurementSource | null;
 }
 
 interface ContentChefQueryRow {
@@ -1389,7 +1390,7 @@ export async function hydrateLatestMeasurementSnapshot() {
 
   const { data: latestSession, error: latestSessionError } = await supabase
     .from('measurement_sessions')
-    .select('id, completed_at')
+    .select('id, completed_at, source')
     .eq('user_id', userId)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
@@ -1418,6 +1419,7 @@ export async function hydrateLatestMeasurementSnapshot() {
   return {
     measuredAt: latestSession.completed_at ?? new Date().toISOString(),
     results: toTasteMeasurementResults(resultRows ?? []),
+    source: latestSession.source === 'quick_calibration' ? 'broad-starter' : 'measured',
   } satisfies TasteMeasurementSnapshot;
 }
 
@@ -1434,7 +1436,7 @@ export async function hydrateRecentMeasurementSnapshots(limit = 6) {
 
   const { data: sessionRows, error: sessionError } = await supabase
     .from('measurement_sessions')
-    .select('id, completed_at')
+    .select('id, completed_at, source')
     .eq('user_id', userId)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
@@ -1482,6 +1484,7 @@ export async function hydrateRecentMeasurementSnapshots(limit = 6) {
     .map((session) => ({
       measuredAt: session.completed_at ?? new Date().toISOString(),
       results: toTasteMeasurementResults(resultsBySessionId.get(session.id) ?? []),
+      source: session.source === 'quick_calibration' ? 'broad-starter' : 'measured',
     }));
 }
 

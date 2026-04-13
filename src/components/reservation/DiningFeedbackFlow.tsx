@@ -11,6 +11,7 @@ import TopAppBar from '../TopAppBar';
 import OutlineBadge from '../system/OutlineBadge';
 import PageSection from '../system/PageSection';
 import PrimaryButton from '../system/PrimaryButton';
+import CardIconBox from '../system/CardIconBox';
 import TasteChip from '../system/TasteChip';
 import {
   type DiningDishMetadata,
@@ -479,14 +480,9 @@ export function DiningAiAnalysisScreen({
                 return (
                   <SectionCard key={note.title} hoverEffect={false}>
                     <div className="flex items-start gap-3">
-                      <div
-                        className={cn(
-                          'flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)]',
-                          iconClass,
-                        )}
-                      >
+                      <CardIconBox className={iconClass}>
                         <Icon size={ICON_TOKENS.size.md} />
-                      </div>
+                      </CardIconBox>
                       <div className="flex flex-col gap-1">
                         <p className={feedbackHintClass}>{note.title}</p>
                         <p className="text-[13px] font-normal leading-relaxed text-[var(--tb-color-text-tertiary)]">
@@ -540,9 +536,9 @@ export function DiningAiAnalysisScreen({
 
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start gap-3">
-              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+              <CardIconBox className="bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
                 <ChefHat size={ICON_TOKENS.size.md} />
-              </div>
+              </CardIconBox>
               <div className="flex flex-col gap-1">
                 <p className={feedbackHintClass}>셰프용 현재 요약</p>
                 <p className="text-[13px] font-normal leading-relaxed text-[var(--tb-color-text-tertiary)]">
