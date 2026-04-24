@@ -9,6 +9,7 @@ import ReservationPage from './pages/ReservationPage';
 import ProfilePage from './pages/ProfilePage';
 import SplashScreen from './pages/SplashScreen';
 import OnboardingScreen from './pages/OnboardingScreen';
+import PreferenceIntakeScreen from './pages/PreferenceIntakeScreen';
 import QuickTasteCalibrationScreen from './pages/QuickTasteCalibrationScreen';
 import TeastickConnectScreen from './pages/TeastickConnectScreen';
 import TasteMeasurementScreen from './pages/TasteMeasurementScreen';
@@ -16,7 +17,26 @@ import ImproveAccuracyScreen from './pages/ImproveAccuracyScreen';
 import BottomTabBar, { type TabType } from './components/BottomTabBar';
 import TopAppBar from './components/TopAppBar';
 import NotificationPanel from './components/NotificationPanel';
-import AppMenuDrawer from './components/AppMenuDrawer';
+import AppMenuDrawer, { type AppMenuSupportPanel } from './components/AppMenuDrawer';
+import SectionCard from './components/SectionCard';
+import { Button } from './components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './components/ui/dialog';
 import { type TasteMeasurementSnapshot } from './constants/tasteMeasurementData';
 import {
   createFallbackRestaurantReadyGuidance,
@@ -24,6 +44,10 @@ import {
   mergeRestaurantReadyGuidanceWithSnapshot,
   type RestaurantReadyGuidance,
 } from './constants/quickTasteCalibrationData';
+import {
+  isPreferenceIntakeProfile,
+  type PreferenceIntakeProfile,
+} from './constants/preferenceIntakeData';
 import { clearAppliedDesignTokenRuntimeState } from './lib/designTokenRuntime';
 import {
   getFallbackNotifications,
@@ -38,21 +62,31 @@ import {
 } from './lib/tasteBuddySupabase';
 import { ensureSupabaseSession, isSupabaseConfigured } from './lib/supabase';
 
-type AppState = 'splash' | 'onboarding' | 'calibration' | 'teastick' | 'measurement' | 'improve-accuracy' | 'main';
+type AppState =
+  | 'splash'
+  | 'onboarding'
+  | 'intake'
+  | 'calibration'
+  | 'teastick'
+  | 'measurement'
+  | 'improve-accuracy'
+  | 'main';
 type MeasurementEntryPoint = 'initial' | 'main';
 const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const MAIN_APP_BOTTOM_OFFSET =
   'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
 
-const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v4';
+const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v5';
 const LEGACY_USER_STATE_STORAGE_KEYS = [
   'tastebuddy-user-state-v1',
   'tastebuddy-user-state-v2',
   'tastebuddy-user-state-v3',
+  'tastebuddy-user-state-v4',
 ] as const;
 
 interface PersistedUserState {
   hasCompletedInitialMeasurement: boolean;
+  latestPreferenceIntakeProfile: PreferenceIntakeProfile | null;
   latestRestaurantReadyGuidance: RestaurantReadyGuidance | null;
   latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
 }
@@ -71,6 +105,7 @@ function loadPersistedUserState(): PersistedUserState {
   if (typeof window === 'undefined') {
     return {
       hasCompletedInitialMeasurement: false,
+      latestPreferenceIntakeProfile: null,
       latestRestaurantReadyGuidance: null,
       latestTasteMeasurementSnapshot: null,
     };
@@ -91,6 +126,7 @@ function loadPersistedUserState(): PersistedUserState {
 
       return {
         hasCompletedInitialMeasurement: false,
+        latestPreferenceIntakeProfile: null,
         latestRestaurantReadyGuidance: null,
         latestTasteMeasurementSnapshot: null,
       };
@@ -101,6 +137,11 @@ function loadPersistedUserState(): PersistedUserState {
       parsedValue.latestTasteMeasurementSnapshot,
     )
       ? parsedValue.latestTasteMeasurementSnapshot
+      : null;
+    const latestPreferenceIntakeProfile = isPreferenceIntakeProfile(
+      parsedValue.latestPreferenceIntakeProfile,
+    )
+      ? parsedValue.latestPreferenceIntakeProfile
       : null;
     const latestRestaurantReadyGuidance = isRestaurantReadyGuidance(
       parsedValue.latestRestaurantReadyGuidance,
@@ -113,12 +154,14 @@ function loadPersistedUserState(): PersistedUserState {
     return {
       hasCompletedInitialMeasurement:
         Boolean(parsedValue.hasCompletedInitialMeasurement) && latestTasteMeasurementSnapshot !== null,
+      latestPreferenceIntakeProfile,
       latestRestaurantReadyGuidance,
       latestTasteMeasurementSnapshot,
     };
   } catch {
     return {
       hasCompletedInitialMeasurement: false,
+      latestPreferenceIntakeProfile: null,
       latestRestaurantReadyGuidance: null,
       latestTasteMeasurementSnapshot: null,
     };
@@ -140,6 +183,8 @@ function MainApp() {
   >(persistedUserState.latestTasteMeasurementSnapshot);
   const [latestRestaurantReadyGuidance, setLatestRestaurantReadyGuidance] =
     useState<RestaurantReadyGuidance | null>(persistedUserState.latestRestaurantReadyGuidance);
+  const [latestPreferenceIntakeProfile, setLatestPreferenceIntakeProfile] =
+    useState<PreferenceIntakeProfile | null>(persistedUserState.latestPreferenceIntakeProfile);
   const [hasSplashDelayCompleted, setHasSplashDelayCompleted] = useState(false);
   const [hasHydratedRemoteMeasurement, setHasHydratedRemoteMeasurement] = useState(
     !isSupabaseConfigured,
@@ -149,6 +194,8 @@ function MainApp() {
   // Overlay states
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSupportPanel, setActiveSupportPanel] = useState<AppMenuSupportPanel | null>(null);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isReservationRootView, setIsReservationRootView] = useState(true);
 
   useEffect(() => {
@@ -156,12 +203,14 @@ function MainApp() {
       USER_STATE_STORAGE_KEY,
       JSON.stringify({
         hasCompletedInitialMeasurement,
+        latestPreferenceIntakeProfile,
         latestRestaurantReadyGuidance,
         latestTasteMeasurementSnapshot,
       } satisfies PersistedUserState),
     );
   }, [
     hasCompletedInitialMeasurement,
+    latestPreferenceIntakeProfile,
     latestRestaurantReadyGuidance,
     latestTasteMeasurementSnapshot,
   ]);
@@ -236,12 +285,18 @@ function MainApp() {
       return;
     }
 
+    if (latestPreferenceIntakeProfile) {
+      setAppState('calibration');
+      return;
+    }
+
     setAppState('onboarding');
   }, [
     appState,
     hasHydratedRemoteMeasurement,
     hasMeasurementData,
     hasSplashDelayCompleted,
+    latestPreferenceIntakeProfile,
   ]);
 
   const handleTabChange = (tab: TabType) => {
@@ -260,7 +315,7 @@ function MainApp() {
   };
 
   const handleStartInitialMeasurementFlow = () => {
-    setAppState('calibration');
+    setAppState('intake');
   };
 
   const handleStartMeasurementFromMain = (originTab: TabType) => {
@@ -289,6 +344,32 @@ function MainApp() {
     setMeasurementEntryPoint('main');
     setMeasurementReturnTab(activeTab);
     setAppState('improve-accuracy');
+  };
+
+  const handleOpenSupportPanel = (panel: AppMenuSupportPanel) => {
+    setIsMenuOpen(false);
+    setActiveSupportPanel(panel);
+  };
+
+  const handleCloseSupportPanel = () => {
+    setActiveSupportPanel(null);
+  };
+
+  const handleRequestLogout = () => {
+    setIsMenuOpen(false);
+    setIsLogoutConfirmOpen(true);
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      Object.keys(window.localStorage)
+        .filter((key) => key.startsWith('tastebuddy-'))
+        .forEach((key) => window.localStorage.removeItem(key));
+    }
+
+    clearAppliedDesignTokenRuntimeState();
+
+    window.location.reload();
   };
 
   const handleMarkNotificationAsRead = (notificationId: string) => {
@@ -322,7 +403,7 @@ function MainApp() {
   };
 
   const isImmersiveWhiteShell =
-    appState === 'onboarding' || appState === 'calibration';
+    appState === 'onboarding' || appState === 'intake' || appState === 'calibration';
   const shouldShowMainShell =
     appState === 'main' && (activeTab !== 'reservation' || isReservationRootView);
 
@@ -351,18 +432,26 @@ function MainApp() {
 
   return (
     <div
-      className={`flex min-h-[100dvh] items-center justify-center overflow-hidden ${
-        isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
-      }`}
+      className={`flex min-h-[100dvh] items-center justify-center overflow-hidden ${isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+        }`}
     >
       <div
-        className={`relative flex h-[100dvh] w-full max-w-[1440px] flex-col overflow-hidden font-sans shadow-2xl ${
-          isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
-        }`}
+        className={`relative flex h-[100dvh] w-full max-w-[1440px] flex-col overflow-hidden font-sans ${isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+          }`}
       >
         {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}
         {appState === 'onboarding' && (
           <OnboardingScreen onComplete={handleStartInitialMeasurementFlow} />
+        )}
+        {appState === 'intake' && (
+          <PreferenceIntakeScreen
+            initialProfile={latestPreferenceIntakeProfile}
+            onBack={() => setAppState('onboarding')}
+            onComplete={(profile) => {
+              setLatestPreferenceIntakeProfile(profile);
+              setAppState('calibration');
+            }}
+          />
         )}
         {appState === 'calibration' && (
           <QuickTasteCalibrationScreen
@@ -372,7 +461,7 @@ function MainApp() {
                 return;
               }
 
-              setAppState('onboarding');
+              setAppState('intake');
             }}
             onComplete={({ snapshot, starterGuidance }) => {
               setLatestTasteMeasurementSnapshot(snapshot);
@@ -442,9 +531,9 @@ function MainApp() {
           style={
             appState === 'main'
               ? {
-                  paddingTop: shouldShowMainShell ? MAIN_APP_TOP_OFFSET : undefined,
-                  paddingBottom: shouldShowMainShell ? MAIN_APP_BOTTOM_OFFSET : undefined,
-                }
+                paddingTop: shouldShowMainShell ? MAIN_APP_TOP_OFFSET : undefined,
+                paddingBottom: shouldShowMainShell ? MAIN_APP_BOTTOM_OFFSET : undefined,
+              }
               : undefined
           }
         >
@@ -502,6 +591,7 @@ function MainApp() {
               <ProfilePage
                 measurementSnapshot={latestTasteMeasurementSnapshot}
                 starterGuidance={latestRestaurantReadyGuidance}
+                onOpenSupportPanel={handleOpenSupportPanel}
                 onStartMeasurement={() => handleStartMeasurementFromMain('profile')}
                 onNavigateToReservation={(chefName: string) => {
                   setActiveTab('reservation');
@@ -523,9 +613,172 @@ function MainApp() {
         <AppMenuDrawer
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
+          onOpenSupportPanel={handleOpenSupportPanel}
           onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
           onImproveAccuracy={handleOpenImproveAccuracy}
+          onRequestLogout={handleRequestLogout}
         />
+
+        <Dialog
+          open={activeSupportPanel !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              handleCloseSupportPanel();
+            }
+          }}
+        >
+          {activeSupportPanel ? (
+            <DialogContent className="max-w-[calc(100%-1rem)] rounded-[28px] border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] p-0 shadow-[var(--tb-shadow-drawer)] sm:max-w-[520px]">
+              <DialogHeader className="px-5 pt-5">
+                <DialogTitle className="text-[18px] text-[var(--tb-color-text-primary)]">
+                  {activeSupportPanel === 'notification-settings'
+                    ? '보정 알림 설정'
+                    : activeSupportPanel === 'help'
+                      ? '도움말'
+                      : '앱 정보'}
+                </DialogTitle>
+                <DialogDescription className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                  {activeSupportPanel === 'notification-settings'
+                    ? '다이닝 전 미각 측정 알림은 현재 프로필 기준으로 이어집니다.'
+                    : activeSupportPanel === 'help'
+                      ? 'Taste Buddy는 현재 입맛을 셰프가 읽기 쉬운 언어로 바꾸는 데서 시작합니다.'
+                      : 'Taste Buddy v1.0.0은 다음 예약을 더 정교하게 맞추는 프리미엄 다이닝 개인화 서비스입니다.'}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="flex flex-col gap-3 px-5 pb-5 pt-4">
+                {activeSupportPanel === 'notification-settings' ? (
+                  <>
+                    <SectionCard hoverEffect={false}>
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          알림이 하는 일
+                        </p>
+                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                          최근 측정과 예약 흐름을 기준으로, 다음 다이닝 전에 다시 점검하면 좋은 시점을 알려줍니다.
+                        </p>
+                      </div>
+                    </SectionCard>
+                    <SectionCard hoverEffect={false}>
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          어디서 확인하나요
+                        </p>
+                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                          오른쪽 상단 알림 패널에서 예약, 피드백, 보정 관련 메시지를 모아볼 수 있어요.
+                        </p>
+                      </div>
+                    </SectionCard>
+                  </>
+                ) : activeSupportPanel === 'help' ? (
+                  <>
+                    <SectionCard hoverEffect={false}>
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          1. 빠른 보정
+                        </p>
+                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                          짧은 질문으로 현재 입맛의 기준을 잡고, 첫 예약에 바로 쓸 수 있는 프로필을 만듭니다.
+                        </p>
+                      </div>
+                    </SectionCard>
+                    <SectionCard hoverEffect={false}>
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          2. 예약 개인화
+                        </p>
+                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                          예약과 셰프 준비를 지금의 반응으로 해석해, 식사 전 전달이 더 자연스럽게 이어지도록 돕습니다.
+                        </p>
+                      </div>
+                    </SectionCard>
+                    <SectionCard hoverEffect={false}>
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          3. 식후 피드백
+                        </p>
+                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                          한 줄 피드백만으로도 다음 예약과 셰프 가이드가 조금씩 더 정교해집니다.
+                        </p>
+                      </div>
+                    </SectionCard>
+                  </>
+                ) : (
+                  <>
+                    <SectionCard hoverEffect={false}>
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          현재 버전
+                        </p>
+                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                          Taste Buddy v1.0.0
+                        </p>
+                      </div>
+                    </SectionCard>
+                    <SectionCard hoverEffect={false}>
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          제품 방향
+                        </p>
+                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                          현재 입맛을 해석해, 다음 식사가 더 잘 맞도록 셰프와 사용자를 중간에서 연결합니다.
+                        </p>
+                      </div>
+                    </SectionCard>
+                  </>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3 px-5 pb-5">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (activeSupportPanel === 'help') {
+                      handleStartMeasurementFromMain(activeTab);
+                    } else if (activeSupportPanel === 'notification-settings') {
+                      setIsNotificationOpen(true);
+                    } else {
+                      setActiveTab('profile');
+                    }
+
+                    handleCloseSupportPanel();
+                  }}
+                >
+                  {activeSupportPanel === 'help'
+                    ? '미각 재측정 시작'
+                    : activeSupportPanel === 'notification-settings'
+                      ? '알림 센터 열기'
+                      : '프로필 보기'}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleCloseSupportPanel}>
+                  닫기
+                </Button>
+              </div>
+            </DialogContent>
+          ) : null}
+        </Dialog>
+
+        <AlertDialog
+          open={isLogoutConfirmOpen}
+          onOpenChange={(open) => {
+            setIsLogoutConfirmOpen(open);
+          }}
+        >
+          <AlertDialogContent className="max-w-[calc(100%-1rem)] rounded-[28px] border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] sm:max-w-[440px]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-[18px] text-[var(--tb-color-text-primary)]">
+                로그아웃
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                현재 프로필, 최근 검색, 디자인 런타임 상태를 지우고 처음 화면으로 돌아갑니다.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout}>로그아웃</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

@@ -48,6 +48,8 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 | 용어 | 의미 | 비고 |
 | --- | --- | --- |
 | `bg` | 더 강한 taste fill | stat, highlight, 보정 강조 블록 |
+| `tintSoft` | 부드러운 inline taste tint 배경 | `TasteChip`, `기준점/절대 좌표` 메타 칩 |
+| `tintSoftBorder` | `tintSoft` 위 경계선 | soft inline chip / meta chip border |
 | `tintSurface` | 부드러운 taste 카드 배경 | `셰프 매칭`, `세부 분석` 같은 해석형 카드 |
 | `tintSurfaceText` | `tintSurface` 위의 메인 텍스트 색 | 카드 타이틀, 강조 라벨 |
 | `tintSurfaceSubText` | `tintSurface` 위의 보조 텍스트 색 | 레스토랑명, 설명 보조선 |
@@ -58,6 +60,7 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 
 - `ringBaseColor`는 측정 루프 그래픽 구현 토큰이다.
 - 카드 배경 의미로는 `tintSurface`를 우선 사용한다.
+- 작은 pill / 메타 칩 배경은 `tintSoft`와 `tintSoftBorder`를 우선 사용한다.
 - "같은 값이지만 다른 역할"이 생기면 의미 토큰을 먼저 보고, 그래픽 구현 토큰은 필요할 때만 본다.
 
 ## Core Tokens
@@ -91,6 +94,7 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 ### Core Surfaces
 
 - page background: `#F3F3F3`
+- focus background: `#FFFFFF`
 - base surface: `#FFFFFF`
 - card surface: `#FFFFFF`
 - muted surface: `#F7F7F7`
@@ -134,15 +138,33 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 - summary: `--tb-taste-{tasteId}-tint-surface-sub-text`
 - shell: `132 x 132`, radius `20px`, padding `12px`
 
+### Chip
+
+소스: [`../src/components/system/Chip.tsx`](../src/components/system/Chip.tsx)
+
+- intent: non-taste general label chip
+- size set: `xs`, `sm`, `md`
+- size recipe:
+  xs = `10px` text, `12px` icon, `px 8 / py 4 / gap 4`
+  sm = `11px` text, `12px` icon, `px 10 / py 6 / gap 6`
+  md = `12px` text, `14px` icon, `px 12 / py 8 / gap 8`
+- variant set: `soft`, `outline`, `solid`, `text`
+- tone set: `neutral`, `success`, `warning`, `accent`
+- neutral soft: `surface-muted + border-default + text-muted`
+- icon support: `leadingIcon`, `trailingIcon`
+- background token override: `backgroundColorToken`
+- composition: `asChild` for anchor / button / span reuse
+
 ### TasteChip
 
 소스: [`../src/components/system/TasteChip.tsx`](../src/components/system/TasteChip.tsx)
 
-- border: `rgba(getTasteColor(taste), 0.18)`
-- background: `rgba(getTasteColor(taste), 0.05)`
+- border: `taste.palette.tintSoftBorder`
+- background: `taste.palette.tintSoft`
 - label color: neutral primary
 - value color: `getTasteColor(taste)`
 - shape: full pill
+- neutral meta: use `tone="neutral"` for non-taste labels such as `첫 측정` or `4회 예약`; it uses `surface-muted / border-strong / text-tertiary`
 
 ### SectionCard
 
@@ -192,4 +214,3 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 ## Machine-Readable Snapshot
 
 구조화된 버전은 [`./design-system.snapshot.json`](./design-system.snapshot.json)에 있다.
-

@@ -110,11 +110,11 @@ export default function HomePage({
   const chefCards = Array.from(groupedByRestaurant.values()).sort((left, right) => right.match - left.match);
 
   return (
-    <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <div className="shrink-0 px-5 pb-4 pt-1">
+    <main className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
+      <header className="shrink-0 px-5 pb-4 pt-1">
         <HomeUnifiedSearch catalog={contentCatalog} reservations={reservations} />
-      </div>
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+      </header>
+      <section className="flex-1 overflow-y-auto no-scrollbar pb-10" aria-label="홈 콘텐츠">
         <div className="flex flex-col gap-3 px-5 pb-5 animate-fadeIn">
           <HomeCardStack
             chefCards={chefCards}
@@ -129,7 +129,7 @@ export default function HomePage({
           />
           <div className="h-6" />
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

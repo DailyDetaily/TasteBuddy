@@ -10,7 +10,7 @@ interface EmptyStateProps {
   actionLabel?: string;
   /** Callback when the CTA button is pressed */
   onAction?: () => void;
-  /** Optional icon element (e.g. a Fluent icon) to display above the title */
+  /** Optional icon element to display above the title */
   icon?: React.ReactNode;
 }
 

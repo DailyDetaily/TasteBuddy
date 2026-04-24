@@ -123,7 +123,7 @@ Quiet Hospitality Intelligence
 5. Shadows
 6. Icons
 7. Buttons
-8. Badges
+8. Chips & Badges
 9. Fields
 10. Cards
 11. Navigation
@@ -139,7 +139,7 @@ Quiet Hospitality Intelligence
 
 | 항목 | 현재 값 |
 | --- | --- |
-| Currently used component count | `16` |
+| Currently used component count | `18` |
 | Defined primitive count | `20` |
 | Shared motion duration | `300ms` |
 | Screen max width | `1440px` |
@@ -271,6 +271,7 @@ Taste Buddy의 색상은 세 층으로 읽혀야 한다.
 | Token | Value | 역할 |
 | --- | --- | --- |
 | `--tb-color-bg-page` | `#F3F3F3` | 앱 전체 배경 |
+| `--tb-color-bg-focus` | `#FFFFFF` | 집중형 flow 화면 배경 |
 | `--tb-color-surface-base` | `#FFFFFF` | 기본 서피스, 상단 바, 기본 컨테이너 |
 | `--tb-color-surface-card` | `#FFFFFF` | 기본 카드 |
 | `--tb-color-surface-card-hover` | `#FAFAFA` | 인터랙티브 카드 hover |
@@ -312,20 +313,22 @@ Taste Buddy의 색상은 세 층으로 읽혀야 한다.
 
 맛 컬러는 장식 컬러가 아니다. 제품 의미를 전달하는 domain token이다.
 
-| Taste | Main | Dark | Light | BG | Tint Surface | Gradient |
-| --- | --- | --- | --- | --- | --- | --- |
-| Sweet / 단맛 | `#FF9900` | `#CC7A00` | `#FFCC80` | `#FFD699` | `#FFEBCC` | `linear-gradient(135deg, #FF9900, #FFB84D)` |
-| Sour / 신맛 | `#FBC02D` | `#C99A00` | `#FDD835` | `#FFEF99` | `#FFF7CC` | `linear-gradient(135deg, #FBC02D, #FFD54F)` |
-| Bitter / 쓴맛 | `#95C900` | `#6E9600` | `#E6EE9C` | `#E0EBB4` | `#EAF4CC` | `linear-gradient(135deg, #95C900, #AED581)` |
-| Salty / 짠맛 | `#7299FF` | `#4A70CC` | `#90CAF9` | `#C6D6FF` | `#E3EBFF` | `linear-gradient(135deg, #7299FF, #9FBFFF)` |
-| Umami / 감칠맛 | `#B372B4` | `#8A5490` | `#CE93D8` | `#E1C7E1` | `#F0E3F0` | `linear-gradient(135deg, #B372B4, #CE93D8)` |
-| Fat / 지방맛 | `#95867A` | `#6B5E54` | `#BCAAA4` | `#D5CFCA` | `#EAE7E4` | `linear-gradient(135deg, #95867A, #B0A49A)` |
+| Taste | Main | Dark | Light | BG | Tint Soft | Tint Soft Border | Tint Surface | Gradient |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Sweet / 단맛 | `#FF9900` | `#CC7A00` | `#FFCC80` | `#FFD699` | `rgba(255, 153, 0, 0.05)` | `rgba(255, 153, 0, 0.18)` | `#FFEBCC` | `linear-gradient(135deg, #FF9900, #FFB84D)` |
+| Sour / 신맛 | `#FBC02D` | `#C99A00` | `#FDD835` | `#FFEF99` | `rgba(251, 192, 45, 0.05)` | `rgba(251, 192, 45, 0.18)` | `#FFF7CC` | `linear-gradient(135deg, #FBC02D, #FFD54F)` |
+| Bitter / 쓴맛 | `#95C900` | `#6E9600` | `#E6EE9C` | `#E0EBB4` | `rgba(149, 201, 0, 0.05)` | `rgba(149, 201, 0, 0.18)` | `#EAF4CC` | `linear-gradient(135deg, #95C900, #AED581)` |
+| Salty / 짠맛 | `#7299FF` | `#4A70CC` | `#90CAF9` | `#C6D6FF` | `rgba(114, 153, 255, 0.05)` | `rgba(114, 153, 255, 0.18)` | `#E3EBFF` | `linear-gradient(135deg, #7299FF, #9FBFFF)` |
+| Umami / 감칠맛 | `#B372B4` | `#8A5490` | `#CE93D8` | `#E1C7E1` | `rgba(179, 114, 180, 0.05)` | `rgba(179, 114, 180, 0.18)` | `#F0E3F0` | `linear-gradient(135deg, #B372B4, #CE93D8)` |
+| Fat / 지방맛 | `#95867A` | `#6B5E54` | `#BCAAA4` | `#D5CFCA` | `rgba(149, 134, 122, 0.05)` | `rgba(149, 134, 122, 0.18)` | `#EAE7E4` | `linear-gradient(135deg, #95867A, #B0A49A)` |
 
 ### Taste Surface Roles
 
 | Token | 역할 | 대표 예시 |
 | --- | --- | --- |
 | `BG` | 맛 신호를 더 또렷하게 보여줘야 하는 fill. quick stat, calibration highlight, 더 직접적인 시선 유도에 사용 | 측정/보정 계열 강조 블록, taste fill |
+| `Tint Soft` | 작은 pill / 메타 칩에서 맛 맥락을 부드럽게 드러내는 얇은 tint 배경 | `TasteChip`, 측정 화면 `절대 좌표` / `기준점` 칩 |
+| `Tint Soft Border` | `Tint Soft`와 함께 쓰는 경계선 | soft inline chip / meta chip border |
 | `Tint Surface` | 한 가지 맛 맥락을 유지하되 카드가 과하게 외치지 않게 만드는 부드러운 해석형 배경 | `셰프 매칭`, `세부 분석` 카드 |
 
 ### Taste Palette Rules
@@ -501,8 +504,8 @@ Scale:
 
 ### Icon Rules
 
-- 메인 앱의 실제 아이콘 언어는 `@fluentui/react-icons`
-- `lucide-react` 는 디자인 시스템 문서나 보조 샘플에 제한적으로 사용
+- 메인 앱의 실제 아이콘 언어는 `lucide-react`
+- 디자인 시스템 문서와 샘플도 같은 아이콘 언어를 사용한다
 
 현재 메인 앱 컴포넌트는 대부분 `ICON_TOKENS.size` 를 직접 읽는다.
 
@@ -512,7 +515,9 @@ Scale:
 | --- | --- |
 | `xs` | `12` |
 | `sm` | `14` |
+| `base` | `16` |
 | `md` | `18` |
+| `control` | `20` |
 | `lg` | `24` |
 | `xl` | `24` |
 | `touch` | `24` |
@@ -538,7 +543,7 @@ Scale:
 | --- | --- |
 | Progress bar height | `8px` |
 | Radar size | `320px` |
-| Radar label size | `9px` |
+| Radar label size | `10px` |
 | Trend dot size | `4px` |
 | Orbit outer ring thickness | `24px` |
 | Orbit guide radius | `138px` |
@@ -553,15 +558,18 @@ Scale:
 | --- | --- | --- | --- |
 | Card | `SectionCard` | 리스트 섹션, 통계 타일, 요약 카드의 기본 shell | `src/components/SectionCard.tsx` |
 | Button | `PrimaryButton` | 온보딩, 측정, 예약, 피드백 전반의 메인 CTA | `src/components/system/PrimaryButton.tsx` |
+| Button | `FlowBottomCta` | 온보딩, 측정, 예약, 피드백 전반의 하단 CTA shell | `src/components/system/FlowBottomCta.tsx` |
+| Button | `FlowStepCta` | 온보딩과 미각 측정 플로우의 공통 하단 step footer | `src/components/system/FlowStepCta.tsx` |
 | Navigation | `TopAppBar` | 공용 상단 내비게이션 shell | `src/components/TopAppBar.tsx` |
 | Navigation | `BottomTabBar` | 메인 플로우 하단 탭 바 | `src/components/BottomTabBar.tsx` |
 | Overlay | `NotificationPanel` | 상단 알림 overlay | `src/components/NotificationPanel.tsx` |
 | Overlay | `AppMenuDrawer` | 우측 메뉴 drawer | `src/components/AppMenuDrawer.tsx` |
+| Chip | `Chip` | 일반 목적 neutral / semantic / icon label chip | `src/components/system/Chip.tsx` |
 | Badge | `OutlineBadge` | 프로필 단계, 섹션 라벨 | `src/components/system/OutlineBadge.tsx` |
 | Badge | `StatusChip` | 예약 상태 메타데이터 | `src/components/system/StatusChip.tsx` |
 | Badge | `Home TCS Badge` | 홈 히스토리 카드의 gradient TCS 배지 | `src/imports/Home.tsx` |
-| Badge | `TasteChip` | 맛 포인트 전용 pill | `src/components/system/TasteChip.tsx` |
-| Card | `InsightCard` | 분석 인사이트와 셰프 번역 요약 카드 | `src/components/system/InsightCard.tsx` |
+| Chip | `TasteChip` | 맛 포인트 전용 taste-aware pill | `src/components/system/TasteChip.tsx` |
+| Card | `InterpretationCard` | 프로필 해석, 셰프 번역 요약, 홈 변화 요약 카드 | `src/components/system/InterpretationCard.tsx` |
 | Typography Helper | `SectionTitle` | 섹션 제목 helper | `src/components/system/SectionTitle.tsx` |
 | App Specific | `TasteMeasurementMiniCta` | 여러 탭에서 재사용되는 inline CTA 카드 | `src/components/measurement/TasteMeasurementMiniCta.tsx` |
 | Feedback | `EmptyState` | 비어 있는 상태 안내 블록 | `src/components/system/EmptyState.tsx` |
@@ -574,16 +582,19 @@ Scale:
 
 프리뷰의 `componentSpecs` 섹션에서 바로 확인할 수 있는 핵심 스타일값만 다시 적는다.
 
-### Buttons & Badges
+### Buttons & Chips / Badges
 
 | Component | 현재 규칙 |
 | --- | --- |
 | `PrimaryButton` | 높이 `48px`, radius `10px`, background `--tb-color-text-primary`, text `--tb-color-text-inverse`, shadow `--tb-shadow-button`, active scale `0.98` |
 | `PrimaryButton compact` | 최소 높이 `40px`, `16px` 좌우 여백, `12px` 글자, `600` 굵기, shadow 없음 |
+| `FlowBottomCta` | bottom fade shell, absolute bottom anchor, min-height `140px`, padding-inline `20px`, padding-bottom `40px + safe area`, primary action은 `PrimaryButton`, top slot / helper copy optional |
+| `FlowStepCta` | absolute bottom anchor, content shell `relative flex min-h-[140px] w-full flex-col items-center justify-end px-5`, indicator `mb-8`, button `mb-8`, 미각 측정에서는 active dot만 `palette.main`을 쓰고 나머지 dot은 neutral gray 유지 |
+| `Chip` | full pill, size `xs/sm/md`, tone `neutral/success/warning/accent`, variant `soft/outline/solid/text`, general label / source tag / icon+text chip 용도. `xs`: `10px`, `px 8 / py 4 / gap 4 / icon 12`. `sm`: `11px`, `px 10 / py 6 / gap 6 / icon 12`. `md`: `12px`, `px 12 / py 8 / gap 8 / icon 14`. 필요 시 `backgroundColorToken`으로 `surface-base` 같은 배경 토큰을 직접 주입할 수 있다. |
 | `OutlineBadge` | `1px solid --tb-color-text-tertiary`, radius `6px`, padding `2px 8px`, `12px / 600` |
 | `StatusChip` | radius `6px`, padding `2px 6px`, `10px / 700`, 색상은 prop으로 주입 |
 | `HomeTcsBadge` | radius `6px`, padding `2px 6px`, `10px / 700`, weighted taste-light gradient + badge elevated shadow |
-| `TasteChip` | full pill, border taste tint `18%`, bg taste tint `5%`, `10px / 500`, value는 taste color `600` |
+| `TasteChip` | full pill, border `taste.palette.tintSoftBorder`, bg `taste.palette.tintSoft`, `10px / 500`, value는 taste color `600`; 미각과 무관한 메타는 `tone="neutral"`로 `surface-muted / border-strong / text-tertiary` 사용 |
 
 ### Cards
 
@@ -607,7 +618,7 @@ Scale:
 
 `src/components/design-system/componentStyleSpecs.ts` 기준:
 
-- Currently used: `TasteChip`, `HomeTcsBadge`, `StatusChip`, `OutlineBadge`, `PrimaryButton`, `SectionCard`, `PageSection`, `TasteMeasurementMiniCta`, `TopAppBar`, `BottomTabBar`, `NotificationPanel`, `AppMenuDrawer`, `EmptyState`
+- Currently used: `Chip`, `TasteChip`, `HomeTcsBadge`, `StatusChip`, `OutlineBadge`, `PrimaryButton`, `FlowBottomCta`, `FlowStepCta`, `SectionCard`, `PageSection`, `TasteMeasurementMiniCta`, `TopAppBar`, `BottomTabBar`, `NotificationPanel`, `AppMenuDrawer`, `EmptyState`
 - Defined but unused: `Badge`, `Button`, `Input`, `Textarea`, `SelectTrigger`, `Tabs`, `DialogContent`, `SheetContent`, `PopoverContent`, `TooltipContent`
 
 ---

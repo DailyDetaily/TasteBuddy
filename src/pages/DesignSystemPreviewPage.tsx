@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import ComponentFilePreview from '../components/design-system/filePreviewRegistry';
 import { DiningAiAnalysisScreen, DiningFeedbackScreen } from '../components/reservation/DiningFeedbackFlow';
 import {
   createDiningFeedbackDraft,
@@ -14,6 +15,7 @@ import OnboardingScreen from './OnboardingScreen';
 import ProfilePage from './ProfilePage';
 import ReservationConfirmationScreen from './ReservationConfirmationScreen';
 import ReservationPage from './ReservationPage';
+import TasteMeasurementScreen from './TasteMeasurementScreen';
 import TeastickConnectScreen from './TeastickConnectScreen';
 
 interface OverlayNote {
@@ -85,6 +87,9 @@ function ShowcaseSection({
 }
 
 export default function DesignSystemPreviewPage() {
+  const searchParams =
+    typeof window === 'undefined' ? null : new URLSearchParams(window.location.search);
+  const filePreview = searchParams?.get('file-preview') ?? null;
   const measurementSnapshot = useMemo(() => createInitialTasteMeasurementSnapshot(), []);
   const diningScenario = useMemo(() => getDiningFeedbackScenario(3), []);
   const initialDraft = useMemo(
@@ -92,11 +97,12 @@ export default function DesignSystemPreviewPage() {
     [diningScenario],
   );
   const [draft, setDraft] = useState<DiningFeedbackDraft | null>(initialDraft);
-  const focusSection =
-    typeof window === 'undefined'
-      ? null
-      : new URLSearchParams(window.location.search).get('focus');
+  const focusSection = searchParams?.get('focus') ?? null;
   const isFocusedView = focusSection !== null;
+
+  if (filePreview) {
+    return <ComponentFilePreview file={filePreview} />;
+  }
 
   if (!diningScenario || !draft) {
     return (
@@ -152,10 +158,33 @@ export default function DesignSystemPreviewPage() {
             notes={[
               { id: '1', text: '슬라이드 전환 거리를 화면별 하드코딩 대신 모션 토큰 기준으로 통일했습니다.' },
               { id: '2', text: '헤드라인과 본문 컬러를 뉴트럴 텍스트 토큰으로 정리했습니다.' },
-              { id: '3', text: '하단 인디케이터의 active/inactive 컬러를 시스템 border/text 계층에 맞췄습니다.' },
+              { id: '3', text: '하단 CTA는 FlowStepCta로 묶어 스텝 인디케이터와 primary action의 정렬과 간격을 같은 규칙으로 유지합니다.' },
             ]}
           >
             <OnboardingScreen onComplete={() => undefined} />
+          </ShowcaseSection>
+          )}
+
+          {(!focusSection || focusSection === 'taste-measurement') && (
+            <ShowcaseSection
+            title="Taste Measurement"
+            description="미각 측정 flow도 온보딩과 같은 FlowStepCta를 사용하되, 스텝 인디케이터는 현재 측정 중인 맛의 palette 규칙을 따라 보입니다."
+            overlayNotes={[
+              { id: '1', left: '50%', top: '18%' },
+              { id: '2', left: '50%', top: '47%' },
+              { id: '3', left: '50%', top: '84%' },
+            ]}
+            notes={[
+              { id: '1', text: 'intro, prep, active, finished 단계가 같은 FlowStepCta 위에서 이어져 진행감이 더 선명해졌습니다.' },
+              { id: '2', text: '스텝 인디케이터와 primary action 정렬은 온보딩과 동일한 중앙 기준을 유지합니다.' },
+              { id: '3', text: '현재 단계만 taste palette.main으로 강조하고, 다음 단계 점은 시스템 gray로 유지합니다.' },
+            ]}
+          >
+            <TasteMeasurementScreen
+              initialPhase="intro"
+              onBack={() => undefined}
+              onComplete={() => undefined}
+            />
           </ShowcaseSection>
           )}
 

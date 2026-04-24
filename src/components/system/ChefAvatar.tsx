@@ -1,4 +1,6 @@
-import { PersonFilled } from '@fluentui/react-icons';
+import {
+  UserRound as UserRoundIcon
+} from 'lucide-react';
 
 import { getTasteColor } from '../../constants/tasteColors';
 import { cn } from '../ui/utils';
@@ -35,7 +37,7 @@ export default function ChefAvatar({
       role="img"
       className={cn('flex items-center justify-center', backgroundClass, className)}
     >
-      <PersonFilled
+      <UserRoundIcon
         aria-hidden="true"
         style={{
           color: iconColor,

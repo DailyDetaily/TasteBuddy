@@ -1,22 +1,26 @@
 import type { ReactNode } from 'react';
-import { Sparkles } from 'lucide-react';
+import {
+  Sparkles as SparklesIcon
+} from 'lucide-react';
 
 import SectionCard from '../SectionCard';
 import CardIconBox from './CardIconBox';
 import { ICON_TOKENS } from '../../constants/designTokens';
 
-type QuickCalibrationHintCardSize = 'sm' | 'md';
+type TCSHintCardSize = 'sm' | 'md';
+type TCSHintCardSurface = 'nested' | 'standalone';
 
-interface QuickCalibrationHintCardProps {
+interface TCSHintCardProps {
   className?: string;
   description: string;
   icon?: ReactNode;
-  size?: QuickCalibrationHintCardSize;
+  size?: TCSHintCardSize;
+  surface?: TCSHintCardSurface;
   title?: string;
 }
 
 const SIZE_STYLES: Record<
-  QuickCalibrationHintCardSize,
+  TCSHintCardSize,
   {
     iconSize: number;
   }
@@ -29,23 +33,28 @@ const SIZE_STYLES: Record<
   },
 };
 
-export default function QuickCalibrationHintCard({
+export default function TCSHintCard({
   className = '',
   description,
   icon,
   size = 'sm',
+  surface = 'nested',
   title,
-}: QuickCalibrationHintCardProps) {
+}: TCSHintCardProps) {
   const sizeStyle = SIZE_STYLES[size];
+  const surfaceClassName =
+    surface === 'standalone'
+      ? 'bg-[var(--tb-color-surface-card)]'
+      : 'bg-[var(--tb-color-surface-muted)]';
 
   return (
     <SectionCard
       hoverEffect={false}
-      className={`bg-[var(--tb-color-surface-muted)] ${className}`.trim()}
+      className={`${surfaceClassName} ${className}`.trim()}
     >
       <div className="flex items-start gap-3">
         <CardIconBox className="bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
-          {icon ?? <Sparkles size={sizeStyle.iconSize} strokeWidth={ICON_TOKENS.strokeWidth.regular} />}
+          {icon ?? <SparklesIcon size={sizeStyle.iconSize} />}
         </CardIconBox>
         {title ? (
           <div className="flex flex-col gap-2">

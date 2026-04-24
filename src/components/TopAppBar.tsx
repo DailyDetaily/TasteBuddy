@@ -1,16 +1,20 @@
-import { AlertRegular, AddCircleRegular, NavigationRegular } from '@fluentui/react-icons';
+import {
+  Bell as BellIcon,
+  CirclePlus as CirclePlusIcon,
+  Menu as MenuIcon
+} from 'lucide-react';
 import React from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
-  return ({ size, style, ...props }: any) => (
-    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
+  return ({ size, fontSize, style, ...props }: any) => (
+    <IconComponent {...props} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />
   );
 };
 
-const Bell = wrapIcon(AlertRegular);
-const PlusCircle = wrapIcon(AddCircleRegular);
-const Menu = wrapIcon(NavigationRegular);
+const Bell = wrapIcon(BellIcon);
+const PlusCircle = wrapIcon(CirclePlusIcon);
+const Menu = wrapIcon(MenuIcon);
 const APP_SHELL_ICON_SIZE = ICON_TOKENS.size.lg;
 const APP_SHELL_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 

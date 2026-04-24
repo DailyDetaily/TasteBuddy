@@ -1327,54 +1327,75 @@ export async function hydrateReservationPageData(): Promise<HydratedReservationP
     };
   }
 
-  const userId = await getAuthenticatedUserId();
+  try {
+    const userId = await getAuthenticatedUserId();
 
-  if (!userId) {
+    if (!userId) {
+      return {
+        reservations: [],
+        feedbackByReservationId: {},
+        feedbackScenariosByReservationId: {},
+      };
+    }
+
+    let rows = await fetchReservationRows(userId);
+
+    const shouldSeedContentReservations =
+      rows.length === 0 ||
+      rows.every((row) => parseMockReservationExternalRef(row.external_ref) !== null);
+
+    if (shouldSeedContentReservations) {
+      await syncReservationCatalogToSupabase(userId);
+      rows = await fetchReservationRows(userId);
+    }
+
+    const hasContentSeedReservations = rows.some(
+      (row) => isContentSeedExternalRef(row.external_ref),
+    );
+    const visibleRows = hasContentSeedReservations
+      ? rows.filter((row) => parseMockReservationExternalRef(row.external_ref) === null)
+      : rows;
+
+    const reservationIdMap = new Map<string, number>();
+    const reservations = visibleRows.map((row) => {
+      const reservation = mapReservationRowToRecord(row);
+      reservationIdMap.set(row.id, reservation.id);
+      return reservation;
+    });
+    const reservationDishRows = await fetchReservationDishRows(visibleRows.map((row) => row.id));
+    const feedbackScenariosByReservationId = buildHydratedFeedbackScenarioMap({
+      reservationDishRows,
+      reservationIdMap,
+      reservations,
+    });
+    const feedbackByReservationId = await hydrateFeedbackDrafts(
+      reservationIdMap,
+      feedbackScenariosByReservationId,
+    );
+
     return {
-      reservations: [],
+      reservations,
+      feedbackByReservationId,
+      feedbackScenariosByReservationId,
+    };
+  } catch (error) {
+    console.warn('Failed to hydrate reservation page data from Supabase.', error);
+
+    return {
+      reservations: RESERVATION_CATALOG,
       feedbackByReservationId: {},
-      feedbackScenariosByReservationId: {},
+      feedbackScenariosByReservationId: RESERVATION_CATALOG.reduce<Record<number, DiningFeedbackScenario>>(
+        (scenarios, reservation) => {
+          const scenario = getDiningFeedbackScenario(reservation.id);
+          if (scenario) {
+            scenarios[reservation.id] = scenario;
+          }
+          return scenarios;
+        },
+        {},
+      ),
     };
   }
-
-  let rows = await fetchReservationRows(userId);
-
-  const shouldSeedContentReservations =
-    rows.length === 0 ||
-    rows.every((row) => parseMockReservationExternalRef(row.external_ref) !== null);
-
-  if (shouldSeedContentReservations) {
-    await syncReservationCatalogToSupabase(userId);
-    rows = await fetchReservationRows(userId);
-  }
-
-  const hasContentSeedReservations = rows.some((row) => isContentSeedExternalRef(row.external_ref));
-  const visibleRows = hasContentSeedReservations
-    ? rows.filter((row) => parseMockReservationExternalRef(row.external_ref) === null)
-    : rows;
-
-  const reservationIdMap = new Map<string, number>();
-  const reservations = visibleRows.map((row) => {
-    const reservation = mapReservationRowToRecord(row);
-    reservationIdMap.set(row.id, reservation.id);
-    return reservation;
-  });
-  const reservationDishRows = await fetchReservationDishRows(visibleRows.map((row) => row.id));
-  const feedbackScenariosByReservationId = buildHydratedFeedbackScenarioMap({
-    reservationDishRows,
-    reservationIdMap,
-    reservations,
-  });
-  const feedbackByReservationId = await hydrateFeedbackDrafts(
-    reservationIdMap,
-    feedbackScenariosByReservationId,
-  );
-
-  return {
-    reservations,
-    feedbackByReservationId,
-    feedbackScenariosByReservationId,
-  };
 }
 
 export async function hydrateLatestMeasurementSnapshot() {

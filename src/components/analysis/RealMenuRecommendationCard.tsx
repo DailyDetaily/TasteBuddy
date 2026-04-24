@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import SectionCard from '../SectionCard';
 import ChefAvatar from '../system/ChefAvatar';
+import Chip from '../system/Chip';
 import OutlineBadge from '../system/OutlineBadge';
 import { ICON_TOKENS } from '../../constants/designTokens';
 import TasteChip from '../system/TasteChip';
@@ -21,9 +22,9 @@ export interface RealMenuRecommendationCardData {
 
 function MenuMetaChip({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-2 py-1 text-[10px] font-medium text-[var(--tb-color-text-secondary)]">
+    <Chip size="xs" className="text-[var(--tb-color-text-secondary)]">
       {children}
-    </span>
+    </Chip>
   );
 }
 

@@ -1,42 +1,44 @@
 import { useEffect, useState } from 'react';
 import {
-  SettingsRegular,
-  ChevronRightRegular,
-  BluetoothRegular,
-  Battery5Regular,
-  ArrowSyncRegular,
-  AlertRegular,
-  QuestionCircleRegular,
-  InfoRegular,
-  TrophyRegular,
-  ChatRegular,
-  CalendarRegular,
-  StarRegular,
-} from '@fluentui/react-icons';
+  Settings as SettingsIcon,
+  ChevronRight as ChevronRightIcon,
+  Bluetooth as BluetoothIcon,
+  BatteryFull as BatteryFullIcon,
+  RefreshCw as RefreshCwIcon,
+  Bell as BellIcon,
+  CircleHelp as CircleHelpIcon,
+  Info as InfoIcon,
+  Trophy as TrophyIcon,
+  MessageCircle as MessageCircleIcon,
+  Calendar as CalendarIcon,
+  Star as StarIcon
+} from 'lucide-react';
 import React from 'react';
+
+import type { AppMenuSupportPanel } from '../components/AppMenuDrawer';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, className, ...props }: any) => (
     <IconComponent
       {...props}
       className={className}
-      style={{ fontSize: size, width: size, height: size, ...style }}
+      style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }}
     />
   );
 };
 
-const Settings = wrapIcon(SettingsRegular);
-const ChevronRight = wrapIcon(ChevronRightRegular);
-const Bluetooth = wrapIcon(BluetoothRegular);
-const Battery = wrapIcon(Battery5Regular);
-const RefreshCw = wrapIcon(ArrowSyncRegular);
-const Bell = wrapIcon(AlertRegular);
-const HelpCircle = wrapIcon(QuestionCircleRegular);
-const Info = wrapIcon(InfoRegular);
-const Award = wrapIcon(TrophyRegular);
-const MessageCircle = wrapIcon(ChatRegular);
-const Calendar = wrapIcon(CalendarRegular);
-const Star = wrapIcon(StarRegular);
+const Settings = wrapIcon(SettingsIcon);
+const ChevronRight = wrapIcon(ChevronRightIcon);
+const Bluetooth = wrapIcon(BluetoothIcon);
+const Battery = wrapIcon(BatteryFullIcon);
+const RefreshCw = wrapIcon(RefreshCwIcon);
+const Bell = wrapIcon(BellIcon);
+const HelpCircle = wrapIcon(CircleHelpIcon);
+const Info = wrapIcon(InfoIcon);
+const Award = wrapIcon(TrophyIcon);
+const MessageCircle = wrapIcon(MessageCircleIcon);
+const Calendar = wrapIcon(CalendarIcon);
+const Star = wrapIcon(StarIcon);
 const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
@@ -185,6 +187,7 @@ const settingsSections = [
 interface ProfilePageProps {
   measurementSnapshot: TasteMeasurementSnapshot;
   starterGuidance?: RestaurantReadyGuidance | null;
+  onOpenSupportPanel?: (panel: AppMenuSupportPanel) => void;
   onStartMeasurement: () => void;
   onNavigateToReservation?: (chefName: string) => void;
   onOpenNotifications?: () => void;
@@ -195,6 +198,7 @@ interface ProfilePageProps {
 export default function ProfilePage({
   measurementSnapshot,
   starterGuidance = null,
+  onOpenSupportPanel,
   onStartMeasurement,
   onNavigateToReservation,
   onOpenNotifications,
@@ -438,13 +442,13 @@ export default function ProfilePage({
               {favoriteChefs.map((chef, index) => (
                 <SectionCard key={index} onClick={() => onNavigateToReservation?.(chef.name)}>
                   <div className="flex items-center gap-3 w-full">
-                      <ChefAvatar
-                        alt={chef.name}
-                        className="h-[40px] w-[40px] rounded-[10px]"
+                    <ChefAvatar
+                      alt={chef.name}
+                      className="h-[40px] w-[40px] rounded-[10px]"
                       iconSize={ICON_TOKENS.size.lg}
-                        imageSrc={chef.image}
-                        taste={chef.taste}
-                        variant="neutral"
+                      imageSrc={chef.image}
+                      taste={chef.taste}
+                      variant="neutral"
                     />
                     <div className="flex flex-col flex-1">
                       <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
@@ -472,10 +476,21 @@ export default function ProfilePage({
               <div className="flex flex-col gap-3">
                 {section.items.map((item) => {
                   const Icon = item.icon;
+                  const onClick =
+                    item.label === '미각 재측정'
+                      ? onStartMeasurement
+                      : item.label === '보정 알림 설정'
+                        ? () => onOpenSupportPanel?.('notification-settings')
+                        : item.label === '도움말'
+                          ? () => onOpenSupportPanel?.('help')
+                          : item.label === '앱 정보'
+                            ? () => onOpenSupportPanel?.('about')
+                            : undefined;
+
                   return (
                     <SectionCard
                       key={item.label}
-                      onClick={item.label === '미각 재측정' ? onStartMeasurement : undefined}
+                      onClick={onClick}
                     >
                       <div className="flex items-center gap-3 w-full">
                         <Icon size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-primary)]" />

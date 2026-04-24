@@ -1,23 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  ChevronRightRegular, LocationRegular, ClockRegular, FoodRegular,
-  HeartPulseRegular, CheckmarkCircleRegular, CircleRegular
-} from '@fluentui/react-icons';
-import React from 'react';
 
-const wrapIcon = (IconComponent: React.ElementType) => {
-  return ({ size, style, ...props }: any) => (
-    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
-  );
-};
-
-const ChevronRight = wrapIcon(ChevronRightRegular);
-const MapPin = wrapIcon(LocationRegular);
-const Clock = wrapIcon(ClockRegular);
-const Utensils = wrapIcon(FoodRegular);
-const Activity = wrapIcon(HeartPulseRegular);
-const CheckCircle2 = wrapIcon(CheckmarkCircleRegular);
-const Circle = wrapIcon(CircleRegular);
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
@@ -25,6 +7,17 @@ import {
   DiningAiAnalysisScreen,
   DiningFeedbackScreen,
 } from '../components/reservation/DiningFeedbackFlow';
+import ReservationCard from '../components/reservation/ReservationCard';
+import {
+  ReservationChefCalibrationSection,
+  ReservationChefSummary,
+  ReservationCompletedFeedbackCard,
+  ReservationDiningInterpretationSection,
+  ReservationPendingActionCard,
+  ReservationPersonalizationHero,
+  ReservationTimelineSection,
+  type ReservationPersonalizationSummary,
+} from '../components/reservation/ReservationDetailSections';
 import PrimaryButton from '../components/system/PrimaryButton';
 import ChefAvatar from '../components/system/ChefAvatar';
 import PageSection from '../components/system/PageSection';
@@ -38,23 +31,20 @@ import {
   type DiningFeedbackDraft,
   type DiningFeedbackScenario,
 } from '../constants/diningFeedbackData';
-import { getTasteColor } from '../constants/tasteColors';
 import {
   formatMeasurementDate,
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
   isBroadStarterMeasurementSnapshot,
   isTasteMeasurementStale,
-  type TasteMeasurementEntry,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
 import { type RestaurantReadyGuidance } from '../constants/quickTasteCalibrationData';
 import {
   RESERVATION_CATALOG,
   type ReservationRecord as Reservation,
-  type ReservationStatus,
 } from '../constants/reservationCatalog';
-import { COLOR_TOKENS, ICON_TOKENS } from '../constants/designTokens';
+import { ICON_TOKENS } from '../constants/designTokens';
 import {
   hydrateReservationPageData,
   submitDiningFeedbackToSupabase,
@@ -62,32 +52,6 @@ import {
 import { isSupabaseConfigured } from '../lib/supabase';
 
 type ReservationView = 'detail' | 'feedback' | 'analysis';
-const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
-
-const statusConfig: Record<ReservationStatus, { label: string; color: string; bg: string }> = {
-  upcoming: { label: '예약 확정', color: '#3F3F3F', bg: '#F3F3F3' },
-  preparing: {
-    label: 'TCS 준비 중',
-    color: COLOR_TOKENS.text.secondary,
-    bg: COLOR_TOKENS.surface.muted,
-  },
-  ready: {
-    label: '준비 완료',
-    color: COLOR_TOKENS.text.primary,
-    bg: COLOR_TOKENS.surface.muted,
-  },
-  completed: { label: '완료', color: '#AFAFAF', bg: '#F3F3F3' },
-};
-
-interface ReservationPersonalizationSummary {
-  chefGuidance: string[];
-  guestMessage: string;
-  headline: string;
-  nextStepCta: string;
-  primary: TasteMeasurementEntry[];
-  recommendationLogic: string;
-  softest: TasteMeasurementEntry;
-}
 
 function buildReservationPersonalizationSummary(
   measurementSnapshot: TasteMeasurementSnapshot,
@@ -123,79 +87,6 @@ function buildReservationPersonalizationSummary(
   };
 }
 
-function ReservationCard({ reservation, onSelect }: { reservation: Reservation; onSelect: () => void }) {
-  const status = statusConfig[reservation.status];
-
-  return (
-    <SectionCard onClick={onSelect}>
-      {/* 상태 배지 + 레스토랑 */}
-      <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-2">
-          <StatusChip color={status.color} backgroundColor={status.bg}>
-            {status.label}
-          </StatusChip>
-          <span className="font-bold text-[14px] text-[var(--tb-color-text-primary)]">{reservation.restaurant}</span>
-        </div>
-        <ChevronRight
-          size={CARD_TRAILING_ICON_SIZE}
-          className="text-[var(--tb-color-text-disabled)]"
-        />
-      </div>
-
-      {/* 셰프 정보 */}
-      <div className="flex items-center gap-3 w-full">
-        <ChefAvatar
-          alt={reservation.chef}
-          className="h-[40px] w-[40px] rounded-[8px]"
-          iconSize={ICON_TOKENS.size.lg}
-          imageSrc={reservation.chefImage}
-          taste={reservation.adjustments[0]?.taste}
-          variant="neutral"
-        />
-        <div className="flex flex-col">
-          <span className="font-semibold text-[14px] text-[var(--tb-color-text-primary)]">{reservation.chef} 셰프</span>
-          <span className="text-[12px] text-[var(--tb-color-text-subtle)]">프로필 반영 중</span>
-        </div>
-      </div>
-
-      {/* 예약 정보 */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 w-full">
-        <div className="flex items-center gap-1">
-          <Clock size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-muted)]" />
-          <span className="text-[12px] text-[var(--tb-color-text-muted)]">{reservation.date} {reservation.time}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Utensils size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-muted)]" />
-          <span className="text-[12px] text-[var(--tb-color-text-muted)]">{reservation.course}</span>
-        </div>
-      </div>
-
-      {/* TCS 상태 */}
-      <div className="flex items-center gap-2 w-full rounded-[12px] bg-[var(--tb-color-surface-muted)] px-3 py-2">
-        <Activity size={ICON_TOKENS.size.sm} style={{ color: status.color }} />
-        <span className="text-[12px] text-[var(--tb-color-text-primary)]">{reservation.tcsStatus}</span>
-      </div>
-
-      <p className="w-full text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
-        {reservation.diningPromise}
-      </p>
-
-      {/* 예상 보정 태그 */}
-      {reservation.adjustments.length > 0 ? (
-        <div className="flex gap-2 flex-wrap">
-          {reservation.adjustments.map((adj, idx) => (
-            <TasteChip
-              key={idx}
-              taste={adj.taste}
-              value={adj.direction}
-            />
-          ))}
-        </div>
-      ) : null}
-    </SectionCard>
-  );
-}
-
 function ReservationDetail({
   feedbackScenario,
   feedbackSubmitted,
@@ -217,7 +108,6 @@ function ReservationDetail({
   reservation: Reservation;
   starterGuidance: RestaurantReadyGuidance | null;
 }) {
-  const status = statusConfig[reservation.status];
   const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
   const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
@@ -238,241 +128,38 @@ function ReservationDetail({
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="tb-section-stack p-[20px]">
           <div className="tb-card-stack">
-          <SectionCard hoverEffect={false}>
-            <div className="flex flex-col gap-4 w-full">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex flex-col gap-2">
-                  <StatusChip color="#0F0F0F" backgroundColor="white">
-                    Personalized Dining
-                  </StatusChip>
-                  <SectionTitle size="md">{personalizationSummary.headline}</SectionTitle>
-                </div>
-                <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
-                  프로필 반영 중
-                </span>
-              </div>
-
-              <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                {personalizationSummary.guestMessage}
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                {personalizationSummary.primary.map((entry) => (
-                  <TasteChip key={entry.id} taste={entry.label} value="현재 더 또렷한 포인트" />
-                ))}
-                <TasteChip
-                  taste={personalizationSummary.softest.label}
-                  value="천천히 이어지는 포인트"
-                />
-              </div>
-
-              <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">이번 예약에서 달라지는 점</p>
-                <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                  {reservation.diningPromise}
-                </p>
-              </div>
-            </div>
-          </SectionCard>
-
-          {/* 셰프 + 상태 */}
-          <div className="flex items-center gap-4">
-            <ChefAvatar
-              alt={reservation.chef}
-              className="h-[56px] w-[56px] rounded-[14px]"
-              iconSize={ICON_TOKENS.size.lg}
-              imageSrc={reservation.chefImage}
-              taste={reservation.adjustments[0]?.taste}
-              variant="neutral"
+            <ReservationPersonalizationHero
+              diningPromise={reservation.diningPromise}
+              summary={personalizationSummary}
             />
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-[18px]">{reservation.chef} 셰프</span>
-                <StatusChip color={status.color} backgroundColor={status.bg}>
-                  {status.label}
-                </StatusChip>
-              </div>
-              <span className="text-[14px] text-[var(--tb-color-text-subtle)]">
-                {reservation.course} · {reservation.guests}명
-              </span>
-            </div>
+            <ReservationChefSummary reservation={reservation} />
           </div>
 
-          {/* 예약 정보 카드 */}
-          <SectionCard>
-            <div className="flex flex-col gap-3 w-full">
-              <div className="flex items-center gap-2">
-                <Clock size={ICON_TOKENS.size.md} className="text-[var(--tb-color-text-secondary)]" />
-                <span className="text-[14px] font-medium">{reservation.date} {reservation.time}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={ICON_TOKENS.size.md} className="text-[var(--tb-color-text-secondary)]" />
-                <span className="text-[14px] font-medium">{reservation.restaurant}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Utensils size={ICON_TOKENS.size.md} className="text-[var(--tb-color-text-secondary)]" />
-                <span className="text-[14px] font-medium">{reservation.course}</span>
-              </div>
-            </div>
-          </SectionCard>
-          </div>
-
-          <PageSection title="프로필 기반 예약 개인화">
-            <SectionCard hoverEffect={false}>
-              <div className="flex flex-col gap-4 w-full">
-                <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                  Taste Buddy는 레시피를 바꾸라고 지시하지 않고, 현재 프로필이 더 편안하게 받아들여질 수 있는 방향을 매장과 주방이 참고할 수 있게 정리합니다.
-                </p>
-
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">게스트 관점</p>
-                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                      코스가 내 현재 입맛과 더 자연스럽게 연결되도록 준비된다는 뜻이에요.
-                    </p>
-                  </div>
-                  <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">매장 전달 포인트</p>
-                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                      파인다이닝에서는 셰프용 가이드로, 일반 매장에서는 메뉴 추천과 간 방향 참고용으로 같은 기준을 쓸 수 있어요.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </SectionCard>
-          </PageSection>
-
-          {/* 다이닝 타임라인 */}
-          <PageSection title="다이닝 타임라인">
-            <div className="flex flex-col gap-0">
-              {reservation.timeline.map((step, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className="flex flex-col items-center">
-                    {step.done ? (
-                      <CheckCircle2 size={ICON_TOKENS.size.md} className="text-[var(--tb-color-text-primary)] shrink-0" />
-                    ) : step.current ? (
-                      <div className="relative">
-                        <Circle size={ICON_TOKENS.size.md} className="text-[var(--tb-color-text-secondary)] shrink-0" />
-                        <div className="absolute inset-[4px] rounded-full bg-[var(--tb-color-icon-primary)] animate-pulse-soft" />
-                      </div>
-                    ) : (
-                      <Circle size={ICON_TOKENS.size.md} className="text-[#e0e0e0] shrink-0" />
-                    )}
-                    {idx < reservation.timeline.length - 1 && (
-                      <div className={`w-[2px] h-[28px] ${step.done ? 'bg-[var(--tb-color-text-primary)]' : 'bg-[var(--tb-color-border-disabled)]'}`} />
-                    )}
-                  </div>
-                  <div className="pb-6">
-                    <span className={`text-[14px] ${step.current ? 'font-bold text-[var(--tb-color-text-primary)]' : step.done ? 'font-medium text-[var(--tb-color-text-primary)]' : 'font-medium text-[var(--tb-color-text-disabled)]'}`}>
-                      {step.step}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </PageSection>
-
-          {/* 셰프용 캘리브레이션 요약 */}
-          <PageSection title="셰프용 캘리브레이션 요약">
-            <SectionCard hoverEffect={false}>
-              <div className="flex flex-col gap-4 w-full">
-                <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                  <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
-                    매장 공통 한 줄 가이드
-                  </p>
-                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                    {personalizationSummary.recommendationLogic}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {personalizationSummary.chefGuidance.map((guidance) => (
-                    <div
-                      key={guidance}
-                      className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3"
-                    >
-                      <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">{guidance}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {reservation.adjustments.length > 0 ? (
-                  <div className="flex flex-col gap-3 w-full mt-1">
-                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
-                      이번 예약에서 참고 중인 조정 포인트
-                    </p>
-                    {reservation.adjustments.map((adj, idx) => {
-                      const color = getTasteColor(adj.taste);
-                      return (
-                        <div key={idx} className="flex items-center gap-3 w-full">
-                          <div className="w-[6px] h-[32px] rounded-full" style={{ backgroundColor: color }} />
-                          <span className="font-medium text-[14px] text-[var(--tb-color-text-primary)] w-[50px]">{adj.taste}</span>
-                          <div className="flex-1 h-[8px] bg-[var(--tb-color-border-subtle)] rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full animate-grow"
-                              style={{
-                                width: '60%',
-                                backgroundColor: color,
-                                animationDelay: `${idx * 200}ms`,
-                                animationFillMode: 'both',
-                              }}
-                            />
-                          </div>
-                          <span className="font-bold text-[14px] w-[56px] text-right" style={{ color }}>{adj.direction}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            </SectionCard>
-          </PageSection>
+          <ReservationDiningInterpretationSection />
+          <ReservationTimelineSection timeline={reservation.timeline} />
+          <ReservationChefCalibrationSection
+            adjustments={reservation.adjustments}
+            chefGuidance={personalizationSummary.chefGuidance}
+            recommendationLogic={personalizationSummary.recommendationLogic}
+          />
 
           {reservation.status !== 'completed' && (
-            <SectionCard hoverEffect={false}>
-              <div className="flex flex-col gap-3 w-full">
-                <div>
-                  <SectionTitle size="md">다음 액션</SectionTitle>
-                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                    {personalizationSummary.nextStepCta}
-                  </p>
-                </div>
-                <PrimaryButton onClick={onStartMeasurement}>
-                  {needsMeasurementRefresh ? '현재 컨디션 다시 반영하기' : '현재 프로필 한 번 더 점검하기'}
-                </PrimaryButton>
-                <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                  마지막 측정 {formatMeasurementDate(measurementSnapshot.measuredAt)} · {measurementAgeLabel}
-                  {isBroadStarterProfile ? ' · 질문 기반 스타터 프로필' : ''}
-                </p>
-              </div>
-            </SectionCard>
+            <ReservationPendingActionCard
+              isBroadStarterProfile={isBroadStarterProfile}
+              measurementAgeLabel={measurementAgeLabel}
+              measurementSnapshotMeasuredAt={measurementSnapshot.measuredAt}
+              needsMeasurementRefresh={needsMeasurementRefresh}
+              nextStepCta={personalizationSummary.nextStepCta}
+              onStartMeasurement={onStartMeasurement}
+            />
           )}
 
           {reservation.status === 'completed' && feedbackScenario && (
-            <SectionCard hoverEffect={false}>
-              <div className="flex items-start justify-between gap-4 w-full">
-                <div className="flex flex-col gap-2">
-                  <SectionTitle size="md">다음 다이닝을 위한 식후 피드백</SectionTitle>
-                  <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                    짧게 남겨주신 인상은 이번 다이닝에서 무엇이 잘 맞았는지 배우고, 다음 예약과 셰프용 캘리브레이션을 더 정교하게 만드는 데 바로 반영됩니다.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 w-full">
-                <PrimaryButton onClick={feedbackSubmitted ? onOpenAnalysis : onOpenFeedback}>
-                  {feedbackSubmitted ? '프로필 정교화 보기' : '다음 다이닝을 위한 피드백 남기기'}
-                </PrimaryButton>
-                {feedbackSubmitted ? (
-                  <button
-                    type="button"
-                    onClick={onOpenFeedback}
-                    className="self-center text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
-                  >
-                    피드백 수정하기
-                  </button>
-                ) : null}
-              </div>
-            </SectionCard>
+            <ReservationCompletedFeedbackCard
+              feedbackSubmitted={feedbackSubmitted}
+              onOpenAnalysis={onOpenAnalysis}
+              onOpenFeedback={onOpenFeedback}
+            />
           )}
 
           <div className="h-6" />
@@ -669,7 +356,10 @@ export default function ReservationPage({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <StatusChip color="#0F0F0F" backgroundColor="white">
+                      <StatusChip
+                        color="var(--tb-color-text-primary)"
+                        backgroundColor="var(--tb-color-surface-base)"
+                      >
                         {starterGuidance ? 'Restaurant-ready Profile' : 'Chef-ready Personalization'}
                       </StatusChip>
                       <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
@@ -698,14 +388,10 @@ export default function ReservationPage({
                     </div>
                   </div>
 
-                  <div className="shrink-0 rounded-[8px] bg-[var(--tb-color-surface-muted)] px-3 py-2 text-right">
-                    <p className="text-[11px] font-medium text-[var(--tb-color-text-hint)]">
-                      match
-                    </p>
-                    <p className="mt-1 text-[16px] font-bold text-[var(--tb-color-text-primary)]">
-                      {featuredReservation.matchRate}%
-                    </p>
-                  </div>
+                  <StatusChip className="shrink-0 gap-1">
+                    <span>매칭</span>
+                    <span>{featuredReservation.matchRate}%</span>
+                  </StatusChip>
                 </div>
 
                 <h2 className="text-[18px] font-bold leading-tight text-[var(--tb-color-text-primary)]">

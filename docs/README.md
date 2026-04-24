@@ -33,6 +33,7 @@ The important thing to know is that some of the most important docs live at the 
 - Product source of truth: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - Design system: [`../DESIGN.md`](../DESIGN.md)
 - Onboarding product note: [`product/onboarding-digital-anchoring.md`](./product/onboarding-digital-anchoring.md)
+- Onboarding intake plan: [`product/onboarding-preference-intake-plan.md`](./product/onboarding-preference-intake-plan.md)
 
 ### Design
 

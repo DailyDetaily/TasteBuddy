@@ -1,27 +1,36 @@
-import {
-  ChevronLeftRegular, ChevronRightRegular
-} from '@fluentui/react-icons';
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon
+} from 'lucide-react';
 import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {
   buildHomeReservationHint,
   buildHomeSpecialNoteFromReservations,
   buildHomeTasteProfileFromMeasurements,
   LegacyHomeSpecialNoteCard,
+  LegacyHomeSpecialNoteDetailScreen,
   LegacyHomeTasteProfileCard,
+  LegacyHomeTasteProfileDetailScreen,
 } from '../imports/Home';
 import PalateSignatureHeroCard from '../components/analysis/PalateSignatureHeroCard';
 import RealMenuRecommendationCard from '../components/analysis/RealMenuRecommendationCard';
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import SectionCard from '../components/SectionCard';
-import InsightCard from '../components/system/InsightCard';
+import InterpretationDetailDrawer, {
+  type InterpretationDetailContent,
+} from '../components/system/InterpretationDetailDrawer';
+import InterpretationCard from '../components/system/InterpretationCard';
 import PageSection from '../components/system/PageSection';
 import ProfileConfidenceCard, {
   type ProfileConfidenceStage,
 } from '../components/system/ProfileConfidenceCard';
+import CardScrollList from '../components/system/CardScrollList';
 import SectionTitle from '../components/system/SectionTitle';
-import { DATA_VIZ_TOKENS, ICON_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_LABEL_TO_ID, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
-import { TASTE_COLORS, buildTasteAdjustmentGradient, getTasteColor, getTasteTint, getTasteTintSurface, getTasteTintSurfaceSubText, mixHexColors } from '../constants/tasteColors';
+import TasteTintCard from '../components/system/TasteTintCard';
+import HexRadarChart from '../components/system/HexRadarChart';
+import { DATA_VIZ_TOKENS, ICON_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
+import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, mixHexColors } from '../constants/tasteColors';
 import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
 import {
   formatMeasurementDate,
@@ -42,15 +51,6 @@ import {
   type RestaurantContentDish,
 } from '../lib/tasteBuddySupabase';
 import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reservationCatalog';
-
-const wrapIcon = (IconComponent: React.ElementType) => {
-  return ({ size, style, ...props }: any) => (
-    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
-  );
-};
-
-const ChevronLeft = wrapIcon(ChevronLeftRegular);
-const ChevronRight = wrapIcon(ChevronRightRegular);
 
 const RADAR_CHART = DATA_VIZ_TOKENS.radar;
 const TREND_TINT_LINE_STROKE_WIDTH = 10;
@@ -128,6 +128,10 @@ type RealMenuRecommendation = {
   subtitle: string;
   tasteLabel: string;
   title: string;
+};
+
+type AnalysisInsight = InterpretationDetailContent & {
+  id: string;
 };
 
 type TrendRangeId = (typeof TREND_RANGE_OPTIONS)[number]['id'];
@@ -317,7 +321,7 @@ function TasteDirectionIcon({
   taste,
   trend,
   muted = false,
-  size = 32,
+  size = ICON_TOKENS.container.lg,
 }: {
   taste: string;
   trend: 'up' | 'down' | 'flat';
@@ -437,28 +441,46 @@ function buildInsights(
 
   return [
     {
-      taste: strongestTaste.label,
-      text: `${strongestTaste.label}에 빠르게 반응하는 프로필이에요`,
-      type: 'high' as const,
+      accentColor: getTasteColor(strongestTaste.label),
+      description: `${strongestTaste.label}에 빠르게 반응하는 프로필이에요`,
+      id: 'strongest-taste',
+      meaning: `${strongestTaste.label} 축이 메뉴의 첫인상을 비교적 빠르게 결정할 가능성이 커요. 같은 자극도 이 맛이 앞에서 읽히면 전체 밸런스를 더 또렷하게 느낄 수 있어요.`,
+      nextStep: `다음 다이닝 해석에서는 ${strongestTaste.label}이 과하게 겹치지 않도록 흐름을 먼저 보고, 이 축이 자연스럽게 살아나는 메뉴를 우선 추천해요.`,
+      title: `${strongestTaste.label} 반응이 먼저 올라와요`,
     },
     {
-      taste: biggestDeltaTaste.label,
-      text: `${biggestDeltaTaste.label} 변화가 눈에 띄게 나타났어요. 다음 다이닝에 반영됩니다`,
-      type: biggestDeltaTaste.deltaMm >= 0 ? 'up' as const : 'low' as const,
+      accentColor: getTasteColor(biggestDeltaTaste.label),
+      description: `${biggestDeltaTaste.label} 변화가 눈에 띄게 나타났어요. 다음 다이닝에 반영됩니다`,
+      id: 'biggest-delta',
+      meaning: `이번에는 ${biggestDeltaTaste.label} 축의 체감이 평소보다 더 크게 움직였어요. 고정된 판단이라기보다, 현재 컨디션까지 함께 읽어야 하는 신호에 가까워요.`,
+      nextStep: `다음 다이닝 해석에는 ${biggestDeltaTaste.label} 변화를 먼저 반영하고, 식후 피드백이 쌓이면 이 변화가 일시적인지 반복 패턴인지 더 정확히 구분해요.`,
+      title: `${biggestDeltaTaste.label} 변화가 이번 측정에서 두드러져요`,
     },
     {
-      taste: weakestTaste.label,
-      text: `${weakestTaste.label}은 천천히 쌓이는 구성이 더 편안할 수 있어요`,
-      type: 'low' as const,
+      accentColor: getTasteColor(weakestTaste.label),
+      description: `${weakestTaste.label}은 천천히 쌓이는 구성이 더 편안할 수 있어요`,
+      id: 'weakest-taste',
+      meaning: `${weakestTaste.label} 자극이 한 번에 강하게 들어오기보다, 코스 안에서 부드럽게 이어질 때 전체 경험이 더 안정적으로 느껴질 가능성이 있어요.`,
+      nextStep: `예약 개인화와 셰프 가이드에는 ${weakestTaste.label} 밀도를 한 번에 몰지 않고, 더 완만한 흐름에서 읽히도록 참고 포인트로 반영해요.`,
+      title: `${weakestTaste.label}은 천천히 쌓이는 구성이 편안할 수 있어요`,
     },
     {
-      taste: strongestTaste.label,
-      text: totalSensitivity > avgSensitivity
+      accentColor: getTasteColor(strongestTaste.label),
+      description: totalSensitivity > avgSensitivity
         ? '전체적으로 평균보다 민감한 프로필이에요'
         : '전체적으로 평균에 가까운 균형 잡힌 프로필이에요',
-      type: 'high' as const,
+      id: 'overall-profile',
+      meaning: totalSensitivity > avgSensitivity
+        ? '맛의 대비와 전환이 비교적 또렷하게 느껴질 수 있어, 작은 차이도 식사 인상에 영향을 줄 가능성이 커요.'
+        : '특정 축 하나가 압도하기보다 여러 맛의 균형과 연결감을 안정적으로 읽는 편으로 해석할 수 있어요.',
+      nextStep: totalSensitivity > avgSensitivity
+        ? '다음 다이닝 추천에서는 자극을 겹치기보다, 여백 있는 전개와 균형을 우선 검토해요.'
+        : '다음 다이닝 추천에서는 한 가지 자극을 과하게 밀기보다, 코스 전체의 연결감과 균형을 중심으로 맞춰가요.',
+      title: totalSensitivity > avgSensitivity
+        ? '전반적으로 맛 변화를 빠르게 읽는 편이에요'
+        : '전반적으로 균형 있게 읽는 프로필이에요',
     },
-  ];
+  ] satisfies AnalysisInsight[];
 }
 
 function formatTrendDateLabel(value: string) {
@@ -1382,449 +1404,6 @@ function buildRealMenuRecommendations(
   return diversified.slice(0, 3);
 }
 
-// 6각형 꼭짓점 좌표 생성 (상단 시작, 시계 방향)
-function hexPoint(cx: number, cy: number, r: number, i: number): [number, number] {
-  const angle = (Math.PI / 3) * i - Math.PI / 2 - Math.PI / 6;
-  return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
-}
-
-function hexPolygon(cx: number, cy: number, r: number): string {
-  return Array.from({ length: 6 }, (_, i) => hexPoint(cx, cy, r, i))
-    .map(([x, y]) => `${x},${y}`)
-    .join(' ');
-}
-
-function trianglePolygon(
-  cx: number,
-  cy: number,
-  radius: number,
-  startAngleDeg: number,
-) {
-  return Array.from({ length: 3 }, (_, index) => {
-    const angle = ((startAngleDeg + 120 * index) * Math.PI) / 180;
-    const x = cx + radius * Math.cos(angle);
-    const y = cy + radius * Math.sin(angle);
-
-    return `${x},${y}`;
-  }).join(' ');
-}
-
-function movePointTowardCenter(
-  cx: number,
-  cy: number,
-  x: number,
-  y: number,
-  offset: number,
-): [number, number] {
-  const dx = cx - x;
-  const dy = cy - y;
-  const distance = Math.hypot(dx, dy);
-  const safeOffset = Math.min(offset, distance);
-
-  if (distance === 0 || safeOffset === 0) {
-    return [x, y];
-  }
-
-  return [
-    x + (dx / distance) * safeOffset,
-    y + (dy / distance) * safeOffset,
-  ];
-}
-
-function clampUnit(value: number) {
-  return Math.max(0, Math.min(1, value));
-}
-
-function solveCubicBezierY(
-  progress: number,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-) {
-  const clampedProgress = clampUnit(progress);
-
-  if (clampedProgress === 0 || clampedProgress === 1) {
-    return clampedProgress;
-  }
-
-  const cx = 3 * x1;
-  const bx = 3 * (x2 - x1) - cx;
-  const ax = 1 - cx - bx;
-  const cy = 3 * y1;
-  const by = 3 * (y2 - y1) - cy;
-  const ay = 1 - cy - by;
-  const sampleCurveX = (t: number) => ((ax * t + bx) * t + cx) * t;
-  const sampleCurveY = (t: number) => ((ay * t + by) * t + cy) * t;
-  const sampleCurveDerivativeX = (t: number) => (3 * ax * t + 2 * bx) * t + cx;
-
-  let t = clampedProgress;
-
-  for (let iteration = 0; iteration < 5; iteration += 1) {
-    const currentX = sampleCurveX(t) - clampedProgress;
-    const currentSlope = sampleCurveDerivativeX(t);
-
-    if (Math.abs(currentX) < 0.0001 || Math.abs(currentSlope) < 0.000001) {
-      break;
-    }
-
-    t -= currentX / currentSlope;
-  }
-
-  let lowerBound = 0;
-  let upperBound = 1;
-  t = clampUnit(t);
-
-  for (let iteration = 0; iteration < 8; iteration += 1) {
-    const currentX = sampleCurveX(t);
-
-    if (Math.abs(currentX - clampedProgress) < 0.00001) {
-      break;
-    }
-
-    if (currentX > clampedProgress) {
-      upperBound = t;
-    } else {
-      lowerBound = t;
-    }
-
-    t = (lowerBound + upperBound) / 2;
-  }
-
-  return sampleCurveY(t);
-}
-
-function getRadarAnimationProgress(progress: number) {
-  return solveCubicBezierY(progress, 0.3, 0, 0.1, 1);
-}
-
-function getRoundedClosedCorners(
-  points: ReadonlyArray<readonly [number, number]>,
-  cornerRadius: number,
-) {
-  if (points.length < 3) {
-    return [];
-  }
-
-  return points.map((point, index) => {
-    const previous = points[(index - 1 + points.length) % points.length] ?? point;
-    const next = points[(index + 1) % points.length] ?? point;
-    const incomingDx = previous[0] - point[0];
-    const incomingDy = previous[1] - point[1];
-    const outgoingDx = next[0] - point[0];
-    const outgoingDy = next[1] - point[1];
-    const incomingDistance = Math.hypot(incomingDx, incomingDy) || 1;
-    const outgoingDistance = Math.hypot(outgoingDx, outgoingDy) || 1;
-    const safeRadius = Math.min(cornerRadius, incomingDistance / 2, outgoingDistance / 2);
-
-    return {
-      control: point,
-      entry: [
-        point[0] + (incomingDx / incomingDistance) * safeRadius,
-        point[1] + (incomingDy / incomingDistance) * safeRadius,
-      ] as const,
-      exit: [
-        point[0] + (outgoingDx / outgoingDistance) * safeRadius,
-        point[1] + (outgoingDy / outgoingDistance) * safeRadius,
-      ] as const,
-    };
-  });
-}
-
-function buildRoundedClosedPath(
-  points: ReadonlyArray<readonly [number, number]>,
-  cornerRadius: number,
-) {
-  const roundedCorners = getRoundedClosedCorners(points, cornerRadius);
-
-  const firstCorner = roundedCorners[0];
-
-  if (!firstCorner) {
-    return '';
-  }
-
-  const commands = [`M ${firstCorner.exit[0]} ${firstCorner.exit[1]}`];
-
-  for (let index = 1; index < roundedCorners.length; index += 1) {
-    const corner = roundedCorners[index];
-
-    if (!corner) {
-      continue;
-    }
-
-    commands.push(`L ${corner.entry[0]} ${corner.entry[1]}`);
-    commands.push(`Q ${corner.control[0]} ${corner.control[1]} ${corner.exit[0]} ${corner.exit[1]}`);
-  }
-
-  commands.push(`L ${firstCorner.entry[0]} ${firstCorner.entry[1]}`);
-  commands.push(
-    `Q ${firstCorner.control[0]} ${firstCorner.control[1]} ${firstCorner.exit[0]} ${firstCorner.exit[1]}`,
-  );
-  commands.push('Z');
-
-  return commands.join(' ');
-}
-
-function buildRoundedClosedSegmentPaths(
-  points: ReadonlyArray<readonly [number, number]>,
-  cornerRadius: number,
-) {
-  const roundedCorners = getRoundedClosedCorners(points, cornerRadius);
-
-  return roundedCorners.map((corner, index) => {
-    const nextCorner = roundedCorners[(index + 1) % roundedCorners.length];
-
-    if (!corner || !nextCorner) {
-      return '';
-    }
-
-    return [
-      `M ${corner.exit[0]} ${corner.exit[1]}`,
-      `L ${nextCorner.entry[0]} ${nextCorner.entry[1]}`,
-      `Q ${nextCorner.control[0]} ${nextCorner.control[1]} ${nextCorner.exit[0]} ${nextCorner.exit[1]}`,
-    ].join(' ');
-  });
-}
-
-// 커스텀 6각형 레이더 차트
-function HexRadarChart({
-  myTasteData,
-  shouldAnimate = true,
-}: {
-  myTasteData: TasteMeasurementEntry[];
-  shouldAnimate?: boolean;
-}) {
-  const cx = 160;
-  const cy = 145;
-  const maxR = 100;
-  const gridLevels = [0.25, 0.5, 0.75, 1];
-  const gridStrokeColor = mixHexColors(RADAR_CHART.gridColor, '#FFFFFF', 0.45);
-  const profileAnimationDurationMs = (60 / 60) * 1000;
-  const centerStarRadius = 18 * (25 / 27);
-  const centerStarUp = trianglePolygon(cx, cy, centerStarRadius, -90);
-  const centerStarDown = trianglePolygon(cx, cy, centerStarRadius, 90);
-  const gradientIdPrefix = React.useId().replace(/:/g, '');
-  const radarMotionFrameRef = useRef<number | null>(null);
-  const [profileMotionProgress, setProfileMotionProgress] = useState(0);
-  const tasteProfileAnimationKey = myTasteData
-    .map(({ label, score, averageScore }) => `${label}:${score}:${averageScore}`)
-    .join('|');
-
-  useEffect(() => {
-    if (radarMotionFrameRef.current !== null) {
-      cancelAnimationFrame(radarMotionFrameRef.current);
-      radarMotionFrameRef.current = null;
-    }
-
-    if (!shouldAnimate) {
-      setProfileMotionProgress(0);
-      return;
-    }
-
-    if (
-      typeof window !== 'undefined'
-      && typeof window.matchMedia === 'function'
-      && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      setProfileMotionProgress(1);
-      return;
-    }
-
-    setProfileMotionProgress(0);
-    let animationStart: number | null = null;
-    const animateProfile = (timestamp: number) => {
-      if (animationStart === null) {
-        animationStart = timestamp;
-      }
-
-      const elapsed = timestamp - animationStart;
-      const rawProgress = Math.min(elapsed / profileAnimationDurationMs, 1);
-
-      setProfileMotionProgress(rawProgress);
-
-      if (rawProgress < 1) {
-        radarMotionFrameRef.current = requestAnimationFrame(animateProfile);
-        return;
-      }
-
-      radarMotionFrameRef.current = null;
-    };
-
-    radarMotionFrameRef.current = requestAnimationFrame(animateProfile);
-
-    return () => {
-      if (radarMotionFrameRef.current !== null) {
-        cancelAnimationFrame(radarMotionFrameRef.current);
-        radarMotionFrameRef.current = null;
-      }
-    };
-  }, [profileAnimationDurationMs, shouldAnimate, tasteProfileAnimationKey]);
-
-  const animatedProfileProgress = getRadarAnimationProgress(profileMotionProgress);
-
-  // 나의 민감도 폴리곤 좌표
-  const myPoints = myTasteData.map((d, i) => {
-    const r = (d.score / 100) * maxR * animatedProfileProgress;
-    return hexPoint(cx, cy, r, i);
-  });
-  const myNodePoints = myPoints.map(([x, y]) =>
-    movePointTowardCenter(cx, cy, x, y, 10 * animatedProfileProgress),
-  );
-  const mySegmentPaths = buildRoundedClosedSegmentPaths(myPoints, 8);
-
-  // 평균 민감도 폴리곤 좌표
-  const avgPoints = myTasteData.map((d, i) => {
-    const r = (d.averageScore / 100) * maxR;
-    return hexPoint(cx, cy, r, i);
-  });
-  const avgPath = buildRoundedClosedPath(avgPoints, 8);
-
-  // 꼭짓점 (맛 라벨 + 점)
-  const vertices = myTasteData.map((d, i) => ({
-    ...d,
-    point: hexPoint(cx, cy, maxR, i),
-    labelPoint: hexPoint(cx, cy, maxR + 10, i),
-    color: getTasteColor(d.label),
-  }));
-
-  // 대각선 (0-3, 1-4, 2-5)
-  const diagonals = [
-    [vertices[0], vertices[3]],
-    [vertices[1], vertices[4]],
-    [vertices[2], vertices[5]],
-  ];
-
-  return (
-    <svg
-      width={RADAR_CHART.size}
-      height="310"
-      viewBox={`0 0 ${RADAR_CHART.size} 310`}
-      className="mx-auto w-full max-w-[320px]"
-    >
-      <defs>
-        {vertices.map((vertex, index) => {
-          const nextVertex = vertices[(index + 1) % vertices.length];
-
-          if (!nextVertex) {
-            return null;
-          }
-
-          return (
-            <linearGradient
-              key={`profile-gradient-${index}`}
-              id={`${gradientIdPrefix}-profile-gradient-${index}`}
-              x1={myPoints[index]?.[0] ?? cx}
-              y1={myPoints[index]?.[1] ?? cy}
-              x2={myPoints[(index + 1) % myPoints.length]?.[0] ?? cx}
-              y2={myPoints[(index + 1) % myPoints.length]?.[1] ?? cy}
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop offset="0%" stopColor={mixHexColors(vertex.color, '#FFFFFF', 0.5)} />
-              <stop offset="100%" stopColor={mixHexColors(nextVertex.color, '#FFFFFF', 0.5)} />
-            </linearGradient>
-          );
-        })}
-      </defs>
-
-      {/* 배경 6각형 그리드 */}
-      {gridLevels.map((level, idx) => (
-        <polygon
-          key={idx}
-          points={hexPolygon(cx, cy, maxR * level)}
-          fill="none"
-          stroke={gridStrokeColor}
-          strokeWidth="1"
-        />
-      ))}
-
-      {/* 대각선 */}
-      {diagonals.map(([a, b], idx) => (
-        <line
-          key={idx}
-          x1={a.point[0]}
-          y1={a.point[1]}
-          x2={b.point[0]}
-          y2={b.point[1]}
-          stroke={gridStrokeColor}
-          strokeWidth="1"
-        />
-      ))}
-
-      {/* 중심점에서 나의 민감도 노드로 연결되는 축 */}
-      {myNodePoints.map(([x, y], idx) => (
-        <line
-          key={`spoke-${idx}`}
-          x1={cx}
-          y1={cy}
-          x2={x}
-          y2={y}
-          stroke={mixHexColors(vertices[idx]?.color ?? RADAR_CHART.highlightStroke, '#FFFFFF', 0.4)}
-          strokeWidth="16"
-          strokeLinecap="round"
-        />
-      ))}
-
-      <polygon points={centerStarUp} fill="#FFFFFF" />
-      <polygon points={centerStarDown} fill="#FFFFFF" />
-
-      {/* 평균 민감도 헥사곤 */}
-      <path
-        d={avgPath}
-        fill={RADAR_CHART.averageFill}
-        stroke={RADAR_CHART.averageStroke}
-        strokeWidth="1.5"
-      />
-
-      {/* 나의 민감도 헥사곤 */}
-      {mySegmentPaths.map((segmentPath, index) => (
-        <path
-          key={`my-segment-${index}`}
-          d={segmentPath}
-          fill="none"
-          stroke={`url(#${gradientIdPrefix}-profile-gradient-${index})`}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      ))}
-
-      {/* 나의 민감도 꼭짓점 */}
-      {myNodePoints.map(([x, y], i) => (
-        <circle
-          key={`my-${i}`}
-          cx={x}
-          cy={y}
-          r="8"
-          fill={vertices[i]?.color ?? RADAR_CHART.highlightStroke}
-        />
-      ))}
-
-      {/* 맛 라벨 */}
-      {vertices.map((v, i) => {
-        const isLeft = i === 5;
-        const isRight = i === 2;
-        const isTopLabel = i === 0 || i === 1;
-        const isBottomLabel = i === 3 || i === 4;
-
-        return (
-          <text
-            key={`label-${i}`}
-            x={v.labelPoint[0]}
-            y={v.labelPoint[1]}
-            textAnchor={isLeft ? 'end' : isRight ? 'start' : 'middle'}
-            dominantBaseline={
-              isTopLabel ? 'text-after-edge' : isBottomLabel ? 'text-before-edge' : 'middle'
-            }
-            className="text-[8px] font-medium"
-            fill={RADAR_CHART.labelColor}
-          >
-            {v.label}
-          </text>
-        );
-      })}
-    </svg>
-  );
-}
 
 interface AnalysisPageProps {
   isActive?: boolean;
@@ -1856,6 +1435,9 @@ export default function AnalysisPage({
   );
   const [selectedTasteIndex, setSelectedTasteIndex] = useState(0);
   const [contentDishes, setContentDishes] = useState<RestaurantContentDish[]>([]);
+  const [selectedInsight, setSelectedInsight] = useState<AnalysisInsight | null>(null);
+  const [isInsightDrawerOpen, setIsInsightDrawerOpen] = useState(false);
+  const [activeLegacyDetail, setActiveLegacyDetail] = useState<'taste-profile' | 'special-note' | null>(null);
   const [trendDragOffsetX, setTrendDragOffsetX] = useState(0);
   const [trendMotionOffsetPercent, setTrendMotionOffsetPercent] = useState(0);
   const [trendMotionScale, setTrendMotionScale] = useState(1);
@@ -1888,6 +1470,15 @@ export default function AnalysisPage({
       })),
     'to bottom',
   );
+  const chefTranslationInsight: AnalysisInsight = {
+    description: CHEF_TRANSLATION_COPY,
+    eyebrow: '셰프 참고 가이드',
+    id: 'chef-translation',
+    indicatorBackground: chefTranslationIndicatorBackground,
+    meaning: '현재는 단맛과 신맛이 겹치는 구간에서 반응이 빠르게 올라와, 자극이 밀집되면 전체 인상이 조금 더 강하게 느껴질 수 있어요.',
+    nextStep: '예약 개인화와 셰프 가이드에는 산미와 단맛의 밀도를 조금 나눠 읽는 참고 포인트로 전달돼요. 레시피를 바꾸라는 뜻이 아니라, 현재 손님의 수용 리듬을 이해하는 수준이에요.',
+    title: '셰프가 참고할 현재 프로필 가이드',
+  };
   const realMenuRecommendations = buildRealMenuRecommendations(measurementSnapshot, contentDishes);
   const trendDataBounds = getTrendDataBounds(measurementTimeline, measurementSnapshot);
   const trendNavigationBounds = getTrendNavigationBounds(trendDataBounds);
@@ -1895,11 +1486,13 @@ export default function AnalysisPage({
   const filteredMeasurements = filterMeasurementsByWindow(measurementTimeline, trendViewWindow);
   const trendData = buildProfileChangeTrendData(filteredMeasurements, trendViewWindow, activeTrendRange);
   const profileConfidenceStage = deriveProfileConfidenceStage(measurementTimeline.length);
-  const legacyTasteProfileCard = buildHomeTasteProfileFromMeasurements(measurementTimeline).cardData;
+  const legacyReservationHint = buildHomeReservationHint(reservations);
+  const legacyTasteProfile = buildHomeTasteProfileFromMeasurements(measurementTimeline);
+  const legacyTasteProfileCard = legacyTasteProfile.cardData;
   const legacySpecialNoteCard = buildHomeSpecialNoteFromReservations(
     reservations,
     feedbackByReservationId,
-    buildHomeReservationHint(reservations),
+    legacyReservationHint,
   );
   const hasTrendHistory = filteredMeasurements.length > 1;
   const totalTasteScore = Math.round(totalSensitivity * 10);
@@ -1949,6 +1542,32 @@ export default function AnalysisPage({
     trendPeriodGuide.gridPositions.length > 1
       ? Math.min(0.08, (trendPeriodGuide.gridPositions[1] - trendPeriodGuide.gridPositions[0]) / 6)
       : 0.08;
+  const handleOpenInsightDetail = (insight: AnalysisInsight) => {
+    setSelectedInsight(insight);
+    setIsInsightDrawerOpen(true);
+  };
+
+  if (activeLegacyDetail === 'taste-profile') {
+    return (
+      <LegacyHomeTasteProfileDetailScreen
+        cardData={legacyTasteProfile.cardData}
+        onBack={() => setActiveLegacyDetail(null)}
+        overviewValues={legacyTasteProfile.overviewValues}
+        series={legacyTasteProfile.series}
+      />
+    );
+  }
+
+  if (activeLegacyDetail === 'special-note') {
+    return (
+      <LegacyHomeSpecialNoteDetailScreen
+        cardData={legacySpecialNoteCard}
+        onBack={() => setActiveLegacyDetail(null)}
+        reservationHint={legacyReservationHint}
+      />
+    );
+  }
+
   const trendLeadingInset = trendBaseInset;
   const trendTrailingInset = trendBaseInset;
   const trendGridStepFraction =
@@ -2244,10 +1863,12 @@ export default function AnalysisPage({
               tasteEntries={myTasteData}
             />
 
-            <InsightCard
-              description={CHEF_TRANSLATION_COPY}
-              eyebrow="셰프는 이렇게 참고합니다 (Chef Translation)"
-              indicatorBackground={chefTranslationIndicatorBackground}
+            <InterpretationCard
+              detailLabel="가이드 보기"
+              description={chefTranslationInsight.description}
+              eyebrow={chefTranslationInsight.eyebrow}
+              indicatorBackground={chefTranslationInsight.indicatorBackground}
+              onExpand={() => handleOpenInsightDetail(chefTranslationInsight)}
             />
 
             <ProfileConfidenceCard
@@ -2282,11 +1903,11 @@ export default function AnalysisPage({
             <SectionCard hoverEffect={false}>
               <div className="flex items-center justify-between w-full">
                 <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-muted)]">
-                  <ChevronLeft size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
+                  <ChevronLeftIcon size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
                 </button>
                 <span className="text-[15px] font-semibold text-[var(--tb-color-text-primary)]">{period}</span>
                 <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-muted)]">
-                  <ChevronRight size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
+                  <ChevronRightIcon size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
                 </button>
               </div>
 
@@ -2313,68 +1934,88 @@ export default function AnalysisPage({
 
             <LegacyHomeTasteProfileCard
               cardData={legacyTasteProfileCard}
-              onOpenDetail={() => undefined}
+              onOpenDetail={() => setActiveLegacyDetail('taste-profile')}
             />
 
             <LegacyHomeSpecialNoteCard
               cardData={legacySpecialNoteCard}
-              onOpenDetail={() => undefined}
+              onOpenDetail={() => setActiveLegacyDetail('special-note')}
             />
           </PageSection>
 
           <PageSection title="세부 분석" titleSize="md">
-            <div className="mx-[-20px] flex w-[calc(100%+40px)] gap-[10px] overflow-x-auto px-[20px] pb-4 no-scrollbar">
+            <CardScrollList>
               {myTasteData.map((item, idx) => {
-                const colors = TASTE_COLORS[item.label as keyof typeof TASTE_COLORS];
-                const tasteId = TASTE_LABEL_TO_ID[item.label as keyof typeof TASTE_LABEL_TO_ID];
-                const tintBackgroundColor = tasteId
-                  ? getTasteTintSurface(item.label)
-                  : colors.bg;
-                const tintSurfaceTextColor = tasteId
-                  ? `var(--tb-taste-${tasteId}-tint-surface-text)`
-                  : colors.tintSurfaceText;
-                const tintSurfaceSubTextColor = tasteId
-                  ? `var(--tb-taste-${tasteId}-tint-surface-sub-text)`
-                  : getTasteTintSurfaceSubText(item.label);
+                const taste = TASTE_TOKENS[item.id];
+
                 return (
-                  <div
-                    key={idx}
-                    className="shrink-0 w-[132px] h-[132px] rounded-[20px] p-3 flex flex-col gap-2 animate-slideUp transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.98] cursor-pointer"
+                  <TasteTintCard
+                    key={item.id}
+                    className="shrink-0 animate-slideUp"
                     style={{
-                      backgroundColor: tintBackgroundColor,
-                      border: `1px solid ${getTasteTint(item.label, 0.18)}`,
                       animationDelay: `${idx * 80}ms`,
                       animationFillMode: 'both',
                     }}
-                  >
-                    <div
-                      className="w-[32px] h-[32px] rounded-[8px] flex items-center justify-center text-[14px]"
-                      style={{ backgroundColor: colors.main }}
-                    >
-                      {item.deltaMm > 0 ? (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M4 12L12 4M12 4H6M12 4V10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    description={formatTasteDeltaSummary(item.deltaMm)}
+                    detail={`현재 반응 ${item.score}점`}
+                    tasteId={item.id}
+                    title={item.label}
+                    leading={
+                      item.deltaMm > 0 ? (
+                        <svg
+                          width={ICON_TOKENS.size.lg}
+                          height={ICON_TOKENS.size.lg}
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M4 12L12 4M12 4H6M12 4V10"
+                            stroke={taste.palette.main}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       ) : item.deltaMm < 0 ? (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M4 4L12 12M12 12H6M12 12V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg
+                          width={ICON_TOKENS.size.lg}
+                          height={ICON_TOKENS.size.lg}
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M4 4L12 12M12 12H6M12 12V6"
+                            stroke={taste.palette.main}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M4 8H12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg
+                          width={ICON_TOKENS.size.lg}
+                          height={ICON_TOKENS.size.lg}
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M4 8H12"
+                            stroke={taste.palette.main}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-[1px]">
-                      <p className="font-bold text-[14px]" style={{ color: tintSurfaceTextColor }}>{item.label}</p>
-                      <p className="font-medium text-[12px]" style={{ color: tintSurfaceSubTextColor }}>
-                        {formatTasteDeltaSummary(item.deltaMm)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                      )
+                    }
+                    leadingStyle={{ backgroundColor: 'var(--tb-color-surface-base)' }}
+                    />
+                  );
+                })}
+            </CardScrollList>
           </PageSection>
 
           {/* 측정/피드백 변화 차트 */}
@@ -2386,7 +2027,7 @@ export default function AnalysisPage({
                 </SectionTitle>
                 <p className="text-[12px] text-[var(--tb-color-text-subtle)] font-normal">전문가용 데이터 대시보드 열기</p>
               </div>
-              <ChevronRight size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)] transition-transform duration-300 group-open:rotate-90" />
+              <ChevronRightIcon size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)] transition-transform duration-300 group-open:rotate-90" />
             </summary>
             
             <div className="mt-4 flex flex-col gap-3 animate-fadeIn">
@@ -2422,7 +2063,7 @@ export default function AnalysisPage({
                   }}
                   aria-label="이전 기간 보기"
                 >
-                  <ChevronLeft size={ICON_TOKENS.size.lg} />
+                  <ChevronLeftIcon size={ICON_TOKENS.size.lg} />
                 </button>
                 <div className="flex min-w-0 items-center justify-center text-center">
                   <p className="truncate text-[15px] font-semibold leading-none text-[var(--tb-color-text-primary)]">
@@ -2439,7 +2080,7 @@ export default function AnalysisPage({
                   }}
                   aria-label="다음 기간 보기"
                 >
-                  <ChevronRight size={ICON_TOKENS.size.lg} />
+                  <ChevronRightIcon size={ICON_TOKENS.size.lg} />
                 </button>
               </div>
               <div className="mb-0 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -2453,7 +2094,7 @@ export default function AnalysisPage({
                     taste={previousTaste}
                     trend={previousTasteMeta.trend}
                     muted
-                    size={24}
+                    size={ICON_TOKENS.size.lg}
                   />
                   <span className="truncate text-[12px] font-semibold leading-none">{previousTaste}</span>
                 </button>
@@ -2482,7 +2123,7 @@ export default function AnalysisPage({
                     taste={nextTaste}
                     trend={nextTasteMeta.trend}
                     muted
-                    size={24}
+                    size={ICON_TOKENS.size.lg}
                   />
                   <span className="truncate text-[12px] font-semibold leading-none">{nextTaste}</span>
                 </button>
@@ -2637,17 +2278,25 @@ export default function AnalysisPage({
           {/* 인사이트 */}
           <PageSection title="인사이트" titleSize="md" className="pb-6">
             <div className="flex flex-col gap-3">
-              {insights.map((item, idx) => (
-                <InsightCard
-                  key={idx}
-                  accentColor={getTasteColor(item.taste)}
-                  description={item.text}
+              {insights.map((item) => (
+                <InterpretationCard
+                  key={item.id}
+                  accentColor={item.accentColor}
+                  detailLabel="해석 보기"
+                  description={item.description}
+                  onExpand={() => handleOpenInsightDetail(item)}
                 />
               ))}
             </div>
           </PageSection>
         </div>
       </div>
+
+      <InterpretationDetailDrawer
+        interpretation={selectedInsight}
+        open={isInsightDrawerOpen}
+        onOpenChange={setIsInsightDrawerOpen}
+      />
     </div>
   );
 }

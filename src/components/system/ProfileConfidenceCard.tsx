@@ -97,7 +97,7 @@ export default function ProfileConfidenceCard({
             sectionId="badges"
           >
             <StatusChip
-              className="gap-1"
+              className="gap-1 whitespace-nowrap"
               color="var(--tb-color-text-primary)"
               backgroundColor="var(--tb-color-surface-muted)"
             >

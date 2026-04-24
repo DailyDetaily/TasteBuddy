@@ -1,16 +1,21 @@
 import type { ReactNode } from 'react';
-import { CheckmarkCircleRegular, PersonRegular, ChatRegular, SparkleRegular } from '@fluentui/react-icons';
-const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
-const CheckCircle2 = wrapIcon(CheckmarkCircleRegular);
-const ChefHat = wrapIcon(PersonRegular);
-const MessageSquareText = wrapIcon(ChatRegular);
-const Sparkles = wrapIcon(SparkleRegular);
+import {
+  CircleCheck as CircleCheckIcon,
+  ChefHat as ChefHatIcon,
+  MessageSquareText as MessageSquareTextIcon,
+  Sparkles as SparklesIcon
+} from 'lucide-react';
+const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
+const CheckCircle2 = wrapIcon(CircleCheckIcon);
+const ChefHat = wrapIcon(ChefHatIcon);
+const MessageSquareText = wrapIcon(MessageSquareTextIcon);
+const Sparkles = wrapIcon(SparklesIcon);
 
 import SectionCard from '../SectionCard';
 import TopAppBar from '../TopAppBar';
 import OutlineBadge from '../system/OutlineBadge';
+import FlowBottomCta from '../system/FlowBottomCta';
 import PageSection from '../system/PageSection';
-import PrimaryButton from '../system/PrimaryButton';
 import CardIconBox from '../system/CardIconBox';
 import TasteChip from '../system/TasteChip';
 import {
@@ -407,12 +412,11 @@ export function DiningFeedbackScreen({
         </div>
       </div>
 
-      <div className="tb-bottom-fade absolute bottom-0 left-0 right-0 z-20 flex min-h-[140px] w-full flex-col items-center justify-end gap-2 px-5 pb-10">
-        <PrimaryButton onClick={onSubmit}>다음 다이닝에 반영하기</PrimaryButton>
-        <p className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">
-          저장 후 바로 어떤 점이 다음 다이닝에 반영되는지 확인할 수 있어요.
-        </p>
-      </div>
+      <FlowBottomCta
+        actionLabel="다음 다이닝에 반영하기"
+        helperText="저장 후 바로 어떤 점이 다음 다이닝에 반영되는지 확인할 수 있어요."
+        onAction={onSubmit}
+      />
     </div>
   );
 }
@@ -555,12 +559,11 @@ export function DiningAiAnalysisScreen({
         </div>
       </div>
 
-      <div className="tb-bottom-fade absolute bottom-0 left-0 right-0 z-20 flex min-h-[140px] w-full flex-col items-center justify-end gap-2 px-5 pb-10">
-        <PrimaryButton onClick={onClose}>예약 상세로 돌아가기</PrimaryButton>
-        <p className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">
-          다음 예약과 프로필 업데이트에 자동 반영됩니다.
-        </p>
-      </div>
+      <FlowBottomCta
+        actionLabel="예약 상세로 돌아가기"
+        helperText="다음 예약과 프로필 업데이트에 자동 반영됩니다."
+        onAction={onClose}
+      />
     </div>
   );
 }

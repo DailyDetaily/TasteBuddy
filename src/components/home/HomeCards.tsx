@@ -4,11 +4,14 @@ import ChefAvatar from '../system/ChefAvatar';
 import InspectableComponent, {
   type InspectableNavigateHandler,
 } from '../system/InspectableComponent';
+import InterpretationCard from '../system/InterpretationCard';
+import TCSBadge from '../system/TCSBadge';
 import { type ProfileConfidenceStage } from '../system/ProfileConfidenceCard';
-import QuickCalibrationHintCard from '../system/QuickCalibrationHintCard';
+import TCSHintCard from '../system/TCSHintCard';
 import SectionTitle from '../system/SectionTitle';
 import StatusChip from '../system/StatusChip';
 import TasteChip from '../system/TasteChip';
+import CardScrollList from '../system/CardScrollList';
 import { LegacyHomeChefCard } from '../../imports/Home';
 import { type TasteId, TASTE_TOKENS } from '../../constants/designTokens';
 import { type ReservationRecord, RESERVATION_CATALOG } from '../../constants/reservationCatalog';
@@ -26,7 +29,6 @@ import {
 } from '../../constants/tasteMeasurementData';
 import { type RestaurantReadyGuidance } from '../../constants/quickTasteCalibrationData';
 import {
-  buildTasteAdjustmentGradient,
   getTasteColor,
 } from '../../constants/tasteColors';
 
@@ -109,14 +111,9 @@ interface HomeDiningPreparationCardProps {
 
 interface HomeChefMatchStripProps {
   chefCards: HomeChefMatchCardData[];
+  fullBleed?: boolean;
   onNavigateToSection?: InspectableNavigateHandler;
   showSectionTitle?: boolean;
-}
-
-interface HomeRecentProfileChangeCardProps {
-  recentChangeTasteLabel: string;
-  onNavigateToSection?: InspectableNavigateHandler;
-  recentChangeText: string;
 }
 
 interface HomeCardStackProps
@@ -237,24 +234,25 @@ export function HomeDiningPreparationCard({
       : reservation.status === 'preparing'
         ? '셰프 준비 중'
         : '예약 확정';
-  const reservationBadgeGradient = buildTasteAdjustmentGradient(
-    reservation.adjustments.map((adjustment, index) => ({
-      change: `${Math.max(6, 12 - index * 2)}%`,
-      taste: adjustment.taste,
-    })),
-  );
 
   return (
     <div className="relative w-full rounded-[20px] bg-white transition-all duration-300">
       <div className="size-full overflow-clip rounded-[inherit]">
         <div className="box-border flex w-full flex-col items-start gap-[12px] p-[12px]">
           <div className="flex w-full items-center gap-2">
-            <span
-              className="tb-badge-elevated relative rounded-[6px] px-[6px] py-[2px] text-[10px] font-bold text-white"
-              style={{ background: reservationBadgeGradient }}
+            <InspectableComponent
+              className="shrink-0"
+              componentName="TCSBadge"
+              onNavigate={onNavigateToSection}
+              sectionId="badges"
             >
-              TCS
-            </span>
+              <TCSBadge
+                adjustments={reservation.adjustments.map((adjustment, index) => ({
+                  change: `${Math.max(6, 12 - index * 2)}%`,
+                  taste: adjustment.taste,
+                }))}
+              />
+            </InspectableComponent>
             <p className="min-w-0 flex-1 truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
               {reservation.course}
             </p>
@@ -265,8 +263,6 @@ export function HomeDiningPreparationCard({
               sectionId="badges"
             >
               <StatusChip
-                color="var(--tb-color-text-body)"
-                backgroundColor="var(--tb-color-bg-page)"
               >
                 {reservationStatusLabel}
               </StatusChip>
@@ -327,13 +323,14 @@ export function HomeDiningPreparationCard({
 
           <InspectableComponent
             className="block w-full"
-            componentName="QuickCalibrationHintCard"
+            componentName="TCSHintCard"
             onNavigate={onNavigateToSection}
             sectionId="appSpecific"
           >
-            <QuickCalibrationHintCard
+            <TCSHintCard
               title="이번 식사에서 달라지는 점"
               description={summary.guestMessage}
+              surface="nested"
             />
           </InspectableComponent>
         </div>
@@ -376,6 +373,7 @@ export function HomeChefMatchCard({
 
 export function HomeChefMatchStrip({
   chefCards,
+  fullBleed = true,
   onNavigateToSection,
   showSectionTitle = true,
 }: HomeChefMatchStripProps) {
@@ -384,56 +382,22 @@ export function HomeChefMatchStrip({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="tb-card-stack">
       {showSectionTitle ? (
         <SectionTitle as="h3" size="md">
           셰프 매칭
         </SectionTitle>
       ) : null}
-      <div className="mx-[-20px] w-[calc(100%+40px)] overflow-x-auto no-scrollbar">
-        <div className="flex gap-[10px] px-[20px]">
-          {chefCards.map((chef) => (
-            <HomeChefMatchCard
-              key={`${chef.chef}-${chef.restaurant}-${chef.match}`}
-              chef={chef}
-              onNavigateToSection={onNavigateToSection}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function HomeRecentProfileChangeCard({
-  recentChangeTasteLabel,
-  onNavigateToSection,
-  recentChangeText,
-}: HomeRecentProfileChangeCardProps) {
-  return (
-    <InspectableComponent
-      className="block w-full"
-      componentName="SectionCard"
-      onNavigate={onNavigateToSection}
-      sectionId="cards"
-    >
-      <SectionCard hoverEffect={false}>
-        <div className="flex w-full items-center gap-3">
-          <div
-            className="h-[36px] w-[8px] shrink-0 rounded-full"
-            style={{ backgroundColor: getTasteColor(recentChangeTasteLabel) }}
+      <CardScrollList fullBleed={fullBleed}>
+        {chefCards.map((chef) => (
+          <HomeChefMatchCard
+            key={`${chef.chef}-${chef.restaurant}-${chef.match}`}
+            chef={chef}
+            onNavigateToSection={onNavigateToSection}
           />
-          <div className="flex min-w-0 flex-col gap-1">
-            <p className="text-[14px] font-medium leading-relaxed text-[var(--tb-color-text-primary)]">
-              {recentChangeText}
-            </p>
-            <span className="text-[12px] text-[var(--tb-color-text-muted)]">
-              가장 최근 다이닝 피드백과 측정을 통해 반영된 내용이에요.
-            </span>
-          </div>
-        </div>
-      </SectionCard>
-    </InspectableComponent>
+        ))}
+      </CardScrollList>
+    </div>
   );
 }
 
@@ -463,7 +427,7 @@ export function HomeCardStack({
       />
 
       {featuredReservation && featuredSummary ? (
-        <div className="flex flex-col gap-3">
+        <div className="tb-card-stack">
           <SectionTitle as="h2" size="md">
             다음 다이닝 준비
           </SectionTitle>
@@ -475,15 +439,24 @@ export function HomeCardStack({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3">
+      <div className="tb-card-stack">
         <SectionTitle as="h3" size="md">
           최근 프로필 변화
         </SectionTitle>
-        <HomeRecentProfileChangeCard
-          onNavigateToSection={onNavigateToSection}
-          recentChangeTasteLabel={recentChangeTasteLabel}
-          recentChangeText={recentChangeText}
-        />
+        <InspectableComponent
+          className="block w-full"
+          componentName="InterpretationCard"
+          onNavigate={onNavigateToSection}
+          sectionId="cards"
+        >
+          <InterpretationCard
+            accentColor={getTasteColor(recentChangeTasteLabel)}
+            detailLabel="변화 보기"
+            description={recentChangeText}
+            eyebrow="최근 반영 내용"
+            supportingText="가장 최근 다이닝 피드백과 측정을 통해 반영된 내용이에요."
+          />
+        </InspectableComponent>
       </div>
 
       <InspectableComponent

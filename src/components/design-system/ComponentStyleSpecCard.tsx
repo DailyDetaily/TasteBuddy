@@ -1,5 +1,6 @@
 import { Button } from "../ui/button";
 import { cn } from "../ui/utils";
+import { SourceFileLink } from "./PreviewableSourceText";
 
 import type { ComponentStyleSpec } from "./componentStyleSpecs";
 
@@ -94,9 +95,11 @@ export default function ComponentStyleSpecCard({
               key={`${spec.id}-${source.file}`}
               className="rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3"
             >
-              <p className="font-mono text-[11px] text-[var(--tb-color-text-primary)]">
-                {source.file}
-              </p>
+              <SourceFileLink
+                className="font-mono"
+                file={source.file}
+                variant="block"
+              />
               {source.note ? (
                 <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                   {source.note}

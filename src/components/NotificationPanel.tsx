@@ -1,10 +1,12 @@
-import { DismissRegular } from '@fluentui/react-icons';
 import {
-  CalendarCheckmarkRegular,
-  AlertRegular,
-  FoodRegular,
-  CheckmarkCircleRegular,
-} from '@fluentui/react-icons';
+  X as XIcon
+} from 'lucide-react';
+import {
+  CalendarCheck as CalendarCheckIcon,
+  Bell as BellIcon,
+  Utensils as UtensilsIcon,
+  CircleCheck as CircleCheckIcon
+} from 'lucide-react';
 import React from 'react';
 import {
   formatNotificationRelativeTime,
@@ -13,15 +15,15 @@ import {
 import { ICON_TOKENS } from '../constants/designTokens';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
-  return ({ size, style, ...props }: any) => (
-    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
+  return ({ size, fontSize, style, ...props }: any) => (
+    <IconComponent {...props} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />
   );
 };
 
-const CalendarCheck = wrapIcon(CalendarCheckmarkRegular);
-const Bell = wrapIcon(AlertRegular);
-const Utensils = wrapIcon(FoodRegular);
-const CheckCircle = wrapIcon(CheckmarkCircleRegular);
+const CalendarCheck = wrapIcon(CalendarCheckIcon);
+const Bell = wrapIcon(BellIcon);
+const Utensils = wrapIcon(UtensilsIcon);
+const CheckCircle = wrapIcon(CircleCheckIcon);
 const PANEL_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
 const PANEL_ACTION_BUTTON_SIZE = ICON_TOKENS.container.md;
 const NOTIFICATION_ITEM_ICON_SIZE = ICON_TOKENS.size.md;
@@ -118,7 +120,7 @@ export default function NotificationPanel({
                     height: PANEL_ACTION_BUTTON_SIZE,
                   }}
                 >
-                  <DismissRegular fontSize={PANEL_ACTION_ICON_SIZE} />
+                  <XIcon size={PANEL_ACTION_ICON_SIZE} />
                 </button>
               </div>
             </div>

@@ -1,43 +1,51 @@
-import { useId, useState, type CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  CheckmarkRegular,
-  ChevronLeftRegular,
-  DismissRegular,
-} from '@fluentui/react-icons';
+  Check as CheckIcon,
+  ChevronLeft as ChevronLeftIcon,
+  X as XIcon
+} from 'lucide-react';
 
 import SectionCard from '../components/SectionCard';
-import QuickCalibrationHintCard from '../components/system/QuickCalibrationHintCard';
+import CalibrationQuestionHeader from '../components/measurement/CalibrationQuestionHeader';
+import HexRadarChart from '../components/system/HexRadarChart';
+import FlowHeaderBlock from '../components/system/FlowHeaderBlock';
+import FlowStepCta from '../components/system/FlowStepCta';
+import CardScrollList from '../components/system/CardScrollList';
 import SectionTitle from '../components/system/SectionTitle';
 import OutlineBadge from '../components/system/OutlineBadge';
-import PrimaryButton from '../components/system/PrimaryButton';
-import StepIndicator from '../components/system/StepIndicator';
 import TasteChip from '../components/system/TasteChip';
-import { ICON_TOKENS, MOTION_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
+import TasteTintCard from '../components/system/TasteTintCard';
+import { ICON_TOKENS, MOTION_TOKENS, TASTE_TOKENS } from '../constants/designTokens';
 import {
   QUICK_CALIBRATION_SLIDER_VALUES,
   QUICK_TASTE_CALIBRATION_QUESTIONS,
   createInitialQuickTasteCalibrationResponses,
   createQuickCalibrationResult,
   getQuickTasteCalibrationSelection,
-  getQuickTasteCalibrationSelections,
   getStarterAxisDisplayLabel,
   type QuickCalibrationResult,
   type QuickCalibrationSliderValue,
   type QuickTasteCalibrationResponses,
 } from '../constants/quickTasteCalibrationData';
+import { getTasteMeasurementEntries } from '../constants/tasteMeasurementData';
+import {
+  getTasteColor,
+  getTasteTintSoft,
+  getTasteTintSoftBorder,
+} from '../constants/tasteColors';
 
-const wrapIcon = (Icon: any) => ({ size, className, style, ...props }: any) => (
+const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...props }: any) => (
   <Icon
     {...props}
     className={className}
-    style={{ fontSize: size, width: size, height: size, ...style }}
+    style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }}
   />
 );
 
-const Check = wrapIcon(CheckmarkRegular);
-const ChevronLeft = wrapIcon(ChevronLeftRegular);
-const Dismiss = wrapIcon(DismissRegular);
+const Check = wrapIcon(CheckIcon);
+const ChevronLeft = wrapIcon(ChevronLeftIcon);
+const Dismiss = wrapIcon(XIcon);
 
 interface QuickTasteCalibrationScreenProps {
   onBack: () => void;
@@ -50,9 +58,7 @@ const APP_CHROME_ICON_SIZE = ICON_TOKENS.size.lg;
 const APP_CHROME_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const CONTENT_BOTTOM_PADDING = 'calc(164px + var(--tb-safe-area-bottom))';
 const QUESTION_CONTENT_BOTTOM_PADDING = 'calc(188px + var(--tb-safe-area-bottom))';
-const RADAR_SIZE = 320;
-const RADAR_CENTER = 160;
-const RADAR_MAX_RADIUS = 102;
+const SECTION_CARD_BORDER_CLASS = 'border border-[var(--tb-color-border-subtle)]';
 
 function buildCenteredSliderBackground(
   value: QuickCalibrationSliderValue,
@@ -74,229 +80,9 @@ function buildCenteredSliderBackground(
   return `linear-gradient(to right, ${trackColor} 0%, ${center}%, ${fillColor} ${center}%, ${fillColor} ${progress}%, ${trackColor} ${progress}%, ${trackColor} 100%)`;
 }
 
-function polarPoint(radius: number, index: number) {
-  const angle = (-90 + index * (360 / TASTE_IDS.length)) * (Math.PI / 180);
-  return [
-    RADAR_CENTER + Math.cos(angle) * radius,
-    RADAR_CENTER + Math.sin(angle) * radius,
-  ] as const;
-}
-
-function buildClosedPath(points: ReadonlyArray<readonly [number, number]>) {
-  if (points.length === 0) {
-    return '';
-  }
-
-  return points.reduce((command, [x, y], index) => {
-    if (index === 0) {
-      return `M ${x} ${y}`;
-    }
-
-    return `${command} L ${x} ${y}`;
-  }, '') + ' Z';
-}
-
-function TasteDnaRadar({
-  absoluteScores,
-  topAxes,
-}: {
-  absoluteScores: QuickCalibrationResult['absoluteScores'];
-  topAxes: TasteId[];
-}) {
-  const gradientId = useId().replace(/:/g, '');
-  const polygonPoints = TASTE_IDS.map((tasteId, index) => {
-    const radius = (absoluteScores[tasteId] / 100) * RADAR_MAX_RADIUS;
-    return polarPoint(radius, index);
-  });
-  const polygonPath = buildClosedPath(polygonPoints);
-  const labelPoints = TASTE_IDS.map((_, index) => polarPoint(RADAR_MAX_RADIUS + 26, index));
-  const outerPoints = TASTE_IDS.map((_, index) => polarPoint(RADAR_MAX_RADIUS, index));
-
-  return (
-    <div className="relative flex w-full items-center justify-center">
-      <svg
-        width={RADAR_SIZE}
-        height={RADAR_SIZE}
-        viewBox={`0 0 ${RADAR_SIZE} ${RADAR_SIZE}`}
-        className="w-full max-w-[320px]"
-      >
-        <defs>
-          <linearGradient id={`${gradientId}-fill`} x1="40" y1="40" x2="280" y2="280">
-            <stop
-              offset="0%"
-              stopColor={TASTE_TOKENS[topAxes[0] ?? 'sweet'].palette.main}
-              stopOpacity="0.44"
-            />
-            <stop
-              offset="100%"
-              stopColor={TASTE_TOKENS[topAxes[1] ?? topAxes[0] ?? 'umami'].palette.main}
-              stopOpacity="0.2"
-            />
-          </linearGradient>
-        </defs>
-
-        {[0.25, 0.5, 0.75, 1].map((level) => (
-          <polygon
-            key={level}
-            points={TASTE_IDS.map((_, index) => polarPoint(RADAR_MAX_RADIUS * level, index).join(',')).join(' ')}
-            fill="none"
-            stroke="rgba(15, 15, 15, 0.08)"
-            strokeWidth="1"
-          />
-        ))}
-
-        {outerPoints.map(([x, y], index) => (
-          <line
-            key={`axis-${TASTE_IDS[index]}`}
-            x1={RADAR_CENTER}
-            y1={RADAR_CENTER}
-            x2={x}
-            y2={y}
-            stroke="rgba(15, 15, 15, 0.07)"
-            strokeWidth="1"
-          />
-        ))}
-
-        <motion.path
-          d={polygonPath}
-          fill={`url(#${gradientId}-fill)`}
-          stroke="rgba(15, 15, 15, 0.78)"
-          strokeWidth="1.6"
-          initial={{ opacity: 0, pathLength: 0, scale: 0.94 }}
-          animate={{ opacity: 1, pathLength: 1, scale: 1 }}
-          transition={{
-            duration: 0.72,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          style={{ transformOrigin: `${RADAR_CENTER}px ${RADAR_CENTER}px` }}
-        />
-
-        {polygonPoints.map(([x, y], index) => {
-          const tasteId = TASTE_IDS[index];
-          const color = TASTE_TOKENS[tasteId].palette.main;
-
-          return (
-            <motion.circle
-              key={tasteId}
-              cx={x}
-              cy={y}
-              r="5.5"
-              fill="#FFFFFF"
-              stroke={color}
-              strokeWidth="3"
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                delay: 0.16 + index * 0.04,
-                duration: 0.4,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            />
-          );
-        })}
-
-        <circle
-          cx={RADAR_CENTER}
-          cy={RADAR_CENTER}
-          r="4"
-          fill="rgba(15, 15, 15, 0.8)"
-        />
-
-        {labelPoints.map(([x, y], index) => {
-          const tasteId = TASTE_IDS[index];
-          const isHighlighted = topAxes.includes(tasteId);
-          const color = TASTE_TOKENS[tasteId].palette.main;
-
-          return (
-            <text
-              key={`label-${tasteId}`}
-              x={x}
-              y={y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="12"
-              fontWeight={isHighlighted ? '700' : '600'}
-              fill={isHighlighted ? color : 'rgba(15, 15, 15, 0.56)'}
-            >
-              {TASTE_TOKENS[tasteId].label}
-            </text>
-          );
-        })}
-      </svg>
-    </div>
-  );
-}
-
-function TasteAxisMeter({
-  absoluteScore,
-  tasteId,
-}: {
-  absoluteScore: number;
-  tasteId: TasteId;
-}) {
-  const taste = TASTE_TOKENS[tasteId];
-
-  return (
-    <div className="flex flex-col gap-2 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-white/84 p-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span
-            className="h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: taste.palette.main }}
-          />
-          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-            {taste.label}
-          </p>
-        </div>
-        <span className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-          {getStarterAxisDisplayLabel(absoluteScore / 10)}
-        </span>
-      </div>
-      <div className="h-[10px] overflow-hidden rounded-full bg-[rgba(15,15,15,0.07)]">
-        <div
-          className="h-full rounded-full transition-[width] duration-500 ease-[var(--tb-motion-ease-entrance)]"
-          style={{
-            width: `${absoluteScore}%`,
-            background: taste.palette.gradient,
-          }}
-        />
-      </div>
-      <p className="text-[12px] text-[var(--tb-color-text-muted)]">
-        절대 좌표 {absoluteScore}
-      </p>
-    </div>
-  );
-}
-
-function CalibrationQuestionHeader({
-  currentQuestion,
-  currentTaste,
-  questionIndex,
-}: {
-  currentQuestion: NonNullable<typeof QUICK_TASTE_CALIBRATION_QUESTIONS[number]>;
-  currentTaste: (typeof TASTE_TOKENS)[TasteId];
-  questionIndex: number;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-start justify-between gap-4">
-        <SectionTitle as="h1" size="lg" className="whitespace-pre-line leading-tight">
-          {currentQuestion.title}
-        </SectionTitle>
-        <span className="mt-1 shrink-0 text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-          {questionIndex + 1} / {QUICK_TASTE_CALIBRATION_QUESTIONS.length}
-        </span>
-      </div>
-      <p className="max-w-[620px] text-[14px] leading-relaxed text-[var(--tb-color-text-body)]">
-        {currentQuestion.description}
-      </p>
-    </div>
-  );
-}
-
 function getHeaderTitle(phase: CalibrationPhase, tasteLabel?: string) {
   if (phase === 'result') {
-    return 'Taste Profile';
+    return '미각 프로필';
   }
 
   if (phase === 'questions' && tasteLabel) {
@@ -304,6 +90,38 @@ function getHeaderTitle(phase: CalibrationPhase, tasteLabel?: string) {
   }
 
   return '미각 측정';
+}
+
+interface CalibrationMetaChipProps {
+  label: string;
+  taste: string;
+  value?: string;
+}
+
+function CalibrationMetaChip({
+  label,
+  taste,
+  value,
+}: CalibrationMetaChipProps) {
+  const accentColor = getTasteColor(taste);
+  const backgroundColor = getTasteTintSoft(taste);
+  const borderColor = getTasteTintSoftBorder(taste);
+
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-medium"
+      style={{ backgroundColor, borderColor }}
+    >
+      <span style={{ color: value ? 'var(--tb-color-text-primary)' : accentColor }}>
+        {label}
+      </span>
+      {value ? (
+        <span className="font-semibold" style={{ color: accentColor }}>
+          {value}
+        </span>
+      ) : null}
+    </span>
+  );
 }
 
 export default function QuickTasteCalibrationScreen({
@@ -323,8 +141,13 @@ export default function QuickTasteCalibrationScreen({
   const currentTaste = currentQuestion ? TASTE_TOKENS[currentQuestion.tasteId] : null;
   const currentValue = currentSelection?.sliderValue ?? 0;
   const completedResult = createQuickCalibrationResult(responses);
-  const selections = getQuickTasteCalibrationSelections(responses);
   const starterGuidance = completedResult.starterGuidance;
+  const resultTasteEntries = getTasteMeasurementEntries(completedResult.snapshot);
+  const resultSummaryLines = [
+    `${starterGuidance.topLabels[0] ?? '첫 번째 축'}은 기준점에 가깝게 편안한 편이에요.`,
+    `${starterGuidance.topLabels[1] ?? '두 번째 축'}도 기준점에 가깝게 편안한 축으로 읽혀요.`,
+    `조심할 축은 ${starterGuidance.cautionLabel}이고, 강도를 과하게 밀지 않는 편이 좋아요.`,
+  ];
   const topAxisEntries = starterGuidance.topAxes.map((tasteId) => ({
     id: tasteId,
     label: TASTE_TOKENS[tasteId].label,
@@ -390,20 +213,18 @@ export default function QuickTasteCalibrationScreen({
           : '다음 질문'
         : '프로필 저장하고 시작하기';
 
-  const headerSurfaceClass = 'bg-[var(--tb-color-bg-page)]/88 supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/78';
   const fallbackTaste = currentTaste ?? TASTE_TOKENS.salty;
   const currentAccent = fallbackTaste.palette.main;
   const sliderBackground = buildCenteredSliderBackground(currentValue, fallbackTaste);
   const sliderStyle = {
     '--tb-slider-color': currentAccent,
   } as CSSProperties;
-  const resultTaste = TASTE_TOKENS[starterGuidance.topAxes[0] ?? 'sweet'];
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-page)] font-sans">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-focus)] font-sans">
       <header className="z-30 flex w-full shrink-0 justify-center">
         <div
-          className={`w-full max-w-[1440px] border-b border-[var(--tb-color-border-subtle)] backdrop-blur-md ${headerSurfaceClass}`}
+          className="w-full max-w-[1440px] border-b border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-overlay)] backdrop-blur-md"
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
           <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">
@@ -448,74 +269,61 @@ export default function QuickTasteCalibrationScreen({
               className="absolute inset-0 overflow-y-auto px-5 pt-4 no-scrollbar"
               style={{ paddingBottom: CONTENT_BOTTOM_PADDING }}
             >
-              <div className="relative mx-auto flex w-full max-w-[980px] flex-col gap-3 pb-8">
-                <SectionCard
-                  hoverEffect={false}
-                  className="bg-[var(--tb-color-surface-card)]"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex flex-col gap-3">
-                      <OutlineBadge>Digital Anchoring</OutlineBadge>
-                      <div className="flex flex-col gap-2">
-                        <SectionTitle as="h1" size="lg" className="whitespace-pre-line leading-tight">
-                          익숙한 음식 6개로{'\n'}내 미각의 영점을 먼저 맞춰요
-                        </SectionTitle>
-                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                          숫자 대신 모두가 아는 기준 음식만 떠올리면 됩니다. 첫 예약부터 바로
-                          쓰는 스타터 프로필을 1분 안에 만들 수 있어요.
-                        </p>
-                      </div>
-                    </div>
-                    <OutlineBadge>보통 1분 이내</OutlineBadge>
-                  </div>
-                </SectionCard>
+              <div className="tb-section-stack">
+                <FlowHeaderBlock
+                  description={
+                    <>
+                      숫자 대신 모두가 아는 기준 음식만 떠올리면 됩니다.{'\n'}
+                      첫 예약부터 바로 쓰는 스타터 프로필을 1분 안에 만들 수 있어요.
+                    </>
+                  }
+                  descriptionClassName="whitespace-pre-line"
+                  title={
+                    <>
+                      익숙한 음식 6개로{'\n'}내 미각의 영점을 먼저 맞춰요
+                    </>
+                  }
+                  titleClassName="whitespace-pre-line leading-tight"
+                  topLeft={<OutlineBadge>Digital Anchoring</OutlineBadge>}
+                  topRight={<OutlineBadge>보통 1분 이내</OutlineBadge>}
+                />
 
-                <SectionCard hoverEffect={false}>
-                  <div className="flex w-full flex-col gap-4">
-                    <div className="flex flex-col gap-1">
-                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-faint)]">
-                        6 Tastes, 6 Anchors
-                      </p>
-                      <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
-                        한 화면에 한 질문씩, 기준 음식 하나만 떠올리면 됩니다
-                      </p>
-                    </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {QUICK_TASTE_CALIBRATION_QUESTIONS.map((question, index) => {
+                    const taste = TASTE_TOKENS[question.tasteId];
 
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {QUICK_TASTE_CALIBRATION_QUESTIONS.map((question) => {
-                        const taste = TASTE_TOKENS[question.tasteId];
-
-                        return (
-                          <SectionCard
-                            key={question.id}
-                            hoverEffect={false}
-                            className="border"
-                            style={{
-                              backgroundColor: taste.palette.bg,
-                              borderColor: taste.palette.light,
-                            } as CSSProperties}
+                    return (
+                      <motion.div
+                        key={question.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 + index * 0.05, duration: 0.4 }}
+                        className="flex items-center gap-3 rounded-[var(--tb-radius-20)] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-card)] p-3"
+                      >
+                        <div
+                          className="flex size-[36px] shrink-0 items-center justify-center rounded-[var(--tb-radius-8)]"
+                          style={{
+                            backgroundColor: taste.palette.tintSurface,
+                            color: taste.palette.main,
+                          }}
+                        >
+                          <span className="text-[13px] font-bold">0{index + 1}</span>
+                        </div>
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <span
+                            className="mb-[2px] text-[11px] font-semibold tracking-[0.02em]"
+                            style={{ color: taste.palette.main }}
                           >
-                            <p className="text-[11px] font-semibold tracking-[0.12em] text-[var(--tb-color-text-muted)] uppercase">
-                              {question.eyebrow}
-                            </p>
-                            <p
-                              className="text-[13px] font-semibold"
-                              style={{ color: taste.palette.dark }}
-                            >
-                              {taste.label}
-                            </p>
-                            <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                              {question.anchorName}
-                            </p>
-                            <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                              {question.anchorDetail}
-                            </p>
-                          </SectionCard>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </SectionCard>
+                            {taste.label}
+                          </span>
+                          <span className="truncate text-[14px] font-semibold leading-snug text-[var(--tb-color-text-primary)]">
+                            {question.anchorName}
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             </motion.div>
           )}
@@ -530,19 +338,21 @@ export default function QuickTasteCalibrationScreen({
               className="absolute inset-0 overflow-y-auto px-5 pt-4 no-scrollbar"
               style={{ paddingBottom: QUESTION_CONTENT_BOTTOM_PADDING }}
             >
-              <div className="relative mx-auto flex w-full max-w-[1120px] flex-col gap-4 pb-8">
-                <div className="flex w-full flex-col gap-4">
+              <div className="tb-card-stack">
+                <div className="tb-card-stack">
                   <CalibrationQuestionHeader
-                    currentQuestion={currentQuestion}
-                    currentTaste={currentTaste}
+                    description={currentQuestion.description}
                     questionIndex={questionIndex}
+                    tasteLabel={currentTaste.label}
+                    title={currentQuestion.title}
+                    totalQuestions={QUICK_TASTE_CALIBRATION_QUESTIONS.length}
                   />
 
 
 
                   <SectionCard
                     hoverEffect={false}
-                    className="overflow-visible"
+                    className={`overflow-visible ${SECTION_CARD_BORDER_CLASS}`}
                     style={{
                       backgroundColor: 'var(--tb-color-surface-base)',
                     } as CSSProperties}
@@ -559,16 +369,11 @@ export default function QuickTasteCalibrationScreen({
                           {currentSelection.responseLabel}
                         </p>
                       </div>
-                      <div
-                        className="rounded-full border px-3 py-1.5 text-[12px] font-semibold"
-                        style={{
-                          backgroundColor: currentTaste.palette.bg,
-                          borderColor: currentTaste.palette.light,
-                          color: currentTaste.palette.dark,
-                        }}
-                      >
-                        절대 좌표 {completedResult.absoluteScores[currentQuestion.id]} / 100
-                      </div>
+                      <CalibrationMetaChip
+                        label="절대 좌표"
+                        taste={currentTaste.label}
+                        value={`${completedResult.absoluteScores[currentQuestion.id]} / 100`}
+                      />
                     </div>
 
                     <div className="mt-6 w-full">
@@ -577,7 +382,7 @@ export default function QuickTasteCalibrationScreen({
                           className="pointer-events-none absolute inset-x-0 top-1/2 h-[12px] -translate-y-1/2 rounded-full"
                           style={{ background: sliderBackground }}
                         />
-                        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[28px] w-px -translate-x-1/2 -translate-y-1/2 bg-white shadow-[0_0_0_1px_rgba(15,15,15,0.08)]" />
+                        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[28px] w-px -translate-x-1/2 -translate-y-1/2 bg-[var(--tb-color-bg-focus)] shadow-[0_0_0_1px_rgba(15,15,15,0.08)]" />
                         <input
                           type="range"
                           min={-3}
@@ -592,7 +397,14 @@ export default function QuickTasteCalibrationScreen({
                         />
                       </div>
 
-                      <div className="mt-5 grid w-full grid-cols-3 gap-3 text-left sm:text-center">
+                      <div className="mt-4 flex justify-center">
+                        <CalibrationMetaChip
+                          label="기준점"
+                          taste={currentTaste.label}
+                        />
+                      </div>
+
+                      <div className="mt-4 grid w-full grid-cols-3 gap-3 text-left sm:text-center">
                         <div>
                           <p className="text-[12px] font-semibold text-[var(--tb-color-text-secondary)]">
                             {currentQuestion.scaleLeftLabel}
@@ -606,7 +418,7 @@ export default function QuickTasteCalibrationScreen({
                             {currentQuestion.scaleCenterLabel}
                           </p>
                           <p className="mt-1 text-[12px] text-[var(--tb-color-text-muted)]">
-                            기준점에 가까움
+                            가장 편안한 중심
                           </p>
                         </div>
                         <div className="text-right sm:text-center">
@@ -658,8 +470,8 @@ export default function QuickTasteCalibrationScreen({
                   </SectionCard>
                 </div>
 
-                <div className="flex flex-col gap-3">
-                  <SectionCard hoverEffect={false}>
+                <div className="tb-card-stack">
+                  <SectionCard hoverEffect={false} className={SECTION_CARD_BORDER_CLASS}>
                     <div className="w-full">
                       <p className="text-[12px] font-semibold text-[var(--tb-color-text-faint)]">
                         This Axis
@@ -671,13 +483,17 @@ export default function QuickTasteCalibrationScreen({
                         <div>
                           <p
                             className="text-[18px] font-bold leading-[1.2] tracking-[var(--tb-letter-spacing-tight)]"
-                            style={{ color: currentTaste.palette.dark }}
+                            style={{ color: currentTaste.palette.main }}
                           >
                             {completedResult.absoluteScores[currentQuestion.id]}
                           </p>
-                          <p className="text-[12px] text-[var(--tb-color-text-muted)]">
-                            0~100 절대 좌표
-                          </p>
+                          <div className="mt-2">
+                            <CalibrationMetaChip
+                              label="절대 좌표"
+                              taste={currentTaste.label}
+                              value="0~100"
+                            />
+                          </div>
                         </div>
                         <div
                           className="rounded-[18px] px-3 py-2 text-[12px] font-semibold"
@@ -693,11 +509,6 @@ export default function QuickTasteCalibrationScreen({
                       </div>
                     </div>
                   </SectionCard>
-
-                  <QuickCalibrationHintCard
-                    title="이 답변은 이렇게 반영돼요"
-                    description={currentQuestion.calibrationHint}
-                  />
                 </div>
               </div>
             </motion.div>
@@ -713,49 +524,56 @@ export default function QuickTasteCalibrationScreen({
               className="absolute inset-0 overflow-y-auto px-5 pt-4 no-scrollbar"
               style={{ paddingBottom: QUESTION_CONTENT_BOTTOM_PADDING }}
             >
-              <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div
-                  className="absolute left-1/2 top-[12%] h-[280px] w-[280px] -translate-x-1/2 rounded-full blur-3xl"
-                  style={{ backgroundColor: resultTaste.palette.light }}
+              <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-4 pb-8">
+                <FlowHeaderBlock
+                  description={
+                    <>
+                      대중적인 기준 음식 6개로 아주 빠르게 잡은 첫 좌표예요.{'\n'}
+                      피드백이 쌓일수록 이 프로필은 더 정교하게 다듬어집니다.
+                    </>
+                  }
+                  descriptionClassName="whitespace-pre-line"
+                  topLeft={<OutlineBadge>Starter Profile</OutlineBadge>}
+                  title={
+                    <span className="inline-flex items-center gap-2">
+                      <span>첫 번째 미각 프로필이 준비됐어요</span>
+                      <span className="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] shadow-[var(--tb-shadow-strong)]">
+                        <Check size={ICON_TOKENS.size.xs} strokeWidth={ICON_TOKENS.strokeWidth.emphasis} className="text-white" />
+                      </span>
+                    </span>
+                  }
+                  titleClassName="leading-tight"
                 />
-                <div className="absolute right-[-70px] top-[26%] h-[220px] w-[220px] rounded-full bg-[rgba(114,153,255,0.12)] blur-3xl" />
-              </div>
 
-              <div className="relative mx-auto flex w-full max-w-[1120px] flex-col gap-4 pb-8">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mx-auto flex size-[72px] items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] shadow-[var(--tb-shadow-strong)]">
-                    <Check size={ICON_TOKENS.size.lg} strokeWidth={3} className="text-white" />
+                <div className="grid w-full gap-5 lg:grid-cols-[420px_minmax(0,1fr)] lg:items-center">
+                  <div className="mx-auto w-full max-w-[420px]">
+                    <HexRadarChart
+                      className="max-w-[420px]"
+                      myTasteData={resultTasteEntries}
+                      shouldAnimate
+                    />
                   </div>
-                  <OutlineBadge className="mt-5">Starter Taste DNA</OutlineBadge>
-                  <SectionTitle as="h1" size="lg" className="mt-4 leading-tight">
-                    첫 번째 미각 프로필이 준비됐어요
-                  </SectionTitle>
-                  <p className="mt-3 max-w-[680px] whitespace-pre-line text-[14px] leading-relaxed text-[var(--tb-color-text-body)]">
-                    대중적인 기준 음식 6개로 아주 빠르게 잡은 첫 좌표예요.{'\n'}
-                    실제 다이닝과 피드백이 쌓일수록 이 프로필은 더 정교하게 다듬어집니다.
-                  </p>
-                </div>
 
-                <SectionCard
-                  hoverEffect={false}
-                  className="border border-[var(--tb-color-border-subtle)]"
-                >
-                  <div className="grid w-full gap-5 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-center">
-                    <div className="mx-auto w-full max-w-[340px]">
-                      <TasteDnaRadar
-                        absoluteScores={completedResult.absoluteScores}
-                        topAxes={starterGuidance.topAxes}
-                      />
-                    </div>
+                  <div className="flex w-full flex-col gap-4">
+                    <div className="rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-muted)] p-4">
+                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-faint)]">
+                        Starter Reading
+                      </p>
+                      <SectionTitle size="md" className="mt-2 leading-tight">
+                        {starterGuidance.surfaceLabel}
+                      </SectionTitle>
+                      <div className="mt-3 flex flex-col gap-2">
+                        {resultSummaryLines.map((line) => (
+                          <p
+                            key={line}
+                            className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]"
+                          >
+                            {line}
+                          </p>
+                        ))}
+                      </div>
 
-                    <div className="flex w-full flex-col gap-4">
-                      <QuickCalibrationHintCard
-                        size="md"
-                        title={starterGuidance.surfaceLabel}
-                        description={starterGuidance.summaryLine}
-                      />
-
-                      <div className="rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-muted)] p-3">
+                      <div className="mt-4 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-muted)] p-3">
                         <p className="text-[12px] font-semibold text-[var(--tb-color-text-faint)]">
                           먼저 살아나는 축
                         </p>
@@ -786,109 +604,38 @@ export default function QuickTasteCalibrationScreen({
                           />
                         </div>
                       </div>
-
-                      <div className="grid gap-3 md:grid-cols-3">
-                        {starterGuidance.evidence.slice(0, 3).map((evidence) => (
-                          <div
-                            key={evidence}
-                            className="rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-white/80 p-3"
-                          >
-                            <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                              {evidence}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </div>
-                </SectionCard>
+                </div>
 
-                <div className="grid gap-3 lg:grid-cols-2">
-                  <SectionCard hoverEffect={false}>
-                    <div className="w-full">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[12px] font-semibold text-[var(--tb-color-text-faint)]">
-                            Axis Overview
-                          </p>
-                          <SectionTitle size="lg" className="mt-1">
-                            6축 절대 좌표
-                          </SectionTitle>
-                        </div>
-                        <div
-                          className="rounded-full px-3 py-1.5 text-[12px] font-semibold"
-                          style={{
-                            backgroundColor: resultTaste.palette.bg,
-                            color: TASTE_TOKENS[starterGuidance.topAxes[0] ?? 'sweet'].palette.dark,
-                          }}
-                        >
-                          {starterGuidance.goalPhrase}
-                        </div>
-                      </div>
+                <div className="tb-card-stack">
+                  <SectionTitle as="h2" size="md">
+                    세부 분석
+                  </SectionTitle>
+                  <CardScrollList>
+                    {resultTasteEntries.map((entry) => {
+                      const taste = TASTE_TOKENS[entry.id];
 
-                      <div className="mt-5 grid gap-3">
-                        {TASTE_IDS.map((tasteId) => (
-                          <TasteAxisMeter
-                            key={tasteId}
-                            tasteId={tasteId}
-                            absoluteScore={completedResult.absoluteScores[tasteId]}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </SectionCard>
-
-                  <SectionCard hoverEffect={false}>
-                    <div className="w-full">
-                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-faint)]">
-                        Anchor Responses
-                      </p>
-                      <SectionTitle size="lg" className="mt-1">
-                        기준 음식별 응답
-                      </SectionTitle>
-
-                      <div className="mt-5 grid gap-3">
-                        {selections.map((selection) => {
-                          const taste = TASTE_TOKENS[selection.question.tasteId];
-
-                          return (
-                            <div
-                              key={selection.question.id}
-                              className="rounded-[20px] border p-3"
-                              style={{
-                                backgroundColor: taste.palette.bg,
-                                borderColor: taste.palette.light,
-                              }}
+                      return (
+                        <TasteTintCard
+                          key={entry.id}
+                          leading={
+                            <span
+                              className="text-[16px] font-bold"
+                              style={{ color: taste.palette.dark }}
                             >
-                              <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div>
-                                  <p className="text-[11px] font-semibold tracking-[0.12em] text-[var(--tb-color-text-muted)] uppercase">
-                                    {selection.question.eyebrow}
-                                  </p>
-                                  <p className="mt-2 text-[15px] font-bold text-[var(--tb-color-text-primary)]">
-                                    {selection.question.anchorName}
-                                  </p>
-                                </div>
-                                <div
-                                  className="rounded-full border px-3 py-1.5 text-[12px] font-semibold"
-                                  style={{
-                                    backgroundColor: taste.palette.bg,
-                                    borderColor: taste.palette.light,
-                                    color: taste.palette.dark,
-                                  }}
-                                >
-                                  {selection.responseLabel}
-                                </div>
-                              </div>
-                              <p className="mt-3 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                                {selection.responseNote}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </SectionCard>
+                              {entry.label.slice(0, 1)}
+                            </span>
+                          }
+                          leadingClassName="bg-white/80"
+                          description={getStarterAxisDisplayLabel(entry.score / 10)}
+                          detail={`현재 반응 ${entry.score}점`}
+                          tasteId={entry.id}
+                          title={entry.label}
+                        />
+                      );
+                    })}
+                  </CardScrollList>
                 </div>
               </div>
             </motion.div>
@@ -896,30 +643,15 @@ export default function QuickTasteCalibrationScreen({
         </AnimatePresence>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 flex justify-center">
-        <div className="w-full max-w-[1440px]">
-          <div
-            className="relative flex min-h-[140px] w-full flex-col items-center justify-end px-5"
-            style={{
-              background:
-                'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.96) 54%, rgba(255, 255, 255, 0) 100%)',
-              paddingBottom: 'var(--tb-safe-area-bottom)',
-            }}
-          >
-            {phase === 'questions' ? (
-              <StepIndicator
-                className="mb-8"
-                currentIndex={questionIndex}
-                total={QUICK_TASTE_CALIBRATION_QUESTIONS.length}
-                activeColor={(currentTaste ?? TASTE_TOKENS.salty).palette.main}
-              />
-            ) : null}
-            <PrimaryButton className="mb-10" onClick={handleContinue}>
-              {buttonLabel}
-            </PrimaryButton>
-          </div>
-        </div>
-      </div>
+      <FlowStepCta
+        actionLabel={buttonLabel}
+        currentIndex={questionIndex}
+        indicatorActiveColor={(currentTaste ?? TASTE_TOKENS.salty).palette.main}
+        fadeClassName="bg-[linear-gradient(to_top,var(--tb-color-bg-focus)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]"
+        onAction={handleContinue}
+        showIndicator={phase === 'questions'}
+        total={QUICK_TASTE_CALIBRATION_QUESTIONS.length}
+      />
     </div>
   );
 }

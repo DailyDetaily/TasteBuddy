@@ -60,6 +60,14 @@ export function getTasteTint(taste: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
 }
 
+export function getTasteTintSoft(taste: string): string {
+  return (TASTE_COLORS as any)[taste]?.tintSoft || getTasteTint(taste, 0.05);
+}
+
+export function getTasteTintSoftBorder(taste: string): string {
+  return (TASTE_COLORS as any)[taste]?.tintSoftBorder || getTasteTint(taste, 0.18);
+}
+
 export function getTasteBg(taste: string): string {
   return (TASTE_COLORS as any)[taste]?.bg || '#FFD699';
 }

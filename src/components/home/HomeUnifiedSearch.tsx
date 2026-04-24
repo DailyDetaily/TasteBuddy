@@ -1,21 +1,19 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import {
-  AddCircleFilled,
-  AddCircleRegular,
-  BookmarkFilled,
-  BookmarkRegular,
-  ChevronRightRegular,
-} from '@fluentui/react-icons';
-import {
+  Bookmark,
+  BookmarkCheck,
   ChefHat,
-  Clock3,
+  CircleCheck,
+  CirclePlus,
+  Clock,
   Search,
   Sparkles,
   Store,
-  UtensilsCrossed,
+  Utensils,
 } from 'lucide-react';
 
 import ChefAvatar from '../system/ChefAvatar';
+import Chip from '../system/Chip';
 import EmptyState from '../system/EmptyState';
 import { cn } from '../ui/utils';
 import { type ReservationRecord } from '../../constants/reservationCatalog';
@@ -33,14 +31,40 @@ const SEARCH_BAR_FIELD_CLASS_NAME =
   'flex h-11 min-w-0 flex-1 items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-4 text-left transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
 const SEARCH_BAR_ICON_BUTTON_CLASS_NAME =
   'flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[#303946] transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
-const APP_LUCIDE_ICON_SIZE_S = ICON_TOKENS.size.sm;
 const APP_LUCIDE_ICON_SIZE_M = ICON_TOKENS.size.md;
 const SEARCH_BAR_ICON_SIZE = ICON_TOKENS.size.md;
-const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 const SEARCH_RESULT_ACTION_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const SEARCH_RESULT_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
 const SEARCH_OVERLAY_TOP_OFFSET =
   'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
+const SEARCH_FOCUS_CARD_CLASS_NAME =
+  'rounded-[24px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] p-4';
+const SEARCH_SECTION_TITLE_CLASS_NAME =
+  'text-[13px] font-semibold text-[var(--tb-color-text-primary)]';
+const SEARCH_SECTION_COUNT_CLASS_NAME =
+  'text-[11px] font-medium text-[var(--tb-color-text-faint)]';
+const SEARCH_RESULT_CARD_CLASS_NAME =
+  'tb-section-card overflow-hidden border text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2';
+const SEARCH_RESULT_CARD_SELECTED_CLASS_NAME = 'border-[var(--tb-color-text-primary)]';
+const SEARCH_RESULT_CARD_UNSELECTED_CLASS_NAME =
+  'border-[var(--tb-color-border-default)] hover:-translate-y-[1px] hover:border-[var(--tb-color-border-strong)]';
+const SEARCH_RESULT_CARD_BODY_CLASS_NAME = 'tb-section-card__body w-full';
+const SEARCH_RESULT_DESCRIPTION_CLASS_NAME =
+  'mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]';
+const SEARCH_RESULT_TITLE_CLASS_NAME =
+  'mt-2 text-[15px] font-semibold text-[var(--tb-color-text-primary)]';
+const SEARCH_RESULT_BODY_COPY_CLASS_NAME =
+  'mt-4 text-[13px] leading-relaxed text-[var(--tb-color-text-body)]';
+const SEARCH_RESULT_SIGNATURES_CLASS_NAME = 'mt-3 flex flex-wrap gap-2';
+const SEARCH_RESULT_TYPE_LABEL_CLASS_NAME =
+  'text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--tb-color-text-faint)]';
+const SEARCH_EMPTY_STATE_CLASS_NAME =
+  'rounded-[28px] border border-dashed border-[var(--tb-color-border-default)] bg-white/75 px-2 py-6';
+const SEARCH_PANEL_HEADER_CLASS_NAME =
+  'border-b border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/95 px-5 pb-4 pt-1 backdrop-blur-sm';
+const SEARCH_PANEL_BODY_CLASS_NAME = 'flex-1 overflow-y-auto no-scrollbar px-5 pb-8 pt-4';
+const SEARCH_SUGGESTION_SECTION_CLASS_NAME = 'tb-card-stack';
+const SEARCH_SUGGESTION_ITEMS_CLASS_NAME = 'flex flex-wrap gap-2';
 
 type SearchResultType = 'restaurant' | 'chef' | 'menu';
 
@@ -386,7 +410,7 @@ function getResultTypeIcon(type: SearchResultType) {
       return ChefHat;
     case 'menu':
     default:
-      return UtensilsCrossed;
+      return Utensils;
   }
 }
 
@@ -400,23 +424,33 @@ function SearchSuggestionChip({
   tone?: 'default' | 'recent';
 }) {
   return (
-    <button
-      type="button"
+    <Chip
+      size="md"
+      tone="neutral"
+      variant={tone === 'recent' ? 'outline' : 'soft'}
+      backgroundColorToken={
+        tone === 'recent' ? 'var(--tb-color-surface-base)' : undefined
+      }
+      leadingIcon={tone === 'recent' ? <Clock /> : <Sparkles />}
+      role="button"
+      tabIndex={0}
+      aria-pressed="false"
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-medium transition-colors',
+        'cursor-pointer select-none transition-colors',
         tone === 'recent'
-          ? 'border-[var(--tb-color-border-default)] bg-white text-[var(--tb-color-text-primary)] hover:bg-[var(--tb-color-surface-muted)]'
-          : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-body)] hover:bg-[var(--tb-color-surface-disabled)]',
+          ? 'text-[var(--tb-color-text-primary)] hover:bg-[var(--tb-color-surface-muted)]'
+          : 'text-[var(--tb-color-text-body)] hover:bg-[var(--tb-color-surface-disabled)]',
       )}
     >
-      {tone === 'recent' ? (
-        <Clock3 size={APP_LUCIDE_ICON_SIZE_S} />
-      ) : (
-        <Sparkles size={APP_LUCIDE_ICON_SIZE_S} />
-      )}
-      <span>{label}</span>
-    </button>
+      {label}
+    </Chip>
   );
 }
 
@@ -424,7 +458,7 @@ function SearchFocusCard({ result }: { result: HomeSearchResult }) {
   const TypeIcon = getResultTypeIcon(result.type);
 
   return (
-    <div className="rounded-[24px] border border-[var(--tb-color-border-default)] bg-white/95 p-4 shadow-[0_20px_44px_rgba(15,23,42,0.08)]">
+    <div className={SEARCH_FOCUS_CARD_CLASS_NAME}>
       <div className="flex items-start gap-3">
         <ChefAvatar
           alt={result.chef}
@@ -435,34 +469,40 @@ function SearchFocusCard({ result }: { result: HomeSearchResult }) {
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--tb-color-text-faint)]">
+            <span className={SEARCH_RESULT_TYPE_LABEL_CLASS_NAME}>
               탐색 포커스
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--tb-color-surface-muted)] px-2.5 py-1 text-[11px] font-semibold text-[var(--tb-color-text-body)]">
-              <TypeIcon size={APP_LUCIDE_ICON_SIZE_S} />
+            <Chip
+              size="md"
+              tone="neutral"
+              leadingIcon={<TypeIcon />}
+              className="text-[var(--tb-color-text-body)]"
+            >
               {getResultTypeLabel(result.type)}
-            </span>
+            </Chip>
           </div>
-          <p className="mt-2 text-[15px] font-semibold text-[var(--tb-color-text-primary)]">
+          <p className={SEARCH_RESULT_TITLE_CLASS_NAME}>
             {result.label}
           </p>
-          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+          <p className={SEARCH_RESULT_DESCRIPTION_CLASS_NAME}>
             {result.subLabel}
           </p>
         </div>
       </div>
-      <p className="mt-4 text-[13px] leading-relaxed text-[var(--tb-color-text-body)]">
+      <p className={SEARCH_RESULT_BODY_COPY_CLASS_NAME}>
         {result.matchMeta}
       </p>
       {result.signatureItems.length > 0 ? (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className={SEARCH_RESULT_SIGNATURES_CLASS_NAME}>
           {result.signatureItems.slice(0, 3).map((item) => (
-            <span
+            <Chip
               key={item}
-              className="rounded-full bg-[var(--tb-color-surface-muted)] px-3 py-1 text-[11px] font-medium text-[var(--tb-color-text-body)]"
+              size="md"
+              tone="neutral"
+              className="text-[var(--tb-color-text-body)]"
             >
               {item}
-            </span>
+            </Chip>
           ))}
         </div>
       ) : null}
@@ -490,65 +530,65 @@ function SearchSection({
   title: string;
 }) {
   return (
-    <section className="flex flex-col gap-3">
+    <section className="tb-section-stack" aria-label={title}>
       <div className="flex items-center justify-between">
-        <h3 className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">{title}</h3>
-        <span className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">
+        <h3 className={SEARCH_SECTION_TITLE_CLASS_NAME}>{title}</h3>
+        <span className={SEARCH_SECTION_COUNT_CLASS_NAME}>
           {results.length}개
         </span>
       </div>
-      <div className="grid gap-3">
+      <ul className="grid gap-3">
         {results.map((result) => {
-          const TypeIcon = getResultTypeIcon(result.type);
           const isSelected = selectedResultId === result.id;
-          const resultTypeLabel = getResultTypeLabel(result.type);
-          const showsQuickActions =
-            result.type === 'restaurant' || result.type === 'menu';
           const isRecorded = recordedResultIds.includes(result.id);
           const isBookmarked = bookmarkedResultIds.includes(result.id);
-          const RecordIcon = isRecorded ? AddCircleFilled : AddCircleRegular;
-          const BookmarkIcon = isBookmarked ? BookmarkFilled : BookmarkRegular;
+          const RecordIcon = isRecorded ? CircleCheck : CirclePlus;
+          const BookmarkIcon = isBookmarked ? BookmarkCheck : Bookmark;
 
           return (
-            <div
+            <li
               key={result.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onSelect(result)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onSelect(result);
-                }
-              }}
-              aria-pressed={isSelected}
-              title={result.matchMeta}
-              className={cn(
-                'tb-section-card overflow-hidden border text-left shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2',
-                isSelected
-                  ? 'border-[var(--tb-color-text-primary)] shadow-[0_16px_36px_rgba(15,23,42,0.1)]'
-                  : 'border-[var(--tb-color-border-default)] hover:-translate-y-[1px] hover:border-[var(--tb-color-border-strong)]',
-              )}
+              className="list-none"
             >
-              <div className="tb-section-card__body">
-                <div className="flex w-full items-center gap-3">
-                  <ChefAvatar
-                    alt={result.chef}
-                    className="h-[40px] w-[40px] shrink-0 rounded-[var(--tb-radius-10)] object-cover"
-                    iconSize={ICON_TOKENS.size.lg}
-                    imageSrc={result.image}
-                    variant="neutral"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                      {result.label}
-                    </span>
-                    <span className="block truncate text-[11px] text-[var(--tb-color-text-muted)]">
-                      {result.subLabel}
-                    </span>
-                  </div>
-                  {showsQuickActions ? (
-                    <div className="ml-auto flex shrink-0 items-center gap-0">
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelect(result)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelect(result);
+                  }
+                }}
+                aria-pressed={isSelected}
+                title={result.matchMeta}
+                className={cn(
+                  SEARCH_RESULT_CARD_CLASS_NAME,
+                  isSelected
+                    ? SEARCH_RESULT_CARD_SELECTED_CLASS_NAME
+                    : SEARCH_RESULT_CARD_UNSELECTED_CLASS_NAME,
+                )}
+              >
+                <div className={SEARCH_RESULT_CARD_BODY_CLASS_NAME}>
+                  <div className="flex w-full items-center justify-between gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <ChefAvatar
+                        alt={result.chef}
+                        className="h-[40px] w-[40px] shrink-0 rounded-[var(--tb-radius-10)] object-cover"
+                        iconSize={ICON_TOKENS.size.lg}
+                        imageSrc={result.image}
+                        variant="neutral"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="block truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                          {result.label}
+                        </span>
+                        <span className="block truncate text-[11px] text-[var(--tb-color-text-muted)]">
+                          {result.subLabel}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center justify-end gap-0">
                       <button
                         type="button"
                         onClick={(event) => {
@@ -568,7 +608,7 @@ function SearchSection({
                           height: SEARCH_RESULT_ACTION_BUTTON_SIZE,
                         }}
                       >
-                        <RecordIcon fontSize={SEARCH_RESULT_ACTION_ICON_SIZE} />
+                        <RecordIcon size={SEARCH_RESULT_ACTION_ICON_SIZE} />
                       </button>
                       <button
                         type="button"
@@ -589,36 +629,16 @@ function SearchSection({
                           height: SEARCH_RESULT_ACTION_BUTTON_SIZE,
                         }}
                       >
-                        <BookmarkIcon fontSize={SEARCH_RESULT_ACTION_ICON_SIZE} />
+                        <BookmarkIcon size={SEARCH_RESULT_ACTION_ICON_SIZE} />
                       </button>
                     </div>
-                  ) : (
-                    <div className="ml-auto flex shrink-0 items-center gap-2">
-                      <TypeIcon
-                        size={APP_LUCIDE_ICON_SIZE_S}
-                        className={cn(
-                          isSelected
-                            ? 'text-[var(--tb-color-text-primary)]'
-                            : 'text-[var(--tb-color-icon-muted)]',
-                        )}
-                        aria-hidden="true"
-                      />
-                      <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
-                        {resultTypeLabel}
-                      </span>
-                      <ChevronRightRegular
-                        fontSize={CARD_TRAILING_ICON_SIZE}
-                        className="text-[var(--tb-color-icon-muted)]"
-                        aria-hidden="true"
-                      />
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }
@@ -793,7 +813,7 @@ export default function HomeUnifiedSearch({
             style={{ top: SEARCH_OVERLAY_TOP_OFFSET }}
           >
             <div className="flex h-full w-full max-w-[1440px] flex-col">
-              <div className="border-b border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/95 px-5 pb-4 pt-1 backdrop-blur-sm">
+              <div className={SEARCH_PANEL_HEADER_CLASS_NAME}>
                 <form className="flex items-center gap-3" onSubmit={handleSubmit}>
                   <div
                     className={cn(
@@ -830,27 +850,27 @@ export default function HomeUnifiedSearch({
                 </form>
               </div>
 
-              <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-8 pt-4">
-                <div className="mx-auto flex w-full max-w-[680px] flex-col gap-5">
+              <div className={SEARCH_PANEL_BODY_CLASS_NAME}>
+                <div className="tb-section-stack">
                   {selectedResult ? <SearchFocusCard result={selectedResult} /> : null}
 
                   {!query.trim() ? (
                     <>
                       {recentSearches.length > 0 ? (
-                        <section className="flex flex-col gap-3">
+                        <section className={SEARCH_SUGGESTION_SECTION_CLASS_NAME}>
                           <div className="flex items-center justify-between">
-                            <h3 className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
+                            <h3 className={SEARCH_SECTION_TITLE_CLASS_NAME}>
                               최근 검색
                             </h3>
                             <button
                               type="button"
                               onClick={() => setRecentSearches([])}
-                              className="text-[11px] font-medium text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-body)]"
+                              className={`${SEARCH_SECTION_COUNT_CLASS_NAME} transition-colors hover:text-[var(--tb-color-text-body)]`}
                             >
                               모두 지우기
                             </button>
                           </div>
-                          <div className="flex flex-wrap gap-2">
+                          <div className={SEARCH_SUGGESTION_ITEMS_CLASS_NAME}>
                             {recentSearches.map((item) => (
                               <SearchSuggestionChip
                                 key={item}
@@ -863,20 +883,16 @@ export default function HomeUnifiedSearch({
                         </section>
                       ) : null}
 
-                      <section className="flex flex-col gap-3">
-                        <div className="flex items-center gap-2">
-                          <Sparkles
-                            size={APP_LUCIDE_ICON_SIZE_S}
-                            className="text-[var(--tb-color-icon-primary)]"
-                          />
-                          <h3 className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
+                      <section className={SEARCH_SUGGESTION_SECTION_CLASS_NAME}>
+                        <div className="flex flex-1 flex-col gap-1">
+                          <h3 className={SEARCH_SECTION_TITLE_CLASS_NAME}>
                             추천 탐색
                           </h3>
+                          <p className={SEARCH_RESULT_DESCRIPTION_CLASS_NAME}>
+                            레스토랑을 먼저, 셰프와 메뉴를 함께 비교할 수 있도록 정리했어요.
+                          </p>
                         </div>
-                        <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                          레스토랑을 먼저, 셰프와 메뉴를 함께 비교할 수 있도록 정리했어요.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className={SEARCH_SUGGESTION_ITEMS_CLASS_NAME}>
                           {suggestions.map((item) => (
                             <SearchSuggestionChip
                               key={item.id}
@@ -938,7 +954,7 @@ export default function HomeUnifiedSearch({
                       ) : null}
                     </>
                   ) : (
-                    <div className="rounded-[28px] border border-dashed border-[var(--tb-color-border-default)] bg-white/75 px-2 py-6">
+                    <div className={SEARCH_EMPTY_STATE_CLASS_NAME}>
                       <EmptyState
                         icon={<Search size={APP_LUCIDE_ICON_SIZE_M} />}
                         title="아직 맞는 결과를 찾지 못했어요"
@@ -962,7 +978,8 @@ export default function HomeUnifiedSearch({
             </div>
           </div>
         </>
-      ) : null}
+      ) : null
+      }
     </>
   );
 }

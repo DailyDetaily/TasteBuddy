@@ -13,6 +13,7 @@ If you are opening the project for the first time, start here instead of jumping
 
 ### What to read first
 
+- Codex working rules for this repo: [`AGENTS.md`](./AGENTS.md)
 - Product UX source of truth: [`src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](./src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - Visual design source of truth: [`DESIGN.md`](./DESIGN.md)
 - AI-friendly design system guide: [`docs/AI_DESIGN_SYSTEM.md`](./docs/AI_DESIGN_SYSTEM.md)
@@ -92,6 +93,7 @@ Not every important doc lives in `docs/`.
 
 | Concern | Source of truth |
 | --- | --- |
+| Codex repo-specific working rules | [`AGENTS.md`](./AGENTS.md) |
 | Product behavior and UX principles | [`src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](./src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md) |
 | Visual system and component rules | [`DESIGN.md`](./DESIGN.md) |
 | AI design-system fast path | [`docs/AI_DESIGN_SYSTEM.md`](./docs/AI_DESIGN_SYSTEM.md), [`docs/design-system.snapshot.json`](./docs/design-system.snapshot.json) |
