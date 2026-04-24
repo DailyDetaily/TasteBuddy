@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import {
-  type HomeChefMatchCardData,
   HomeCardStack,
   buildReservationPersonalizationSummary,
   getChefImageByName,
@@ -17,10 +16,16 @@ import { type RestaurantReadyGuidance } from '../constants/quickTasteCalibration
 import {
   hydrateReservationPageData,
   hydrateRestaurantContentCatalog,
+  hydrateUserLearnedCalibration,
   type RestaurantContentCatalog,
 } from '../lib/tasteBuddySupabase';
+import {
+  buildPersonalizedChefMatches,
+  resolveUsableImagePath,
+} from '../lib/chefMatching';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reservationCatalog';
+import type { UserLearnedCalibration } from '../types/tastePersonalization';
 
 interface HomePageProps {
   disableHydration?: boolean;
@@ -51,20 +56,23 @@ export default function HomePage({
     chefs: [],
     dishes: [],
   });
+  const [userLearnedCalibration, setUserLearnedCalibration] = useState<UserLearnedCalibration | null>(null);
 
   useEffect(() => {
     if (disableHydration) return;
     let isCancelled = false;
 
     void (async () => {
-      const [hydratedData, hydratedCatalog] = await Promise.all([
+      const [hydratedData, hydratedCatalog, hydratedCalibration] = await Promise.all([
         hydrateReservationPageData(),
         hydrateRestaurantContentCatalog(),
+        hydrateUserLearnedCalibration(),
       ]);
 
       if (isCancelled) return;
       setReservations(hydratedData.reservations);
       setContentCatalog(hydratedCatalog);
+      setUserLearnedCalibration(hydratedCalibration);
     })();
 
     return () => {
@@ -90,24 +98,13 @@ export default function HomePage({
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
   const recentChangeText = getRecentChangeSummary(measurementSnapshot);
 
-  const groupedByRestaurant = new Map<string, HomeChefMatchCardData>();
-  contentCatalog.dishes.forEach((dish) => {
-    const match = 58 + Math.min(37, Math.round(dish.confidence * 35));
-    if (
-      !groupedByRestaurant.has(dish.restaurantSlug) ||
-      groupedByRestaurant.get(dish.restaurantSlug)!.match < match
-    ) {
-      groupedByRestaurant.set(dish.restaurantSlug, {
-        chef: dish.chef,
-        match,
-        restaurant: dish.restaurant,
-        image: getChefImageByName(dish.chef),
-        tasteId: dish.dominantTaste,
-      });
-    }
+  const chefCards = buildPersonalizedChefMatches({
+    calibration: userLearnedCalibration,
+    dishes: contentCatalog.dishes,
+    measurementSnapshot,
+    resolveChefImage: (dish) =>
+      resolveUsableImagePath(dish.chefAvatarPath) ?? getChefImageByName(dish.chef),
   });
-
-  const chefCards = Array.from(groupedByRestaurant.values()).sort((left, right) => right.match - left.match);
 
   return (
     <main className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">

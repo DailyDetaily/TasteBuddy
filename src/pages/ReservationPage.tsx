@@ -332,10 +332,10 @@ export default function ReservationPage({
   const featuredReservation = upcoming[0] ?? null;
   const featuredSummary = featuredReservation
     ? buildReservationPersonalizationSummary(
-        measurementSnapshot,
-        featuredReservation,
-        starterGuidance,
-      )
+      measurementSnapshot,
+      featuredReservation,
+      starterGuidance,
+    )
     : null;
   const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
   const measurementHighlights = getTasteMeasurementEntries(measurementSnapshot).sort(
@@ -353,102 +353,102 @@ export default function ReservationPage({
             {featuredReservation && featuredSummary && (
               <SectionCard hoverEffect={false}>
                 <div className="flex flex-col gap-4 w-full">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusChip
-                        color="var(--tb-color-text-primary)"
-                        backgroundColor="var(--tb-color-surface-base)"
-                      >
-                        {starterGuidance ? 'Restaurant-ready Profile' : 'Chef-ready Personalization'}
-                      </StatusChip>
-                      <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
-                        {featuredReservation.date}
-                      </span>
-                    </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusChip
+                          color="var(--tb-color-text-primary)"
+                          backgroundColor="var(--tb-color-surface-base)"
+                        >
+                          {starterGuidance ? 'Restaurant-ready Profile' : 'Chef-ready Personalization'}
+                        </StatusChip>
+                        <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
+                          {featuredReservation.date}
+                        </span>
+                      </div>
 
-                    <div className="mt-3 flex items-center gap-3">
-                      <ChefAvatar
-                        alt={featuredReservation.chef}
-                        className="h-[44px] w-[44px] rounded-[14px]"
-                        iconSize={ICON_TOKENS.size.lg}
-                        imageSrc={featuredReservation.chefImage}
-                        taste={featuredReservation.adjustments[0]?.taste}
-                        variant="neutral"
-                      />
+                      <div className="mt-3 flex items-center gap-3">
+                        <ChefAvatar
+                          alt={featuredReservation.chef}
+                          className="h-[40px] w-[40px] rounded-[var(--tb-radius-8)]"
+                          iconSize={ICON_TOKENS.size.lg}
+                          imageSrc={featuredReservation.chefImage}
+                          taste={featuredReservation.adjustments[0]?.taste}
+                          variant="neutral"
+                        />
 
-                      <div className="min-w-0">
-                        <p className="truncate text-[12px] font-medium text-[var(--tb-color-text-hint)]">
-                          {featuredReservation.restaurant}
-                        </p>
-                        <p className="truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                          {featuredReservation.chef} 셰프
-                        </p>
+                        <div className="min-w-0">
+                          <p className="truncate text-[12px] font-medium text-[var(--tb-color-text-hint)]">
+                            {featuredReservation.restaurant}
+                          </p>
+                          <p className="truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                            {featuredReservation.chef} 셰프
+                          </p>
+                        </div>
                       </div>
                     </div>
+
+                    <StatusChip className="shrink-0 gap-1">
+                      <span>매칭</span>
+                      <span>{featuredReservation.matchRate}%</span>
+                    </StatusChip>
                   </div>
 
-                  <StatusChip className="shrink-0 gap-1">
-                    <span>매칭</span>
-                    <span>{featuredReservation.matchRate}%</span>
-                  </StatusChip>
-                </div>
+                  <h2 className="text-[18px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
+                    {featuredSummary.headline}
+                  </h2>
 
-                <h2 className="text-[18px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
-                  {featuredSummary.headline}
-                </h2>
+                  <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
+                    {starterGuidance?.summaryLine ?? featuredReservation.diningPromise}
+                  </p>
 
-                <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                  {starterGuidance?.summaryLine ?? featuredReservation.diningPromise}
-                </p>
+                  <div className="grid gap-2">
+                    <div className="rounded-[8px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
+                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
+                        게스트가 기대할 변화
+                      </p>
+                      <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                        {featuredSummary.guestMessage}
+                      </p>
+                    </div>
 
-                <div className="grid gap-2">
-                  <div className="rounded-[8px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
-                      게스트가 기대할 변화
-                    </p>
-                    <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                      {featuredSummary.guestMessage}
-                    </p>
+                    <div className="rounded-[8px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
+                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
+                        {starterGuidance ? '매장이 참고하는 포인트' : '셰프가 참고하는 포인트'}
+                      </p>
+                      <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                        {featuredSummary.chefGuidance[0] ?? featuredSummary.recommendationLogic}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="rounded-[8px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
-                      {starterGuidance ? '매장이 참고하는 포인트' : '셰프가 참고하는 포인트'}
-                    </p>
-                    <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                      {featuredSummary.chefGuidance[0] ?? featuredSummary.recommendationLogic}
-                    </p>
+                  <div className="flex flex-wrap gap-2">
+                    {featuredSummary.primary.map((entry) => (
+                      <TasteChip key={entry.id} taste={entry.label} value="현재 더 또렷한 포인트" />
+                    ))}
+                    <TasteChip
+                      taste={featuredSummary.softest.label}
+                      value="부드럽게 연결할 포인트"
+                    />
                   </div>
-                </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {featuredSummary.primary.map((entry) => (
-                    <TasteChip key={entry.id} taste={entry.label} value="현재 더 또렷한 포인트" />
-                  ))}
-                  <TasteChip
-                    taste={featuredSummary.softest.label}
-                    value="부드럽게 연결할 포인트"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <PrimaryButton
-                    onClick={() => {
-                      setSelectedId(featuredReservation.id);
-                      setSelectedView('detail');
-                    }}
-                  >
-                    예약 개인화 자세히 보기
-                  </PrimaryButton>
-                  <button
-                    type="button"
-                    onClick={onStartMeasurement}
-                    className="self-center text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
-                  >
-                    {needsMeasurementRefresh ? '현재 프로필 다시 반영하기' : '현재 컨디션 한 번 더 반영하기'}
-                  </button>
-                </div>
+                  <div className="flex flex-col gap-2">
+                    <PrimaryButton
+                      onClick={() => {
+                        setSelectedId(featuredReservation.id);
+                        setSelectedView('detail');
+                      }}
+                    >
+                      예약 개인화 자세히 보기
+                    </PrimaryButton>
+                    <button
+                      type="button"
+                      onClick={onStartMeasurement}
+                      className="self-center text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
+                    >
+                      {needsMeasurementRefresh ? '현재 프로필 다시 반영하기' : '현재 컨디션 한 번 더 반영하기'}
+                    </button>
+                  </div>
                 </div>
               </SectionCard>
             )}

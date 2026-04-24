@@ -205,13 +205,13 @@ export default function CurrentHomeCardArchive({
         </div>
 
         <ArchivePanel
-          componentNames={['HomeChefMatchCard', 'LegacyHomeChefCard']}
+          componentNames={['HomeChefMatchCard', 'ChefMatchCard']}
           title="셰프 매칭 카드"
-          description="현재 홈에서 레거시 셰프 카드 패턴을 다시 사용해, 레스토랑별 상위 매칭 셰프를 가로 스크롤로 노출합니다."
+          description="현재 홈에서 레스토랑별 상위 매칭 셰프를 ChefMatchCard와 CardScrollList 조합으로 노출합니다."
         >
           <div className="flex flex-wrap gap-2">
             <ArchiveEyebrow>HomeChefMatchCard</ArchiveEyebrow>
-            <ArchiveEyebrow>LegacyHomeChefCard reference</ArchiveEyebrow>
+            <ArchiveEyebrow>ChefMatchCard</ArchiveEyebrow>
             <ArchiveEyebrow>가로 스크롤 카드</ArchiveEyebrow>
             <ArchiveEyebrow>현재 홈 실사용</ArchiveEyebrow>
           </div>

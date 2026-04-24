@@ -22,6 +22,7 @@ import {
   type RestaurantContentCatalog,
   type RestaurantContentDish,
 } from '../../lib/tasteBuddySupabase';
+import { resolveUsableImagePath } from '../../lib/chefMatching';
 import { getChefImageByName } from './HomeCards';
 
 const HOME_RECENT_SEARCH_STORAGE_KEY = 'tastebuddy-home-recent-searches-v1';
@@ -141,7 +142,16 @@ function loadRecentSearches() {
   }
 }
 
-function resolveChefImage(name: string, reservations: ReservationRecord[]) {
+function resolveChefImage(
+  name: string,
+  reservations: ReservationRecord[],
+  avatarPath?: string | null,
+) {
+  const resolvedAvatarPath = resolveUsableImagePath(avatarPath);
+  if (resolvedAvatarPath) {
+    return resolvedAvatarPath;
+  }
+
   const reservationMatch = reservations.find((reservation) => reservation.chef === name);
   return reservationMatch?.chefImage ?? getChefImageByName(name);
 }
@@ -173,7 +183,7 @@ function buildRestaurantResults(
       subLabel: `${formatChefName(chefName)} · 대표 메뉴 ${Math.min(signatureItems.length, 2)}개`,
       restaurant: dish.restaurant,
       chef: chefName,
-      image: existingResult?.image ?? resolveChefImage(chefName, reservations),
+      image: existingResult?.image ?? resolveChefImage(chefName, reservations, dish.chefAvatarPath),
       matchMeta: signatureItems.slice(0, 2).join(' · ') || '시즌 메뉴를 살펴볼 수 있어요.',
       signatureItems,
       searchText: buildSearchText([
@@ -234,7 +244,7 @@ function buildChefResults(
       subLabel: chef.restaurant,
       restaurant: chef.restaurant,
       chef: chef.name,
-      image: resolveChefImage(chef.name, reservations),
+      image: resolveChefImage(chef.name, reservations, chef.avatarPath),
       matchMeta:
         chef.signatureDishTitles.slice(0, 2).join(' · ') ||
         '대표 메뉴 힌트가 준비되어 있어요.',
@@ -288,7 +298,7 @@ function buildMenuResults(
     subLabel: `${dish.restaurant} · ${formatChefName(dish.chef)}`,
     restaurant: dish.restaurant,
     chef: dish.chef,
-    image: resolveChefImage(dish.chef, reservations),
+    image: resolveChefImage(dish.chef, reservations, dish.chefAvatarPath),
     matchMeta: [dish.courseLabel, dish.seasonLabel].filter(Boolean).join(' · ') || dish.subtitle,
     signatureItems: dedupeSignatureItems([dish.subtitle, ...dish.ingredients]),
     searchText: buildSearchText([

@@ -13,6 +13,14 @@ import {
   type TasteId,
 } from '../constants/designTokens';
 import {
+  PERCEPTUAL_AXES,
+  type PerceptualAxis,
+  type PerceptualVector,
+  type SignedPerceptualVector,
+  type SignedTasteVector,
+  type UserLearnedCalibration,
+} from '../types/tastePersonalization';
+import {
   RESERVATION_CATALOG,
   buildMockReservationExternalRef,
   getReservationCatalogEntry,
@@ -36,6 +44,10 @@ import {
 import { ensureSupabaseSession, isSupabaseConfigured, supabase } from './supabase';
 
 type MeasurementSource = 'quick_calibration' | 'teastick' | 'manual';
+
+interface MeasurementPersistenceOptions {
+  rawPayload?: Record<string, unknown>;
+}
 
 export interface ReservationPersistenceInput {
   id: number;
@@ -106,12 +118,15 @@ interface MeasurementSessionQueryRow {
 }
 
 interface ContentChefQueryRow {
+  avatar_path: string | null;
   display_name: string | null;
+  id: string;
   restaurants: { name: string | null; slug: string | null } | Array<{ name: string | null; slug: string | null }> | null;
 }
 
 interface ContentInferenceProfileQueryRow {
   confidence: number | null;
+  perceptual_vector: Partial<Record<PerceptualAxis, number>> | null;
   taste_vector: Partial<Record<TasteId, number>> | null;
 }
 
@@ -137,6 +152,8 @@ interface ContentDishQueryRow {
 }
 
 export interface RestaurantContentChef {
+  avatarPath: string | null;
+  id: string;
   name: string;
   restaurant: string;
   restaurantSlug: string;
@@ -146,12 +163,15 @@ export interface RestaurantContentChef {
 
 export interface RestaurantContentDish {
   chef: string;
+  chefAvatarPath: string | null;
+  chefId: string | null;
   confidence: number;
   courseLabel: string;
   coursePosition: string;
   dominantTaste: TasteId;
   id: string;
   ingredients: string[];
+  perceptualVector: PerceptualVector;
   restaurant: string;
   restaurantSlug: string;
   seasonLabel: string | null;
@@ -442,6 +462,19 @@ function getDominantTasteFromVector(vector: Partial<Record<TasteId, number>> | n
     const candidateValue = vector?.[candidate] ?? 0;
     return candidateValue > currentValue ? candidate : current;
   }, TASTE_IDS[0]);
+}
+
+function readNumericRecord<K extends string>(keys: readonly K[], value: unknown) {
+  const source =
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Partial<Record<K, unknown>>)
+      : {};
+
+  return keys.reduce<Record<K, number>>((record, key) => {
+    const numericValue = Number(source[key] ?? 0);
+    record[key] = Number.isFinite(numericValue) ? numericValue : 0;
+    return record;
+  }, {} as Record<K, number>);
 }
 
 function takeSingleRelation<T>(value: T | T[] | null | undefined): T | null {
@@ -1509,6 +1542,51 @@ export async function hydrateRecentMeasurementSnapshots(limit = 6) {
     }));
 }
 
+export async function hydrateUserLearnedCalibration(): Promise<UserLearnedCalibration | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return null;
+  }
+
+  const userId = await getAuthenticatedUserId();
+
+  if (!userId) {
+    return null;
+  }
+
+  const { data: deltaRow, error: deltaError } = await supabase
+    .from('user_learned_deltas')
+    .select(
+      'perception_taste_delta, perception_perceptual_delta, preference_taste_delta, preference_perceptual_delta, support_count, hypothesis_count, updated_at',
+    )
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (deltaError) {
+    console.warn('Failed to hydrate learned taste calibration from Supabase.', deltaError);
+    return null;
+  }
+
+  if (!deltaRow) {
+    return createEmptyUserLearnedCalibration();
+  }
+
+  return {
+    perceptionTasteDelta: readNumericRecord(TASTE_IDS, deltaRow.perception_taste_delta) as SignedTasteVector,
+    perceptionPerceptualDelta: readNumericRecord(
+      PERCEPTUAL_AXES,
+      deltaRow.perception_perceptual_delta,
+    ) as SignedPerceptualVector,
+    preferenceTasteDelta: readNumericRecord(TASTE_IDS, deltaRow.preference_taste_delta) as SignedTasteVector,
+    preferencePerceptualDelta: readNumericRecord(
+      PERCEPTUAL_AXES,
+      deltaRow.preference_perceptual_delta,
+    ) as SignedPerceptualVector,
+    supportCount: Number(deltaRow.support_count ?? 0),
+    hypothesisCount: Number(deltaRow.hypothesis_count ?? 0),
+    updatedAt: deltaRow.updated_at ?? undefined,
+  };
+}
+
 export async function hydrateRestaurantContentCatalog(): Promise<RestaurantContentCatalog> {
   if (!supabase || !isSupabaseConfigured) {
     return { chefs: [], dishes: [] };
@@ -1517,12 +1595,12 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
   const [chefResponse, dishResponse] = await Promise.all([
     supabase
       .from('chefs')
-      .select('display_name, restaurants(name, slug)')
+      .select('id, display_name, avatar_path, restaurants(name, slug)')
       .eq('is_active', true),
     supabase
       .from('dish_entities')
       .select(
-        'id, public_title, public_subtitle, season_label, course_position, status, restaurants(name, slug), dish_observed_facts(fact_type, value_text, value_json), dish_inference_profiles(confidence, taste_vector)',
+        'id, public_title, public_subtitle, season_label, course_position, status, restaurants(name, slug), dish_observed_facts(fact_type, value_text, value_json), dish_inference_profiles(confidence, taste_vector, perceptual_vector)',
       )
       .eq('status', 'active')
       .order('season_label', { ascending: false })
@@ -1541,7 +1619,14 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
 
   const chefRows = (chefResponse.data ?? []) as ContentChefQueryRow[];
   const dishRows = (dishResponse.data ?? []) as ContentDishQueryRow[];
-  const primaryChefByRestaurantSlug = new Map<string, string>();
+  const primaryChefByRestaurantSlug = new Map<
+    string,
+    {
+      avatarPath: string | null;
+      id: string | null;
+      name: string;
+    }
+  >();
 
   for (const row of chefRows) {
     const restaurantRelation = takeSingleRelation(row.restaurants);
@@ -1552,7 +1637,11 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       continue;
     }
 
-    primaryChefByRestaurantSlug.set(restaurantSlug, localizedChefName);
+    primaryChefByRestaurantSlug.set(restaurantSlug, {
+      avatarPath: row.avatar_path,
+      id: row.id ?? null,
+      name: localizedChefName,
+    });
   }
 
   const dishes = dishRows
@@ -1560,7 +1649,11 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       const restaurantRelation = takeSingleRelation(row.restaurants);
       const restaurantSlug = restaurantRelation?.slug ?? 'unknown-restaurant';
       const restaurantName = localizeRestaurantName(restaurantRelation?.name);
-      const chefName = primaryChefByRestaurantSlug.get(restaurantSlug) ?? '셰프 미정';
+      const chef = primaryChefByRestaurantSlug.get(restaurantSlug) ?? {
+        avatarPath: null,
+        id: null,
+        name: '셰프 미정',
+      };
       const title = localizeDishTitle(row.public_title);
 
       if (!title) {
@@ -1569,11 +1662,11 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
 
       const ingredients = extractObservedFactValues(row.dish_observed_facts, 'ingredients');
       const profile = takeSingleRelation(row.dish_inference_profiles);
-      const tasteVector = createZeroTasteVector();
-
-      for (const tasteId of TASTE_IDS) {
-        tasteVector[tasteId] = Number(profile?.taste_vector?.[tasteId] ?? 0);
-      }
+      const tasteVector = readNumericRecord(TASTE_IDS, profile?.taste_vector);
+      const perceptualVector = readNumericRecord(
+        PERCEPTUAL_AXES,
+        profile?.perceptual_vector,
+      ) as PerceptualVector;
 
       return {
         id: row.id,
@@ -1581,13 +1674,16 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
         subtitle: buildLocalizedSubtitle(title, row.public_subtitle, ingredients),
         restaurant: restaurantName,
         restaurantSlug,
-        chef: chefName,
+        chef: chef.name,
+        chefAvatarPath: chef.avatarPath,
+        chefId: chef.id,
         ingredients,
         confidence: Number(profile?.confidence ?? 0.5),
         coursePosition: row.course_position ?? 'other',
         courseLabel: formatCoursePositionLabel(row.course_position),
         seasonLabel: row.season_label,
         tasteVector,
+        perceptualVector,
         dominantTaste: getDominantTasteFromVector(profile?.taste_vector),
       };
     })
@@ -1700,6 +1796,8 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       seenChefKeys.add(key);
 
       return {
+        avatarPath: row.avatar_path,
+        id: row.id,
         name,
         restaurant,
         restaurantSlug,
@@ -1735,6 +1833,7 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
 export async function persistTasteMeasurementSnapshot(
   snapshot: TasteMeasurementSnapshot,
   source: MeasurementSource,
+  options: MeasurementPersistenceOptions = {},
 ) {
   if (!supabase || !isSupabaseConfigured) {
     return false;
@@ -1759,6 +1858,7 @@ export async function persistTasteMeasurementSnapshot(
       confidence_score: confidenceScore,
       raw_payload: {
         persisted_from: 'taste-buddy-app',
+        ...(options.rawPayload ?? {}),
       },
     })
     .select('id')

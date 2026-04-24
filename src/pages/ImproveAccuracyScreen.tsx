@@ -9,6 +9,7 @@ const Bluetooth = wrapIcon(BluetoothIcon);
 const ArrowRight = wrapIcon(ArrowRightIcon);
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
+import TokenBox from '../components/system/TokenBox';
 import FlowBottomCta from '../components/system/FlowBottomCta';
 import OutlineBadge from '../components/system/OutlineBadge';
 import { ICON_TOKENS } from '../constants/designTokens';
@@ -78,9 +79,9 @@ export default function ImproveAccuracyScreen({
                   </p>
                 </div>
               </div>
-              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+              <TokenBox backgroundToken="surface-base" textToken="text-primary">
                 <Sparkles size={ICON_TOKENS.size.lg} />
-              </div>
+              </TokenBox>
             </div>
           </SectionCard>
 
@@ -143,15 +144,14 @@ export default function ImproveAccuracyScreen({
             {benefits.map((benefit) => (
               <SectionCard key={benefit.title} hoverEffect={false}>
                 <div className="flex items-start gap-3">
-                  <div
-                    className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)]"
+                  <TokenBox
                     style={{
                       backgroundColor: benefit.iconBg,
                       color: benefit.iconColor,
                     }}
                   >
                     <Sparkles size={ICON_TOKENS.size.md} />
-                  </div>
+                  </TokenBox>
                   <div className="flex flex-col gap-1">
                     <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
                       {benefit.title}

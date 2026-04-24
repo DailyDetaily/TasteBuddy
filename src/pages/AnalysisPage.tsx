@@ -1963,8 +1963,8 @@ export default function AnalysisPage({
                     leading={
                       item.deltaMm > 0 ? (
                         <svg
-                          width={ICON_TOKENS.size.lg}
-                          height={ICON_TOKENS.size.lg}
+                          width={ICON_TOKENS.size.xl}
+                          height={ICON_TOKENS.size.xl}
                           viewBox="0 0 16 16"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -1979,8 +1979,8 @@ export default function AnalysisPage({
                         </svg>
                       ) : item.deltaMm < 0 ? (
                         <svg
-                          width={ICON_TOKENS.size.lg}
-                          height={ICON_TOKENS.size.lg}
+                          width={ICON_TOKENS.size.xl}
+                          height={ICON_TOKENS.size.xl}
                           viewBox="0 0 16 16"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -1995,8 +1995,8 @@ export default function AnalysisPage({
                         </svg>
                       ) : (
                         <svg
-                          width={ICON_TOKENS.size.lg}
-                          height={ICON_TOKENS.size.lg}
+                          width={ICON_TOKENS.size.xl}
+                          height={ICON_TOKENS.size.xl}
                           viewBox="0 0 16 16"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"

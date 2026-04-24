@@ -188,7 +188,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
       { file: "src/components/system/StepBadge.tsx", note: "currentIndex/currentStep를 사람이 읽기 쉬운 분리형 숫자와 슬래시 구조로 렌더링합니다." },
       { file: "src/components/system/OutlineBadge.tsx", note: "배지 shell의 border, radius, font 규칙을 재사용합니다." },
       { file: "src/pages/PreferenceIntakeScreen.tsx", note: "사전 조사 질문 헤더 우측에서 사용됩니다." },
-      { file: "src/components/measurement/CalibrationQuestionHeader.tsx", note: "빠른 미각 측정 질문 헤더 우측에서 사용됩니다." },
+      { file: "src/components/measurement/CalibrationQuestionHeader.tsx", note: "guided measurement-style 질문 헤더 우측에서 사용됩니다." },
     ],
     values: [
       { label: "display", value: "inline-flex" },
@@ -309,9 +309,9 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
     description: "정사각형 미각 해석 카드입니다. 맛별 tint surface 위에 결과와 해석을 같이 보여줍니다.",
     selector: "src/components/system/TasteTintCard.tsx root",
     sources: [
-      { file: "src/components/system/TasteTintCard.tsx", note: "기존 홈 셰프 매칭 카드와 동일한 골격으로 만든 공용 정사각형 카드입니다." },
+      { file: "src/components/system/TasteTintCard.tsx", note: "ChefMatchCard와 같은 정사각형 카드 리듬을 공유하는 공용 미각 해석 카드입니다." },
       { file: "src/components/system/TasteTintCardList.tsx", note: "grid 전용 카드 배치 래퍼입니다." },
-      { file: "src/pages/QuickTasteCalibrationScreen.tsx", note: "결과 화면 세부 분석에서 실제로 사용됩니다." },
+      { file: "src/pages/TasteSurveyResultScreen.tsx", note: "설문 기반 starter result 화면의 해석 카드에서 사용됩니다." },
       { file: "src/pages/AnalysisPage.tsx", note: "분석 화면의 세부 분석 카드 스트립에서 실제로 사용됩니다." },
     ],
     values: [
@@ -325,7 +325,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
       { label: "title font", value: "14px / 700" },
       { label: "description font", value: "10px / 400" },
       { label: "detail font", value: "10px / 600" },
-      { label: "text layout", value: "ChefCard와 동일", note: "상단 48px 박스 + 하단 grow 영역 + title/meta/bottom label" },
+      { label: "text layout", value: "ChefMatchCard와 동일", note: "상단 48px 박스 + 하단 grow 영역 + title/meta/bottom label" },
       { label: "interactive state", value: "optional", note: "onClick이 있으면 hover lift와 press scale 적용" },
     ],
   },
@@ -339,7 +339,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
     sources: [
       { file: "src/components/system/CardScrollList.tsx", note: "가로 스크롤 카드 스트립의 outer / inner 래퍼를 정의합니다." },
       { file: "src/components/home/HomeCards.tsx", note: "홈 셰프 매칭 스트립의 실제 배치에서 사용됩니다." },
-      { file: "src/pages/QuickTasteCalibrationScreen.tsx", note: "결과 화면 세부 분석 카드 스트립에서 사용됩니다." },
+      { file: "src/pages/AnalysisPage.tsx", note: "분석 화면의 세부 분석 카드 스트립에서 사용됩니다." },
       { file: "src/pages/AnalysisPage.tsx", note: "분석 화면의 세부 분석 카드 스트립에서 사용됩니다." },
     ],
     values: [
@@ -383,12 +383,12 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
     name: "FlowHeaderBlock",
     group: "카드",
     status: "currently-used",
-    description: "사전 조사와 미각 보정 intro에서 배지 행과 title / description 블록을 묶는 공통 header block입니다.",
+    description: "사전 조사와 미각 설문 intro에서 배지 행과 title / description 블록을 묶는 공통 header block입니다.",
     selector: "src/components/system/FlowHeaderBlock.tsx root div",
     sources: [
       { file: "src/components/system/FlowHeaderBlock.tsx", note: "topLeft/topRight 슬롯과 title/description stack을 한곳에서 정의합니다." },
       { file: "src/pages/PreferenceIntakeScreen.tsx", note: "사전 조사 상단에서 step badge와 함께 사용됩니다." },
-      { file: "src/pages/QuickTasteCalibrationScreen.tsx", note: "미각 보정 intro 상단에서 dual outline badges와 함께 사용됩니다." },
+      { file: "src/pages/TasteSurveyIntroScreen.tsx", note: "미각 설문 intro 상단에서 dual outline badges와 함께 사용됩니다." },
     ],
     values: [
       { label: "layout", value: "flex column" },

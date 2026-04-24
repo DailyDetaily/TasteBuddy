@@ -12,8 +12,8 @@ import SectionTitle from '../system/SectionTitle';
 import StatusChip from '../system/StatusChip';
 import TasteChip from '../system/TasteChip';
 import CardScrollList from '../system/CardScrollList';
-import { LegacyHomeChefCard } from '../../imports/Home';
-import { type TasteId, TASTE_TOKENS } from '../../constants/designTokens';
+import ChefMatchCard from './ChefMatchCard';
+import { type TasteId } from '../../constants/designTokens';
 import { type ReservationRecord, RESERVATION_CATALOG } from '../../constants/reservationCatalog';
 import {
   createInitialTasteMeasurementSnapshot,
@@ -31,6 +31,7 @@ import { type RestaurantReadyGuidance } from '../../constants/quickTasteCalibrat
 import {
   getTasteColor,
 } from '../../constants/tasteColors';
+import type { PersonalizedMatchConfidence } from '../../lib/chefMatching';
 
 import chefHwangJeongin from '../../assets/HwangJeongin.png';
 import chefHyunseokChoi from '../../assets/HyunseokChoi.png';
@@ -74,9 +75,15 @@ const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
 
 export interface HomeChefMatchCardData {
   chef: string;
+  chefAvatarPath?: string | null;
   image: string | null;
   match: number;
+  matchConfidence?: PersonalizedMatchConfidence;
+  matchReason?: string;
+  representativeDishTitle?: string;
   restaurant: string;
+  restaurantSlug?: string;
+  sourceTasteId?: TasteId;
   tasteId: TasteId;
 }
 
@@ -346,26 +353,24 @@ export function HomeChefMatchCard({
   chef: HomeChefMatchCardData;
   onNavigateToSection?: InspectableNavigateHandler;
 }) {
-  const dominantTasteLabel = TASTE_TOKENS[chef.tasteId].label;
   const chefName = chef.chef.endsWith('셰프') ? chef.chef : `${chef.chef} 셰프`;
 
   return (
     <InspectableComponent
       className="shrink-0"
-      componentName="LegacyHomeChefCard"
+      componentName="ChefMatchCard"
       onNavigate={onNavigateToSection}
       sectionId="cards"
     >
-      <LegacyHomeChefCard
-        chef={{
-          image: chef.image,
-          match: chef.match,
-          name: chefName,
-          restaurant: chef.restaurant,
-          taste: dominantTasteLabel,
-        }}
+      <ChefMatchCard
+        chefName={chefName}
         hoverMotion={false}
         hoverShadow={false}
+        imageSrc={chef.image}
+        matchRate={chef.match}
+        matchReason={chef.matchReason}
+        restaurant={chef.restaurant}
+        tasteId={chef.tasteId}
       />
     </InspectableComponent>
   );

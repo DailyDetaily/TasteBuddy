@@ -15,6 +15,7 @@ The important thing to know is that some of the most important docs live at the 
 - Product UX guideline: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - AI-friendly design system guide: [`AI_DESIGN_SYSTEM.md`](./AI_DESIGN_SYSTEM.md)
 - Machine-readable design snapshot: [`design-system.snapshot.json`](./design-system.snapshot.json)
+- App/service summary: [`TASTE_BUDDY_APP_SUMMARY.md`](./TASTE_BUDDY_APP_SUMMARY.md)
 
 ## Docs Folder Structure
 
@@ -30,6 +31,7 @@ The important thing to know is that some of the most important docs live at the 
 
 ### Product and UX
 
+- App/service summary: [`TASTE_BUDDY_APP_SUMMARY.md`](./TASTE_BUDDY_APP_SUMMARY.md)
 - Product source of truth: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - Design system: [`../DESIGN.md`](../DESIGN.md)
 - Onboarding product note: [`product/onboarding-digital-anchoring.md`](./product/onboarding-digital-anchoring.md)

@@ -85,9 +85,9 @@ import {
 import ImproveAccuracyScreen from '../../pages/ImproveAccuracyScreen';
 import OnboardingScreen from '../../pages/OnboardingScreen';
 import ProfilePage from '../../pages/ProfilePage';
-import QuickTasteCalibrationScreen from '../../pages/QuickTasteCalibrationScreen';
 import ReservationConfirmationScreen from '../../pages/ReservationConfirmationScreen';
 import ReservationPage from '../../pages/ReservationPage';
+import TasteSurveyIntroScreen from '../../pages/TasteSurveyIntroScreen';
 import TasteMeasurementScreen from '../../pages/TasteMeasurementScreen';
 import { cn } from '../ui/utils';
 
@@ -1082,13 +1082,8 @@ function OnboardingScreenFilePreview() {
   return <OnboardingScreen onComplete={() => undefined} />;
 }
 
-function QuickTasteCalibrationScreenFilePreview() {
-  return (
-    <QuickTasteCalibrationScreen
-      onBack={() => undefined}
-      onComplete={() => undefined}
-    />
-  );
+function TasteSurveyIntroScreenFilePreview() {
+  return <TasteSurveyIntroScreen onBack={() => undefined} onStart={() => undefined} />;
 }
 
 function TasteMeasurementScreenFilePreview() {
@@ -1339,13 +1334,13 @@ const FILE_PREVIEW_DEFINITIONS: Record<string, FilePreviewDefinition> = {
     render: () => <CardScrollListFilePreview />,
   },
   'src/components/measurement/TasteAxisMeter.tsx': {
-    description: 'A single taste axis meter used in quick calibration result summaries.',
+    description: 'A single taste axis meter used for starter profile result summaries.',
     kind: 'component',
     title: 'TasteAxisMeter.tsx',
     render: () => <TasteAxisMeterFilePreview />,
   },
   'src/components/measurement/CalibrationQuestionHeader.tsx': {
-    description: 'The question header block for quick calibration with title, description, and step count.',
+    description: 'The question header block for guided measurement-style flows with title, description, and step count.',
     kind: 'component',
     title: 'CalibrationQuestionHeader.tsx',
     render: () => <CalibrationQuestionHeaderFilePreview />,
@@ -1434,11 +1429,11 @@ const FILE_PREVIEW_DEFINITIONS: Record<string, FilePreviewDefinition> = {
     title: 'OnboardingScreen.tsx',
     render: () => <OnboardingScreenFilePreview />,
   },
-  'src/pages/QuickTasteCalibrationScreen.tsx': {
-    description: 'The full quick taste calibration flow screen.',
+  'src/pages/TasteSurveyIntroScreen.tsx': {
+    description: 'The intro screen for the current six-taste survey starter flow.',
     kind: 'mobile-screen',
-    title: 'QuickTasteCalibrationScreen.tsx',
-    render: () => <QuickTasteCalibrationScreenFilePreview />,
+    title: 'TasteSurveyIntroScreen.tsx',
+    render: () => <TasteSurveyIntroScreenFilePreview />,
   },
   'src/pages/TasteMeasurementScreen.tsx': {
     description: 'The taste measurement flow using the shared anchored step footer.',

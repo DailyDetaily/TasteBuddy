@@ -423,8 +423,8 @@ warmth는 taste palette보다 앞에 나오면 안 된다.
 | Token | Value | 역할 |
 | --- | --- | --- |
 | `--tb-radius-6` | `6px` | 작은 badge, compact control |
-| `--tb-radius-8` | `8px` | small surface |
-| `--tb-radius-10` | `10px` | 기본 CTA, icon box |
+| `--tb-radius-8` | `8px` | small surface, `TokenBox` |
+| `--tb-radius-10` | `10px` | 기본 CTA |
 | `--tb-radius-12` | `12px` | row, tab, selectable card |
 | `--tb-radius-14` | `14px` | profile block, empty state icon box |
 | `--tb-radius-20` | `20px` | 기본 카드 shell |
@@ -436,6 +436,14 @@ warmth는 taste palette보다 앞에 나오면 안 된다.
 | Token | Value | 용도 |
 | --- | --- | --- |
 | `--tb-shadow-hover` | `0 1px 3px rgba(15, 15, 15, 0.06)` | 가벼운 hover |
+
+### Box Size Tokens
+
+| Token | Value | 용도 |
+| --- | --- | --- |
+| `--tb-box-size-sm` | `32px` | compact icon / symbol box |
+| `--tb-box-size-md` | `40px` | list row icon / medium symbol box |
+| `--tb-box-size-lg` | `48px` | empty state / emphasized symbol box |
 | `--tb-shadow-soft` | `0 4px 20px rgba(0, 0, 0, 0.1)` | 가벼운 floating surface |
 | `--tb-shadow-strong` | `0 12px 32px rgba(15, 15, 15, 0.12)` | interactive card hover |
 | `--tb-shadow-button` | `0 8px 20px rgba(0, 0, 0, 0.1)` | primary CTA |
@@ -519,7 +527,7 @@ Scale:
 | `md` | `18` |
 | `control` | `20` |
 | `lg` | `24` |
-| `xl` | `24` |
+| `xl` | `28` |
 | `touch` | `24` |
 | `hero` | `24` |
 
@@ -595,6 +603,8 @@ Scale:
 | `StatusChip` | radius `6px`, padding `2px 6px`, `10px / 700`, 색상은 prop으로 주입 |
 | `HomeTcsBadge` | radius `6px`, padding `2px 6px`, `10px / 700`, weighted taste-light gradient + badge elevated shadow |
 | `TasteChip` | full pill, border `taste.palette.tintSoftBorder`, bg `taste.palette.tintSoft`, `10px / 500`, value는 taste color `600`; 미각과 무관한 메타는 `tone="neutral"`로 `surface-muted / border-strong / text-tertiary` 사용 |
+| `TokenBox` | radius `8px`, size `sm/md/lg = 32/40/48px`, `backgroundToken`과 `textToken`으로 `tb-*` 색상 토큰을 주입 |
+| `ImageBox` | radius `8px`, size `sm/md/lg = 32/40/48px`, 이미지가 있으면 `object-cover`, 없으면 `person/chef/restaurant/menu/generic` fallback icon |
 
 ### Cards
 

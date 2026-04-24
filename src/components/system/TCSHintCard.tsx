@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 
 import SectionCard from '../SectionCard';
-import CardIconBox from './CardIconBox';
+import TokenBox from './TokenBox';
 import { ICON_TOKENS } from '../../constants/designTokens';
 
 type TCSHintCardSize = 'sm' | 'md';
@@ -53,9 +53,9 @@ export default function TCSHintCard({
       className={`${surfaceClassName} ${className}`.trim()}
     >
       <div className="flex items-start gap-3">
-        <CardIconBox className="bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+        <TokenBox backgroundToken="surface-base" textToken="text-primary">
           {icon ?? <SparklesIcon size={sizeStyle.iconSize} />}
-        </CardIconBox>
+        </TokenBox>
         {title ? (
           <div className="flex flex-col gap-2">
             <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">

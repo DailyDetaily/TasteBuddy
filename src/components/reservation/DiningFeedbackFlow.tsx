@@ -16,7 +16,7 @@ import TopAppBar from '../TopAppBar';
 import OutlineBadge from '../system/OutlineBadge';
 import FlowBottomCta from '../system/FlowBottomCta';
 import PageSection from '../system/PageSection';
-import CardIconBox from '../system/CardIconBox';
+import TokenBox from '../system/TokenBox';
 import TasteChip from '../system/TasteChip';
 import {
   type DiningDishMetadata,
@@ -297,9 +297,9 @@ export function DiningFeedbackScreen({
                   {scenario.courseName} · {scenario.restaurant}
                 </p>
               </div>
-              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+              <TokenBox backgroundToken="surface-base" textToken="text-primary">
                 <MessageSquareText size={ICON_TOKENS.size.lg} />
-              </div>
+              </TokenBox>
             </div>
           </SectionCard>
 
@@ -459,9 +459,9 @@ export function DiningAiAnalysisScreen({
                   </p>
                 </div>
               </div>
-              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+              <TokenBox backgroundToken="surface-base" textToken="text-primary">
                 <CheckCircle2 size={ICON_TOKENS.size.lg} />
-              </div>
+              </TokenBox>
             </div>
 
             <div className="w-full rounded-[var(--tb-radius-20)] bg-[var(--tb-color-surface-base)] px-4 py-4">
@@ -474,19 +474,22 @@ export function DiningAiAnalysisScreen({
             <div className="grid grid-cols-1 gap-3">
               {summary.changes.map((note, index) => {
                 const Icon = index === 0 ? Sparkles : index === 1 ? ChefHat : MessageSquareText;
-                const iconClass =
+                const iconTokens =
                   index === 0
-                    ? 'bg-[var(--tb-taste-sweet-bg)] text-[var(--tb-taste-sweet-main)]'
+                    ? { backgroundToken: 'taste-sweet-bg', textToken: 'taste-sweet-main' }
                     : index === 1
-                      ? 'bg-[var(--tb-taste-salty-bg)] text-[var(--tb-taste-salty-main)]'
-                      : 'bg-[var(--tb-taste-umami-bg)] text-[var(--tb-taste-umami-main)]';
+                      ? { backgroundToken: 'taste-salty-bg', textToken: 'taste-salty-main' }
+                      : { backgroundToken: 'taste-umami-bg', textToken: 'taste-umami-main' };
 
                 return (
                   <SectionCard key={note.title} hoverEffect={false}>
                     <div className="flex items-start gap-3">
-                      <CardIconBox className={iconClass}>
+                      <TokenBox
+                        backgroundToken={iconTokens.backgroundToken}
+                        textToken={iconTokens.textToken}
+                      >
                         <Icon size={ICON_TOKENS.size.md} />
-                      </CardIconBox>
+                      </TokenBox>
                       <div className="flex flex-col gap-1">
                         <p className={feedbackHintClass}>{note.title}</p>
                         <p className="text-[13px] font-normal leading-relaxed text-[var(--tb-color-text-tertiary)]">
@@ -540,9 +543,9 @@ export function DiningAiAnalysisScreen({
 
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start gap-3">
-              <CardIconBox className="bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+              <TokenBox backgroundToken="surface-base" textToken="text-primary">
                 <ChefHat size={ICON_TOKENS.size.md} />
-              </CardIconBox>
+              </TokenBox>
               <div className="flex flex-col gap-1">
                 <p className={feedbackHintClass}>셰프용 현재 요약</p>
                 <p className="text-[13px] font-normal leading-relaxed text-[var(--tb-color-text-tertiary)]">

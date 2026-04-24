@@ -1,19 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Taste Buddy" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Taste Buddy app</title>
   <link rel="icon" type="image/png" href="/symbol.png" />
   <link rel="apple-touch-icon" href="/symbol.png" />
-  <script type="module" crossorigin src="/assets/index-DNK3Fs1K.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DbxpkhZQ.css">
-</head>
+<link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
 
 <body>
   <div id="root"></div>
+  <script>
+    (() => {
+      const isLocalDevHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+      const loadApp = () => {
+        const script = document.createElement("script");
+        script.type = "module";
+        script.src = `/src/main.tsx?v=${Date.now()}`;
+        document.body.appendChild(script);
+      };
+
+      const boot = async () => {
+        if (!isLocalDevHost) {
+          loadApp();
+          return;
+        }
+
+        let shouldReload = false;
+
+        try {
+          if ("serviceWorker" in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+
+            if (registrations.length > 0) {
+              shouldReload = true;
+              await Promise.all(registrations.map((registration) => registration.unregister()));
+            }
+          }
+
+          if ("caches" in window) {
+            const cacheKeys = await window.caches.keys();
+
+            if (cacheKeys.length > 0) {
+              shouldReload = true;
+              await Promise.all(cacheKeys.map((cacheKey) => window.caches.delete(cacheKey)));
+            }
+          }
+        } catch (error) {
+          console.warn("Failed to clear local dev cache before bootstrap.", error);
+        }
+
+        if (shouldReload) {
+          window.location.replace(
+            `${window.location.pathname}${window.location.search}${window.location.hash}`,
+          );
+          return;
+        }
+
+        loadApp();
+      };
+
+      void boot();
+    })();
+  </script>
 </body>
 
 </html>

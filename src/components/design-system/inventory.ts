@@ -929,12 +929,13 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "피드백 요약, 변화 노트, confidence, 셰프용 요약 카드가 있습니다.",
     },
     {
-      file: "src/pages/QuickTasteCalibrationScreen.tsx",
-      note: "빠른 보정 힌트 카드와 스타터 프로필 결과 카드 패턴입니다.",
+      file: "src/pages/TasteSurveyResultScreen.tsx",
+      note: "설문 기반 스타터 프로필 결과 카드 패턴입니다.",
     },
     {
       file: "src/components/system/TCSHintCard.tsx",
-      note: "빠른 보정 힌트 카드를 공용 컴포넌트로 재사용합니다.",
+      note: "미각 설문과 보정 안내의 힌트 카드를 공용 컴포넌트로 재사용합니다.",
+    },
     },
     {
       file: "src/components/system/InterpretationCard.tsx",

@@ -19,7 +19,7 @@ import { ICON_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from "../../consta
 import { buildTasteAdjustmentGradient } from "../../constants/tasteColors";
 import TasteMeasurementMiniCta from "../measurement/TasteMeasurementMiniCta";
 import SectionCard from "../SectionCard";
-import CardIconBox from "../system/CardIconBox";
+import TokenBox from "../system/TokenBox";
 import InspectableComponent from "../system/InspectableComponent";
 import InterpretationDetailDrawer, {
   type InterpretationDetailContent,
@@ -590,7 +590,7 @@ export default function CardGallery({
 
       <GallerySection
         title="피드백·보정 카드"
-        description="식후 피드백과 빠른 보정 플로우에서 실제로 쓰이는 카드 패턴을 모두 모았습니다."
+        description="식후 피드백과 미각 설문 플로우에서 실제로 쓰이는 카드 패턴을 모두 모았습니다."
       >
         <SampleBlock
           title="피드백 요약 히어로 카드"
@@ -632,20 +632,22 @@ export default function CardGallery({
             {[
               {
                 body: `${accentLabel} 포인트는 더 분명하게 반응하고, 짠맛은 후반부에 정리될 때 안정적으로 느껴졌어요.`,
-                iconClass: "bg-[var(--tb-taste-sweet-bg)] text-[var(--tb-taste-sweet-main)]",
+                backgroundToken: "taste-sweet-bg" as const,
+                textToken: "taste-sweet-main" as const,
                 title: "현재 더 또렷해진 포인트",
               },
               {
                 body: "메인 코스는 감칠맛을 한 번에 강하게 밀기보다 여유 있게 이어지는 구성이 더 자연스럽습니다.",
-                iconClass: "bg-[var(--tb-taste-salty-bg)] text-[var(--tb-taste-salty-main)]",
+                backgroundToken: "taste-salty-bg" as const,
+                textToken: "taste-salty-main" as const,
                 title: "다음 예약 반영 힌트",
               },
             ].map((item) => (
               <SectionCard key={item.title} hoverEffect={false}>
                 <div className="flex items-start gap-3">
-                  <CardIconBox className={item.iconClass}>
+                  <TokenBox backgroundToken={item.backgroundToken} textToken={item.textToken}>
                     <SparklesIcon size={ICON_TOKENS.size.md} />
-                  </CardIconBox>
+                  </TokenBox>
                   <div className="flex flex-col gap-1">
                     <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">{item.title}</p>
                     <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-tertiary)]">{item.body}</p>
@@ -701,9 +703,9 @@ export default function CardGallery({
         >
           <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
             <div className="flex items-start gap-3">
-              <CardIconBox className="bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+              <TokenBox backgroundToken="surface-base" textToken="text-primary">
                 <UtensilsIcon size={ICON_TOKENS.size.md} />
-              </CardIconBox>
+              </TokenBox>
               <div className="flex flex-col gap-1">
                 <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">셰프용 현재 요약</p>
                 <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-tertiary)]">
@@ -784,9 +786,9 @@ export default function CardGallery({
 
         <SampleBlock
           title="스타터 프로필 결과 카드"
-          description="빠른 보정 완료 후 현재 프로필을 해석해 주는 카드입니다."
+          description="미각 설문 완료 후 현재 프로필을 해석해 주는 카드입니다."
           componentNames={["SectionCard", "TasteChip"]}
-          source="src/pages/QuickTasteCalibrationScreen.tsx"
+          source="src/pages/TasteSurveyResultScreen.tsx"
         >
           <SectionCard hoverEffect={false}>
             <div className="flex flex-col gap-4">
@@ -823,7 +825,7 @@ export default function CardGallery({
           title="보정 단서 카드"
           description="선택한 답변이 현재 프로필에 어떻게 반영됐는지 설명하는 카드입니다."
           componentNames={["SectionCard"]}
-          source="src/pages/QuickTasteCalibrationScreen.tsx"
+          source="src/pages/TasteSurveyResultScreen.tsx"
         >
           <SectionCard hoverEffect={false}>
             <div className="flex flex-col gap-2">

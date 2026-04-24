@@ -110,7 +110,7 @@ export const ICON_TOKENS = {
     md: 18,
     control: 20,
     lg: 24,
-    xl: 24,
+    xl: 28,
     touch: 24,
     hero: 24,
   },
@@ -126,6 +126,14 @@ export const ICON_TOKENS = {
     md: 24,
     lg: 32,
     xl: 32,
+  },
+} as const;
+
+export const BOX_TOKENS = {
+  size: {
+    sm: 32,
+    md: 40,
+    lg: 48,
   },
 } as const;
 

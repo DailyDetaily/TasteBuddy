@@ -3180,7 +3180,7 @@ export default function DesignSystemPage() {
           <PlaygroundSection
             id="cards"
             title="Cards / Lists"
-            description="공용 카드부터 예약, 프로필, 식후 피드백, 빠른 보정 플로우까지 현재 앱에서 카드 컴포넌트처럼 쓰이는 패턴을 모두 모았습니다."
+            description="공용 카드부터 예약, 프로필, 식후 피드백, 미각 설문 플로우까지 현재 앱에서 카드 컴포넌트처럼 쓰이는 패턴을 모두 모았습니다."
             controls={
               <>
                 <SliderControl label="Card radius" value={cardRadius} min={8} max={32} onChange={setCardRadius} />
@@ -3447,7 +3447,7 @@ export default function DesignSystemPage() {
                 <div className={cn(previewCardClass, "p-4")}>
                   <div className="flex items-center justify-between">
                     <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">Step indicator</span>
-                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">Onboarding / Quick calibration</span>
+                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">Onboarding / Taste survey</span>
                   </div>
                   <div className="mt-4 grid gap-4">
                     <div className="rounded-[16px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] px-4 py-4">

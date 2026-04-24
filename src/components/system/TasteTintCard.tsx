@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
 import { getTasteTint } from '../../constants/tasteColors';
 import { cn } from '../ui/utils';
+import TokenBox from './TokenBox';
 
 export interface TasteTintCardProps {
   className?: string;
@@ -51,15 +52,17 @@ export default function TasteTintCard({
   const content = (
     <div className="flex h-full w-full flex-col items-start gap-[12px]">
       {leading ? (
-        <div
+        <TokenBox
           className={cn(
-            'relative flex size-[48px] shrink-0 items-center justify-center overflow-hidden rounded-[8px]',
+            'relative overflow-hidden',
             leadingClassName,
           )}
+          backgroundToken="surface-base"
+          size="lg"
           style={leadingStyle}
         >
           {leading}
-        </div>
+        </TokenBox>
       ) : null}
 
       <div className="relative flex w-full grow flex-col items-start justify-between leading-[normal]">

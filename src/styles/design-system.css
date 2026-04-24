@@ -78,9 +78,13 @@
   --tb-icon-size-sm: 14px;
   --tb-icon-size-md: 18px;
   --tb-icon-size-lg: 24px;
-  --tb-icon-size-xl: 24px;
+  --tb-icon-size-xl: 28px;
   --tb-icon-size-touch: 24px;
   --tb-icon-size-hero: 24px;
+
+  --tb-box-size-sm: 32px;
+  --tb-box-size-md: 40px;
+  --tb-box-size-lg: 48px;
 
   --tb-icon-stroke-thin: 1.5;
   --tb-icon-stroke-regular: 1.8;

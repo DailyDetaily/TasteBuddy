@@ -61,6 +61,7 @@
       },
       "scripts": {
             "dev": "vite",
+            "dev:keepalive": "node scripts/dev-keepalive.mjs --host 0.0.0.0 --port 3001 --strictPort",
             "dev:app": "node scripts/open-design-system.mjs /",
             "dev:design-system": "node scripts/open-design-system.mjs",
             "dev:design-system-updates": "node scripts/open-design-system.mjs /design-system-updates",
@@ -81,6 +82,7 @@
             "intake:generate-seed": "node scripts/generate-intake-seed-json.mjs",
             "content:normalize-korean": "node scripts/normalize-supabase-content-korean.mjs",
             "seed:supabase": "node scripts/import-supabase-seed.mjs",
-            "seed:mingles:dinner": "node scripts/import-supabase-seed.mjs supabase/seeds/mingles-dinner-2026-01-08.seed.json"
+            "seed:mingles:dinner": "node scripts/import-supabase-seed.mjs supabase/seeds/mingles-dinner-2026-01-08.seed.json",
+            "test": "node scripts/test-taste-survey-scoring.mjs"
       }
 }

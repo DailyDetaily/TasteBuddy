@@ -10,7 +10,10 @@ import ProfilePage from './pages/ProfilePage';
 import SplashScreen from './pages/SplashScreen';
 import OnboardingScreen from './pages/OnboardingScreen';
 import PreferenceIntakeScreen from './pages/PreferenceIntakeScreen';
-import QuickTasteCalibrationScreen from './pages/QuickTasteCalibrationScreen';
+import TasteSurveyIntroScreen from './pages/TasteSurveyIntroScreen';
+import TasteSurveyScreen from './pages/TasteSurveyScreen';
+import TasteSurveyReviewScreen from './pages/TasteSurveyReviewScreen';
+import TasteSurveyResultScreen from './pages/TasteSurveyResultScreen';
 import TeastickConnectScreen from './pages/TeastickConnectScreen';
 import TasteMeasurementScreen from './pages/TasteMeasurementScreen';
 import ImproveAccuracyScreen from './pages/ImproveAccuracyScreen';
@@ -61,6 +64,14 @@ import {
   persistTasteMeasurementSnapshot,
 } from './lib/tasteBuddySupabase';
 import { ensureSupabaseSession, isSupabaseConfigured } from './lib/supabase';
+import { buildTasteSurveyCompatibleResult } from './lib/tasteSurveyScoring';
+import { TASTE_SURVEY_ITEMS } from './constants/tasteSurveyItems';
+import { TASTE_SURVEY_INSTRUMENT } from './constants/tasteSurveyConfig';
+import type {
+  TasteSurveyCompatibleResult,
+  TasteSurveyLikertValue,
+  TasteSurveyResponse,
+} from './types/tasteSurvey';
 
 type AppState =
   | 'splash'
@@ -72,6 +83,7 @@ type AppState =
   | 'improve-accuracy'
   | 'main';
 type MeasurementEntryPoint = 'initial' | 'main';
+type TasteSurveyFlowStep = 'intro' | 'questions' | 'review' | 'result';
 const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const MAIN_APP_BOTTOM_OFFSET =
   'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
@@ -89,6 +101,14 @@ interface PersistedUserState {
   latestPreferenceIntakeProfile: PreferenceIntakeProfile | null;
   latestRestaurantReadyGuidance: RestaurantReadyGuidance | null;
   latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
+  tasteSurveyDraft: PersistedTasteSurveyDraft | null;
+}
+
+interface PersistedTasteSurveyDraft {
+  currentSurveyIndex: number;
+  surveyResponses: Record<string, TasteSurveyResponse>;
+  tasteSurveyFlowStep: TasteSurveyFlowStep;
+  tasteSurveyLastUpdatedAt: string;
 }
 
 function isTasteMeasurementSnapshot(value: unknown): value is TasteMeasurementSnapshot {
@@ -101,6 +121,124 @@ function isTasteMeasurementSnapshot(value: unknown): value is TasteMeasurementSn
   return typeof snapshot.measuredAt === 'string' && typeof snapshot.results === 'object';
 }
 
+function isTasteSurveyFlowStep(value: unknown): value is TasteSurveyFlowStep {
+  return value === 'intro' || value === 'questions' || value === 'review' || value === 'result';
+}
+
+function isTasteSurveyLikertValue(value: unknown): value is TasteSurveyLikertValue {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= 7
+  );
+}
+
+function isTasteSurveyResponse(value: unknown): value is TasteSurveyResponse {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const response = value as Partial<TasteSurveyResponse>;
+
+  return (
+    typeof response.itemId === 'string' &&
+    typeof response.uncertain === 'boolean' &&
+    (response.selectedValue === null || isTasteSurveyLikertValue(response.selectedValue))
+  );
+}
+
+function sanitizeTasteSurveyResponses(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {} as Record<string, TasteSurveyResponse>;
+  }
+
+  return Object.entries(value as Record<string, unknown>).reduce<Record<string, TasteSurveyResponse>>(
+    (responses, [itemId, response]) => {
+      if (isTasteSurveyResponse(response) && response.itemId === itemId) {
+        responses[itemId] = response;
+      }
+
+      return responses;
+    },
+    {},
+  );
+}
+
+function isPersistedTasteSurveyDraft(value: unknown): value is PersistedTasteSurveyDraft {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const draft = value as Partial<PersistedTasteSurveyDraft>;
+
+  return (
+    typeof draft.currentSurveyIndex === 'number' &&
+    Number.isInteger(draft.currentSurveyIndex) &&
+    draft.currentSurveyIndex >= 0 &&
+    isTasteSurveyFlowStep(draft.tasteSurveyFlowStep) &&
+    typeof draft.tasteSurveyLastUpdatedAt === 'string'
+  );
+}
+
+function clampSurveyIndex(value: number) {
+  return Math.min(Math.max(value, 0), Math.max(TASTE_SURVEY_ITEMS.length - 1, 0));
+}
+
+function createTasteSurveyDraft(
+  surveyResponses: Record<string, TasteSurveyResponse | undefined>,
+  currentSurveyIndex: number,
+  tasteSurveyFlowStep: TasteSurveyFlowStep,
+): PersistedTasteSurveyDraft | null {
+  const sanitizedResponses = sanitizeTasteSurveyResponses(surveyResponses);
+  const hasDraftProgress =
+    Object.keys(sanitizedResponses).length > 0 ||
+    currentSurveyIndex > 0 ||
+    tasteSurveyFlowStep !== 'intro';
+
+  if (!hasDraftProgress) {
+    return null;
+  }
+
+  return {
+    currentSurveyIndex: clampSurveyIndex(currentSurveyIndex),
+    surveyResponses: sanitizedResponses,
+    tasteSurveyFlowStep,
+    tasteSurveyLastUpdatedAt: new Date().toISOString(),
+  };
+}
+
+function getTasteSurveyResponseList(
+  responses: Record<string, TasteSurveyResponse | undefined>,
+) {
+  return Object.values(responses).filter(
+    (response): response is TasteSurveyResponse => Boolean(response),
+  );
+}
+
+function buildCompatibleResultFromSurveyResponses(
+  responses: Record<string, TasteSurveyResponse | undefined>,
+) {
+  return buildTasteSurveyCompatibleResult(getTasteSurveyResponseList(responses));
+}
+
+function createTasteSurveyMeasurementRawPayload(
+  responses: Record<string, TasteSurveyResponse | undefined>,
+  compatibleResult: TasteSurveyCompatibleResult,
+) {
+  const responseList = getTasteSurveyResponseList(responses);
+
+  return {
+    derived_snapshot_source: compatibleResult.snapshot.source ?? 'broad-starter',
+    instrument_id: TASTE_SURVEY_INSTRUMENT.id,
+    instrument_version: TASTE_SURVEY_INSTRUMENT.version,
+    measurement_flow: 'taste_survey',
+    response_count: responseList.length,
+    survey_responses: responseList,
+    uncertain_response_count: responseList.filter((response) => response.uncertain).length,
+  };
+}
+
 function loadPersistedUserState(): PersistedUserState {
   if (typeof window === 'undefined') {
     return {
@@ -108,6 +246,7 @@ function loadPersistedUserState(): PersistedUserState {
       latestPreferenceIntakeProfile: null,
       latestRestaurantReadyGuidance: null,
       latestTasteMeasurementSnapshot: null,
+      tasteSurveyDraft: null,
     };
   }
 
@@ -129,6 +268,7 @@ function loadPersistedUserState(): PersistedUserState {
         latestPreferenceIntakeProfile: null,
         latestRestaurantReadyGuidance: null,
         latestTasteMeasurementSnapshot: null,
+        tasteSurveyDraft: null,
       };
     }
 
@@ -157,6 +297,17 @@ function loadPersistedUserState(): PersistedUserState {
       latestPreferenceIntakeProfile,
       latestRestaurantReadyGuidance,
       latestTasteMeasurementSnapshot,
+      tasteSurveyDraft:
+        isPersistedTasteSurveyDraft(parsedValue.tasteSurveyDraft)
+          ? {
+              currentSurveyIndex: clampSurveyIndex(parsedValue.tasteSurveyDraft.currentSurveyIndex),
+              surveyResponses: sanitizeTasteSurveyResponses(
+                parsedValue.tasteSurveyDraft.surveyResponses,
+              ),
+              tasteSurveyFlowStep: parsedValue.tasteSurveyDraft.tasteSurveyFlowStep,
+              tasteSurveyLastUpdatedAt: parsedValue.tasteSurveyDraft.tasteSurveyLastUpdatedAt,
+            }
+          : null,
     };
   } catch {
     return {
@@ -164,6 +315,7 @@ function loadPersistedUserState(): PersistedUserState {
       latestPreferenceIntakeProfile: null,
       latestRestaurantReadyGuidance: null,
       latestTasteMeasurementSnapshot: null,
+      tasteSurveyDraft: null,
     };
   }
 }
@@ -185,6 +337,24 @@ function MainApp() {
     useState<RestaurantReadyGuidance | null>(persistedUserState.latestRestaurantReadyGuidance);
   const [latestPreferenceIntakeProfile, setLatestPreferenceIntakeProfile] =
     useState<PreferenceIntakeProfile | null>(persistedUserState.latestPreferenceIntakeProfile);
+  const [tasteSurveyFlowStep, setTasteSurveyFlowStep] =
+    useState<TasteSurveyFlowStep>(
+      persistedUserState.tasteSurveyDraft?.tasteSurveyFlowStep ?? 'intro',
+    );
+  const [currentSurveyIndex, setCurrentSurveyIndex] = useState(
+    persistedUserState.tasteSurveyDraft?.currentSurveyIndex ?? 0,
+  );
+  const [surveyResponses, setSurveyResponses] = useState<
+    Record<string, TasteSurveyResponse | undefined>
+  >(persistedUserState.tasteSurveyDraft?.surveyResponses ?? {});
+  const [latestSurveyCompatibleResult, setLatestSurveyCompatibleResult] =
+    useState<TasteSurveyCompatibleResult | null>(() =>
+      persistedUserState.tasteSurveyDraft?.tasteSurveyFlowStep === 'result'
+        ? buildCompatibleResultFromSurveyResponses(
+            persistedUserState.tasteSurveyDraft.surveyResponses,
+          )
+        : null,
+    );
   const [hasSplashDelayCompleted, setHasSplashDelayCompleted] = useState(false);
   const [hasHydratedRemoteMeasurement, setHasHydratedRemoteMeasurement] = useState(
     !isSupabaseConfigured,
@@ -199,6 +369,17 @@ function MainApp() {
   const [isReservationRootView, setIsReservationRootView] = useState(true);
 
   useEffect(() => {
+    const nextTasteSurveyDraft =
+      hasCompletedInitialMeasurement && latestTasteMeasurementSnapshot !== null
+        ? null
+        : latestPreferenceIntakeProfile
+          ? createTasteSurveyDraft(
+              surveyResponses,
+              currentSurveyIndex,
+              tasteSurveyFlowStep,
+            )
+          : null;
+
     window.localStorage.setItem(
       USER_STATE_STORAGE_KEY,
       JSON.stringify({
@@ -206,13 +387,17 @@ function MainApp() {
         latestPreferenceIntakeProfile,
         latestRestaurantReadyGuidance,
         latestTasteMeasurementSnapshot,
+        tasteSurveyDraft: nextTasteSurveyDraft,
       } satisfies PersistedUserState),
     );
   }, [
+    currentSurveyIndex,
     hasCompletedInitialMeasurement,
     latestPreferenceIntakeProfile,
     latestRestaurantReadyGuidance,
     latestTasteMeasurementSnapshot,
+    surveyResponses,
+    tasteSurveyFlowStep,
   ]);
 
   useEffect(() => {
@@ -306,8 +491,9 @@ function MainApp() {
   const handlePersistedMeasurement = (
     snapshot: TasteMeasurementSnapshot,
     source: 'quick_calibration' | 'teastick',
+    options?: Parameters<typeof persistTasteMeasurementSnapshot>[2],
   ) => {
-    void persistTasteMeasurementSnapshot(snapshot, source);
+    void persistTasteMeasurementSnapshot(snapshot, source, options);
   };
 
   const handleSplashComplete = () => {
@@ -316,6 +502,21 @@ function MainApp() {
 
   const handleStartInitialMeasurementFlow = () => {
     setAppState('intake');
+  };
+
+  const resetTasteSurveyFlow = (shouldClearResponses = false) => {
+    setTasteSurveyFlowStep('intro');
+    setCurrentSurveyIndex(0);
+    setLatestSurveyCompatibleResult(null);
+
+    if (shouldClearResponses) {
+      setSurveyResponses({});
+    }
+  };
+
+  const handleEnterTasteSurveyFlow = (shouldClearResponses = false) => {
+    resetTasteSurveyFlow(shouldClearResponses);
+    setAppState('calibration');
   };
 
   const handleStartMeasurementFromMain = (originTab: TabType) => {
@@ -327,7 +528,7 @@ function MainApp() {
   const handleStartRemeasurementFromMain = (originTab: TabType) => {
     setMeasurementEntryPoint('main');
     setMeasurementReturnTab(originTab);
-    setAppState('calibration');
+    handleEnterTasteSurveyFlow(true);
   };
 
   const handleExitMeasurementFlow = () => {
@@ -338,6 +539,83 @@ function MainApp() {
     }
 
     setAppState('onboarding');
+  };
+
+  const handleExitTasteSurveyFlow = () => {
+    if (measurementEntryPoint === 'main') {
+      handleExitMeasurementFlow();
+      return;
+    }
+
+    setAppState('intake');
+  };
+
+  const handleSelectSurveyLikert = (itemId: string, value: TasteSurveyLikertValue) => {
+    setLatestSurveyCompatibleResult(null);
+    setSurveyResponses((currentResponses) => ({
+      ...currentResponses,
+      [itemId]: {
+        itemId,
+        selectedValue: value,
+        uncertain: false,
+      },
+    }));
+  };
+
+  const handleSelectSurveyUncertain = (itemId: string) => {
+    setLatestSurveyCompatibleResult(null);
+    setSurveyResponses((currentResponses) => ({
+      ...currentResponses,
+      [itemId]: {
+        itemId,
+        selectedValue: null,
+        uncertain: true,
+      },
+    }));
+  };
+
+  const clearTasteSurveyDraftAfterCompletion = () => {
+    resetTasteSurveyFlow(true);
+  };
+
+  const handleNextSurveyQuestion = () => {
+    if (currentSurveyIndex < TASTE_SURVEY_ITEMS.length - 1) {
+      setCurrentSurveyIndex((previousIndex) => previousIndex + 1);
+      return;
+    }
+
+    setTasteSurveyFlowStep('review');
+  };
+
+  const handleBackFromSurveyQuestion = () => {
+    if (currentSurveyIndex > 0) {
+      setCurrentSurveyIndex((previousIndex) => previousIndex - 1);
+      return;
+    }
+
+    setTasteSurveyFlowStep('intro');
+  };
+
+  const handleSubmitTasteSurveyReview = () => {
+    const compatibleResult = buildCompatibleResultFromSurveyResponses(surveyResponses);
+
+    setLatestSurveyCompatibleResult(compatibleResult);
+    setTasteSurveyFlowStep('result');
+  };
+
+  const handleCompleteTasteSurvey = () => {
+    const compatibleResult =
+      latestSurveyCompatibleResult ?? buildCompatibleResultFromSurveyResponses(surveyResponses);
+
+    setLatestTasteMeasurementSnapshot(compatibleResult.snapshot);
+    setLatestRestaurantReadyGuidance(compatibleResult.starterGuidance);
+    setHasCompletedInitialMeasurement(true);
+    handlePersistedMeasurement(compatibleResult.snapshot, 'quick_calibration', {
+      rawPayload: createTasteSurveyMeasurementRawPayload(surveyResponses, compatibleResult),
+    });
+    clearTasteSurveyDraftAfterCompletion();
+    setActiveTab(measurementEntryPoint === 'main' ? measurementReturnTab : 'home');
+    setAppState('main');
   };
 
   const handleOpenImproveAccuracy = () => {
@@ -449,28 +727,46 @@ function MainApp() {
             onBack={() => setAppState('onboarding')}
             onComplete={(profile) => {
               setLatestPreferenceIntakeProfile(profile);
-              setAppState('calibration');
+              handleEnterTasteSurveyFlow(true);
             }}
           />
         )}
-        {appState === 'calibration' && (
-          <QuickTasteCalibrationScreen
+        {appState === 'calibration' && tasteSurveyFlowStep === 'intro' && (
+          <TasteSurveyIntroScreen
+            onBack={handleExitTasteSurveyFlow}
+            onStart={() => setTasteSurveyFlowStep('questions')}
+          />
+        )}
+        {appState === 'calibration' && tasteSurveyFlowStep === 'questions' && (
+          <TasteSurveyScreen
+            currentIndex={currentSurveyIndex}
+            currentResponse={surveyResponses[TASTE_SURVEY_ITEMS[currentSurveyIndex]?.id ?? ''] ?? null}
+            items={TASTE_SURVEY_ITEMS}
+            onBack={handleBackFromSurveyQuestion}
+            onNext={handleNextSurveyQuestion}
+            onSelectLikert={handleSelectSurveyLikert}
+            onSelectUncertain={handleSelectSurveyUncertain}
+          />
+        )}
+        {appState === 'calibration' && tasteSurveyFlowStep === 'review' && (
+          <TasteSurveyReviewScreen
+            items={TASTE_SURVEY_ITEMS}
             onBack={() => {
-              if (measurementEntryPoint === 'main') {
-                handleExitMeasurementFlow();
-                return;
-              }
-
-              setAppState('intake');
+              setCurrentSurveyIndex(Math.max(TASTE_SURVEY_ITEMS.length - 1, 0));
+              setTasteSurveyFlowStep('questions');
             }}
-            onComplete={({ snapshot, starterGuidance }) => {
-              setLatestTasteMeasurementSnapshot(snapshot);
-              setLatestRestaurantReadyGuidance(starterGuidance);
-              setHasCompletedInitialMeasurement(true);
-              setActiveTab(measurementEntryPoint === 'main' ? measurementReturnTab : 'home');
-              setAppState('main');
-              handlePersistedMeasurement(snapshot, 'quick_calibration');
+            onEditItem={(index) => {
+              setCurrentSurveyIndex(index);
+              setTasteSurveyFlowStep('questions');
             }}
+            onSubmit={handleSubmitTasteSurveyReview}
+            responses={surveyResponses}
+          />
+        )}
+        {appState === 'calibration' && tasteSurveyFlowStep === 'result' && (
+          <TasteSurveyResultScreen
+            compatibleResult={latestSurveyCompatibleResult}
+            onComplete={handleCompleteTasteSurvey}
           />
         )}
         {appState === 'teastick' && (
@@ -675,10 +971,10 @@ function MainApp() {
                     <SectionCard hoverEffect={false}>
                       <div className="flex flex-col gap-2">
                         <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                          1. 빠른 보정
+                          1. 미각 설문
                         </p>
                         <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                          짧은 질문으로 현재 입맛의 기준을 잡고, 첫 예약에 바로 쓸 수 있는 프로필을 만듭니다.
+                          최근 식사에서 반복된 감각 반응을 바탕으로 현재 입맛의 기준을 잡고, 첫 예약에 바로 쓸 수 있는 프로필을 만듭니다.
                         </p>
                       </div>
                     </SectionCard>

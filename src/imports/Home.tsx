@@ -1483,6 +1483,7 @@ function ChefCard({
         <ChefAvatar
           alt={chef.name}
           className="relative shrink-0 size-[48px] rounded-[8px]"
+          iconSize={ICON_TOKENS.size.xl}
           imageSrc={chef.image}
           taste={chef.taste}
         />

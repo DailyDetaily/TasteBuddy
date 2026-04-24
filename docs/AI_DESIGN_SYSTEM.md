@@ -73,10 +73,12 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 - primary button height: `48px`
 - top app bar height: `56px`
 - screen max width: `1440px`
+- reusable box sizes: `sm 32px`, `md 40px`, `lg 48px`
 
 ### Radius
 
 - badge / small chip: `6px`
+- icon / symbol box: `8px`
 - control: `10px`
 - inset support block: `12px` to `14px`
 - primary card shell: `20px`
@@ -120,13 +122,14 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 
 ### Chef Matching Card
 
-소스: [`../src/imports/Home.tsx`](../src/imports/Home.tsx)
+소스: [`../src/components/home/ChefMatchCard.tsx`](../src/components/home/ChefMatchCard.tsx)
 
 - card bg: `getTasteTintSurface(taste)`
 - border: `getTasteTint(taste, 0.18)`
 - title / match text: `getTasteTintSurfaceText(taste)`
 - meta text: `getTasteTintSurfaceSubText(taste)`
 - shell: `132 x 132`, radius `20px`, padding `12px`
+- image: `ImageBox` `lg`, fallback icon `xl`
 
 ### Detail Analysis Card
 
@@ -174,6 +177,16 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 - radius: `20px`
 - body padding: `12px`
 - hover: `translateY(-4px)` with stronger shadow
+
+### ImageBox
+
+소스: [`../src/components/system/ImageBox.tsx`](../src/components/system/ImageBox.tsx)
+
+- intent: chef, restaurant, menu 등 작은 사진 컨테이너
+- size set: `sm 32px`, `md 40px`, `lg 48px`
+- radius: `8px`
+- image state: `object-cover`
+- empty state: `person`, `chef`, `restaurant`, `menu`, `generic` fallback icon
 
 ### TopAppBar / Overlay
 

@@ -12,6 +12,7 @@ const Send = wrapIcon(SendIcon);
 const CalendarCheck = wrapIcon(CalendarCheckIcon);
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
+import TokenBox from '../components/system/TokenBox';
 import FlowBottomCta from '../components/system/FlowBottomCta';
 import { ICON_TOKENS } from '../constants/designTokens';
 
@@ -116,8 +117,8 @@ export default function ReservationConfirmationScreen({
                 >
                   <SectionCard hoverEffect={false}>
                     <div className="flex items-start gap-3">
-                      <div
-                        className={`flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] transition-all duration-500 ${
+                      <TokenBox
+                        className={`transition-all duration-500 ${
                           isCurrent ? 'animate-pulse' : ''
                         }`}
                         style={{
@@ -126,7 +127,7 @@ export default function ReservationConfirmationScreen({
                         }}
                       >
                         <Icon size={ICON_TOKENS.size.md} />
-                      </div>
+                      </TokenBox>
                       <div className="flex flex-col gap-1 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
