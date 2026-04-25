@@ -12,7 +12,7 @@ export const TASTE_SURVEY_ITEMS = [
       description: '잘 익은 바나나를 한 입 먹었을 때의 단맛을 떠올리는 기준입니다.',
       stability: 'medium',
     },
-    prompt: '최근 3개월 동안 단맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
+    prompt: '단맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
   },
   {
     id: 'sweet-overload-v1',
@@ -25,7 +25,7 @@ export const TASTE_SURVEY_ITEMS = [
       description: '같은 바나나라도 더 달게 느껴지는 한 입을 떠올리는 기준입니다.',
       stability: 'medium',
     },
-    prompt: '최근 3개월 동안 단맛이 조금만 강해져도 쉽게 과하게 느껴졌어요.',
+    prompt: '단맛이 조금만 강해져도 쉽게 과하게 느껴졌어요.',
   },
   {
     id: 'salty-salience-v1',
@@ -38,7 +38,7 @@ export const TASTE_SURVEY_ITEMS = [
       description: '맑은 물이나 아주 연한 국물에 소금 한 꼬집이 더해진 짠맛을 떠올리는 기준입니다.',
       stability: 'medium',
     },
-    prompt: '최근 3개월 동안 짠맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
+    prompt: '짠맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
   },
   {
     id: 'salty-overload-v1',
@@ -51,7 +51,7 @@ export const TASTE_SURVEY_ITEMS = [
       description: '소금기가 한 단계 더해졌을 때 입안에서 느껴지는 짠맛을 떠올리는 기준입니다.',
       stability: 'medium',
     },
-    prompt: '최근 3개월 동안 짠맛이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요.',
+    prompt: '짠맛이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요.',
   },
   {
     id: 'sour-salience-v1',
@@ -64,7 +64,7 @@ export const TASTE_SURVEY_ITEMS = [
       description: '물 한 모금에 레몬즙이 조금 들어갔을 때의 신맛을 떠올리는 기준입니다.',
       stability: 'medium',
     },
-    prompt: '최근 3개월 동안 신맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
+    prompt: '신맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
   },
   {
     id: 'sour-overload-v1',
@@ -77,7 +77,7 @@ export const TASTE_SURVEY_ITEMS = [
       description: '레몬즙이 조금 더 들어갔을 때 입안에서 올라오는 신맛을 떠올리는 기준입니다.',
       stability: 'medium',
     },
-    prompt: '최근 3개월 동안 신맛이 조금만 강해져도 쉽게 과하게 느껴졌어요.',
+    prompt: '신맛이 조금만 강해져도 쉽게 과하게 느껴졌어요.',
   },
   {
     id: 'bitter-salience-v1',
@@ -90,7 +90,7 @@ export const TASTE_SURVEY_ITEMS = [
       description: '아메리카노를 처음 마셨을 때 입안에 바로 닿는 쓴맛을 떠올리는 기준입니다.',
       stability: 'medium',
     },
-    prompt: '최근 3개월 동안 쓴맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
+    prompt: '쓴맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
   },
   {
     id: 'bitter-overload-v1',
@@ -103,7 +103,7 @@ export const TASTE_SURVEY_ITEMS = [
       description: '아메리카노의 쓴맛이 한 단계 더 강하게 느껴지는 상황을 떠올리는 기준입니다.',
       stability: 'medium',
     },
-    prompt: '최근 3개월 동안 쓴맛이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요.',
+    prompt: '쓴맛이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요.',
   },
   {
     id: 'umami-salience-v1',
@@ -121,7 +121,7 @@ export const TASTE_SURVEY_ITEMS = [
       rationale: '감칠맛은 재료 상태와 농도, 짠맛의 영향이 함께 작용할 수 있어 v1에서는 탐색 축으로 다룹니다.',
       interpretationCaution: '단일 응답만으로 확정하지 않고 반복 응답과 식후 피드백을 함께 보며 해석해야 합니다.',
     },
-    prompt: '최근 3개월 동안 감칠맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
+    prompt: '감칠맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
   },
   {
     id: 'umami-overload-v1',
@@ -139,7 +139,7 @@ export const TASTE_SURVEY_ITEMS = [
       rationale: '감칠맛의 과함은 짠맛이나 농도와 겹쳐 느껴질 수 있어 v1에서는 탐색적으로 기록합니다.',
       interpretationCaution: '셰프 가이드에서는 감칠맛을 줄이라는 지시가 아니라 강도와 누적감을 조절할 참고 신호로 사용해야 합니다.',
     },
-    prompt: '최근 3개월 동안 감칠맛이 조금만 강해져도 쉽게 무겁거나 과하게 느껴졌어요.',
+    prompt: '감칠맛이 조금만 강해져도 쉽게 무겁거나 과하게 느껴졌어요.',
   },
   {
     id: 'fat-salience-v1',
@@ -157,7 +157,7 @@ export const TASTE_SURVEY_ITEMS = [
       rationale: '지방감은 질감, 온도, 양의 영향을 크게 받을 수 있어 v1에서는 탐색 축으로 다룹니다.',
       interpretationCaution: '기호 판단이 아니라 지방감의 인지 속도와 부담 신호를 중심으로 해석해야 합니다.',
     },
-    prompt: '최근 3개월 동안 지방감의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
+    prompt: '지방감의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요.',
   },
   {
     id: 'fat-overload-v1',
@@ -175,6 +175,6 @@ export const TASTE_SURVEY_ITEMS = [
       rationale: '지방감의 과함은 질감과 잔여감에 따라 달라질 수 있어 v1에서는 탐색적으로 기록합니다.',
       interpretationCaution: '셰프 가이드에서는 지방을 배제하라는 뜻이 아니라 잔여감과 정리감을 조절할 참고 신호로 사용해야 합니다.',
     },
-    prompt: '최근 3개월 동안 지방감이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요.',
+    prompt: '지방감이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요.',
   },
 ] as const satisfies readonly TasteSurveyItem[];

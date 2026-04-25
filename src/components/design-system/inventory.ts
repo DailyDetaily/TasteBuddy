@@ -936,7 +936,6 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       file: "src/components/system/TCSHintCard.tsx",
       note: "미각 설문과 보정 안내의 힌트 카드를 공용 컴포넌트로 재사용합니다.",
     },
-    },
     {
       file: "src/components/system/InterpretationCard.tsx",
       note: "분석 인사이트, 셰프 번역 요약, 홈 변화 요약까지 같은 해석 카드 형태로 재사용합니다.",

@@ -1,6 +1,5 @@
 import { ChevronLeft as ChevronLeftIcon, X as XIcon } from 'lucide-react';
 
-import TasteSurveyProgress from '../components/measurement/TasteSurveyProgress';
 import TasteSurveyQuestionCard from '../components/measurement/TasteSurveyQuestionCard';
 import FlowStepCta from '../components/system/FlowStepCta';
 import { ICON_TOKENS, TASTE_TOKENS } from '../constants/designTokens';
@@ -81,12 +80,13 @@ export default function TasteSurveyScreen({
 
       <main className="flex-1 overflow-y-auto px-5 pt-4 no-scrollbar">
         <div className="tb-section-stack pb-[calc(188px+var(--tb-safe-area-bottom))]">
-          <TasteSurveyProgress currentIndex={safeIndex} total={total} />
           <TasteSurveyQuestionCard
+            currentIndex={safeIndex}
             item={item}
             onSelectLikert={(value) => onSelectLikert(item.id, value)}
             onSelectUncertain={() => onSelectUncertain(item.id)}
             selectedValue={currentResponse?.selectedValue ?? null}
+            total={total}
             uncertain={currentResponse?.uncertain ?? false}
           />
         </div>

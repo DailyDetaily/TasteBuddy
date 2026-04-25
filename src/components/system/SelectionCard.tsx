@@ -1,7 +1,7 @@
 import {
   Check as CheckIcon
 } from 'lucide-react';
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 import { ICON_TOKENS } from "../../constants/designTokens";
 import { cn } from '../ui/utils';
@@ -19,8 +19,10 @@ const Checkmark = wrapIcon(CheckIcon);
 interface SelectionCardProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   description?: string;
   indicator?: 'checkbox' | 'radio';
+  singleLine?: boolean;
   selected?: boolean;
   title: string;
+  trailing?: ReactNode;
 }
 
 export default function SelectionCard({
@@ -28,7 +30,9 @@ export default function SelectionCard({
   description,
   indicator = 'radio',
   selected = false,
+  singleLine = false,
   title,
+  trailing,
   type = 'button',
   ...props
 }: SelectionCardProps) {
@@ -50,7 +54,8 @@ export default function SelectionCard({
       <span
         aria-hidden="true"
         className={cn(
-          'mt-[2px] flex size-[18px] shrink-0 items-center justify-center border transition-colors',
+          'flex size-[18px] shrink-0 items-center justify-center border transition-colors',
+          !singleLine && 'mt-[2px]',
           indicator === 'checkbox' ? 'rounded-[6px]' : 'rounded-full',
           selected
             ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
@@ -60,7 +65,12 @@ export default function SelectionCard({
         <Checkmark size={ICON_TOKENS.size.xs} />
       </span>
 
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
+      <span
+        className={cn(
+          'flex min-w-0 flex-1 flex-col gap-1',
+          singleLine && 'justify-center',
+        )}
+      >
         <span className="text-[14px] font-semibold leading-snug text-[var(--tb-color-text-primary)]">
           {title}
         </span>
@@ -70,6 +80,11 @@ export default function SelectionCard({
           </span>
         ) : null}
       </span>
+      {trailing ? (
+        <span className="shrink-0">
+          {trailing}
+        </span>
+      ) : null}
     </button>
   );
 }

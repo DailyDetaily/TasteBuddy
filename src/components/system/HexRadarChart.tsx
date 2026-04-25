@@ -277,19 +277,178 @@ function buildClosedPathFromCorners(roundedCorners: RoundedCorner[]) {
   return commands.join(' ');
 }
 
-function buildSegmentPathsFromCorners(roundedCorners: RoundedCorner[]) {
-  return roundedCorners.map((corner, index) => {
-    const nextCorner = roundedCorners[(index + 1) % roundedCorners.length];
+function snapPointToOuterEdge(
+  cx: number,
+  cy: number,
+  x: number,
+  y: number,
+  radius: number,
+): [number, number] {
+  const dx = x - cx;
+  const dy = y - cy;
+  const distance = Math.hypot(dx, dy);
 
-    if (!corner || !nextCorner) {
-      return '';
+  if (distance < 0.001 || radius <= 0) {
+    return [x, y];
+  }
+
+  return [
+    x + (dx / distance) * radius,
+    y + (dy / distance) * radius,
+  ];
+}
+
+type ProfileSegmentPath = {
+  d: string;
+  gradientEnd: readonly [number, number];
+  gradientStart: readonly [number, number];
+};
+
+function getSignedPolygonArea(points: ReadonlyArray<readonly [number, number]>) {
+  return points.reduce((area, point, index) => {
+    const nextPoint = points[(index + 1) % points.length] ?? point;
+    return area + point[0] * nextPoint[1] - point[1] * nextPoint[0];
+  }, 0);
+}
+
+function normalizeVector(dx: number, dy: number): [number, number] {
+  const distance = Math.hypot(dx, dy);
+
+  if (distance < 0.001) {
+    return [1, 0];
+  }
+
+  return [dx / distance, dy / distance];
+}
+
+function getEdgeUnitVector(
+  points: ReadonlyArray<readonly [number, number]>,
+  fallbackPoints: ReadonlyArray<readonly [number, number]>,
+  index: number,
+) {
+  const nextIndex = (index + 1) % points.length;
+  const point = points[index];
+  const nextPoint = points[nextIndex];
+
+  if (
+    point
+    && nextPoint
+    && Math.hypot(nextPoint[0] - point[0], nextPoint[1] - point[1]) >= 0.001
+  ) {
+    return normalizeVector(nextPoint[0] - point[0], nextPoint[1] - point[1]);
+  }
+
+  const fallbackPoint = fallbackPoints[index];
+  const fallbackNextPoint = fallbackPoints[nextIndex];
+
+  if (fallbackPoint && fallbackNextPoint) {
+    return normalizeVector(
+      fallbackNextPoint[0] - fallbackPoint[0],
+      fallbackNextPoint[1] - fallbackPoint[1],
+    );
+  }
+
+  return [1, 0] as const;
+}
+
+function getOutwardNormal(unitVector: readonly [number, number], isClockwise: boolean): [number, number] {
+  return isClockwise
+    ? [unitVector[1], -unitVector[0]]
+    : [-unitVector[1], unitVector[0]];
+}
+
+function getDistanceFromCenter(cx: number, cy: number, point: readonly [number, number]) {
+  return Math.hypot(point[0] - cx, point[1] - cy);
+}
+
+function shouldSnapProfileNode(
+  centers: ReadonlyArray<readonly [number, number]>,
+  index: number,
+  cx: number,
+  cy: number,
+  radius: number,
+) {
+  const center = centers[index];
+  const previousCenter = centers[(index - 1 + centers.length) % centers.length];
+  const nextCenter = centers[(index + 1) % centers.length];
+
+  if (!center || !previousCenter || !nextCenter) {
+    return false;
+  }
+
+  const currentDistance = getDistanceFromCenter(cx, cy, center);
+  const previousDistance = getDistanceFromCenter(cx, cy, previousCenter);
+  const nextDistance = getDistanceFromCenter(cx, cy, nextCenter);
+  const valleyDepth = Math.min(previousDistance, nextDistance) - currentDistance;
+
+  return valleyDepth >= radius * 0.5;
+}
+
+function buildHybridProfileSegmentPaths(
+  centers: ReadonlyArray<readonly [number, number]>,
+  radius: number,
+  fallbackPoints: ReadonlyArray<readonly [number, number]>,
+  cx: number,
+  cy: number,
+): ProfileSegmentPath[] {
+  if (centers.length < 3 || radius <= 0) {
+    return [];
+  }
+
+  const fallbackArea = getSignedPolygonArea(fallbackPoints);
+  const currentArea = getSignedPolygonArea(centers);
+  const isClockwise = Math.abs(currentArea) >= 0.001
+    ? currentArea > 0
+    : fallbackArea >= 0;
+  const sweepFlag: 0 | 1 = isClockwise ? 1 : 0;
+  const snapPoints = centers.map(([x, y]) => snapPointToOuterEdge(cx, cy, x, y, radius));
+  const shouldSnapNodes = centers.map((_, index) =>
+    shouldSnapProfileNode(centers, index, cx, cy, radius)
+  );
+  const tangentSegments = centers.map((center, index) => {
+    const nextCenter = centers[(index + 1) % centers.length] ?? center;
+    const unitVector = getEdgeUnitVector(centers, fallbackPoints, index);
+    const outwardNormal = getOutwardNormal(unitVector, isClockwise);
+
+    return {
+      start: [
+        center[0] + outwardNormal[0] * radius,
+        center[1] + outwardNormal[1] * radius,
+      ] as const,
+      end: [
+        nextCenter[0] + outwardNormal[0] * radius,
+        nextCenter[1] + outwardNormal[1] * radius,
+      ] as const,
+    };
+  });
+
+  return tangentSegments.map((segment, index) => {
+    const nextIndex = (index + 1) % centers.length;
+    const nextSegment = tangentSegments[nextIndex];
+    const start = shouldSnapNodes[index]
+      ? snapPoints[index] ?? segment.start
+      : segment.start;
+    const end = shouldSnapNodes[nextIndex]
+      ? snapPoints[nextIndex] ?? segment.end
+      : segment.end;
+    const pathCommands = [
+      `M ${start[0]} ${start[1]}`,
+      `L ${end[0]} ${end[1]}`,
+    ];
+
+    if (!shouldSnapNodes[nextIndex] && nextSegment) {
+      pathCommands.push(
+        `A ${radius} ${radius} 0 0 ${sweepFlag} ${nextSegment.start[0]} ${nextSegment.start[1]}`,
+      );
     }
 
-    return [
-      `M ${corner.exit[0]} ${corner.exit[1]}`,
-      `L ${nextCorner.entry[0]} ${nextCorner.entry[1]}`,
-      `Q ${nextCorner.control[0]} ${nextCorner.control[1]} ${nextCorner.exit[0]} ${nextCorner.exit[1]}`,
-    ].join(' ');
+    return {
+      d: pathCommands.join(' '),
+      gradientStart: start,
+      gradientEnd: !shouldSnapNodes[nextIndex] && nextSegment
+        ? nextSegment.start
+        : end,
+    };
   });
 }
 
@@ -378,6 +537,8 @@ export default function HexRadarChart({
 
   // 나의 민감도 폴리곤 좌표
   const NODE_RADIUS = 8;
+  const PROFILE_OUTLINE_OUTSET = 1;
+  const PROFILE_OUTLINE_RADIUS = NODE_RADIUS + PROFILE_OUTLINE_OUTSET;
   const BASE_CORNER_RADIUS = 8;
   const MAX_CORNER_RADIUS = 16;
 
@@ -389,7 +550,6 @@ export default function HexRadarChart({
   // 적응형 코너 반경: 좁은 각도(높은 점수 + 낮은 이웃)일수록 더 둥글게
   const adaptiveRadii = computeAdaptiveCornerRadii(myPoints, BASE_CORNER_RADIUS, MAX_CORNER_RADIUS);
   const adaptiveCorners = getRoundedClosedCornersAdaptive(myPoints, adaptiveRadii);
-  const mySegmentPaths = buildSegmentPathsFromCorners(adaptiveCorners);
 
   // 노드 위치를 적응형 라운드 코너 기하학에 맞춰 동적으로 계산.
   // 각 꼭짓점의 Bezier 곡선 중점(헥사곤 경로에서 원래 꼭짓점에 가장 가까운 점)을 구한 뒤,
@@ -408,6 +568,14 @@ export default function HexRadarChart({
     // Bezier 중점에서 NODE_RADIUS만큼 안쪽으로 → 헥사곤이 노드 겉면에 접함
     return movePointTowardCenter(cx, cy, bezierMidX, bezierMidY, NODE_RADIUS);
   });
+  const chartOuterPoints = myTasteData.map((_, i) => hexPoint(cx, cy, maxR, i));
+  const mySegmentPaths = buildHybridProfileSegmentPaths(
+    myNodePoints,
+    PROFILE_OUTLINE_RADIUS,
+    chartOuterPoints,
+    cx,
+    cy,
+  );
 
   // 평균 민감도 폴리곤 좌표
   const avgPoints = myTasteData.map((d, i) => {
@@ -419,7 +587,7 @@ export default function HexRadarChart({
   // 꼭짓점 (맛 라벨 + 점)
   const vertices = myTasteData.map((d, i) => ({
     ...d,
-    point: hexPoint(cx, cy, maxR, i),
+    point: chartOuterPoints[i] ?? hexPoint(cx, cy, maxR, i),
     labelPoint: hexPoint(cx, cy, maxR + 10, i),
     color: getTasteColor(d.label),
   }));
@@ -450,10 +618,10 @@ export default function HexRadarChart({
             <linearGradient
               key={`profile-gradient-${index}`}
               id={`${gradientIdPrefix}-profile-gradient-${index}`}
-              x1={myPoints[index]?.[0] ?? cx}
-              y1={myPoints[index]?.[1] ?? cy}
-              x2={myPoints[(index + 1) % myPoints.length]?.[0] ?? cx}
-              y2={myPoints[(index + 1) % myPoints.length]?.[1] ?? cy}
+              x1={mySegmentPaths[index]?.gradientStart[0] ?? cx}
+              y1={mySegmentPaths[index]?.gradientStart[1] ?? cy}
+              x2={mySegmentPaths[index]?.gradientEnd[0] ?? cx}
+              y2={mySegmentPaths[index]?.gradientEnd[1] ?? cy}
               gradientUnits="userSpaceOnUse"
             >
               <stop offset="0%" stopColor={mixHexColors(vertex.color, '#FFFFFF', 0.5)} />
@@ -516,7 +684,7 @@ export default function HexRadarChart({
       {mySegmentPaths.map((segmentPath, index) => (
         <path
           key={`my-segment-${index}`}
-          d={segmentPath}
+          d={segmentPath.d}
           fill="none"
           stroke={`url(#${gradientIdPrefix}-profile-gradient-${index})`}
           strokeWidth="2"

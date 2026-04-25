@@ -27,7 +27,7 @@ interface BottomTabBarProps {
 
 const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
   { id: 'home', label: '홈', icon: Home },
-  { id: 'analysis', label: '나의 미각', icon: Analysis },
+  { id: 'analysis', label: '나의 입맛', icon: Analysis },
   { id: 'reservation', label: '다이닝', icon: CalendarCheck },
   { id: 'profile', label: '프로필', icon: User },
 ];
@@ -51,20 +51,18 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
               <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}>
                 <Icon
                   size={ICON_TOKENS.size.lg}
-                  className={`transition-colors duration-300 ${
-                    isActive
-                      ? 'text-[var(--tb-color-text-primary)]'
-                      : 'text-[var(--tb-color-icon-muted)] group-hover:text-[var(--tb-color-icon-hover)]'
-                  }`}
+                  className={`transition-colors duration-300 ${isActive
+                    ? 'text-[var(--tb-color-text-primary)]'
+                    : 'text-[var(--tb-color-icon-muted)] group-hover:text-[var(--tb-color-icon-hover)]'
+                    }`}
                   strokeWidth={isActive ? ICON_TOKENS.strokeWidth.medium : ICON_TOKENS.strokeWidth.regular}
                 />
               </div>
               <span
-                className={`text-[10px] tracking-[0.14px] transition-colors duration-300 ${
-                  isActive
-                    ? 'font-semibold text-[var(--tb-color-text-primary)]'
-                    : 'font-medium text-[var(--tb-color-icon-muted)] group-hover:text-[var(--tb-color-icon-hover)]'
-                }`}
+                className={`text-[10px] tracking-[0.14px] transition-colors duration-300 ${isActive
+                  ? 'font-semibold text-[var(--tb-color-text-primary)]'
+                  : 'font-medium text-[var(--tb-color-icon-muted)] group-hover:text-[var(--tb-color-icon-hover)]'
+                  }`}
               >
                 {tab.label}
               </span>
