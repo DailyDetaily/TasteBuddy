@@ -1,10 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import {
-  DATA_VIZ_TOKENS,
-  TASTE_IDS,
-  type TasteId,
-} from '../../constants/designTokens';
+import { DATA_VIZ_TOKENS } from '../../constants/designTokens';
 import { getTasteColor, mixHexColors } from '../../constants/tasteColors';
 import type { TasteMeasurementEntry } from '../../constants/tasteMeasurementData';
 import { cn } from '../ui/utils';
@@ -24,16 +20,17 @@ function hexPolygon(cx: number, cy: number, r: number): string {
     .join(' ');
 }
 
-function trianglePolygon(
-  cx: number,
-  cy: number,
-  radius: number,
+function hexagramPolygon(
+  outerRadius: number,
   startAngleDeg: number,
 ) {
-  return Array.from({ length: 3 }, (_, index) => {
-    const angle = ((startAngleDeg + 120 * index) * Math.PI) / 180;
-    const x = cx + radius * Math.cos(angle);
-    const y = cy + radius * Math.sin(angle);
+  const innerRadius = outerRadius / Math.sqrt(3);
+
+  return Array.from({ length: 12 }, (_, index) => {
+    const radius = index % 2 === 0 ? outerRadius : innerRadius;
+    const angle = ((startAngleDeg + 30 * index) * Math.PI) / 180;
+    const x = radius * Math.cos(angle);
+    const y = radius * Math.sin(angle);
     return `${x},${y}`;
   }).join(' ');
 }
@@ -473,9 +470,8 @@ export default function HexRadarChart({
   const gridLevels = [0.25, 0.5, 0.75, 1];
   const gridStrokeColor = mixHexColors(RADAR_CHART.gridColor, '#FFFFFF', 0.45);
   const profileAnimationDurationMs = (60 / 60) * 1000;
-  const centerStarRadius = 18 * (25 / 27);
-  const centerStarUp = trianglePolygon(cx, cy, centerStarRadius, -90);
-  const centerStarDown = trianglePolygon(cx, cy, centerStarRadius, 90);
+  const centerMaskRadius = 18 * (25 / 27);
+  const centerHexagramMask = hexagramPolygon(centerMaskRadius, -90);
   const gradientIdPrefix = React.useId().replace(/:/g, '');
   const radarMotionFrameRef = useRef<number | null>(null);
   const [profileMotionProgress, setProfileMotionProgress] = useState(0);
@@ -671,14 +667,15 @@ export default function HexRadarChart({
           y1={cy}
           x2={x}
           y2={y}
-          stroke={mixHexColors(vertices[idx]?.color ?? RADAR_CHART.highlightStroke, '#FFFFFF', 0.4)}
+          stroke={mixHexColors(vertices[idx]?.color ?? RADAR_CHART.highlightStroke, '#FFFFFF', 0.6)}
           strokeWidth="16"
           strokeLinecap="round"
         />
       ))}
 
-      <polygon points={centerStarUp} fill="#FFFFFF" />
-      <polygon points={centerStarDown} fill="#FFFFFF" />
+      <g transform={`translate(${cx} ${cy})`}>
+        <polygon points={centerHexagramMask} fill="#FFFFFF" />
+      </g>
 
       {/* 나의 민감도 헥사곤 */}
       {mySegmentPaths.map((segmentPath, index) => (

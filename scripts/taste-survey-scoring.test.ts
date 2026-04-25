@@ -1,12 +1,17 @@
 import assert from 'node:assert/strict';
 
 import { TASTE_IDS } from '../src/constants/designTokens';
+import { TASTE_SURVEY_CONTEXT_STEPS } from '../src/constants/tasteSurveyConfig';
 import { TASTE_SURVEY_ITEMS } from '../src/constants/tasteSurveyItems';
 import {
   buildTasteSurveyCompatibleResult,
   scoreTasteSurveyResponses,
 } from '../src/lib/tasteSurveyScoring';
-import type { TasteSurveyResponse } from '../src/types/tasteSurvey';
+import {
+  buildTasteSurveyMeasurementRawPayload,
+  sanitizeTasteSurveyRespondentContext,
+} from '../src/lib/tasteSurveyPersistence';
+import type { TasteSurveyRespondentContext, TasteSurveyResponse } from '../src/types/tasteSurvey';
 
 function response(
   itemId: string,
@@ -104,6 +109,64 @@ function assertClose(actual: number, expected: number, message: string) {
   for (const tasteId of TASTE_IDS) {
     assert.equal(scored.snapshot.results[tasteId], null);
   }
+}
+
+{
+  assert.equal(TASTE_SURVEY_CONTEXT_STEPS.length, 3);
+  assert.equal(TASTE_SURVEY_CONTEXT_STEPS[0].options[0].value, 'teen');
+  assert.deepEqual(
+    TASTE_SURVEY_CONTEXT_STEPS.map((step) => step.id),
+    ['ageRange', 'sexContext', 'smokingStatus'],
+  );
+}
+
+{
+  const respondentContext: TasteSurveyRespondentContext = {
+    ageRange: '25_34',
+    sexContext: 'prefer_not_to_say',
+    smokingStatus: 'current',
+  };
+  const responses = TASTE_SURVEY_ITEMS.map((item) => response(item.id, 4));
+  const result = buildTasteSurveyCompatibleResult(responses);
+  const rawPayload = buildTasteSurveyMeasurementRawPayload({
+    compatibleResult: result,
+    respondentContext,
+    responses,
+  });
+
+  assert.equal(rawPayload.measurement_flow, 'taste_survey');
+  assert.equal(rawPayload.respondent_context.age_range, '25_34');
+  assert.equal(rawPayload.respondent_context.sex_context, 'prefer_not_to_say');
+  assert.equal(rawPayload.respondent_context.smoking_status, 'current');
+  assert.equal(rawPayload.response_count, responses.length);
+}
+
+{
+  const responses = TASTE_SURVEY_ITEMS.map((item) => response(item.id, 4));
+  const result = buildTasteSurveyCompatibleResult(responses);
+  const rawPayload = buildTasteSurveyMeasurementRawPayload({
+    compatibleResult: result,
+    respondentContext: {},
+    responses,
+  });
+
+  assert.equal(rawPayload.respondent_context.age_range, null);
+  assert.equal(rawPayload.respondent_context.sex_context, null);
+  assert.equal(rawPayload.respondent_context.smoking_status, null);
+  assert.equal(rawPayload.response_count, responses.length);
+}
+
+{
+  const sanitized = sanitizeTasteSurveyRespondentContext({
+    ageRange: '35_44',
+    sexContext: 'unknown',
+    smokingStatus: 'former',
+  });
+
+  assert.deepEqual(sanitized, {
+    ageRange: '35_44',
+    smokingStatus: 'former',
+  });
 }
 
 console.log('tasteSurveyScoring tests passed');

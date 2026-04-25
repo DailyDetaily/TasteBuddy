@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  ChevronLeft as ChevronLeftIcon,
-  MoreHorizontal as MoreHorizontalIcon,
-  Check as CheckIcon
+    ChevronLeft as ChevronLeftIcon,
+    MoreHorizontal as MoreHorizontalIcon,
+    Check as CheckIcon
 } from 'lucide-react';
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
 const ChevronLeft = wrapIcon(ChevronLeftIcon);
@@ -172,7 +172,7 @@ export default function TeastickConnectScreen({
 
                             let bgColor = 'bg-[var(--tb-color-surface-muted)]';
                             if (isActive) bgColor = 'border border-[var(--tb-color-border-strong)] bg-[var(--tb-color-surface-elevated)]';
-                            else if (isCompleted) bgColor = 'bg-[var(--tb-color-surface-muted)] opacity-80';
+                            else if (isCompleted) bgColor = 'bg-[var(--tb-color-surface-elevated)] opacity-80';
 
                             return (
                                 <div key={step.id} className={`w-full rounded-[20px] p-3 ${bgColor} transition-all duration-300`}>
@@ -227,9 +227,9 @@ export default function TeastickConnectScreen({
                             onClick={drawerStep === 'connecting' ? undefined : handleDrawerNext}
                             disabled={drawerStep === 'connecting'}
                             className={drawerStep === 'connecting'
-                                    ? 'cursor-none'
-                                    : ''
-                                }
+                                ? 'cursor-none'
+                                : ''
+                            }
                         >
                             {drawerStep === 'power' ? '연결하기' : (drawerStep === 'connecting' ? '연결 중...' : '계속하기')}
                         </PrimaryButton>

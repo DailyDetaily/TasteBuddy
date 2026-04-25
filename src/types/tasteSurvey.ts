@@ -8,6 +8,26 @@ export type TasteSurveyRecallWindow = 'recent-3-months';
 export type TasteSurveyConstruct = 'salience' | 'overload';
 export type TasteSurveyLikertValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type TasteSurveyAnchorStability = 'high' | 'medium' | 'low';
+export type TasteSurveyAgeRange =
+  | 'teen'
+  | '18_24'
+  | '25_34'
+  | '35_44'
+  | '45_54'
+  | '55_64'
+  | '65_plus'
+  | 'prefer_not_to_say';
+export type TasteSurveySexContext =
+  | 'female'
+  | 'male'
+  | 'other_or_not_listed'
+  | 'prefer_not_to_say';
+export type TasteSurveySmokingStatus =
+  | 'never'
+  | 'former'
+  | 'current'
+  | 'prefer_not_to_say';
+export type TasteSurveyContextFieldId = 'ageRange' | 'sexContext' | 'smokingStatus';
 
 export interface TasteSurveyInstrumentMetadata {
   id: TasteSurveyInstrumentId;
@@ -42,6 +62,12 @@ export interface TasteSurveyResponse {
   itemId: TasteSurveyItem['id'];
   selectedValue: TasteSurveyLikertValue | null;
   uncertain: boolean;
+}
+
+export interface TasteSurveyRespondentContext {
+  ageRange?: TasteSurveyAgeRange;
+  sexContext?: TasteSurveySexContext;
+  smokingStatus?: TasteSurveySmokingStatus;
 }
 
 export interface TasteSurveyLikertScaleConfig {
