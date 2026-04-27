@@ -36,7 +36,7 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
   return (
     <div
       className="relative min-h-[var(--tb-size-bottom-tab-bar-height)] w-full shrink-0 border-t border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70"
-      style={{ paddingBottom: 'var(--tb-safe-area-bottom)' }}
+      style={{ paddingBottom: 'max(0px, calc(var(--tb-safe-area-bottom) - 20px))' }}
     >
       <div className="flex items-center justify-around px-2 py-1">
         {tabs.map((tab) => {
