@@ -461,12 +461,13 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
     name: "BottomTabBar",
     group: "내비게이션",
     status: "currently-used",
-    description: "하단 탭 바와 홈 인디케이터입니다.",
+    description: "하단 탭 바입니다. iOS home indicator는 시스템 기본 표시만 사용합니다.",
     selector: "src/components/BottomTabBar.tsx root div",
     sources: [
-      { file: "src/components/BottomTabBar.tsx", note: "tab button, active state, indicator 정의" },
+      { file: "src/components/BottomTabBar.tsx", note: "tab button, active state 정의" },
     ],
     values: [
+      { label: "min-height", value: "60px", note: "`var(--tb-size-bottom-tab-bar-height)`" },
       { label: "background-color", value: "var(--tb-color-bg-page) / 85%", note: "`bg-[var(--tb-color-bg-page)]/85`" },
       { label: "backdrop blur", value: "12px", note: "`backdrop-blur-md`" },
       { label: "border-top", value: "1px solid var(--tb-color-border-default)" },
@@ -480,7 +481,6 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
       { label: "active scale", value: "1.1" },
       { label: "press scale", value: "0.92", note: "탭 버튼 active 상태" },
       { label: "active stroke width", value: "2.2" },
-      { label: "indicator size", value: "134px x 5px" },
     ],
   },
   {

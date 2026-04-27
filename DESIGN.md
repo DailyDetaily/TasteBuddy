@@ -460,7 +460,7 @@ warmth는 taste palette보다 앞에 나오면 안 된다.
 | `--tb-layout-card-stack-gap` | `12px` |
 | `--tb-layout-card-padding` | `12px` |
 | `--tb-size-top-app-bar-height` | `56px` |
-| `--tb-size-bottom-tab-bar-height` | `78px` |
+| `--tb-size-bottom-tab-bar-height` | `60px` |
 | `--tb-size-primary-button-height` | `48px` |
 | `--tb-size-bottom-fade-min-height` | `140px` |
 | `--tb-size-bottom-indicator-width` | `134px` |
@@ -620,7 +620,7 @@ Scale:
 | Component | 현재 규칙 |
 | --- | --- |
 | `TopAppBar` | `bg-page` 85% + blur `12px`, padding `20px 12px`, 높이 `56px`, avatar `32px`, icon `24px`, unread dot `6px` |
-| `BottomTabBar` | `bg-page` 85% + blur `12px`, border-top default, tab padding `6px 16px`, label `10px`, active scale `1.1`, indicator `134px x 5px` |
+| `BottomTabBar` | min-height `60px`, `bg-page` 85% + blur `12px`, border-top default, tab padding `6px 16px`, label `10px`, active scale `1.1`, iOS home indicator는 시스템 기본 표시만 사용 |
 | `NotificationPanel` | top `56px`, horizontal margin `20px`, max-height `70vh`, radius `20px`, white 85% + blur, shadow `drawer`, unread row는 muted surface |
 | `AppMenuDrawer` | width `300px`, max-width `85vw`, white 85% + blur, backdrop `black/30 + blur(2px)`, transition `300ms entrance easing`, row radius `12px` |
 

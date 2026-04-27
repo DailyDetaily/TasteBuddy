@@ -72,6 +72,7 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 - card stack gap: `12px`
 - primary button height: `48px`
 - top app bar height: `56px`
+- bottom tab bar min-height: `60px`
 - screen max width: `1440px`
 - reusable box sizes: `sm 32px`, `md 40px`, `lg 48px`
 

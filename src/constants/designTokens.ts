@@ -225,6 +225,7 @@ export const LAYOUT_TOKENS = {
   cardStackGap: SPACING_TOKENS[12],
   cardPadding: '12px',
   topAppBarHeight: '56px',
+  bottomTabBarHeight: '60px',
   primaryButtonHeight: '48px',
   bottomFadeMinHeight: '140px',
   bottomIndicatorWidth: '134px',
