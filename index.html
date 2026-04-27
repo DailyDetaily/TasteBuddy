@@ -16,60 +16,7 @@
 
 <body>
   <div id="root"></div>
-  <script>
-    (() => {
-      const isLocalDevHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-
-      const loadApp = () => {
-        const script = document.createElement("script");
-        script.type = "module";
-        script.src = `/src/main.tsx?v=${Date.now()}`;
-        document.body.appendChild(script);
-      };
-
-      const boot = async () => {
-        if (!isLocalDevHost) {
-          loadApp();
-          return;
-        }
-
-        let shouldReload = false;
-
-        try {
-          if ("serviceWorker" in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-
-            if (registrations.length > 0) {
-              shouldReload = true;
-              await Promise.all(registrations.map((registration) => registration.unregister()));
-            }
-          }
-
-          if ("caches" in window) {
-            const cacheKeys = await window.caches.keys();
-
-            if (cacheKeys.length > 0) {
-              shouldReload = true;
-              await Promise.all(cacheKeys.map((cacheKey) => window.caches.delete(cacheKey)));
-            }
-          }
-        } catch (error) {
-          console.warn("Failed to clear local dev cache before bootstrap.", error);
-        }
-
-        if (shouldReload) {
-          window.location.replace(
-            `${window.location.pathname}${window.location.search}${window.location.hash}`,
-          );
-          return;
-        }
-
-        loadApp();
-      };
-
-      void boot();
-    })();
-  </script>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 
 </html>
