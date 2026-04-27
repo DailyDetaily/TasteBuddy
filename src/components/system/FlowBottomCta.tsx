@@ -72,12 +72,11 @@ export default function FlowBottomCta({
         'absolute inset-x-0 bottom-0 z-20 flex justify-center',
         className,
       )}
-      style={{ paddingBottom: 'var(--tb-safe-area-bottom)' }}
     >
       <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
         <div
           className={cn(
-            'tb-bottom-fade relative flex min-h-[var(--tb-size-bottom-fade-min-height)] w-full flex-col items-center justify-end gap-0 px-5 pb-10',
+            'tb-bottom-fade relative flex min-h-[var(--tb-size-bottom-fade-min-height)] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))]',
             fadeClassName,
             contentClassName,
           )}

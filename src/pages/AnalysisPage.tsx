@@ -1482,6 +1482,7 @@ export default function AnalysisPage({
   const [contentDishes, setContentDishes] = useState<RestaurantContentDish[]>([]);
   const [selectedInsight, setSelectedInsight] = useState<AnalysisInsight | null>(null);
   const [isInsightDrawerOpen, setIsInsightDrawerOpen] = useState(false);
+  const [showAllRealMenuRecommendations, setShowAllRealMenuRecommendations] = useState(true);
   const [showAllInsights, setShowAllInsights] = useState(false);
   const [activeLegacyDetail, setActiveLegacyDetail] = useState<'taste-profile' | 'special-note' | null>(null);
   const [trendDragOffsetX, setTrendDragOffsetX] = useState(0);
@@ -1526,6 +1527,10 @@ export default function AnalysisPage({
     title: '셰프가 참고할 현재 프로필 가이드',
   };
   const realMenuRecommendations = buildRealMenuRecommendations(measurementSnapshot, contentDishes);
+  const visibleRealMenuRecommendations = showAllRealMenuRecommendations
+    ? realMenuRecommendations
+    : realMenuRecommendations.slice(0, 1);
+  const canToggleRealMenuRecommendations = realMenuRecommendations.length > 1;
   const trendDataBounds = getTrendDataBounds(measurementTimeline, measurementSnapshot);
   const trendNavigationBounds = getTrendNavigationBounds(trendDataBounds);
   const activeTrendRange = selectedTrendRange;
@@ -1606,7 +1611,7 @@ export default function AnalysisPage({
     setIsInsightDrawerOpen(true);
   };
   const visibleInsights = showAllInsights ? insights : insights.slice(0, 1);
-  const hasHiddenInsights = insights.length > visibleInsights.length;
+  const canToggleInsights = insights.length > 1;
 
   if (activeLegacyDetail === 'taste-profile') {
     return (
@@ -2355,9 +2360,31 @@ export default function AnalysisPage({
           </details>
 
           {realMenuRecommendations.length > 0 ? (
-            <PageSection title="지금 프로필에 맞는 실제 메뉴" titleSize="md">
+            <PageSection
+              title={(
+                <div className="flex w-full items-center justify-between gap-3">
+                  <span>지금 프로필에 맞는 실제 메뉴</span>
+                  {canToggleRealMenuRecommendations ? (
+                    <button
+                      type="button"
+                      className="rounded-full"
+                      onClick={() => setShowAllRealMenuRecommendations((prev) => !prev)}
+                      aria-expanded={showAllRealMenuRecommendations}
+                      aria-label={showAllRealMenuRecommendations ? '실제 메뉴 접기' : '실제 메뉴 전체보기'}
+                    >
+                      <CardDetailLabel
+                        direction={showAllRealMenuRecommendations ? 'up' : 'down'}
+                        label={showAllRealMenuRecommendations ? '접기' : '전체보기'}
+                      />
+                    </button>
+                  ) : null}
+                </div>
+              )}
+              titleAs="div"
+              titleSize="md"
+            >
               <div className="flex flex-col gap-3">
-                {realMenuRecommendations.map((menu) => (
+                {visibleRealMenuRecommendations.map((menu) => (
                   <RealMenuRecommendationCard
                     key={menu.id}
                     menu={menu}
@@ -2373,14 +2400,18 @@ export default function AnalysisPage({
             title={(
               <div className="flex w-full items-center justify-between gap-3">
                 <span>인사이트</span>
-                {hasHiddenInsights ? (
+                {canToggleInsights ? (
                   <button
                     type="button"
                     className="rounded-full"
-                    onClick={() => setShowAllInsights(true)}
-                    aria-label="인사이트 전체보기"
+                    onClick={() => setShowAllInsights((prev) => !prev)}
+                    aria-expanded={showAllInsights}
+                    aria-label={showAllInsights ? '인사이트 접기' : '인사이트 전체보기'}
                   >
-                    <CardDetailLabel label="전체보기" />
+                    <CardDetailLabel
+                      direction={showAllInsights ? 'up' : 'down'}
+                      label={showAllInsights ? '접기' : '전체보기'}
+                    />
                   </button>
                 ) : null}
               </div>
