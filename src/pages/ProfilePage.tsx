@@ -265,8 +265,8 @@ export default function ProfilePage({
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-16">
-        <div className="tb-section-stack p-5 animate-fadeIn">
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+        <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
           <div className="tb-card-stack">
             <div className="flex items-center gap-4">
               <div className="relative rounded-full size-[64px]">

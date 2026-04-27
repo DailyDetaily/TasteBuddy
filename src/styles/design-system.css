@@ -263,7 +263,7 @@
   --tb-safe-area-top: env(safe-area-inset-top, 0px);
   --tb-safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --tb-size-top-app-bar-height: 56px;
-  --tb-size-bottom-tab-bar-height: 78px;
+  --tb-size-bottom-tab-bar-height: 60px;
   --tb-size-primary-button-height: 48px;
   --tb-size-bottom-fade-min-height: 140px;
   --tb-size-bottom-indicator-width: 134px;

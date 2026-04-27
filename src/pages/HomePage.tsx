@@ -120,8 +120,8 @@ export default function HomePage({
           reservations={reservations}
         />
       </header>
-      <section className="flex-1 overflow-y-auto no-scrollbar pb-16" aria-label="홈 콘텐츠">
-        <div className="flex flex-col gap-3 px-5 pb-5 animate-fadeIn">
+      <section className="flex-1 overflow-y-auto no-scrollbar" aria-label="홈 콘텐츠">
+        <div className="flex flex-col gap-3 px-5 pb-20 animate-fadeIn">
           <HomeCardStack
             chefCards={chefCards}
             featuredReservation={featuredReservation}
