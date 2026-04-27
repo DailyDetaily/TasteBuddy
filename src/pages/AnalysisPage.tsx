@@ -1935,7 +1935,7 @@ export default function AnalysisPage({
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-16">
         <div className="tb-section-stack p-5 animate-fadeIn">
           <PageSection title="나의 미각" titleAs="h1" titleSize="lg" contentClassName="flex flex-col gap-3">
             <PalateSignatureHeroCard

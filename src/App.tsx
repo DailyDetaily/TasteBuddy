@@ -116,7 +116,7 @@ type TasteSurveyFlowStep =
   | 'result';
 const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const MAIN_APP_BOTTOM_OFFSET =
-  'calc(var(--tb-size-bottom-tab-bar-height) + max(0px, calc(var(--tb-safe-area-bottom) - 20px)))';
+  'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
 
 const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v5';
 const LEGACY_USER_STATE_STORAGE_KEYS = [
