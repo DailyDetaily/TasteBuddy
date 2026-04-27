@@ -5,8 +5,9 @@ import {
   buildReservationPersonalizationSummary,
   getChefImageByName,
   getRecentChangeSummary,
+  type HomeChefMatchCardData,
 } from '../components/home/HomeCards';
-import HomeUnifiedSearch from '../components/home/HomeUnifiedSearch';
+import HomeUnifiedSearch, { type HomeSearchResult } from '../components/home/HomeUnifiedSearch';
 import {
   type TasteMeasurementSnapshot,
   isTasteMeasurementStale,
@@ -36,6 +37,8 @@ interface HomePageProps {
   onStartRemeasurement: () => void;
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
+  onOpenRestaurantDetail?: (chef: HomeChefMatchCardData) => void;
+  onOpenRestaurantDetailFromSearch?: (result: HomeSearchResult) => void;
   hasUnreadNotifications?: boolean;
 }
 
@@ -48,6 +51,8 @@ export default function HomePage({
   onStartRemeasurement,
   onOpenNotifications,
   onOpenMenu,
+  onOpenRestaurantDetail,
+  onOpenRestaurantDetailFromSearch,
   hasUnreadNotifications,
 }: HomePageProps) {
   const fallbackReservations = isSupabaseConfigured && !disableHydration ? [] : RESERVATION_CATALOG;
@@ -109,7 +114,11 @@ export default function HomePage({
   return (
     <main className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
       <header className="shrink-0 px-5 pb-4 pt-1">
-        <HomeUnifiedSearch catalog={contentCatalog} reservations={reservations} />
+        <HomeUnifiedSearch
+          catalog={contentCatalog}
+          onOpenRestaurantDetail={onOpenRestaurantDetailFromSearch}
+          reservations={reservations}
+        />
       </header>
       <section className="flex-1 overflow-y-auto no-scrollbar pb-10" aria-label="홈 콘텐츠">
         <div className="flex flex-col gap-3 px-5 pb-5 animate-fadeIn">
@@ -122,6 +131,7 @@ export default function HomePage({
             needsMeasurementRefresh={needsMeasurementRefresh}
             onStartMeasurement={onStartMeasurement}
             onStartRemeasurement={onStartRemeasurement}
+            onSelectChefMatch={onOpenRestaurantDetail}
             recentChangeText={recentChangeText}
           />
           <div className="h-6" />

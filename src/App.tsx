@@ -5,6 +5,14 @@ import AnalysisPage from './pages/AnalysisPage';
 import DesignSystemPage from './pages/DesignSystemPage';
 import DesignSystemPreviewPage from './pages/DesignSystemPreviewPage';
 import FigmaWorksPreviewPage from './pages/FigmaWorksPreviewPage';
+import RestaurantDetailPage, {
+  createRestaurantDetailFromChefMatch,
+  createRestaurantDetailFromFavoriteChef,
+  createRestaurantDetailFromMenuRecommendation,
+  createRestaurantDetailFromReservation,
+  createRestaurantDetailFromSearchResult,
+  type RestaurantDetailViewModel,
+} from './pages/RestaurantDetailPage';
 import ReservationPage from './pages/ReservationPage';
 import ProfilePage from './pages/ProfilePage';
 import SplashScreen from './pages/SplashScreen';
@@ -15,7 +23,7 @@ import TasteSurveyContextScreen from './pages/TasteSurveyContextScreen';
 import TasteSurveyScreen from './pages/TasteSurveyScreen';
 import TasteSurveyReviewScreen from './pages/TasteSurveyReviewScreen';
 import TasteSurveyResultScreen from './pages/TasteSurveyResultScreen';
-import TeastickConnectScreen from './pages/TeastickConnectScreen';
+import TastickConnectScreen from './pages/TastickConnectScreen';
 import TasteMeasurementScreen from './pages/TasteMeasurementScreen';
 import ImproveAccuracyScreen from './pages/ImproveAccuracyScreen';
 import BottomTabBar, { type TabType } from './components/BottomTabBar';
@@ -62,8 +70,16 @@ import {
 } from './lib/notificationsSupabase';
 import {
   hydrateLatestMeasurementSnapshot,
+  hydrateReservationPageData,
+  hydrateRestaurantContentCatalog,
   persistTasteMeasurementSnapshot,
+  type RestaurantContentCatalog,
 } from './lib/tasteBuddySupabase';
+import HomeUnifiedSearch from './components/home/HomeUnifiedSearch';
+import {
+  RESERVATION_CATALOG,
+  type ReservationRecord,
+} from './constants/reservationCatalog';
 import { ensureSupabaseSession, isSupabaseConfigured } from './lib/supabase';
 import { buildTasteSurveyCompatibleResult } from './lib/tasteSurveyScoring';
 import { TASTE_SURVEY_ITEMS } from './constants/tasteSurveyItems';
@@ -85,7 +101,7 @@ type AppState =
   | 'onboarding'
   | 'intake'
   | 'calibration'
-  | 'teastick'
+  | 'tastick'
   | 'measurement'
   | 'improve-accuracy'
   | 'main';
@@ -114,6 +130,7 @@ interface PersistedUserState {
   hasCompletedInitialMeasurement: boolean;
   latestPreferenceIntakeProfile: PreferenceIntakeProfile | null;
   latestRestaurantReadyGuidance: RestaurantReadyGuidance | null;
+  latestTasteSurveyRespondentContext: TasteSurveyRespondentContext;
   latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
   tasteSurveyDraft: PersistedTasteSurveyDraft | null;
 }
@@ -243,6 +260,12 @@ function createTasteSurveyDraft(
   };
 }
 
+function hasCompleteTasteSurveyRespondentContext(
+  context: TasteSurveyRespondentContext,
+) {
+  return Boolean(context.ageRange && context.sexContext && context.smokingStatus);
+}
+
 function getTasteSurveyResponseList(
   responses: Record<string, TasteSurveyResponse | undefined>,
 ) {
@@ -277,6 +300,7 @@ function loadPersistedUserState(): PersistedUserState {
       hasCompletedInitialMeasurement: false,
       latestPreferenceIntakeProfile: null,
       latestRestaurantReadyGuidance: null,
+      latestTasteSurveyRespondentContext: {},
       latestTasteMeasurementSnapshot: null,
       tasteSurveyDraft: null,
     };
@@ -299,6 +323,7 @@ function loadPersistedUserState(): PersistedUserState {
         hasCompletedInitialMeasurement: false,
         latestPreferenceIntakeProfile: null,
         latestRestaurantReadyGuidance: null,
+        latestTasteSurveyRespondentContext: {},
         latestTasteMeasurementSnapshot: null,
         tasteSurveyDraft: null,
       };
@@ -322,12 +347,17 @@ function loadPersistedUserState(): PersistedUserState {
       : latestTasteMeasurementSnapshot
         ? createFallbackRestaurantReadyGuidance(latestTasteMeasurementSnapshot)
         : null;
+    const latestTasteSurveyRespondentContext = sanitizeTasteSurveyRespondentContext(
+      parsedValue.latestTasteSurveyRespondentContext ??
+        parsedValue.tasteSurveyDraft?.respondentContext,
+    );
 
     return {
       hasCompletedInitialMeasurement:
         Boolean(parsedValue.hasCompletedInitialMeasurement) && latestTasteMeasurementSnapshot !== null,
       latestPreferenceIntakeProfile,
       latestRestaurantReadyGuidance,
+      latestTasteSurveyRespondentContext,
       latestTasteMeasurementSnapshot,
       tasteSurveyDraft:
         isPersistedTasteSurveyDraft(parsedValue.tasteSurveyDraft)
@@ -352,6 +382,7 @@ function loadPersistedUserState(): PersistedUserState {
       hasCompletedInitialMeasurement: false,
       latestPreferenceIntakeProfile: null,
       latestRestaurantReadyGuidance: null,
+      latestTasteSurveyRespondentContext: {},
       latestTasteMeasurementSnapshot: null,
       tasteSurveyDraft: null,
     };
@@ -387,7 +418,8 @@ function MainApp() {
   );
   const [tasteSurveyRespondentContext, setTasteSurveyRespondentContext] =
     useState<TasteSurveyRespondentContext>(
-      persistedUserState.tasteSurveyDraft?.respondentContext ?? {},
+      persistedUserState.tasteSurveyDraft?.respondentContext ??
+        persistedUserState.latestTasteSurveyRespondentContext,
     );
   const [surveyResponses, setSurveyResponses] = useState<
     Record<string, TasteSurveyResponse | undefined>
@@ -412,6 +444,16 @@ function MainApp() {
   const [activeSupportPanel, setActiveSupportPanel] = useState<AppMenuSupportPanel | null>(null);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isReservationRootView, setIsReservationRootView] = useState(true);
+  const [selectedRestaurantDetail, setSelectedRestaurantDetail] =
+    useState<RestaurantDetailViewModel | null>(null);
+  const [globalSearchTrigger, setGlobalSearchTrigger] = useState(0);
+  const [globalSearchCatalog, setGlobalSearchCatalog] = useState<RestaurantContentCatalog>({
+    chefs: [],
+    dishes: [],
+  });
+  const [globalSearchReservations, setGlobalSearchReservations] = useState<ReservationRecord[]>(
+    isSupabaseConfigured ? [] : RESERVATION_CATALOG,
+  );
 
   useEffect(() => {
     const nextTasteSurveyDraft =
@@ -433,6 +475,9 @@ function MainApp() {
         hasCompletedInitialMeasurement,
         latestPreferenceIntakeProfile,
         latestRestaurantReadyGuidance,
+        latestTasteSurveyRespondentContext: sanitizeTasteSurveyRespondentContext(
+          tasteSurveyRespondentContext,
+        ),
         latestTasteMeasurementSnapshot,
         tasteSurveyDraft: nextTasteSurveyDraft,
       } satisfies PersistedUserState),
@@ -505,6 +550,32 @@ function MainApp() {
     hasCompletedInitialMeasurement && latestTasteMeasurementSnapshot !== null;
 
   useEffect(() => {
+    if (!hasMeasurementData || !isSupabaseConfigured) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void (async () => {
+      const [hydratedData, hydratedCatalog] = await Promise.all([
+        hydrateReservationPageData(),
+        hydrateRestaurantContentCatalog(),
+      ]);
+
+      if (isCancelled) {
+        return;
+      }
+
+      setGlobalSearchReservations(hydratedData.reservations);
+      setGlobalSearchCatalog(hydratedCatalog);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [hasMeasurementData]);
+
+  useEffect(() => {
     if (
       appState !== 'splash' ||
       !hasSplashDelayCompleted ||
@@ -534,12 +605,13 @@ function MainApp() {
   ]);
 
   const handleTabChange = (tab: TabType) => {
+    setSelectedRestaurantDetail(null);
     setActiveTab(tab);
   };
 
   const handlePersistedMeasurement = (
     snapshot: TasteMeasurementSnapshot,
-    source: 'quick_calibration' | 'teastick',
+    source: 'quick_calibration' | 'tastick',
     options?: Parameters<typeof persistTasteMeasurementSnapshot>[2],
   ) => {
     void persistTasteMeasurementSnapshot(snapshot, source, options);
@@ -561,7 +633,6 @@ function MainApp() {
 
     if (shouldClearResponses) {
       setSurveyResponses({});
-      setTasteSurveyRespondentContext({});
     }
   };
 
@@ -573,7 +644,7 @@ function MainApp() {
   const handleStartMeasurementFromMain = (originTab: TabType) => {
     setMeasurementEntryPoint('main');
     setMeasurementReturnTab(originTab);
-    setAppState('teastick');
+    handleEnterTasteSurveyFlow(true);
   };
 
   const handleStartRemeasurementFromMain = (originTab: TabType) => {
@@ -671,6 +742,11 @@ function MainApp() {
       return;
     }
 
+    if (hasCompleteTasteSurveyRespondentContext(tasteSurveyRespondentContext)) {
+      setTasteSurveyFlowStep('intro');
+      return;
+    }
+
     setCurrentSurveyContextIndex(Math.max(TASTE_SURVEY_CONTEXT_STEPS.length - 1, 0));
     setTasteSurveyFlowStep('context');
   };
@@ -756,6 +832,13 @@ function MainApp() {
     void markAllNotificationsAsRead();
   };
 
+  const handleOpenGlobalSearch = () => {
+    setIsNotificationOpen(false);
+    setIsMenuOpen(false);
+    setActiveSupportPanel(null);
+    setGlobalSearchTrigger((current) => current + 1);
+  };
+
   // Common overlay props
   const overlayProps = {
     onOpenNotifications: () => setIsNotificationOpen(true),
@@ -766,7 +849,10 @@ function MainApp() {
   const isImmersiveWhiteShell =
     appState === 'onboarding' || appState === 'intake' || appState === 'calibration';
   const shouldShowMainShell =
-    appState === 'main' && (activeTab !== 'reservation' || isReservationRootView);
+    appState === 'main' &&
+    (selectedRestaurantDetail !== null || activeTab !== 'reservation' || isReservationRootView);
+  const shouldShowMainTopShell = shouldShowMainShell && selectedRestaurantDetail === null;
+  const shouldShowMainBottomShell = shouldShowMainShell;
 
   useEffect(() => {
     const nextBackgroundColor = isImmersiveWhiteShell ? '#ffffff' : '#f3f3f3';
@@ -817,12 +903,29 @@ function MainApp() {
         {appState === 'calibration' && tasteSurveyFlowStep === 'intro' && (
           <TasteSurveyIntroScreen
             activeStepIndex={0}
-            actionLabel="설문 시작"
+            actionLabel={
+              hasCompleteTasteSurveyRespondentContext(tasteSurveyRespondentContext)
+                ? '다시 작성'
+                : '설문 시작'
+            }
             onBack={handleExitTasteSurveyFlow}
+            onReuseContext={
+              hasCompleteTasteSurveyRespondentContext(tasteSurveyRespondentContext)
+                ? () => {
+                    setCurrentSurveyIndex(0);
+                    setTasteSurveyFlowStep('questions');
+                  }
+                : undefined
+            }
             onStart={() => {
               setCurrentSurveyContextIndex(0);
               setTasteSurveyFlowStep('context');
             }}
+            reuseContextLabel={
+              hasCompleteTasteSurveyRespondentContext(tasteSurveyRespondentContext)
+                ? '건너뛰기'
+                : undefined
+            }
           />
         )}
         {appState === 'calibration' && tasteSurveyFlowStep === 'questionsIntro' && (
@@ -890,8 +993,8 @@ function MainApp() {
             onComplete={handleCompleteTasteSurvey}
           />
         )}
-        {appState === 'teastick' && (
-          <TeastickConnectScreen
+        {appState === 'tastick' && (
+          <TastickConnectScreen
             onConnect={() => setAppState('measurement')}
             onSkip={handleExitMeasurementFlow}
           />
@@ -908,14 +1011,14 @@ function MainApp() {
               setHasCompletedInitialMeasurement(true);
               setActiveTab('home');
               setAppState('main');
-              handlePersistedMeasurement(snapshot, 'teastick');
+              handlePersistedMeasurement(snapshot, 'tastick');
             }}
-            onBack={() => setAppState('teastick')}
+            onBack={() => setAppState('tastick')}
           />
         )}
         {appState === 'improve-accuracy' && (
           <ImproveAccuracyScreen
-            onConnectDevice={() => setAppState('teastick')}
+            onConnectDevice={() => setAppState('tastick')}
             onSkip={() => {
               setActiveTab(measurementReturnTab);
               setAppState('main');
@@ -923,23 +1026,29 @@ function MainApp() {
           />
         )}
 
-        {shouldShowMainShell ? (
+        {shouldShowMainTopShell || shouldShowMainBottomShell ? (
           <>
-            <div className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center">
-              <div className="pointer-events-auto w-full max-w-[1440px]">
-                <TopAppBar
-                  onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
-                  onOpenNotifications={overlayProps.onOpenNotifications}
-                  onOpenMenu={overlayProps.onOpenMenu}
-                  hasUnreadNotifications={overlayProps.hasUnreadNotifications}
-                />
+            {shouldShowMainTopShell ? (
+              <div className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center">
+                <div className="pointer-events-auto w-full max-w-[1440px]">
+                  <TopAppBar
+                    onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
+                    onOpenSearch={handleOpenGlobalSearch}
+                    onOpenNotifications={overlayProps.onOpenNotifications}
+                    onOpenMenu={overlayProps.onOpenMenu}
+                    hasUnreadNotifications={overlayProps.hasUnreadNotifications}
+                    showSearchAction={activeTab !== 'home'}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center">
-              <div className="pointer-events-auto w-full max-w-[1440px]">
-                <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
+            ) : null}
+            {shouldShowMainBottomShell ? (
+              <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center">
+                <div className="pointer-events-auto w-full max-w-[1440px]">
+                  <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
+                </div>
               </div>
-            </div>
+            ) : null}
           </>
         ) : null}
 
@@ -948,78 +1057,114 @@ function MainApp() {
           style={
             appState === 'main'
               ? {
-                paddingTop: shouldShowMainShell ? MAIN_APP_TOP_OFFSET : undefined,
-                paddingBottom: shouldShowMainShell ? MAIN_APP_BOTTOM_OFFSET : undefined,
+                paddingTop: shouldShowMainTopShell ? MAIN_APP_TOP_OFFSET : undefined,
+                paddingBottom: shouldShowMainBottomShell ? MAIN_APP_BOTTOM_OFFSET : undefined,
               }
               : undefined
           }
         >
-          <div className={activeTab === 'home' ? 'h-full w-full' : 'hidden'}>
-            <Home
-              hasMeasurementData={hasMeasurementData}
-              measurementSnapshot={latestTasteMeasurementSnapshot}
-              starterGuidance={latestRestaurantReadyGuidance}
-              onStartMeasurement={() => handleStartMeasurementFromMain('home')}
-              onStartRemeasurement={() => handleStartRemeasurementFromMain('home')}
-              {...overlayProps}
+          {selectedRestaurantDetail ? (
+            <RestaurantDetailPage
+              restaurant={selectedRestaurantDetail}
+              onBack={() => setSelectedRestaurantDetail(null)}
             />
-          </div>
-          <div
-            className={
-              activeTab === 'analysis' && latestTasteMeasurementSnapshot
-                ? 'h-full w-full animate-fadeIn'
-                : 'hidden'
-            }
-          >
-            {latestTasteMeasurementSnapshot ? (
-              <AnalysisPage
-                isActive={activeTab === 'analysis'}
-                measurementSnapshot={latestTasteMeasurementSnapshot}
-                onStartMeasurement={() => handleStartMeasurementFromMain('analysis')}
-                {...overlayProps}
-              />
-            ) : null}
-          </div>
-          <div
-            className={
-              activeTab === 'reservation' && latestTasteMeasurementSnapshot
-                ? 'h-full w-full animate-fadeIn'
-                : 'hidden'
-            }
-          >
-            {latestTasteMeasurementSnapshot ? (
-              <ReservationPage
-                measurementSnapshot={latestTasteMeasurementSnapshot}
-                starterGuidance={latestRestaurantReadyGuidance}
-                onRootViewChange={setIsReservationRootView}
-                onStartMeasurement={() => handleStartMeasurementFromMain('reservation')}
-                {...overlayProps}
-              />
-            ) : null}
-          </div>
-          <div
-            className={
-              activeTab === 'profile' && latestTasteMeasurementSnapshot
-                ? 'h-full w-full animate-fadeIn'
-                : 'hidden'
-            }
-          >
-            {latestTasteMeasurementSnapshot ? (
-              <ProfilePage
-                measurementSnapshot={latestTasteMeasurementSnapshot}
-                starterGuidance={latestRestaurantReadyGuidance}
-                onOpenSupportPanel={handleOpenSupportPanel}
-                onStartMeasurement={() => handleStartMeasurementFromMain('profile')}
-                onNavigateToReservation={(chefName: string) => {
-                  setActiveTab('reservation');
-                }}
-                {...overlayProps}
-              />
-            ) : null}
-          </div>
+          ) : (
+            <>
+              <div className={activeTab === 'home' ? 'h-full w-full' : 'hidden'}>
+                <Home
+                  hasMeasurementData={hasMeasurementData}
+                  measurementSnapshot={latestTasteMeasurementSnapshot}
+                  starterGuidance={latestRestaurantReadyGuidance}
+                  onStartMeasurement={() => handleStartMeasurementFromMain('home')}
+                  onStartRemeasurement={() => handleStartRemeasurementFromMain('home')}
+                  onOpenRestaurantDetail={(chef) =>
+                    setSelectedRestaurantDetail(createRestaurantDetailFromChefMatch(chef))
+                  }
+                  onOpenRestaurantDetailFromSearch={(result) =>
+                    setSelectedRestaurantDetail(createRestaurantDetailFromSearchResult(result))
+                  }
+                  {...overlayProps}
+                />
+              </div>
+              <div
+                className={
+                  activeTab === 'analysis' && latestTasteMeasurementSnapshot
+                    ? 'h-full w-full animate-fadeIn'
+                    : 'hidden'
+                }
+              >
+                {latestTasteMeasurementSnapshot ? (
+                  <AnalysisPage
+                    isActive={activeTab === 'analysis'}
+                    measurementSnapshot={latestTasteMeasurementSnapshot}
+                    onOpenRestaurantDetail={(menu) =>
+                      setSelectedRestaurantDetail(createRestaurantDetailFromMenuRecommendation(menu))
+                    }
+                    onStartMeasurement={() => handleStartMeasurementFromMain('analysis')}
+                    {...overlayProps}
+                  />
+                ) : null}
+              </div>
+              <div
+                className={
+                  activeTab === 'reservation' && latestTasteMeasurementSnapshot
+                    ? 'h-full w-full animate-fadeIn'
+                    : 'hidden'
+                }
+              >
+                {latestTasteMeasurementSnapshot ? (
+                  <ReservationPage
+                    measurementSnapshot={latestTasteMeasurementSnapshot}
+                    starterGuidance={latestRestaurantReadyGuidance}
+                    onRootViewChange={setIsReservationRootView}
+                    onOpenRestaurantDetail={(reservation) =>
+                      setSelectedRestaurantDetail(createRestaurantDetailFromReservation(reservation))
+                    }
+                    onStartMeasurement={() => handleStartRemeasurementFromMain('reservation')}
+                    {...overlayProps}
+                  />
+                ) : null}
+              </div>
+              <div
+                className={
+                  activeTab === 'profile' && latestTasteMeasurementSnapshot
+                    ? 'h-full w-full animate-fadeIn'
+                    : 'hidden'
+                }
+              >
+                {latestTasteMeasurementSnapshot ? (
+                  <ProfilePage
+                    measurementSnapshot={latestTasteMeasurementSnapshot}
+                    starterGuidance={latestRestaurantReadyGuidance}
+                    onOpenSupportPanel={handleOpenSupportPanel}
+                    onOpenRestaurantDetail={(chef) =>
+                      setSelectedRestaurantDetail(createRestaurantDetailFromFavoriteChef(chef))
+                    }
+                    onStartMeasurement={() => handleStartMeasurementFromMain('profile')}
+                    onNavigateToReservation={(chefName: string) => {
+                      setActiveTab('reservation');
+                    }}
+                    {...overlayProps}
+                  />
+                ) : null}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Global Overlays */}
+        {appState === 'main' ? (
+          <HomeUnifiedSearch
+            catalog={globalSearchCatalog}
+            onOpenRestaurantDetail={(result) =>
+              setSelectedRestaurantDetail(createRestaurantDetailFromSearchResult(result))
+            }
+            openTrigger={globalSearchTrigger}
+            reservations={globalSearchReservations}
+            showTrigger={false}
+          />
+        ) : null}
+
         <NotificationPanel
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}

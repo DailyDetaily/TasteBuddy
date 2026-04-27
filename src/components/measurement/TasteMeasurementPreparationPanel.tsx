@@ -34,7 +34,7 @@ export default function TasteMeasurementPreparationPanel({
         <div className="relative flex aspect-square w-full max-w-[440px] items-center justify-center overflow-hidden rounded-[var(--tb-radius-20)] border border-[var(--tb-color-border-card)] bg-[var(--tb-color-bg-page)] shadow-sm">
           <img
             src={personUsingTastickImage}
-            alt="Teastick Preparation"
+            alt="Tastick Preparation"
             className="absolute inset-0 h-full w-full origin-bottom translate-y-[12%] scale-[1.9] object-cover object-center will-change-transform"
           />
 

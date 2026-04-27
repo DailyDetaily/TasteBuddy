@@ -7,6 +7,7 @@ import {
 import type { RestaurantContentDish } from './tasteBuddySupabase';
 import { projectDishForUser } from './tastePersonalization';
 import type { TasteVector, UserLearnedCalibration } from '../types/tastePersonalization';
+import { resolvePublicMediaPath } from './mediaAssets';
 
 export type PersonalizedMatchConfidence = 'starter' | 'building' | 'strong';
 
@@ -110,15 +111,7 @@ function buildMatchReason(
 }
 
 export function resolveUsableImagePath(imagePath?: string | null) {
-  if (!imagePath) {
-    return null;
-  }
-
-  if (/^(https?:|data:|\/)/.test(imagePath)) {
-    return imagePath;
-  }
-
-  return null;
+  return resolvePublicMediaPath(imagePath);
 }
 
 export function scorePersonalizedDishMatch(

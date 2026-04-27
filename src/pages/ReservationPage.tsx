@@ -19,6 +19,7 @@ import {
   type ReservationPersonalizationSummary,
 } from '../components/reservation/ReservationDetailSections';
 import PrimaryButton from '../components/system/PrimaryButton';
+import CardDetailLabel from '../components/system/CardDetailLabel';
 import ChefAvatar from '../components/system/ChefAvatar';
 import PageSection from '../components/system/PageSection';
 import HospitalityEmptyState from '../components/system/HospitalityEmptyState';
@@ -94,6 +95,7 @@ function ReservationDetail({
   onBack,
   onOpenAnalysis,
   onOpenFeedback,
+  onOpenRestaurantDetail,
   onStartMeasurement,
   reservation,
   starterGuidance,
@@ -104,6 +106,7 @@ function ReservationDetail({
   onBack: () => void;
   onOpenAnalysis: () => void;
   onOpenFeedback: () => void;
+  onOpenRestaurantDetail?: (reservation: Reservation) => void;
   onStartMeasurement: () => void;
   reservation: Reservation;
   starterGuidance: RestaurantReadyGuidance | null;
@@ -133,6 +136,15 @@ function ReservationDetail({
               summary={personalizationSummary}
             />
             <ReservationChefSummary reservation={reservation} />
+            {onOpenRestaurantDetail ? (
+              <button
+                type="button"
+                onClick={() => onOpenRestaurantDetail(reservation)}
+                className="self-start"
+              >
+                <CardDetailLabel label="레스토랑 정보 보기" />
+              </button>
+            ) : null}
           </div>
 
           <ReservationDiningInterpretationSection />
@@ -175,6 +187,7 @@ interface ReservationPageProps {
   measurementSnapshot: TasteMeasurementSnapshot;
   starterGuidance?: RestaurantReadyGuidance | null;
   onRootViewChange?: (isRootView: boolean) => void;
+  onOpenRestaurantDetail?: (reservation: Reservation) => void;
   onStartMeasurement: () => void;
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
@@ -187,6 +200,7 @@ export default function ReservationPage({
   measurementSnapshot,
   starterGuidance = null,
   onRootViewChange,
+  onOpenRestaurantDetail,
   onStartMeasurement,
   onOpenNotifications,
   onOpenMenu,
@@ -319,6 +333,7 @@ export default function ReservationPage({
         }}
         onOpenFeedback={() => setSelectedView('feedback')}
         onOpenAnalysis={() => setSelectedView('analysis')}
+        onOpenRestaurantDetail={onOpenRestaurantDetail}
         onStartMeasurement={onStartMeasurement}
         starterGuidance={starterGuidance}
       />
@@ -342,6 +357,7 @@ export default function ReservationPage({
     (left, right) => right.valueMm - left.valueMm,
   );
   const topTasteLabels = measurementHighlights.slice(0, 2).map((entry) => entry.label);
+  const remeasurementAccentTaste = measurementHighlights[0]?.label;
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
@@ -455,6 +471,7 @@ export default function ReservationPage({
 
             {upcoming.length > 0 && (
               <TasteMeasurementMiniCta
+                accentTaste={remeasurementAccentTaste}
                 title={
                   needsMeasurementRefresh
                     ? isBroadStarterProfile
@@ -475,6 +492,7 @@ export default function ReservationPage({
                 }
                 meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
                 actionLabel={needsMeasurementRefresh ? '프로필 업데이트' : '현재 컨디션 반영'}
+                actionFullWidth={!needsMeasurementRefresh}
                 onAction={onStartMeasurement}
                 tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
               />
@@ -498,6 +516,7 @@ export default function ReservationPage({
                     setSelectedId(r.id);
                     setSelectedView('detail');
                   }}
+                  onOpenRestaurantInfo={() => onOpenRestaurantDetail?.(r)}
                 />
               ))}
             </PageSection>
@@ -520,6 +539,7 @@ export default function ReservationPage({
                     setSelectedId(r.id);
                     setSelectedView('detail');
                   }}
+                  onOpenRestaurantInfo={() => onOpenRestaurantDetail?.(r)}
                 />
               ))}
             </PageSection>

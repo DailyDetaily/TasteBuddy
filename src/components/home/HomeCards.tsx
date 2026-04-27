@@ -21,7 +21,6 @@ import {
   getStrongestTasteMeasurement,
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
-  getWeakestTasteMeasurement,
   isBroadStarterMeasurementSnapshot,
   isTasteMeasurementStale,
   type TasteMeasurementEntry,
@@ -33,21 +32,7 @@ import {
 } from '../../constants/tasteColors';
 import type { PersonalizedMatchConfidence } from '../../lib/chefMatching';
 
-import chefHwangJeongin from '../../assets/HwangJeongin.png';
-import chefHyunseokChoi from '../../assets/HyunseokChoi.png';
-import chefLeeEunji from '../../assets/LeeEunji.png';
-import chefLeeJun from '../../assets/LeeJun.png';
-import chefLimJeongsik from '../../assets/LimJeongsik.png';
-import chefSonJongwon from '../../assets/SonJongwon.png';
-
-const CHEF_IMAGE_BY_NAME: Record<string, string> = {
-  손종원: chefSonJongwon,
-  이은지: chefLeeEunji,
-  이준: chefLeeJun,
-  임정식: chefLimJeongsik,
-  최현석: chefHyunseokChoi,
-  황정인: chefHwangJeongin,
-};
+import { getChefImageByName } from '../../constants/chefImages';
 
 const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
   {
@@ -120,19 +105,19 @@ interface HomeChefMatchStripProps {
   chefCards: HomeChefMatchCardData[];
   fullBleed?: boolean;
   onNavigateToSection?: InspectableNavigateHandler;
+  onSelectChefMatch?: (chef: HomeChefMatchCardData) => void;
   showSectionTitle?: boolean;
 }
 
 interface HomeCardStackProps
   extends Omit<HomeCardPreviewData, 'confidenceStage' | 'measurementCount'> {
   onNavigateToSection?: InspectableNavigateHandler;
+  onSelectChefMatch?: (chef: HomeChefMatchCardData) => void;
   onStartMeasurement: () => void;
   onStartRemeasurement: () => void;
 }
 
-export function getChefImageByName(name: string) {
-  return CHEF_IMAGE_BY_NAME[name.replace(/\s*셰프$/, '')] ?? null;
-}
+export { getChefImageByName } from '../../constants/chefImages';
 
 export function buildReservationPersonalizationSummary(
   measurementSnapshot: TasteMeasurementSnapshot,
@@ -349,9 +334,11 @@ export function HomeDiningPreparationCard({
 export function HomeChefMatchCard({
   chef,
   onNavigateToSection,
+  onSelect,
 }: {
   chef: HomeChefMatchCardData;
   onNavigateToSection?: InspectableNavigateHandler;
+  onSelect?: (chef: HomeChefMatchCardData) => void;
 }) {
   const chefName = chef.chef.endsWith('셰프') ? chef.chef : `${chef.chef} 셰프`;
 
@@ -362,16 +349,22 @@ export function HomeChefMatchCard({
       onNavigate={onNavigateToSection}
       sectionId="cards"
     >
-      <ChefMatchCard
-        chefName={chefName}
-        hoverMotion={false}
-        hoverShadow={false}
-        imageSrc={chef.image}
-        matchRate={chef.match}
-        matchReason={chef.matchReason}
-        restaurant={chef.restaurant}
-        tasteId={chef.tasteId}
-      />
+      <button
+        type="button"
+        className="block text-left"
+        onClick={() => onSelect?.(chef)}
+      >
+        <ChefMatchCard
+          chefName={chefName}
+          hoverMotion={false}
+          hoverShadow={false}
+          imageSrc={chef.image}
+          matchRate={chef.match}
+          matchReason={chef.matchReason}
+          restaurant={chef.restaurant}
+          tasteId={chef.tasteId}
+        />
+      </button>
     </InspectableComponent>
   );
 }
@@ -380,6 +373,7 @@ export function HomeChefMatchStrip({
   chefCards,
   fullBleed = true,
   onNavigateToSection,
+  onSelectChefMatch,
   showSectionTitle = true,
 }: HomeChefMatchStripProps) {
   if (chefCards.length === 0) {
@@ -399,6 +393,7 @@ export function HomeChefMatchStrip({
             key={`${chef.chef}-${chef.restaurant}-${chef.match}`}
             chef={chef}
             onNavigateToSection={onNavigateToSection}
+            onSelect={onSelectChefMatch}
           />
         ))}
       </CardScrollList>
@@ -414,14 +409,13 @@ export function HomeCardStack({
   measurementSnapshot,
   needsMeasurementRefresh,
   onNavigateToSection,
+  onSelectChefMatch,
   onStartMeasurement,
   onStartRemeasurement,
   recentChangeText,
 }: HomeCardStackProps) {
-  const strongestTasteLabel = getStrongestTasteMeasurement(measurementSnapshot).label;
-  const weakestTasteLabel = getWeakestTasteMeasurement(measurementSnapshot).label;
   const recentChangeTasteLabel = getRecentChangeTasteMeasurement(measurementSnapshot).label;
-  const remeasurementAccentTaste = strongestTasteLabel;
+  const remeasurementAccentTaste = getStrongestTasteMeasurement(measurementSnapshot).label;
   const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
 
   return (
@@ -429,6 +423,7 @@ export function HomeCardStack({
       <HomeChefMatchStrip
         chefCards={chefCards}
         onNavigateToSection={onNavigateToSection}
+        onSelectChefMatch={onSelectChefMatch}
       />
 
       {featuredReservation && featuredSummary ? (

@@ -82,7 +82,7 @@ export default function TasteSurveyQuestionCard({
           return (
             <SelectionCard
               key={value}
-              indicator="radio"
+              indicator="checkbox"
               selected={isSelected}
               singleLine
               title={label}

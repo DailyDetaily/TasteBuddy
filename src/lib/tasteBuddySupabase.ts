@@ -29,6 +29,7 @@ import {
   type ReservationStatus,
   type ReservationTimelineStep,
 } from '../constants/reservationCatalog';
+import { getChefImageByName } from '../constants/chefImages';
 import {
   TASTE_MEASUREMENT_AVERAGES,
   createInitialTasteMeasurementResults,
@@ -42,8 +43,9 @@ import {
   updateUserLearnedCalibration,
 } from './tastePersonalization';
 import { ensureSupabaseSession, isSupabaseConfigured, supabase } from './supabase';
+import { resolvePublicMediaPath } from './mediaAssets';
 
-type MeasurementSource = 'quick_calibration' | 'teastick' | 'manual';
+type MeasurementSource = 'quick_calibration' | 'tastick' | 'manual';
 
 interface MeasurementPersistenceOptions {
   rawPayload?: Record<string, unknown>;
@@ -74,7 +76,10 @@ interface HydratedReservationPageData {
 }
 
 interface ReservationQueryRow {
-  chefs: { display_name: string | null } | Array<{ display_name: string | null }> | null;
+  chefs:
+    | { avatar_path: string | null; display_name: string | null }
+    | Array<{ avatar_path: string | null; display_name: string | null }>
+    | null;
   course_name: string | null;
   external_ref: string | null;
   id: string;
@@ -802,7 +807,9 @@ function mapReservationRowToRecord(row: ReservationQueryRow): ReservationRecord 
   const { date, time } = formatReservationDateParts(row.reservation_at);
   const status = mapReservationStatusFromDb(row.status);
   const rawRestaurantName = takeSingleRelation(row.restaurants)?.name ?? null;
-  const rawChefName = takeSingleRelation(row.chefs)?.display_name ?? null;
+  const chefRelation = takeSingleRelation(row.chefs);
+  const rawChefName = chefRelation?.display_name ?? null;
+  const rawChefAvatarPath = chefRelation?.avatar_path ?? null;
   const restaurantName =
     rawRestaurantName !== null
       ? localizeRestaurantName(rawRestaurantName)
@@ -817,7 +824,10 @@ function mapReservationRowToRecord(row: ReservationQueryRow): ReservationRecord 
       hashTextToNumericId(row.id),
     restaurant: restaurantName,
     chef: chefName,
-    chefImage: fallbackReservation?.chefImage ?? null,
+    chefImage:
+      resolvePublicMediaPath(rawChefAvatarPath) ??
+      fallbackReservation?.chefImage ??
+      getChefImageByName(chefName),
     date,
     time,
     externalRef: row.external_ref,
@@ -853,7 +863,7 @@ async function fetchReservationRows(userId: string) {
       course_name,
       status,
       restaurants(name),
-      chefs(display_name)
+      chefs(display_name, avatar_path)
     `)
     .eq('user_id', userId)
     .order('reservation_at', { ascending: true });
@@ -1845,7 +1855,7 @@ export async function persistTasteMeasurementSnapshot(
     return false;
   }
 
-  const confidenceScore = source === 'teastick' ? 0.82 : source === 'quick_calibration' ? 0.68 : 0.55;
+  const confidenceScore = source === 'tastick' ? 0.82 : source === 'quick_calibration' ? 0.68 : 0.55;
 
   const { data: sessionRow, error: sessionError } = await supabase
     .from('measurement_sessions')

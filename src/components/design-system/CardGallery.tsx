@@ -435,7 +435,7 @@ export default function CardGallery({
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">테이스틱</span>
-                  <span className="text-[11px] text-[var(--tb-color-text-muted)]">Teastick Pro</span>
+                  <span className="text-[11px] text-[var(--tb-color-text-muted)]">Tastick Pro</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">

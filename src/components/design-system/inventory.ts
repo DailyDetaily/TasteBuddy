@@ -433,7 +433,7 @@ export const TYPOGRAPHY_SPECS: TypographySpec[] = [
   {
     name: "헤딩",
     sample: "프로필은 조금씩 더 정교해집니다",
-    source: "DESIGN.md / src/pages/OnboardingScreen.tsx / src/pages/TeastickConnectScreen.tsx",
+    source: "DESIGN.md / src/pages/OnboardingScreen.tsx / src/pages/TastickConnectScreen.tsx",
     usage: "온보딩과 드로어 타이틀",
     cssVars: ["--tb-font-size-22", "--tb-font-weight-bold", "--tb-line-height-snug"],
     value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[22], fontWeight: 700, lineHeight: 1.35 },
@@ -508,7 +508,7 @@ export const BORDER_ITEMS = [
 export const ICON_RULES = [
   {
     name: "Lucide 시스템 아이콘",
-    source: "src/components/TopAppBar.tsx / src/components/BottomTabBar.tsx / src/components/AppMenuDrawer.tsx / src/components/NotificationPanel.tsx / src/pages/AnalysisPage.tsx / src/pages/ProfilePage.tsx / src/pages/TeastickConnectScreen.tsx / src/pages/TasteMeasurementScreen.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
+    source: "src/components/TopAppBar.tsx / src/components/BottomTabBar.tsx / src/components/AppMenuDrawer.tsx / src/components/NotificationPanel.tsx / src/pages/AnalysisPage.tsx / src/pages/ProfilePage.tsx / src/pages/TastickConnectScreen.tsx / src/pages/TasteMeasurementScreen.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
     description: "메인 내비게이션, 오버레이, 측정/피드백 플로우까지 현재 실제 앱 아이콘 언어는 lucide-react로 정리되었습니다.",
   },
   {
@@ -746,7 +746,7 @@ export const TODO_ITEMS: InventoryEntry[] = [
   },
   {
     name: "오버레이 전략 통합",
-    source: "src/pages/TeastickConnectScreen.tsx / src/components/ui/dialog.tsx / src/components/ui/sheet.tsx / src/components/ui/drawer.tsx",
+    source: "src/pages/TastickConnectScreen.tsx / src/components/ui/dialog.tsx / src/components/ui/sheet.tsx / src/components/ui/drawer.tsx",
     note: "제품은 custom drawer형 레이아웃을 쓰고 있고, Radix/Vaul overlay도 존재하지만 아직 메인 앱에는 통합되지 않았습니다.",
   },
   {

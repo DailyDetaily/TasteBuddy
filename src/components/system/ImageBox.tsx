@@ -1,4 +1,4 @@
-import type { CSSProperties, HTMLAttributes } from 'react';
+import { useEffect, useState, type CSSProperties, type HTMLAttributes } from 'react';
 import {
   ChefHat,
   ImageIcon,
@@ -61,13 +61,19 @@ export default function ImageBox({
   variant = 'neutral',
   ...props
 }: ImageBoxProps) {
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const fallbackColor =
     variant === 'taste' ? getTasteColor(taste) : 'var(--tb-color-icon-muted)';
   const FallbackIcon = FALLBACK_ICON[fallback];
   const effectiveSize = size ?? 'md';
   const shouldApplySize = Boolean(size) || !className;
+  const shouldShowImage = Boolean(imageSrc) && !imageLoadFailed;
 
-  if (imageSrc) {
+  useEffect(() => {
+    setImageLoadFailed(false);
+  }, [imageSrc]);
+
+  if (shouldShowImage) {
     return (
       <div
         className={cn(
@@ -84,6 +90,7 @@ export default function ImageBox({
           src={imageSrc}
           alt={alt}
           className={cn('size-full object-cover', imageClassName)}
+          onError={() => setImageLoadFailed(true)}
         />
       </div>
     );

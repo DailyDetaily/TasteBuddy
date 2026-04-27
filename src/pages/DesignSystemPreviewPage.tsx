@@ -16,7 +16,7 @@ import ProfilePage from './ProfilePage';
 import ReservationConfirmationScreen from './ReservationConfirmationScreen';
 import ReservationPage from './ReservationPage';
 import TasteMeasurementScreen from './TasteMeasurementScreen';
-import TeastickConnectScreen from './TeastickConnectScreen';
+import TastickConnectScreen from './TastickConnectScreen';
 
 interface OverlayNote {
   id: string;
@@ -188,9 +188,9 @@ export default function DesignSystemPreviewPage() {
           </ShowcaseSection>
           )}
 
-          {(!focusSection || focusSection === 'teastick') && (
+          {(!focusSection || focusSection === 'tastick') && (
             <ShowcaseSection
-            title="Teastick Connect"
+            title="Tastick Connect"
             description="드로어 전환과 단계 카드가 공통 motion/neutral 규칙을 따르도록 정돈했습니다."
             overlayNotes={[
               { id: '1', left: '49%', top: '32%' },
@@ -203,7 +203,7 @@ export default function DesignSystemPreviewPage() {
               { id: '3', text: '드로어/배경 카드 전환 시간과 easing을 motion token 기반으로 맞췄습니다.' },
             ]}
           >
-            <TeastickConnectScreen
+            <TastickConnectScreen
               onConnect={() => undefined}
               onSkip={() => undefined}
               initialDrawerOpen

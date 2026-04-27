@@ -1813,7 +1813,7 @@ function Cards3({
     <button
       type="button"
       onClick={onOpenDetail}
-      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer"
+      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left cursor-pointer"
       data-name="Cards"
     >
       <div className="overflow-clip rounded-[inherit] size-full">
@@ -2397,7 +2397,7 @@ function Cards4({
     <button
       type="button"
       onClick={onOpenDetail}
-      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer"
+      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left cursor-pointer"
       data-name="Cards"
     >
       <div className="overflow-clip rounded-[inherit] size-full">

@@ -38,11 +38,13 @@ function buildMenuSummary(menu: RealMenuRecommendationCardData) {
 
 export default function RealMenuRecommendationCard({
   menu,
+  onOpenRestaurantDetail,
 }: {
   menu: RealMenuRecommendationCardData;
+  onOpenRestaurantDetail?: (menu: RealMenuRecommendationCardData) => void;
 }) {
   return (
-    <SectionCard>
+    <SectionCard onClick={onOpenRestaurantDetail ? () => onOpenRestaurantDetail(menu) : undefined}>
       <div className="flex w-full flex-col gap-[12px]">
         <div className="flex items-center gap-2 w-full">
           <TasteChip taste={menu.tasteLabel} />

@@ -25,6 +25,8 @@ VITE_SUPABASE_PUBLISHABLE_KEY="your-supabase-publishable-key"
 # Legacy fallback
 VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
 
+VITE_SUPABASE_PUBLIC_ASSET_BUCKET="taste-buddy-assets"
+
 # Server-side only
 SUPABASE_SECRET_KEY="your-supabase-secret-key"
 # Legacy fallback
@@ -34,6 +36,11 @@ VITE_SUPABASE_USE_ANONYMOUS_AUTH="true"
 ```
 
 지금 앱은 `VITE_SUPABASE_PUBLISHABLE_KEY`를 먼저 읽고, 없으면 `VITE_SUPABASE_ANON_KEY`를 fallback으로 사용합니다.
+
+`chefs.avatar_path`처럼 DB에 저장된 상대 이미지 경로는
+`VITE_SUPABASE_PUBLIC_ASSET_BUCKET`의 public object URL로 해석됩니다. 예를 들어 bucket이
+`taste-buddy-assets`이고 DB 값이 `chefs/jungsik.png`이면 앱은 Supabase Storage의
+public asset을 먼저 사용하고, 없을 때만 로컬 fallback 이미지를 사용합니다.
 
 ## 3. DB 스키마 적용
 

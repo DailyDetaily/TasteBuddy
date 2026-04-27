@@ -612,7 +612,7 @@ Scale:
 | --- | --- |
 | `SectionCard` | radius `20px`, background `surface-card`, body gap `12px`, body padding `12px`, hover 시 `translateY(-4px)`, interactive면 active 시 `scale(0.99)` |
 | `PageSection` | title + card stack wrapper, 기본 stack gap `12px`, `SectionTitle` 사용 |
-| `TasteMeasurementMiniCta` | radius `20px`, padding `16px`, neutral / alert tone 분기, alert는 sweet bg 기반 gradient, title `13px / 600`, desc `12px`, meta `11px`, action은 compact `PrimaryButton` |
+| `TasteMeasurementMiniCta` | radius `20px`, 기본 padding `12px`, neutral / alert tone 분기, alert는 sweet bg 기반 gradient, title `14px / 600`, desc `12px`, meta `11px`, action은 compact `PrimaryButton` |
 | `EmptyState` | centered layout, gap `16px`, padding `48px 24px`, icon box `48px / radius 14px`, title `16px / 700`, desc `13px`, CTA radius `10px` |
 
 ### Navigation & Overlay

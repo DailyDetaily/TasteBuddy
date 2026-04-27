@@ -18,6 +18,11 @@ export interface FlowBottomCtaProps {
   helperText?: ReactNode;
   helperTextClassName?: string;
   onAction: () => void;
+  secondaryButtonClassName?: string;
+  secondaryButtonDisabled?: boolean;
+  secondaryButtonLabel?: ReactNode;
+  secondaryButtonVisualDisabled?: boolean;
+  onSecondaryButtonAction?: () => void;
   secondaryAction?: ReactNode;
   secondaryActionClassName?: string;
   topSlot?: ReactNode;
@@ -39,6 +44,11 @@ export default function FlowBottomCta({
   helperText,
   helperTextClassName,
   onAction,
+  secondaryButtonClassName,
+  secondaryButtonDisabled = false,
+  secondaryButtonLabel,
+  secondaryButtonVisualDisabled = false,
+  onSecondaryButtonAction,
   secondaryAction,
   secondaryActionClassName,
   topSlot,
@@ -74,18 +84,49 @@ export default function FlowBottomCta({
         >
           {resolvedTopSlot}
 
-          <PrimaryButton
-            className={actionClassName}
-            disabled={actionDisabled}
-            fullWidth={actionFullWidth}
-            onClick={onAction}
-            size={actionSize}
-            style={actionStyle}
-            type={actionType}
-            visualDisabled={actionVisualDisabled}
-          >
-            {actionLabel}
-          </PrimaryButton>
+          {secondaryButtonLabel && onSecondaryButtonAction ? (
+            <div className="flex w-full gap-2">
+              <PrimaryButton
+                className={cn(
+                  'border border-[var(--tb-color-border-strong)] bg-transparent text-[var(--tb-color-text-tertiary)] shadow-none',
+                  secondaryButtonClassName,
+                )}
+                disabled={secondaryButtonDisabled}
+                fullWidth
+                onClick={onSecondaryButtonAction}
+                size={actionSize}
+                type="button"
+                visualDisabled={secondaryButtonVisualDisabled}
+              >
+                {secondaryButtonLabel}
+              </PrimaryButton>
+              <PrimaryButton
+                className={actionClassName}
+                disabled={actionDisabled}
+                fullWidth
+                onClick={onAction}
+                size={actionSize}
+                style={actionStyle}
+                type={actionType}
+                visualDisabled={actionVisualDisabled}
+              >
+                {actionLabel}
+              </PrimaryButton>
+            </div>
+          ) : (
+            <PrimaryButton
+              className={actionClassName}
+              disabled={actionDisabled}
+              fullWidth={actionFullWidth}
+              onClick={onAction}
+              size={actionSize}
+              style={actionStyle}
+              type={actionType}
+              visualDisabled={actionVisualDisabled}
+            >
+              {actionLabel}
+            </PrimaryButton>
+          )}
 
           {secondaryAction ? (
             <div className={cn('w-full', secondaryActionClassName)}>{secondaryAction}</div>

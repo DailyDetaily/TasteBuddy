@@ -97,6 +97,39 @@ export default function AnchoredFlowCtaPreview({
             />
           </div>
         </div>
+
+        <div className="overflow-hidden rounded-[28px] border border-[var(--tb-color-border-default)] bg-white">
+          <div className="relative min-h-[240px] bg-[var(--tb-color-surface-base)]">
+            <div className="px-4 pt-6 pb-[160px]">
+              <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
+                Split CTA state
+              </p>
+              <p className="mt-1 max-w-[260px] text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                Existing context can reuse saved details or reopen the context form
+                without leaving the anchored footer pattern.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <PreviewEyebrow file="src/components/system/FlowBottomCta.tsx" label="FlowBottomCta.tsx" />
+                <PreviewEyebrow file="src/pages/TasteSurveyIntroScreen.tsx" label="TasteSurveyIntroScreen.tsx" />
+              </div>
+            </div>
+            <FlowBottomCta
+              actionLabel="다시 작성"
+              contentClassName="gap-0"
+              onAction={() => undefined}
+              secondaryButtonLabel="건너뛰기"
+              onSecondaryButtonAction={() => undefined}
+              topSlot={
+                <StepIndicator
+                  activeColor={indicatorActiveColor}
+                  className="mb-8"
+                  currentIndex={0}
+                  total={3}
+                />
+              }
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -14,12 +14,15 @@ import {
   LegacyHomeTasteProfileDetailScreen,
 } from '../imports/Home';
 import PalateSignatureHeroCard from '../components/analysis/PalateSignatureHeroCard';
-import RealMenuRecommendationCard from '../components/analysis/RealMenuRecommendationCard';
+import RealMenuRecommendationCard, {
+  type RealMenuRecommendationCardData,
+} from '../components/analysis/RealMenuRecommendationCard';
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import SectionCard from '../components/SectionCard';
 import InterpretationDetailDrawer, {
   type InterpretationDetailContent,
 } from '../components/system/InterpretationDetailDrawer';
+import CardDetailLabel from '../components/system/CardDetailLabel';
 import InterpretationCard from '../components/system/InterpretationCard';
 import PageSection from '../components/system/PageSection';
 import ProfileConfidenceCard, {
@@ -117,21 +120,11 @@ type ProfileChangeTrendPoint = {
   지방맛: number;
 };
 
-type RealMenuRecommendation = {
-  chef: string;
-  courseLabel: string;
-  fitScore: number;
-  id: string;
-  ingredients: string[];
-  reason: string;
-  restaurant: string;
-  subtitle: string;
-  tasteLabel: string;
-  title: string;
-};
+type RealMenuRecommendation = RealMenuRecommendationCardData;
 
 type AnalysisInsight = InterpretationDetailContent & {
   id: string;
+  supportingText: string;
 };
 
 type TrendRangeId = (typeof TREND_RANGE_OPTIONS)[number]['id'];
@@ -443,25 +436,31 @@ function buildInsights(
     {
       accentColor: getTasteColor(strongestTaste.label),
       description: `${strongestTaste.label}에 빠르게 반응하는 프로필이에요`,
+      eyebrow: '먼저 읽히는 맛',
       id: 'strongest-taste',
       meaning: `${strongestTaste.label} 축이 메뉴의 첫인상을 비교적 빠르게 결정할 가능성이 커요. 같은 자극도 이 맛이 앞에서 읽히면 전체 밸런스를 더 또렷하게 느낄 수 있어요.`,
       nextStep: `다음 다이닝 해석에서는 ${strongestTaste.label}이 과하게 겹치지 않도록 흐름을 먼저 보고, 이 축이 자연스럽게 살아나는 메뉴를 우선 추천해요.`,
+      supportingText: `다음 추천에서는 ${strongestTaste.label}이 자연스럽게 살아나는 메뉴를 먼저 볼게요.`,
       title: `${strongestTaste.label} 반응이 먼저 올라와요`,
     },
     {
       accentColor: getTasteColor(biggestDeltaTaste.label),
       description: `${biggestDeltaTaste.label} 변화가 눈에 띄게 나타났어요. 다음 다이닝에 반영됩니다`,
+      eyebrow: '최근 변화 신호',
       id: 'biggest-delta',
       meaning: `이번에는 ${biggestDeltaTaste.label} 축의 체감이 평소보다 더 크게 움직였어요. 고정된 판단이라기보다, 현재 컨디션까지 함께 읽어야 하는 신호에 가까워요.`,
       nextStep: `다음 다이닝 해석에는 ${biggestDeltaTaste.label} 변화를 먼저 반영하고, 식후 피드백이 쌓이면 이 변화가 일시적인지 반복 패턴인지 더 정확히 구분해요.`,
+      supportingText: `이번 변화는 다음 다이닝 개인화에 우선 반영돼요.`,
       title: `${biggestDeltaTaste.label} 변화가 이번 측정에서 두드러져요`,
     },
     {
       accentColor: getTasteColor(weakestTaste.label),
       description: `${weakestTaste.label}은 천천히 쌓이는 구성이 더 편안할 수 있어요`,
+      eyebrow: '편안한 밀도',
       id: 'weakest-taste',
       meaning: `${weakestTaste.label} 자극이 한 번에 강하게 들어오기보다, 코스 안에서 부드럽게 이어질 때 전체 경험이 더 안정적으로 느껴질 가능성이 있어요.`,
       nextStep: `예약 개인화와 셰프 가이드에는 ${weakestTaste.label} 밀도를 한 번에 몰지 않고, 더 완만한 흐름에서 읽히도록 참고 포인트로 반영해요.`,
+      supportingText: `코스 안에서는 한 번에 강하게 밀기보다 완만한 흐름으로 참고해요.`,
       title: `${weakestTaste.label}은 천천히 쌓이는 구성이 편안할 수 있어요`,
     },
     {
@@ -469,6 +468,7 @@ function buildInsights(
       description: totalSensitivity > avgSensitivity
         ? '전체적으로 평균보다 민감한 프로필이에요'
         : '전체적으로 평균에 가까운 균형 잡힌 프로필이에요',
+      eyebrow: '전체 프로필',
       id: 'overall-profile',
       meaning: totalSensitivity > avgSensitivity
         ? '맛의 대비와 전환이 비교적 또렷하게 느껴질 수 있어, 작은 차이도 식사 인상에 영향을 줄 가능성이 커요.'
@@ -476,6 +476,9 @@ function buildInsights(
       nextStep: totalSensitivity > avgSensitivity
         ? '다음 다이닝 추천에서는 자극을 겹치기보다, 여백 있는 전개와 균형을 우선 검토해요.'
         : '다음 다이닝 추천에서는 한 가지 자극을 과하게 밀기보다, 코스 전체의 연결감과 균형을 중심으로 맞춰가요.',
+      supportingText: totalSensitivity > avgSensitivity
+        ? '다음 추천은 자극을 겹치기보다 여백과 균형을 먼저 봐요.'
+        : '다음 추천은 코스 전체의 연결감과 균형을 중심으로 맞춰가요.',
       title: totalSensitivity > avgSensitivity
         ? '전반적으로 맛 변화를 빠르게 읽는 편이에요'
         : '전반적으로 균형 있게 읽는 프로필이에요',
@@ -493,6 +496,46 @@ function formatTrendDateLabel(value: string) {
   const day = parts.find((part) => part.type === 'day')?.value ?? '00';
 
   return `${month}.${day}`;
+}
+
+function formatMeasurementDayKey(value: string) {
+  const date = new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatRadarMeasurementLabel(
+  snapshot: TasteMeasurementSnapshot,
+  timeline: TasteMeasurementSnapshot[],
+  latestSnapshot: TasteMeasurementSnapshot,
+) {
+  if (snapshot.measuredAt === latestSnapshot.measuredAt) {
+    return '최근 측정';
+  }
+
+  const dayKey = formatMeasurementDayKey(snapshot.measuredAt);
+  const hasSameDayMeasurement = timeline.some(
+    (item) => item.measuredAt !== snapshot.measuredAt
+      && formatMeasurementDayKey(item.measuredAt) === dayKey,
+  );
+
+  if (!hasSameDayMeasurement) {
+    return formatTrendDateLabel(snapshot.measuredAt);
+  }
+
+  const parts = new Intl.DateTimeFormat('ko-KR', {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).formatToParts(new Date(snapshot.measuredAt));
+  const dayPeriod = parts.find((part) => part.type === 'dayPeriod')?.value ?? '';
+  const hour = parts.find((part) => part.type === 'hour')?.value ?? '';
+  const minute = parts.find((part) => part.type === 'minute')?.value ?? '';
+  const timeLabel = [dayPeriod, `${hour}:${minute}`].filter(Boolean).join(' ');
+
+  return `${formatTrendDateLabel(snapshot.measuredAt)} ${timeLabel}`;
 }
 
 function startOfDay(value: Date) {
@@ -1411,6 +1454,7 @@ interface AnalysisPageProps {
   onStartMeasurement: () => void;
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
+  onOpenRestaurantDetail?: (menu: RealMenuRecommendationCardData) => void;
   hasUnreadNotifications?: boolean;
 }
 
@@ -1420,13 +1464,14 @@ export default function AnalysisPage({
   onStartMeasurement,
   onOpenNotifications,
   onOpenMenu,
+  onOpenRestaurantDetail,
   hasUnreadNotifications,
 }: AnalysisPageProps) {
-  const period = '이번 측정';
   const initialTimeline = [measurementSnapshot];
   const initialTrendDataBounds = getTrendDataBounds(initialTimeline, measurementSnapshot);
   const initialTrendNavigationBounds = getTrendNavigationBounds(initialTrendDataBounds);
   const [measurementTimeline, setMeasurementTimeline] = useState<TasteMeasurementSnapshot[]>(initialTimeline);
+  const [selectedRadarMeasurementIndex, setSelectedRadarMeasurementIndex] = useState(0);
   const [reservations, setReservations] = useState<ReservationRecord[]>(RESERVATION_CATALOG);
   const [feedbackByReservationId, setFeedbackByReservationId] = useState<Record<number, DiningFeedbackDraft>>({});
   const [selectedTrendRange, setSelectedTrendRange] = useState<TrendRangeId>('all');
@@ -1437,6 +1482,7 @@ export default function AnalysisPage({
   const [contentDishes, setContentDishes] = useState<RestaurantContentDish[]>([]);
   const [selectedInsight, setSelectedInsight] = useState<AnalysisInsight | null>(null);
   const [isInsightDrawerOpen, setIsInsightDrawerOpen] = useState(false);
+  const [showAllInsights, setShowAllInsights] = useState(false);
   const [activeLegacyDetail, setActiveLegacyDetail] = useState<'taste-profile' | 'special-note' | null>(null);
   const [trendDragOffsetX, setTrendDragOffsetX] = useState(0);
   const [trendMotionOffsetPercent, setTrendMotionOffsetPercent] = useState(0);
@@ -1485,6 +1531,19 @@ export default function AnalysisPage({
   const activeTrendRange = selectedTrendRange;
   const filteredMeasurements = filterMeasurementsByWindow(measurementTimeline, trendViewWindow);
   const trendData = buildProfileChangeTrendData(filteredMeasurements, trendViewWindow, activeTrendRange);
+  const selectedRadarMeasurement =
+    measurementTimeline[selectedRadarMeasurementIndex]
+    ?? measurementTimeline[measurementTimeline.length - 1]
+    ?? measurementSnapshot;
+  const selectedRadarData = getTasteMeasurementEntries(selectedRadarMeasurement);
+  const selectedRadarTotalSensitivity = getAverageMeasurementMm(selectedRadarMeasurement);
+  const selectedRadarPeriod = formatRadarMeasurementLabel(
+    selectedRadarMeasurement,
+    measurementTimeline,
+    measurementSnapshot,
+  );
+  const canShowPreviousRadarMeasurement = selectedRadarMeasurementIndex > 0;
+  const canShowNextRadarMeasurement = selectedRadarMeasurementIndex < measurementTimeline.length - 1;
   const profileConfidenceStage = deriveProfileConfidenceStage(measurementTimeline.length);
   const legacyReservationHint = buildHomeReservationHint(reservations);
   const legacyTasteProfile = buildHomeTasteProfileFromMeasurements(measurementTimeline);
@@ -1546,6 +1605,8 @@ export default function AnalysisPage({
     setSelectedInsight(insight);
     setIsInsightDrawerOpen(true);
   };
+  const visibleInsights = showAllInsights ? insights : insights.slice(0, 1);
+  const hasHiddenInsights = insights.length > visibleInsights.length;
 
   if (activeLegacyDetail === 'taste-profile') {
     return (
@@ -1678,8 +1739,10 @@ export default function AnalysisPage({
       }
 
       const mergedMeasurements = mergeMeasurementSnapshots(recentMeasurements, measurementSnapshot);
+      const nextMeasurements = mergedMeasurements.length > 0 ? mergedMeasurements : [measurementSnapshot];
 
-      setMeasurementTimeline(mergedMeasurements.length > 0 ? mergedMeasurements : [measurementSnapshot]);
+      setMeasurementTimeline(nextMeasurements);
+      setSelectedRadarMeasurementIndex(Math.max(0, nextMeasurements.length - 1));
       setContentDishes(contentCatalog.dishes);
       setReservations(
         reservationPageData.reservations.length > 0
@@ -1719,6 +1782,18 @@ export default function AnalysisPage({
       }
 
       return nextIndex;
+    });
+  };
+
+  const handleMoveRadarMeasurement = (direction: -1 | 1) => {
+    setSelectedRadarMeasurementIndex((currentIndex) => {
+      const timelineLength = measurementTimeline.length;
+
+      if (timelineLength <= 1) {
+        return currentIndex;
+      }
+
+      return Math.max(0, Math.min(timelineLength - 1, currentIndex + direction));
     });
   };
 
@@ -1880,6 +1955,52 @@ export default function AnalysisPage({
               weakestTasteLabel={getWeakestTasteMeasurement(measurementSnapshot).label}
             />
 
+            <SectionCard hoverEffect={false}>
+              <div className="flex items-center justify-between w-full">
+                <button
+                  type="button"
+                  aria-label="이전 측정 그래프 보기"
+                  disabled={!canShowPreviousRadarMeasurement}
+                  className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-muted)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-30"
+                  onClick={() => handleMoveRadarMeasurement(-1)}
+                >
+                  <ChevronLeftIcon size={ICON_TOKENS.size.lg} className="-translate-x-px text-[var(--tb-color-icon-primary)]" />
+                </button>
+                <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                  {selectedRadarPeriod}
+                </span>
+                <button
+                  type="button"
+                  aria-label="다음 측정 그래프 보기"
+                  disabled={!canShowNextRadarMeasurement}
+                  className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-muted)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-30"
+                  onClick={() => handleMoveRadarMeasurement(1)}
+                >
+                  <ChevronRightIcon size={ICON_TOKENS.size.lg} className="translate-x-px text-[var(--tb-color-icon-primary)]" />
+                </button>
+              </div>
+
+              <div className="flex w-full flex-col items-center animate-slideUp">
+                <HexRadarChart myTasteData={selectedRadarData} shouldAnimate={isActive} />
+
+                <div className="mt-2 flex items-end gap-0">
+                  <div className="flex flex-col items-center gap-[4px]">
+                    <span className="text-[10px] text-[var(--tb-color-text-hint)]">나의 반응</span>
+                    <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
+                      {selectedRadarTotalSensitivity > avgSensitivity + 0.5 ? '민감' : selectedRadarTotalSensitivity < avgSensitivity - 0.5 ? '부드러움' : '평균'}
+                    </span>
+                  </div>
+                  <span className="mx-[4px] flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-[var(--tb-color-text-disabled)] text-[10px] text-[var(--tb-color-text-inverse)]">→</span>
+                  <div className="flex flex-col items-center gap-[4px]">
+                    <span className="text-[10px] text-[var(--tb-color-text-hint)]">기준 반응</span>
+                    <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
+                      평균
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </SectionCard>
+
             <TasteMeasurementMiniCta
               accentTaste={
                 needsMeasurementRefresh
@@ -1899,38 +2020,6 @@ export default function AnalysisPage({
               padding={needsMeasurementRefresh ? 'default' : 'compact'}
               tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
             />
-
-            <SectionCard hoverEffect={false}>
-              <div className="flex items-center justify-between w-full">
-                <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-muted)]">
-                  <ChevronLeftIcon size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
-                </button>
-                <span className="text-[15px] font-semibold text-[var(--tb-color-text-primary)]">{period}</span>
-                <button className="rounded-full p-1 transition-colors hover:bg-[var(--tb-color-surface-muted)]">
-                  <ChevronRightIcon size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
-                </button>
-              </div>
-
-              <div className="flex w-full flex-col items-center animate-slideUp">
-                <HexRadarChart myTasteData={myTasteData} shouldAnimate={isActive} />
-
-                <div className="mt-2 flex items-end gap-0">
-                  <div className="flex flex-col items-center gap-[4px]">
-                    <span className="text-[10px] text-[var(--tb-color-text-hint)]">나의 반응</span>
-                    <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
-                      {totalSensitivity > avgSensitivity + 0.5 ? '민감' : totalSensitivity < avgSensitivity - 0.5 ? '부드러움' : '평균'}
-                    </span>
-                  </div>
-                  <span className="mx-[4px] flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-[var(--tb-color-text-disabled)] text-[10px] text-[var(--tb-color-text-inverse)]">→</span>
-                  <div className="flex flex-col items-center gap-[4px]">
-                    <span className="text-[10px] text-[var(--tb-color-text-hint)]">기준 반응</span>
-                    <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
-                      평균
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </SectionCard>
 
             <LegacyHomeTasteProfileCard
               cardData={legacyTasteProfileCard}
@@ -2269,22 +2358,47 @@ export default function AnalysisPage({
             <PageSection title="지금 프로필에 맞는 실제 메뉴" titleSize="md">
               <div className="flex flex-col gap-3">
                 {realMenuRecommendations.map((menu) => (
-                  <RealMenuRecommendationCard key={menu.id} menu={menu} />
+                  <RealMenuRecommendationCard
+                    key={menu.id}
+                    menu={menu}
+                    onOpenRestaurantDetail={onOpenRestaurantDetail}
+                  />
                 ))}
               </div>
             </PageSection>
           ) : null}
 
           {/* 인사이트 */}
-          <PageSection title="인사이트" titleSize="md" className="pb-6">
+          <PageSection
+            title={(
+              <div className="flex w-full items-center justify-between gap-3">
+                <span>인사이트</span>
+                {hasHiddenInsights ? (
+                  <button
+                    type="button"
+                    className="rounded-full"
+                    onClick={() => setShowAllInsights(true)}
+                    aria-label="인사이트 전체보기"
+                  >
+                    <CardDetailLabel label="전체보기" />
+                  </button>
+                ) : null}
+              </div>
+            )}
+            titleAs="div"
+            titleSize="md"
+            className="pb-6"
+          >
             <div className="flex flex-col gap-3">
-              {insights.map((item) => (
+              {visibleInsights.map((item) => (
                 <InterpretationCard
                   key={item.id}
                   accentColor={item.accentColor}
                   detailLabel="해석 보기"
                   description={item.description}
+                  eyebrow={item.eyebrow}
                   onExpand={() => handleOpenInsightDetail(item)}
+                  supportingText={item.supportingText}
                 />
               ))}
             </div>

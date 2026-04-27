@@ -136,10 +136,12 @@ function FlowStepCtaFilePreview() {
         </p>
       </div>
       <FlowStepCta
-        actionLabel="다음"
+        actionLabel="다시 작성"
         currentIndex={1}
         indicatorActiveColor={TASTE_TOKENS.sour.palette.main}
         onAction={() => undefined}
+        secondaryButtonLabel="건너뛰기"
+        onSecondaryButtonAction={() => undefined}
         total={4}
       />
     </div>
@@ -1454,7 +1456,7 @@ const FILE_PREVIEW_DEFINITIONS: Record<string, FilePreviewDefinition> = {
     render: () => <ProfilePageFilePreview />,
   },
   'src/pages/ImproveAccuracyScreen.tsx': {
-    description: 'The optional precision upgrade screen for Teastick-assisted profile refinement.',
+    description: 'The optional precision upgrade screen for Tastick-assisted profile refinement.',
     kind: 'mobile-screen',
     title: 'ImproveAccuracyScreen.tsx',
     render: () => <ImproveAccuracyScreenFilePreview />,

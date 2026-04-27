@@ -46,22 +46,22 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className="flex flex-col items-center justify-center gap-[2px] py-[6px] px-4 relative group transition-all duration-200 active:scale-[0.92]"
+              className="flex flex-col items-center justify-center gap-[2px] py-[6px] px-4 relative"
             >
-              <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}>
+              <div className="relative">
                 <Icon
                   size={ICON_TOKENS.size.lg}
-                  className={`transition-colors duration-300 ${isActive
+                  className={isActive
                     ? 'text-[var(--tb-color-text-primary)]'
-                    : 'text-[var(--tb-color-icon-muted)] group-hover:text-[var(--tb-color-icon-hover)]'
-                    }`}
+                    : 'text-[var(--tb-color-icon-muted)]'
+                  }
                   strokeWidth={isActive ? ICON_TOKENS.strokeWidth.medium : ICON_TOKENS.strokeWidth.regular}
                 />
               </div>
               <span
-                className={`text-[10px] tracking-[0.14px] transition-colors duration-300 ${isActive
+                className={`text-[10px] tracking-[0.14px] ${isActive
                   ? 'font-semibold text-[var(--tb-color-text-primary)]'
-                  : 'font-medium text-[var(--tb-color-icon-muted)] group-hover:text-[var(--tb-color-icon-hover)]'
+                  : 'font-medium text-[var(--tb-color-icon-muted)]'
                   }`}
               >
                 {tab.label}

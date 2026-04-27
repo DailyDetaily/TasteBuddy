@@ -16,6 +16,7 @@ import {
 import React from 'react';
 
 import type { AppMenuSupportPanel } from '../components/AppMenuDrawer';
+import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, className, ...props }: any) => (
@@ -41,7 +42,6 @@ const Calendar = wrapIcon(CalendarIcon);
 const Star = wrapIcon(StarIcon);
 const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 
-import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import SectionCard from '../components/SectionCard';
 import ChefAvatar from '../components/system/ChefAvatar';
 import OutlineBadge from '../components/system/OutlineBadge';
@@ -54,6 +54,7 @@ import {
   formatMeasurementDate,
   formatMeasurementValue,
   getAverageMeasurementMm,
+  getStrongestTasteMeasurement,
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
   getTasteProfileBadge,
@@ -74,7 +75,7 @@ interface ProfileStat {
   value: string;
 }
 
-interface FavoriteChef {
+export interface FavoriteChef {
   image: string | null;
   matchRate: number;
   name: string;
@@ -190,6 +191,7 @@ interface ProfilePageProps {
   onOpenSupportPanel?: (panel: AppMenuSupportPanel) => void;
   onStartMeasurement: () => void;
   onNavigateToReservation?: (chefName: string) => void;
+  onOpenRestaurantDetail?: (chef: FavoriteChef) => void;
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
   hasUnreadNotifications?: boolean;
@@ -201,6 +203,7 @@ export default function ProfilePage({
   onOpenSupportPanel,
   onStartMeasurement,
   onNavigateToReservation,
+  onOpenRestaurantDetail,
   onOpenNotifications,
   onOpenMenu,
   hasUnreadNotifications,
@@ -224,6 +227,7 @@ export default function ProfilePage({
   const tasteProfileBadge = getTasteProfileBadge(averageMeasurement);
   const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
+  const remeasurementAccentTaste = getStrongestTasteMeasurement(measurementSnapshot).label;
   const [favoriteChefs, setFavoriteChefs] = useState<FavoriteChef[]>([]);
   const [stats, setStats] = useState<ProfileStat[]>(() => deriveProfileStats([], 0, null));
 
@@ -312,7 +316,7 @@ export default function ProfilePage({
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">테이스틱</span>
-                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">Teastick Pro</span>
+                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">Tastick Pro</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -336,26 +340,27 @@ export default function ProfilePage({
             </SectionCard>
 
             <TasteMeasurementMiniCta
+              accentTaste={remeasurementAccentTaste}
               title={
                 needsMeasurementRefresh
                   ? isBroadStarterProfile
-                    ? '스타터 프로필을 다시 점검해보세요'
-                    : '미각 재측정이 필요해 보여요'
-                  : isBroadStarterProfile
-                    ? '프로필을 한 번 더 점검할 수 있어요'
-                    : '프로필을 한 번 더 점검할 수 있어요'
+                    ? '스타터 프로필을 더 정교하게 만들 수 있어요'
+                    : '미각 갱신 추천'
+                  : '현재 프로필 반영 완료'
               }
+              actionFullWidth={!needsMeasurementRefresh}
+              padding={needsMeasurementRefresh ? 'default' : 'compact'}
               description={
                 needsMeasurementRefresh
                   ? isBroadStarterProfile
-                    ? `${measurementAgeLabel} 질문 기반 시작 프로필이에요. 다시 점검하거나 식사 기록이 쌓이면 추천과 매장 전달 포인트가 더 자연스러워져요.`
-                    : `${measurementAgeLabel} 상태예요. 최신 데이터로 갱신하면 추천과 보정 정확도가 더 좋아져요.`
+                    ? `${measurementAgeLabel} 질문 기반 스타터 프로필이에요. 다시 점검하거나 식사 기록이 쌓이면 메뉴 추천과 매장 전달 포인트가 더 자연스러워집니다.`
+                    : `${measurementAgeLabel} 데이터예요. 예약 전에 갱신해두면 셰프용 캘리브레이션 가이드가 더 정밀해집니다.`
                   : isBroadStarterProfile
-                    ? '입맛이 달라졌다면 지금 다시 점검해서 시작 프로필을 더 자연스럽게 유지할 수 있어요.'
-                    : '입맛이 달라졌다면 지금 다시 측정해서 내 프로필을 더 정확하게 유지할 수 있어요.'
+                    ? '질문 기반 시작 프로필이 반영되어 있어요. 식사 기록이 쌓일수록 더 정교해집니다.'
+                    : '가장 최근 입맛 상태가 반영되어 있습니다. 다시 측정할 수도 있어요.'
               }
               meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
-              actionLabel={needsMeasurementRefresh ? '재측정' : '다시 측정'}
+              actionLabel={needsMeasurementRefresh ? '프로필 업데이트' : '다시 측정'}
               onAction={onStartMeasurement}
               tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
             />
@@ -440,7 +445,17 @@ export default function ProfilePage({
           <PageSection title="즐겨찾기 셰프">
             <div className="flex flex-col gap-3">
               {favoriteChefs.map((chef, index) => (
-                <SectionCard key={index} onClick={() => onNavigateToReservation?.(chef.name)}>
+                <SectionCard
+                  key={index}
+                  onClick={() => {
+                    if (onOpenRestaurantDetail) {
+                      onOpenRestaurantDetail(chef);
+                      return;
+                    }
+
+                    onNavigateToReservation?.(chef.name);
+                  }}
+                >
                   <div className="flex items-center gap-3 w-full">
                     <ChefAvatar
                       alt={chef.name}

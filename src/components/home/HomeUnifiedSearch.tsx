@@ -1,7 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import {
   Bookmark,
-  BookmarkCheck,
   ChefHat,
   CircleCheck,
   CirclePlus,
@@ -10,6 +9,7 @@ import {
   Sparkles,
   Store,
   Utensils,
+  X,
 } from 'lucide-react';
 
 import ChefAvatar from '../system/ChefAvatar';
@@ -24,6 +24,11 @@ import {
 } from '../../lib/tasteBuddySupabase';
 import { resolveUsableImagePath } from '../../lib/chefMatching';
 import { getChefImageByName } from './HomeCards';
+import {
+  RESTAURANT_BOOKMARKS_CHANGED_EVENT,
+  getRestaurantBookmarkKey,
+  isRestaurantBookmarked,
+} from '../restaurant/RestaurantBookmarkSheet';
 
 const HOME_RECENT_SEARCH_STORAGE_KEY = 'tastebuddy-home-recent-searches-v1';
 const MAX_RECENT_SEARCHES = 5;
@@ -36,6 +41,7 @@ const APP_LUCIDE_ICON_SIZE_M = ICON_TOKENS.size.md;
 const SEARCH_BAR_ICON_SIZE = ICON_TOKENS.size.md;
 const SEARCH_RESULT_ACTION_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const SEARCH_RESULT_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
+const SEARCH_RESULT_ACTIVE_RECORD_ICON_SIZE = 24;
 const SEARCH_OVERLAY_TOP_OFFSET =
   'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const SEARCH_FOCUS_CARD_CLASS_NAME =
@@ -69,7 +75,7 @@ const SEARCH_SUGGESTION_ITEMS_CLASS_NAME = 'flex flex-wrap gap-2';
 
 type SearchResultType = 'restaurant' | 'chef' | 'menu';
 
-type HomeSearchResult = {
+export type HomeSearchResult = {
   chef: string;
   id: string;
   image: string | null;
@@ -91,7 +97,10 @@ type SearchGroups = {
 
 interface HomeUnifiedSearchProps {
   catalog: RestaurantContentCatalog;
+  onOpenRestaurantDetail?: (result: HomeSearchResult) => void;
+  openTrigger?: number;
   reservations: ReservationRecord[];
+  showTrigger?: boolean;
 }
 
 function normalizeSearchValue(value: string) {
@@ -521,7 +530,7 @@ function SearchFocusCard({ result }: { result: HomeSearchResult }) {
 }
 
 function SearchSection({
-  bookmarkedResultIds,
+  bookmarkedRestaurantKeys,
   onBookmarkToggle,
   onRecordToggle,
   recordedResultIds,
@@ -530,8 +539,8 @@ function SearchSection({
   selectedResultId,
   onSelect,
 }: {
-  bookmarkedResultIds: string[];
-  onBookmarkToggle: (resultId: string) => void;
+  bookmarkedRestaurantKeys: string[];
+  onBookmarkToggle: (result: HomeSearchResult) => void;
   onRecordToggle: (resultId: string) => void;
   onSelect: (result: HomeSearchResult) => void;
   recordedResultIds: string[];
@@ -551,9 +560,12 @@ function SearchSection({
         {results.map((result) => {
           const isSelected = selectedResultId === result.id;
           const isRecorded = recordedResultIds.includes(result.id);
-          const isBookmarked = bookmarkedResultIds.includes(result.id);
+          const restaurantKey = getRestaurantBookmarkKey(result.restaurant);
+          const isBookmarked =
+            bookmarkedRestaurantKeys.includes(restaurantKey) ||
+            isRestaurantBookmarked(result.restaurant);
           const RecordIcon = isRecorded ? CircleCheck : CirclePlus;
-          const BookmarkIcon = isBookmarked ? BookmarkCheck : Bookmark;
+          const BookmarkIcon = Bookmark;
 
           return (
             <li
@@ -610,7 +622,7 @@ function SearchSection({
                         className={cn(
                           'flex items-center justify-center rounded-full transition-colors',
                           isRecorded
-                            ? 'text-[var(--tb-color-text-primary)]'
+                            ? 'text-[var(--tb-color-text-secondary)] [&>svg>circle]:fill-current [&>svg>path]:stroke-white'
                             : 'text-[var(--tb-color-icon-muted)] hover:text-[var(--tb-color-text-primary)]',
                         )}
                         style={{
@@ -618,20 +630,27 @@ function SearchSection({
                           height: SEARCH_RESULT_ACTION_BUTTON_SIZE,
                         }}
                       >
-                        <RecordIcon size={SEARCH_RESULT_ACTION_ICON_SIZE} />
+                        <RecordIcon
+                          strokeWidth={1.8}
+                          size={
+                            isRecorded
+                              ? SEARCH_RESULT_ACTIVE_RECORD_ICON_SIZE
+                              : SEARCH_RESULT_ACTION_ICON_SIZE
+                          }
+                        />
                       </button>
                       <button
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
-                          onBookmarkToggle(result.id);
+                          onBookmarkToggle(result);
                         }}
                         aria-label="나중에 갈 레스토랑에 추가"
                         title="나중에 갈 레스토랑에 추가"
                         className={cn(
                           'flex items-center justify-center rounded-full transition-colors',
                           isBookmarked
-                            ? 'text-[var(--tb-color-text-primary)]'
+                            ? 'text-[var(--tb-color-text-secondary)] [&>svg]:fill-current'
                             : 'text-[var(--tb-color-icon-muted)] hover:text-[var(--tb-color-text-primary)]',
                         )}
                         style={{
@@ -639,7 +658,7 @@ function SearchSection({
                           height: SEARCH_RESULT_ACTION_BUTTON_SIZE,
                         }}
                       >
-                        <BookmarkIcon size={SEARCH_RESULT_ACTION_ICON_SIZE} />
+                        <BookmarkIcon size={SEARCH_RESULT_ACTION_ICON_SIZE} strokeWidth={1.8} />
                       </button>
                     </div>
                   </div>
@@ -655,15 +674,20 @@ function SearchSection({
 
 export default function HomeUnifiedSearch({
   catalog,
+  onOpenRestaurantDetail,
+  openTrigger,
   reservations,
+  showTrigger = true,
 }: HomeUnifiedSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastOpenTriggerRef = useRef(openTrigger);
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedResult, setSelectedResult] = useState<HomeSearchResult | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>(loadRecentSearches);
   const [recordedResultIds, setRecordedResultIds] = useState<string[]>([]);
-  const [bookmarkedResultIds, setBookmarkedResultIds] = useState<string[]>([]);
+  const [bookmarkedRestaurantKeys, setBookmarkedRestaurantKeys] = useState<string[]>([]);
+  const [, setBookmarkSyncIndex] = useState(0);
 
   const restaurantResults = buildRestaurantResults(catalog, reservations);
   const chefResults = buildChefResults(catalog, reservations);
@@ -712,8 +736,20 @@ export default function HomeUnifiedSearch({
   };
 
   const handleResultSelect = (result: HomeSearchResult) => {
-    setSelectedResult(result);
     updateRecentSearches(result.label);
+    if (onOpenRestaurantDetail) {
+      handleClose();
+      onOpenRestaurantDetail(result);
+      return;
+    }
+
+    setSelectedResult(result);
+  };
+
+  const handleClearQuery = () => {
+    setQuery('');
+    setSelectedResult(null);
+    requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   const toggleRecordedResult = (resultId: string) => {
@@ -724,11 +760,13 @@ export default function HomeUnifiedSearch({
     );
   };
 
-  const toggleBookmarkedResult = (resultId: string) => {
-    setBookmarkedResultIds((current) =>
-      current.includes(resultId)
-        ? current.filter((item) => item !== resultId)
-        : [...current, resultId],
+  const toggleBookmarkedResult = (result: HomeSearchResult) => {
+    const restaurantKey = getRestaurantBookmarkKey(result.restaurant);
+
+    setBookmarkedRestaurantKeys((current) =>
+      current.includes(restaurantKey)
+        ? current.filter((item) => item !== restaurantKey)
+        : [...current, restaurantKey],
     );
   };
 
@@ -748,6 +786,15 @@ export default function HomeUnifiedSearch({
 
     updateRecentSearches(nextQuery);
   };
+
+  useEffect(() => {
+    if (openTrigger === undefined || openTrigger === lastOpenTriggerRef.current) {
+      return;
+    }
+
+    lastOpenTriggerRef.current = openTrigger;
+    handleOpen();
+  }, [openTrigger]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -789,28 +836,44 @@ export default function HomeUnifiedSearch({
     setSelectedResult(null);
   }, [query]);
 
+  useEffect(() => {
+    const syncBookmarkState = () => {
+      setBookmarkSyncIndex((current) => current + 1);
+    };
+
+    window.addEventListener(RESTAURANT_BOOKMARKS_CHANGED_EVENT, syncBookmarkState);
+    window.addEventListener('storage', syncBookmarkState);
+
+    return () => {
+      window.removeEventListener(RESTAURANT_BOOKMARKS_CHANGED_EVENT, syncBookmarkState);
+      window.removeEventListener('storage', syncBookmarkState);
+    };
+  }, []);
+
   return (
     <>
-      <div className="flex w-full items-center gap-2">
-        <button
-          type="button"
-          onClick={handleOpen}
-          aria-label="통합 검색 열기"
-          className={SEARCH_BAR_FIELD_CLASS_NAME}
-        >
-          <span className="truncate text-[13px] font-medium text-[#5D6672]">
-            레스토랑, 메뉴, 셰프 검색
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={handleOpen}
-          aria-label="통합 검색"
-          className={SEARCH_BAR_ICON_BUTTON_CLASS_NAME}
-        >
-          <Search size={SEARCH_BAR_ICON_SIZE} />
-        </button>
-      </div>
+      {showTrigger ? (
+        <div className="flex w-full items-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpen}
+            aria-label="통합 검색 열기"
+            className={SEARCH_BAR_FIELD_CLASS_NAME}
+          >
+            <span className="truncate text-[13px] font-medium text-[#5D6672]">
+              레스토랑, 메뉴, 셰프 검색
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={handleOpen}
+            aria-label="통합 검색"
+            className={SEARCH_BAR_ICON_BUTTON_CLASS_NAME}
+          >
+            <Search size={SEARCH_BAR_ICON_SIZE} />
+          </button>
+        </div>
+      ) : null}
 
       {isOpen ? (
         <>
@@ -828,7 +891,7 @@ export default function HomeUnifiedSearch({
                   <div
                     className={cn(
                       SEARCH_BAR_FIELD_CLASS_NAME,
-                      'hover:bg-[var(--tb-color-surface-muted)]',
+                      'relative hover:bg-[var(--tb-color-surface-muted)]',
                     )}
                   >
                     <input
@@ -840,8 +903,19 @@ export default function HomeUnifiedSearch({
                       autoCapitalize="none"
                       spellCheck={false}
                       placeholder="레스토랑, 메뉴, 셰프 검색"
-                      className="h-full min-w-0 flex-1 border-none bg-transparent text-[13px] font-medium text-[#303946] outline-none placeholder:text-[#5D6672]"
+                      className="h-full min-w-0 flex-1 border-none bg-transparent pr-8 text-[13px] font-medium text-[#303946] outline-none placeholder:text-[#5D6672]"
                     />
+                    {query ? (
+                      <button
+                        type="button"
+                        onClick={handleClearQuery}
+                        aria-label="검색어 지우기"
+                        title="검색어 지우기"
+                        className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-[var(--tb-color-icon-muted)] transition-colors hover:bg-[var(--tb-color-surface-disabled)] hover:text-[var(--tb-color-text-primary)]"
+                      >
+                        <X size={ICON_TOKENS.size.sm} />
+                      </button>
+                    ) : null}
                   </div>
                   <button
                     type="submit"
@@ -926,7 +1000,7 @@ export default function HomeUnifiedSearch({
 
                       {searchGroups.restaurants.length > 0 ? (
                         <SearchSection
-                          bookmarkedResultIds={bookmarkedResultIds}
+                          bookmarkedRestaurantKeys={bookmarkedRestaurantKeys}
                           onBookmarkToggle={toggleBookmarkedResult}
                           onRecordToggle={toggleRecordedResult}
                           recordedResultIds={recordedResultIds}
@@ -939,7 +1013,7 @@ export default function HomeUnifiedSearch({
 
                       {searchGroups.chefs.length > 0 ? (
                         <SearchSection
-                          bookmarkedResultIds={bookmarkedResultIds}
+                          bookmarkedRestaurantKeys={bookmarkedRestaurantKeys}
                           onBookmarkToggle={toggleBookmarkedResult}
                           onRecordToggle={toggleRecordedResult}
                           recordedResultIds={recordedResultIds}
@@ -952,7 +1026,7 @@ export default function HomeUnifiedSearch({
 
                       {searchGroups.menus.length > 0 ? (
                         <SearchSection
-                          bookmarkedResultIds={bookmarkedResultIds}
+                          bookmarkedRestaurantKeys={bookmarkedRestaurantKeys}
                           onBookmarkToggle={toggleBookmarkedResult}
                           onRecordToggle={toggleRecordedResult}
                           recordedResultIds={recordedResultIds}

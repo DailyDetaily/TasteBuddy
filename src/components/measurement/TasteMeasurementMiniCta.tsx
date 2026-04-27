@@ -22,7 +22,7 @@ export default function TasteMeasurementMiniCta({
   description,
   meta,
   onAction,
-  padding = 'default',
+  padding = 'compact',
   title,
   tone = 'neutral',
 }: TasteMeasurementMiniCtaProps) {
@@ -44,7 +44,7 @@ export default function TasteMeasurementMiniCta({
     <div className={`rounded-[var(--tb-radius-20)] border ${paddingClass} ${accentClass}`}>
       <div className={isRightAction ? 'flex items-end justify-between gap-3' : undefined}>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
+          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
           <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
             {description}
           </p>

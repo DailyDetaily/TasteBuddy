@@ -1,6 +1,4 @@
-import chefHwangJeongin from '../assets/HwangJeongin.png';
-import chefLeeEunji from '../assets/LeeEunji.png';
-import chefLimJeongsik from '../assets/LimJeongsik.png';
+import { getChefImageByName } from './chefImages';
 
 export type ReservationStatus = 'upcoming' | 'preparing' | 'ready' | 'completed';
 
@@ -40,7 +38,7 @@ export const RESERVATION_CATALOG: ReservationRecord[] = [
     id: 1,
     restaurant: '레스토랑 베누',
     chef: '황정인',
-    chefImage: chefHwangJeongin,
+    chefImage: getChefImageByName('황정인'),
     date: '2025.03.15',
     time: '저녁 7:00',
     guests: 2,
@@ -68,7 +66,7 @@ export const RESERVATION_CATALOG: ReservationRecord[] = [
     id: 2,
     restaurant: '숍 리제 (Lysée)',
     chef: '이은지',
-    chefImage: chefLeeEunji,
+    chefImage: getChefImageByName('이은지'),
     date: '2025.03.22',
     time: '저녁 6:30',
     guests: 2,
@@ -96,7 +94,7 @@ export const RESERVATION_CATALOG: ReservationRecord[] = [
     id: 3,
     restaurant: '정식당',
     chef: '임정식',
-    chefImage: chefLimJeongsik,
+    chefImage: getChefImageByName('임정식'),
     date: '2025.02.28',
     time: '저녁 7:30',
     guests: 4,
@@ -143,3 +141,4 @@ export function parseMockReservationExternalRef(externalRef: string | null | und
 export function getReservationCatalogEntry(id: number) {
   return RESERVATION_CATALOG.find((reservation) => reservation.id === id) ?? null;
 }
+

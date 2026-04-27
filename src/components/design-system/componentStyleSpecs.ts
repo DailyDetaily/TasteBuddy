@@ -271,7 +271,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
       { label: "content shell", value: "relative flex min-h-[140px] w-full flex-col items-center justify-end px-5" },
       { label: "footer fade", value: "FlowBottomCta shell gradient to transparent", note: "same footer shell as onboarding" },
       { label: "indicator spacing", value: "margin-bottom 32px", note: "indicator block above the CTA" },
-      { label: "button spacing", value: "margin-bottom 40px + safe area", note: "PrimaryButton uses `mb-8` and wrapper safe area padding" },
+      { label: "button layout", value: "single primary / optional split CTA", note: "secondaryButtonLabel + onSecondaryButtonAction이 있으면 좌우 분할 CTA로 렌더링합니다." },
       { label: "indicator color", value: "default neutral / optional taste-aware active", note: "measurement passes palette.main for the active dot and keeps inactive dots gray" },
     ],
   },
@@ -416,7 +416,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
     values: [
       { label: "border-radius", value: "var(--tb-radius-20)" },
       { label: "border", value: "1px solid", note: "tone에 따라 색상 변경" },
-      { label: "padding", value: "16px", note: "`p-4`" },
+      { label: "default padding", value: "12px", note: "`p-3`" },
       { label: "alert background", value: "linear-gradient(135deg, var(--tb-taste-sweet-bg) 0%, var(--tb-color-surface-base) 100%)" },
       { label: "neutral background", value: "var(--tb-color-surface-card)" },
       { label: "alert border color", value: "var(--tb-taste-sweet-light)" },

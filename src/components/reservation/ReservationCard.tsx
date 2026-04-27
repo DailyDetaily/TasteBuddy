@@ -10,6 +10,7 @@ import type { ReservationRecord } from '../../constants/reservationCatalog';
 import { ICON_TOKENS } from '../../constants/designTokens';
 import SectionCard from '../SectionCard';
 import ChefAvatar from '../system/ChefAvatar';
+import CardDetailLabel from '../system/CardDetailLabel';
 import StatusChip from '../system/StatusChip';
 import TasteChip from '../system/TasteChip';
 import { reservationStatusConfig } from './reservationStatusConfig';
@@ -26,11 +27,13 @@ const Utensils = wrapIcon(UtensilsIcon);
 const Activity = wrapIcon(ActivityIcon);
 
 interface ReservationCardProps {
+  onOpenRestaurantInfo?: () => void;
   onSelect: () => void;
   reservation: ReservationRecord;
 }
 
 export default function ReservationCard({
+  onOpenRestaurantInfo,
   onSelect,
   reservation,
 }: ReservationCardProps) {
@@ -52,6 +55,19 @@ export default function ReservationCard({
           className="text-[var(--tb-color-text-disabled)]"
         />
       </div>
+
+      {onOpenRestaurantInfo ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onOpenRestaurantInfo();
+          }}
+          className="self-start"
+        >
+          <CardDetailLabel label="레스토랑 정보" />
+        </button>
+      ) : null}
 
       <div className="flex w-full items-center gap-3">
         <ChefAvatar
