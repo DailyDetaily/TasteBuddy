@@ -70,10 +70,6 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
           );
         })}
       </div>
-      {/* Home Indicator */}
-      <div className="flex justify-center pb-1">
-        <div className="w-[134px] h-[5px] bg-[var(--tb-color-text-primary)] rounded-full" />
-      </div>
     </div>
   );
 }

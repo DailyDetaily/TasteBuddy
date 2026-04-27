@@ -847,7 +847,7 @@ function MainApp() {
   };
 
   const isImmersiveWhiteShell =
-    appState === 'onboarding' || appState === 'intake' || appState === 'calibration';
+    appState === 'onboarding' || appState === 'intake';
   const shouldShowMainShell =
     appState === 'main' &&
     (selectedRestaurantDetail !== null || activeTab !== 'reservation' || isReservationRootView);
