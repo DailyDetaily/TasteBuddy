@@ -1065,6 +1065,7 @@ function MainApp() {
         >
           {selectedRestaurantDetail ? (
             <RestaurantDetailPage
+              measurementSnapshot={latestTasteMeasurementSnapshot}
               restaurant={selectedRestaurantDetail}
               onBack={() => setSelectedRestaurantDetail(null)}
             />

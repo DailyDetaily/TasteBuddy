@@ -18,6 +18,12 @@ Restaurant/menu seed payloads live here.
 
 These seed files are often produced or updated by the scripts in [`../scripts/`](../scripts/).
 
+### Place index
+
+- [`migrations/20260430_place_index.sql`](./migrations/20260430_place_index.sql)
+
+External map providers are stored as a place index layer, separate from Taste Buddy's menu and taste interpretation data. See [`../docs/operations/place-index-api-sync.md`](../docs/operations/place-index-api-sync.md).
+
 ## Typical Workflow
 
 1. Gather or review content in `docs/content/`
@@ -35,6 +41,7 @@ node scripts/import-supabase-seed.mjs supabase/seeds/mvp-content-seed.example.js
 
 - migrations that change schema
 - seed payloads that are ready to import
+- external place index tables and operating-hours sync schema
 
 ## What Does Not Belong Here
 

@@ -8,18 +8,21 @@ import {
 } from 'lucide-react';
 
 import { ICON_TOKENS } from '../../constants/designTokens';
-import { getTasteColor } from '../../constants/tasteColors';
+import { getChefImageByName } from '../../constants/chefImages';
 import TokenBox, { type TokenBoxSize } from './TokenBox';
 import { cn } from '../ui/utils';
 
 type ImageBoxSize = TokenBoxSize;
-type ImageBoxFallback = 'person' | 'chef' | 'restaurant' | 'menu' | 'generic';
+export type ImageBoxKind = 'chef' | 'restaurant' | 'menu';
+type ImageBoxFallback = ImageBoxKind | 'person' | 'generic';
 type ImageBoxVariant = 'neutral' | 'taste';
 
 interface ImageBoxProps extends HTMLAttributes<HTMLDivElement> {
   alt: string;
+  kind?: ImageBoxKind;
   fallback?: ImageBoxFallback;
   fallbackIconSize?: number;
+  fallbackIconColor?: string;
   imageClassName?: string;
   imageSrc?: string | null;
   size?: ImageBoxSize;
@@ -36,10 +39,16 @@ const FALLBACK_ICON = {
   restaurant: Store,
 } satisfies Record<ImageBoxFallback, typeof UserRound>;
 
+const KIND_FALLBACK = {
+  chef: 'person',
+  menu: 'menu',
+  restaurant: 'restaurant',
+} satisfies Record<ImageBoxKind, ImageBoxFallback>;
+
 const FALLBACK_ICON_SIZE: Record<ImageBoxSize, number> = {
-  sm: ICON_TOKENS.size.md,
-  md: ICON_TOKENS.size.control,
-  lg: ICON_TOKENS.size.xl,
+  sm: ICON_TOKENS.size.sm,
+  md: ICON_TOKENS.size.md,
+  lg: ICON_TOKENS.size.lg,
 };
 
 const SIZE_CLASS: Record<ImageBoxSize, string> = {
@@ -51,10 +60,12 @@ const SIZE_CLASS: Record<ImageBoxSize, string> = {
 export default function ImageBox({
   alt,
   className,
-  fallback = 'generic',
+  fallback,
+  fallbackIconColor = 'var(--tb-color-icon-muted)',
   fallbackIconSize,
   imageClassName,
   imageSrc,
+  kind,
   size,
   style,
   taste = '감칠맛',
@@ -62,16 +73,19 @@ export default function ImageBox({
   ...props
 }: ImageBoxProps) {
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
-  const fallbackColor =
-    variant === 'taste' ? getTasteColor(taste) : 'var(--tb-color-icon-muted)';
-  const FallbackIcon = FALLBACK_ICON[fallback];
+  const effectiveFallback = fallback ?? (kind ? KIND_FALLBACK[kind] : 'generic');
+  const FallbackIcon = FALLBACK_ICON[effectiveFallback];
   const effectiveSize = size ?? 'md';
+  const chefFallbackImageSrc = kind === 'chef' ? getChefImageByName(alt) : null;
+  const resolvedImageSrc = imageLoadFailed
+    ? chefFallbackImageSrc
+    : imageSrc ?? chefFallbackImageSrc;
   const shouldApplySize = Boolean(size) || !className;
-  const shouldShowImage = Boolean(imageSrc) && !imageLoadFailed;
+  const shouldShowImage = Boolean(resolvedImageSrc);
 
   useEffect(() => {
     setImageLoadFailed(false);
-  }, [imageSrc]);
+  }, [chefFallbackImageSrc, imageSrc]);
 
   if (shouldShowImage) {
     return (
@@ -87,10 +101,14 @@ export default function ImageBox({
         {...props}
       >
         <img
-          src={imageSrc}
+          src={resolvedImageSrc}
           alt={alt}
           className={cn('size-full object-cover', imageClassName)}
-          onError={() => setImageLoadFailed(true)}
+          onError={() => {
+            if (resolvedImageSrc !== chefFallbackImageSrc) {
+              setImageLoadFailed(true);
+            }
+          }}
         />
       </div>
     );
@@ -104,13 +122,17 @@ export default function ImageBox({
       role="img"
       size={shouldApplySize ? effectiveSize : null}
       style={{
-        color: fallbackColor,
+        color: fallbackIconColor,
         ...style,
       }}
       textToken="icon-muted"
       {...props}
     >
-      <FallbackIcon aria-hidden="true" size={fallbackIconSize ?? FALLBACK_ICON_SIZE[effectiveSize]} />
+      <FallbackIcon
+        aria-hidden="true"
+        size={fallbackIconSize ?? FALLBACK_ICON_SIZE[effectiveSize]}
+        strokeWidth={ICON_TOKENS.strokeWidth.regular}
+      />
     </TokenBox>
   );
 }

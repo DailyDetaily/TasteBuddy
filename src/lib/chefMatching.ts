@@ -18,6 +18,7 @@ export interface PersonalizedChefMatch {
   match: number;
   matchConfidence: PersonalizedMatchConfidence;
   matchReason: string;
+  profileRank: number;
   representativeDishTitle: string;
   restaurant: string;
   restaurantSlug: string;
@@ -32,6 +33,12 @@ interface PersonalizedDishMatch {
   matchReason: string;
   rawScore: number;
   sourceTasteId: TasteId;
+}
+
+interface RankedTasteAxis {
+  rank: number;
+  tasteId: TasteId;
+  valueMm: number;
 }
 
 interface BuildPersonalizedChefMatchesOptions {
@@ -95,19 +102,23 @@ function buildMatchReason(
   snapshot: TasteMeasurementSnapshot,
   dish: RestaurantContentDish,
   calibration?: UserLearnedCalibration | null,
+  sourceTasteId = getStrongestTasteMeasurement(snapshot).id,
+  profileRank?: number,
 ) {
-  const strongestTaste = getStrongestTasteMeasurement(snapshot);
+  const sourceTaste =
+    getTasteMeasurementEntries(snapshot).find((entry) => entry.id === sourceTasteId) ??
+    getStrongestTasteMeasurement(snapshot);
   const dominantTasteLabel = TASTE_TOKENS[dish.dominantTaste].label;
 
-  if (dish.dominantTaste === strongestTaste.id) {
-    return `${strongestTaste.label} 반응이 또렷한 현재 프로필과 ${dish.title}의 ${dominantTasteLabel} 흐름이 잘 맞아요.`;
+  if (dish.dominantTaste === sourceTaste.id) {
+    return `현재 프로필과 ${dish.title}의 ${dominantTasteLabel} 흐름이 잘 맞아요.`;
   }
 
   if (hasLearnedCalibration(calibration)) {
-    return `최근 다이닝 피드백까지 반영하면 ${dish.title}의 ${dominantTasteLabel} 구성이 현재 프로필에 자연스럽게 이어질 가능성이 높아요.`;
+    return `최근 다이닝 피드백까지 반영하면 ${dish.title}의 ${dominantTasteLabel} 구성이 자연스럽게 이어질 가능성이 높아요.`;
   }
 
-  return `현재 프로필의 ${strongestTaste.label} 축을 기준으로 ${dish.title}의 ${dominantTasteLabel} 구성이 균형 있게 맞을 가능성이 높아요.`;
+  return `${sourceTaste.label} 반응을 기준으로 ${dish.title}의 ${dominantTasteLabel} 구성이 균형 있게 맞을 가능성이 높아요.`;
 }
 
 export function resolveUsableImagePath(imagePath?: string | null) {
@@ -118,6 +129,8 @@ export function scorePersonalizedDishMatch(
   snapshot: TasteMeasurementSnapshot,
   dish: RestaurantContentDish,
   calibration?: UserLearnedCalibration | null,
+  sourceTasteId = getStrongestTasteMeasurement(snapshot).id,
+  profileRank?: number,
 ): PersonalizedDishMatch {
   const userTasteVector = buildUserTasteVector(snapshot);
   const shouldProjectForUser = hasLearnedCalibration(calibration);
@@ -134,9 +147,13 @@ export function scorePersonalizedDishMatch(
   const tasteVector = projectedProfile?.predictedTasteVector ?? dish.tasteVector;
   const confidence = projectedProfile?.confidence ?? dish.confidence;
   const tasteAlignment = getTasteAlignment(userTasteVector, tasteVector);
+  const sourceTasteFit = userTasteVector[sourceTasteId] * tasteVector[sourceTasteId];
   const dominantTasteFit = userTasteVector[dish.dominantTaste] * tasteVector[dish.dominantTaste];
   const rawScore = clamp(
-    tasteAlignment * 0.62 + dominantTasteFit * 0.23 + confidence * 0.15,
+    tasteAlignment * 0.42 +
+      sourceTasteFit * 0.34 +
+      dominantTasteFit * 0.09 +
+      confidence * 0.15,
     0,
     1,
   );
@@ -145,10 +162,77 @@ export function scorePersonalizedDishMatch(
     dish,
     match: Math.round(MATCH_RATE_FLOOR + rawScore * MATCH_RATE_RANGE),
     matchConfidence: buildMatchConfidence(snapshot, confidence, calibration),
-    matchReason: buildMatchReason(snapshot, dish, calibration),
+    matchReason: buildMatchReason(snapshot, dish, calibration, sourceTasteId, profileRank),
     rawScore,
-    sourceTasteId: getStrongestTasteMeasurement(snapshot).id,
+    sourceTasteId,
   };
+}
+
+function getRankedTasteAxes(snapshot: TasteMeasurementSnapshot): RankedTasteAxis[] {
+  return getTasteMeasurementEntries(snapshot)
+    .slice()
+    .sort((left, right) => {
+      if (right.valueMm !== left.valueMm) {
+        return right.valueMm - left.valueMm;
+      }
+
+      return Math.abs(right.deltaMm) - Math.abs(left.deltaMm);
+    })
+    .map((entry, index) => ({
+      rank: index + 1,
+      tasteId: entry.id,
+      valueMm: entry.valueMm,
+    }));
+}
+
+function getAxisPresence(dish: RestaurantContentDish, tasteId: TasteId) {
+  return clamp(dish.tasteVector[tasteId] ?? 0, 0, 1);
+}
+
+function buildAxisMatchCandidates(
+  calibration: UserLearnedCalibration | null | undefined,
+  dishes: readonly RestaurantContentDish[],
+  measurementSnapshot: TasteMeasurementSnapshot,
+  rankedAxis: RankedTasteAxis,
+) {
+  const minimumAxisPresence = 0.12;
+  const axisDishes = dishes.filter(
+    (dish) => getAxisPresence(dish, rankedAxis.tasteId) >= minimumAxisPresence,
+  );
+  const candidateDishes = axisDishes.length > 0 ? axisDishes : dishes;
+
+  return candidateDishes
+    .map((dish) => {
+      const match = scorePersonalizedDishMatch(
+        measurementSnapshot,
+        dish,
+        calibration,
+        rankedAxis.tasteId,
+        rankedAxis.rank,
+      );
+      const axisPresence = getAxisPresence(dish, rankedAxis.tasteId);
+      const rankWeight = clamp(rankedAxis.valueMm / 10, 0, 1);
+
+      return {
+        ...match,
+        rawScore: clamp(match.rawScore * 0.78 + axisPresence * 0.16 + rankWeight * 0.06, 0, 1),
+      };
+    })
+    .sort((left, right) => {
+      if (right.rawScore !== left.rawScore) {
+        return right.rawScore - left.rawScore;
+      }
+
+      if (right.match !== left.match) {
+        return right.match - left.match;
+      }
+
+      return left.dish.title.localeCompare(right.dish.title, 'ko');
+    });
+}
+
+function getChefMatchKey(dish: RestaurantContentDish) {
+  return dish.chef.trim().toLowerCase();
 }
 
 export function buildPersonalizedChefMatches({
@@ -158,38 +242,59 @@ export function buildPersonalizedChefMatches({
   measurementSnapshot,
   resolveChefImage,
 }: BuildPersonalizedChefMatchesOptions): PersonalizedChefMatch[] {
-  const bestMatchByRestaurant = new Map<string, PersonalizedDishMatch>();
+  const rankedAxes = getRankedTasteAxes(measurementSnapshot);
+  const selectedMatches: Array<PersonalizedDishMatch & { profileRank: number }> = [];
+  const axisCandidateEntries = rankedAxes.map((rankedAxis) => ({
+    candidates: buildAxisMatchCandidates(
+      calibration,
+      dishes,
+      measurementSnapshot,
+      rankedAxis,
+    ),
+    rankedAxis,
+  }));
+  const consumedChefKeys = new Set<string>();
 
-  for (const dish of dishes) {
-    const match = scorePersonalizedDishMatch(measurementSnapshot, dish, calibration);
-    const key = dish.restaurantSlug || `${dish.restaurant}:${dish.chef}`;
-    const current = bestMatchByRestaurant.get(key);
+  for (const { candidates, rankedAxis } of axisCandidateEntries) {
+    const uniqueChefCandidate = candidates.find((candidate) => {
+      const chefKey = getChefMatchKey(candidate.dish);
 
-    if (!current || match.match > current.match || match.rawScore > current.rawScore) {
-      bestMatchByRestaurant.set(key, match);
+      return !consumedChefKeys.has(chefKey);
+    });
+    const selectedCandidate = uniqueChefCandidate ?? candidates[0];
+
+    if (!selectedCandidate) {
+      continue;
     }
+
+    consumedChefKeys.add(getChefMatchKey(selectedCandidate.dish));
+    selectedMatches.push({
+      ...selectedCandidate,
+      profileRank: rankedAxis.rank,
+    });
   }
 
-  const matches = Array.from(bestMatchByRestaurant.values())
-    .sort((left, right) => {
-      if (right.match !== left.match) {
-        return right.match - left.match;
-      }
-
-      return left.dish.title.localeCompare(right.dish.title, 'ko');
-    })
-    .map<PersonalizedChefMatch>(({ dish, match, matchConfidence, matchReason, sourceTasteId }) => ({
+  const matches = selectedMatches
+    .map<PersonalizedChefMatch>(({
+      dish,
+      match,
+      matchConfidence,
+      matchReason,
+      profileRank,
+      sourceTasteId,
+    }) => ({
       chef: dish.chef,
       chefAvatarPath: dish.chefAvatarPath,
       image: resolveChefImage?.(dish) ?? resolveUsableImagePath(dish.chefAvatarPath),
       match,
       matchConfidence,
       matchReason,
+      profileRank,
       representativeDishTitle: dish.title,
       restaurant: dish.restaurant,
       restaurantSlug: dish.restaurantSlug,
       sourceTasteId,
-      tasteId: dish.dominantTaste,
+      tasteId: sourceTasteId,
     }));
 
   return typeof limit === 'number' ? matches.slice(0, limit) : matches;

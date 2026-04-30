@@ -15,7 +15,7 @@ export const reservationStatusConfig: Record<
     bg: 'var(--tb-color-surface-muted)',
   },
   ready: {
-    label: '준비 완료',
+    label: '준비완료',
     color: 'var(--tb-color-text-primary)',
     bg: 'var(--tb-color-surface-muted)',
   },

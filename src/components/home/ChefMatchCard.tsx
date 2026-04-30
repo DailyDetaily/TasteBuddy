@@ -51,9 +51,10 @@ export default function ChefMatchCard({
       <ImageBox
         alt={chefName}
         className="shrink-0"
-        fallback="person"
+        fallbackIconColor={taste.palette.main}
         fallbackIconSize={ICON_TOKENS.size.xl}
         imageSrc={imageSrc}
+        kind="chef"
         size="lg"
         taste={tasteLabel}
         variant="taste"

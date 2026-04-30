@@ -36,6 +36,11 @@ If you are looking for app source code, this is not the right place. Start in `s
 - [`generate-intake-seed-json.mjs`](./generate-intake-seed-json.mjs)
 - [`import-supabase-seed.mjs`](./import-supabase-seed.mjs)
 
+### Place index sync
+
+- [`sync-place-index.mjs`](./sync-place-index.mjs)
+  Fetches restaurant place candidates from Kakao, Naver, or Google and upserts them into Supabase.
+
 ### Normalization and utilities
 
 - [`normalize-supabase-content-korean.mjs`](./normalize-supabase-content-korean.mjs)
@@ -78,6 +83,13 @@ node scripts/generate-catchtable-seed-json.mjs
 node scripts/import-supabase-seed.mjs supabase/seeds/example.seed.json
 ```
 
+### Place index API sync
+
+```bash
+npm run place-index:sync -- --provider kakao --query "정식당" --restaurant-slug jungsik --limit 3
+npm run place-index:sync -- --provider google --query "Jungsik Seoul" --restaurant-slug jungsik --with-hours --limit 1
+```
+
 ### Public source review workflow
 
 ```bash
@@ -90,4 +102,5 @@ node scripts/fill-public-review-rows.mjs
 
 - Config: [`config/catchtable-target-restaurants.json`](./config/catchtable-target-restaurants.json)
 - Supabase schema and seeds: [`../supabase/README.md`](../supabase/README.md)
+- Place index setup: [`../docs/operations/place-index-api-sync.md`](../docs/operations/place-index-api-sync.md)
 - Supporting content docs: [`../docs/content/`](../docs/content/)

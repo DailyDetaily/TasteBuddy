@@ -27,9 +27,7 @@ import {
   type TasteMeasurementSnapshot,
 } from '../../constants/tasteMeasurementData';
 import { type RestaurantReadyGuidance } from '../../constants/quickTasteCalibrationData';
-import {
-  getTasteColor,
-} from '../../constants/tasteColors';
+import { getTasteColor } from '../../constants/tasteColors';
 import type { PersonalizedMatchConfidence } from '../../lib/chefMatching';
 
 import { getChefImageByName } from '../../constants/chefImages';
@@ -40,6 +38,8 @@ const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
     image: getChefImageByName('황정인'),
     match: 75,
     restaurant: '레스토랑 베누',
+    profileRank: 1,
+    sourceTasteId: 'umami',
     tasteId: 'umami',
   },
   {
@@ -47,6 +47,8 @@ const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
     image: getChefImageByName('이은지'),
     match: 72,
     restaurant: '숍 리제 (Lysee)',
+    profileRank: 2,
+    sourceTasteId: 'sweet',
     tasteId: 'sweet',
   },
   {
@@ -54,6 +56,8 @@ const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
     image: getChefImageByName('임정식'),
     match: 70,
     restaurant: '정식당',
+    profileRank: 3,
+    sourceTasteId: 'fat',
     tasteId: 'fat',
   },
 ] as const;
@@ -65,6 +69,7 @@ export interface HomeChefMatchCardData {
   match: number;
   matchConfidence?: PersonalizedMatchConfidence;
   matchReason?: string;
+  profileRank?: number;
   representativeDishTitle?: string;
   restaurant: string;
   restaurantSlug?: string;
@@ -130,9 +135,21 @@ export function buildReservationPersonalizationSummary(
   const primary = entries.slice(0, 2);
   const softest = entries[entries.length - 1];
   const topTasteLabels = primary.map((entry) => entry.label).join('과 ');
-  const chefGuidance = reservation.adjustments.map((adjustment, index) => {
+  const profileAdjustments =
+    reservation.adjustments.length > 0
+      ? reservation.adjustments
+      : primary.map((entry, index) => ({
+          taste: entry.label,
+          direction: index === 0 ? '살리기' : '정리하기',
+        }));
+  const chefGuidance = profileAdjustments.map((adjustment, index) => {
     const matchingAxis = primary[index] ?? primary[0];
-    return `${adjustment.taste} 포인트는 ${adjustment.direction} 방향으로 ${matchingAxis.label} 인상이 더 자연스럽게 전달되도록 참고합니다.`;
+    const deltaText =
+      matchingAxis.deltaMm >= 0
+        ? `기준보다 ${matchingAxis.deltaMm.toFixed(1)}mm 또렷한`
+        : `기준보다 ${Math.abs(matchingAxis.deltaMm).toFixed(1)}mm 부드러운`;
+
+    return `${adjustment.taste} 포인트는 ${adjustment.direction} 방향으로, ${deltaText} ${matchingAxis.label} 반응을 셰프 가이드의 기준점으로 씁니다.`;
   });
 
   return {
@@ -220,11 +237,31 @@ export function HomeDiningPreparationCard({
   reservation,
   summary,
 }: HomeDiningPreparationCardProps) {
+  const isReady = reservation.status === 'ready' || reservation.status === 'preparing';
+  const activeAdjustments =
+    reservation.adjustments.length > 0
+      ? reservation.adjustments
+      : summary.primary.map((entry, index) => ({
+          direction: index === 0 ? '살리기' : '정리하기',
+          taste: entry.label,
+        }));
+  const tcsAdjustments = activeAdjustments.map((adjustment, index) => {
+    const matchingAxis = summary.primary[index] ?? summary.primary[0];
+    const change = matchingAxis
+      ? `${Math.max(6, Math.round(Math.abs(matchingAxis.deltaMm) * 3 + 6))}%`
+      : `${Math.max(6, 12 - index * 2)}%`;
+
+    return {
+      change,
+      taste: adjustment.taste,
+    };
+  });
+  const tcsStatusText = isReady ? '셰프 가이드가 준비되었습니다' : reservation.tcsStatus;
   const reservationStatusLabel =
     reservation.status === 'ready'
-      ? '준비 완료'
+      ? '준비완료'
       : reservation.status === 'preparing'
-        ? '셰프 준비 중'
+        ? '준비완료'
         : '예약 확정';
 
   return (
@@ -239,10 +276,8 @@ export function HomeDiningPreparationCard({
               sectionId="badges"
             >
               <TCSBadge
-                adjustments={reservation.adjustments.map((adjustment, index) => ({
-                  change: `${Math.max(6, 12 - index * 2)}%`,
-                  taste: adjustment.taste,
-                }))}
+                adjustments={tcsAdjustments}
+                disabled={!isReady}
               />
             </InspectableComponent>
             <p className="min-w-0 flex-1 truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
@@ -267,7 +302,7 @@ export function HomeDiningPreparationCard({
               className="size-[40px] shrink-0 rounded-[8px]"
               iconSize={24}
               imageSrc={reservation.chefImage}
-              taste={reservation.adjustments[0]?.taste}
+              taste={activeAdjustments[0]?.taste}
               variant="neutral"
             />
             <div className="grow">
@@ -285,11 +320,11 @@ export function HomeDiningPreparationCard({
               {reservation.date} {reservation.time}
             </p>
             <p className="font-normal">• {reservation.guests}인</p>
-            <p className="font-normal">• {reservation.tcsStatus}</p>
+            <p className="font-normal">• {tcsStatusText}</p>
           </div>
 
           <div className="flex w-full flex-wrap items-start gap-[6px]">
-            {reservation.adjustments.map((adjustment, index) => (
+            {activeAdjustments.map((adjustment, index) => (
               <InspectableComponent
                 key={`${reservation.id}-${adjustment.taste}-${index}`}
                 componentName="TasteChip"
@@ -321,7 +356,7 @@ export function HomeDiningPreparationCard({
           >
             <TCSHintCard
               title="이번 식사에서 달라지는 점"
-              description={summary.guestMessage}
+              description={isReady ? summary.chefGuidance[0] ?? summary.recommendationLogic : summary.guestMessage}
               surface="nested"
             />
           </InspectableComponent>
@@ -362,7 +397,7 @@ export function HomeChefMatchCard({
           matchRate={chef.match}
           matchReason={chef.matchReason}
           restaurant={chef.restaurant}
-          tasteId={chef.tasteId}
+          tasteId={chef.sourceTasteId ?? chef.tasteId}
         />
       </button>
     </InspectableComponent>
@@ -390,7 +425,13 @@ export function HomeChefMatchStrip({
       <CardScrollList fullBleed={fullBleed}>
         {chefCards.map((chef) => (
           <HomeChefMatchCard
-            key={`${chef.chef}-${chef.restaurant}-${chef.match}`}
+            key={[
+              chef.profileRank ?? 'match',
+              chef.sourceTasteId ?? chef.tasteId,
+              chef.chef,
+              chef.restaurant,
+              chef.match,
+            ].join('-')}
             chef={chef}
             onNavigateToSection={onNavigateToSection}
             onSelect={onSelectChefMatch}

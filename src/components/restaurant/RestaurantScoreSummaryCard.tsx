@@ -10,6 +10,7 @@ export interface RestaurantScoreTag {
 }
 
 export interface RestaurantScoreSummaryViewModel {
+  decisionReason: string;
   scores: {
     overallScore: number;
     palateFriendsAverageScore: number;
@@ -40,11 +41,11 @@ export default function RestaurantScoreSummaryCard({
       value: `${summary.scores.personalMatchRate}%`,
     },
     {
-      label: '미각 친구 평균',
+      label: '비슷한 미각 기준',
       value: `${summary.scores.palateFriendsAverageScore}점`,
     },
     {
-      label: '전체 점수',
+      label: '전체 평판',
       value: `${summary.scores.overallScore.toFixed(1)} / 5`,
     },
   ];
@@ -68,9 +69,14 @@ export default function RestaurantScoreSummaryCard({
           ))}
         </div>
 
-        <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-muted)]">
-          숫자는 선택의 시작점이고, 아래 감각 태그가 이곳이 어떤 경험으로 남을 가능성이 높은지 더 잘 보여줘요.
-        </p>
+        <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
+          <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
+            판단 근거
+          </p>
+          <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
+            {summary.decisionReason}
+          </p>
+        </div>
 
         <div className="flex flex-wrap gap-2">
           {summary.tags.map((tag) =>

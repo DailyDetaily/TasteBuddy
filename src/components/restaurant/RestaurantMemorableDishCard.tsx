@@ -1,9 +1,11 @@
+import { Ellipsis } from 'lucide-react';
+import { useState } from 'react';
+
 import CardDetailLabel from '../system/CardDetailLabel';
-import Chip from '../system/Chip';
 import ImageBox from '../system/ImageBox';
 import PageSection from '../system/PageSection';
 import SectionCard from '../SectionCard';
-import TasteChip from '../system/TasteChip';
+import { ICON_TOKENS } from '../../constants/designTokens';
 
 export interface RestaurantMemorableDishViewModel {
   id: string;
@@ -15,79 +17,111 @@ export interface RestaurantMemorableDishViewModel {
 
 interface RestaurantMemorableDishCardProps {
   dishes: RestaurantMemorableDishViewModel[];
+  onSelectDish?: (dish: RestaurantMemorableDishViewModel, index: number) => void;
 }
 
-function getTasteChipProps(tag: string) {
-  if (tag.includes('감칠')) {
-    return { taste: '감칠맛', value: tag };
-  }
-
-  if (tag.includes('지방')) {
-    return { taste: '지방맛', value: tag };
-  }
-
-  if (tag.includes('산미')) {
-    return { taste: '신맛', value: tag };
-  }
-
-  return null;
+function getBriefDishSummary(summary: string) {
+  return summary
+    .replace(/^현재\s+(미각\s+기준|프로필\s+기준|프로필|기준)(에서|과)?\s*/u, '')
+    .replace(/^나의\s+미각\s+기준에서\s*/u, '');
 }
+
+const DEFAULT_VISIBLE_DISH_COUNT = 2;
 
 export default function RestaurantMemorableDishCard({
   dishes,
+  onSelectDish,
 }: RestaurantMemorableDishCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const canExpand = dishes.length > DEFAULT_VISIBLE_DISH_COUNT;
+  const visibleDishes = canExpand && !isExpanded
+    ? dishes.slice(0, DEFAULT_VISIBLE_DISH_COUNT)
+    : dishes;
+
   return (
     <PageSection
       contentClassName="flex flex-col gap-3"
       title={
         <div className="flex w-full items-center justify-between gap-3">
-          <span>나에게 기억될 가능성이 높은 메뉴</span>
-          <button type="button" className="shrink-0">
-            <CardDetailLabel label="전체 메뉴 보기" />
-          </button>
+          <span>메뉴</span>
+          {canExpand ? (
+            <button
+              type="button"
+              aria-expanded={isExpanded}
+              className="shrink-0"
+              onClick={() => setIsExpanded((previous) => !previous)}
+            >
+              <CardDetailLabel
+                direction={isExpanded ? 'up' : 'down'}
+                label={isExpanded ? '메뉴 접기' : '전체 메뉴 보기'}
+              />
+            </button>
+          ) : null}
         </div>
       }
       titleAs="h2"
       titleSize="md"
     >
-      {dishes.map((dish) => (
-        <SectionCard key={dish.id} hoverEffect={false}>
-          <div className="flex w-full items-start gap-3">
-            <ImageBox
-              alt={`${dish.title} 이미지`}
-              className="size-[64px] rounded-[12px]"
-              fallback="menu"
-              imageSrc={dish.imageUrl}
-              variant="neutral"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
-                {dish.title}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {dish.tags.map((tag) => {
-                  const tasteChipProps = getTasteChipProps(tag);
-
-                  return tasteChipProps ? (
-                    <TasteChip
-                      key={`${dish.id}-${tag}`}
-                      taste={tasteChipProps.taste}
-                      value={tasteChipProps.value}
-                    />
-                  ) : (
-                    <Chip key={`${dish.id}-${tag}`} size="xs" tone="neutral" variant="soft">
-                      {tag}
-                    </Chip>
-                  );
-                })}
+      <SectionCard hoverEffect={false}>
+        <div className="flex w-full flex-col gap-3">
+          {visibleDishes.map((dish, index) => (
+            <div key={dish.id} className="flex w-full flex-col gap-3">
+              <div
+                aria-label={`${dish.title} 메뉴 상세 보기`}
+                className={`flex w-full items-center gap-3 ${
+                  onSelectDish ? 'cursor-pointer' : ''
+                }`}
+                onClick={onSelectDish ? () => onSelectDish(dish, index) : undefined}
+                onKeyDown={
+                  onSelectDish
+                    ? (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onSelectDish(dish, index);
+                        }
+                      }
+                    : undefined
+                }
+                role={onSelectDish ? 'button' : undefined}
+                tabIndex={onSelectDish ? 0 : undefined}
+              >
+                <ImageBox
+                  alt={`${dish.title} 이미지`}
+                  imageSrc={dish.imageUrl}
+                  kind="menu"
+                  size="lg"
+                  variant="neutral"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                    {dish.title}
+                  </p>
+                  <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
+                    {getBriefDishSummary(dish.summary)}
+                  </p>
+                </div>
               </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                {dish.summary}
-              </p>
+              {index < visibleDishes.length - 1 ? (
+                <div className="h-px w-full bg-[var(--tb-color-border-subtle)]" />
+              ) : null}
             </div>
-          </div>
-        </SectionCard>
-      ))}
+          ))}
+          {canExpand ? (
+            <button
+              type="button"
+              aria-label={isExpanded ? '메뉴 접기' : '전체 메뉴 보기'}
+              className="-my-2 flex h-3 w-full items-center justify-center text-[var(--tb-color-icon-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+              onClick={() => setIsExpanded((previous) => !previous)}
+            >
+              <Ellipsis
+                aria-hidden="true"
+                size={ICON_TOKENS.size.md}
+                strokeWidth={1.8}
+              />
+            </button>
+          ) : null}
+        </div>
+      </SectionCard>
     </PageSection>
   );
 }

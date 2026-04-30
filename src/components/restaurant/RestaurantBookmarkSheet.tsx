@@ -41,7 +41,17 @@ const LIST_SUGGESTIONS = [
   {
     id: 'want-to-visit',
     name: '가보고 싶은 다이닝',
-    description: '다음 레스토랑 탐색 때 다시 비교할 후보',
+    description: '예약 전 다시 판단해볼 후보',
+  },
+  {
+    id: 'compare-later',
+    name: '나중에 비교할 곳',
+    description: '메뉴와 내 미각 기준을 더 살펴본 뒤 고를 곳',
+  },
+  {
+    id: 'reference-point',
+    name: '기준점이 될 수 있는 곳',
+    description: '내 취향의 기준을 잡을 때 다시 볼 후보',
   },
   {
     id: 'anniversary',
@@ -49,19 +59,9 @@ const LIST_SUGGESTIONS = [
     description: '차분하게 오래 기억될 식사를 고를 때',
   },
   {
-    id: 'quiet-room',
-    name: '조용한 공간',
-    description: '대화와 서비스 흐름을 함께 보고 싶은 곳',
-  },
-  {
     id: 'chef-interest',
     name: '셰프 관심 리스트',
     description: '셰프의 코스와 감각 흐름을 이어서 보고 싶은 곳',
-  },
-  {
-    id: 'compare-later',
-    name: '나중에 비교할 곳',
-    description: '메뉴와 내 미각 기준을 더 살펴본 뒤 고를 곳',
   },
 ] satisfies BookmarkList[];
 
@@ -271,7 +271,7 @@ export default function RestaurantBookmarkSheet({
               북마크에 저장했어요
             </SectionTitle>
             <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-              다음에 레스토랑을 비교할 때 이 리스트 기준으로 다시 보여드릴게요.
+              예약 전 다시 비교할 때 이 리스트 기준으로 차분히 확인할 수 있어요.
             </p>
           </div>
 
@@ -304,7 +304,7 @@ export default function RestaurantBookmarkSheet({
               </SectionTitle>
               <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-muted)]">
                 {isCreating
-                  ? '리스트 이름을 정해두면 나중에 내 미각 기준으로 레스토랑을 다시 고르기 쉬워요.'
+                  ? '리스트 이름을 정해두면 예약 전 내 미각 기준으로 다시 판단하기 쉬워요.'
                   : '이미 만들어둔 리스트에 저장하거나 새로운 리스트를 만들 수 있어요.'}
               </p>
             </div>

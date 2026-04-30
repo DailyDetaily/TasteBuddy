@@ -33,6 +33,12 @@ SUPABASE_SECRET_KEY="your-supabase-secret-key"
 SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
 
 VITE_SUPABASE_USE_ANONYMOUS_AUTH="true"
+
+# Server-side place index sync
+KAKAO_REST_API_KEY="your-kakao-rest-api-key"
+NAVER_CLIENT_ID="your-naver-client-id"
+NAVER_CLIENT_SECRET="your-naver-client-secret"
+GOOGLE_MAPS_API_KEY="your-google-maps-api-key"
 ```
 
 지금 앱은 `VITE_SUPABASE_PUBLISHABLE_KEY`를 먼저 읽고, 없으면 `VITE_SUPABASE_ANON_KEY`를 fallback으로 사용합니다.
@@ -47,6 +53,7 @@ public asset을 먼저 사용하고, 없을 때만 로컬 fallback 이미지를 
 아직 테이블이 없다면 Supabase Dashboard의 SQL Editor에서 아래 파일 내용을 실행하면 됩니다.
 
 - [20260326_taste_buddy_mvp.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260326_taste_buddy_mvp.sql#L1)
+- [20260430_place_index.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260430_place_index.sql#L1)
 
 이 파일이 만들어주는 것:
 - `restaurants`
@@ -56,6 +63,7 @@ public asset을 먼저 사용하고, 없을 때만 로컬 fallback 이미지를 
 - `dish_observed_facts`
 - `dish_inference_profiles`
 - 앱에서 쓰는 예약/측정/피드백 관련 테이블들
+- `restaurant_place_index`, `restaurant_operating_hours`
 
 ## 4. Anonymous auth 사용 여부
 

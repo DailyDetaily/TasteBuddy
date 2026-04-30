@@ -23,9 +23,9 @@ export default function ChefAvatar({
     <ImageBox
       alt={alt}
       className={className}
-      fallback="person"
       fallbackIconSize={iconSize}
       imageSrc={imageSrc}
+      kind="chef"
       size={size}
       taste={taste}
       variant={variant}

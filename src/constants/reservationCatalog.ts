@@ -42,24 +42,24 @@ export const RESERVATION_CATALOG: ReservationRecord[] = [
     date: '2025.03.15',
     time: '저녁 7:00',
     guests: 2,
-    status: 'preparing',
+    status: 'ready',
     course: '시그니처 디너 코스',
     matchRate: 75,
-    tcsStatus: '셰프가 보정 전략을 준비 중입니다',
+    tcsStatus: '셰프 가이드가 준비되었습니다',
     adjustments: [
       { taste: '감칠맛', direction: '살리기' },
       { taste: '짠맛', direction: '정리하기' },
     ],
     diningPromise:
-      '코스의 중심 풍미는 살리되, 피니시는 조금 더 또렷하게 정리해 황정인 셰프의 의도가 더 자연스럽게 전달되도록 준비 중입니다.',
+      '코스의 중심 풍미는 살리되, 피니시는 조금 더 또렷하게 정리해 황정인 셰프의 의도가 더 자연스럽게 전달되도록 준비됐습니다.',
     guestUnderstanding:
       '지금의 프로필은 깊이감은 즐기지만 마무리가 무거워지면 만족이 떨어질 수 있다는 점을 보여줘요.',
     timeline: [
       { step: '예약 확정', done: true },
       { step: '미각 데이터 전달', done: true },
-      { step: '셰프 TCS 준비', done: false, current: true },
+      { step: '셰프 TCS 준비', done: true },
       { step: '사전 미각 측정', done: false },
-      { step: '다이닝 당일', done: false },
+      { step: '다이닝 당일', done: false, current: true },
     ],
   },
   {
@@ -141,4 +141,3 @@ export function parseMockReservationExternalRef(externalRef: string | null | und
 export function getReservationCatalogEntry(id: number) {
   return RESERVATION_CATALOG.find((reservation) => reservation.id === id) ?? null;
 }
-

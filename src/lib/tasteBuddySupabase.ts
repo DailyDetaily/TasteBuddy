@@ -366,7 +366,7 @@ function buildReservationSeedSchedule(index: number, seasonLabel: string | null 
   const baseDate = new Date();
   const normalized = seasonLabel?.toLowerCase() ?? '';
   const isLunch = normalized.includes('lunch');
-  const statusCycle: ReservationStatus[] = ['preparing', 'upcoming', 'completed', 'ready'];
+  const statusCycle: ReservationStatus[] = ['ready', 'upcoming', 'completed', 'ready'];
   const status = statusCycle[index % statusCycle.length];
   const date = new Date(baseDate);
 
@@ -536,7 +536,7 @@ function mapReservationStatusFromDb(status: string): ReservationStatus {
     case 'ready':
       return 'ready';
     case 'preparing':
-      return 'preparing';
+      return 'ready';
     case 'draft':
     case 'confirmed':
     case 'cancelled':
@@ -590,7 +590,7 @@ function buildGenericTcsStatus(status: ReservationStatus) {
     case 'ready':
       return '셰프 가이드가 준비되었습니다';
     case 'preparing':
-      return '셰프가 보정 전략을 준비 중입니다';
+      return '셰프 가이드가 준비되었습니다';
     case 'upcoming':
     default:
       return '예약이 확정되었습니다';
@@ -607,7 +607,7 @@ function buildGenericDiningPromise(
   }
 
   if (status === 'preparing' || status === 'ready') {
-    return `${courseName}에서 현재 프로필이 더 자연스럽게 전달되도록 셰프가 참고할 수 있는 개인화 가이드가 준비되고 있어요.`;
+    return `${courseName}에서 현재 프로필이 더 자연스럽게 전달되도록 셰프가 참고할 수 있는 개인화 가이드가 준비됐어요.`;
   }
 
   return `${restaurantName} 예약은 현재 프로필을 바탕으로 더 잘 맞는 다이닝 흐름을 준비할 수 있는 상태예요.`;
@@ -1614,7 +1614,7 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       )
       .eq('status', 'active')
       .order('season_label', { ascending: false })
-      .limit(120),
+      .limit(500),
   ]);
 
   if (chefResponse.error) {
