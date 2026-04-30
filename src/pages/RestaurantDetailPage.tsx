@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Ellipsis,
+  Pencil,
   Share,
 } from 'lucide-react';
 
@@ -18,6 +19,7 @@ import RestaurantHeroCard from '../components/restaurant/RestaurantHeroCard';
 import RestaurantInfoCard, {
   type RestaurantInfoViewModel,
 } from '../components/restaurant/RestaurantInfoCard';
+import RestaurantInfoSuggestionSheet from '../components/restaurant/RestaurantInfoSuggestionSheet';
 import RestaurantMemorableDishCard, {
   type RestaurantMemorableDishViewModel,
 } from '../components/restaurant/RestaurantMemorableDishCard';
@@ -62,6 +64,7 @@ export type RestaurantDetailViewModel = {
     website?: string;
   };
   locationLabel: string;
+  mediaStatus?: 'placeholder' | 'verified';
   memorableDishes: {
     id: string;
     imageUrl?: string | null;
@@ -870,7 +873,9 @@ export function createRestaurantDetailFromSearchResult(
       id: result.id,
       name: result.restaurant,
       category: '카카오 장소 정보 기반',
+      heroImageUrl: null,
       locationLabel,
+      mediaStatus: 'placeholder',
       chef: {
         name: 'Taste Buddy 분석 준비 중',
         avatarUrl: null,
@@ -1119,7 +1124,10 @@ export default function RestaurantDetailPage({
   restaurant = DEFAULT_RESTAURANT_DETAIL,
 }: RestaurantDetailPageProps) {
   const sourceDetail = restaurant ?? DEFAULT_RESTAURANT_DETAIL;
-  const resolvedInfo = getRestaurantInfo(sourceDetail.name);
+  const resolvedInfo =
+    sourceDetail.mediaStatus === 'placeholder'
+      ? sourceDetail.info
+      : getRestaurantInfo(sourceDetail.name);
   const [placeInfo, setPlaceInfo] = useState<Partial<RestaurantInfoViewModel> | null>(null);
   const detail = useMemo(
     () => ({
@@ -1139,6 +1147,7 @@ export default function RestaurantDetailPage({
     createDiningFeedbackDraft(feedbackScenario),
   );
   const [isBookmarkSheetOpen, setIsBookmarkSheetOpen] = useState(false);
+  const [isInfoSuggestionSheetOpen, setIsInfoSuggestionSheetOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(() => isRestaurantBookmarked(detail.name));
 
   const iconButtonClassName =
@@ -1254,6 +1263,7 @@ export default function RestaurantDetailPage({
         <div className="tb-section-stack p-5 pb-10">
           <RestaurantHeroCard
             isBookmarked={isBookmarked}
+            quickInfo={detail.info}
             restaurant={detail}
             onBookmarkClick={() => setIsBookmarkSheetOpen(true)}
             onVisitedClick={() => setSelectedView('feedback')}
@@ -1268,7 +1278,17 @@ export default function RestaurantDetailPage({
           />
 
           <PageSection title="위치 및 정보" titleAs="h2" titleSize="md">
-            <RestaurantInfoCard info={detail.info} />
+            <div className="flex flex-col gap-2">
+              <RestaurantInfoCard info={detail.info} />
+              <button
+                className="inline-flex items-center gap-1.5 self-start px-1 py-1 text-[12px] font-semibold text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-strong)]"
+                onClick={() => setIsInfoSuggestionSheetOpen(true)}
+                type="button"
+              >
+                <Pencil aria-hidden="true" size={13} strokeWidth={1.8} />
+                수정 제안하기
+              </button>
+            </div>
           </PageSection>
 
           <div className="h-6" />
@@ -1280,6 +1300,12 @@ export default function RestaurantDetailPage({
         onOpenChange={setIsBookmarkSheetOpen}
         onSaved={() => setIsBookmarked(true)}
         restaurant={detail}
+      />
+      <RestaurantInfoSuggestionSheet
+        info={detail.info}
+        open={isInfoSuggestionSheetOpen}
+        onOpenChange={setIsInfoSuggestionSheetOpen}
+        restaurantName={detail.name}
       />
     </div>
   );

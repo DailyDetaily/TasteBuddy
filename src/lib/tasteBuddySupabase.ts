@@ -211,13 +211,18 @@ export interface RestaurantContentCatalog {
 
 export interface RestaurantPlaceInfo {
   address: string;
+  googleMapsUrl?: string;
   lat?: number;
   lng?: number;
   mapUrl?: string;
   phone?: string;
+  website?: string;
+  hours?: string;
   sourceByRow: {
     address: 'kakao';
-    phone?: 'kakao';
+    hours?: 'google';
+    phone?: 'kakao' | 'google';
+    website?: 'google';
   };
 }
 
@@ -247,6 +252,30 @@ export interface KakaoPlaceSearchResult {
   placeUrl: string | null;
   provider: 'kakao';
   roadAddress: string | null;
+}
+
+interface GooglePlaceEnrichResponse {
+  place: {
+    address: string | null;
+    googleMapsUrl: string | null;
+    hours: string | null;
+    lat: number | null;
+    lng: number | null;
+    name: string | null;
+    phone: string | null;
+    photo: {
+      attributions: Array<{
+        displayName?: string;
+        uri?: string;
+      }>;
+      name: string;
+    } | null;
+    placeId: string | null;
+    priceLevel: string | null;
+    rating: number | null;
+    userRatingCount: number | null;
+    website: string | null;
+  } | null;
 }
 
 interface ReservationSeedCandidate {
@@ -675,6 +704,95 @@ async function lookupLiveKakaoPlaceInfo(
   return placeInfo;
 }
 
+async function lookupGooglePlaceEnrichment(
+  restaurantName: string,
+  basePlaceInfo: RestaurantPlaceInfo | null,
+): Promise<Partial<RestaurantPlaceInfo> | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return null;
+  }
+
+  const { data, error } = await supabase.functions.invoke<GooglePlaceEnrichResponse>(
+    'google-place-enrich',
+    {
+      body: {
+        address: basePlaceInfo?.address,
+        lat: basePlaceInfo?.lat,
+        lng: basePlaceInfo?.lng,
+        phone: basePlaceInfo?.phone,
+        query: restaurantName,
+      },
+    },
+  );
+
+  if (error) {
+    console.warn('Failed to hydrate Google place enrichment.', error);
+    return null;
+  }
+
+  const place = data?.place;
+
+  if (!place) {
+    return null;
+  }
+
+  const enrichment: Partial<RestaurantPlaceInfo> = {
+    sourceByRow: {},
+  };
+
+  if (place.hours) {
+    enrichment.hours = place.hours;
+    enrichment.sourceByRow = {
+      ...enrichment.sourceByRow,
+      hours: 'google',
+    };
+  }
+
+  if (place.website) {
+    enrichment.website = place.website;
+    enrichment.sourceByRow = {
+      ...enrichment.sourceByRow,
+      website: 'google',
+    };
+  }
+
+  if (!basePlaceInfo?.phone && place.phone) {
+    enrichment.phone = place.phone;
+    enrichment.sourceByRow = {
+      ...enrichment.sourceByRow,
+      phone: 'google',
+    };
+  }
+
+  if (place.googleMapsUrl) {
+    enrichment.googleMapsUrl = place.googleMapsUrl;
+  }
+
+  return enrichment;
+}
+
+function mergePlaceInfo(
+  basePlaceInfo: RestaurantPlaceInfo | null,
+  enrichment: Partial<RestaurantPlaceInfo> | null,
+) {
+  if (!basePlaceInfo) {
+    return null;
+  }
+
+  if (!enrichment) {
+    return basePlaceInfo;
+  }
+
+  return {
+    ...basePlaceInfo,
+    ...enrichment,
+    sourceByRow: {
+      ...basePlaceInfo.sourceByRow,
+      ...enrichment.sourceByRow,
+    },
+  } satisfies RestaurantPlaceInfo;
+}
+
 export async function hydrateRestaurantPlaceInfo(
   restaurantName: string,
 ): Promise<RestaurantPlaceInfo | null> {
@@ -698,8 +816,10 @@ export async function hydrateRestaurantPlaceInfo(
   const rows = (data ?? []) as RestaurantPlaceIndexQueryRow[];
   const match = rows.find((row) => isMatchingPlaceIndexRow(row, restaurantName));
   const livePlaceInfo = await lookupLiveKakaoPlaceInfo(restaurantName, match);
+  const basePlaceInfo = livePlaceInfo ?? (match ? buildRestaurantPlaceInfoFromIndex(match) : null);
+  const googleEnrichment = await lookupGooglePlaceEnrichment(restaurantName, basePlaceInfo);
 
-  return livePlaceInfo ?? (match ? buildRestaurantPlaceInfoFromIndex(match) : null);
+  return mergePlaceInfo(basePlaceInfo, googleEnrichment);
 }
 
 export async function searchKakaoRestaurantPlaces(

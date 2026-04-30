@@ -27,8 +27,9 @@ External map providers are stored as a place index layer, separate from Taste Bu
 ### Edge Functions
 
 - [`functions/kakao-place-lookup`](./functions/kakao-place-lookup)
+- [`functions/google-place-enrich`](./functions/google-place-enrich)
 
-The app uses this function to fetch live Kakao Local place details without exposing the Kakao REST API key in the browser. Keep `KAKAO_REST_API_KEY` as a Supabase function secret.
+The app uses these functions to fetch live Kakao Local place details and Google Places enrichment without exposing provider API keys in the browser. Keep `KAKAO_REST_API_KEY` and `GOOGLE_MAPS_API_KEY` as Supabase function secrets.
 
 ## Typical Workflow
 
