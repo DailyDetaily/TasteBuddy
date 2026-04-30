@@ -41,6 +41,7 @@ import type { HomeChefMatchCardData } from '../components/home/HomeCards';
 import type { HomeSearchResult } from '../components/home/HomeUnifiedSearch';
 import type { RealMenuRecommendationCardData } from '../components/analysis/RealMenuRecommendationCard';
 import type { ReservationRecord } from '../constants/reservationCatalog';
+import { hydrateRestaurantPlaceInfo } from '../lib/tasteBuddySupabase';
 
 type RestaurantDetailView = 'detail' | 'feedback' | 'analysis' | 'menuDetail';
 
@@ -513,6 +514,7 @@ function getRestaurantContextProfile(restaurantName: string, sourceTasteId: Tast
   if (
     normalizedName.includes('세븐도어') ||
     normalizedName.includes('세븐스도어') ||
+    normalizedName.includes('7thdoor') ||
     normalizedName.includes('seventhdoor')
   ) {
     return {
@@ -1051,12 +1053,16 @@ export default function RestaurantDetailPage({
 }: RestaurantDetailPageProps) {
   const sourceDetail = restaurant ?? DEFAULT_RESTAURANT_DETAIL;
   const resolvedInfo = getRestaurantInfo(sourceDetail.name);
+  const [placeInfo, setPlaceInfo] = useState<Partial<RestaurantInfoViewModel> | null>(null);
   const detail = useMemo(
     () => ({
       ...sourceDetail,
-      info: resolvedInfo,
+      info: {
+        ...resolvedInfo,
+        ...placeInfo,
+      },
     }),
-    [resolvedInfo, sourceDetail],
+    [placeInfo, resolvedInfo, sourceDetail],
   );
   const feedbackScenario = useMemo(() => createRestaurantFeedbackScenario(detail), [detail]);
   const [selectedView, setSelectedView] = useState<RestaurantDetailView>('detail');
@@ -1074,6 +1080,25 @@ export default function RestaurantDetailPage({
     height: ICON_TOKENS.container.lg,
     width: ICON_TOKENS.container.lg,
   };
+
+  useEffect(() => {
+    let isCancelled = false;
+    setPlaceInfo(null);
+
+    void (async () => {
+      const hydratedPlaceInfo = await hydrateRestaurantPlaceInfo(sourceDetail.name);
+
+      if (isCancelled) {
+        return;
+      }
+
+      setPlaceInfo(hydratedPlaceInfo);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [sourceDetail.name]);
 
   useEffect(() => {
     const syncBookmarkState = () => {

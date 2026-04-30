@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "description": "Seed generated from curated intake CSV files for 세븐도어.",
+    "description": "Seed generated from curated intake CSV files for 7th Door.",
     "generatedAt": "2026-03-29T11:47:30.049Z",
     "sourceFiles": [
       "docs/content/intake/mvp-content-intake-7th-door.csv"
@@ -10,10 +10,10 @@
   "restaurants": [
     {
       "slug": "7th-door-seoul",
-      "name": "세븐도어",
+      "name": "7th Door",
       "timezone": "Asia/Seoul",
       "city": "서울",
-      "intro": "세븐도어 큐레이션 메뉴 시드 데이터입니다."
+      "intro": "7th Door 큐레이션 메뉴 시드 데이터입니다."
     }
   ],
   "chefs": [

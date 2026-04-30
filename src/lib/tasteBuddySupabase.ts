@@ -156,6 +156,25 @@ interface ContentDishQueryRow {
   status: string | null;
 }
 
+interface RestaurantPlaceIndexQueryRow {
+  category: string | null;
+  formatted_address: string | null;
+  id: string;
+  lat: number | null;
+  lng: number | null;
+  normalized_name: string | null;
+  phone: string | null;
+  provider: string | null;
+  provider_place_id: string | null;
+  provider_url: string | null;
+  raw_name: string | null;
+  restaurants:
+    | { name: string | null; slug: string | null }
+    | Array<{ name: string | null; slug: string | null }>
+    | null;
+  road_address: string | null;
+}
+
 export interface RestaurantContentChef {
   avatarPath: string | null;
   id: string;
@@ -190,6 +209,16 @@ export interface RestaurantContentCatalog {
   dishes: RestaurantContentDish[];
 }
 
+export interface RestaurantPlaceInfo {
+  address: string;
+  mapUrl?: string;
+  phone?: string;
+  sourceByRow: {
+    address: 'kakao';
+    phone?: 'kakao';
+  };
+}
+
 interface ReservationSeedCandidate {
   chef: string;
   dishes: RestaurantContentDish[];
@@ -199,8 +228,10 @@ interface ReservationSeedCandidate {
 }
 
 const RESTAURANT_NAME_TRANSLATIONS: Record<string, string> = {
-  '7TH DOOR': '세븐도어',
-  '7TH DOOR SEOUL': '세븐도어',
+  '7TH DOOR': '7th Door',
+  '7TH DOOR SEOUL': '7th Door',
+  '세븐도어': '7th Door',
+  '세븐스도어': '7th Door',
   'ALLA PRIMA': '알라프리마',
   ALLAPRIMA: '알라프리마',
   'EATANIC GARDEN': '이타닉가든',
@@ -282,6 +313,16 @@ const COURSE_POSITION_LABELS: Record<string, string> = {
 
 function normalizeTranslationKey(value: string) {
   return value.replace(/[()]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+}
+
+function normalizeComparableName(value: string | null | undefined) {
+  return (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/[()'".,/-]/g, '')
+    .replace(/\s+/g, '');
 }
 
 function localizeRestaurantName(value: string | null | undefined) {
@@ -488,6 +529,74 @@ function takeSingleRelation<T>(value: T | T[] | null | undefined): T | null {
   }
 
   return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+function isMatchingPlaceIndexRow(row: RestaurantPlaceIndexQueryRow, restaurantName: string) {
+  const targetName = normalizeComparableName(restaurantName);
+  const restaurantRelation = takeSingleRelation(row.restaurants);
+  const candidates = [
+    restaurantRelation?.name,
+    restaurantRelation?.slug,
+    row.normalized_name,
+    row.raw_name,
+  ].map(normalizeComparableName);
+
+  return candidates.some(
+    (candidate) =>
+      candidate &&
+      (candidate.includes(targetName) || targetName.includes(candidate)),
+  );
+}
+
+export async function hydrateRestaurantPlaceInfo(
+  restaurantName: string,
+): Promise<RestaurantPlaceInfo | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('restaurant_place_index')
+    .select(
+      'id, provider, provider_place_id, normalized_name, raw_name, formatted_address, road_address, lat, lng, phone, category, provider_url, restaurants(name, slug)',
+    )
+    .order('last_synced_at', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    console.warn('Failed to hydrate restaurant place info from Supabase.', error);
+    return null;
+  }
+
+  const rows = (data ?? []) as RestaurantPlaceIndexQueryRow[];
+  const match = rows.find((row) => isMatchingPlaceIndexRow(row, restaurantName));
+
+  if (!match) {
+    return null;
+  }
+
+  const address = match.road_address || match.formatted_address;
+  if (!address) {
+    return null;
+  }
+
+  const placeInfo: RestaurantPlaceInfo = {
+    address,
+    sourceByRow: {
+      address: 'kakao',
+    },
+  };
+
+  if (match.provider_url) {
+    placeInfo.mapUrl = match.provider_url;
+  }
+
+  if (match.phone) {
+    placeInfo.phone = match.phone;
+    placeInfo.sourceByRow.phone = 'kakao';
+  }
+
+  return placeInfo;
 }
 
 function formatReservationDateParts(dateIso: string) {

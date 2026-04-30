@@ -106,7 +106,7 @@ interface HomeUnifiedSearchProps {
 function normalizeSearchValue(value: string) {
   return value
     .toLowerCase()
-    .normalize('NFKD')
+    .normalize('NFKC')
     .replace(/[()'".,/-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -119,8 +119,27 @@ function splitSearchTerms(value: string) {
     .filter(Boolean);
 }
 
+function hasSearchableCompleteCharacter(value: string) {
+  return /[가-힣a-z0-9]/i.test(value);
+}
+
 function buildSearchText(parts: Array<string | null | undefined>) {
   return normalizeSearchValue(parts.filter(Boolean).join(' '));
+}
+
+function getRestaurantSearchAliases(restaurantName: string) {
+  const normalizedName = normalizeSearchValue(restaurantName);
+
+  if (
+    normalizedName.includes('7th door') ||
+    normalizedName.includes('7thdoor') ||
+    normalizedName.includes('세븐도어') ||
+    normalizedName.includes('세븐스도어')
+  ) {
+    return ['7th Door', '7thDoor', '세븐스도어', '세븐도어'];
+  }
+
+  return [];
 }
 
 function formatChefName(name: string) {
@@ -198,6 +217,7 @@ function buildRestaurantResults(
       searchText: buildSearchText([
         dish.restaurant,
         dish.restaurantSlug,
+        ...getRestaurantSearchAliases(dish.restaurant),
         chefName,
         ...signatureItems,
       ]),
@@ -228,6 +248,7 @@ function buildRestaurantResults(
       signatureItems,
       searchText: buildSearchText([
         reservation.restaurant,
+        ...getRestaurantSearchAliases(reservation.restaurant),
         reservation.chef,
         reservation.course,
         ...signatureItems,
@@ -262,6 +283,7 @@ function buildChefResults(
         chef.name,
         chef.restaurant,
         chef.restaurantSlug,
+        ...getRestaurantSearchAliases(chef.restaurant),
         ...chef.signatureDishTitles,
       ]),
     });
@@ -288,6 +310,7 @@ function buildChefResults(
       searchText: buildSearchText([
         reservation.chef,
         reservation.restaurant,
+        ...getRestaurantSearchAliases(reservation.restaurant),
         reservation.course,
       ]),
     });
@@ -314,6 +337,7 @@ function buildMenuResults(
       dish.title,
       dish.subtitle,
       dish.restaurant,
+      ...getRestaurantSearchAliases(dish.restaurant),
       dish.chef,
       dish.courseLabel,
       dish.seasonLabel ?? '',
@@ -334,6 +358,7 @@ function buildMenuResults(
     searchText: buildSearchText([
       reservation.course,
       reservation.restaurant,
+      ...getRestaurantSearchAliases(reservation.restaurant),
       reservation.chef,
       ...reservation.adjustments.map((adjustment) => adjustment.taste),
     ]),
@@ -344,22 +369,27 @@ function buildMenuResults(
 
 function calculateMatchScore(query: string, item: HomeSearchResult) {
   const normalizedQuery = normalizeSearchValue(query);
-  if (!normalizedQuery) {
-    return 0;
+  if (!normalizedQuery || !hasSearchableCompleteCharacter(normalizedQuery)) {
+    return -1;
   }
 
-  const haystack = item.searchText;
-  if (!haystack.includes(normalizedQuery)) {
-    const terms = splitSearchTerms(query);
-    if (!terms.every((term) => haystack.includes(term))) {
-      return -1;
-    }
+  const terms = splitSearchTerms(query);
+  const searchableNames = [
+    item.label,
+    ...(item.type === 'restaurant' ? getRestaurantSearchAliases(item.label) : []),
+  ].map(normalizeSearchValue).filter(Boolean);
+
+  const hasNameMatch = searchableNames.some((name) => name.includes(normalizedQuery));
+  const hasTermMatch = terms.length > 0 && searchableNames.some((name) =>
+    terms.every((term) => name.includes(term)),
+  );
+
+  if (!hasNameMatch && !hasTermMatch) {
+    return -1;
   }
 
   let score = 0;
   const normalizedLabel = normalizeSearchValue(item.label);
-  const normalizedSubLabel = normalizeSearchValue(item.subLabel);
-  const normalizedMeta = normalizeSearchValue(item.matchMeta);
 
   if (normalizedLabel === normalizedQuery) {
     score += 150;
@@ -369,21 +399,20 @@ function calculateMatchScore(query: string, item: HomeSearchResult) {
     score += 100;
   }
 
-  if (normalizedSubLabel.includes(normalizedQuery)) {
-    score += 45;
-  }
-
-  if (normalizedMeta.includes(normalizedQuery)) {
-    score += 30;
-  }
-
-  const terms = splitSearchTerms(query);
-  score += terms.filter((term) => haystack.includes(term)).length * 20;
+  score += searchableNames
+    .filter((name) => name !== normalizedLabel && name.includes(normalizedQuery))
+    .length * 80;
+  score += terms.filter((term) => searchableNames.some((name) => name.includes(term))).length * 20;
 
   return score;
 }
 
 function filterResults(results: HomeSearchResult[], query: string) {
+  const normalizedQuery = normalizeSearchValue(query);
+  if (!normalizedQuery || !hasSearchableCompleteCharacter(normalizedQuery)) {
+    return [];
+  }
+
   return results
     .map((result) => ({
       result,
