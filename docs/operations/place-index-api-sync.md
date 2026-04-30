@@ -13,6 +13,8 @@ Taste Buddy
 → 메뉴, taste vector, interpretation, chef calibration guidance
 ```
 
+앱 화면에서는 가능한 한 실시간 장소 조회를 우선한다. DB의 place index는 전체 주소 사본을 계속 늘리는 주 테이블이 아니라, `provider_place_id`와 식당명 매칭을 안정화하는 연결 레이어로 둔다.
+
 ## 1. DB 마이그레이션
 
 Supabase SQL Editor에서 아래 파일을 적용한다.
@@ -42,6 +44,15 @@ GOOGLE_MAPS_API_KEY="your-google-maps-api-key"
 
 이 키들은 서버/스크립트 전용이다. `VITE_` 접두사를 붙이지 않는다.
 
+Supabase Edge Function에서 실시간 조회를 쓰려면 Supabase에도 같은 값을 secret으로 등록한다.
+
+```bash
+supabase secrets set KAKAO_REST_API_KEY="your-kakao-rest-api-key"
+supabase functions deploy kakao-place-lookup
+```
+
+앱은 `supabase.functions.invoke('kakao-place-lookup')`을 통해 카카오를 호출한다. 브라우저 번들에는 카카오 키가 들어가지 않는다.
+
 ## 3. 카카오로 장소 인덱스 동기화
 
 ```bash
@@ -59,6 +70,17 @@ npm run place-index:sync -- --provider kakao --query "정식당" --restaurant-sl
 - 카카오맵 URL
 
 영업시간은 카카오 Local API에서 안정적인 필드로 제공되지 않으므로 저장하지 않는다.
+
+## 3-1. 앱 화면에서 실시간 카카오 조회
+
+식당 상세의 위치 카드에서는 아래 순서로 장소 정보를 정한다.
+
+1. `restaurant_place_index`에서 같은 식당의 카카오 place id를 찾는다.
+2. `kakao-place-lookup` Edge Function으로 카카오 Local API를 호출한다.
+3. 카카오 응답의 주소, 전화번호, 좌표, 카카오맵 URL을 화면에 사용한다.
+4. 함수가 아직 배포되지 않았거나 API 호출이 실패하면 기존 DB place index 값을 fallback으로 사용한다.
+
+이 구조 덕분에 Taste Buddy DB는 메뉴/미각 벡터/큐레이션에 집중하고, 장소 정보는 카카오의 최신 데이터를 우선 사용할 수 있다.
 
 ## 4. 네이버 지역 검색 보조
 
@@ -87,6 +109,8 @@ Google Places는 field mask에 따라 과금 SKU가 달라진다. 특히 `regula
 ## 6. 운영 원칙
 
 - 기본 식당 검색과 좌표 인덱스는 카카오를 우선한다.
+- 앱 화면의 주소, 전화번호, 좌표, 카카오맵 링크는 `kakao-place-lookup` 실시간 조회를 우선한다.
+- `restaurant_place_index`에는 노출용 사본을 무조건 늘리기보다 외부 provider ID와 fallback 값을 보관한다.
 - 네이버는 검색 후보 보조로만 사용한다.
 - 영업시간은 Google 또는 파트너 입력으로 보강한다.
 - 외부 API 응답은 `source_payload`에 보관하되, 앱의 핵심 추천 로직은 내부 `dish_inference_profiles`와 피드백 루프를 기준으로 한다.

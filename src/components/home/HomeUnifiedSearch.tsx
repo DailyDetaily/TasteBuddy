@@ -19,6 +19,7 @@ import { cn } from '../ui/utils';
 import { type ReservationRecord } from '../../constants/reservationCatalog';
 import { ICON_TOKENS } from '../../constants/designTokens';
 import {
+  searchKakaoRestaurantPlaces,
   type RestaurantContentCatalog,
   type RestaurantContentDish,
 } from '../../lib/tasteBuddySupabase';
@@ -74,6 +75,7 @@ const SEARCH_SUGGESTION_SECTION_CLASS_NAME = 'tb-card-stack';
 const SEARCH_SUGGESTION_ITEMS_CLASS_NAME = 'flex flex-wrap gap-2';
 
 type SearchResultType = 'restaurant' | 'chef' | 'menu';
+type SearchResultSource = 'taste-buddy' | 'kakao';
 
 export type HomeSearchResult = {
   chef: string;
@@ -81,9 +83,18 @@ export type HomeSearchResult = {
   image: string | null;
   label: string;
   matchMeta: string;
+  place?: {
+    address: string | null;
+    lat: number | null;
+    lng: number | null;
+    phone: string | null;
+    placeId: string | null;
+    placeUrl: string | null;
+  };
   restaurant: string;
   searchText: string;
   signatureItems: string[];
+  source?: SearchResultSource;
   subLabel: string;
   type: SearchResultType;
 };
@@ -438,6 +449,41 @@ function buildSuggestedQueries(
   return Array.from(new Map(candidates.map((candidate) => [candidate.label, candidate])).values()).slice(0, 6);
 }
 
+function buildKakaoSearchResult(place: Awaited<ReturnType<typeof searchKakaoRestaurantPlaces>>[number]) {
+  const name = place.name?.trim();
+
+  if (!name) {
+    return null;
+  }
+
+  const address = place.roadAddress || place.address;
+
+  return {
+    id: `kakao-restaurant-${place.placeId ?? normalizeSearchValue(`${name}-${address ?? ''}`)}`,
+    type: 'restaurant',
+    label: name,
+    subLabel: address ? `카카오 장소 정보 · ${address}` : '카카오 장소 정보',
+    restaurant: name,
+    chef: 'Taste Buddy 분석 준비 중',
+    image: null,
+    matchMeta:
+      '카카오가 제공한 장소 정보로 먼저 확인하고, 메뉴별 미각 분석은 Taste Buddy 데이터가 준비되면 이어서 볼 수 있어요.',
+    signatureItems: [place.category, place.phone ? `전화 ${place.phone}` : null]
+      .filter((item): item is string => Boolean(item))
+      .slice(0, 3),
+    searchText: buildSearchText([name, address, place.category ?? '', place.phone ?? '']),
+    source: 'kakao',
+    place: {
+      address,
+      lat: place.lat,
+      lng: place.lng,
+      phone: place.phone,
+      placeId: place.placeId,
+      placeUrl: place.placeUrl,
+    },
+  } satisfies HomeSearchResult;
+}
+
 function getResultTypeLabel(type: SearchResultType) {
   switch (type) {
     case 'restaurant':
@@ -716,6 +762,8 @@ export default function HomeUnifiedSearch({
   const [recentSearches, setRecentSearches] = useState<string[]>(loadRecentSearches);
   const [recordedResultIds, setRecordedResultIds] = useState<string[]>([]);
   const [bookmarkedRestaurantKeys, setBookmarkedRestaurantKeys] = useState<string[]>([]);
+  const [kakaoResults, setKakaoResults] = useState<HomeSearchResult[]>([]);
+  const [isKakaoSearching, setIsKakaoSearching] = useState(false);
   const [, setBookmarkSyncIndex] = useState(0);
 
   const restaurantResults = buildRestaurantResults(catalog, reservations);
@@ -725,11 +773,22 @@ export default function HomeUnifiedSearch({
   const filteredRestaurants = query.trim() ? filterResults(restaurantResults, query) : [];
   const filteredChefs = query.trim() ? filterResults(chefResults, query) : [];
   const filteredMenus = query.trim() ? filterResults(menuResults, query) : [];
+  const shouldSearchKakao =
+    Boolean(query.trim()) &&
+    hasSearchableCompleteCharacter(normalizeSearchValue(query)) &&
+    filteredRestaurants.length === 0 &&
+    filteredChefs.length === 0 &&
+    filteredMenus.length === 0;
+  const visibleKakaoResults = shouldSearchKakao ? kakaoResults : [];
   const searchGroups: SearchGroups = {
-    restaurants: filteredRestaurants,
+    restaurants: filteredRestaurants.length > 0 ? filteredRestaurants : visibleKakaoResults,
     chefs: filteredChefs,
     menus: filteredMenus,
-    totalCount: filteredRestaurants.length + filteredChefs.length + filteredMenus.length,
+    totalCount:
+      filteredRestaurants.length +
+      filteredChefs.length +
+      filteredMenus.length +
+      visibleKakaoResults.length,
   };
 
   const updateRecentSearches = (value: string) => {
@@ -756,6 +815,40 @@ export default function HomeUnifiedSearch({
   const handleOpen = () => {
     setIsOpen(true);
   };
+
+  useEffect(() => {
+    if (!shouldSearchKakao) {
+      setKakaoResults([]);
+      setIsKakaoSearching(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setIsKakaoSearching(true);
+
+    const timeoutId = window.setTimeout(() => {
+      void (async () => {
+        const places = await searchKakaoRestaurantPlaces(query);
+
+        if (isCancelled) {
+          return;
+        }
+
+        setKakaoResults(
+          places
+            .map(buildKakaoSearchResult)
+            .filter((result): result is HomeSearchResult => Boolean(result))
+            .slice(0, MAX_GROUP_RESULTS),
+        );
+        setIsKakaoSearching(false);
+      })();
+    }, 250);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [query, shouldSearchKakao]);
 
   const handleSuggestionSelect = (value: string) => {
     setQuery(value);
@@ -1066,6 +1159,14 @@ export default function HomeUnifiedSearch({
                         />
                       ) : null}
                     </>
+                  ) : isKakaoSearching ? (
+                    <div className={SEARCH_EMPTY_STATE_CLASS_NAME}>
+                      <EmptyState
+                        icon={<Search size={APP_LUCIDE_ICON_SIZE_M} />}
+                        title="카카오에서 식당 정보를 확인하고 있어요"
+                        description="Taste Buddy에 아직 없는 식당도 같은 상세 페이지에서 먼저 확인할 수 있어요."
+                      />
+                    </div>
                   ) : (
                     <div className={SEARCH_EMPTY_STATE_CLASS_NAME}>
                       <EmptyState

@@ -24,6 +24,12 @@ These seed files are often produced or updated by the scripts in [`../scripts/`]
 
 External map providers are stored as a place index layer, separate from Taste Buddy's menu and taste interpretation data. See [`../docs/operations/place-index-api-sync.md`](../docs/operations/place-index-api-sync.md).
 
+### Edge Functions
+
+- [`functions/kakao-place-lookup`](./functions/kakao-place-lookup)
+
+The app uses this function to fetch live Kakao Local place details without exposing the Kakao REST API key in the browser. Keep `KAKAO_REST_API_KEY` as a Supabase function secret.
+
 ## Typical Workflow
 
 1. Gather or review content in `docs/content/`

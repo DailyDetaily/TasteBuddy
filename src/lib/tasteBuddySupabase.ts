@@ -211,12 +211,42 @@ export interface RestaurantContentCatalog {
 
 export interface RestaurantPlaceInfo {
   address: string;
+  lat?: number;
+  lng?: number;
   mapUrl?: string;
   phone?: string;
   sourceByRow: {
     address: 'kakao';
     phone?: 'kakao';
   };
+}
+
+interface KakaoPlaceLookupResponse {
+  place: {
+    address: string | null;
+    category: string | null;
+    lat: number | null;
+    lng: number | null;
+    name: string | null;
+    phone: string | null;
+    placeId: string | null;
+    placeUrl: string | null;
+    provider: 'kakao';
+    roadAddress: string | null;
+  } | null;
+}
+
+export interface KakaoPlaceSearchResult {
+  address: string | null;
+  category: string | null;
+  lat: number | null;
+  lng: number | null;
+  name: string | null;
+  phone: string | null;
+  placeId: string | null;
+  placeUrl: string | null;
+  provider: 'kakao';
+  roadAddress: string | null;
 }
 
 interface ReservationSeedCandidate {
@@ -548,6 +578,103 @@ function isMatchingPlaceIndexRow(row: RestaurantPlaceIndexQueryRow, restaurantNa
   );
 }
 
+function buildRestaurantPlaceInfoFromIndex(
+  row: RestaurantPlaceIndexQueryRow,
+): RestaurantPlaceInfo | null {
+  const address = row.road_address || row.formatted_address;
+
+  if (!address) {
+    return null;
+  }
+
+  const placeInfo: RestaurantPlaceInfo = {
+    address,
+    sourceByRow: {
+      address: 'kakao',
+    },
+  };
+
+  if (typeof row.lat === 'number') {
+    placeInfo.lat = row.lat;
+  }
+
+  if (typeof row.lng === 'number') {
+    placeInfo.lng = row.lng;
+  }
+
+  if (row.provider_url) {
+    placeInfo.mapUrl = row.provider_url;
+  }
+
+  if (row.phone) {
+    placeInfo.phone = row.phone;
+    placeInfo.sourceByRow.phone = 'kakao';
+  }
+
+  return placeInfo;
+}
+
+async function lookupLiveKakaoPlaceInfo(
+  restaurantName: string,
+  placeIndexMatch?: RestaurantPlaceIndexQueryRow,
+): Promise<RestaurantPlaceInfo | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return null;
+  }
+
+  const query = placeIndexMatch?.raw_name || restaurantName;
+  const { data, error } = await supabase.functions.invoke<KakaoPlaceLookupResponse>(
+    'kakao-place-lookup',
+    {
+      body: {
+        expectedPlaceId:
+          placeIndexMatch?.provider === 'kakao'
+            ? placeIndexMatch.provider_place_id ?? undefined
+            : undefined,
+        query,
+      },
+    },
+  );
+
+  if (error) {
+    console.warn('Failed to hydrate live Kakao place info.', error);
+    return null;
+  }
+
+  const place = data?.place;
+  const address = place?.roadAddress || place?.address;
+
+  if (!place || !address) {
+    return null;
+  }
+
+  const placeInfo: RestaurantPlaceInfo = {
+    address,
+    sourceByRow: {
+      address: 'kakao',
+    },
+  };
+
+  if (typeof place.lat === 'number') {
+    placeInfo.lat = place.lat;
+  }
+
+  if (typeof place.lng === 'number') {
+    placeInfo.lng = place.lng;
+  }
+
+  if (place.placeUrl) {
+    placeInfo.mapUrl = place.placeUrl;
+  }
+
+  if (place.phone) {
+    placeInfo.phone = place.phone;
+    placeInfo.sourceByRow.phone = 'kakao';
+  }
+
+  return placeInfo;
+}
+
 export async function hydrateRestaurantPlaceInfo(
   restaurantName: string,
 ): Promise<RestaurantPlaceInfo | null> {
@@ -565,38 +692,49 @@ export async function hydrateRestaurantPlaceInfo(
 
   if (error) {
     console.warn('Failed to hydrate restaurant place info from Supabase.', error);
-    return null;
+    return lookupLiveKakaoPlaceInfo(restaurantName);
   }
 
   const rows = (data ?? []) as RestaurantPlaceIndexQueryRow[];
   const match = rows.find((row) => isMatchingPlaceIndexRow(row, restaurantName));
+  const livePlaceInfo = await lookupLiveKakaoPlaceInfo(restaurantName, match);
 
-  if (!match) {
-    return null;
+  return livePlaceInfo ?? (match ? buildRestaurantPlaceInfoFromIndex(match) : null);
+}
+
+export async function searchKakaoRestaurantPlaces(
+  query: string,
+): Promise<KakaoPlaceSearchResult[]> {
+  if (!supabase || !isSupabaseConfigured) {
+    return [];
   }
 
-  const address = match.road_address || match.formatted_address;
-  if (!address) {
-    return null;
+  const normalizedQuery = query.trim();
+
+  if (!normalizedQuery) {
+    return [];
   }
 
-  const placeInfo: RestaurantPlaceInfo = {
-    address,
-    sourceByRow: {
-      address: 'kakao',
+  const { data, error } = await supabase.functions.invoke<{
+    places?: KakaoPlaceSearchResult[];
+    place?: KakaoPlaceSearchResult | null;
+  }>('kakao-place-lookup', {
+    body: {
+      includeCandidates: true,
+      query: normalizedQuery,
     },
-  };
+  });
 
-  if (match.provider_url) {
-    placeInfo.mapUrl = match.provider_url;
+  if (error) {
+    console.warn('Failed to search Kakao restaurant places.', error);
+    return [];
   }
 
-  if (match.phone) {
-    placeInfo.phone = match.phone;
-    placeInfo.sourceByRow.phone = 'kakao';
+  if (Array.isArray(data?.places)) {
+    return data.places;
   }
 
-  return placeInfo;
+  return data?.place ? [data.place] : [];
 }
 
 function formatReservationDateParts(dateIso: string) {

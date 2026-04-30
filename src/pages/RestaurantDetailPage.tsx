@@ -851,6 +851,73 @@ export function createRestaurantDetailFromChefMatch(
 export function createRestaurantDetailFromSearchResult(
   result: HomeSearchResult,
 ): RestaurantDetailViewModel {
+  if (result.source === 'kakao') {
+    const address = result.place?.address ?? DEFAULT_RESTAURANT_DETAIL.info.address;
+    const info: RestaurantInfoViewModel = {
+      address,
+      hours: 'Taste Buddy 분석 준비 중',
+      mapUrl: result.place?.placeUrl ?? undefined,
+      phone: result.place?.phone ?? undefined,
+      sourceByRow: {
+        address: 'kakao',
+        ...(result.place?.phone ? { phone: 'kakao' as const } : {}),
+      },
+    };
+    const locationLabel = address.split(' ').slice(0, 2).join(' ') || DEFAULT_RESTAURANT_DETAIL.locationLabel;
+
+    return {
+      ...DEFAULT_RESTAURANT_DETAIL,
+      id: result.id,
+      name: result.restaurant,
+      category: '카카오 장소 정보 기반',
+      locationLabel,
+      chef: {
+        name: 'Taste Buddy 분석 준비 중',
+        avatarUrl: null,
+      },
+      confidenceLabel: '더 확인 필요',
+      fitSummary:
+        '장소 정보는 카카오 기준으로 확인했어요. 메뉴별 미각 매칭은 Taste Buddy 데이터가 준비되면 같은 페이지에서 이어서 볼 수 있어요.',
+      mainRisk:
+        '아직 메뉴와 코스의 미각 벡터가 연결되지 않아 개인화 매칭률은 판단하지 않았어요.',
+      decisionReason:
+        '먼저 장소를 확인하고, 자주 찾는 식당은 Taste Buddy 큐레이션 후보로 올려 메뉴와 셰프 해석을 붙일 수 있어요.',
+      summaryLine:
+        `${result.restaurant}은 카카오 장소 정보로 먼저 확인한 레스토랑이에요. Taste Buddy 분석은 준비 중입니다.`,
+      scores: {
+        personalMatchRate: 0,
+        palateFriendsAverageScore: 0,
+        overallScore: 0,
+      },
+      tags: [
+        { id: 'kakao-place', label: '카카오 장소 정보', tone: 'neutral' },
+        { id: 'analysis-pending', label: 'TB 분석 준비 중', tone: 'neutral' },
+        { id: 'taste-vector-pending', label: '미각 벡터 미연결', tone: 'neutral' },
+      ],
+      memorableDishes: [
+        {
+          id: `${result.id}-analysis-pending`,
+          title: 'Taste Buddy 분석 준비 중',
+          imageUrl: null,
+          tags: ['메뉴 수집 전', '미각 벡터 미연결'],
+          summary:
+            '이 식당의 코스와 메뉴 데이터가 준비되면 감각 흐름, 셰프 의도, 개인화 매칭을 같은 상세 페이지에서 볼 수 있어요.',
+        },
+        {
+          id: `${result.id}-place-confirmed`,
+          title: '장소 정보 확인됨',
+          imageUrl: null,
+          tags: ['카카오 장소', '주소 확인'],
+          summary:
+            address !== DEFAULT_RESTAURANT_DETAIL.info.address
+              ? `${address} 기준으로 위치 정보를 확인했어요.`
+              : '카카오 장소 정보를 기준으로 식당 존재 여부를 먼저 확인했어요.',
+        },
+      ],
+      info,
+    };
+  }
+
   const primaryDishTitle = result.type === 'menu' ? result.label : result.signatureItems[0];
   const chefName = result.chef.replace(/\s*셰프$/, '');
   const memorableDishes = isEatanicGardenRestaurant(result.restaurant)
@@ -1083,7 +1150,7 @@ export default function RestaurantDetailPage({
 
   useEffect(() => {
     let isCancelled = false;
-    setPlaceInfo(null);
+    setPlaceInfo(sourceDetail.info.sourceByRow?.address === 'kakao' ? sourceDetail.info : null);
 
     void (async () => {
       const hydratedPlaceInfo = await hydrateRestaurantPlaceInfo(sourceDetail.name);
