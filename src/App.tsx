@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Home from './pages/HomePage';
 import AnalysisPage from './pages/AnalysisPage';
@@ -84,6 +84,10 @@ import { ensureSupabaseSession, isSupabaseConfigured } from './lib/supabase';
 import { buildTasteSurveyCompatibleResult } from './lib/tasteSurveyScoring';
 import { TASTE_SURVEY_ITEMS } from './constants/tasteSurveyItems';
 import { TASTE_SURVEY_CONTEXT_STEPS } from './constants/tasteSurveyConfig';
+import {
+  createUserTasteAccentStyle,
+  resolveUserTasteAccent,
+} from './lib/userTasteAccent';
 import {
   buildTasteSurveyMeasurementRawPayload,
   hasTasteSurveyRespondentContext,
@@ -446,6 +450,7 @@ function MainApp() {
   const [isReservationRootView, setIsReservationRootView] = useState(true);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] =
     useState<RestaurantDetailViewModel | null>(null);
+  const [isRestaurantDetailFeedbackView, setIsRestaurantDetailFeedbackView] = useState(false);
   const [globalSearchTrigger, setGlobalSearchTrigger] = useState(0);
   const [globalSearchCatalog, setGlobalSearchCatalog] = useState<RestaurantContentCatalog>({
     chefs: [],
@@ -852,7 +857,11 @@ function MainApp() {
     appState === 'main' &&
     (selectedRestaurantDetail !== null || activeTab !== 'reservation' || isReservationRootView);
   const shouldShowMainTopShell = shouldShowMainShell && selectedRestaurantDetail === null;
-  const shouldShowMainBottomShell = shouldShowMainShell;
+  const shouldShowMainBottomShell = shouldShowMainShell && !isRestaurantDetailFeedbackView;
+  const userTasteAccentStyle = useMemo(
+    () => createUserTasteAccentStyle(resolveUserTasteAccent(latestTasteMeasurementSnapshot)),
+    [latestTasteMeasurementSnapshot],
+  );
 
   useEffect(() => {
     const nextBackgroundColor = isImmersiveWhiteShell ? '#ffffff' : '#f3f3f3';
@@ -881,6 +890,7 @@ function MainApp() {
     <div
       className={`flex min-h-[100dvh] items-center justify-center overflow-hidden ${isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
         }`}
+      style={userTasteAccentStyle}
     >
       <div
         className={`relative flex h-[100dvh] w-full max-w-[1440px] flex-col overflow-hidden font-sans ${isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
@@ -1067,7 +1077,11 @@ function MainApp() {
             <RestaurantDetailPage
               measurementSnapshot={latestTasteMeasurementSnapshot}
               restaurant={selectedRestaurantDetail}
-              onBack={() => setSelectedRestaurantDetail(null)}
+              onBack={() => {
+                setIsRestaurantDetailFeedbackView(false);
+                setSelectedRestaurantDetail(null);
+              }}
+              onFeedbackViewChange={setIsRestaurantDetailFeedbackView}
             />
           ) : (
             <>

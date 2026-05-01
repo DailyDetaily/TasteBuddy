@@ -254,7 +254,7 @@ export default function RestaurantHeroCard({
                   </div>
                   {item.id === 'address' ? (
                     <button
-                      className="shrink-0 text-[11px] font-semibold text-[var(--tb-color-text-subtle)] transition-colors hover:text-[var(--tb-color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-strong)]"
+                      className="shrink-0 text-[11px] font-semibold text-[var(--tb-user-accent-main)] transition-colors hover:text-[var(--tb-user-accent-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-user-accent-tint-soft-border)]"
                       onClick={() => {
                         void navigator.clipboard?.writeText(item.value);
                       }}

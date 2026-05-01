@@ -1115,12 +1115,14 @@ export function createRestaurantDetailFromReservation(
 interface RestaurantDetailPageProps {
   measurementSnapshot?: TasteMeasurementSnapshot | null;
   onBack: () => void;
+  onFeedbackViewChange?: (isFeedbackView: boolean) => void;
   restaurant?: RestaurantDetailViewModel | null;
 }
 
 export default function RestaurantDetailPage({
   measurementSnapshot,
   onBack,
+  onFeedbackViewChange,
   restaurant = DEFAULT_RESTAURANT_DETAIL,
 }: RestaurantDetailPageProps) {
   const sourceDetail = restaurant ?? DEFAULT_RESTAURANT_DETAIL;
@@ -1196,6 +1198,14 @@ export default function RestaurantDetailPage({
     setSelectedView('detail');
     setSelectedMenuDetail(null);
   }, [feedbackScenario]);
+
+  useEffect(() => {
+    onFeedbackViewChange?.(selectedView === 'feedback');
+
+    return () => {
+      onFeedbackViewChange?.(false);
+    };
+  }, [onFeedbackViewChange, selectedView]);
 
   if (selectedView === 'feedback') {
     return (
@@ -1278,10 +1288,10 @@ export default function RestaurantDetailPage({
           />
 
           <PageSection title="위치 및 정보" titleAs="h2" titleSize="md">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col items-center gap-2">
               <RestaurantInfoCard info={detail.info} />
               <button
-                className="inline-flex items-center gap-1.5 self-start px-1 py-1 text-[12px] font-semibold text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-strong)]"
+                className="inline-flex items-center gap-1.5 self-center px-1 py-1 text-[12px] font-semibold text-[var(--tb-user-accent-main)] transition-colors hover:text-[var(--tb-user-accent-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-user-accent-tint-soft-border)]"
                 onClick={() => setIsInfoSuggestionSheetOpen(true)}
                 type="button"
               >

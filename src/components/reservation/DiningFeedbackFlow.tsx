@@ -16,6 +16,7 @@ import TopAppBar from '../TopAppBar';
 import OutlineBadge from '../system/OutlineBadge';
 import FlowBottomCta from '../system/FlowBottomCta';
 import PageSection from '../system/PageSection';
+import SelectionCard from '../system/SelectionCard';
 import TokenBox from '../system/TokenBox';
 import TasteChip from '../system/TasteChip';
 import {
@@ -101,37 +102,16 @@ function ChoiceSelector({
     <div className="flex flex-col gap-2">
       {choices.map((choice) => {
         const isActive = selectedChoiceId === choice.id;
+
         return (
-          <button
+          <SelectionCard
             key={choice.id}
-            type="button"
+            description={choice.reason}
+            indicator="checkbox"
             onClick={() => onSelect(choice.id)}
-            className={cn(
-              'rounded-[var(--tb-radius-14)] border px-3 py-3 text-left transition-colors',
-              isActive
-                ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-surface-base)]'
-                : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-overlay)]',
-            )}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className={cn(
-                  'mt-[2px] size-[14px] rounded-full border transition-colors',
-                  isActive
-                    ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)]'
-                    : 'border-[var(--tb-color-border-disabled)] bg-transparent',
-                )}
-              />
-              <div className="flex flex-col gap-1">
-                <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
-                  {choice.label}
-                </span>
-                <span className="text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                  {choice.reason}
-                </span>
-              </div>
-            </div>
-          </button>
+            selected={isActive}
+            title={choice.label}
+          />
         );
       })}
     </div>
@@ -274,7 +254,7 @@ export function DiningFeedbackScreen({
       <TopAppBar title="식후 피드백" showBack onBack={onBack} />
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="tb-section-stack px-5 pt-6 pb-[168px]">
-          <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
+          <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-base)]">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap gap-2">

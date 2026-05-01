@@ -18,7 +18,6 @@ import { type ReservationRecord, RESERVATION_CATALOG } from '../../constants/res
 import {
   createInitialTasteMeasurementSnapshot,
   formatMeasurementDate,
-  getStrongestTasteMeasurement,
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
   isBroadStarterMeasurementSnapshot,
@@ -456,7 +455,6 @@ export function HomeCardStack({
   recentChangeText,
 }: HomeCardStackProps) {
   const recentChangeTasteLabel = getRecentChangeTasteMeasurement(measurementSnapshot).label;
-  const remeasurementAccentTaste = getStrongestTasteMeasurement(measurementSnapshot).label;
   const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
 
   return (
@@ -507,7 +505,6 @@ export function HomeCardStack({
         sectionId="appSpecific"
       >
         <TasteMeasurementMiniCta
-          accentTaste={remeasurementAccentTaste}
           title={
             needsMeasurementRefresh
               ? isBroadStarterProfile
