@@ -32,6 +32,7 @@ import FlowBottomCta from '../system/FlowBottomCta';
 import FlowHeaderBlock from '../system/FlowHeaderBlock';
 import FlowStepCta from '../system/FlowStepCta';
 import HexRadarChart from '../system/HexRadarChart';
+import TasteLineChart from '../system/TasteLineChart';
 import TCSBadge from '../system/TCSBadge';
 import HospitalityEmptyState from '../system/HospitalityEmptyState';
 import InterpretationCard from '../system/InterpretationCard';
@@ -974,6 +975,33 @@ function TastePointArrowBoxFilePreview() {
   );
 }
 
+function TasteLineChartFilePreview() {
+  return (
+    <div className="bg-[var(--tb-color-surface-muted)] p-6">
+      <div className="mx-auto grid max-w-[420px] gap-3 rounded-[24px] bg-white p-5 shadow-[0_18px_40px_rgba(15,15,15,0.06)]">
+        <div className="flex items-center justify-between gap-4">
+          <div className="grid gap-1">
+            <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+              특이사항 미니 추세
+            </p>
+            <p className="text-[12px] text-[var(--tb-color-text-subtle)]">
+              같은 스케일에서 최근 변화 흐름을 비교합니다.
+            </p>
+          </div>
+          <div className="w-[152px]">
+            <TasteLineChart
+              entries={[
+                { id: 'umami', taste: '감칠맛', values: [1.2, 2.1, 2.4, 4.5] },
+                { id: 'fat', taste: '지방맛', values: [0.8, 1.1, 1.4, 3.2] },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SectionTitleFilePreview() {
   return (
     <div className="bg-[var(--tb-color-surface-muted)] p-6">
@@ -1238,6 +1266,12 @@ const FILE_PREVIEW_DEFINITIONS: Record<string, FilePreviewDefinition> = {
     kind: 'component',
     title: 'TastePointArrowBox.tsx',
     render: () => <TastePointArrowBoxFilePreview />,
+  },
+  'src/components/system/TasteLineChart.tsx': {
+    description: 'Compact taste-aware line graph for comparing small profile changes on a shared scale.',
+    kind: 'component',
+    title: 'TasteLineChart.tsx',
+    render: () => <TasteLineChartFilePreview />,
   },
   'src/components/system/SectionTitle.tsx': {
     description: 'Shared section title typography used across app flows.',

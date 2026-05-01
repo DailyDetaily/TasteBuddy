@@ -3,7 +3,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon
 } from 'lucide-react';
-import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {
   buildHomeReservationHint,
   buildHomeSpecialNoteFromReservations,
@@ -44,7 +44,9 @@ import {
   getTasteMeasurementEntries,
   getWeakestTasteMeasurement,
   isTasteMeasurementStale,
+  resolveTasteMeasurementValue,
   type TasteMeasurementEntry,
+  type TasteMeasurementResults,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
 import {
@@ -68,6 +70,7 @@ const TREND_GUIDE_BOTTOM_TAIL = 8;
 const TREND_CHART_TOP_MARGIN = 10;
 const TREND_CHART_X_AXIS_HEIGHT = 18;
 const TREND_CHART_Y_AXIS_WIDTH = 34;
+const TREND_ALL_RANGE_EDGE_GUTTER = TREND_ACTIVE_DOT_OUTER_RADIUS + 2;
 const TREND_WINDOW_NAV_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const GRAPH_TASTE_ORDER = TASTE_LABELS;
 const TREND_RANGE_OPTIONS = [
@@ -554,8 +557,21 @@ function startOfMonth(value: Date) {
   return new Date(value.getFullYear(), value.getMonth(), 1);
 }
 
+function endOfMonth(value: Date) {
+  return startOfDay(new Date(value.getFullYear(), value.getMonth() + 1, 0));
+}
+
 function startOfYear(value: Date) {
   return new Date(value.getFullYear(), 0, 1);
+}
+
+function startOfQuarter(value: Date) {
+  const quarterStartMonth = Math.floor(value.getMonth() / 3) * 3;
+  return startOfDay(new Date(value.getFullYear(), quarterStartMonth, 1));
+}
+
+function endOfQuarter(value: Date) {
+  return endOfMonth(addMonths(startOfQuarter(value), 2));
 }
 
 function startOfWeekMonday(value: Date) {
@@ -579,6 +595,10 @@ function addMonths(value: Date, amount: number) {
   return startOfDay(next);
 }
 
+function addYears(value: Date, amount: number) {
+  return startOfDay(new Date(value.getFullYear() + amount, value.getMonth(), 1));
+}
+
 function formatTrendWeekdayLabel(value: Date) {
   return new Intl.DateTimeFormat('ko-KR', { weekday: 'long' }).format(value);
 }
@@ -590,7 +610,7 @@ function formatTrendMonthDayAxisLabel(value: Date) {
 }
 
 function formatTrendMonthMondayAxisLabel(value: Date) {
-  return `월 ${value.getDate()}`;
+  return `${value.getMonth() + 1}.${value.getDate()}`;
 }
 
 function formatTrendMonthAxisLabel(value: Date) {
@@ -700,6 +720,8 @@ function getTrendNavigationBounds(
   const paddedEarliestMs = dataBounds.latestMs - 730 * DAY_IN_MS;
   const paddedLatestMs = Math.max(
     dataBounds.latestMs,
+    endOfMonth(new Date(dataBounds.latestMs)).getTime(),
+    endOfQuarter(new Date(dataBounds.latestMs)).getTime(),
     endOfWeekMonday(new Date(dataBounds.latestMs)).getTime(),
     endOfYear(new Date(dataBounds.latestMs)).getTime(),
   );
@@ -710,32 +732,68 @@ function getTrendNavigationBounds(
   };
 }
 
-function createTrendViewWindow(
-  endMs: number,
-  durationDays: number,
+function createCalendarTrendViewWindow(
+  rangeId: TrendRangeId,
+  anchorMs: number,
+  navigationBounds: { earliestMs: number; latestMs: number },
 ) {
-  const safeEndMs = startOfDay(new Date(endMs)).getTime();
-  const safeDurationDays = Math.max(1, Math.round(durationDays));
+  const anchorDate = startOfDay(new Date(anchorMs));
 
-  return {
-    startMs: safeEndMs - (safeDurationDays - 1) * DAY_IN_MS,
-    endMs: safeEndMs,
-  };
-}
+  if (rangeId === 'week') {
+    const startDate = startOfWeekMonday(anchorDate);
 
-function createTrendViewWindowFromCenter(
-  centerMs: number,
-  durationDays: number,
-) {
-  const safeCenterMs = startOfDay(new Date(centerMs)).getTime();
-  const safeDurationDays = Math.max(1, Math.round(durationDays));
-  const halfSpanBeforeDays = Math.floor((safeDurationDays - 1) / 2);
-  const halfSpanAfterDays = safeDurationDays - 1 - halfSpanBeforeDays;
+    return clampTrendViewWindow(
+      {
+        startMs: startDate.getTime(),
+        endMs: addDays(startDate, 6).getTime(),
+      },
+      navigationBounds,
+    );
+  }
 
-  return {
-    startMs: safeCenterMs - halfSpanBeforeDays * DAY_IN_MS,
-    endMs: safeCenterMs + halfSpanAfterDays * DAY_IN_MS,
-  };
+  if (rangeId === 'month') {
+    const startDate = startOfMonth(anchorDate);
+
+    return clampTrendViewWindow(
+      {
+        startMs: startDate.getTime(),
+        endMs: endOfMonth(anchorDate).getTime(),
+      },
+      navigationBounds,
+    );
+  }
+
+  if (rangeId === 'quarter') {
+    const startDate = startOfQuarter(anchorDate);
+
+    return clampTrendViewWindow(
+      {
+        startMs: startDate.getTime(),
+        endMs: endOfQuarter(anchorDate).getTime(),
+      },
+      navigationBounds,
+    );
+  }
+
+  if (rangeId === 'year') {
+    const startDate = startOfYear(anchorDate);
+
+    return clampTrendViewWindow(
+      {
+        startMs: startDate.getTime(),
+        endMs: endOfYear(anchorDate).getTime(),
+      },
+      navigationBounds,
+    );
+  }
+
+  return clampTrendViewWindow(
+    {
+      startMs: startOfYear(new Date(navigationBounds.earliestMs)).getTime(),
+      endMs: endOfYear(new Date(navigationBounds.latestMs)).getTime(),
+    },
+    navigationBounds,
+  );
 }
 
 function clampTrendViewWindow(
@@ -771,51 +829,11 @@ function clampTrendViewWindow(
   };
 }
 
-function getTrendPresetDurationDays(
-  rangeId: TrendRangeId,
-  dataBounds: { earliestMs: number; latestMs: number },
-) {
-  const totalSpanDays = Math.max(1, Math.round((dataBounds.latestMs - dataBounds.earliestMs) / DAY_IN_MS) + 1);
-  const option = TREND_RANGE_OPTIONS.find((item) => item.id === rangeId);
-
-  if (!option || rangeId === 'all' || option.days === null) {
-    return totalSpanDays;
-  }
-
-  return option.days;
-}
-
 function createTrendViewWindowFromRange(
   rangeId: TrendRangeId,
   dataBounds: { earliestMs: number; latestMs: number },
   navigationBounds: { earliestMs: number; latestMs: number },
 ) {
-  if (rangeId === 'week') {
-    const startDate = startOfWeekMonday(new Date(dataBounds.latestMs));
-    const endDate = addDays(startDate, 6);
-
-    return clampTrendViewWindow(
-      {
-        startMs: startDate.getTime(),
-        endMs: endDate.getTime(),
-      },
-      navigationBounds,
-    );
-  }
-
-  if (rangeId === 'year') {
-    const endDate = endOfYear(new Date(dataBounds.latestMs));
-    const startDate = startOfYear(endDate);
-
-    return clampTrendViewWindow(
-      {
-        startMs: startDate.getTime(),
-        endMs: endDate.getTime(),
-      },
-      navigationBounds,
-    );
-  }
-
   if (rangeId === 'all') {
     const startDate = startOfYear(new Date(dataBounds.earliestMs));
     const endDate = endOfYear(new Date(dataBounds.latestMs));
@@ -829,12 +847,7 @@ function createTrendViewWindowFromRange(
     );
   }
 
-  const durationDays = getTrendPresetDurationDays(rangeId, dataBounds);
-
-  return clampTrendViewWindow(
-    createTrendViewWindow(dataBounds.latestMs, durationDays),
-    navigationBounds,
-  );
+  return createCalendarTrendViewWindow(rangeId, dataBounds.latestMs, navigationBounds);
 }
 
 function deriveTrendRangeIdFromWindow(
@@ -874,86 +887,69 @@ function shiftTrendViewWindow(
   direction: -1 | 1,
   bounds: { earliestMs: number; latestMs: number },
 ) {
-  if (rangeId === 'year') {
-    const targetYear = new Date(window.startMs).getFullYear() + direction;
-    return clampTrendViewWindow(
-      {
-        startMs: startOfYear(new Date(targetYear, 0, 1)).getTime(),
-        endMs: endOfYear(new Date(targetYear, 0, 1)).getTime(),
-      },
+  const startDate = new Date(window.startMs);
+
+  if (rangeId === 'week') {
+    return createCalendarTrendViewWindow(
+      'week',
+      addDays(startDate, direction * 7).getTime(),
+      bounds,
+    );
+  }
+
+  if (rangeId === 'month') {
+    return createCalendarTrendViewWindow(
+      'month',
+      addMonths(startDate, direction).getTime(),
       bounds,
     );
   }
 
   if (rangeId === 'quarter') {
-    return clampTrendViewWindow(
-      {
-        startMs: addMonths(new Date(window.startMs), direction).getTime(),
-        endMs: addMonths(new Date(window.endMs), direction).getTime(),
-      },
+    return createCalendarTrendViewWindow(
+      'quarter',
+      addMonths(startDate, direction * 3).getTime(),
       bounds,
     );
   }
 
-  const shiftDays = (() => {
-    switch (rangeId) {
-      case 'week':
-        return 1;
-      case 'month':
-        return 7;
-      case 'all':
-        return Math.max(1, Math.round((getTrendDurationDays(window) - 1) / 4));
-      default:
-        return Math.max(1, Math.round(getTrendDurationDays(window) * 0.78));
-    }
-  })();
+  if (rangeId === 'year') {
+    return createCalendarTrendViewWindow(
+      'year',
+      addYears(startDate, direction).getTime(),
+      bounds,
+    );
+  }
 
-  return clampTrendViewWindow(
-    {
-      startMs: window.startMs + shiftDays * DAY_IN_MS * direction,
-      endMs: window.endMs + shiftDays * DAY_IN_MS * direction,
-    },
-    bounds,
-  );
+  return window;
+}
+
+function getScaledTrendRangeId(rangeId: TrendRangeId, scaleFactor: number): TrendRangeId {
+  const orderedRangeIds: TrendRangeId[] = ['week', 'month', 'quarter', 'year', 'all'];
+  const currentIndex = Math.max(0, orderedRangeIds.indexOf(rangeId));
+  const nextIndex = scaleFactor < 1
+    ? Math.max(0, currentIndex - 1)
+    : Math.min(orderedRangeIds.length - 1, currentIndex + 1);
+
+  return orderedRangeIds[nextIndex] ?? rangeId;
 }
 
 function scaleTrendViewWindow(
   window: TrendViewWindow,
+  rangeId: TrendRangeId,
   scaleFactor: number,
-  bounds: { earliestMs: number; latestMs: number },
+  dataBounds: { earliestMs: number; latestMs: number },
+  navigationBounds: { earliestMs: number; latestMs: number },
 ) {
-  const currentDurationDays = getTrendDurationDays(window);
-  const totalSpanDays = Math.max(1, Math.round((bounds.latestMs - bounds.earliestMs) / DAY_IN_MS) + 1);
-  const targetDurationDays = Math.min(
-    Math.max(3, Math.round(currentDurationDays * scaleFactor)),
-    Math.max(totalSpanDays, 540),
-  );
+  const nextRangeId = getScaledTrendRangeId(rangeId, scaleFactor);
   const centerMs = window.startMs + (window.endMs - window.startMs) / 2;
 
-  return clampTrendViewWindow(
-    createTrendViewWindowFromCenter(centerMs, targetDurationDays),
-    bounds,
-  );
-}
-
-function getVisibleTrendPositions(count: number) {
-  if (count <= 0) {
-    return [] as number[];
-  }
-
-  if (count === 1) {
-    return [0.5];
-  }
-
-  if (count === 2) {
-    return [1 / 3, 1];
-  }
-
-  if (count === 3) {
-    return [1 / 3, 2 / 3, 1];
-  }
-
-  return Array.from({ length: count }, (_, index) => index / (count - 1));
+  return {
+    rangeId: nextRangeId,
+    window: nextRangeId === 'all'
+      ? createTrendViewWindowFromRange('all', dataBounds, navigationBounds)
+      : createCalendarTrendViewWindow(nextRangeId, centerMs, navigationBounds),
+  };
 }
 
 function buildTrendGuideFromDates(
@@ -982,15 +978,16 @@ function buildTrendGuideFromDates(
 function buildEqualYearMonthGuide(window: TrendViewWindow) {
   const year = new Date(window.startMs).getFullYear();
   const dates = Array.from({ length: 12 }, (_, index) => new Date(year, index, 1));
-  const positions = dates.map((_, index) => Number((index / 12).toFixed(4)));
-  const labelByPosition = positions.reduce<Record<string, string>>((accumulator, position, index) => {
+  const tickPositions = dates.map((_, index) => Number((index / 11).toFixed(4)));
+  const gridPositions = tickPositions;
+  const labelByPosition = tickPositions.reduce<Record<string, string>>((accumulator, position, index) => {
     accumulator[formatTrendPositionKey(position)] = formatTrendMonthAxisLabel(dates[index]);
     return accumulator;
   }, {});
 
   return {
-    tickPositions: positions,
-    gridPositions: positions,
+    tickPositions,
+    gridPositions,
     labelByPosition,
   };
 }
@@ -1111,6 +1108,7 @@ function buildYearBoundaryDatesWithinWindow(window: TrendViewWindow) {
 function buildTrendPeriodGuide(
   rangeId: TrendRangeId,
   window: TrendViewWindow,
+  allRangeDataBounds?: { earliestMs: number; latestMs: number },
 ) {
   const startDate = startOfDay(new Date(window.startMs));
   const endDate = startOfDay(new Date(window.endMs));
@@ -1118,7 +1116,10 @@ function buildTrendPeriodGuide(
   switch (rangeId) {
     case 'week': {
       const dates = Array.from({ length: 7 }, (_, index) => addDays(startDate, index));
-      return sanitizeTrendGuide(buildTrendGuideFromDates(dates, formatTrendWeekdayLabel, window));
+      return appendTrendGridBoundary(
+        sanitizeTrendGuide(buildTrendGuideFromDates(dates, formatTrendWeekdayLabel, window)),
+        1,
+      );
     }
     case 'month': {
       const dates = buildWeeklyMondayDatesWithinWindow(window);
@@ -1136,25 +1137,31 @@ function buildTrendPeriodGuide(
       ), 1, nextBoundaryLabel);
     }
     case 'year': {
-      return sanitizeTrendGuide(buildEqualYearMonthGuide(window));
+      return appendTrendGridBoundary(
+        sanitizeTrendGuide(buildEqualYearMonthGuide(window)),
+        1,
+      );
     }
     case 'all':
     default: {
-      const dates = buildYearBoundaryDatesWithinWindow(window);
-      let guide = sanitizeTrendGuide(
-        buildTrendGuideFromDates(dates, formatTrendYearRangeLabel, window),
-      );
-      const startYearLabel = formatTrendYearRangeLabel(startDate);
-      const endBoundaryYearLabel = formatTrendYearRangeLabel(
-        startOfYear(new Date(endDate.getFullYear() + 1, 0, 1)),
-      );
+      const dataStartDate = startOfDay(new Date(allRangeDataBounds?.earliestMs ?? window.startMs));
+      const dataEndDate = startOfDay(new Date(allRangeDataBounds?.latestMs ?? window.endMs));
+      const sameYear = dataStartDate.getFullYear() === dataEndDate.getFullYear();
+      const startLabel = sameYear
+        ? formatTrendMonthDayAxisLabel(dataStartDate)
+        : formatTrendYearRangeLabel(dataStartDate);
+      const endLabel = sameYear
+        ? formatTrendMonthDayAxisLabel(dataEndDate)
+        : formatTrendYearRangeLabel(dataEndDate);
 
-      guide = appendTrendBoundaryTick(appendTrendGridBoundary(guide, 0), 0, startYearLabel);
-      guide = appendTrendGridBoundary(guide, 1);
-
-      guide = appendTrendBoundaryTick(guide, 1, endBoundaryYearLabel);
-
-      return sanitizeTrendGuide(guide);
+      return {
+        tickPositions: [0, 1],
+        gridPositions: [0, 1],
+        labelByPosition: {
+          [formatTrendPositionKey(0)]: startLabel,
+          [formatTrendPositionKey(1)]: endLabel,
+        },
+      };
     }
   }
 }
@@ -1203,39 +1210,12 @@ function buildTrendRangeLabel(window: TrendViewWindow | null, rangeId: TrendRang
 }
 
 function buildTrendAxisConfig(
-  points: ProfileChangeTrendPoint[],
-  visibleTasteLabels: string[],
+  _points: ProfileChangeTrendPoint[],
+  _visibleTasteLabels: string[],
 ) {
-  const values = points.flatMap((point) =>
-    visibleTasteLabels
-      .map((label) => point[label as keyof ProfileChangeTrendPoint])
-      .filter((value): value is number => typeof value === 'number'),
-  );
-
-  if (values.length === 0) {
-    return {
-      domain: [0, 100] as [number, number],
-      ticks: [20, 40, 60, 80, 100],
-    };
-  }
-
-  const minimumValue = Math.min(...values);
-  const maximumValue = Math.max(...values);
-  const basePadding = minimumValue === maximumValue ? 8 : Math.max(4, Math.ceil((maximumValue - minimumValue) * 0.16));
-  const rawMin = Math.max(0, minimumValue - basePadding);
-  const rawMax = Math.min(100, maximumValue + basePadding);
-  const tickStep = rawMax - rawMin <= 20 ? 5 : rawMax - rawMin <= 40 ? 10 : 20;
-  const domainMin = Math.max(0, Math.floor(rawMin / tickStep) * tickStep);
-  const domainMax = Math.min(100, Math.ceil(rawMax / tickStep) * tickStep);
-  const ticks: number[] = [];
-
-  for (let tick = domainMin; tick <= domainMax; tick += tickStep) {
-    ticks.push(tick);
-  }
-
   return {
-    domain: [domainMin, domainMax] as [number, number],
-    ticks,
+    domain: [0, 100] as [number, number],
+    ticks: [20, 40, 60, 80, 100],
   };
 }
 
@@ -1286,12 +1266,50 @@ function mergeMeasurementSnapshots(
     .slice(-6);
 }
 
+function aggregateMeasurementsByDay(snapshots: TasteMeasurementSnapshot[]) {
+  const groupedSnapshots = snapshots.reduce<Record<string, TasteMeasurementSnapshot[]>>((groups, snapshot) => {
+    const dayKey = formatMeasurementDayKey(snapshot.measuredAt);
+    groups[dayKey] = [...(groups[dayKey] ?? []), snapshot];
+    return groups;
+  }, {});
+
+  return Object.entries(groupedSnapshots)
+    .map<TasteMeasurementSnapshot>(([dayKey, daySnapshots]) => {
+      const measuredAt = `${dayKey}T12:00:00+09:00`;
+      const results = TASTE_IDS.reduce<TasteMeasurementResults>((accumulator, tasteId) => {
+        const values = daySnapshots
+          .map((snapshot) => snapshot.results[tasteId])
+          .filter((value): value is number => typeof value === 'number');
+        const fallbackValue = resolveTasteMeasurementValue(daySnapshots[daySnapshots.length - 1], tasteId);
+
+        accumulator[tasteId] =
+          values.length > 0
+            ? Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(2))
+            : fallbackValue;
+
+        return accumulator;
+      }, {} as TasteMeasurementResults);
+
+      return {
+        measuredAt,
+        results,
+        source: daySnapshots.some((snapshot) => snapshot.source === 'measured')
+          ? 'measured'
+          : daySnapshots[daySnapshots.length - 1]?.source,
+      };
+    })
+    .sort(
+      (left, right) =>
+        new Date(left.measuredAt).getTime() - new Date(right.measuredAt).getTime(),
+    );
+}
+
 function buildProfileChangeTrendData(
   snapshots: TasteMeasurementSnapshot[],
   window: TrendViewWindow | null,
   rangeId: TrendRangeId,
 ) {
-  const sortedSnapshots = [...snapshots]
+  const sortedSnapshots = aggregateMeasurementsByDay(snapshots)
     .sort(
       (left, right) =>
         new Date(left.measuredAt).getTime() - new Date(right.measuredAt).getTime(),
@@ -1314,14 +1332,20 @@ function buildProfileChangeTrendData(
       ).getTime();
       const monthSpan = Math.max(DAY_IN_MS, nextMonthStart - monthStart);
       const monthProgress = (measuredAt - monthStart) / monthSpan;
-      const rawPosition = monthIndex / 12 + monthProgress / 12;
+      const rawPosition = monthIndex >= 11
+        ? 1
+        : monthIndex / 11 + monthProgress / 11;
 
       return Math.max(0, Math.min(1, Number(rawPosition.toFixed(4))));
     }
 
     if (rangeId === 'all') {
-      const denominator = Math.max(DAY_IN_MS, window.endMs - window.startMs);
-      const rawPosition = (measuredAt - window.startMs) / denominator;
+      const firstMeasuredAt = startOfDay(new Date(sortedSnapshots[0]?.measuredAt ?? window.startMs)).getTime();
+      const lastMeasuredAt = startOfDay(new Date(sortedSnapshots[sortedSnapshots.length - 1]?.measuredAt ?? window.endMs)).getTime();
+      const denominator = Math.max(DAY_IN_MS, lastMeasuredAt - firstMeasuredAt);
+      const rawPosition = sortedSnapshots.length === 1
+        ? 0.5
+        : (measuredAt - firstMeasuredAt) / denominator;
 
       return Math.max(0, Math.min(1, Number(rawPosition.toFixed(4))));
     }
@@ -1598,7 +1622,11 @@ export default function AnalysisPage({
   const visibleTrendData = trendData.filter((point) => point.isVisible);
   const trendAxisConfig = buildTrendAxisConfig(visibleTrendData, visibleTasteLabels);
   const trendRangeLabel = buildTrendRangeLabel(trendViewWindow, activeTrendRange);
-  const trendPeriodGuide = buildTrendPeriodGuide(activeTrendRange, trendViewWindow);
+  const trendPeriodGuide = buildTrendPeriodGuide(
+    activeTrendRange,
+    trendViewWindow,
+    trendDataBounds,
+  );
   const trendTickPositionKeys = trendPeriodGuide.tickPositions.map((position) =>
     formatTrendPositionKey(position),
   );
@@ -1634,16 +1662,35 @@ export default function AnalysisPage({
     );
   }
 
-  const trendLeadingInset = trendBaseInset;
-  const trendTrailingInset = trendBaseInset;
+  const shouldUseChartEdgeGutter =
+    activeTrendRange === 'all' || activeTrendRange === 'year';
+  const trendLeadingInset = shouldUseChartEdgeGutter ? 0 : trendBaseInset;
+  const trendTrailingInset = shouldUseChartEdgeGutter ? 0 : trendBaseInset;
+  const trendChartEdgeGutter =
+    shouldUseChartEdgeGutter ? TREND_ALL_RANGE_EDGE_GUTTER : 0;
   const trendGridStepFraction =
     trendPeriodGuide.gridPositions.length > 1
       ? trendPeriodGuide.gridPositions[1] - trendPeriodGuide.gridPositions[0]
       : 0.25;
-  const trendChartDomainEnd =
-    activeTrendRange === 'year' && trendPeriodGuide.gridPositions.length > 0
-      ? (trendPeriodGuide.gridPositions[trendPeriodGuide.gridPositions.length - 1] ?? 1) + trendTrailingInset
-      : 1 + trendTrailingInset;
+  const trendChartDomainEnd = 1 + trendTrailingInset;
+  const trendChartDomainStart = -trendLeadingInset;
+  const trendChartDomainSpan = Math.max(0.0001, trendChartDomainEnd - trendChartDomainStart);
+  const trendExtendedGridPositions = [-1, 0, 1]
+    .flatMap((offset) => trendPeriodGuide.gridPositions.map((position) => position + offset))
+    .filter((position, index, positions) => positions.findIndex((item) => Math.abs(item - position) < 0.0005) === index);
+  const trendExtendedTickLabels = [-1, 0, 1].flatMap((offset) =>
+    trendPeriodGuide.tickPositions.map((position, index) => {
+      const valueKey = formatTrendPositionKey(position);
+
+      return {
+        key: `${offset}-${valueKey}`,
+        label: trendPeriodGuide.labelByPosition[valueKey],
+        isFirst: index === 0,
+        isLast: index === trendPeriodGuide.tickPositions.length - 1,
+        value: position + offset,
+      };
+    }).filter((item) => item.label),
+  );
   const shouldLockTrendGridDuringSwipe = activeTrendRange === 'year';
   const visibleTrendDragOffsetX = shouldLockTrendGridDuringSwipe ? 0 : trendDragOffsetX;
   const visibleTrendMotionOffsetPercent = shouldLockTrendGridDuringSwipe ? 0 : trendMotionOffsetPercent;
@@ -1721,10 +1768,16 @@ export default function AnalysisPage({
   };
 
   const handleScaleTrendWindow = (scaleFactor: number) => {
-    const nextWindow = scaleTrendViewWindow(trendViewWindow, scaleFactor, trendNavigationBounds);
-    setSelectedTrendRange(deriveTrendRangeIdFromWindow(nextWindow, trendDataBounds));
+    const next = scaleTrendViewWindow(
+      trendViewWindow,
+      activeTrendRange,
+      scaleFactor,
+      trendDataBounds,
+      trendNavigationBounds,
+    );
+    setSelectedTrendRange(next.rangeId);
     updateTrendWindow(
-      nextWindow,
+      next.window,
       scaleFactor < 1 ? 'zoom-in' : 'zoom-out',
     );
   };
@@ -1891,7 +1944,14 @@ export default function AnalysisPage({
       }
 
       const nextScale = initialDistance / nextDistance;
-      setTrendViewWindow(scaleTrendViewWindow(initialWindow, nextScale, trendNavigationBounds));
+      const next = scaleTrendViewWindow(
+        initialWindow,
+        activeTrendRange,
+        nextScale,
+        trendDataBounds,
+        trendNavigationBounds,
+      );
+      setTrendViewWindow(next.window);
       return;
     }
 
@@ -1906,7 +1966,16 @@ export default function AnalysisPage({
   const handleTrendTouchEnd = () => {
     if (trendTouchStateRef.current.mode === 'pinch') {
       const initialWindow = trendTouchStateRef.current.initialWindow;
-      setSelectedTrendRange(deriveTrendRangeIdFromWindow(trendViewWindow, trendDataBounds));
+      const nextRangeId = deriveTrendRangeIdFromWindow(trendViewWindow, trendDataBounds);
+      const nextWindow = nextRangeId === 'all'
+        ? createTrendViewWindowFromRange('all', trendDataBounds, trendNavigationBounds)
+        : createCalendarTrendViewWindow(
+            nextRangeId,
+            trendViewWindow.startMs + (trendViewWindow.endMs - trendViewWindow.startMs) / 2,
+            trendNavigationBounds,
+          );
+      setSelectedTrendRange(nextRangeId);
+      setTrendViewWindow(nextWindow);
       const motionKind =
         initialWindow && getTrendDurationDays(trendViewWindow) > getTrendDurationDays(initialWindow)
           ? 'zoom-out'
@@ -2241,54 +2310,100 @@ export default function AnalysisPage({
                 onTouchEnd={handleTrendTouchEnd}
                 onWheel={handleTrendWheel}
               >
-                <div className="relative h-full w-full">
-                  <div
-                    className="h-full w-full"
-                    style={{
-                      transform: `translateX(calc(${visibleTrendDragOffsetX}px + ${visibleTrendMotionOffsetPercent}%)) scale(${trendMotionScale})`,
-                      transition: isTrendDragging ? 'none' : 'transform 260ms steps(4, end), opacity 220ms linear',
+	                <div className="relative h-full w-full overflow-hidden">
+	                  <div
+	                    className="relative h-full w-full"
+	                    style={{
+	                      transform: `translateX(calc(${visibleTrendDragOffsetX}px + ${visibleTrendMotionOffsetPercent}%)) scale(${trendMotionScale})`,
+	                      transition: isTrendDragging ? 'none' : 'transform 260ms steps(4, end), opacity 220ms linear',
                       opacity: isTrendDragging
                         ? shouldLockTrendGridDuringSwipe
                           ? 0.96
                           : Math.max(0.84, 1 - Math.abs(trendDragOffsetX) / 240)
-                        : 1,
-                    }}
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={trendData} margin={{ top: TREND_CHART_TOP_MARGIN, bottom: 0 }}>
-                        {trendAxisConfig.ticks.map((value) => (
-                          <ReferenceLine
-                            key={`trend-horizontal-grid-${value}`}
-                            y={value}
-                            stroke={TREND_GRID_HORIZONTAL_STROKE}
-                            strokeWidth={1}
-                            ifOverflow="extendDomain"
-                          />
-                        ))}
-                        {trendPeriodGuide.gridPositions
-                          .map((value) => (
-                            <ReferenceLine
-                              key={`trend-grid-${value}`}
-                              x={value}
-                              stroke={TREND_GRID_VERTICAL_STROKE}
-                              strokeDasharray="4 4"
-                              strokeWidth={1}
-                              ifOverflow="extendDomain"
-                            />
-                          ))}
-                        <XAxis
+	                        : 1,
+	                    }}
+	                  >
+	                    <div
+	                      className="pointer-events-none absolute z-0"
+	                      style={{
+	                        top: TREND_CHART_TOP_MARGIN,
+	                        bottom: TREND_CHART_X_AXIS_HEIGHT,
+	                        left: trendChartEdgeGutter,
+	                        right: TREND_CHART_Y_AXIS_WIDTH + trendChartEdgeGutter,
+	                      }}
+	                      aria-hidden="true"
+	                    >
+	                      <div className="absolute inset-y-0 left-[-100%] w-[300%]">
+	                        {trendAxisConfig.ticks.map((value) => {
+	                          const [domainMin, domainMax] = trendAxisConfig.domain;
+	                          const ratio = (domainMax - value) / Math.max(1, domainMax - domainMin);
+
+	                          return (
+	                            <span
+	                              key={`trend-horizontal-grid-${value}`}
+	                              className="absolute left-0 h-px w-full"
+	                              style={{
+	                                top: `${ratio * 100}%`,
+	                                backgroundColor: TREND_GRID_HORIZONTAL_STROKE,
+	                              }}
+	                            />
+	                          );
+	                        })}
+	                        {trendExtendedGridPositions.map((value) => {
+	                          const ratio = (value - trendChartDomainStart) / trendChartDomainSpan;
+
+	                          return (
+	                            <span
+	                              key={`trend-extended-grid-${value}`}
+	                              className="absolute top-0 h-full border-l"
+	                              style={{
+	                                left: `${((ratio + 1) / 3) * 100}%`,
+	                                borderColor: TREND_GRID_VERTICAL_STROKE,
+	                                borderLeftStyle: 'dashed',
+	                              }}
+	                            />
+	                          );
+	                        })}
+	                        {trendExtendedTickLabels.map((item) => {
+	                          const ratio = (item.value - trendChartDomainStart) / trendChartDomainSpan;
+	                          const edgeLabelOffset = activeTrendRange === 'all' ? 6 : 2;
+
+	                          return (
+	                            <span
+	                              key={`trend-extended-label-${item.key}`}
+	                              className="absolute top-[calc(100%+4px)] whitespace-nowrap text-[11px] text-[var(--tb-color-text-hint)]"
+	                              style={{
+	                                left: `${((ratio + 1) / 3) * 100}%`,
+	                                marginLeft: item.isFirst ? edgeLabelOffset : item.isLast ? -edgeLabelOffset : 0,
+	                                transform: item.isFirst
+	                                  ? 'translateX(0)'
+	                                  : item.isLast
+	                                    ? 'translateX(-100%)'
+	                                    : 'translateX(-50%)',
+	                              }}
+	                            >
+	                              {item.label}
+	                            </span>
+	                          );
+	                        })}
+	                      </div>
+	                    </div>
+	                    <ResponsiveContainer width="100%" height="100%" className="relative z-10">
+	                      <LineChart
+	                        data={trendData}
+	                        margin={{
+                          top: TREND_CHART_TOP_MARGIN,
+                          right: trendChartEdgeGutter,
+                          bottom: 0,
+	                          left: trendChartEdgeGutter,
+	                        }}
+	                      >
+	                        <XAxis
                           type="number"
                           dataKey="xPosition"
                           domain={[-trendLeadingInset, trendChartDomainEnd]}
                           ticks={trendPeriodGuide.tickPositions}
-                          tick={(props) => (
-                            <WeeklyTrendAxisTick
-                              {...props}
-                              labelByPosition={trendPeriodGuide.labelByPosition}
-                              rangeId={activeTrendRange}
-                              tickPositionKeys={trendTickPositionKeys}
-                            />
-                          )}
+                          tick={false}
                           axisLine={false}
                           tickLine={false}
                           interval={0}

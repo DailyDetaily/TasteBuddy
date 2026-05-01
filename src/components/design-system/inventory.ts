@@ -621,6 +621,12 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     status: "currently-used",
   },
   {
+    name: "TasteLineChart",
+    source: "src/components/system/TasteLineChart.tsx",
+    note: "특이사항과 미각 변화 카드에서 쓰는 compact taste-aware line graph입니다.",
+    status: "currently-used",
+  },
+  {
     name: "InterpretationCard",
     source: "src/components/system/InterpretationCard.tsx",
     note: "분석 인사이트, 셰프 번역 요약, 홈의 최근 프로필 변화 요약에 공통으로 쓰이는 해석 카드입니다.",

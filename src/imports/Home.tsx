@@ -14,6 +14,7 @@ import TasteChip from "../components/system/TasteChip";
 import TopAppBar from "../components/TopAppBar";
 import ChefAvatar from "../components/system/ChefAvatar";
 import CardDetailLabel from "../components/system/CardDetailLabel";
+import TasteLineChart from "../components/system/TasteLineChart";
 import TCSBadge from "../components/system/TCSBadge";
 import TastePointArrowBox from "../components/system/TastePointArrowBox";
 import { ICON_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from "../constants/designTokens";
@@ -25,7 +26,6 @@ import {
   getTasteTintSurface,
   getTasteTintSurfaceSubText,
   getTasteTintSurfaceText,
-  mixHexColors,
   TASTE_TYPES,
 } from "../constants/tasteColors";
 import { type DiningFeedbackDraft } from "../constants/diningFeedbackData";
@@ -371,31 +371,6 @@ function getHomeSpecialNoteSummaryDetails() {
 }
 
 const HOME_SPECIAL_NOTE_SUMMARY_DETAILS = getHomeSpecialNoteSummaryDetails();
-
-function buildSpecialNoteTrendPath(points: Array<{ x: number; y: number }>) {
-  if (points.length === 0) {
-    return "";
-  }
-
-  let path = `M ${points[0]?.x ?? 0} ${points[0]?.y ?? 0}`;
-
-  for (let index = 1; index < points.length; index += 1) {
-    const current = points[index];
-
-    if (!current) {
-      continue;
-    }
-    path += ` L ${current.x} ${current.y}`;
-  }
-
-  return path;
-}
-
-
-
-
-
-
 
 function Heading() {
   return (
@@ -1639,165 +1614,13 @@ function Heading4({
 }
 
 function TasteChangeMiniGraph({ details }: { details: HomeTrendDetail[] }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [availableWidth, setAvailableWidth] = useState(128);
   const graphEntries = getHomeCardSummaryDetails(details).map((detail) => ({
-    ...detail,
-    graphValues: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
+    id: detail.detailLabel,
+    taste: detail.parentTaste,
+    values: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
   }));
-  const currentDotRadius = 6;
-  const historyDotRadius = 2;
-  const tintedLineWidth = 12;
-  const maxPointGap = 36;
-  const graphHeight = 24;
-  const graphInsetX = 6;
-  const lineStartWhiteMix = 0.6;
 
-  useEffect(() => {
-    const node = containerRef.current;
-
-    if (!node) {
-      return;
-    }
-
-    const updateWidth = (nextWidth: number) => {
-      setAvailableWidth((previousWidth) => {
-        const roundedWidth = Math.max(0, Math.round(nextWidth));
-        return previousWidth === roundedWidth ? previousWidth : roundedWidth;
-      });
-    };
-
-    updateWidth(node.clientWidth);
-
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) {
-        return;
-      }
-
-      updateWidth(entry.contentRect.width);
-    });
-
-    observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  return (
-    <div
-      aria-hidden="true"
-      ref={containerRef}
-      className="content-stretch flex w-full flex-col gap-[4px] shrink-0"
-      data-name="Taste Change Graph"
-    >
-      {graphEntries.map((entry, index) => {
-        const fillColor = getTasteColor(entry.parentTaste);
-        const trackColor = getTasteTint(entry.parentTaste, 0.18);
-        const lineStartColor = mixHexColors(fillColor, '#FFFFFF', lineStartWhiteMix);
-        const maxVisiblePoints = Math.max(
-          2,
-          Math.floor(Math.max(availableWidth - graphInsetX * 2, 0) / maxPointGap) + 1,
-        );
-        const visibleValues = entry.graphValues.slice(-maxVisiblePoints);
-        const graphWidth =
-          graphInsetX * 2 + Math.max(visibleValues.length - 1, 0) * maxPointGap;
-        const values = visibleValues;
-        const minValue = Math.min(...values);
-        const maxValue = Math.max(...values);
-        const xStep = maxPointGap;
-        const gradientId = `taste-change-graph-gradient-${index}`;
-        const points = values.map((value, pointIndex) => {
-          const normalized =
-            maxValue === minValue ? 0.5 : (value - minValue) / (maxValue - minValue);
-
-          return {
-            x: Math.round(graphInsetX + xStep * pointIndex),
-            y: Math.round(18 - normalized * 10),
-          };
-        });
-        const graphPath = buildSpecialNoteTrendPath(points);
-        const currentPoint =
-          points[points.length - 1] ?? { x: graphWidth - graphInsetX, y: graphHeight / 2 };
-
-        return (
-          <div key={entry.detailLabel} className="flex h-[24px] w-full items-center justify-end">
-            <div className="relative h-[24px]" style={{ width: `${graphWidth}px` }}>
-              <svg className="absolute inset-0 size-full" viewBox={`0 0 ${graphWidth} ${graphHeight}`}>
-                <defs>
-                  <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="0" x2={graphWidth} y1="0" y2="0">
-                    <stop offset="0%" stopColor={lineStartColor} />
-                    <stop offset="100%" stopColor={fillColor} />
-                  </linearGradient>
-                </defs>
-                <path
-                  d={graphPath}
-                  fill="none"
-                  stroke={trackColor}
-                  strokeLinecap="round"
-                  strokeWidth={tintedLineWidth}
-                />
-                <path
-                  d={graphPath}
-                  fill="none"
-                  stroke={`url(#${gradientId})`}
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              {points.slice(0, -1).map((point, historyIndex) => {
-                const progress =
-                  graphWidth <= graphInsetX * 2
-                    ? 1
-                    : Math.min(
-                        1,
-                        Math.max(0, (point.x - graphInsetX) / (graphWidth - graphInsetX * 2)),
-                      );
-                const pointColor = mixHexColors(
-                  fillColor,
-                  '#FFFFFF',
-                  lineStartWhiteMix * (1 - progress),
-                );
-
-                return (
-                  <span
-                    key={`${entry.detailLabel}-history-${historyIndex}`}
-                    aria-hidden="true"
-                    className="absolute rounded-full"
-                    style={{
-                      backgroundColor: pointColor,
-                      height: `${historyDotRadius * 2}px`,
-                      left: `${point.x}px`,
-                      top: `${point.y}px`,
-                      transform: 'translate(-50%, -50%)',
-                      width: `${historyDotRadius * 2}px`,
-                    }}
-                  />
-                );
-              })}
-              <span
-                aria-hidden="true"
-                className="absolute rounded-full"
-                style={{
-                  backgroundColor: fillColor,
-                  height: `${currentDotRadius * 2}px`,
-                  left: `${currentPoint.x}px`,
-                  top: `${currentPoint.y}px`,
-                  transform: 'translate(-50%, -50%)',
-                  width: `${currentDotRadius * 2}px`,
-                }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  return <TasteLineChart entries={graphEntries} />;
 }
 
 function Cards3({
@@ -1898,167 +1721,13 @@ function Heading5({
 }
 
 function SpecialNoteMiniGraph({ details }: { details: HomeTrendDetail[] }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [availableWidth, setAvailableWidth] = useState(128);
   const graphEntries = getHomeCardSummaryDetails(details).map((detail) => ({
-    ...detail,
-    graphValues: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
+    id: detail.detailLabel,
+    taste: detail.parentTaste,
+    values: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
   }));
-  const currentDotRadius = 6;
-  const historyDotRadius = 2;
-  const tintedLineWidth = 12;
-  const maxPointGap = 36;
-  const graphHeight = 24;
-  const graphInsetX = 6;
-  const lineStartWhiteMix = 0.6;
 
-  useEffect(() => {
-    const node = containerRef.current;
-
-    if (!node) {
-      return;
-    }
-
-    const updateWidth = (nextWidth: number) => {
-      setAvailableWidth((previousWidth) => {
-        const roundedWidth = Math.max(0, Math.round(nextWidth));
-        return previousWidth === roundedWidth ? previousWidth : roundedWidth;
-      });
-    };
-
-    updateWidth(node.clientWidth);
-
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) {
-        return;
-      }
-
-      updateWidth(entry.contentRect.width);
-    });
-
-    observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  return (
-    <div
-      aria-hidden="true"
-      ref={containerRef}
-      className="content-stretch flex w-full flex-col gap-[4px] shrink-0"
-      data-name="Special Note Graph"
-    >
-      {graphEntries.map((entry, index) => {
-        const fillColor = getTasteColor(entry.parentTaste);
-        const trackColor = getTasteTint(entry.parentTaste, 0.18);
-        const lineStartColor = mixHexColors(fillColor, '#FFFFFF', lineStartWhiteMix);
-        const maxVisiblePoints = Math.max(
-          2,
-          Math.floor(Math.max(availableWidth - graphInsetX * 2, 0) / maxPointGap) + 1,
-        );
-        const visibleValues = entry.graphValues.slice(-maxVisiblePoints);
-        const graphWidth =
-          graphInsetX * 2 + Math.max(visibleValues.length - 1, 0) * maxPointGap;
-        const values = visibleValues;
-        const minValue = Math.min(...values);
-        const maxValue = Math.max(...values);
-        const xStep = maxPointGap;
-        const gradientId = `special-note-graph-gradient-${index}`;
-        const points = values.map((value, index) => {
-          const normalized =
-            maxValue === minValue ? 0.5 : (value - minValue) / (maxValue - minValue);
-
-          return {
-            x: Math.round(graphInsetX + xStep * index),
-            y: Math.round(18 - normalized * 10),
-          };
-        });
-        const graphPath = buildSpecialNoteTrendPath(points);
-        const currentPoint = points[points.length - 1] ?? { x: graphWidth - graphInsetX, y: graphHeight / 2 };
-
-        return (
-          <div key={entry.detailLabel} className="flex h-[24px] w-full items-center justify-end">
-            <div className="relative h-[24px]" style={{ width: `${graphWidth}px` }}>
-              <svg
-                className="absolute inset-0 size-full"
-                viewBox={`0 0 ${graphWidth} ${graphHeight}`}
-              >
-                <defs>
-                  <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="0" x2={graphWidth} y1="0" y2="0">
-                    <stop offset="0%" stopColor={lineStartColor} />
-                    <stop offset="100%" stopColor={fillColor} />
-                  </linearGradient>
-                </defs>
-                <path
-                  d={graphPath}
-                  fill="none"
-                  stroke={trackColor}
-                  strokeLinecap="round"
-                  strokeWidth={tintedLineWidth}
-                />
-                <path
-                  d={graphPath}
-                  fill="none"
-                  stroke={`url(#${gradientId})`}
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              {points.slice(0, -1).map((point, historyIndex) => {
-                const progress =
-                  graphWidth <= graphInsetX * 2
-                    ? 1
-                    : Math.min(
-                        1,
-                        Math.max(0, (point.x - graphInsetX) / (graphWidth - graphInsetX * 2)),
-                      );
-                const pointColor = mixHexColors(
-                  fillColor,
-                  '#FFFFFF',
-                  lineStartWhiteMix * (1 - progress),
-                );
-
-                return (
-                  <span
-                    key={`${entry.detailLabel}-history-${historyIndex}`}
-                    aria-hidden="true"
-                    className="absolute rounded-full"
-                    style={{
-                      backgroundColor: pointColor,
-                      height: `${historyDotRadius * 2}px`,
-                      left: `${point.x}px`,
-                      top: `${point.y}px`,
-                      transform: 'translate(-50%, -50%)',
-                      width: `${historyDotRadius * 2}px`,
-                    }}
-                  />
-                );
-              })}
-              <span
-                aria-hidden="true"
-                className="absolute rounded-full"
-                style={{
-                  backgroundColor: fillColor,
-                  height: `${currentDotRadius * 2}px`,
-                  left: `${currentPoint.x}px`,
-                  top: `${currentPoint.y}px`,
-                  transform: 'translate(-50%, -50%)',
-                  width: `${currentDotRadius * 2}px`,
-                }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  return <TasteLineChart entries={graphEntries} />;
 }
 
 function SpecialNoteInfo({

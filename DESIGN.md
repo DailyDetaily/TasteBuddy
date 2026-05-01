@@ -139,7 +139,7 @@ Quiet Hospitality Intelligence
 
 | 항목 | 현재 값 |
 | --- | --- |
-| Currently used component count | `18` |
+| Currently used component count | `19` |
 | Defined primitive count | `20` |
 | Shared motion duration | `300ms` |
 | Screen max width | `1440px` |
