@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { getTasteColor, getTasteTint, mixHexColors } from '../../constants/tasteColors';
 
@@ -20,7 +20,7 @@ const TRACK_STROKE_WIDTH = 12;
 const LINE_STROKE_WIDTH = 2;
 const GRAPH_HEIGHT = 24;
 const GRAPH_INSET_X = 6;
-const LINE_START_WHITE_MIX = 0.6;
+const LINE_START_WHITE_MIX = 0.28;
 
 function buildLinePath(points: Array<{ x: number; y: number }>) {
   if (points.length === 0) {
@@ -73,6 +73,7 @@ export default function TasteLineChart({
   entries,
   maxPointGap = 36,
 }: TasteLineChartProps) {
+  const chartInstanceId = useId().replace(/:/g, '');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [availableWidth, setAvailableWidth] = useState(128);
 
@@ -135,8 +136,7 @@ export default function TasteLineChart({
         const lineStartColor = mixHexColors(fillColor, '#FFFFFF', LINE_START_WHITE_MIX);
         const graphWidth =
           GRAPH_INSET_X * 2 + Math.max(entry.values.length - 1, 0) * maxPointGap;
-        const safeEntryId = entry.id.replace(/[^a-zA-Z0-9_-]/g, '-');
-        const gradientId = `taste-line-chart-gradient-${safeEntryId}-${index}`;
+        const gradientId = `taste-line-chart-gradient-${chartInstanceId}-${index}`;
         const points = entry.values.map((value, pointIndex) => {
           const normalized =
             maxValue === minValue ? 0.5 : (value - minValue) / (maxValue - minValue);
@@ -181,37 +181,16 @@ export default function TasteLineChart({
                   strokeLinecap="round"
                   strokeWidth={LINE_STROKE_WIDTH}
                 />
-              </svg>
-              {points.slice(0, -1).map((point, historyIndex) => {
-                const progress =
-                  graphWidth <= GRAPH_INSET_X * 2
-                    ? 1
-                    : Math.min(
-                        1,
-                        Math.max(0, (point.x - GRAPH_INSET_X) / (graphWidth - GRAPH_INSET_X * 2)),
-                      );
-                const pointColor = mixHexColors(
-                  fillColor,
-                  '#FFFFFF',
-                  LINE_START_WHITE_MIX * (1 - progress),
-                );
-
-                return (
-                  <span
+                {points.slice(0, -1).map((point, historyIndex) => (
+                  <circle
                     key={`${entry.id}-history-${historyIndex}`}
-                    aria-hidden="true"
-                    className="absolute rounded-full"
-                    style={{
-                      backgroundColor: pointColor,
-                      height: `${HISTORY_DOT_RADIUS * 2}px`,
-                      left: `${point.x}px`,
-                      top: `${point.y}px`,
-                      transform: 'translate(-50%, -50%)',
-                      width: `${HISTORY_DOT_RADIUS * 2}px`,
-                    }}
+                    cx={point.x}
+                    cy={point.y}
+                    fill={`url(#${gradientId})`}
+                    r={HISTORY_DOT_RADIUS}
                   />
-                );
-              })}
+                ))}
+              </svg>
               <span
                 aria-hidden="true"
                 className="absolute rounded-full"

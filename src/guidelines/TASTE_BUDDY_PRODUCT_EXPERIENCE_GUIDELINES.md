@@ -463,6 +463,16 @@ Capture high-value reflection with minimal burden.
 - framed as future improvement
 - never framed as admin work
 
+### Taste Bubble Map Layout Rules
+
+When post-dining feedback uses a bubble map for taste impressions:
+
+- each taste axis should read as a compact triangular silhouette within the shared hex grid
+- adding or removing bubbles must preserve the six triangular axis silhouettes before optimizing individual word proximity
+- boundary words may move within the layout only when they smooth the axis silhouette, not when they make a single bubble protrude from its axis cluster
+- slot overrides should be treated as visual silhouette corrections, not as changes to the word's taste axis, color, meaning, or chef-facing interpretation
+- the full map should remain evenly spaced; never fix one protruding bubble by breaking the global hex-grid rhythm
+
 ## 10.6 Bottom Sheet
 
 ### Purpose

@@ -665,6 +665,14 @@ export const TASTE_COLORS = Object.fromEntries(
   TASTE_IDS.map((id) => [TASTE_TOKENS[id].label, TASTE_TOKENS[id].palette]),
 ) as Record<(typeof TASTE_LABELS)[number], TastePalette>;
 
+export const NEUTRAL_TASTE_TOKENS = {
+  label: '모든맛',
+  palette: {
+    main: '#7A7A7A',
+    tintSurface: '#E4E4E4',
+  },
+} as const;
+
 export const DESIGN_TOKENS = {
   colors: COLOR_TOKENS,
   shadows: SHADOW_TOKENS,

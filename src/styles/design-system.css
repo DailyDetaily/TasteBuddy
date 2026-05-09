@@ -192,6 +192,9 @@
   --tb-taste-fat-ring-base: var(--tb-taste-fat-tint-surface);
   --tb-taste-fat-ring-guide: #95867a;
 
+  --tb-taste-neutral-main: #7a7a7a;
+  --tb-taste-neutral-tint-surface: #e4e4e4;
+
   --tb-space-2: 2px;
   --tb-space-4: 4px;
   --tb-space-6: 6px;

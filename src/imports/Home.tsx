@@ -14,7 +14,7 @@ import TasteChip from "../components/system/TasteChip";
 import TopAppBar from "../components/TopAppBar";
 import ChefAvatar from "../components/system/ChefAvatar";
 import CardDetailLabel from "../components/system/CardDetailLabel";
-import TasteLineChart from "../components/system/TasteLineChart";
+import TasteInsightSummaryCard from "../components/system/TasteInsightSummaryCard";
 import TCSBadge from "../components/system/TCSBadge";
 import TastePointArrowBox from "../components/system/TastePointArrowBox";
 import { ICON_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from "../constants/designTokens";
@@ -1613,16 +1613,6 @@ function Heading4({
   );
 }
 
-function TasteChangeMiniGraph({ details }: { details: HomeTrendDetail[] }) {
-  const graphEntries = getHomeCardSummaryDetails(details).map((detail) => ({
-    id: detail.detailLabel,
-    taste: detail.parentTaste,
-    values: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
-  }));
-
-  return <TasteLineChart entries={graphEntries} />;
-}
-
 function Cards3({
   cardData,
   onOpenDetail,
@@ -1630,59 +1620,15 @@ function Cards3({
   cardData: HomeTasteProfileCardData;
   onOpenDetail: () => void;
 }) {
-  const summaryDetails = getHomeCardSummaryDetails(cardData.details);
-
   return (
-    <button
-      type="button"
+    <TasteInsightSummaryCard
+      actionLabel={cardData.periodLabel}
+      details={cardData.details}
+      keywords={cardData.keywords}
       onClick={onOpenDetail}
-      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left cursor-pointer"
-      data-name="Cards"
-    >
-      <div className="overflow-clip rounded-[inherit] size-full">
-        <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
-          <Heading4 details={cardData.details} periodLabel={cardData.periodLabel} />
-
-          <div className="box-border content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full">
-            <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
-              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[var(--tb-color-text-primary)] text-[16px] w-full">
-                {cardData.title}
-              </p>
-            </div>
-
-            <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
-              <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
-                {summaryDetails.map((detail) => (
-                  <div key={detail.detailLabel} className="flex items-center gap-[8px] w-full">
-                    <TastePointArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
-                    <div className="flex min-w-0 items-center gap-[6px]">
-                      <p className="truncate text-[14px] font-medium text-[var(--tb-color-text-secondary)]">
-                        {detail.detailLabel}
-                      </p>
-                      <p
-                        className="shrink-0 text-[12px] font-semibold leading-[1.1]"
-                        style={{ color: getTasteColor(detail.parentTaste) }}
-                      >
-                        {detail.change}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
-                <TasteChangeMiniGraph details={cardData.details} />
-              </div>
-            </div>
-
-            <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
-              {cardData.keywords.map((keyword) => (
-                <HomeKeywordChip key={keyword} keyword={keyword} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </button>
+      sectionLabel="미각변화"
+      title={cardData.title}
+    />
   );
 }
 
@@ -1718,16 +1664,6 @@ function Heading5({
       <CardDetailLabel label={periodLabel} />
     </div>
   );
-}
-
-function SpecialNoteMiniGraph({ details }: { details: HomeTrendDetail[] }) {
-  const graphEntries = getHomeCardSummaryDetails(details).map((detail) => ({
-    id: detail.detailLabel,
-    taste: detail.parentTaste,
-    values: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
-  }));
-
-  return <TasteLineChart entries={graphEntries} />;
 }
 
 function SpecialNoteInfo({
@@ -2060,65 +1996,15 @@ function Cards4({
   cardData: HomeSpecialNoteCardData;
   onOpenDetail: () => void;
 }) {
-  const summaryDetails = getHomeCardSummaryDetails(cardData.details);
-
   return (
-    <button
-      type="button"
+    <TasteInsightSummaryCard
+      action={<CardDetailLabel />}
+      details={cardData.details}
+      keywords={cardData.keywords}
       onClick={onOpenDetail}
-      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left cursor-pointer"
-      data-name="Cards"
-    >
-      <div className="overflow-clip rounded-[inherit] size-full">
-        <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
-          <div className="content-center flex flex-wrap gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full">
-            <Head1 details={cardData.details} />
-            <CardDetailLabel />
-          </div>
-
-          <div className="box-border content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full">
-            <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
-              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[var(--tb-color-text-primary)] text-[16px] w-full">
-                {cardData.title}
-              </p>
-            </div>
-
-            <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
-              <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
-                {summaryDetails.map((detail) => (
-                  <div
-                    key={detail.detailLabel}
-                    className="flex items-center gap-[8px] w-full"
-                  >
-                    <TastePointArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
-                    <div className="flex min-w-0 items-center gap-[6px]">
-                      <p className="truncate text-[14px] font-medium text-[var(--tb-color-text-secondary)]">
-                        {detail.detailLabel}
-                      </p>
-                      <p
-                        className="shrink-0 text-[12px] font-semibold leading-[1.1]"
-                        style={{ color: getTasteColor(detail.parentTaste) }}
-                      >
-                        {detail.change}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
-                <SpecialNoteMiniGraph details={cardData.details} />
-              </div>
-            </div>
-
-            <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
-              {cardData.keywords.map((keyword) => (
-                <HomeKeywordChip key={keyword} keyword={keyword} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </button>
+      sectionLabel="특이사항"
+      title={cardData.title}
+    />
   );
 }
 

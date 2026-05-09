@@ -23,6 +23,7 @@ import InterpretationDetailDrawer, {
   type InterpretationDetailContent,
 } from '../components/system/InterpretationDetailDrawer';
 import CardDetailLabel from '../components/system/CardDetailLabel';
+import InsightSummaryCard, { InsightSummaryIndicator } from '../components/system/InsightSummaryCard';
 import InterpretationCard from '../components/system/InterpretationCard';
 import PageSection from '../components/system/PageSection';
 import ProfileConfidenceCard, {
@@ -32,7 +33,7 @@ import CardScrollList from '../components/system/CardScrollList';
 import SectionTitle from '../components/system/SectionTitle';
 import TasteTintCard from '../components/system/TasteTintCard';
 import HexRadarChart from '../components/system/HexRadarChart';
-import { DATA_VIZ_TOKENS, ICON_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
+import { DATA_VIZ_TOKENS, ICON_TOKENS, NEUTRAL_TASTE_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
 import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, mixHexColors } from '../constants/tasteColors';
 import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
 import {
@@ -56,12 +57,13 @@ import {
   type RestaurantContentDish,
 } from '../lib/tasteBuddySupabase';
 import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reservationCatalog';
+import TasteChangePage from './TasteChangePage';
 
 const RADAR_CHART = DATA_VIZ_TOKENS.radar;
-const TREND_TINT_LINE_STROKE_WIDTH = 10;
-const TREND_LINE_STROKE_WIDTH = 1;
-const TREND_DOT_RADIUS = 5;
-const TREND_ACTIVE_DOT_OUTER_RADIUS = 9;
+const TREND_TINT_LINE_STROKE_WIDTH = 12;
+const TREND_LINE_STROKE_WIDTH = 2;
+const TREND_DOT_RADIUS = 6;
+const TREND_ACTIVE_DOT_OUTER_RADIUS = 10;
 const TREND_ACTIVE_DOT_CORE_RADIUS = TREND_DOT_RADIUS;
 const TREND_ACTIVE_DOT_HALO_WHITE_MIX = 0.72;
 const TREND_GUIDE_GAP = 2;
@@ -70,7 +72,9 @@ const TREND_GUIDE_BOTTOM_TAIL = 8;
 const TREND_CHART_TOP_MARGIN = 10;
 const TREND_CHART_X_AXIS_HEIGHT = 18;
 const TREND_CHART_Y_AXIS_WIDTH = 34;
-const TREND_ALL_RANGE_EDGE_GUTTER = TREND_ACTIVE_DOT_OUTER_RADIUS + 2;
+const TREND_CHART_Y_AXIS_GAP = 4;
+const TREND_CHART_Y_AXIS_LABEL_PADDING = 4;
+const TREND_CHART_GRID_EDGE_GUTTER = 18;
 const TREND_WINDOW_NAV_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const GRAPH_TASTE_ORDER = TASTE_LABELS;
 const TREND_RANGE_OPTIONS = [
@@ -290,8 +294,11 @@ function FixedTrendYAxisLabels({
 
   return (
     <div
-      className="pointer-events-none absolute inset-y-0 right-0"
-      style={{ width: TREND_CHART_Y_AXIS_WIDTH }}
+      className="pointer-events-none absolute inset-y-0 right-0 box-border"
+      style={{
+        width: TREND_CHART_Y_AXIS_WIDTH,
+        paddingLeft: TREND_CHART_Y_AXIS_LABEL_PADDING,
+      }}
       aria-hidden="true"
     >
       {ticks.map((tick) => {
@@ -300,8 +307,9 @@ function FixedTrendYAxisLabels({
         return (
           <span
             key={`trend-y-label-${tick}`}
-            className="absolute right-0 -translate-y-1/2 text-[11px] text-[var(--tb-color-text-hint)]"
+            className="absolute -translate-y-1/2 text-[11px] text-[var(--tb-color-text-hint)]"
             style={{
+              left: TREND_CHART_Y_AXIS_LABEL_PADDING,
               top: `calc(${TREND_CHART_TOP_MARGIN}px + ((100% - ${TREND_CHART_TOP_MARGIN + TREND_CHART_X_AXIS_HEIGHT}px) * ${ratio}))`,
             }}
           >
@@ -324,7 +332,7 @@ function TasteDirectionIcon({
   muted?: boolean;
   size?: number;
 }) {
-  const baseColor = taste === '모든맛' ? '#7A7A7A' : getTasteColor(taste);
+  const baseColor = taste === '모든맛' ? NEUTRAL_TASTE_TOKENS.palette.main : getTasteColor(taste);
   const strokeColor = muted ? 'rgba(255,255,255,0.88)' : '#FFFFFF';
   const backgroundColor = muted ? mixHexColors(baseColor, '#FFFFFF', 0.58) : baseColor;
   const path =
@@ -336,7 +344,7 @@ function TasteDirectionIcon({
 
   return (
     <span
-      className="inline-flex shrink-0 items-center justify-center rounded-[10px]"
+      className="inline-flex shrink-0 items-center justify-center rounded-[8px]"
       style={{
         width: size,
         height: size,
@@ -1219,6 +1227,139 @@ function buildTrendAxisConfig(
   };
 }
 
+function formatTasteTrendDelta(delta: number) {
+  if (Math.abs(delta) < 1) {
+    return '변화 적음';
+  }
+
+  return `${delta > 0 ? '+' : ''}${delta}점`;
+}
+
+function buildTasteTrendDetailInfo({
+  points,
+  selectedTaste,
+  visibleTasteLabels,
+}: {
+  points: ProfileChangeTrendPoint[];
+  selectedTaste: (typeof TREND_TASTE_OPTIONS)[number];
+  visibleTasteLabels: string[];
+}) {
+  const visiblePoints = points.filter((point) => point.isVisible);
+  const firstPoint = visiblePoints[0];
+  const lastPoint = visiblePoints[visiblePoints.length - 1];
+  const hasHistory = !!firstPoint && !!lastPoint && visiblePoints.length > 1;
+
+  if (!hasHistory) {
+    const currentTaste = selectedTaste === '모든맛' ? '전체 미각' : selectedTaste;
+
+    return {
+      accentTaste: selectedTaste,
+      currentLabel: '현재 기준',
+      deltaLabel: '기준 형성 중',
+      endScore: selectedTaste === '모든맛' ? undefined : lastPoint?.[selectedTaste],
+      eyebrow: '첫 기준',
+      meaning:
+        '아직 변화폭을 단정하기보다는 이번 값을 다음 식사를 맞추는 시작 기준으로 보는 단계예요.',
+      nextStep:
+        '다음 측정이나 식사 피드백이 쌓이면 이 축이 안정적으로 유지되는지, 혹은 다이닝 맥락에 따라 달라지는지 이어서 확인합니다.',
+      startScore: undefined,
+      title: `${currentTaste}의 변화 기준을 쌓고 있어요`,
+      whatWeKnow:
+        '현재 측정값은 예약 개인화에 바로 사용할 수 있지만, 반복 추세는 다음 기록부터 더 자연스럽게 읽힙니다.',
+    };
+  }
+
+  if (selectedTaste !== '모든맛') {
+    const startScore = firstPoint[selectedTaste];
+    const endScore = lastPoint[selectedTaste];
+    const delta = endScore - startScore;
+    const directionPhrase =
+      Math.abs(delta) < 1
+        ? '큰 흔들림 없이 유지되는 흐름'
+        : delta > 0
+          ? '조금 더 선명하게 올라온 흐름'
+          : '조금 더 부드럽게 낮아진 흐름';
+
+    return {
+      accentTaste: selectedTaste,
+      currentLabel: '현재',
+      deltaLabel: formatTasteTrendDelta(delta),
+      endScore,
+      eyebrow: `${selectedTaste} 세부 변화`,
+      meaning:
+        Math.abs(delta) < 1
+          ? `${selectedTaste}은 현재 안정적인 기준으로 읽혀요. 다음 다이닝에서는 이 축을 크게 조정하기보다 다른 맛과의 균형을 확인하는 데 쓰입니다.`
+          : `${selectedTaste}은 ${directionPhrase}으로 읽혀요. 강도를 단정하기보다 코스 안에서 어떤 맛과 함께 놓일 때 편안한지 보는 기준입니다.`,
+      nextStep:
+        `${selectedTaste}이 중심이 되는 메뉴에서는 셰프의 의도를 바꾸기보다, 여운과 받침 맛의 균형을 참고 포인트로 전달합니다.`,
+      startScore,
+      title: `${selectedTaste}은 ${directionPhrase}이에요`,
+      whatWeKnow:
+        `${startScore}점에서 ${endScore}점으로 이어졌고, 최근 기준에서는 ${Math.abs(delta) < 1 ? '유사한 반응' : delta > 0 ? '더 또렷한 반응' : '더 부드러운 반응'}으로 정리됩니다.`,
+    };
+  }
+
+  const rankedChanges = visibleTasteLabels
+    .map((taste) => {
+      const startScore = firstPoint[taste as keyof ProfileChangeTrendPoint];
+      const endScore = lastPoint[taste as keyof ProfileChangeTrendPoint];
+
+      return {
+        delta: typeof startScore === 'number' && typeof endScore === 'number' ? endScore - startScore : 0,
+        endScore,
+        startScore,
+        taste,
+      };
+    })
+    .filter(
+      (item): item is {
+        delta: number;
+        endScore: number;
+        startScore: number;
+        taste: string;
+      } => typeof item.startScore === 'number' && typeof item.endScore === 'number',
+    )
+    .sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta));
+
+  const strongestChange = rankedChanges[0];
+
+  if (!strongestChange || Math.abs(strongestChange.delta) < 1) {
+    return {
+      accentTaste: '모든맛',
+      currentLabel: '전체',
+      deltaLabel: '안정적',
+      endScore: undefined,
+      eyebrow: '전체 흐름',
+      meaning:
+        '전체 미각 축이 큰 흔들림 없이 유지되고 있어, 다음 다이닝에서는 세부 취향보다 현재 균형을 안정적으로 반영하는 쪽이 좋습니다.',
+      nextStep:
+        '예약 가이드에는 큰 조정 요청보다 현재 균형을 유지하는 참고 신호로 전달됩니다.',
+      startScore: undefined,
+      title: '전체 미각 균형이 안정적으로 유지되고 있어요',
+      whatWeKnow:
+        '선택한 기간 안에서 두드러지게 흔들린 축이 크지 않아, 지금 프로필은 비교적 일관된 기준으로 읽힙니다.',
+    };
+  }
+
+  const directionPhrase = strongestChange.delta > 0 ? '더 또렷해진 축' : '더 부드러워진 축';
+
+  return {
+    accentTaste: strongestChange.taste,
+    currentLabel: '주요 변화',
+    deltaLabel: formatTasteTrendDelta(strongestChange.delta),
+    endScore: strongestChange.endScore,
+    eyebrow: '전체 흐름',
+    meaning:
+      `${strongestChange.taste}이 가장 ${directionPhrase}으로 읽혀요. 이 변화는 단일 취향 판단보다 코스 안에서 어떤 맛을 받쳐주면 좋은지 보는 참고점입니다.`,
+    nextStep:
+      '다음 예약 가이드에는 가장 큰 변화 축을 먼저 반영하되, 셰프에게는 조정 명령이 아니라 손님이 더 편안하게 의도를 받을 수 있는 힌트로 전달합니다.',
+    startScore: strongestChange.startScore,
+    title: `${strongestChange.taste} 변화가 가장 먼저 읽혀요`,
+    whatWeKnow:
+      `${strongestChange.taste}은 ${strongestChange.startScore}점에서 ${strongestChange.endScore}점으로 이어졌고, 선택한 기간에서 가장 뚜렷한 변화로 정리됩니다.`,
+  };
+}
+
 function createTrendPoint(
   snapshot: TasteMeasurementSnapshot,
   eventLabel: string,
@@ -1509,6 +1650,7 @@ export default function AnalysisPage({
   const [showAllRealMenuRecommendations, setShowAllRealMenuRecommendations] = useState(true);
   const [showAllInsights, setShowAllInsights] = useState(false);
   const [activeLegacyDetail, setActiveLegacyDetail] = useState<'taste-profile' | 'special-note' | null>(null);
+  const [isTasteChangePageOpen, setIsTasteChangePageOpen] = useState(false);
   const [trendDragOffsetX, setTrendDragOffsetX] = useState(0);
   const [trendMotionOffsetPercent, setTrendMotionOffsetPercent] = useState(0);
   const [trendMotionScale, setTrendMotionScale] = useState(1);
@@ -1588,11 +1730,11 @@ export default function AnalysisPage({
   const selectedTaste = TREND_TASTE_OPTIONS[selectedTasteIndex] ?? TREND_TASTE_OPTIONS[0];
   const previousTaste =
     TREND_TASTE_OPTIONS[
-      selectedTasteIndex <= 0 ? TREND_TASTE_OPTIONS.length - 1 : selectedTasteIndex - 1
+    selectedTasteIndex <= 0 ? TREND_TASTE_OPTIONS.length - 1 : selectedTasteIndex - 1
     ] ?? TREND_TASTE_OPTIONS[0];
   const nextTaste =
     TREND_TASTE_OPTIONS[
-      selectedTasteIndex >= TREND_TASTE_OPTIONS.length - 1 ? 0 : selectedTasteIndex + 1
+    selectedTasteIndex >= TREND_TASTE_OPTIONS.length - 1 ? 0 : selectedTasteIndex + 1
     ] ?? TREND_TASTE_OPTIONS[0];
   const getTasteTrendDirection = (deltaMm?: number) =>
     typeof deltaMm !== 'number' || Math.abs(deltaMm) < 0.01
@@ -1618,22 +1760,32 @@ export default function AnalysisPage({
   const selectedTasteMeta = getTasteCardMeta(selectedTaste);
   const previousTasteMeta = getTasteCardMeta(previousTaste);
   const nextTasteMeta = getTasteCardMeta(nextTaste);
+  const trendRangeAccentColor =
+    selectedTaste === '모든맛' ? NEUTRAL_TASTE_TOKENS.palette.main : getTasteColor(selectedTaste);
+  const trendRangeAccentTint =
+    selectedTaste === '모든맛' ? NEUTRAL_TASTE_TOKENS.palette.tintSurface : getTasteTint(selectedTaste, 0.12);
   const visibleTasteLabels = selectedTaste === '모든맛' ? [...GRAPH_TASTE_ORDER] : [selectedTaste];
   const visibleTrendData = trendData.filter((point) => point.isVisible);
   const trendAxisConfig = buildTrendAxisConfig(visibleTrendData, visibleTasteLabels);
   const trendRangeLabel = buildTrendRangeLabel(trendViewWindow, activeTrendRange);
+  const tasteTrendDetailInfo = buildTasteTrendDetailInfo({
+    points: trendData,
+    selectedTaste,
+    visibleTasteLabels,
+  });
+  const tasteTrendDetailAccentColor =
+    tasteTrendDetailInfo.accentTaste === '모든맛'
+      ? NEUTRAL_TASTE_TOKENS.palette.main
+      : getTasteColor(tasteTrendDetailInfo.accentTaste);
+  const tasteTrendDetailAccentTint =
+    tasteTrendDetailInfo.accentTaste === '모든맛'
+      ? NEUTRAL_TASTE_TOKENS.palette.tintSurface
+      : getTasteTint(tasteTrendDetailInfo.accentTaste, 0.12);
   const trendPeriodGuide = buildTrendPeriodGuide(
     activeTrendRange,
     trendViewWindow,
     trendDataBounds,
   );
-  const trendTickPositionKeys = trendPeriodGuide.tickPositions.map((position) =>
-    formatTrendPositionKey(position),
-  );
-  const trendBaseInset =
-    trendPeriodGuide.gridPositions.length > 1
-      ? Math.min(0.08, (trendPeriodGuide.gridPositions[1] - trendPeriodGuide.gridPositions[0]) / 6)
-      : 0.08;
   const handleOpenInsightDetail = (insight: AnalysisInsight) => {
     setSelectedInsight(insight);
     setIsInsightDrawerOpen(true);
@@ -1662,12 +1814,12 @@ export default function AnalysisPage({
     );
   }
 
-  const shouldUseChartEdgeGutter =
-    activeTrendRange === 'all' || activeTrendRange === 'year';
-  const trendLeadingInset = shouldUseChartEdgeGutter ? 0 : trendBaseInset;
-  const trendTrailingInset = shouldUseChartEdgeGutter ? 0 : trendBaseInset;
-  const trendChartEdgeGutter =
-    shouldUseChartEdgeGutter ? TREND_ALL_RANGE_EDGE_GUTTER : 0;
+  const trendLeadingInset = 0;
+  const trendTrailingInset = 0;
+  const trendChartEdgeGutter = TREND_CHART_GRID_EDGE_GUTTER;
+  const trendChartLeftGutter = trendChartEdgeGutter;
+  const trendChartRightGutter = trendChartEdgeGutter;
+  const trendYAxisReservedWidth = TREND_CHART_Y_AXIS_WIDTH + TREND_CHART_Y_AXIS_GAP;
   const trendGridStepFraction =
     trendPeriodGuide.gridPositions.length > 1
       ? trendPeriodGuide.gridPositions[1] - trendPeriodGuide.gridPositions[0]
@@ -1675,18 +1827,30 @@ export default function AnalysisPage({
   const trendChartDomainEnd = 1 + trendTrailingInset;
   const trendChartDomainStart = -trendLeadingInset;
   const trendChartDomainSpan = Math.max(0.0001, trendChartDomainEnd - trendChartDomainStart);
-  const trendExtendedGridPositions = [-1, 0, 1]
-    .flatMap((offset) => trendPeriodGuide.gridPositions.map((position) => position + offset))
+  const trendExtendedOffsetSpan = activeTrendRange === 'week' ? 1 + trendGridStepFraction : 1;
+  const trendExtendedGuides = (activeTrendRange === 'all' ? [0] : [-1, 0, 1]).map((direction) => {
+    const guideWindow = direction === 0
+      ? trendViewWindow
+      : shiftTrendViewWindow(trendViewWindow, activeTrendRange, direction as -1 | 1, trendNavigationBounds);
+    const guide = direction === 0
+      ? trendPeriodGuide
+      : buildTrendPeriodGuide(activeTrendRange, guideWindow, trendDataBounds);
+
+    return {
+      guide,
+      offset: direction * trendExtendedOffsetSpan,
+    };
+  });
+  const trendExtendedGridPositions = trendExtendedGuides
+    .flatMap(({ guide, offset }) => guide.gridPositions.map((position) => position + offset))
     .filter((position, index, positions) => positions.findIndex((item) => Math.abs(item - position) < 0.0005) === index);
-  const trendExtendedTickLabels = [-1, 0, 1].flatMap((offset) =>
-    trendPeriodGuide.tickPositions.map((position, index) => {
+  const trendExtendedTickLabels = trendExtendedGuides.flatMap(({ guide, offset }) =>
+    guide.tickPositions.map((position, index) => {
       const valueKey = formatTrendPositionKey(position);
 
       return {
         key: `${offset}-${valueKey}`,
-        label: trendPeriodGuide.labelByPosition[valueKey],
-        isFirst: index === 0,
-        isLast: index === trendPeriodGuide.tickPositions.length - 1,
+        label: guide.labelByPosition[valueKey],
         value: position + offset,
       };
     }).filter((item) => item.label),
@@ -1970,10 +2134,10 @@ export default function AnalysisPage({
       const nextWindow = nextRangeId === 'all'
         ? createTrendViewWindowFromRange('all', trendDataBounds, trendNavigationBounds)
         : createCalendarTrendViewWindow(
-            nextRangeId,
-            trendViewWindow.startMs + (trendViewWindow.endMs - trendViewWindow.startMs) / 2,
-            trendNavigationBounds,
-          );
+          nextRangeId,
+          trendViewWindow.startMs + (trendViewWindow.endMs - trendViewWindow.startMs) / 2,
+          trendNavigationBounds,
+        );
       setSelectedTrendRange(nextRangeId);
       setTrendViewWindow(nextWindow);
       const motionKind =
@@ -2001,6 +2165,397 @@ export default function AnalysisPage({
       initialWindow: null,
     };
   };
+
+  const tasteChangeRangeTabs = (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="flex w-full justify-center gap-[8px]">
+        {TREND_RANGE_OPTIONS.map((option) => (
+          <button
+            type="button"
+            key={option.id}
+            onClick={() => handleSelectTrendRange(option.id)}
+            className={`h-auto flex-none rounded-full border px-[14px] py-[8px] text-[13px] font-semibold transition-colors ${activeTrendRange === option.id
+              ? ''
+              : 'border-transparent bg-transparent text-[var(--tb-color-text-tertiary)]'
+              }`}
+            style={activeTrendRange === option.id ? {
+              backgroundColor: trendRangeAccentTint,
+              borderColor: 'transparent',
+              color: trendRangeAccentColor,
+            } : undefined}
+            aria-pressed={activeTrendRange === option.id}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const tasteChangeChartSection = (
+    <div className="tb-section-stack animate-fadeIn">
+      <SectionCard className="!rounded-none">
+        <div className="mb-0 grid w-full grid-cols-[40px_minmax(0,1fr)_40px] items-center gap-3 pt-0">
+          <button
+            type="button"
+            disabled={!canShiftTrendWindowBackward}
+            onClick={() => handleShiftTrendWindow(-1)}
+            className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white disabled:cursor-default disabled:border-[var(--tb-color-border-subtle)] disabled:bg-transparent disabled:text-[var(--tb-color-text-disabled)]"
+            style={{
+              width: TREND_WINDOW_NAV_BUTTON_SIZE,
+              height: TREND_WINDOW_NAV_BUTTON_SIZE,
+            }}
+            aria-label="이전 기간 보기"
+          >
+            <ChevronLeftIcon size={ICON_TOKENS.size.sm} className="-translate-x-px" />
+          </button>
+          <div className="flex min-w-0 items-center justify-center text-center">
+            <p className="truncate text-[15px] font-semibold leading-none text-[var(--tb-color-text-primary)]">
+              {trendRangeLabel}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleShiftTrendWindow(1)}
+            className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white"
+            style={{
+              width: TREND_WINDOW_NAV_BUTTON_SIZE,
+              height: TREND_WINDOW_NAV_BUTTON_SIZE,
+            }}
+            aria-label="다음 기간 보기"
+          >
+            <ChevronRightIcon size={ICON_TOKENS.size.sm} className="translate-x-px" />
+          </button>
+        </div>
+        <div className="mb-0 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <button
+            type="button"
+            onClick={() => handleMoveTasteFilter(-1)}
+            className="flex min-h-[42px] min-w-0 items-center justify-self-start gap-2 rounded-[14px] bg-[var(--tb-color-surface-muted)] px-[8px] py-[8px] text-[12px] font-medium leading-none text-[var(--tb-color-text-secondary)] opacity-50 transition-opacity hover:opacity-70"
+            aria-label={`이전 미각 ${previousTaste} 보기`}
+          >
+            <TasteDirectionIcon
+              taste={previousTaste}
+              trend={previousTasteMeta.trend}
+              muted
+              size={ICON_TOKENS.size.lg}
+            />
+            <span className="truncate text-[12px] font-semibold leading-none">{previousTaste}</span>
+          </button>
+          <div className="flex min-h-[56px] min-w-0 items-center justify-center gap-2 rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] p-[12px] text-center">
+            <TasteDirectionIcon
+              taste={selectedTaste}
+              trend={selectedTasteMeta.trend}
+              size={ICON_TOKENS.size.lg}
+            />
+            <div className="flex min-w-0 flex-col items-start">
+              <span className="truncate text-[14px] font-semibold leading-none text-[var(--tb-color-text-primary)]">
+                {selectedTaste}
+              </span>
+              <span className="mt-[3px] text-[11px] font-medium leading-none text-[var(--tb-color-text-secondary)]">
+                {selectedTasteMeta.score}점
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleMoveTasteFilter(1)}
+            className="flex min-h-[42px] min-w-0 items-center justify-self-end gap-2 rounded-[14px] bg-[var(--tb-color-surface-muted)] px-[8px] py-[8px] text-[12px] font-medium leading-none text-[var(--tb-color-text-secondary)] opacity-50 transition-opacity hover:opacity-70"
+            aria-label={`다음 미각 ${nextTaste} 보기`}
+          >
+            <TasteDirectionIcon
+              taste={nextTaste}
+              trend={nextTasteMeta.trend}
+              muted
+              size={ICON_TOKENS.size.lg}
+            />
+            <span className="truncate text-[12px] font-semibold leading-none">{nextTaste}</span>
+          </button>
+        </div>
+        <div
+          className="-mx-3 h-[280px] w-[calc(100%+24px)] touch-none select-none"
+          onPointerDown={handleTrendPointerDown}
+          onPointerMove={handleTrendPointerMove}
+          onPointerUp={handleTrendPointerUp}
+          onPointerCancel={handleTrendPointerUp}
+          onPointerLeave={handleTrendPointerUp}
+          onTouchStart={handleTrendTouchStart}
+          onTouchMove={handleTrendTouchMove}
+          onTouchEnd={handleTrendTouchEnd}
+          onWheel={handleTrendWheel}
+        >
+          <div className="relative h-full w-full overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0"
+              style={{
+                right: trendYAxisReservedWidth,
+                transform: `translateX(calc(${visibleTrendDragOffsetX}px + ${visibleTrendMotionOffsetPercent}%)) scale(${trendMotionScale})`,
+                transition: isTrendDragging ? 'none' : 'transform 260ms steps(4, end), opacity 220ms linear',
+                opacity: isTrendDragging
+                  ? shouldLockTrendGridDuringSwipe
+                    ? 0.96
+                    : Math.max(0.84, 1 - Math.abs(trendDragOffsetX) / 240)
+                  : 1,
+              }}
+            >
+              <div
+                className="pointer-events-none absolute z-0"
+                style={{
+                  top: TREND_CHART_TOP_MARGIN,
+                  bottom: TREND_CHART_X_AXIS_HEIGHT,
+                  left: 0,
+                  right: 0,
+                }}
+                aria-hidden="true"
+              >
+                <div className="absolute inset-0">
+                  <div className="absolute inset-y-0 left-[-100%] w-[300%]">
+                    {trendAxisConfig.ticks.map((value) => {
+                      const [domainMin, domainMax] = trendAxisConfig.domain;
+                      const ratio = (domainMax - value) / Math.max(1, domainMax - domainMin);
+
+                      return (
+                        <span
+                          key={`trend-horizontal-grid-${value}`}
+                          className="absolute left-0 h-px w-full"
+                          style={{
+                            top: `${ratio * 100}%`,
+                            backgroundColor: TREND_GRID_HORIZONTAL_STROKE,
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+                <div
+                  className="absolute inset-y-0"
+                  style={{
+                    left: trendChartLeftGutter,
+                    right: trendChartRightGutter,
+                  }}
+                >
+                  <div className="absolute inset-y-0 left-[-100%] w-[300%]">
+                    {trendExtendedGridPositions.map((value) => {
+                      const ratio = (value - trendChartDomainStart) / trendChartDomainSpan;
+                      const isRightEdgeGridLine = Math.abs(ratio - 1) < 0.0005;
+
+                      return (
+                        <span
+                          key={`trend-extended-grid-${value}`}
+                          className="absolute top-0 h-full border-l"
+                          style={{
+                            left: `${((ratio + 1) / 3) * 100}%`,
+                            borderColor: TREND_GRID_VERTICAL_STROKE,
+                            borderLeftStyle: 'dashed',
+                            transform: isRightEdgeGridLine ? 'translateX(-1px)' : undefined,
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+                <div
+                  className="absolute inset-y-0"
+                  style={{
+                    left: trendChartLeftGutter,
+                    right: trendChartRightGutter,
+                  }}
+                >
+                  <div className="absolute inset-y-0 left-[-100%] w-[300%]">
+                    {trendExtendedTickLabels.map((item) => {
+                      const ratio = (item.value - trendChartDomainStart) / trendChartDomainSpan;
+
+                      return (
+                        <span
+                          key={`trend-extended-label-${item.key}`}
+                          className="absolute top-[calc(100%+4px)] whitespace-nowrap text-[11px] text-[var(--tb-color-text-hint)]"
+                          style={{
+                            left: `${((ratio + 1) / 3) * 100}%`,
+                          }}
+                        >
+                          {item.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height="100%" className="relative z-10">
+                <LineChart
+                  data={trendData}
+                  margin={{
+                    top: TREND_CHART_TOP_MARGIN,
+                    right: trendChartEdgeGutter,
+                    bottom: 0,
+                    left: trendChartLeftGutter,
+                  }}
+                >
+                  <XAxis
+                    type="number"
+                    dataKey="xPosition"
+                    domain={[-trendLeadingInset, trendChartDomainEnd]}
+                    ticks={trendPeriodGuide.tickPositions}
+                    tick={false}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={0}
+                    padding={{ left: 0, right: 0 }}
+                    height={TREND_CHART_X_AXIS_HEIGHT}
+                    tickMargin={0}
+                  />
+                  <YAxis
+                    orientation="right"
+                    domain={trendAxisConfig.domain}
+                    ticks={trendAxisConfig.ticks}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={false}
+                    width={0}
+                  />
+                  <Tooltip
+                    content={<WeeklyTrendTooltip visibleTasteLabels={visibleTasteLabels} />}
+                    cursor={<WeeklyTrendCursor />}
+                  />
+                  {visibleTasteLabels.map((taste) => (
+                    <React.Fragment key={taste}>
+                      <Line
+                        type="linear"
+                        dataKey={taste}
+                        stroke={getTasteTint(taste, 0.18)}
+                        strokeWidth={TREND_TINT_LINE_STROKE_WIDTH}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        dot={false}
+                        activeDot={false}
+                        isAnimationActive={false}
+                      />
+                      <Line
+                        type="linear"
+                        dataKey={taste}
+                        stroke={getTasteColor(taste)}
+                        strokeWidth={TREND_LINE_STROKE_WIDTH}
+                        dot={(props) => <WeeklyTrendDot {...props} taste={taste} />}
+                        activeDot={(props) => <WeeklyTrendActiveDot {...props} taste={taste} />}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        isAnimationActive={false}
+                      />
+                    </React.Fragment>
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div
+              className="pointer-events-none absolute right-0 bg-[var(--tb-color-surface-base)]"
+              style={{
+                top: TREND_CHART_TOP_MARGIN,
+                bottom: TREND_CHART_X_AXIS_HEIGHT,
+                width: trendYAxisReservedWidth,
+              }}
+              aria-hidden="true"
+            />
+            <FixedTrendYAxisLabels
+              domain={trendAxisConfig.domain}
+              ticks={trendAxisConfig.ticks}
+            />
+          </div>
+        </div>
+      </SectionCard>
+      <PageSection
+        className="px-5"
+        contentClassName="w-full"
+        title="미각 세부 정보"
+        titleSize="md"
+      >
+        <SectionCard hoverEffect={false}>
+          <div className="flex w-full flex-col gap-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
+                  {tasteTrendDetailInfo.eyebrow}
+                </p>
+                <p className="mt-1 text-[15px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+                  {tasteTrendDetailInfo.title}
+                </p>
+              </div>
+              <span
+                className="shrink-0 rounded-full px-3 py-[6px] text-[12px] font-semibold"
+                style={{
+                  backgroundColor: tasteTrendDetailAccentTint,
+                  color: tasteTrendDetailAccentColor,
+                }}
+              >
+                {tasteTrendDetailInfo.deltaLabel}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+                <p className="text-[11px] font-semibold text-[var(--tb-color-text-hint)]">
+                  시작
+                </p>
+                <p className="mt-1 text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                  {typeof tasteTrendDetailInfo.startScore === 'number'
+                    ? `${tasteTrendDetailInfo.startScore}점`
+                    : '기준 없음'}
+                </p>
+              </div>
+              <div className="rounded-[12px] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+                <p className="text-[11px] font-semibold text-[var(--tb-color-text-hint)]">
+                  {tasteTrendDetailInfo.currentLabel}
+                </p>
+                <p className="mt-1 text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                  {typeof tasteTrendDetailInfo.endScore === 'number'
+                    ? `${tasteTrendDetailInfo.endScore}점`
+                    : `${selectedTasteMeta.score}점`}
+                </p>
+              </div>
+              <div className="rounded-[12px] px-3 py-3" style={{ backgroundColor: tasteTrendDetailAccentTint }}>
+                <p className="text-[11px] font-semibold" style={{ color: tasteTrendDetailAccentColor }}>
+                  변화
+                </p>
+                <p className="mt-1 text-[14px] font-bold" style={{ color: tasteTrendDetailAccentColor }}>
+                  {tasteTrendDetailInfo.deltaLabel}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {[
+                { label: '지금 읽히는 변화', text: tasteTrendDetailInfo.whatWeKnow },
+                { label: '다이닝에서의 의미', text: tasteTrendDetailInfo.meaning },
+                { label: '다음 반영 방식', text: tasteTrendDetailInfo.nextStep },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[12px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] px-3 py-3"
+                >
+                  <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
+                    {item.label}
+                  </p>
+                  <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionCard>
+      </PageSection>
+    </div>
+  );
+
+  if (isTasteChangePageOpen) {
+    return (
+      <TasteChangePage
+        onBack={() => setIsTasteChangePageOpen(false)}
+        onOpenMenu={onOpenMenu}
+        topSlot={tasteChangeRangeTabs}
+      >
+        {tasteChangeChartSection}
+      </TasteChangePage>
+    );
+  }
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
@@ -2097,7 +2652,7 @@ export default function AnalysisPage({
 
             <LegacyHomeTasteProfileCard
               cardData={legacyTasteProfileCard}
-              onOpenDetail={() => setActiveLegacyDetail('taste-profile')}
+              onOpenDetail={() => setIsTasteChangePageOpen(true)}
             />
 
             <LegacyHomeSpecialNoteCard
@@ -2175,304 +2730,31 @@ export default function AnalysisPage({
                       )
                     }
                     leadingStyle={{ backgroundColor: 'var(--tb-color-surface-base)' }}
-                    />
-                  );
-                })}
+                  />
+                );
+              })}
             </CardScrollList>
           </PageSection>
 
           {/* 측정/피드백 변화 차트 */}
-          <details className="group flex flex-col gap-3 pb-6">
-            <summary className="list-none flex cursor-pointer w-full items-center justify-between rounded-[20px] bg-[var(--tb-color-surface-base)] border border-[var(--tb-color-border-default)] p-4 transition-all duration-300 hover:bg-[var(--tb-color-surface-muted)] active:scale-[0.98]">
-              <div className="flex flex-col gap-1">
-                <SectionTitle size="md" className="mb-0">
-                  {hasTrendHistory ? '과거 측정 및 미각 변화 추이' : '현재 측정 기준 미각 분포 차트'}
-                </SectionTitle>
-                <p className="text-[12px] text-[var(--tb-color-text-subtle)] font-normal">전문가용 데이터 대시보드 열기</p>
-              </div>
-              <ChevronRightIcon size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)] transition-transform duration-300 group-open:rotate-90" />
-            </summary>
-            
-            <div className="mt-4 flex flex-col gap-3 animate-fadeIn">
-              <SectionCard>
-                <div className="mb-0 w-full">
-                  <div className="flex w-full justify-center gap-[8px]">
-                  {TREND_RANGE_OPTIONS.map((option) => (
-                    <button
-                      type="button"
-                      key={option.id}
-                      onClick={() => handleSelectTrendRange(option.id)}
-                      className={`h-auto flex-none rounded-full border px-[14px] py-[8px] text-[13px] font-semibold transition-colors ${
-                        activeTrendRange === option.id
-                          ? 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-primary)]'
-                          : 'border-transparent bg-transparent text-[var(--tb-color-text-secondary)]'
-                      }`}
-                      aria-pressed={activeTrendRange === option.id}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                  </div>
-                </div>
-              <div className="mb-0 grid w-full grid-cols-[40px_minmax(0,1fr)_40px] items-center gap-3 pt-0">
-                <button
-                  type="button"
-                  disabled={!canShiftTrendWindowBackward}
-                  onClick={() => handleShiftTrendWindow(-1)}
-                  className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white disabled:cursor-default disabled:border-[var(--tb-color-border-subtle)] disabled:bg-transparent disabled:text-[var(--tb-color-text-disabled)]"
-                  style={{
-                    width: TREND_WINDOW_NAV_BUTTON_SIZE,
-                    height: TREND_WINDOW_NAV_BUTTON_SIZE,
-                  }}
-                  aria-label="이전 기간 보기"
-                >
-                  <ChevronLeftIcon size={ICON_TOKENS.size.lg} />
-                </button>
-                <div className="flex min-w-0 items-center justify-center text-center">
-                  <p className="truncate text-[15px] font-semibold leading-none text-[var(--tb-color-text-primary)]">
-                    {trendRangeLabel}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleShiftTrendWindow(1)}
-                  className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white"
-                  style={{
-                    width: TREND_WINDOW_NAV_BUTTON_SIZE,
-                    height: TREND_WINDOW_NAV_BUTTON_SIZE,
-                  }}
-                  aria-label="다음 기간 보기"
-                >
-                  <ChevronRightIcon size={ICON_TOKENS.size.lg} />
-                </button>
-              </div>
-              <div className="mb-0 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleMoveTasteFilter(-1)}
-                  className="flex min-h-[42px] min-w-0 items-center justify-self-start gap-2 rounded-[14px] bg-[var(--tb-color-surface-muted)] px-[8px] py-[8px] text-[12px] font-medium leading-none text-[var(--tb-color-text-secondary)] opacity-50 transition-opacity hover:opacity-70"
-                  aria-label={`이전 미각 ${previousTaste} 보기`}
-                >
-                  <TasteDirectionIcon
-                    taste={previousTaste}
-                    trend={previousTasteMeta.trend}
-                    muted
-                    size={ICON_TOKENS.size.lg}
-                  />
-                  <span className="truncate text-[12px] font-semibold leading-none">{previousTaste}</span>
-                </button>
-                <div className="flex min-h-[56px] min-w-0 items-center justify-center gap-2 rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] p-[12px] text-center">
-                  <TasteDirectionIcon
-                    taste={selectedTaste}
-                    trend={selectedTasteMeta.trend}
-                    size={ICON_TOKENS.size.lg}
-                  />
-                  <div className="flex min-w-0 flex-col items-start">
-                    <span className="truncate text-[14px] font-semibold leading-none text-[var(--tb-color-text-primary)]">
-                      {selectedTaste}
-                    </span>
-                    <span className="mt-[3px] text-[11px] font-medium leading-none text-[var(--tb-color-text-secondary)]">
-                      {selectedTasteMeta.score}점
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleMoveTasteFilter(1)}
-                  className="flex min-h-[42px] min-w-0 items-center justify-self-end gap-2 rounded-[14px] bg-[var(--tb-color-surface-muted)] px-[8px] py-[8px] text-[12px] font-medium leading-none text-[var(--tb-color-text-secondary)] opacity-50 transition-opacity hover:opacity-70"
-                  aria-label={`다음 미각 ${nextTaste} 보기`}
-                >
-                  <TasteDirectionIcon
-                    taste={nextTaste}
-                    trend={nextTasteMeta.trend}
-                    muted
-                    size={ICON_TOKENS.size.lg}
-                  />
-                  <span className="truncate text-[12px] font-semibold leading-none">{nextTaste}</span>
-                </button>
-              </div>
-              <div className="mb-2">
-                <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                  {hasTrendHistory
-                    ? '측정이 쌓일수록 각 미각 축이 어떻게 달라졌는지 추세로 이어서 볼 수 있어요.'
-                    : '첫 측정이라 아직 누적 추세는 없어요. 이번 값을 현재 기준점으로 저장했고, 다음 측정부터 변화 흐름이 이어집니다.'}
-                </p>
-              </div>
-              <div
-                className="h-[280px] w-full touch-none select-none"
-                onPointerDown={handleTrendPointerDown}
-                onPointerMove={handleTrendPointerMove}
-                onPointerUp={handleTrendPointerUp}
-                onPointerCancel={handleTrendPointerUp}
-                onPointerLeave={handleTrendPointerUp}
-                onTouchStart={handleTrendTouchStart}
-                onTouchMove={handleTrendTouchMove}
-                onTouchEnd={handleTrendTouchEnd}
-                onWheel={handleTrendWheel}
-              >
-	                <div className="relative h-full w-full overflow-hidden">
-	                  <div
-	                    className="relative h-full w-full"
-	                    style={{
-	                      transform: `translateX(calc(${visibleTrendDragOffsetX}px + ${visibleTrendMotionOffsetPercent}%)) scale(${trendMotionScale})`,
-	                      transition: isTrendDragging ? 'none' : 'transform 260ms steps(4, end), opacity 220ms linear',
-                      opacity: isTrendDragging
-                        ? shouldLockTrendGridDuringSwipe
-                          ? 0.96
-                          : Math.max(0.84, 1 - Math.abs(trendDragOffsetX) / 240)
-	                        : 1,
-	                    }}
-	                  >
-	                    <div
-	                      className="pointer-events-none absolute z-0"
-	                      style={{
-	                        top: TREND_CHART_TOP_MARGIN,
-	                        bottom: TREND_CHART_X_AXIS_HEIGHT,
-	                        left: trendChartEdgeGutter,
-	                        right: TREND_CHART_Y_AXIS_WIDTH + trendChartEdgeGutter,
-	                      }}
-	                      aria-hidden="true"
-	                    >
-	                      <div className="absolute inset-y-0 left-[-100%] w-[300%]">
-	                        {trendAxisConfig.ticks.map((value) => {
-	                          const [domainMin, domainMax] = trendAxisConfig.domain;
-	                          const ratio = (domainMax - value) / Math.max(1, domainMax - domainMin);
-
-	                          return (
-	                            <span
-	                              key={`trend-horizontal-grid-${value}`}
-	                              className="absolute left-0 h-px w-full"
-	                              style={{
-	                                top: `${ratio * 100}%`,
-	                                backgroundColor: TREND_GRID_HORIZONTAL_STROKE,
-	                              }}
-	                            />
-	                          );
-	                        })}
-	                        {trendExtendedGridPositions.map((value) => {
-	                          const ratio = (value - trendChartDomainStart) / trendChartDomainSpan;
-
-	                          return (
-	                            <span
-	                              key={`trend-extended-grid-${value}`}
-	                              className="absolute top-0 h-full border-l"
-	                              style={{
-	                                left: `${((ratio + 1) / 3) * 100}%`,
-	                                borderColor: TREND_GRID_VERTICAL_STROKE,
-	                                borderLeftStyle: 'dashed',
-	                              }}
-	                            />
-	                          );
-	                        })}
-	                        {trendExtendedTickLabels.map((item) => {
-	                          const ratio = (item.value - trendChartDomainStart) / trendChartDomainSpan;
-	                          const edgeLabelOffset = activeTrendRange === 'all' ? 6 : 2;
-
-	                          return (
-	                            <span
-	                              key={`trend-extended-label-${item.key}`}
-	                              className="absolute top-[calc(100%+4px)] whitespace-nowrap text-[11px] text-[var(--tb-color-text-hint)]"
-	                              style={{
-	                                left: `${((ratio + 1) / 3) * 100}%`,
-	                                marginLeft: item.isFirst ? edgeLabelOffset : item.isLast ? -edgeLabelOffset : 0,
-	                                transform: item.isFirst
-	                                  ? 'translateX(0)'
-	                                  : item.isLast
-	                                    ? 'translateX(-100%)'
-	                                    : 'translateX(-50%)',
-	                              }}
-	                            >
-	                              {item.label}
-	                            </span>
-	                          );
-	                        })}
-	                      </div>
-	                    </div>
-	                    <ResponsiveContainer width="100%" height="100%" className="relative z-10">
-	                      <LineChart
-	                        data={trendData}
-	                        margin={{
-                          top: TREND_CHART_TOP_MARGIN,
-                          right: trendChartEdgeGutter,
-                          bottom: 0,
-	                          left: trendChartEdgeGutter,
-	                        }}
-	                      >
-	                        <XAxis
-                          type="number"
-                          dataKey="xPosition"
-                          domain={[-trendLeadingInset, trendChartDomainEnd]}
-                          ticks={trendPeriodGuide.tickPositions}
-                          tick={false}
-                          axisLine={false}
-                          tickLine={false}
-                          interval={0}
-                          padding={{ left: 4, right: 4 }}
-                          height={TREND_CHART_X_AXIS_HEIGHT}
-                          tickMargin={0}
-                        />
-                        <YAxis
-                          orientation="right"
-                          domain={trendAxisConfig.domain}
-                          ticks={trendAxisConfig.ticks}
-                          axisLine={false}
-                          tickLine={false}
-                          tick={false}
-                          width={TREND_CHART_Y_AXIS_WIDTH}
-                        />
-                        <Tooltip
-                          content={<WeeklyTrendTooltip visibleTasteLabels={visibleTasteLabels} />}
-                          cursor={<WeeklyTrendCursor />}
-                        />
-                        {visibleTasteLabels.map((taste) => (
-                          <React.Fragment key={taste}>
-                            <Line
-                              type="linear"
-                              dataKey={taste}
-                              stroke={getTasteTint(taste, 0.18)}
-                              strokeWidth={TREND_TINT_LINE_STROKE_WIDTH}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              dot={false}
-                              activeDot={false}
-                              isAnimationActive={false}
-                            />
-                            <Line
-                              type="linear"
-                              dataKey={taste}
-                              stroke={getTasteColor(taste)}
-                              strokeWidth={TREND_LINE_STROKE_WIDTH}
-                              dot={(props) => <WeeklyTrendDot {...props} taste={taste} />}
-                              activeDot={(props) => <WeeklyTrendActiveDot {...props} taste={taste} />}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              isAnimationActive={false}
-                            />
-                          </React.Fragment>
-                        ))}
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div
-                    className="pointer-events-none absolute"
-                    style={{
-                      top: TREND_CHART_TOP_MARGIN,
-                      bottom: TREND_CHART_X_AXIS_HEIGHT,
-                      right: TREND_CHART_Y_AXIS_WIDTH - 1,
-                      width: 2,
-                      backgroundColor: 'var(--tb-color-surface-card)',
-                    }}
-                    aria-hidden="true"
-                  />
-                  <FixedTrendYAxisLabels
-                    domain={trendAxisConfig.domain}
-                    ticks={trendAxisConfig.ticks}
-                  />
-                </div>
-              </div>
-            </SectionCard>
-            </div>
-          </details>
+          <InsightSummaryCard
+            as="button"
+            onClick={() => setIsTasteChangePageOpen(true)}
+            className="w-full cursor-pointer border border-[var(--tb-color-border-default)] text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+            contentClassName="gap-0"
+            indicator={<InsightSummaryIndicator className="bg-[var(--tb-color-text-disabled)]" />}
+            title={hasTrendHistory ? '과거 측정 및 미각 변화 추이' : '현재 측정 기준 미각 분포 차트'}
+            action={(
+              <ChevronRightIcon
+                size={ICON_TOKENS.size.lg}
+                className="text-[var(--tb-color-icon-primary)]"
+              />
+            )}
+          >
+            <p className="text-[12px] font-normal text-[var(--tb-color-text-subtle)]">
+              전문가용 데이터 대시보드 열기
+            </p>
+          </InsightSummaryCard>
 
           {realMenuRecommendations.length > 0 ? (
             <PageSection
