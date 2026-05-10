@@ -9,12 +9,12 @@ import {
   Sparkles,
   Store,
   Utensils,
-  X,
 } from 'lucide-react';
 
 import ChefAvatar from '../system/ChefAvatar';
 import Chip from '../system/Chip';
 import EmptyState from '../system/EmptyState';
+import SearchOverlayShell from '../search/SearchOverlayShell';
 import { cn } from '../ui/utils';
 import { type ReservationRecord } from '../../constants/reservationCatalog';
 import { ICON_TOKENS } from '../../constants/designTokens';
@@ -43,8 +43,6 @@ const SEARCH_BAR_ICON_SIZE = ICON_TOKENS.size.md;
 const SEARCH_RESULT_ACTION_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const SEARCH_RESULT_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
 const SEARCH_RESULT_ACTIVE_RECORD_ICON_SIZE = 24;
-const SEARCH_OVERLAY_TOP_OFFSET =
-  'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const SEARCH_FOCUS_CARD_CLASS_NAME =
   'rounded-[24px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] p-4';
 const SEARCH_SECTION_TITLE_CLASS_NAME =
@@ -68,9 +66,6 @@ const SEARCH_RESULT_TYPE_LABEL_CLASS_NAME =
   'text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--tb-color-text-faint)]';
 const SEARCH_EMPTY_STATE_CLASS_NAME =
   'rounded-[28px] border border-dashed border-[var(--tb-color-border-default)] bg-white/75 px-2 py-6';
-const SEARCH_PANEL_HEADER_CLASS_NAME =
-  'border-b border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/95 px-5 pb-4 pt-1 backdrop-blur-sm';
-const SEARCH_PANEL_BODY_CLASS_NAME = 'flex-1 overflow-y-auto no-scrollbar px-5 pb-8 pt-4';
 const SEARCH_SUGGESTION_SECTION_CLASS_NAME = 'tb-card-stack';
 const SEARCH_SUGGESTION_ITEMS_CLASS_NAME = 'flex flex-wrap gap-2';
 
@@ -998,65 +993,16 @@ export default function HomeUnifiedSearch({
       ) : null}
 
       {isOpen ? (
-        <>
-          <div
-            className="fixed inset-x-0 bottom-0 z-[55] bg-[var(--tb-color-bg-page)]/92 backdrop-blur-[14px] animate-fadeIn"
-            style={{ top: SEARCH_OVERLAY_TOP_OFFSET }}
-          />
-          <div
-            className="fixed inset-x-0 bottom-0 z-[56] flex justify-center"
-            style={{ top: SEARCH_OVERLAY_TOP_OFFSET }}
-          >
-            <div className="flex h-full w-full max-w-[1440px] flex-col">
-              <div className={SEARCH_PANEL_HEADER_CLASS_NAME}>
-                <form className="flex items-center gap-3" onSubmit={handleSubmit}>
-                  <div
-                    className={cn(
-                      SEARCH_BAR_FIELD_CLASS_NAME,
-                      'relative hover:bg-[var(--tb-color-surface-muted)]',
-                    )}
-                  >
-                    <input
-                      ref={inputRef}
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      aria-label="통합 검색"
-                      autoCorrect="off"
-                      autoCapitalize="none"
-                      spellCheck={false}
-                      placeholder="레스토랑, 메뉴, 셰프 검색"
-                      className="h-full min-w-0 flex-1 border-none bg-transparent pr-8 text-[13px] font-medium text-[#303946] outline-none placeholder:text-[#5D6672]"
-                    />
-                    {query ? (
-                      <button
-                        type="button"
-                        onClick={handleClearQuery}
-                        aria-label="검색어 지우기"
-                        title="검색어 지우기"
-                        className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-[var(--tb-color-icon-muted)] transition-colors hover:bg-[var(--tb-color-surface-disabled)] hover:text-[var(--tb-color-text-primary)]"
-                      >
-                        <X size={ICON_TOKENS.size.sm} />
-                      </button>
-                    ) : null}
-                  </div>
-                  <button
-                    type="submit"
-                    aria-label="검색 실행"
-                    className={SEARCH_BAR_ICON_BUTTON_CLASS_NAME}
-                  >
-                    <Search size={SEARCH_BAR_ICON_SIZE} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    className="shrink-0 text-[13px] font-semibold text-[var(--tb-color-text-body)] transition-colors hover:text-[var(--tb-color-text-primary)]"
-                  >
-                    취소
-                  </button>
-                </form>
-              </div>
-
-              <div className={SEARCH_PANEL_BODY_CLASS_NAME}>
+        <SearchOverlayShell
+          ariaLabel="통합 검색"
+          inputRef={inputRef}
+          onClearQuery={handleClearQuery}
+          onClose={handleClose}
+          onQueryChange={setQuery}
+          onSubmit={handleSubmit}
+          placeholder="레스토랑, 메뉴, 셰프 검색"
+          query={query}
+        >
                 <div className="tb-section-stack">
                   {selectedResult ? <SearchFocusCard result={selectedResult} /> : null}
 
@@ -1188,10 +1134,7 @@ export default function HomeUnifiedSearch({
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
-        </>
+        </SearchOverlayShell>
       ) : null
       }
     </>

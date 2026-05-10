@@ -4,6 +4,7 @@ import {
   CircleCheck as CircleCheckIcon,
   ChefHat as ChefHatIcon,
   MessageSquareText as MessageSquareTextIcon,
+  Search as SearchIcon,
   Sparkles as SparklesIcon,
 } from 'lucide-react';
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
@@ -11,6 +12,7 @@ const ArrowRight = wrapIcon(ArrowRightIcon);
 const CheckCircle2 = wrapIcon(CircleCheckIcon);
 const ChefHat = wrapIcon(ChefHatIcon);
 const MessageSquareText = wrapIcon(MessageSquareTextIcon);
+const Search = wrapIcon(SearchIcon);
 const Sparkles = wrapIcon(SparklesIcon);
 
 import SectionCard from '../SectionCard';
@@ -21,6 +23,7 @@ import PageSection from '../system/PageSection';
 import SelectionCard from '../system/SelectionCard';
 import TokenBox from '../system/TokenBox';
 import TasteChip from '../system/TasteChip';
+import TasteWordSearch from '../search/TasteWordSearch';
 import {
   type DiningDishMetadata,
   type DiningFeedbackChoice,
@@ -614,15 +617,18 @@ function BubbleLabel({ isSelected, label }: { isSelected: boolean; label: string
 }
 
 function TasteExperienceMap({
+  focusExperienceId,
   onConfirm,
   selectedExperienceId,
 }: {
+  focusExperienceId?: string | null;
   onConfirm: (experience: TasteExperienceWord) => void;
   selectedExperienceId: string | null | undefined;
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const hasExploredMapRef = useRef(false);
   const hasInitializedMapRef = useRef(false);
+  const isTouchGestureRef = useRef(false);
   const isTouchingMapRef = useRef(false);
   const isSnappingRef = useRef(false);
   const hasReleasedScrollRef = useRef(false);
@@ -795,6 +801,36 @@ function TasteExperienceMap({
     });
   }, []);
 
+  useEffect(() => {
+    const viewport = viewportRef.current;
+
+    if (!viewport || !focusExperienceId || !hasInitializedMapRef.current) {
+      return;
+    }
+
+    const focusedBubble = tasteExperienceBubblePositions.find(
+      (bubble) => bubble.experience.id === focusExperienceId,
+    );
+
+    if (!focusedBubble) {
+      return;
+    }
+
+    hasExploredMapRef.current = true;
+    selectedExperienceIdRef.current = focusExperienceId;
+    setDraftSelectedExperienceId(focusExperienceId);
+    isSnappingRef.current = true;
+    viewport.scrollTo({
+      behavior: 'smooth',
+      left: focusedBubble.x * mapZoomRef.current,
+      top: focusedBubble.y * mapZoomRef.current,
+    });
+
+    window.setTimeout(() => {
+      isSnappingRef.current = false;
+    }, 420);
+  }, [focusExperienceId]);
+
   const handleMapScroll = () => {
     if (!hasInitializedMapRef.current) {
       return;
@@ -803,7 +839,11 @@ function TasteExperienceMap({
     hasExploredMapRef.current = true;
     window.requestAnimationFrame(selectClosestBubble);
 
-    if (isSnappingRef.current || isTouchingMapRef.current) {
+    if (
+      isSnappingRef.current ||
+      isTouchingMapRef.current ||
+      (isTouchGestureRef.current && !hasReleasedScrollRef.current)
+    ) {
       return;
     }
 
@@ -853,6 +893,7 @@ function TasteExperienceMap({
 
   const handleMapTouchStart = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     hasExploredMapRef.current = true;
+    isTouchGestureRef.current = 'touches' in event;
     isTouchingMapRef.current = true;
     hasReleasedScrollRef.current = false;
     clearSettledSnap();
@@ -907,6 +948,14 @@ function TasteExperienceMap({
     }
   };
 
+  const handleMapMouseLeave = () => {
+    if (isTouchGestureRef.current && isTouchingMapRef.current) {
+      return;
+    }
+
+    handleMapPointerCancel();
+  };
+
   const selectedExperience = resolvedSelectedExperience;
   const renderedBubblePositions = getTasteExperienceBubbleRenderPositions(
     resolvedSelectedExperienceId,
@@ -921,7 +970,7 @@ function TasteExperienceMap({
         ref={viewportRef}
         onScroll={handleMapScroll}
         onMouseDown={handleMapTouchStart}
-        onMouseLeave={handleMapPointerCancel}
+        onMouseLeave={handleMapMouseLeave}
         onMouseUp={handleMapTouchEnd}
         onPointerCancel={handleMapPointerCancel}
         onTouchCancel={handleMapPointerCancel}
@@ -999,10 +1048,10 @@ function TasteExperienceMap({
               <button
                 type="button"
                 onClick={() => onConfirm(selectedExperience)}
-                className="pointer-events-auto ml-auto flex h-[74px] w-[74px] shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] transition hover:opacity-90"
+                className="pointer-events-auto ml-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] transition hover:opacity-90"
                 aria-label="선택한 미각 인상으로 계속하기"
               >
-                <ArrowRight size={ICON_TOKENS.size.lg} strokeWidth={2} />
+                <ArrowRight size={ICON_TOKENS.size.md} strokeWidth={2} />
               </button>
             </div>
           </SectionCard>
@@ -1116,6 +1165,8 @@ export function DiningFeedbackScreen({
   const [feedbackStep, setFeedbackStep] = useState<DiningFeedbackStep>('menu-select');
   const [selectedDishIndex, setSelectedDishIndex] = useState<number | null>(null);
   const [activeDishIndex, setActiveDishIndex] = useState(0);
+  const [isTasteSearchOpen, setIsTasteSearchOpen] = useState(false);
+  const [searchedExperienceId, setSearchedExperienceId] = useState<string | null>(null);
   const activeDish = (scenario.dishes[activeDishIndex] ?? scenario.dishes[0]) as DiningDishMetadata;
   const activeResponse = draft.dishResponses[activeDish.id] ?? {
     rating: 3,
@@ -1160,11 +1211,18 @@ export function DiningFeedbackScreen({
     }
 
     setActiveDishIndex(selectedDishIndex);
+    setSearchedExperienceId(null);
     setFeedbackStep('taste-checkin');
   };
 
   const handleTopBack = () => {
     if (feedbackStep === 'taste-checkin') {
+      if (isTasteSearchOpen) {
+        setIsTasteSearchOpen(false);
+        return;
+      }
+
+      setSearchedExperienceId(null);
       setFeedbackStep('menu-select');
       return;
     }
@@ -1175,27 +1233,44 @@ export function DiningFeedbackScreen({
   if (feedbackStep === 'taste-checkin') {
     return (
       <div className="relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-focus)] animate-slideIn">
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 h-[calc(var(--tb-safe-area-top)+var(--tb-size-top-app-bar-height)+44px)] bg-gradient-to-b from-[var(--tb-color-bg-focus)] from-[0%] via-[var(--tb-color-bg-focus)] via-[72%] to-transparent" />
         <div className="absolute inset-x-0 top-0 z-40">
           <TopAppBar
-            appearance="solid"
+            appearance="transparent"
             title={activeDish.title}
             showBack
             onBack={handleTopBack}
             rightActions={
-              <span className="inline-flex min-h-8 items-center rounded-full bg-[var(--tb-color-surface-muted)] px-3 text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
-                {activeDish.courseLabel}
-              </span>
+              <button
+                type="button"
+                onClick={() => setIsTasteSearchOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+                aria-label="미각 단어 검색"
+                title="미각 단어 검색"
+              >
+                <Search size={ICON_TOKENS.size.lg} strokeWidth={1.8} />
+              </button>
             }
           />
         </div>
 
         <TasteExperienceMap
+          focusExperienceId={searchedExperienceId}
           selectedExperienceId={activeExperienceId}
           onConfirm={(experience) => {
             selectTasteExperience(experience);
+            setSearchedExperienceId(null);
             setFeedbackStep('menu-select');
           }}
+        />
+        <TasteWordSearch
+          axes={tasteExperienceAxes}
+          isOpen={isTasteSearchOpen}
+          onClose={() => setIsTasteSearchOpen(false)}
+          onSelect={(experience) => {
+            setSearchedExperienceId(experience.id);
+            setIsTasteSearchOpen(false);
+          }}
+          words={tasteExperienceWords}
         />
       </div>
     );

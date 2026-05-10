@@ -522,4 +522,30 @@
       0 10px 26px rgba(15, 15, 15, 0.18),
       0 0 0 6px rgba(255, 153, 0, 0.16);
   }
+
+  .tb-taste-axis-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--tb-taste-axis-tab-border);
+    border-radius: 9999px;
+    background: var(--tb-taste-axis-tab-bg);
+    color: var(--tb-taste-axis-tab-text) !important;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 8px 12px;
+    transition:
+      background-color var(--tb-motion-duration-fast) var(--tb-motion-ease-standard),
+      border-color var(--tb-motion-duration-fast) var(--tb-motion-ease-standard),
+      color var(--tb-motion-duration-fast) var(--tb-motion-ease-standard);
+  }
+
+  .tb-taste-axis-tab:hover {
+    background: color-mix(
+      in srgb,
+      var(--tb-taste-axis-tab-bg) 82%,
+      var(--tb-taste-axis-tab-border)
+    );
+  }
 }

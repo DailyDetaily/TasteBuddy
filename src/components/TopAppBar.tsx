@@ -63,7 +63,7 @@ export default function TopAppBar({
       }
       style={{ paddingTop: 'var(--tb-safe-area-top)' }}
     >
-      <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-[20px] py-[12px]">
+      <div className="relative flex h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-[20px]">
         {/* Left */}
         <div className="flex items-center">
           {showBack ? (
