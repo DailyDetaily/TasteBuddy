@@ -851,8 +851,15 @@ function MainApp() {
     hasUnreadNotifications: notifications.some((notification) => !notification.read),
   };
 
-  const isImmersiveWhiteShell =
-    appState === 'onboarding' || appState === 'intake';
+  const usesFocusViewportBackground =
+    appState === 'splash' ||
+    appState === 'onboarding' ||
+    appState === 'intake' ||
+    appState === 'calibration' ||
+    appState === 'tastick' ||
+    appState === 'measurement' ||
+    appState === 'improve-accuracy' ||
+    isRestaurantDetailFeedbackView;
   const shouldShowMainShell =
     appState === 'main' &&
     (selectedRestaurantDetail !== null || activeTab !== 'reservation' || isReservationRootView);
@@ -864,7 +871,7 @@ function MainApp() {
   );
 
   useEffect(() => {
-    const nextBackgroundColor = isImmersiveWhiteShell ? '#ffffff' : '#f3f3f3';
+    const nextBackgroundColor = usesFocusViewportBackground ? '#ffffff' : '#f3f3f3';
     const rootElement = document.documentElement;
     const bodyElement = document.body;
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -884,16 +891,16 @@ function MainApp() {
         themeColorMeta.setAttribute('content', '#ffffff');
       }
     };
-  }, [isImmersiveWhiteShell]);
+  }, [usesFocusViewportBackground]);
 
   return (
     <div
-      className={`flex min-h-[100dvh] items-center justify-center overflow-hidden ${isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+      className={`flex min-h-[100dvh] items-center justify-center overflow-hidden ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
         }`}
       style={userTasteAccentStyle}
     >
       <div
-        className={`relative flex h-[100dvh] w-full max-w-[1440px] flex-col overflow-hidden font-sans ${isImmersiveWhiteShell ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+        className={`relative flex h-[100dvh] w-full max-w-[1440px] flex-col overflow-hidden font-sans ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
           }`}
       >
         {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}

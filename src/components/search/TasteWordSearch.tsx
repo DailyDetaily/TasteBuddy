@@ -133,7 +133,7 @@ export default function TasteWordSearch({
                       '--tb-taste-axis-tab-bg': isSelected
                         ? `var(--tb-taste-${axis.id}-tint-surface)`
                         : 'var(--tb-color-surface-base)',
-                      '--tb-taste-axis-tab-border': `var(--tb-taste-${axis.id}-main)`,
+                      '--tb-taste-axis-tab-border': `var(--tb-taste-${axis.id}-tint-soft-border)`,
                       '--tb-taste-axis-tab-text': isSelected
                         ? `var(--tb-taste-${axis.id}-tint-surface-text)`
                         : `var(--tb-taste-${axis.id}-main)`,
