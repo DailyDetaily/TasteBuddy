@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
+  ArrowRight as ArrowRightIcon,
   CircleCheck as CircleCheckIcon,
   ChefHat as ChefHatIcon,
   MessageSquareText as MessageSquareTextIcon,
   Sparkles as SparklesIcon,
 } from 'lucide-react';
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
+const ArrowRight = wrapIcon(ArrowRightIcon);
 const CheckCircle2 = wrapIcon(CircleCheckIcon);
 const ChefHat = wrapIcon(ChefHatIcon);
 const MessageSquareText = wrapIcon(MessageSquareTextIcon);
@@ -311,26 +313,56 @@ function getFallbackExperienceIdFromChoice(choice: DiningFeedbackChoice | undefi
   );
 }
 
-function getTasteExperienceStyle(axis: TasteAxisId, intensity: number): CSSProperties {
+function getTasteExperienceStyle(
+  axis: TasteAxisId,
+  intensity: number,
+  options: {
+    distanceFromSelected?: number;
+    isSelected?: boolean;
+  } = {},
+): CSSProperties {
   const tint = `var(--tb-taste-${axis}-tint-surface)`;
   const border = `var(--tb-taste-${axis}-tint-soft-border)`;
   const text = `var(--tb-taste-${axis}-tint-surface-text)`;
-  const opacity = 0.72 + intensity * 0.06;
+
+  if (options.isSelected) {
+    return {
+      backgroundColor: tint,
+      borderColor: border,
+      color: text,
+    };
+  }
+
+  const distanceFromSelected = options.distanceFromSelected;
+  const distanceStep =
+    typeof distanceFromSelected === 'number'
+      ? Math.max(1, Math.round(distanceFromSelected / BUBBLE_GRID_SPACING))
+      : 1;
+  const whiteMix = Math.min(80, distanceStep * 20);
+  const tintMix = 100 - whiteMix;
 
   return {
-    backgroundColor: tint,
+    backgroundColor: `color-mix(in srgb, ${tint} ${tintMix}%, var(--tb-color-bg-focus))`,
     borderColor: border,
-    color: text,
-    opacity,
+    color: `color-mix(in srgb, ${text} ${tintMix}%, var(--tb-color-bg-focus))`,
   };
 }
 
 const BUBBLE_MAP_SIZE = 1680;
 const BUBBLE_MAP_CENTER = BUBBLE_MAP_SIZE / 2;
-const BUBBLE_SIZE = 118;
+const BUBBLE_MAP_NEUTRAL_POINT = {
+  x: BUBBLE_MAP_CENTER,
+  y: BUBBLE_MAP_CENTER,
+};
+const BUBBLE_SIZE = 126;
+const SELECTED_BUBBLE_SIZE = 164;
 const BUBBLE_GRID_SPACING = 136;
+const BUBBLE_SURFACE_GAP = BUBBLE_GRID_SPACING - BUBBLE_SIZE;
 const BUBBLE_GRID_ROTATION_DEGREES = 0;
 const BUBBLE_GRID_SEARCH_RANGE = 12;
+const BUBBLE_RELAXATION_ITERATIONS = 12;
+const BUBBLE_MAP_ZOOM_MIN = 0.72;
+const BUBBLE_MAP_ZOOM_MAX = 1.42;
 
 interface TasteExperienceHexPoint {
   angle: number;
@@ -377,6 +409,10 @@ function getRotatedPoint(x: number, y: number, angle: number) {
   };
 }
 
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function getHexGridPoints(pointCount: number) {
   const rowHeight = BUBBLE_GRID_SPACING * Math.sqrt(3) / 2;
   const points: TasteExperienceHexPoint[] = [];
@@ -421,7 +457,7 @@ const tasteExperienceHexPointsByAxis = tasteExperienceAxes.reduce(
         (leftPoint, rightPoint) =>
           leftPoint.distance - rightPoint.distance ||
           getAngleDistance(leftPoint.angle, axis.angle) -
-            getAngleDistance(rightPoint.angle, axis.angle),
+          getAngleDistance(rightPoint.angle, axis.angle),
       ),
   }),
   {} as Record<TasteAxisId, TasteExperienceHexPoint[]>,
@@ -474,24 +510,150 @@ const tasteExperienceBubblePositions = baseTasteExperienceBubblePositions.map((p
   };
 });
 
+function getTasteExperienceBubbleRenderPositions(selectedExperienceId: string | null | undefined) {
+  const selectedPosition = tasteExperienceBubblePositions.find(
+    (position) => position.experience.id === selectedExperienceId,
+  );
+
+  if (!selectedPosition) {
+    return tasteExperienceBubblePositions;
+  }
+
+  const selectedRadiusDelta = (SELECTED_BUBBLE_SIZE - BUBBLE_SIZE) / 2;
+  const expandedPositions = tasteExperienceBubblePositions.map((position) => {
+    const isSelected = position.experience.id === selectedExperienceId;
+
+    if (isSelected) {
+      return {
+        ...position,
+        size: SELECTED_BUBBLE_SIZE,
+      };
+    }
+
+    const deltaX = position.x - selectedPosition.x;
+    const deltaY = position.y - selectedPosition.y;
+    const distance = Math.hypot(deltaX, deltaY);
+
+    if (distance <= 0) {
+      return position;
+    }
+
+    return {
+      ...position,
+      x: position.x + (deltaX / distance) * selectedRadiusDelta,
+      y: position.y + (deltaY / distance) * selectedRadiusDelta,
+    };
+  });
+
+  const relaxedPositions = expandedPositions.map((position) => ({ ...position }));
+  const selectedIndex = relaxedPositions.findIndex(
+    (position) => position.experience.id === selectedExperienceId,
+  );
+
+  for (let iteration = 0; iteration < BUBBLE_RELAXATION_ITERATIONS; iteration += 1) {
+    for (let leftIndex = 0; leftIndex < relaxedPositions.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < relaxedPositions.length; rightIndex += 1) {
+        const leftPosition = relaxedPositions[leftIndex];
+        const rightPosition = relaxedPositions[rightIndex];
+        const deltaX = rightPosition.x - leftPosition.x;
+        const deltaY = rightPosition.y - leftPosition.y;
+        const distance = Math.max(Math.hypot(deltaX, deltaY), 0.001);
+        const minimumDistance =
+          (leftPosition.size + rightPosition.size) / 2 + BUBBLE_SURFACE_GAP;
+        const overlap = minimumDistance - distance;
+
+        if (overlap <= 0) {
+          continue;
+        }
+
+        const offsetX = (deltaX / distance) * overlap;
+        const offsetY = (deltaY / distance) * overlap;
+
+        if (leftIndex === selectedIndex) {
+          rightPosition.x += offsetX;
+          rightPosition.y += offsetY;
+          continue;
+        }
+
+        if (rightIndex === selectedIndex) {
+          leftPosition.x -= offsetX;
+          leftPosition.y -= offsetY;
+          continue;
+        }
+
+        leftPosition.x -= offsetX / 2;
+        leftPosition.y -= offsetY / 2;
+        rightPosition.x += offsetX / 2;
+        rightPosition.y += offsetY / 2;
+      }
+    }
+  }
+
+  return relaxedPositions;
+}
+
+function BubbleLabel({ isSelected, label }: { isSelected: boolean; label: string }) {
+  const words = label.split(' ');
+  const shouldOpticallyCenterMultilineLabel = words.length > 1;
+
+  return (
+    <span
+      className={cn(
+        'flex w-full max-w-full flex-wrap content-center items-center justify-center gap-x-1 gap-y-0.5 text-center text-[14px] leading-[1.15] transition-transform duration-300 ease-out [transform-origin:center_center] [word-break:keep-all]',
+        isSelected ? 'scale-[1.14]' : 'scale-100',
+        shouldOpticallyCenterMultilineLabel ? 'translate-y-[2px]' : '',
+      )}
+    >
+      {words.map((word, index) => (
+        <span key={`${word}-${index}`} className="whitespace-nowrap">
+          {word}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function TasteExperienceMap({
   onConfirm,
-  onSelect,
   selectedExperienceId,
 }: {
-  onConfirm: () => void;
-  onSelect: (experience: TasteExperienceWord) => void;
+  onConfirm: (experience: TasteExperienceWord) => void;
   selectedExperienceId: string | null | undefined;
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
-  const selectedExperienceIdRef = useRef<string | null | undefined>(selectedExperienceId);
-  const snapTimeoutRef = useRef<number | null>(null);
-  const resolvedSelectedExperience = findTasteExperience(selectedExperienceId);
-  const resolvedSelectedExperienceId = resolvedSelectedExperience?.id ?? selectedExperienceId;
+  const hasExploredMapRef = useRef(false);
+  const hasInitializedMapRef = useRef(false);
+  const isTouchingMapRef = useRef(false);
+  const isSnappingRef = useRef(false);
+  const hasReleasedScrollRef = useRef(false);
+  const mapZoomRef = useRef(1);
+  const pinchGestureRef = useRef<{
+    anchorX: number;
+    anchorY: number;
+    initialDistance: number;
+    initialZoom: number;
+    midpointX: number;
+    midpointY: number;
+  } | null>(null);
+  const settleAnimationFrameRef = useRef<number | null>(null);
+  const [draftSelectedExperienceId, setDraftSelectedExperienceId] = useState<string | null>(
+    selectedExperienceId ?? null,
+  );
+  const [mapZoom, setMapZoom] = useState(1);
+  const selectedExperienceIdRef = useRef<string | null | undefined>(draftSelectedExperienceId);
+  const resolvedSelectedExperience = findTasteExperience(draftSelectedExperienceId);
+  const resolvedSelectedExperienceId = resolvedSelectedExperience?.id ?? draftSelectedExperienceId;
 
   useEffect(() => {
-    selectedExperienceIdRef.current = resolvedSelectedExperienceId;
-  }, [resolvedSelectedExperienceId]);
+    const nextSelectedExperienceId = selectedExperienceId ?? null;
+
+    selectedExperienceIdRef.current = nextSelectedExperienceId;
+    setDraftSelectedExperienceId(nextSelectedExperienceId);
+  }, [selectedExperienceId]);
+
+  useEffect(() => {
+    mapZoomRef.current = mapZoom;
+  }, [mapZoom]);
 
   const getClosestBubble = () => {
     const viewport = viewportRef.current;
@@ -500,11 +662,16 @@ function TasteExperienceMap({
       return null;
     }
 
+    const zoom = mapZoomRef.current;
     const centerX = viewport.scrollLeft + viewport.clientWidth / 2;
     const centerY = viewport.scrollTop + viewport.clientHeight / 2;
     return tasteExperienceBubblePositions.reduce((currentClosest, bubble) => {
-      const currentDistance = Math.hypot(currentClosest.x - centerX, currentClosest.y - centerY);
-      const nextDistance = Math.hypot(bubble.x - centerX, bubble.y - centerY);
+      const currentX = currentClosest.x * zoom + viewport.clientWidth / 2;
+      const currentY = currentClosest.y * zoom + viewport.clientHeight / 2;
+      const nextX = bubble.x * zoom + viewport.clientWidth / 2;
+      const nextY = bubble.y * zoom + viewport.clientHeight / 2;
+      const currentDistance = Math.hypot(currentX - centerX, currentY - centerY);
+      const nextDistance = Math.hypot(nextX - centerX, nextY - centerY);
 
       return nextDistance < currentDistance ? bubble : currentClosest;
     });
@@ -519,11 +686,20 @@ function TasteExperienceMap({
 
     if (closest.experience.id !== selectedExperienceIdRef.current) {
       selectedExperienceIdRef.current = closest.experience.id;
-      onSelect(closest.experience);
+      setDraftSelectedExperienceId(closest.experience.id);
     }
 
     return closest;
   };
+
+  const clearSettledSnap = () => {
+    if (settleAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(settleAnimationFrameRef.current);
+      settleAnimationFrameRef.current = null;
+    }
+  };
+
+  useEffect(() => () => clearSettledSnap(), []);
 
   const snapClosestBubbleToCenter = () => {
     const viewport = viewportRef.current;
@@ -533,22 +709,63 @@ function TasteExperienceMap({
       return;
     }
 
+    isSnappingRef.current = true;
     viewport.scrollTo({
       behavior: 'smooth',
-      left: closest.x - viewport.clientWidth / 2,
-      top: closest.y - viewport.clientHeight / 2,
+      left: closest.x * mapZoomRef.current,
+      top: closest.y * mapZoomRef.current,
     });
+
+    window.setTimeout(() => {
+      isSnappingRef.current = false;
+    }, 420);
   };
 
   const scheduleSettledSnap = () => {
-    if (snapTimeoutRef.current !== null) {
-      window.clearTimeout(snapTimeoutRef.current);
+    clearSettledSnap();
+
+    const viewport = viewportRef.current;
+
+    if (!viewport || isTouchingMapRef.current || isSnappingRef.current) {
+      return;
     }
 
-    snapTimeoutRef.current = window.setTimeout(() => {
-      snapTimeoutRef.current = null;
-      snapClosestBubbleToCenter();
-    }, 140);
+    let lastLeft = viewport.scrollLeft;
+    let lastTop = viewport.scrollTop;
+    let stableFrameCount = 0;
+
+    const waitForScrollToSettle = () => {
+      const currentViewport = viewportRef.current;
+
+      if (!currentViewport || isTouchingMapRef.current || isSnappingRef.current) {
+        settleAnimationFrameRef.current = null;
+        return;
+      }
+
+      const nextLeft = currentViewport.scrollLeft;
+      const nextTop = currentViewport.scrollTop;
+      const movement = Math.hypot(nextLeft - lastLeft, nextTop - lastTop);
+
+      if (movement < 0.35) {
+        stableFrameCount += 1;
+      } else {
+        stableFrameCount = 0;
+      }
+
+      lastLeft = nextLeft;
+      lastTop = nextTop;
+
+      if (stableFrameCount >= 8) {
+        settleAnimationFrameRef.current = null;
+        hasReleasedScrollRef.current = false;
+        snapClosestBubbleToCenter();
+        return;
+      }
+
+      settleAnimationFrameRef.current = window.requestAnimationFrame(waitForScrollToSettle);
+    };
+
+    settleAnimationFrameRef.current = window.requestAnimationFrame(waitForScrollToSettle);
   };
 
   useEffect(() => {
@@ -561,108 +778,234 @@ function TasteExperienceMap({
     const selectedBubble = tasteExperienceBubblePositions.find(
       (bubble) => bubble.experience.id === resolvedSelectedExperienceId,
     );
-    const targetX = selectedBubble?.x ?? BUBBLE_MAP_CENTER;
-    const targetY = selectedBubble?.y ?? BUBBLE_MAP_CENTER;
+    const targetX = selectedBubble?.x ?? BUBBLE_MAP_NEUTRAL_POINT.x;
+    const targetY = selectedBubble?.y ?? BUBBLE_MAP_NEUTRAL_POINT.y;
 
-    viewport.scrollLeft = targetX - viewport.clientWidth / 2;
-    viewport.scrollTop = targetY - viewport.clientHeight / 2;
-    window.requestAnimationFrame(selectClosestBubble);
+    viewport.scrollLeft = targetX * mapZoomRef.current;
+    viewport.scrollTop = targetY * mapZoomRef.current;
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        hasInitializedMapRef.current = true;
+
+        if (selectedBubble) {
+          selectClosestBubble();
+        }
+      });
+    });
   }, []);
 
   const handleMapScroll = () => {
+    if (!hasInitializedMapRef.current) {
+      return;
+    }
+
+    hasExploredMapRef.current = true;
     window.requestAnimationFrame(selectClosestBubble);
+
+    if (isSnappingRef.current || isTouchingMapRef.current) {
+      return;
+    }
+
+    hasReleasedScrollRef.current = true;
     scheduleSettledSnap();
   };
 
+  const getTouchDistance = (touches: TouchList) => {
+    const firstTouch = touches[0];
+    const secondTouch = touches[1];
+
+    return Math.hypot(firstTouch.clientX - secondTouch.clientX, firstTouch.clientY - secondTouch.clientY);
+  };
+
+  const getTouchMidpoint = (touches: TouchList) => {
+    const firstTouch = touches[0];
+    const secondTouch = touches[1];
+
+    return {
+      x: (firstTouch.clientX + secondTouch.clientX) / 2,
+      y: (firstTouch.clientY + secondTouch.clientY) / 2,
+    };
+  };
+
+  const beginPinchGesture = (event: React.TouchEvent<HTMLDivElement>) => {
+    const viewport = viewportRef.current;
+
+    if (!viewport || event.touches.length < 2) {
+      return;
+    }
+
+    const viewportRect = viewport.getBoundingClientRect();
+    const midpoint = getTouchMidpoint(event.touches);
+    const midpointX = midpoint.x - viewportRect.left;
+    const midpointY = midpoint.y - viewportRect.top;
+    const initialZoom = mapZoomRef.current;
+
+    pinchGestureRef.current = {
+      anchorX: (viewport.scrollLeft + midpointX - viewport.clientWidth / 2) / initialZoom,
+      anchorY: (viewport.scrollTop + midpointY - viewport.clientHeight / 2) / initialZoom,
+      initialDistance: getTouchDistance(event.touches),
+      initialZoom,
+      midpointX,
+      midpointY,
+    };
+  };
+
+  const handleMapTouchStart = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    hasExploredMapRef.current = true;
+    isTouchingMapRef.current = true;
+    hasReleasedScrollRef.current = false;
+    clearSettledSnap();
+
+    if ('touches' in event && event.touches.length >= 2) {
+      beginPinchGesture(event);
+    }
+  };
+
+  const handleMapTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const viewport = viewportRef.current;
+    const pinchGesture = pinchGestureRef.current;
+
+    if (!viewport || !pinchGesture || event.touches.length < 2) {
+      return;
+    }
+
+    event.preventDefault();
+    const nextZoom = clampNumber(
+      pinchGesture.initialZoom * (getTouchDistance(event.touches) / pinchGesture.initialDistance),
+      BUBBLE_MAP_ZOOM_MIN,
+      BUBBLE_MAP_ZOOM_MAX,
+    );
+
+    mapZoomRef.current = nextZoom;
+    setMapZoom(nextZoom);
+    window.requestAnimationFrame(() => {
+      viewport.scrollLeft = viewport.clientWidth / 2 + pinchGesture.anchorX * nextZoom - pinchGesture.midpointX;
+      viewport.scrollTop = viewport.clientHeight / 2 + pinchGesture.anchorY * nextZoom - pinchGesture.midpointY;
+      selectClosestBubble();
+    });
+  };
+
+  const handleMapTouchEnd = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    if ('touches' in event && event.touches.length >= 2) {
+      beginPinchGesture(event);
+      return;
+    }
+
+    pinchGestureRef.current = null;
+    isTouchingMapRef.current = false;
+    hasReleasedScrollRef.current = true;
+    scheduleSettledSnap();
+  };
+
+  const handleMapPointerCancel = () => {
+    pinchGestureRef.current = null;
+    isTouchingMapRef.current = false;
+
+    if (hasReleasedScrollRef.current) {
+      scheduleSettledSnap();
+    }
+  };
+
   const selectedExperience = resolvedSelectedExperience;
+  const renderedBubblePositions = getTasteExperienceBubbleRenderPositions(
+    resolvedSelectedExperienceId,
+  );
+  const selectedBubblePosition = renderedBubblePositions.find(
+    (position) => position.experience.id === resolvedSelectedExperienceId,
+  );
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-page)]">
+    <div className="relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-focus)]">
       <div
         ref={viewportRef}
         onScroll={handleMapScroll}
-        onMouseUp={snapClosestBubbleToCenter}
-        onPointerCancel={snapClosestBubbleToCenter}
-        onPointerUp={snapClosestBubbleToCenter}
-        onTouchCancel={snapClosestBubbleToCenter}
-        onTouchEnd={snapClosestBubbleToCenter}
-        className="h-full w-full cursor-grab overflow-auto overscroll-contain bg-[var(--tb-color-bg-page)] no-scrollbar active:cursor-grabbing [scroll-snap-type:both_proximity] [scroll-padding:50%]"
+        onMouseDown={handleMapTouchStart}
+        onMouseLeave={handleMapPointerCancel}
+        onMouseUp={handleMapTouchEnd}
+        onPointerCancel={handleMapPointerCancel}
+        onTouchCancel={handleMapPointerCancel}
+        onTouchEnd={handleMapTouchEnd}
+        onTouchMove={handleMapTouchMove}
+        onTouchStart={handleMapTouchStart}
+        className="h-full w-full cursor-grab overflow-auto overscroll-contain bg-[var(--tb-color-bg-focus)] no-scrollbar active:cursor-grabbing [touch-action:pan-x_pan-y]"
       >
         <div
           className="relative"
-          style={{ height: BUBBLE_MAP_SIZE, width: BUBBLE_MAP_SIZE }}
+          style={{
+            height: `calc(${BUBBLE_MAP_SIZE * mapZoom}px + 100vh)`,
+            width: `calc(${BUBBLE_MAP_SIZE * mapZoom}px + 100vw)`,
+          }}
         >
-          {tasteExperienceAxes.map((axis) => {
-            const point = getRadialPoint(axis.angle, 790);
+          <div
+            className="absolute"
+            style={{
+              height: BUBBLE_MAP_SIZE,
+              left: '50vw',
+              top: '50vh',
+              transform: `scale(${mapZoom})`,
+              transformOrigin: '0 0',
+              width: BUBBLE_MAP_SIZE,
+            }}
+          >
+            {renderedBubblePositions.map(({ experience, size, x, y }) => {
+              const isSelected = resolvedSelectedExperienceId === experience.id;
+              const distanceFromSelected = selectedBubblePosition
+                ? Math.hypot(x - selectedBubblePosition.x, y - selectedBubblePosition.y)
+                : undefined;
 
-            return (
-              <span
-                key={`${axis.id}-label`}
-                className="pointer-events-none absolute z-[2] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--tb-color-border-default)] bg-[rgba(255,255,255,0.88)] px-3 py-1 text-[11px] font-bold text-[var(--tb-color-text-muted)] shadow-sm backdrop-blur"
-                style={{
-                  left: BUBBLE_MAP_CENTER + point.x,
-                  top: BUBBLE_MAP_CENTER + point.y,
-                }}
-              >
-                {axis.label}
-              </span>
-            );
-          })}
-
-          {tasteExperienceBubblePositions.map(({ experience, size, x, y }) => {
-            const isSelected = resolvedSelectedExperienceId === experience.id;
-
-            return (
-              <div
-                key={experience.id}
-                aria-label={experience.label}
-                className={cn(
-                  'pointer-events-none absolute z-[3] flex -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-full border px-4 text-center text-[14px] font-bold leading-tight shadow-[0_18px_46px_rgba(0,0,0,0.12)] transition duration-200 [scroll-snap-align:center]',
-                  isSelected
-                    ? 'scale-105 ring-2 ring-[var(--tb-color-text-primary)] ring-offset-4 ring-offset-[var(--tb-color-bg-page)]'
-                    : '',
-                )}
-                style={{
-                  ...getTasteExperienceStyle(experience.axis, experience.intensity),
-                  height: size,
-                  left: x,
-                  top: y,
-                  width: size,
-                }}
-              >
-                {experience.label}
-              </div>
-            );
-          })}
-
+              return (
+                <div
+                  key={experience.id}
+                  aria-label={experience.label}
+                  className={cn(
+                    'pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-full px-4 text-center text-[14px] font-bold leading-tight transition-all duration-300 ease-out',
+                    isSelected ? 'z-[4] border shadow-[0_18px_46px_rgba(0,0,0,0.12)]' : 'z-[3] border-0 shadow-none',
+                  )}
+                  style={{
+                    ...getTasteExperienceStyle(experience.axis, experience.intensity, {
+                      distanceFromSelected,
+                      isSelected,
+                    }),
+                    height: size,
+                    left: x,
+                    top: y,
+                    width: size,
+                  }}
+                >
+                  <BubbleLabel isSelected={isSelected} label={experience.label} />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/80 bg-white/30 shadow-[0_0_0_8px_rgba(255,255,255,0.12)]" />
-
       {selectedExperience ? (
-        <div className="absolute inset-x-5 bottom-[max(20px,var(--tb-safe-area-bottom))] z-30 rounded-[28px] bg-[rgba(255,255,255,0.94)] px-5 py-4 text-[var(--tb-color-text-primary)] shadow-[0_24px_80px_rgba(0,0,0,0.16)] backdrop-blur">
-          <div className="flex items-center gap-4">
-            <div className="min-w-0 flex-1">
-              <p
-                className="text-[18px] font-bold leading-tight"
-                style={{ color: `var(--tb-taste-${selectedExperience.axis}-tint-surface-text)` }}
+        <div className="absolute inset-x-0 bottom-[max(20px,var(--tb-safe-area-bottom))] z-30 px-5">
+          <SectionCard hoverEffect={false} className="border-1 p-4">
+            <div className="flex w-full items-center gap-4">
+              <div className="min-w-0 flex-1">
+                <p
+                  className="text-[16px] font-bold leading-tight"
+                  style={{ color: `var(--tb-taste-${selectedExperience.axis}-main)` }}
+                >
+                  {selectedExperience.label}
+                </p>
+                <p className="mt-1 text-[14px] leading-snug text-[var(--tb-color-text-subtle)]">
+                  {selectedExperience.description}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onConfirm(selectedExperience)}
+                className="pointer-events-auto ml-auto flex h-[74px] w-[74px] shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] transition hover:opacity-90"
+                aria-label="선택한 미각 인상으로 계속하기"
               >
-                {selectedExperience.label}
-              </p>
-              <p className="mt-1 text-[15px] leading-snug text-[var(--tb-color-text-subtle)]">
-                {selectedExperience.description}
-              </p>
+                <ArrowRight size={ICON_TOKENS.size.lg} strokeWidth={2} />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={onConfirm}
-              className="pointer-events-auto flex h-[74px] w-[74px] shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] transition hover:opacity-90"
-              aria-label="선택한 미각 인상으로 계속하기"
-            >
-              <span className="text-[34px] leading-none">→</span>
-            </button>
-          </div>
+          </SectionCard>
         </div>
       ) : null}
     </div>
@@ -780,8 +1123,7 @@ export function DiningFeedbackScreen({
     selectedExperienceId: null,
   };
   const activeChoice = getSelectedChoice(activeDish, draft);
-  const activeExperienceId =
-    activeResponse.selectedExperienceId ?? getFallbackExperienceIdFromChoice(activeChoice);
+  const activeExperienceId = activeResponse.selectedExperienceId;
   const activeExperience = findTasteExperience(activeExperienceId);
   const completedDishCount = scenario.dishes.filter(
     (dish) => draft.dishResponses[dish.id]?.selectedExperienceId,
@@ -832,27 +1174,28 @@ export function DiningFeedbackScreen({
 
   if (feedbackStep === 'taste-checkin') {
     return (
-      <div className="relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-page)] animate-slideIn">
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-40 flex items-center justify-between px-5 pt-[max(18px,var(--tb-safe-area-top))]">
-          <button
-            type="button"
-            onClick={handleTopBack}
-            className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[rgba(255,255,255,0.86)] text-[var(--tb-color-text-primary)] shadow-[0_12px_32px_rgba(0,0,0,0.12)] backdrop-blur"
-            aria-label="메뉴 선택으로 돌아가기"
-          >
-            <span className="text-[28px] leading-none">‹</span>
-          </button>
-          <div className="rounded-full border border-[var(--tb-color-border-default)] bg-[rgba(255,255,255,0.86)] px-3 py-2 text-center text-[var(--tb-color-text-primary)] shadow-[0_12px_32px_rgba(0,0,0,0.1)] backdrop-blur">
-            <p className="text-[11px] font-semibold text-[var(--tb-color-text-faint)]">{activeDish.courseLabel}</p>
-            <p className="text-[13px] font-bold">{activeDish.title}</p>
-          </div>
-          <div className="h-12 w-12" />
+      <div className="relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-focus)] animate-slideIn">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 h-[calc(var(--tb-safe-area-top)+var(--tb-size-top-app-bar-height)+44px)] bg-gradient-to-b from-[var(--tb-color-bg-focus)] from-[0%] via-[var(--tb-color-bg-focus)] via-[72%] to-transparent" />
+        <div className="absolute inset-x-0 top-0 z-40">
+          <TopAppBar
+            appearance="solid"
+            title={activeDish.title}
+            showBack
+            onBack={handleTopBack}
+            rightActions={
+              <span className="inline-flex min-h-8 items-center rounded-full bg-[var(--tb-color-surface-muted)] px-3 text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
+                {activeDish.courseLabel}
+              </span>
+            }
+          />
         </div>
 
         <TasteExperienceMap
           selectedExperienceId={activeExperienceId}
-          onSelect={selectTasteExperience}
-          onConfirm={() => setFeedbackStep('menu-select')}
+          onConfirm={(experience) => {
+            selectTasteExperience(experience);
+            setFeedbackStep('menu-select');
+          }}
         />
       </div>
     );
@@ -953,8 +1296,7 @@ export function DiningFeedbackScreen({
 
                 <TasteExperienceMap
                   selectedExperienceId={activeExperienceId}
-                  onSelect={selectTasteExperience}
-                  onConfirm={() => setFeedbackStep('menu-select')}
+                  onConfirm={selectTasteExperience}
                 />
 
                 <div className="w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-base)] px-4 py-3">

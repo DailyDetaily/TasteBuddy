@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Ellipsis,
   Pencil,
@@ -1151,6 +1151,7 @@ export default function RestaurantDetailPage({
   const [isBookmarkSheetOpen, setIsBookmarkSheetOpen] = useState(false);
   const [isInfoSuggestionSheetOpen, setIsInfoSuggestionSheetOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(() => isRestaurantBookmarked(detail.name));
+  const feedbackResetRestaurantIdRef = useRef(detail.id);
 
   const iconButtonClassName =
     'flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]';
@@ -1194,10 +1195,15 @@ export default function RestaurantDetailPage({
   }, [detail.name]);
 
   useEffect(() => {
+    if (feedbackResetRestaurantIdRef.current === detail.id) {
+      return;
+    }
+
+    feedbackResetRestaurantIdRef.current = detail.id;
     setFeedbackDraft(createDiningFeedbackDraft(feedbackScenario));
     setSelectedView('detail');
     setSelectedMenuDetail(null);
-  }, [feedbackScenario]);
+  }, [detail.id, feedbackScenario]);
 
   useEffect(() => {
     onFeedbackViewChange?.(selectedView === 'feedback');

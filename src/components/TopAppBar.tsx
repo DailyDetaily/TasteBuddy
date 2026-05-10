@@ -21,6 +21,7 @@ const APP_SHELL_ICON_SIZE = ICON_TOKENS.size.lg;
 const APP_SHELL_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 
 interface TopAppBarProps {
+  appearance?: 'default' | 'solid' | 'transparent';
   title?: string;
   showBack?: boolean;
   onBack?: () => void;
@@ -34,6 +35,7 @@ interface TopAppBarProps {
 }
 
 export default function TopAppBar({
+  appearance = 'default',
   title,
   showBack,
   onBack,
@@ -52,7 +54,13 @@ export default function TopAppBar({
 
   return (
     <div
-      className="w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70"
+      className={
+        appearance === 'transparent'
+          ? 'w-full shrink-0 border-b border-transparent bg-transparent'
+          : appearance === 'solid'
+            ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-focus)]'
+            : 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70'
+      }
       style={{ paddingTop: 'var(--tb-safe-area-top)' }}
     >
       <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-[20px] py-[12px]">

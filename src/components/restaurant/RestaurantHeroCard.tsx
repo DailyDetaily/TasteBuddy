@@ -199,7 +199,10 @@ export default function RestaurantHeroCard({
                 type="button"
                 aria-label="먹어본 식당 피드백 남기기"
                 title="먹어본 식당"
-                onClick={onVisitedClick}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onVisitedClick?.();
+                }}
                 className="flex size-[32px] items-center justify-center text-[var(--tb-color-text-secondary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
               >
                 <CirclePlus aria-hidden="true" size={ICON_TOKENS.size.xl} strokeWidth={1.8} />
