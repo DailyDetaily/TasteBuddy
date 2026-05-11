@@ -28,8 +28,11 @@ External map providers are stored as a place index layer, separate from Taste Bu
 
 - [`functions/kakao-place-lookup`](./functions/kakao-place-lookup)
 - [`functions/google-place-enrich`](./functions/google-place-enrich)
+- [`functions/delete-account`](./functions/delete-account)
 
 The app uses these functions to fetch live Kakao Local place details and Google Places enrichment without exposing provider API keys in the browser. Keep `KAKAO_REST_API_KEY` and `GOOGLE_MAPS_API_KEY` as Supabase function secrets.
+
+`delete-account` lets a signed-in user delete their own Supabase Auth account from the app. It verifies the caller's JWT and then deletes the Auth user with `SUPABASE_SERVICE_ROLE_KEY`, so keep the service role key only in Supabase function secrets and never expose it to the browser bundle.
 
 ## Typical Workflow
 

@@ -4,7 +4,7 @@ import {
   Menu as MenuIcon,
   Search as SearchIcon
 } from 'lucide-react';
-import React, { type ReactNode } from 'react';
+import React, { type CSSProperties, type ReactNode } from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
@@ -30,8 +30,11 @@ interface TopAppBarProps {
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
   hasUnreadNotifications?: boolean;
+  onOpenProfile?: () => void;
   rightActions?: ReactNode;
   showSearchAction?: boolean;
+  userAvatarStyle?: CSSProperties;
+  userInitials?: string;
 }
 
 export default function TopAppBar({
@@ -44,8 +47,11 @@ export default function TopAppBar({
   onOpenNotifications,
   onOpenMenu,
   hasUnreadNotifications,
+  onOpenProfile,
   rightActions,
   showSearchAction = false,
+  userAvatarStyle,
+  userInitials = 'TB',
 }: TopAppBarProps) {
   const PrimaryActionIcon = showSearchAction ? Search : PlusCircle;
   const primaryActionLabel = showSearchAction ? '통합 검색 열기' : '미각 측정 시작';
@@ -89,12 +95,22 @@ export default function TopAppBar({
               </svg>
             </button>
           ) : (
-            <div className="relative rounded-full shrink-0 size-[32px]">
-              <div className="flex items-center justify-center overflow-hidden rounded-full size-[32px] bg-[color:rgba(255,153,0,0.2)]">
-                <span className="font-medium text-[14px] text-[var(--tb-color-text-primary)]">JH</span>
+            <button
+              type="button"
+              onClick={onOpenProfile}
+              aria-label="프로필 확인 및 편집"
+              className="relative shrink-0 rounded-full size-[32px] transition-transform active:scale-[0.98]"
+            >
+              <div
+                className="flex items-center justify-center overflow-hidden rounded-full size-[32px] bg-[color:rgba(255,153,0,0.2)]"
+                style={userAvatarStyle}
+              >
+                <span className="font-semibold text-[13px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]">
+                  {userInitials}
+                </span>
               </div>
-              <div className="absolute border border-[var(--tb-color-border-avatar)] inset-0 pointer-events-none rounded-full" />
-            </div>
+              <div className="absolute inset-0 pointer-events-none rounded-full border border-white/45 shadow-[inset_0_0_0_1px_rgba(15,15,15,0.08)]" />
+            </button>
           )}
         </div>
 

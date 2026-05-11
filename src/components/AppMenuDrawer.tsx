@@ -7,6 +7,7 @@ import {
   CircleHelp as CircleHelpIcon,
   Info as InfoIcon,
   LogOut as LogOutIcon,
+  Mail as MailIcon,
   ShieldCheck as ShieldCheckIcon,
   ChevronRight as ChevronRightIcon
 } from 'lucide-react';
@@ -24,6 +25,7 @@ const Bell = wrapIcon(BellIcon);
 const HelpCircle = wrapIcon(CircleHelpIcon);
 const Info = wrapIcon(InfoIcon);
 const LogOut = wrapIcon(LogOutIcon);
+const Mail = wrapIcon(MailIcon);
 const Shield = wrapIcon(ShieldCheckIcon);
 const ChevronRight = wrapIcon(ChevronRightIcon);
 const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
@@ -65,7 +67,12 @@ interface AppMenuDrawerProps {
   onStartMeasurement?: () => void;
   onImproveAccuracy?: () => void;
   onOpenSupportPanel?: (panel: AppMenuSupportPanel) => void;
+  onOpenAuth?: () => void;
   onRequestLogout?: () => void;
+  userEmail?: string | null;
+  userInitials?: string;
+  userLabel?: string;
+  isAnonymousUser?: boolean;
 }
 
 export default function AppMenuDrawer({
@@ -74,7 +81,12 @@ export default function AppMenuDrawer({
   onStartMeasurement,
   onImproveAccuracy,
   onOpenSupportPanel,
+  onOpenAuth,
   onRequestLogout,
+  userEmail,
+  userInitials = 'TB',
+  userLabel = 'Taste Buddy',
+  isAnonymousUser = true,
 }: AppMenuDrawerProps) {
   const handleAction = (action: string) => {
     switch (action) {
@@ -95,6 +107,10 @@ export default function AppMenuDrawer({
       case 'logout':
         onClose();
         onRequestLogout?.();
+        break;
+      case 'auth':
+        onClose();
+        onOpenAuth?.();
         break;
       default:
         break;
@@ -136,15 +152,35 @@ export default function AppMenuDrawer({
           </div>
 
           {/* Profile Summary */}
-          <div className="mx-5 mb-4 flex items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-card)] p-3">
+          <button
+            type="button"
+            onClick={() => handleAction('auth')}
+            className="mx-5 mb-4 flex items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-card)] p-3 text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+          >
             <div className="flex items-center justify-center rounded-full size-[40px] bg-[var(--tb-taste-sweet-bg)]">
-              <span className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">JH</span>
+              <span className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">{userInitials}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">신준호</span>
-              <span className="text-[11px] text-[var(--tb-color-text-muted)]">Building Profile</span>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                {userLabel}
+              </span>
+              <span className="truncate text-[11px] text-[var(--tb-color-text-muted)]">
+                {isAnonymousUser
+                  ? '프로필 보관 전'
+                  : userEmail
+                    ? userEmail
+                    : 'Building Profile'}
+              </span>
             </div>
-          </div>
+            {isAnonymousUser ? (
+              <Mail size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
+            ) : (
+              <ChevronRight
+                size={CARD_TRAILING_ICON_SIZE}
+                className="shrink-0 text-[var(--tb-color-icon-muted)]"
+              />
+            )}
+          </button>
 
           {/* Menu Sections */}
           <div className="flex-1 overflow-y-auto no-scrollbar px-5">
@@ -192,6 +228,7 @@ export default function AppMenuDrawer({
           <div className="px-4 py-4 border-t border-[var(--tb-color-border-default)]">
             <button
               type="button"
+              onClick={() => handleAction('logout')}
               className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 w-full text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
             >
               <LogOut size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-muted)]" />

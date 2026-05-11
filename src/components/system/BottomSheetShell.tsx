@@ -23,6 +23,8 @@ interface BottomSheetShellProps extends ComponentProps<typeof Drawer> {
   contentClassName?: string;
   footer?: ReactNode;
   footerClassName?: string;
+  floatingLayer?: ReactNode;
+  headerCenter?: ReactNode;
   headerClassName?: string;
   headerEnd?: ReactNode;
   headerStart?: ReactNode;
@@ -107,13 +109,16 @@ export default function BottomSheetShell({
   contentClassName,
   footer,
   footerClassName,
+  floatingLayer,
+  headerCenter,
   headerClassName,
   headerEnd,
   headerStart,
   overlayClassName,
   ...drawerProps
 }: BottomSheetShellProps) {
-  const showHeader = headerStart !== undefined || headerEnd !== undefined;
+  const showHeader =
+    headerStart !== undefined || headerCenter !== undefined || headerEnd !== undefined;
 
   return (
     <Drawer {...drawerProps}>
@@ -121,6 +126,7 @@ export default function BottomSheetShell({
         overlayClassName={cn("z-40 bg-[rgba(0,0,0,0.6)]", overlayClassName)}
         className={cn(
           "left-0 right-0 z-50 mx-auto h-[95vh] max-h-[95vh] max-w-[1440px] !rounded-t-[20px] border-0 bg-[var(--tb-color-bg-focus)] outline-none",
+          "data-[vaul-drawer-direction=bottom]:border-t-0",
           "[&>div:first-child]:mt-3 [&>div:first-child]:h-1.5 [&>div:first-child]:w-10 [&>div:first-child]:bg-[var(--tb-color-border-strong)]",
           contentClassName,
         )}
@@ -128,13 +134,18 @@ export default function BottomSheetShell({
         {showHeader ? (
           <div
             className={cn(
-              "flex items-center justify-between px-4 pb-4",
+              "relative flex items-center justify-between px-4 pb-4",
               headerClassName,
             )}
           >
             <div className="flex min-h-10 min-w-10 items-center justify-start">
               {headerStart ?? <div aria-hidden="true" className="h-10 w-10" />}
             </div>
+            {headerCenter ? (
+              <div className="pointer-events-none absolute left-1/2 flex min-h-10 -translate-x-1/2 items-center justify-center text-center">
+                {headerCenter}
+              </div>
+            ) : null}
             <div className="flex min-h-10 min-w-10 items-center justify-end">
               {headerEnd ?? <div aria-hidden="true" className="h-10 w-10" />}
             </div>
@@ -148,11 +159,17 @@ export default function BottomSheetShell({
         {footer ? (
           <div
             className={cn(
-              "w-full px-5 pb-10 pt-4",
+              "w-full px-5 pb-[max(12px,var(--tb-safe-area-bottom))] pt-4",
               footerClassName,
             )}
           >
             {footer}
+          </div>
+        ) : null}
+
+        {floatingLayer ? (
+          <div className="fixed inset-0 z-[70]">
+            {floatingLayer}
           </div>
         ) : null}
       </DrawerContent>

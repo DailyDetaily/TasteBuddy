@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { ChevronLeft, X } from 'lucide-react';
 
 import Home from './pages/HomePage';
 import AnalysisPage from './pages/AnalysisPage';
@@ -16,6 +17,7 @@ import RestaurantDetailPage, {
 import ReservationPage from './pages/ReservationPage';
 import ProfilePage from './pages/ProfilePage';
 import SplashScreen from './pages/SplashScreen';
+import { AuthEntryForm } from './pages/AuthEntryScreen';
 import OnboardingScreen from './pages/OnboardingScreen';
 import PreferenceIntakeScreen from './pages/PreferenceIntakeScreen';
 import TasteSurveyIntroScreen from './pages/TasteSurveyIntroScreen';
@@ -30,6 +32,13 @@ import BottomTabBar, { type TabType } from './components/BottomTabBar';
 import TopAppBar from './components/TopAppBar';
 import NotificationPanel from './components/NotificationPanel';
 import AppMenuDrawer, { type AppMenuSupportPanel } from './components/AppMenuDrawer';
+import AuthProfileDialog from './components/AuthProfileDialog';
+import BottomSheetShell, {
+  BottomSheetCloseButton,
+  BottomSheetIconButton,
+} from './components/system/BottomSheetShell';
+import ProfileIdentitySheetContent from './components/ProfileIdentitySheetContent';
+import ProfileSetupSheetContent from './components/ProfileSetupSheetContent';
 import SectionCard from './components/SectionCard';
 import { Button } from './components/ui/button';
 import {
@@ -49,7 +58,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from './components/ui/dialog';
-import { type TasteMeasurementSnapshot } from './constants/tasteMeasurementData';
+import {
+  DEFAULT_TASTE_MEASUREMENT_RESULTS,
+  createTasteMeasurementSnapshot,
+  getTasteMeasurementEntries,
+  type TasteMeasurementSnapshot,
+} from './constants/tasteMeasurementData';
 import {
   createFallbackRestaurantReadyGuidance,
   isRestaurantReadyGuidance,
@@ -80,7 +94,20 @@ import {
   RESERVATION_CATALOG,
   type ReservationRecord,
 } from './constants/reservationCatalog';
-import { ensureSupabaseSession, isSupabaseConfigured } from './lib/supabase';
+import {
+  deleteCurrentSupabaseAccount,
+  ensureSupabaseSession,
+  getCurrentSupabaseSession,
+  isAnonymousSupabaseSession,
+  isSupabaseConfigured,
+  linkAnonymousSupabaseUserEmail,
+  sendSupabaseEmailOtp,
+  sendSupabaseMagicLink,
+  signOutSupabaseSession,
+  subscribeToSupabaseAuthState,
+  updateSupabaseProfileIdentity,
+  verifySupabaseEmailOtp,
+} from './lib/supabase';
 import { buildTasteSurveyCompatibleResult } from './lib/tasteSurveyScoring';
 import { TASTE_SURVEY_ITEMS } from './constants/tasteSurveyItems';
 import { TASTE_SURVEY_CONTEXT_STEPS } from './constants/tasteSurveyConfig';
@@ -88,6 +115,7 @@ import {
   createUserTasteAccentStyle,
   resolveUserTasteAccent,
 } from './lib/userTasteAccent';
+import { MOTION_TOKENS, TASTE_TOKENS } from './constants/designTokens';
 import {
   buildTasteSurveyMeasurementRawPayload,
   hasTasteSurveyRespondentContext,
@@ -99,6 +127,7 @@ import type {
   TasteSurveyRespondentContext,
   TasteSurveyResponse,
 } from './types/tasteSurvey';
+import type { Session } from '@supabase/supabase-js';
 
 type AppState =
   | 'splash'
@@ -123,6 +152,17 @@ const MAIN_APP_BOTTOM_OFFSET =
   'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
 const FOCUS_VIEWPORT_BACKGROUND = '#ffffff';
 const PAGE_VIEWPORT_BACKGROUND = '#f3f3f3';
+const BACKGROUND_CARD_OPEN_SCALE = 0.9;
+const BACKGROUND_CARD_OPEN_OFFSET = 30;
+const BACKGROUND_CARD_OPEN_RADIUS = 24;
+const BACKGROUND_CARD_SHADOW_Y = 20;
+const BACKGROUND_CARD_SHADOW_BLUR = 60;
+const BACKGROUND_CARD_SHADOW_OPACITY = 0.24;
+const BACKGROUND_CARD_TRANSITION = [
+  `transform ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
+  `border-radius ${MOTION_TOKENS.durationMs.slowest}ms ${MOTION_TOKENS.easing.entrance}`,
+  `box-shadow ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
+].join(', ');
 
 const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v5';
 const LEGACY_USER_STATE_STORAGE_KEYS = [
@@ -300,16 +340,236 @@ function createTasteSurveyMeasurementRawPayload(
   });
 }
 
+function getSessionEmail(session: Session | null) {
+  return session?.user.email ?? session?.user.new_email ?? null;
+}
+
+function getSessionDisplayName(session: Session | null) {
+  const metadata = session?.user.user_metadata;
+  const displayName = typeof metadata?.display_name === 'string' ? metadata.display_name.trim() : '';
+
+  return displayName || null;
+}
+
+function getSessionNickname(session: Session | null) {
+  const metadata = session?.user.user_metadata;
+  const nickname = typeof metadata?.nickname === 'string' ? metadata.nickname.trim() : '';
+
+  return nickname || null;
+}
+
+function getSessionProfileLabel(session: Session | null) {
+  const nickname = getSessionNickname(session);
+  const displayName = getSessionDisplayName(session);
+
+  return nickname || displayName || null;
+}
+
+const HANGUL_INITIAL_ROMAN = [
+  'G',
+  'K',
+  'N',
+  'D',
+  'T',
+  'R',
+  'M',
+  'B',
+  'P',
+  'S',
+  'S',
+  '',
+  'J',
+  'J',
+  'C',
+  'K',
+  'T',
+  'P',
+  'H',
+] as const;
+
+const HANGUL_VOWEL_ROMAN_INITIAL = [
+  'A',
+  'A',
+  'Y',
+  'Y',
+  'E',
+  'E',
+  'Y',
+  'Y',
+  'O',
+  'W',
+  'W',
+  'W',
+  'Y',
+  'U',
+  'W',
+  'W',
+  'W',
+  'Y',
+  'E',
+  'I',
+  'I',
+] as const;
+
+function getRomanizedNameInitial(character: string) {
+  const codePoint = character.charCodeAt(0);
+
+  if (codePoint < 0xac00 || codePoint > 0xd7a3) {
+    return character;
+  }
+
+  const syllableOffset = codePoint - 0xac00;
+  const initialIndex = Math.floor(syllableOffset / 588);
+  const vowelIndex = Math.floor((syllableOffset % 588) / 28);
+
+  return HANGUL_INITIAL_ROMAN[initialIndex] || HANGUL_VOWEL_ROMAN_INITIAL[vowelIndex] || character;
+}
+
+function getUserInitials(displayName: string | null, email: string | null) {
+  const source = displayName?.trim() || email?.split('@')[0] || '';
+
+  if (!source) {
+    return 'TB';
+  }
+
+  const nameParts = source
+    .split(/[\s._-]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (nameParts.length >= 2) {
+    return nameParts
+      .slice(0, 2)
+      .map((part) => getRomanizedNameInitial(part[0] ?? ''))
+      .join('')
+      .toUpperCase();
+  }
+
+  const compactName = (nameParts[0] ?? source).replace(/[^a-zA-Z0-9가-힣]/g, '');
+
+  if (!compactName) {
+    return 'TB';
+  }
+
+  const nameCharacters = Array.from(compactName);
+  const initialsSource =
+    displayName?.trim() && /^[가-힣]{3,}$/.test(compactName)
+      ? nameCharacters.slice(1, 3)
+      : nameCharacters.slice(0, 2);
+
+  return initialsSource
+    .map(getRomanizedNameInitial)
+    .join('')
+    .toUpperCase();
+}
+
+function createTasteProfileAvatarStyle(
+  snapshot: TasteMeasurementSnapshot | null,
+): CSSProperties {
+  if (!snapshot) {
+    return {
+      background:
+        'radial-gradient(circle at 28% 24%, rgba(255, 153, 0, 0.52), transparent 45%), radial-gradient(circle at 72% 76%, rgba(251, 192, 45, 0.38), transparent 44%), #FFE8C1',
+    };
+  }
+
+  const entries = getTasteMeasurementEntries(snapshot);
+  const totalValue = entries.reduce((sum, entry) => sum + Math.max(entry.valueMm, 0.1), 0);
+  const positions = [
+    ['26%', '24%'],
+    ['72%', '22%'],
+    ['78%', '70%'],
+    ['32%', '78%'],
+    ['50%', '42%'],
+    ['18%', '58%'],
+  ] as const;
+
+  const meshLayers = entries
+    .map((entry, index) => {
+      const token = TASTE_TOKENS[entry.id];
+      const ratio = Math.max(entry.valueMm, 0.1) / totalValue;
+      const alpha = Math.min(0.72, 0.22 + ratio * 2.6);
+      const radius = Math.min(66, 34 + ratio * 150);
+      const [x, y] = positions[index] ?? ['50%', '50%'];
+
+      return `radial-gradient(circle at ${x} ${y}, ${token.palette.main}${Math.round(alpha * 255)
+        .toString(16)
+        .padStart(2, '0')} 0%, transparent ${radius.toFixed(0)}%)`;
+    })
+    .join(', ');
+
+  return {
+    background: `${meshLayers}, var(--tb-color-surface-muted)`,
+  };
+}
+
+function createEmptyPersistedUserState(): PersistedUserState {
+  return {
+    hasCompletedInitialMeasurement: false,
+    latestPreferenceIntakeProfile: null,
+    latestRestaurantReadyGuidance: null,
+    latestTasteSurveyRespondentContext: {},
+    latestTasteMeasurementSnapshot: null,
+    tasteSurveyDraft: null,
+  };
+}
+
+function clearTasteBuddyLocalState() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  Object.keys(window.localStorage)
+    .filter((key) => key.startsWith('tastebuddy-'))
+    .forEach((key) => window.localStorage.removeItem(key));
+}
+
+function consumeOnboardingResetParam() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const url = new URL(window.location.href);
+
+  if (url.searchParams.get('reset') !== 'onboarding') {
+    return false;
+  }
+
+  clearTasteBuddyLocalState();
+  url.searchParams.delete('reset');
+  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+
+  return true;
+}
+
+function applySheetBackgroundCardProgress(
+  element: HTMLDivElement | null,
+  progress: number,
+  immediate = false,
+) {
+  if (!element) {
+    return;
+  }
+
+  const clampedProgress = Math.min(Math.max(progress, 0), 1);
+  const scale = 1 - (1 - BACKGROUND_CARD_OPEN_SCALE) * clampedProgress;
+  const translateY = BACKGROUND_CARD_OPEN_OFFSET * clampedProgress;
+  const borderRadius = BACKGROUND_CARD_OPEN_RADIUS * clampedProgress;
+  const shadowOffsetY = BACKGROUND_CARD_SHADOW_Y * clampedProgress;
+  const shadowBlur = BACKGROUND_CARD_SHADOW_BLUR * clampedProgress;
+  const shadowOpacity = BACKGROUND_CARD_SHADOW_OPACITY * clampedProgress;
+
+  element.style.transition = immediate ? 'none' : BACKGROUND_CARD_TRANSITION;
+  element.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale})`;
+  element.style.borderRadius = `${borderRadius}px`;
+  element.style.boxShadow = clampedProgress > 0
+    ? `0 ${shadowOffsetY}px ${shadowBlur}px rgba(0,0,0,${shadowOpacity})`
+    : 'none';
+}
+
 function loadPersistedUserState(): PersistedUserState {
   if (typeof window === 'undefined') {
-    return {
-      hasCompletedInitialMeasurement: false,
-      latestPreferenceIntakeProfile: null,
-      latestRestaurantReadyGuidance: null,
-      latestTasteSurveyRespondentContext: {},
-      latestTasteMeasurementSnapshot: null,
-      tasteSurveyDraft: null,
-    };
+    return createEmptyPersistedUserState();
   }
 
   try {
@@ -325,14 +585,7 @@ function loadPersistedUserState(): PersistedUserState {
         window.localStorage.removeItem(storageKey);
       });
 
-      return {
-        hasCompletedInitialMeasurement: false,
-        latestPreferenceIntakeProfile: null,
-        latestRestaurantReadyGuidance: null,
-        latestTasteSurveyRespondentContext: {},
-        latestTasteMeasurementSnapshot: null,
-        tasteSurveyDraft: null,
-      };
+      return createEmptyPersistedUserState();
     }
 
     const parsedValue = JSON.parse(rawValue) as Partial<PersistedUserState>;
@@ -355,7 +608,7 @@ function loadPersistedUserState(): PersistedUserState {
         : null;
     const latestTasteSurveyRespondentContext = sanitizeTasteSurveyRespondentContext(
       parsedValue.latestTasteSurveyRespondentContext ??
-        parsedValue.tasteSurveyDraft?.respondentContext,
+      parsedValue.tasteSurveyDraft?.respondentContext,
     );
 
     return {
@@ -368,36 +621,35 @@ function loadPersistedUserState(): PersistedUserState {
       tasteSurveyDraft:
         isPersistedTasteSurveyDraft(parsedValue.tasteSurveyDraft)
           ? {
-              currentSurveyContextIndex: clampSurveyContextIndex(
-                parsedValue.tasteSurveyDraft.currentSurveyContextIndex ?? 0,
-              ),
-              currentSurveyIndex: clampSurveyIndex(parsedValue.tasteSurveyDraft.currentSurveyIndex),
-              respondentContext: sanitizeTasteSurveyRespondentContext(
-                parsedValue.tasteSurveyDraft.respondentContext,
-              ),
-              surveyResponses: sanitizeTasteSurveyResponses(
-                parsedValue.tasteSurveyDraft.surveyResponses,
-              ),
-              tasteSurveyFlowStep: parsedValue.tasteSurveyDraft.tasteSurveyFlowStep,
-              tasteSurveyLastUpdatedAt: parsedValue.tasteSurveyDraft.tasteSurveyLastUpdatedAt,
-            }
+            currentSurveyContextIndex: clampSurveyContextIndex(
+              parsedValue.tasteSurveyDraft.currentSurveyContextIndex ?? 0,
+            ),
+            currentSurveyIndex: clampSurveyIndex(parsedValue.tasteSurveyDraft.currentSurveyIndex),
+            respondentContext: sanitizeTasteSurveyRespondentContext(
+              parsedValue.tasteSurveyDraft.respondentContext,
+            ),
+            surveyResponses: sanitizeTasteSurveyResponses(
+              parsedValue.tasteSurveyDraft.surveyResponses,
+            ),
+            tasteSurveyFlowStep: parsedValue.tasteSurveyDraft.tasteSurveyFlowStep,
+            tasteSurveyLastUpdatedAt: parsedValue.tasteSurveyDraft.tasteSurveyLastUpdatedAt,
+          }
           : null,
     };
   } catch {
-    return {
-      hasCompletedInitialMeasurement: false,
-      latestPreferenceIntakeProfile: null,
-      latestRestaurantReadyGuidance: null,
-      latestTasteSurveyRespondentContext: {},
-      latestTasteMeasurementSnapshot: null,
-      tasteSurveyDraft: null,
-    };
+    return createEmptyPersistedUserState();
   }
 }
 
 function MainApp() {
-  const [persistedUserState] = useState<PersistedUserState>(loadPersistedUserState);
-  const [appState, setAppState] = useState<AppState>('splash');
+  const [shouldStartFromOnboarding] = useState(consumeOnboardingResetParam);
+  const [persistedUserState] = useState<PersistedUserState>(() =>
+    shouldStartFromOnboarding ? createEmptyPersistedUserState() : loadPersistedUserState(),
+  );
+  const backgroundCardRef = useRef<HTMLDivElement>(null);
+  const [appState, setAppState] = useState<AppState>(
+    shouldStartFromOnboarding ? 'onboarding' : 'splash',
+  );
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [measurementEntryPoint, setMeasurementEntryPoint] =
     useState<MeasurementEntryPoint>('initial');
@@ -425,7 +677,7 @@ function MainApp() {
   const [tasteSurveyRespondentContext, setTasteSurveyRespondentContext] =
     useState<TasteSurveyRespondentContext>(
       persistedUserState.tasteSurveyDraft?.respondentContext ??
-        persistedUserState.latestTasteSurveyRespondentContext,
+      persistedUserState.latestTasteSurveyRespondentContext,
     );
   const [surveyResponses, setSurveyResponses] = useState<
     Record<string, TasteSurveyResponse | undefined>
@@ -434,21 +686,48 @@ function MainApp() {
     useState<TasteSurveyCompatibleResult | null>(() =>
       persistedUserState.tasteSurveyDraft?.tasteSurveyFlowStep === 'result'
         ? buildCompatibleResultFromSurveyResponses(
-            persistedUserState.tasteSurveyDraft.surveyResponses,
-          )
+          persistedUserState.tasteSurveyDraft.surveyResponses,
+        )
         : null,
     );
   const [hasSplashDelayCompleted, setHasSplashDelayCompleted] = useState(false);
   const [hasHydratedRemoteMeasurement, setHasHydratedRemoteMeasurement] = useState(
-    !isSupabaseConfigured,
+    shouldStartFromOnboarding || !isSupabaseConfigured,
   );
   const [notifications, setNotifications] = useState<AppNotification[]>(getFallbackNotifications);
+  const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
+  const [isAuthProfileOpen, setIsAuthProfileOpen] = useState(false);
+  const [authProfileStatus, setAuthProfileStatus] = useState<
+    'idle' | 'submitting' | 'success' | 'error'
+  >('idle');
+  const [authProfileMessage, setAuthProfileMessage] = useState<string | null>(null);
+  const [authEntryStatus, setAuthEntryStatus] = useState<
+    'idle' | 'submitting' | 'success' | 'error'
+  >('idle');
+  const [authEntryMessage, setAuthEntryMessage] = useState<string | null>(null);
+  const [authEntryStep, setAuthEntryStep] = useState<'email' | 'code'>('email');
+  const [authEntryPendingEmail, setAuthEntryPendingEmail] = useState<string | null>(null);
+  const [isAuthEntrySheetOpen, setIsAuthEntrySheetOpen] = useState(false);
+  const [isAuthEntryCancelConfirmOpen, setIsAuthEntryCancelConfirmOpen] = useState(false);
+  const [isProfileIdentitySheetOpen, setIsProfileIdentitySheetOpen] = useState(false);
+  const [isProfileSetupSheetOpen, setIsProfileSetupSheetOpen] = useState(false);
+  const [profileSetupStatus, setProfileSetupStatus] = useState<
+    'idle' | 'submitting' | 'success' | 'error'
+  >('idle');
+  const [profileSetupMessage, setProfileSetupMessage] = useState<string | null>(null);
+  const [isTasteSurveyIntroSheetOpen, setIsTasteSurveyIntroSheetOpen] = useState(false);
+  const [tasteSurveyIntroReturnTarget, setTasteSurveyIntroReturnTarget] =
+    useState<'auth' | 'profile'>('profile');
+  const [isPreferenceIntakeSheetOpen, setIsPreferenceIntakeSheetOpen] = useState(false);
+  const [isTasteSurveySheetOpen, setIsTasteSurveySheetOpen] = useState(false);
 
   // Overlay states
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSupportPanel, setActiveSupportPanel] = useState<AppMenuSupportPanel | null>(null);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isDeleteAccountConfirmOpen, setIsDeleteAccountConfirmOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isReservationRootView, setIsReservationRootView] = useState(true);
   const [isReservationFeedbackMapView, setIsReservationFeedbackMapView] = useState(false);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] =
@@ -462,6 +741,14 @@ function MainApp() {
   const [globalSearchReservations, setGlobalSearchReservations] = useState<ReservationRecord[]>(
     isSupabaseConfigured ? [] : RESERVATION_CATALOG,
   );
+  const shouldLayerAuthEntrySheet = isAuthEntrySheetOpen && authEntryStep === 'code';
+  const isLayeredMeasurementSheetOpen =
+    shouldLayerAuthEntrySheet ||
+    isProfileIdentitySheetOpen ||
+    isProfileSetupSheetOpen ||
+    isTasteSurveyIntroSheetOpen ||
+    isPreferenceIntakeSheetOpen ||
+    isTasteSurveySheetOpen;
 
   useEffect(() => {
     const nextTasteSurveyDraft =
@@ -469,12 +756,12 @@ function MainApp() {
         ? null
         : latestPreferenceIntakeProfile
           ? createTasteSurveyDraft(
-              surveyResponses,
-              currentSurveyContextIndex,
-              currentSurveyIndex,
-              tasteSurveyFlowStep,
-              tasteSurveyRespondentContext,
-            )
+            surveyResponses,
+            currentSurveyContextIndex,
+            currentSurveyIndex,
+            tasteSurveyFlowStep,
+            tasteSurveyRespondentContext,
+          )
           : null;
 
     window.localStorage.setItem(
@@ -506,12 +793,22 @@ function MainApp() {
     let isCancelled = false;
 
     void (async () => {
+      if (shouldStartFromOnboarding) {
+        setHasHydratedRemoteMeasurement(true);
+        return;
+      }
+
       if (!isSupabaseConfigured) {
         setHasHydratedRemoteMeasurement(true);
         return;
       }
 
-      await ensureSupabaseSession();
+      const session = await ensureSupabaseSession();
+
+      if (!isCancelled) {
+        setSupabaseSession(session);
+      }
+
       const remoteSnapshot = await hydrateLatestMeasurementSnapshot();
 
       if (isCancelled) {
@@ -533,6 +830,40 @@ function MainApp() {
 
     return () => {
       isCancelled = true;
+    };
+  }, [shouldStartFromOnboarding]);
+
+  useEffect(() => {
+    applySheetBackgroundCardProgress(backgroundCardRef.current, isLayeredMeasurementSheetOpen ? 1 : 0);
+  }, [isLayeredMeasurementSheetOpen]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void (async () => {
+      const session = await getCurrentSupabaseSession();
+
+      if (!isCancelled) {
+        setSupabaseSession(session);
+      }
+    })();
+
+    const unsubscribe = subscribeToSupabaseAuthState((session) => {
+      setSupabaseSession(session);
+
+      if (session && !isAnonymousSupabaseSession(session)) {
+        setAuthProfileStatus('success');
+        setAuthProfileMessage('이메일 계정이 연결되었습니다. 다음 식사에도 같은 프로필을 이어갈 수 있어요.');
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+      unsubscribe();
     };
   }, []);
 
@@ -556,6 +887,20 @@ function MainApp() {
 
   const hasMeasurementData =
     hasCompletedInitialMeasurement && latestTasteMeasurementSnapshot !== null;
+  const currentUserEmail = getSessionEmail(supabaseSession);
+  const currentUserDisplayName = getSessionDisplayName(supabaseSession);
+  const currentUserNickname = getSessionNickname(supabaseSession);
+  const currentUserProfileLabel = getSessionProfileLabel(supabaseSession);
+  const isAnonymousUser = isSupabaseConfigured
+    ? isAnonymousSupabaseSession(supabaseSession) || !currentUserEmail
+    : true;
+  const shouldShowAuthEntry = isSupabaseConfigured && isAnonymousUser;
+  const userInitials = getUserInitials(currentUserDisplayName, currentUserEmail);
+  const userLabel = currentUserProfileLabel || (currentUserEmail ? '프로필 연결됨' : 'Taste Buddy Guest');
+  const userAvatarStyle = useMemo(
+    () => createTasteProfileAvatarStyle(latestTasteMeasurementSnapshot),
+    [latestTasteMeasurementSnapshot],
+  );
 
   useEffect(() => {
     if (!hasMeasurementData || !isSupabaseConfigured) {
@@ -617,6 +962,16 @@ function MainApp() {
     setActiveTab(tab);
   };
 
+  const handleOpenProfileIdentitySheet = () => {
+    setIsProfileIdentitySheetOpen(true);
+  };
+
+  const handleEditProfileReferenceInfo = () => {
+    setIsProfileIdentitySheetOpen(false);
+    setTasteSurveyIntroReturnTarget('profile');
+    setIsTasteSurveyIntroSheetOpen(true);
+  };
+
   const handlePersistedMeasurement = (
     snapshot: TasteMeasurementSnapshot,
     source: 'quick_calibration' | 'tastick',
@@ -625,12 +980,228 @@ function MainApp() {
     void persistTasteMeasurementSnapshot(snapshot, source, options);
   };
 
+  const applyStarterHomeState = () => {
+    const starterSnapshot = createTasteMeasurementSnapshot(
+      DEFAULT_TASTE_MEASUREMENT_RESULTS,
+      new Date().toISOString(),
+      'broad-starter',
+    );
+
+    setLatestTasteMeasurementSnapshot(starterSnapshot);
+    setLatestRestaurantReadyGuidance(createFallbackRestaurantReadyGuidance(starterSnapshot));
+    setHasCompletedInitialMeasurement(true);
+  };
+
+  useEffect(() => {
+    if (appState === 'main' && !hasMeasurementData) {
+      applyStarterHomeState();
+    }
+  }, [appState, hasMeasurementData]);
+
   const handleSplashComplete = () => {
     setHasSplashDelayCompleted(true);
   };
 
+  const continueAfterAuthEntry = () => {
+    setAuthEntryStatus('idle');
+    setAuthEntryMessage(null);
+    setAuthEntryStep('email');
+    setAuthEntryPendingEmail(null);
+    setIsAuthEntrySheetOpen(false);
+    setTasteSurveyIntroReturnTarget('auth');
+    setIsTasteSurveyIntroSheetOpen(true);
+  };
+
+  const handleSubmitAuthEntryEmail = async (email: string) => {
+    if (!email) {
+      setAuthEntryStatus('error');
+      setAuthEntryMessage('친구들과 리뷰를 이어갈 이메일을 입력해 주세요.');
+      return;
+    }
+
+    setAuthEntryStatus('submitting');
+    setAuthEntryMessage(null);
+
+    const result = await sendSupabaseEmailOtp(email);
+
+    setAuthEntryStatus(result.ok ? 'success' : 'error');
+    setAuthEntryMessage(
+      result.ok
+        ? '이메일로 인증 코드를 보냈습니다.'
+        : result.message,
+    );
+
+    if (result.ok) {
+      setAuthEntryPendingEmail(email);
+      setAuthEntryStep('code');
+    }
+  };
+
+  const handleSubmitAuthEntryCode = async (code: string) => {
+    if (!authEntryPendingEmail) {
+      setAuthEntryStep('email');
+      setAuthEntryStatus('error');
+      setAuthEntryMessage('먼저 이메일을 입력해 주세요.');
+      return;
+    }
+
+    if (code.length !== 6) {
+      setAuthEntryStatus('error');
+      setAuthEntryMessage('이메일로 받은 6자리 코드를 입력해 주세요.');
+      return;
+    }
+
+    setAuthEntryStatus('submitting');
+    setAuthEntryMessage(null);
+
+    const result = await verifySupabaseEmailOtp(authEntryPendingEmail, code);
+
+    setAuthEntryStatus(result.ok ? 'success' : 'error');
+    setAuthEntryMessage(result.message);
+
+    if (!result.ok) {
+      return;
+    }
+
+    const session = result.session ?? (await getCurrentSupabaseSession());
+    setSupabaseSession(session);
+    setIsAuthEntrySheetOpen(false);
+    setAuthEntryStep('email');
+    setAuthEntryPendingEmail(null);
+    setAuthEntryMessage(null);
+    setProfileSetupStatus('idle');
+    setProfileSetupMessage(null);
+    setIsProfileSetupSheetOpen(true);
+  };
+
+  const handleBackToAuthEntryEmail = () => {
+    setIsAuthEntryCancelConfirmOpen(false);
+    setAuthEntryStep('email');
+    setAuthEntryPendingEmail(null);
+    setAuthEntryStatus('idle');
+    setAuthEntryMessage(null);
+  };
+
+  const handleRequestCloseAuthEntry = () => {
+    if (authEntryStep === 'code') {
+      setIsAuthEntryCancelConfirmOpen(true);
+      return;
+    }
+
+    setIsAuthEntrySheetOpen(false);
+  };
+
+  const handleConfirmCloseAuthEntry = () => {
+    setIsAuthEntryCancelConfirmOpen(false);
+    setIsAuthEntrySheetOpen(false);
+    setAuthEntryStep('email');
+    setAuthEntryPendingEmail(null);
+    setAuthEntryStatus('idle');
+    setAuthEntryMessage(null);
+  };
+
+  const handleDevBypassAuthEntry = () => {
+    if (!import.meta.env.DEV) {
+      return;
+    }
+
+    if (authEntryStep === 'email') {
+      setAuthEntryPendingEmail('dev@tastebuddy.local');
+      setAuthEntryStep('code');
+      setAuthEntryStatus('success');
+      setAuthEntryMessage('개발용으로 인증 코드 입력 단계로 이동했습니다.');
+      return;
+    }
+
+    setIsAuthEntrySheetOpen(false);
+    setAuthEntryStep('email');
+    setAuthEntryPendingEmail(null);
+    setAuthEntryStatus('idle');
+    setAuthEntryMessage(null);
+    setProfileSetupStatus('idle');
+    setProfileSetupMessage(null);
+    setIsProfileSetupSheetOpen(true);
+  };
+
   const handleStartInitialMeasurementFlow = () => {
+    if (shouldShowAuthEntry) {
+      setAuthEntryStatus('idle');
+      setAuthEntryMessage(null);
+      setAuthEntryStep('email');
+      setAuthEntryPendingEmail(null);
+      setIsAuthEntrySheetOpen(true);
+      return;
+    }
+
     setAppState('intake');
+  };
+
+  const handleSubmitProfileSetup = async (input: {
+    displayName: string;
+    nickname: string;
+  }) => {
+    if (!input.displayName.trim() && !input.nickname.trim()) {
+      setProfileSetupStatus('error');
+      setProfileSetupMessage('이름이나 닉네임 중 하나는 입력해 주세요.');
+      return;
+    }
+
+    setProfileSetupStatus('submitting');
+    setProfileSetupMessage(null);
+
+    const result = await updateSupabaseProfileIdentity(input);
+
+    setProfileSetupStatus(result.ok ? 'success' : 'error');
+    setProfileSetupMessage(result.message);
+
+    if (!result.ok) {
+      return;
+    }
+
+    const session = await getCurrentSupabaseSession();
+    setSupabaseSession(session);
+    setIsProfileSetupSheetOpen(false);
+    setProfileSetupStatus('idle');
+    setProfileSetupMessage(null);
+    setTasteSurveyIntroReturnTarget('profile');
+    setIsTasteSurveyIntroSheetOpen(true);
+  };
+
+  const handleStartPreferenceIntakeFromTasteSurveyIntro = () => {
+    setIsTasteSurveyIntroSheetOpen(false);
+    setIsPreferenceIntakeSheetOpen(true);
+  };
+
+  const handleOpenTasteSurveySheetFlow = (shouldClearResponses = false) => {
+    resetTasteSurveyFlow(shouldClearResponses);
+    setIsTasteSurveyIntroSheetOpen(false);
+    setIsPreferenceIntakeSheetOpen(false);
+    setIsTasteSurveySheetOpen(true);
+  };
+
+  const handleCompletePreferenceIntakeSheet = (profile: PreferenceIntakeProfile) => {
+    setLatestPreferenceIntakeProfile(profile);
+    setIsPreferenceIntakeSheetOpen(false);
+    handleOpenTasteSurveySheetFlow(true);
+  };
+
+  const handleSkipPreferenceIntakeSheet = () => {
+    resetTasteSurveyFlow(true);
+    setIsTasteSurveyIntroSheetOpen(false);
+    setIsPreferenceIntakeSheetOpen(false);
+    setCurrentSurveyIndex(0);
+    setTasteSurveyFlowStep('questionsIntro');
+    setIsTasteSurveySheetOpen(true);
+  };
+
+  const handleSkipTasteSurveySheetToHome = () => {
+    setIsTasteSurveyIntroSheetOpen(false);
+    setIsPreferenceIntakeSheetOpen(false);
+    setIsTasteSurveySheetOpen(false);
+    resetTasteSurveyFlow(true);
+    applyStarterHomeState();
+    setActiveTab('home');
+    setAppState('main');
   };
 
   const resetTasteSurveyFlow = (shouldClearResponses = false) => {
@@ -781,6 +1352,7 @@ function MainApp() {
       ),
     });
     clearTasteSurveyDraftAfterCompletion();
+    setIsTasteSurveySheetOpen(false);
     setActiveTab(measurementEntryPoint === 'main' ? measurementReturnTab : 'home');
     setAppState('main');
   };
@@ -800,20 +1372,73 @@ function MainApp() {
     setActiveSupportPanel(null);
   };
 
+  const handleOpenAuthProfile = () => {
+    setIsMenuOpen(false);
+    setAuthProfileStatus('idle');
+    setAuthProfileMessage(null);
+    setIsAuthProfileOpen(true);
+  };
+
+  const handleSubmitAuthEmail = async (email: string) => {
+    if (!email) {
+      setAuthProfileStatus('error');
+      setAuthProfileMessage('프로필을 이어갈 이메일을 입력해 주세요.');
+      return;
+    }
+
+    setAuthProfileStatus('submitting');
+    setAuthProfileMessage(null);
+
+    const result = isAnonymousUser
+      ? await linkAnonymousSupabaseUserEmail(email)
+      : await sendSupabaseMagicLink(email);
+
+    setAuthProfileStatus(result.ok ? 'success' : 'error');
+    setAuthProfileMessage(result.message);
+
+    const session = await getCurrentSupabaseSession();
+    setSupabaseSession(session);
+  };
+
   const handleRequestLogout = () => {
     setIsMenuOpen(false);
     setIsLogoutConfirmOpen(true);
   };
 
-  const handleLogout = () => {
+  const handleRequestDeleteAccount = () => {
+    setIsAuthProfileOpen(false);
+    setIsDeleteAccountConfirmOpen(true);
+  };
+
+  const handleLogout = async () => {
+    await signOutSupabaseSession();
+
     if (typeof window !== 'undefined') {
-      Object.keys(window.localStorage)
-        .filter((key) => key.startsWith('tastebuddy-'))
-        .forEach((key) => window.localStorage.removeItem(key));
+      clearTasteBuddyLocalState();
     }
 
     clearAppliedDesignTokenRuntimeState();
 
+    window.location.reload();
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+
+    const result = await deleteCurrentSupabaseAccount();
+
+    setIsDeletingAccount(false);
+    setIsDeleteAccountConfirmOpen(false);
+
+    if (!result.ok) {
+      setAuthProfileStatus('error');
+      setAuthProfileMessage(result.message);
+      setIsAuthProfileOpen(true);
+      return;
+    }
+
+    clearTasteBuddyLocalState();
+    clearAppliedDesignTokenRuntimeState();
     window.location.reload();
   };
 
@@ -904,12 +1529,17 @@ function MainApp() {
 
   return (
     <div
-      className={`flex min-h-[100dvh] items-center justify-center overflow-hidden ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+      className={`flex min-h-[100dvh] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
+        ? 'bg-black'
+        : usesFocusViewportBackground
+          ? 'bg-white'
+          : 'bg-[var(--tb-color-bg-page)]'
         }`}
       style={userTasteAccentStyle}
     >
       <div
-        className={`relative flex h-[100dvh] w-full max-w-[1440px] flex-col overflow-hidden font-sans ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+        ref={backgroundCardRef}
+        className={`relative flex h-[100dvh] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
           }`}
       >
         <div
@@ -945,9 +1575,9 @@ function MainApp() {
             onReuseContext={
               hasCompleteTasteSurveyRespondentContext(tasteSurveyRespondentContext)
                 ? () => {
-                    setCurrentSurveyIndex(0);
-                    setTasteSurveyFlowStep('questions');
-                  }
+                  setCurrentSurveyIndex(0);
+                  setTasteSurveyFlowStep('questions');
+                }
                 : undefined
             }
             onStart={() => {
@@ -1070,7 +1700,10 @@ function MainApp() {
                     onOpenNotifications={overlayProps.onOpenNotifications}
                     onOpenMenu={overlayProps.onOpenMenu}
                     hasUnreadNotifications={overlayProps.hasUnreadNotifications}
+                    onOpenProfile={handleOpenProfileIdentitySheet}
                     showSearchAction={activeTab !== 'home'}
+                    userInitials={userInitials}
+                    userAvatarStyle={userAvatarStyle}
                   />
                 </div>
               </div>
@@ -1215,10 +1848,388 @@ function MainApp() {
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
           onOpenSupportPanel={handleOpenSupportPanel}
+          onOpenAuth={handleOpenAuthProfile}
           onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
           onImproveAccuracy={handleOpenImproveAccuracy}
           onRequestLogout={handleRequestLogout}
+          isAnonymousUser={isAnonymousUser}
+          userEmail={currentUserEmail}
+          userInitials={userInitials}
+          userLabel={userLabel}
         />
+
+        <AuthProfileDialog
+          isAnonymous={isAnonymousUser}
+          isConfigured={isSupabaseConfigured}
+          isOpen={isAuthProfileOpen}
+          message={authProfileMessage}
+          status={authProfileStatus}
+          userEmail={currentUserEmail}
+          onClose={() => setIsAuthProfileOpen(false)}
+          onRequestDeleteAccount={handleRequestDeleteAccount}
+          onSubmitEmail={handleSubmitAuthEmail}
+        />
+
+        <BottomSheetShell
+          open={isProfileIdentitySheetOpen}
+          onOpenChange={setIsProfileIdentitySheetOpen}
+          onDrag={(_, percentageDragged) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
+          }}
+          onRelease={(_, open) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
+          }}
+          contentClassName="h-[95vh] max-h-[95vh] bg-[var(--tb-color-bg-page)]"
+          bodyClassName="px-5 pb-1 pt-2"
+          headerCenter={
+            <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+              프로필
+            </h2>
+          }
+          headerEnd={<BottomSheetCloseButton />}
+        >
+          <ProfileIdentitySheetContent
+            avatarStyle={userAvatarStyle}
+            displayName={currentUserDisplayName}
+            email={currentUserEmail}
+            initials={userInitials}
+            nickname={currentUserNickname}
+            preferenceProfile={latestPreferenceIntakeProfile}
+            respondentContext={tasteSurveyRespondentContext}
+            userTasteAccentStyle={userTasteAccentStyle}
+            onEditReferenceInfo={handleEditProfileReferenceInfo}
+          />
+        </BottomSheetShell>
+
+        <BottomSheetShell
+          open={isAuthEntrySheetOpen}
+          onOpenChange={setIsAuthEntrySheetOpen}
+          onDrag={(_, percentageDragged) => {
+            if (authEntryStep === 'code') {
+              applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
+            }
+          }}
+          onRelease={(_, open) => {
+            if (authEntryStep === 'code') {
+              applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
+            }
+          }}
+          contentClassName={
+            authEntryStep === 'code'
+              ? 'h-[95vh] max-h-[95vh]'
+              : 'h-auto max-h-[72vh]'
+          }
+          bodyClassName="px-5 pb-1 pt-2"
+          headerCenter={
+            <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+              로그인
+            </h2>
+          }
+          headerStart={
+            authEntryStep === 'code' ? (
+              <BottomSheetIconButton
+                ariaLabel="이메일 입력으로 돌아가기"
+                icon={ChevronLeft}
+                onClick={handleBackToAuthEntryEmail}
+              />
+            ) : undefined
+          }
+          headerEnd={
+            authEntryStep === 'code' ? (
+              <BottomSheetIconButton
+                ariaLabel="로그인 닫기"
+                icon={X}
+                onClick={handleRequestCloseAuthEntry}
+              />
+            ) : (
+              <BottomSheetCloseButton />
+            )
+          }
+          footer={
+            <div className="flex flex-col gap-3">
+              <Button
+                className="h-12 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] hover:bg-[var(--tb-color-text-secondary)]"
+                disabled={!isSupabaseConfigured || authEntryStatus === 'submitting'}
+                form="auth-entry-sheet-email-form"
+                type="submit"
+              >
+                {authEntryStatus === 'submitting'
+                  ? authEntryStep === 'code'
+                    ? '확인 중'
+                    : '코드 보내는 중'
+                  : authEntryStep === 'code'
+                    ? '인증 코드 확인'
+                    : '다음'}
+              </Button>
+              {authEntryStep === 'email' ? (
+                <button
+                  type="button"
+                  onClick={continueAfterAuthEntry}
+                  className="self-center px-2 py-1 text-[12px] font-semibold text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-muted)]"
+                >
+                  나중에 하기
+                </button>
+              ) : null}
+              {import.meta.env.DEV ? (
+                <button
+                  type="button"
+                  onClick={handleDevBypassAuthEntry}
+                  className="self-center px-2 py-1 text-[12px] font-semibold text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-muted)]"
+                >
+                  개발용으로 인증 건너뛰기
+                </button>
+              ) : null}
+            </div>
+          }
+          floatingLayer={
+            isAuthEntryCancelConfirmOpen ? (
+              <div
+                className="flex h-full w-full items-center justify-center bg-black/45 px-5"
+                onClick={() => setIsAuthEntryCancelConfirmOpen(false)}
+              >
+                <div
+                  className="w-full max-w-[320px] rounded-[20px] bg-[var(--tb-color-bg-focus)] p-4 shadow-[var(--tb-shadow-drawer)]"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <h3 className="mb-4 text-center text-[16px] font-bold text-[var(--tb-color-text-primary)]">
+                    취소하시겠습니까?
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={handleConfirmCloseAuthEntry}
+                      className="h-11 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-border-subtle)]"
+                    >
+                      예, 종료하겠습니다
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsAuthEntryCancelConfirmOpen(false)}
+                      className="h-11 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-border-subtle)]"
+                    >
+                      아니요, 계속 진행하겠습니다.
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null
+          }
+        >
+          <AuthEntryForm
+            formId="auth-entry-sheet-email-form"
+            isConfigured={isSupabaseConfigured}
+            isSubmitting={authEntryStatus === 'submitting'}
+            message={authEntryMessage}
+            pendingEmail={authEntryPendingEmail}
+            status={authEntryStatus}
+            step={authEntryStep}
+            onSubmitCode={handleSubmitAuthEntryCode}
+            onSubmitEmail={handleSubmitAuthEntryEmail}
+          />
+        </BottomSheetShell>
+
+        <BottomSheetShell
+          open={isProfileSetupSheetOpen}
+          onOpenChange={setIsProfileSetupSheetOpen}
+          onDrag={(_, percentageDragged) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
+          }}
+          onRelease={(_, open) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
+          }}
+          contentClassName="h-[95vh] max-h-[95vh]"
+          bodyClassName="px-5 pb-1 pt-2"
+          headerCenter={
+            <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+              프로필 설정
+            </h2>
+          }
+          headerEnd={<BottomSheetCloseButton />}
+          footer={
+            <Button
+              className="h-12 w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] hover:bg-[var(--tb-color-text-secondary)]"
+              disabled={profileSetupStatus === 'submitting'}
+              form="profile-setup-sheet-form"
+              type="submit"
+            >
+              {profileSetupStatus === 'submitting' ? '저장 중' : '프로필 저장'}
+            </Button>
+          }
+        >
+          <ProfileSetupSheetContent
+            formId="profile-setup-sheet-form"
+            isSubmitting={profileSetupStatus === 'submitting'}
+            message={profileSetupMessage}
+            status={profileSetupStatus}
+            onSubmit={handleSubmitProfileSetup}
+          />
+        </BottomSheetShell>
+
+        <BottomSheetShell
+          open={isTasteSurveyIntroSheetOpen}
+          onOpenChange={setIsTasteSurveyIntroSheetOpen}
+          onDrag={(_, percentageDragged) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
+          }}
+          onRelease={(_, open) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
+          }}
+          contentClassName="h-[95vh] max-h-[95vh] bg-[var(--tb-color-bg-page)]"
+          bodyClassName="p-0"
+        >
+          <TasteSurveyIntroScreen
+            onBack={() => {
+              setIsTasteSurveyIntroSheetOpen(false);
+              if (tasteSurveyIntroReturnTarget === 'auth') {
+                setAuthEntryStatus('idle');
+                setAuthEntryMessage(null);
+                setAuthEntryStep('email');
+                setAuthEntryPendingEmail(null);
+                setIsAuthEntrySheetOpen(true);
+                return;
+              }
+
+              setIsProfileSetupSheetOpen(true);
+            }}
+            onReuseContext={handleSkipPreferenceIntakeSheet}
+            onStart={handleStartPreferenceIntakeFromTasteSurveyIntro}
+            reuseContextLabel="건너뛰기"
+          />
+        </BottomSheetShell>
+
+        <BottomSheetShell
+          open={isPreferenceIntakeSheetOpen}
+          onOpenChange={setIsPreferenceIntakeSheetOpen}
+          onDrag={(_, percentageDragged) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
+          }}
+          onRelease={(_, open) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
+          }}
+          contentClassName="h-[95vh] max-h-[95vh]"
+          bodyClassName="p-0"
+        >
+          <PreferenceIntakeScreen
+            initialProfile={latestPreferenceIntakeProfile}
+            onBack={() => {
+              setIsPreferenceIntakeSheetOpen(false);
+              setIsTasteSurveyIntroSheetOpen(true);
+            }}
+            onComplete={handleCompletePreferenceIntakeSheet}
+          />
+        </BottomSheetShell>
+
+        <BottomSheetShell
+          open={isTasteSurveySheetOpen}
+          onOpenChange={setIsTasteSurveySheetOpen}
+          onDrag={(_, percentageDragged) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
+          }}
+          onRelease={(_, open) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
+          }}
+          contentClassName="h-[95vh] max-h-[95vh] bg-[var(--tb-color-bg-page)]"
+          bodyClassName="p-0"
+        >
+          {tasteSurveyFlowStep === 'intro' && (
+            <TasteSurveyIntroScreen
+              activeStepIndex={0}
+              actionLabel={
+                hasCompleteTasteSurveyRespondentContext(tasteSurveyRespondentContext)
+                  ? '다시 작성'
+                  : '설문 시작'
+              }
+              onBack={() => {
+                setIsTasteSurveySheetOpen(false);
+                setIsTasteSurveyIntroSheetOpen(true);
+              }}
+              onReuseContext={
+                hasCompleteTasteSurveyRespondentContext(tasteSurveyRespondentContext)
+                  ? () => {
+                    setCurrentSurveyIndex(0);
+                    setTasteSurveyFlowStep('questions');
+                  }
+                  : undefined
+              }
+              onStart={() => {
+                setCurrentSurveyContextIndex(0);
+                setTasteSurveyFlowStep('context');
+              }}
+              reuseContextLabel={
+                hasCompleteTasteSurveyRespondentContext(tasteSurveyRespondentContext)
+                  ? '건너뛰기'
+                  : undefined
+              }
+            />
+          )}
+          {tasteSurveyFlowStep === 'questionsIntro' && (
+            <TasteSurveyIntroScreen
+              activeStepIndex={1}
+              actionLabel="감각 반응으로 이어가기"
+              onBack={() => {
+                setCurrentSurveyContextIndex(Math.max(TASTE_SURVEY_CONTEXT_STEPS.length - 1, 0));
+                setTasteSurveyFlowStep('context');
+              }}
+              onReuseContext={handleSkipTasteSurveySheetToHome}
+              onStart={() => {
+                setCurrentSurveyIndex(0);
+                setTasteSurveyFlowStep('questions');
+              }}
+              reuseContextLabel="건너뛰기"
+            />
+          )}
+          {tasteSurveyFlowStep === 'profileIntro' && (
+            <TasteSurveyIntroScreen
+              activeStepIndex={2}
+              actionLabel="응답 확인하기"
+              onBack={() => {
+                setCurrentSurveyIndex(Math.max(TASTE_SURVEY_ITEMS.length - 1, 0));
+                setTasteSurveyFlowStep('questions');
+              }}
+              onStart={() => setTasteSurveyFlowStep('review')}
+            />
+          )}
+          {tasteSurveyFlowStep === 'context' && (
+            <TasteSurveyContextScreen
+              context={tasteSurveyRespondentContext}
+              currentIndex={currentSurveyContextIndex}
+              onBack={handleBackFromTasteSurveyContext}
+              onChange={handleChangeTasteSurveyRespondentContext}
+              onContinue={handleNextTasteSurveyContext}
+            />
+          )}
+          {tasteSurveyFlowStep === 'questions' && (
+            <TasteSurveyScreen
+              currentIndex={currentSurveyIndex}
+              currentResponse={surveyResponses[TASTE_SURVEY_ITEMS[currentSurveyIndex]?.id ?? ''] ?? null}
+              items={TASTE_SURVEY_ITEMS}
+              onBack={handleBackFromSurveyQuestion}
+              onNext={handleNextSurveyQuestion}
+              onSelectLikert={handleSelectSurveyLikert}
+              onSelectUncertain={handleSelectSurveyUncertain}
+            />
+          )}
+          {tasteSurveyFlowStep === 'review' && (
+            <TasteSurveyReviewScreen
+              items={TASTE_SURVEY_ITEMS}
+              onBack={() => {
+                setTasteSurveyFlowStep('profileIntro');
+              }}
+              onEditItem={(index) => {
+                setCurrentSurveyIndex(index);
+                setTasteSurveyFlowStep('questions');
+              }}
+              onSubmit={handleSubmitTasteSurveyReview}
+              responses={surveyResponses}
+            />
+          )}
+          {tasteSurveyFlowStep === 'result' && (
+            <TasteSurveyResultScreen
+              compatibleResult={latestSurveyCompatibleResult}
+              onComplete={handleCompleteTasteSurvey}
+            />
+          )}
+        </BottomSheetShell>
 
         <Dialog
           open={activeSupportPanel !== null}
@@ -1368,15 +2379,45 @@ function MainApp() {
           <AlertDialogContent className="max-w-[calc(100%-1rem)] rounded-[28px] border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] sm:max-w-[440px]">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-[18px] text-[var(--tb-color-text-primary)]">
-                로그아웃
+                {currentUserEmail ? '로그아웃' : '프로필 초기화'}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                현재 프로필, 최근 검색, 디자인 런타임 상태를 지우고 처음 화면으로 돌아갑니다.
+                {currentUserEmail
+                  ? '이 기기에서 로그아웃하고 처음 화면으로 돌아갑니다. 이메일에 연결된 프로필은 다시 로그인하면 이어갈 수 있습니다.'
+                  : '이 기기에 임시로 쌓인 프로필, 최근 검색, 디자인 런타임 상태를 지우고 처음 화면으로 돌아갑니다.'}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>취소</AlertDialogCancel>
-              <AlertDialogAction onClick={handleLogout}>로그아웃</AlertDialogAction>
+              <AlertDialogAction onClick={handleLogout}>
+                {currentUserEmail ? '로그아웃' : '초기화'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
+          open={isDeleteAccountConfirmOpen}
+          onOpenChange={(open) => {
+            if (!isDeletingAccount) {
+              setIsDeleteAccountConfirmOpen(open);
+            }
+          }}
+        >
+          <AlertDialogContent className="max-w-[calc(100%-1rem)] rounded-[28px] border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] sm:max-w-[440px]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-[18px] text-[var(--tb-color-text-primary)]">
+                계정 삭제
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                연결된 이메일 계정과 이 계정에 저장된 미각 프로필, 예약, 피드백 학습 데이터가 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeletingAccount}>취소</AlertDialogCancel>
+              <AlertDialogAction disabled={isDeletingAccount} onClick={handleDeleteAccount}>
+                {isDeletingAccount ? '삭제 중' : '계정 삭제'}
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -1385,7 +2426,12 @@ function MainApp() {
   );
 }
 
-type InternalRoute = 'app' | 'design-system' | 'design-system-updates' | 'figma-works';
+type InternalRoute =
+  | 'app'
+  | 'design-system'
+  | 'design-system-updates'
+  | 'figma-works'
+  | 'tastick-connect';
 
 function getInternalRoute(): InternalRoute {
   if (typeof window === 'undefined') {
@@ -1406,6 +2452,10 @@ function getInternalRoute(): InternalRoute {
 
   if (previewMode === 'figma-works' || normalizedPath === '/figma-works') {
     return 'figma-works';
+  }
+
+  if (previewMode === 'tastick-connect' || normalizedPath === '/tastick-connect') {
+    return 'tastick-connect';
   }
 
   return 'app';
@@ -1442,6 +2492,17 @@ export default function App() {
 
   if (internalRoute === 'figma-works') {
     return <FigmaWorksPreviewPage />;
+  }
+
+  if (internalRoute === 'tastick-connect') {
+    return (
+      <TastickConnectScreen
+        initialDrawerOpen
+        initialDrawerStep="power"
+        onConnect={() => { }}
+        onSkip={() => { }}
+      />
+    );
   }
 
   return <MainApp />;
