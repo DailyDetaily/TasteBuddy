@@ -1151,6 +1151,7 @@ interface DiningFeedbackScreenProps {
   draft: DiningFeedbackDraft;
   onBack: () => void;
   onChange: (nextDraft: DiningFeedbackDraft) => void;
+  onMapViewChange?: (isMapView: boolean) => void;
   onSubmit: () => void;
   scenario: DiningFeedbackScenario;
 }
@@ -1159,6 +1160,7 @@ export function DiningFeedbackScreen({
   draft,
   onBack,
   onChange,
+  onMapViewChange,
   onSubmit,
   scenario,
 }: DiningFeedbackScreenProps) {
@@ -1180,6 +1182,14 @@ export function DiningFeedbackScreen({
     (dish) => draft.dishResponses[dish.id]?.selectedExperienceId,
   ).length;
   const selectedDish = selectedDishIndex === null ? null : scenario.dishes[selectedDishIndex] ?? null;
+
+  useEffect(() => {
+    onMapViewChange?.(feedbackStep === 'taste-checkin');
+
+    return () => {
+      onMapViewChange?.(false);
+    };
+  }, [feedbackStep, onMapViewChange]);
 
   const selectTasteExperience = (experience: TasteExperienceWord) => {
     const closestChoice = findClosestDishChoice(activeDish, experience);

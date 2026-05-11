@@ -1115,14 +1115,14 @@ export function createRestaurantDetailFromReservation(
 interface RestaurantDetailPageProps {
   measurementSnapshot?: TasteMeasurementSnapshot | null;
   onBack: () => void;
-  onFeedbackViewChange?: (isFeedbackView: boolean) => void;
+  onFeedbackMapViewChange?: (isMapView: boolean) => void;
   restaurant?: RestaurantDetailViewModel | null;
 }
 
 export default function RestaurantDetailPage({
   measurementSnapshot,
   onBack,
-  onFeedbackViewChange,
+  onFeedbackMapViewChange,
   restaurant = DEFAULT_RESTAURANT_DETAIL,
 }: RestaurantDetailPageProps) {
   const sourceDetail = restaurant ?? DEFAULT_RESTAURANT_DETAIL;
@@ -1206,12 +1206,14 @@ export default function RestaurantDetailPage({
   }, [detail.id, feedbackScenario]);
 
   useEffect(() => {
-    onFeedbackViewChange?.(selectedView === 'feedback');
+    if (selectedView !== 'feedback') {
+      onFeedbackMapViewChange?.(false);
+    }
 
     return () => {
-      onFeedbackViewChange?.(false);
+      onFeedbackMapViewChange?.(false);
     };
-  }, [onFeedbackViewChange, selectedView]);
+  }, [onFeedbackMapViewChange, selectedView]);
 
   if (selectedView === 'feedback') {
     return (
@@ -1219,6 +1221,7 @@ export default function RestaurantDetailPage({
         draft={feedbackDraft}
         onBack={() => setSelectedView('detail')}
         onChange={setFeedbackDraft}
+        onMapViewChange={onFeedbackMapViewChange}
         onSubmit={() => setSelectedView('analysis')}
         scenario={feedbackScenario}
       />

@@ -186,6 +186,7 @@ interface ReservationPageProps {
   initialReservations?: Reservation[];
   measurementSnapshot: TasteMeasurementSnapshot;
   starterGuidance?: RestaurantReadyGuidance | null;
+  onFeedbackMapViewChange?: (isMapView: boolean) => void;
   onRootViewChange?: (isRootView: boolean) => void;
   onOpenRestaurantDetail?: (reservation: Reservation) => void;
   onStartMeasurement: () => void;
@@ -199,6 +200,7 @@ export default function ReservationPage({
   initialReservations,
   measurementSnapshot,
   starterGuidance = null,
+  onFeedbackMapViewChange,
   onRootViewChange,
   onOpenRestaurantDetail,
   onStartMeasurement,
@@ -232,6 +234,16 @@ export default function ReservationPage({
   useEffect(() => {
     onRootViewChange?.(!selectedReservation);
   }, [onRootViewChange, selectedReservation]);
+
+  useEffect(() => {
+    if (selectedView !== 'feedback') {
+      onFeedbackMapViewChange?.(false);
+    }
+
+    return () => {
+      onFeedbackMapViewChange?.(false);
+    };
+  }, [onFeedbackMapViewChange, selectedView]);
 
   useEffect(() => {
     if (disableHydration) {
@@ -274,6 +286,7 @@ export default function ReservationPage({
               [selectedReservation.id]: nextDraft,
             }))
           }
+          onMapViewChange={onFeedbackMapViewChange}
           onSubmit={async () => {
             const nextDraft = activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario);
 

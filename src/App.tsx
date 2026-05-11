@@ -121,6 +121,8 @@ type TasteSurveyFlowStep =
 const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const MAIN_APP_BOTTOM_OFFSET =
   'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
+const FOCUS_VIEWPORT_BACKGROUND = '#ffffff';
+const PAGE_VIEWPORT_BACKGROUND = '#f3f3f3';
 
 const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v5';
 const LEGACY_USER_STATE_STORAGE_KEYS = [
@@ -448,9 +450,10 @@ function MainApp() {
   const [activeSupportPanel, setActiveSupportPanel] = useState<AppMenuSupportPanel | null>(null);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isReservationRootView, setIsReservationRootView] = useState(true);
+  const [isReservationFeedbackMapView, setIsReservationFeedbackMapView] = useState(false);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] =
     useState<RestaurantDetailViewModel | null>(null);
-  const [isRestaurantDetailFeedbackView, setIsRestaurantDetailFeedbackView] = useState(false);
+  const [isRestaurantDetailFeedbackMapView, setIsRestaurantDetailFeedbackMapView] = useState(false);
   const [globalSearchTrigger, setGlobalSearchTrigger] = useState(0);
   const [globalSearchCatalog, setGlobalSearchCatalog] = useState<RestaurantContentCatalog>({
     chefs: [],
@@ -859,28 +862,34 @@ function MainApp() {
     appState === 'tastick' ||
     appState === 'measurement' ||
     appState === 'improve-accuracy' ||
-    isRestaurantDetailFeedbackView;
+    isReservationFeedbackMapView ||
+    isRestaurantDetailFeedbackMapView;
   const shouldShowMainShell =
     appState === 'main' &&
     (selectedRestaurantDetail !== null || activeTab !== 'reservation' || isReservationRootView);
   const shouldShowMainTopShell = shouldShowMainShell && selectedRestaurantDetail === null;
-  const shouldShowMainBottomShell = shouldShowMainShell && !isRestaurantDetailFeedbackView;
+  const shouldShowMainBottomShell =
+    shouldShowMainShell && !isReservationFeedbackMapView && !isRestaurantDetailFeedbackMapView;
+  const shouldLetStatusBarShowContent =
+    appState === 'main' && (isReservationFeedbackMapView || isRestaurantDetailFeedbackMapView);
+  const viewportBackgroundColor = usesFocusViewportBackground
+    ? FOCUS_VIEWPORT_BACKGROUND
+    : PAGE_VIEWPORT_BACKGROUND;
   const userTasteAccentStyle = useMemo(
     () => createUserTasteAccentStyle(resolveUserTasteAccent(latestTasteMeasurementSnapshot)),
     [latestTasteMeasurementSnapshot],
   );
 
   useEffect(() => {
-    const nextBackgroundColor = usesFocusViewportBackground ? '#ffffff' : '#f3f3f3';
     const rootElement = document.documentElement;
     const bodyElement = document.body;
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
-    rootElement.style.backgroundColor = nextBackgroundColor;
-    bodyElement.style.backgroundColor = nextBackgroundColor;
+    rootElement.style.backgroundColor = viewportBackgroundColor;
+    bodyElement.style.backgroundColor = viewportBackgroundColor;
 
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', nextBackgroundColor);
+      themeColorMeta.setAttribute('content', viewportBackgroundColor);
     }
 
     return () => {
@@ -891,7 +900,7 @@ function MainApp() {
         themeColorMeta.setAttribute('content', '#ffffff');
       }
     };
-  }, [usesFocusViewportBackground]);
+  }, [viewportBackgroundColor]);
 
   return (
     <div
@@ -903,6 +912,13 @@ function MainApp() {
         className={`relative flex h-[100dvh] w-full max-w-[1440px] flex-col overflow-hidden font-sans ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
           }`}
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 top-0 z-[80] h-[var(--tb-safe-area-top)]"
+          style={{
+            backgroundColor: shouldLetStatusBarShowContent ? 'transparent' : viewportBackgroundColor,
+          }}
+        />
         {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}
         {appState === 'onboarding' && (
           <OnboardingScreen onComplete={handleStartInitialMeasurementFlow} />
@@ -1085,10 +1101,10 @@ function MainApp() {
               measurementSnapshot={latestTasteMeasurementSnapshot}
               restaurant={selectedRestaurantDetail}
               onBack={() => {
-                setIsRestaurantDetailFeedbackView(false);
+                setIsRestaurantDetailFeedbackMapView(false);
                 setSelectedRestaurantDetail(null);
               }}
-              onFeedbackViewChange={setIsRestaurantDetailFeedbackView}
+              onFeedbackMapViewChange={setIsRestaurantDetailFeedbackMapView}
             />
           ) : (
             <>
@@ -1138,6 +1154,7 @@ function MainApp() {
                   <ReservationPage
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     starterGuidance={latestRestaurantReadyGuidance}
+                    onFeedbackMapViewChange={setIsReservationFeedbackMapView}
                     onRootViewChange={setIsReservationRootView}
                     onOpenRestaurantDetail={(reservation) =>
                       setSelectedRestaurantDetail(createRestaurantDetailFromReservation(reservation))
