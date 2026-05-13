@@ -252,16 +252,9 @@ function getVisibleViewportHeight() {
 
   const visualViewportHeight = window.visualViewport?.height ?? 0;
   const layoutViewportHeight = window.innerHeight;
-  const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean };
-  const isStandaloneDisplay =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    navigatorWithStandalone.standalone === true;
+  const documentViewportHeight = document.documentElement.clientHeight;
 
-  if (isStandaloneDisplay && visualViewportHeight > 0) {
-    return visualViewportHeight;
-  }
-
-  return Math.max(visualViewportHeight, layoutViewportHeight);
+  return Math.max(visualViewportHeight, layoutViewportHeight, documentViewportHeight);
 }
 
 function sanitizeTasteSurveyResponses(value: unknown) {
