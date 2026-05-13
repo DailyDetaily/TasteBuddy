@@ -125,7 +125,7 @@ export default function BottomSheetShell({
       <DrawerContent
         overlayClassName={cn("z-40 bg-[rgba(0,0,0,0.6)]", overlayClassName)}
         className={cn(
-          "left-0 right-0 z-50 mx-auto h-[95vh] max-h-[95vh] max-w-[1440px] !rounded-t-[20px] border-0 bg-[var(--tb-color-bg-focus)] outline-none",
+          "left-0 right-0 z-50 mx-auto h-[calc(var(--tb-viewport-height,100dvh)*0.95)] max-h-[calc(var(--tb-viewport-height,100dvh)*0.95)] max-w-[1440px] !rounded-t-[20px] border-0 bg-[var(--tb-color-bg-focus)] outline-none",
           "data-[vaul-drawer-direction=bottom]:border-t-0",
           "[&>div:first-child]:mt-3 [&>div:first-child]:h-1.5 [&>div:first-child]:w-10 [&>div:first-child]:bg-[var(--tb-color-border-strong)]",
           contentClassName,

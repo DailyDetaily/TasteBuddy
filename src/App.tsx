@@ -250,7 +250,18 @@ function getVisibleViewportHeight() {
     return null;
   }
 
-  return window.visualViewport?.height ?? window.innerHeight;
+  const visualViewportHeight = window.visualViewport?.height ?? 0;
+  const layoutViewportHeight = window.innerHeight;
+  const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean };
+  const isStandaloneDisplay =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    navigatorWithStandalone.standalone === true;
+
+  if (isStandaloneDisplay && visualViewportHeight > 0) {
+    return visualViewportHeight;
+  }
+
+  return Math.max(visualViewportHeight, layoutViewportHeight);
 }
 
 function sanitizeTasteSurveyResponses(value: unknown) {
@@ -1936,11 +1947,21 @@ function MainApp() {
     shouldShowMainShell && !isReservationFeedbackMapView && !isRestaurantDetailFeedbackMapView;
   const shouldLetStatusBarShowContent =
     appState === 'main' && (isReservationFeedbackMapView || isRestaurantDetailFeedbackMapView);
-  const viewportBackgroundColor = appState === 'splash'
+  const usesPageViewportBackground =
+    appState === 'splash' ||
+    appState === 'main' ||
+    appState === 'tastick' ||
+    appState === 'measurement' ||
+    appState === 'improve-accuracy' ||
+    (appState === 'calibration' &&
+      (tasteSurveyFlowStep === 'intro' ||
+        tasteSurveyFlowStep === 'questionsIntro' ||
+        tasteSurveyFlowStep === 'profileIntro')) ||
+    isReservationFeedbackMapView ||
+    isRestaurantDetailFeedbackMapView;
+  const viewportBackgroundColor = usesPageViewportBackground
     ? PAGE_VIEWPORT_BACKGROUND
-    : usesFocusViewportBackground
-      ? FOCUS_VIEWPORT_BACKGROUND
-      : PAGE_VIEWPORT_BACKGROUND;
+    : FOCUS_VIEWPORT_BACKGROUND;
   const userTasteAccentStyle = useMemo(
     () => createUserTasteAccentStyle(resolveUserTasteAccent(latestTasteMeasurementSnapshot)),
     [latestTasteMeasurementSnapshot],
@@ -1972,17 +1993,15 @@ function MainApp() {
     <div
       className={`flex min-h-[var(--tb-viewport-height,100dvh)] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
         ? 'bg-black'
-        : usesFocusViewportBackground
-          ? appState === 'splash'
-            ? 'bg-[var(--tb-color-bg-page)]'
-            : 'bg-white'
-          : 'bg-[var(--tb-color-bg-page)]'
+        : usesPageViewportBackground
+          ? 'bg-[var(--tb-color-bg-page)]'
+          : 'bg-white'
         }`}
       style={userTasteAccentStyle}
     >
       <div
         ref={backgroundCardRef}
-        className={`relative flex h-[var(--tb-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesFocusViewportBackground && appState !== 'splash' ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+        className={`relative flex h-[var(--tb-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesPageViewportBackground ? 'bg-[var(--tb-color-bg-page)]' : 'bg-white'
           }`}
       >
         <div
