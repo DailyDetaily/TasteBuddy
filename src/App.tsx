@@ -253,8 +253,13 @@ function getVisibleViewportHeight() {
   const visualViewportHeight = window.visualViewport?.height ?? 0;
   const layoutViewportHeight = window.innerHeight;
   const documentViewportHeight = document.documentElement.clientHeight;
+  const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean };
+  const isStandaloneDisplay =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    navigatorWithStandalone.standalone === true;
+  const screenHeight = isStandaloneDisplay ? window.screen.height : 0;
 
-  return Math.max(visualViewportHeight, layoutViewportHeight, documentViewportHeight);
+  return Math.max(visualViewportHeight, layoutViewportHeight, documentViewportHeight, screenHeight);
 }
 
 function sanitizeTasteSurveyResponses(value: unknown) {
@@ -971,6 +976,9 @@ function MainApp() {
     };
 
     syncViewportHeight();
+    window.requestAnimationFrame(syncViewportHeight);
+    const settleViewportTimer = window.setTimeout(syncViewportHeight, 250);
+    const finalViewportTimer = window.setTimeout(syncViewportHeight, 1000);
 
     window.addEventListener('resize', syncViewportHeight);
     window.addEventListener('orientationchange', syncViewportHeight);
@@ -982,6 +990,8 @@ function MainApp() {
       window.removeEventListener('orientationchange', syncViewportHeight);
       window.visualViewport?.removeEventListener('resize', syncViewportHeight);
       window.visualViewport?.removeEventListener('scroll', syncViewportHeight);
+      window.clearTimeout(settleViewportTimer);
+      window.clearTimeout(finalViewportTimer);
       rootElement.style.removeProperty(VIEWPORT_HEIGHT_CSS_VARIABLE);
     };
   }, []);
