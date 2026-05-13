@@ -4,7 +4,6 @@ import {
   FormEvent,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type CSSProperties,
 } from 'react';
@@ -14,9 +13,16 @@ import {
   type PreferenceIntakeProfile,
 } from '../constants/preferenceIntakeData';
 import { TASTE_SURVEY_CONTEXT_OPTIONS } from '../constants/tasteSurveyConfig';
+import BirthDatePicker, {
+  formatBirthDate,
+  getBirthDateLabel,
+  getDaysInMonth,
+  getDefaultBirthDateYears,
+  parseBirthDate,
+  type BirthDateParts,
+} from './system/BirthDatePicker';
 import SelectionCard from './system/SelectionCard';
 import type {
-  TasteSurveyAgeRange,
   TasteSurveyRespondentContext,
   TasteSurveySexContext,
   TasteSurveySmokingStatus,
@@ -50,23 +56,9 @@ type ProfileEditPicker =
   | 'dietaryRestrictions'
   | null;
 
-interface BirthDateParts {
-  day: number;
-  month: number;
-  year: number;
-}
-
 const dietaryQuestion = PREFERENCE_INTAKE_QUESTIONS.find(
   (question) => question.id === 'dietaryRestrictions',
 );
-const PROFILE_PICKER_ROW_HEIGHT = 42;
-const PROFILE_PICKER_VISIBLE_ROWS = 7;
-const PROFILE_PICKER_HEIGHT = PROFILE_PICKER_ROW_HEIGHT * PROFILE_PICKER_VISIBLE_ROWS;
-const PROFILE_PICKER_VERTICAL_PADDING =
-  (PROFILE_PICKER_HEIGHT - PROFILE_PICKER_ROW_HEIGHT) / 2;
-const PROFILE_PICKER_CYLINDER_RADIUS = 140;
-const PROFILE_PICKER_CYLINDER_STEP_DEGREES = 14;
-const PROFILE_PICKER_TEXT_SIZE = 22;
 
 const emptyPreferenceProfile: PreferenceIntakeProfile = {
   allergies: [],
@@ -80,83 +72,6 @@ const emptyPreferenceProfile: PreferenceIntakeProfile = {
 
 function getInitialPreferenceProfile(profile: PreferenceIntakeProfile | null) {
   return profile ?? emptyPreferenceProfile;
-}
-
-function parseBirthDate(value: string | null): BirthDateParts {
-  if (value) {
-    const [year, month, day] = value.split('-').map(Number);
-
-    if (year && month && day) {
-      return { day, month, year };
-    }
-  }
-
-  return { day: 10, month: 7, year: 1996 };
-}
-
-function padDatePart(value: number) {
-  return String(value).padStart(2, '0');
-}
-
-function formatBirthDate(parts: BirthDateParts) {
-  return `${parts.year}-${padDatePart(parts.month)}-${padDatePart(parts.day)}`;
-}
-
-function getDaysInMonth(year: number, month: number) {
-  return new Date(year, month, 0).getDate();
-}
-
-function getAgeRangeFromBirthDate(birthDate: string): TasteSurveyAgeRange {
-  const [year, month, day] = birthDate.split('-').map(Number);
-  const today = new Date();
-  let age = today.getFullYear() - year;
-  const hasBirthdayPassed =
-    today.getMonth() + 1 > month ||
-    (today.getMonth() + 1 === month && today.getDate() >= day);
-
-  if (!hasBirthdayPassed) {
-    age -= 1;
-  }
-
-  if (age < 18) {
-    return 'teen';
-  }
-
-  if (age <= 24) {
-    return '18_24';
-  }
-
-  if (age <= 34) {
-    return '25_34';
-  }
-
-  if (age <= 44) {
-    return '35_44';
-  }
-
-  if (age <= 54) {
-    return '45_54';
-  }
-
-  if (age <= 64) {
-    return '55_64';
-  }
-
-  return '65_plus';
-}
-
-function getBirthDateLabel(value: string | null) {
-  if (!value) {
-    return '선택해 주세요';
-  }
-
-  const [year, month, day] = value.split('-').map(Number);
-
-  if (!year || !month || !day) {
-    return '선택해 주세요';
-  }
-
-  return `${year}년 ${month}월 ${day}일`;
 }
 
 function resolveOptionLabel(
@@ -231,11 +146,7 @@ export default function ProfileEditSheetContent({
     () => dietaryQuestion?.options ?? [],
     [],
   );
-  const years = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-
-    return Array.from({ length: currentYear - 1919 }, (_, index) => currentYear - index);
-  }, []);
+  const years = useMemo(getDefaultBirthDateYears, []);
   const months = useMemo(() => Array.from({ length: 12 }, (_, index) => index + 1), []);
   const days = useMemo(
     () =>
@@ -279,7 +190,7 @@ export default function ProfileEditSheetContent({
     setDraftBirthDate(nextBirthDate);
     setDraftContext((current) => ({
       ...current,
-      ageRange: getAgeRangeFromBirthDate(nextBirthDate),
+      birthDate: nextBirthDate,
     }));
     setActivePicker(null);
   };
@@ -314,7 +225,10 @@ export default function ProfileEditSheetContent({
       displayName: draftDisplayName.trim(),
       nickname: draftNickname.trim(),
       preferenceProfile: draftPreferenceProfile,
-      respondentContext: draftContext,
+      respondentContext: {
+        ...draftContext,
+        birthDate: draftBirthDate ?? undefined,
+      },
     });
   };
 
@@ -390,7 +304,7 @@ export default function ProfileEditSheetContent({
             onChange={setDraftNickname}
           />
           <ProfileEditSelectField
-            label="연령"
+            label="생년월일"
             value={getBirthDateLabel(draftBirthDate)}
             onClick={() => setActivePicker('birthDate')}
           />
@@ -436,7 +350,7 @@ export default function ProfileEditSheetContent({
               <X aria-hidden="true" className="size-5" strokeWidth={1.8} />
             </button>
             {activePicker === 'birthDate' ? (
-              <ProfileBirthDatePicker
+              <BirthDatePicker
                 days={days}
                 months={months}
                 parts={draftBirthDateParts}
@@ -547,192 +461,6 @@ function ProfileEditSelectField({
           strokeWidth={2.2}
         />
       </button>
-    </div>
-  );
-}
-
-function ProfileBirthDatePicker({
-  days,
-  months,
-  onChange,
-  onConfirm,
-  parts,
-  years,
-}: {
-  days: number[];
-  months: number[];
-  onChange: (field: keyof BirthDateParts, value: number) => void;
-  onConfirm: () => void;
-  parts: BirthDateParts;
-  years: number[];
-}) {
-  return (
-    <div>
-      <h3 className="text-center text-[16px] font-bold text-[var(--tb-color-text-primary)]">
-        생년월일
-      </h3>
-      <div className="relative mt-2 h-[294px] overflow-hidden">
-        <div className="pointer-events-none absolute left-0 right-0 top-1/2 h-9 -translate-y-1/2 rounded-[18px] bg-[var(--tb-color-surface-muted)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-14 bg-gradient-to-b from-[var(--tb-color-bg-focus)] via-[var(--tb-color-bg-focus)]/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-14 bg-gradient-to-t from-[var(--tb-color-bg-focus)] via-[var(--tb-color-bg-focus)]/80 to-transparent" />
-        <div className="relative z-10 grid h-full grid-cols-3 gap-1">
-          <ProfilePickerSelect
-            suffix="년"
-            value={parts.year}
-            values={years}
-            onChange={(value) => onChange('year', value)}
-          />
-          <ProfilePickerSelect
-            suffix="월"
-            value={parts.month}
-            values={months}
-            onChange={(value) => onChange('month', value)}
-          />
-          <ProfilePickerSelect
-            suffix="일"
-            value={parts.day}
-            values={days}
-            onChange={(value) => onChange('day', value)}
-          />
-        </div>
-      </div>
-      <button
-        type="button"
-        className="mt-4 h-12 w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[14px] font-bold text-[var(--tb-color-text-inverse)]"
-        onClick={onConfirm}
-      >
-        선택 완료
-      </button>
-    </div>
-  );
-}
-
-function ProfilePickerSelect({
-  onChange,
-  suffix,
-  value,
-  values,
-}: {
-  onChange: (value: number) => void;
-  suffix: string;
-  value: number;
-  values: number[];
-}) {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const lastCommittedValueRef = useRef(value);
-  const selectedIndex = Math.max(0, values.indexOf(value));
-  const visibleOptions = values
-    .map((optionValue, optionIndex) => ({
-      distance: Math.min(Math.abs(optionIndex - selectedIndex), 4),
-      optionIndex,
-      optionValue,
-    }))
-    .filter((option) => Math.abs(option.optionIndex - selectedIndex) <= 4);
-
-  useEffect(() => {
-    if (lastCommittedValueRef.current === value) {
-      return;
-    }
-
-    lastCommittedValueRef.current = value;
-    scrollRef.current?.scrollTo({
-      top: selectedIndex * PROFILE_PICKER_ROW_HEIGHT,
-      behavior: 'auto',
-    });
-  }, [selectedIndex, value]);
-
-  const handleScroll = () => {
-    const scrollElement = scrollRef.current;
-
-    if (!scrollElement) {
-      return;
-    }
-
-    const nextIndex = Math.min(
-      values.length - 1,
-      Math.max(0, Math.round(scrollElement.scrollTop / PROFILE_PICKER_ROW_HEIGHT)),
-    );
-    const nextValue = values[nextIndex];
-
-    if (nextValue !== undefined && nextValue !== value) {
-      lastCommittedValueRef.current = nextValue;
-      onChange(nextValue);
-    }
-  };
-
-  return (
-    <div className="relative h-full overflow-hidden" style={{ perspective: '420px' }}>
-      <div className="pointer-events-none absolute inset-0 z-10">
-        {visibleOptions.map(({ distance, optionIndex, optionValue }) => {
-          const selected = optionValue === value;
-          const direction = optionIndex < selectedIndex ? -1 : 1;
-          const angle = distance * PROFILE_PICKER_CYLINDER_STEP_DEGREES;
-          const angleRadians = (angle * Math.PI) / 180;
-          const offset = Math.sin(angleRadians) * PROFILE_PICKER_CYLINDER_RADIUS;
-          const colorClass = selected
-            ? 'text-[var(--tb-color-text-primary)]'
-            : distance <= 1
-              ? 'text-[var(--tb-color-text-muted)]'
-              : 'text-[var(--tb-color-text-faint)]';
-          const opacity = [1, 0.64, 0.38, 0.22, 0.1][distance] ?? 0.1;
-          const rotateX = -direction * angle;
-          const scaleY = [1, 0.78, 0.56, 0.38, 0.24][distance] ?? 0.24;
-          const blur = [0, 0, 0.25, 0.55, 0.85][distance] ?? 0.85;
-          const skewX = direction * distance * 0.55;
-          const depth = distance * 5;
-
-          return (
-            <div
-              key={optionValue}
-              aria-hidden="true"
-              className={`absolute left-0 top-1/2 flex h-9 w-full -translate-y-1/2 items-center justify-center text-center font-normal transition-[color,opacity,transform] duration-150 ${colorClass}`}
-              style={{
-                backfaceVisibility: 'hidden',
-                filter: blur > 0 ? `blur(${blur}px)` : undefined,
-                fontSize: PROFILE_PICKER_TEXT_SIZE,
-                opacity,
-                transform: [
-                  `translateY(${direction * offset}px)`,
-                  `rotateX(${rotateX}deg)`,
-                  `translateZ(${-depth}px)`,
-                  `skewX(${skewX}deg)`,
-                  `scaleY(${scaleY})`,
-                ].join(' '),
-                transformOrigin: 'center center',
-                zIndex: 30 - distance,
-              }}
-            >
-              {optionValue}
-              {suffix}
-            </div>
-          );
-        })}
-      </div>
-      <div
-        aria-label={suffix}
-        className="absolute inset-0 z-20 snap-y snap-mandatory overflow-y-auto opacity-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        ref={scrollRef}
-        role="listbox"
-        style={{
-          paddingBottom: PROFILE_PICKER_VERTICAL_PADDING,
-          paddingTop: PROFILE_PICKER_VERTICAL_PADDING,
-        }}
-        onScroll={handleScroll}
-      >
-        {values.map((optionValue) => (
-          <button
-            key={optionValue}
-            type="button"
-            aria-selected={optionValue === value}
-            className="flex h-[42px] w-full snap-center items-center justify-center"
-            role="option"
-            onClick={() => onChange(optionValue)}
-          >
-            {optionValue}
-            {suffix}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

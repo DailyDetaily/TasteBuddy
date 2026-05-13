@@ -264,6 +264,25 @@ export function findTasteExperience(experienceId: string | null | undefined) {
   );
 }
 
+function getSelectedExperienceIds(
+  response: { selectedExperienceId?: string | null; selectedExperienceIds?: string[] } | undefined,
+) {
+  const ids = [
+    ...(response?.selectedExperienceIds ?? []),
+    response?.selectedExperienceId ?? null,
+  ].filter((experienceId): experienceId is string => Boolean(experienceId));
+
+  return [...new Set(ids)].slice(0, 3);
+}
+
+function getSelectedTasteExperiences(
+  response: { selectedExperienceId?: string | null; selectedExperienceIds?: string[] } | undefined,
+) {
+  return getSelectedExperienceIds(response)
+    .map((experienceId) => findTasteExperience(experienceId))
+    .filter((experience): experience is TasteExperienceWord => Boolean(experience));
+}
+
 function findClosestDishChoice(dish: DiningDishMetadata, experience: TasteExperienceWord) {
   const axisLabelById: Record<TasteAxisId, string> = {
     bitter: '쓴맛',
@@ -513,18 +532,20 @@ const tasteExperienceBubblePositions = baseTasteExperienceBubblePositions.map((p
   };
 });
 
-function getTasteExperienceBubbleRenderPositions(selectedExperienceId: string | null | undefined) {
-  const selectedPosition = tasteExperienceBubblePositions.find(
-    (position) => position.experience.id === selectedExperienceId,
+function getTasteExperienceBubbleRenderPositions(selectedExperienceIds: readonly string[]) {
+  const selectedIdSet = new Set(selectedExperienceIds);
+  const selectedPositions = tasteExperienceBubblePositions.filter((position) =>
+    selectedIdSet.has(position.experience.id),
   );
+  const primarySelectedPosition = selectedPositions[0];
 
-  if (!selectedPosition) {
+  if (!primarySelectedPosition) {
     return tasteExperienceBubblePositions;
   }
 
   const selectedRadiusDelta = (SELECTED_BUBBLE_SIZE - BUBBLE_SIZE) / 2;
   const expandedPositions = tasteExperienceBubblePositions.map((position) => {
-    const isSelected = position.experience.id === selectedExperienceId;
+    const isSelected = selectedIdSet.has(position.experience.id);
 
     if (isSelected) {
       return {
@@ -533,8 +554,14 @@ function getTasteExperienceBubbleRenderPositions(selectedExperienceId: string | 
       };
     }
 
-    const deltaX = position.x - selectedPosition.x;
-    const deltaY = position.y - selectedPosition.y;
+    const nearestSelectedPosition = selectedPositions.reduce((nearestPosition, selectedPosition) => {
+      const nearestDistance = Math.hypot(position.x - nearestPosition.x, position.y - nearestPosition.y);
+      const selectedDistance = Math.hypot(position.x - selectedPosition.x, position.y - selectedPosition.y);
+
+      return selectedDistance < nearestDistance ? selectedPosition : nearestPosition;
+    }, primarySelectedPosition);
+    const deltaX = position.x - nearestSelectedPosition.x;
+    const deltaY = position.y - nearestSelectedPosition.y;
     const distance = Math.hypot(deltaX, deltaY);
 
     if (distance <= 0) {
@@ -549,9 +576,6 @@ function getTasteExperienceBubbleRenderPositions(selectedExperienceId: string | 
   });
 
   const relaxedPositions = expandedPositions.map((position) => ({ ...position }));
-  const selectedIndex = relaxedPositions.findIndex(
-    (position) => position.experience.id === selectedExperienceId,
-  );
 
   for (let iteration = 0; iteration < BUBBLE_RELAXATION_ITERATIONS; iteration += 1) {
     for (let leftIndex = 0; leftIndex < relaxedPositions.length; leftIndex += 1) {
@@ -572,18 +596,6 @@ function getTasteExperienceBubbleRenderPositions(selectedExperienceId: string | 
         const offsetX = (deltaX / distance) * overlap;
         const offsetY = (deltaY / distance) * overlap;
 
-        if (leftIndex === selectedIndex) {
-          rightPosition.x += offsetX;
-          rightPosition.y += offsetY;
-          continue;
-        }
-
-        if (rightIndex === selectedIndex) {
-          leftPosition.x -= offsetX;
-          leftPosition.y -= offsetY;
-          continue;
-        }
-
         leftPosition.x -= offsetX / 2;
         leftPosition.y -= offsetY / 2;
         rightPosition.x += offsetX / 2;
@@ -595,7 +607,13 @@ function getTasteExperienceBubbleRenderPositions(selectedExperienceId: string | 
   return relaxedPositions;
 }
 
-function BubbleLabel({ isSelected, label }: { isSelected: boolean; label: string }) {
+function BubbleLabel({
+  isSelected,
+  label,
+}: {
+  isSelected: boolean;
+  label: string;
+}) {
   const words = label.split(' ');
   const shouldOpticallyCenterMultilineLabel = words.length > 1;
 
@@ -619,11 +637,13 @@ function BubbleLabel({ isSelected, label }: { isSelected: boolean; label: string
 function TasteExperienceMap({
   focusExperienceId,
   onConfirm,
-  selectedExperienceId,
+  onToggleSelection,
+  selectedExperienceIds,
 }: {
   focusExperienceId?: string | null;
   onConfirm: (experience: TasteExperienceWord) => void;
-  selectedExperienceId: string | null | undefined;
+  onToggleSelection?: (experience: TasteExperienceWord) => void;
+  selectedExperienceIds: readonly string[];
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const hasExploredMapRef = useRef(false);
@@ -643,19 +663,31 @@ function TasteExperienceMap({
   } | null>(null);
   const settleAnimationFrameRef = useRef<number | null>(null);
   const [draftSelectedExperienceId, setDraftSelectedExperienceId] = useState<string | null>(
-    selectedExperienceId ?? null,
+    selectedExperienceIds[0] ?? null,
   );
   const [mapZoom, setMapZoom] = useState(1);
   const selectedExperienceIdRef = useRef<string | null | undefined>(draftSelectedExperienceId);
   const resolvedSelectedExperience = findTasteExperience(draftSelectedExperienceId);
   const resolvedSelectedExperienceId = resolvedSelectedExperience?.id ?? draftSelectedExperienceId;
+  const selectedExperienceIdSet = new Set(selectedExperienceIds);
+  const enlargedExperienceIds =
+    selectedExperienceIds.length >= 3
+      ? [...selectedExperienceIds]
+      : [
+          ...selectedExperienceIds,
+          ...(resolvedSelectedExperienceId ? [resolvedSelectedExperienceId] : []),
+        ];
 
   useEffect(() => {
-    const nextSelectedExperienceId = selectedExperienceId ?? null;
+    const nextSelectedExperienceId = selectedExperienceIds[0] ?? null;
+
+    if (selectedExperienceIdRef.current && selectedExperienceIds.includes(selectedExperienceIdRef.current)) {
+      return;
+    }
 
     selectedExperienceIdRef.current = nextSelectedExperienceId;
     setDraftSelectedExperienceId(nextSelectedExperienceId);
-  }, [selectedExperienceId]);
+  }, [selectedExperienceIds]);
 
   useEffect(() => {
     mapZoomRef.current = mapZoom;
@@ -958,7 +990,7 @@ function TasteExperienceMap({
 
   const selectedExperience = resolvedSelectedExperience;
   const renderedBubblePositions = getTasteExperienceBubbleRenderPositions(
-    resolvedSelectedExperienceId,
+    enlargedExperienceIds,
   );
   const selectedBubblePosition = renderedBubblePositions.find(
     (position) => position.experience.id === resolvedSelectedExperienceId,
@@ -998,7 +1030,8 @@ function TasteExperienceMap({
             }}
           >
             {renderedBubblePositions.map(({ experience, size, x, y }) => {
-              const isSelected = resolvedSelectedExperienceId === experience.id;
+              const isSelected = enlargedExperienceIds.includes(experience.id);
+              const priorityIndex = selectedExperienceIds.indexOf(experience.id);
               const distanceFromSelected = selectedBubblePosition
                 ? Math.hypot(x - selectedBubblePosition.x, y - selectedBubblePosition.y)
                 : undefined;
@@ -1007,8 +1040,14 @@ function TasteExperienceMap({
                 <div
                   key={experience.id}
                   aria-label={experience.label}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    selectedExperienceIdRef.current = experience.id;
+                    setDraftSelectedExperienceId(experience.id);
+                    onToggleSelection?.(experience);
+                  }}
                   className={cn(
-                    'pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-full px-4 text-center text-[14px] font-bold leading-tight transition-all duration-300 ease-out',
+                    'pointer-events-auto absolute flex -translate-x-1/2 -translate-y-1/2 cursor-pointer select-none items-center justify-center rounded-full px-4 text-center text-[14px] font-bold leading-tight transition-all duration-300 ease-out',
                     isSelected ? 'z-[4] border shadow-[0_18px_46px_rgba(0,0,0,0.12)]' : 'z-[3] border-0 shadow-none',
                   )}
                   style={{
@@ -1022,7 +1061,15 @@ function TasteExperienceMap({
                     width: size,
                   }}
                 >
-                  <BubbleLabel isSelected={isSelected} label={experience.label} />
+                  {priorityIndex >= 0 ? (
+                    <span className="absolute left-1/2 top-[34%] -translate-x-1/2 text-[10px] font-semibold leading-none opacity-70">
+                      {priorityIndex === 0 ? '메인 미각' : '보조 미각'}
+                    </span>
+                  ) : null}
+                  <BubbleLabel
+                    isSelected={isSelected}
+                    label={experience.label}
+                  />
                 </div>
               );
             })}
@@ -1044,12 +1091,22 @@ function TasteExperienceMap({
                 <p className="mt-1 text-[14px] leading-snug text-[var(--tb-color-text-subtle)]">
                   {selectedExperience.description}
                 </p>
+                <TasteSelectionPriorityGuide
+                  activeExperienceId={selectedExperience.id}
+                  selectedExperienceIds={selectedExperienceIds}
+                />
               </div>
               <button
                 type="button"
                 onClick={() => onConfirm(selectedExperience)}
                 className="pointer-events-auto ml-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] transition hover:opacity-90"
-                aria-label="선택한 미각 인상으로 계속하기"
+                aria-label={
+                  selectedExperienceIdSet.has(selectedExperience.id)
+                    ? '현재 미각 인상 선택 취소하기'
+                    : selectedExperienceIds.length >= 3
+                    ? '선택한 미각 인상으로 계속하기'
+                    : '현재 미각 인상 선택하기'
+                }
               >
                 <ArrowRight size={ICON_TOKENS.size.md} strokeWidth={2} />
               </button>
@@ -1057,6 +1114,55 @@ function TasteExperienceMap({
           </SectionCard>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function TasteSelectionPriorityGuide({
+  activeExperienceId,
+  selectedExperienceIds,
+}: {
+  activeExperienceId: string;
+  selectedExperienceIds: readonly string[];
+}) {
+  const activeSlotIndex = Math.min(selectedExperienceIds.length, 2);
+  const activeLabel = selectedExperienceIds.length === 0
+    ? '메인 미각 선택'
+    : selectedExperienceIds.length < 3
+      ? '보조 미각 선택'
+      : '선택한 미각 인상';
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+      {[0, 1, 2].map((slotIndex) => {
+        const slotExperience = findTasteExperience(selectedExperienceIds[slotIndex]);
+        const isFilled = Boolean(slotExperience);
+        const isActiveSlot = slotIndex === activeSlotIndex;
+        const slotColor = slotExperience
+          ? `var(--tb-taste-${slotExperience.axis}-main)`
+          : 'var(--tb-color-border-default)';
+
+        return (
+          <span
+            key={slotIndex}
+            className="inline-flex min-h-4 items-center gap-1.5"
+          >
+            <span
+              aria-hidden="true"
+              className="h-3 w-3 shrink-0 rounded-full border"
+              style={{
+                backgroundColor: isFilled ? slotColor : 'transparent',
+                borderColor: slotColor,
+              }}
+            />
+            {isActiveSlot ? (
+              <span className="whitespace-nowrap text-[11px] font-semibold leading-none text-[var(--tb-color-text-faint)]">
+                {activeLabel}
+              </span>
+            ) : null}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -1174,12 +1280,14 @@ export function DiningFeedbackScreen({
     rating: 3,
     selectedChoiceId: null,
     selectedExperienceId: null,
+    selectedExperienceIds: [],
   };
   const activeChoice = getSelectedChoice(activeDish, draft);
-  const activeExperienceId = activeResponse.selectedExperienceId;
-  const activeExperience = findTasteExperience(activeExperienceId);
+  const activeExperienceIds = getSelectedExperienceIds(activeResponse);
+  const activeExperiences = getSelectedTasteExperiences(activeResponse);
+  const activeExperience = activeExperiences[0] ?? null;
   const completedDishCount = scenario.dishes.filter(
-    (dish) => draft.dishResponses[dish.id]?.selectedExperienceId,
+    (dish) => getSelectedExperienceIds(draft.dishResponses[dish.id]).length > 0,
   ).length;
   const selectedDish = selectedDishIndex === null ? null : scenario.dishes[selectedDishIndex] ?? null;
 
@@ -1192,15 +1300,21 @@ export function DiningFeedbackScreen({
   }, [feedbackStep, onMapViewChange]);
 
   const selectTasteExperience = (experience: TasteExperienceWord) => {
-    const closestChoice = findClosestDishChoice(activeDish, experience);
-    const nextRating = getExperienceMappedRating(experience);
+    const currentExperienceIds = getSelectedExperienceIds(activeResponse);
+    const nextExperienceIds = currentExperienceIds.includes(experience.id)
+      ? currentExperienceIds.filter((experienceId) => experienceId !== experience.id)
+      : [...currentExperienceIds, experience.id].slice(0, 3);
+    const mainExperience = findTasteExperience(nextExperienceIds[0]);
+    const closestChoice = mainExperience ? findClosestDishChoice(activeDish, mainExperience) : null;
+    const nextRating = mainExperience ? getExperienceMappedRating(mainExperience) : 3;
     const nextDishResponses = {
       ...draft.dishResponses,
       [activeDish.id]: {
         ...activeResponse,
         rating: nextRating,
-        selectedChoiceId: closestChoice?.id ?? activeResponse.selectedChoiceId,
-        selectedExperienceId: experience.id,
+        selectedChoiceId: closestChoice?.id ?? (nextExperienceIds.length > 0 ? activeResponse.selectedChoiceId : null),
+        selectedExperienceId: nextExperienceIds[0] ?? null,
+        selectedExperienceIds: nextExperienceIds,
       },
     };
     const ratingValues = Object.values(nextDishResponses).map((response) => response.rating);
@@ -1213,6 +1327,8 @@ export function DiningFeedbackScreen({
       overallRating: Math.round(averageRating),
       returnIntent: averageRating >= 4 ? 'yes' : averageRating <= 2.5 ? 'no' : 'maybe',
     });
+
+    return nextExperienceIds;
   };
 
   const moveToTasteCheckin = () => {
@@ -1265,11 +1381,17 @@ export function DiningFeedbackScreen({
 
         <TasteExperienceMap
           focusExperienceId={searchedExperienceId}
-          selectedExperienceId={activeExperienceId}
-          onConfirm={(experience) => {
+          selectedExperienceIds={activeExperienceIds}
+          onToggleSelection={(experience) => {
             selectTasteExperience(experience);
             setSearchedExperienceId(null);
-            setFeedbackStep('menu-select');
+          }}
+          onConfirm={(experience) => {
+            const nextExperienceIds = selectTasteExperience(experience);
+            setSearchedExperienceId(null);
+            if (nextExperienceIds.length >= 3) {
+              setFeedbackStep('menu-select');
+            }
           }}
         />
         <TasteWordSearch
@@ -1335,9 +1457,8 @@ export function DiningFeedbackScreen({
               <div className="flex flex-col gap-3">
                 {scenario.dishes.map((dish, index) => {
                   const isSelected = selectedDishIndex === index;
-                  const recordedExperience = findTasteExperience(
-                    draft.dishResponses[dish.id]?.selectedExperienceId,
-                  );
+                  const recordedExperiences = getSelectedTasteExperiences(draft.dishResponses[dish.id]);
+                  const recordedExperience = recordedExperiences[0] ?? null;
 
                   return (
                     <SelectionCard
@@ -1350,7 +1471,9 @@ export function DiningFeedbackScreen({
                       trailing={
                         recordedExperience ? (
                           <span className="rounded-full bg-[var(--tb-color-surface-muted)] px-2 py-1 text-[10px] font-semibold text-[var(--tb-color-text-muted)]">
-                            {recordedExperience.label} 기록됨
+                            {recordedExperiences.length > 1
+                              ? `${recordedExperience.label} 외 ${recordedExperiences.length - 1}개 기록됨`
+                              : `${recordedExperience.label} 기록됨`}
                           </span>
                         ) : null
                       }
@@ -1380,7 +1503,8 @@ export function DiningFeedbackScreen({
                 </div>
 
                 <TasteExperienceMap
-                  selectedExperienceId={activeExperienceId}
+                  selectedExperienceIds={activeExperienceIds}
+                  onToggleSelection={selectTasteExperience}
                   onConfirm={selectTasteExperience}
                 />
 

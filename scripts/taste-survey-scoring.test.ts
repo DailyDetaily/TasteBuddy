@@ -113,16 +113,16 @@ function assertClose(actual: number, expected: number, message: string) {
 
 {
   assert.equal(TASTE_SURVEY_CONTEXT_STEPS.length, 3);
-  assert.equal(TASTE_SURVEY_CONTEXT_STEPS[0].options[0].value, 'teen');
+  assert.equal(TASTE_SURVEY_CONTEXT_STEPS[0].options.length, 0);
   assert.deepEqual(
     TASTE_SURVEY_CONTEXT_STEPS.map((step) => step.id),
-    ['ageRange', 'sexContext', 'smokingStatus'],
+    ['birthDate', 'sexContext', 'smokingStatus'],
   );
 }
 
 {
   const respondentContext: TasteSurveyRespondentContext = {
-    ageRange: '25_34',
+    birthDate: '1996-07-10',
     sexContext: 'prefer_not_to_say',
     smokingStatus: 'current',
   };
@@ -135,7 +135,7 @@ function assertClose(actual: number, expected: number, message: string) {
   });
 
   assert.equal(rawPayload.measurement_flow, 'taste_survey');
-  assert.equal(rawPayload.respondent_context.age_range, '25_34');
+  assert.equal(rawPayload.respondent_context.birth_date, '1996-07-10');
   assert.equal(rawPayload.respondent_context.sex_context, 'prefer_not_to_say');
   assert.equal(rawPayload.respondent_context.smoking_status, 'current');
   assert.equal(rawPayload.response_count, responses.length);
@@ -150,7 +150,7 @@ function assertClose(actual: number, expected: number, message: string) {
     responses,
   });
 
-  assert.equal(rawPayload.respondent_context.age_range, null);
+  assert.equal(rawPayload.respondent_context.birth_date, null);
   assert.equal(rawPayload.respondent_context.sex_context, null);
   assert.equal(rawPayload.respondent_context.smoking_status, null);
   assert.equal(rawPayload.response_count, responses.length);
@@ -158,13 +158,13 @@ function assertClose(actual: number, expected: number, message: string) {
 
 {
   const sanitized = sanitizeTasteSurveyRespondentContext({
-    ageRange: '35_44',
+    birthDate: '1990-03-14',
     sexContext: 'unknown',
     smokingStatus: 'former',
   });
 
   assert.deepEqual(sanitized, {
-    ageRange: '35_44',
+    birthDate: '1990-03-14',
     smokingStatus: 'former',
   });
 }

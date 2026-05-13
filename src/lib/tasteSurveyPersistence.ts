@@ -1,23 +1,11 @@
 import { TASTE_SURVEY_INSTRUMENT } from '../constants/tasteSurveyConfig';
 import type {
-  TasteSurveyAgeRange,
   TasteSurveyCompatibleResult,
   TasteSurveyRespondentContext,
   TasteSurveyResponse,
   TasteSurveySexContext,
   TasteSurveySmokingStatus,
 } from '../types/tasteSurvey';
-
-const AGE_RANGE_VALUES = new Set<TasteSurveyAgeRange>([
-  'teen',
-  '18_24',
-  '25_34',
-  '35_44',
-  '45_54',
-  '55_64',
-  '65_plus',
-  'prefer_not_to_say',
-]);
 
 const SEX_CONTEXT_VALUES = new Set<TasteSurveySexContext>([
   'female',
@@ -33,6 +21,8 @@ const SMOKING_STATUS_VALUES = new Set<TasteSurveySmokingStatus>([
   'prefer_not_to_say',
 ]);
 
+const BIRTH_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
 export function sanitizeTasteSurveyRespondentContext(
   value: unknown,
 ): TasteSurveyRespondentContext {
@@ -43,8 +33,8 @@ export function sanitizeTasteSurveyRespondentContext(
   const context = value as Partial<TasteSurveyRespondentContext>;
   const sanitized: TasteSurveyRespondentContext = {};
 
-  if (context.ageRange && AGE_RANGE_VALUES.has(context.ageRange)) {
-    sanitized.ageRange = context.ageRange;
+  if (context.birthDate && BIRTH_DATE_PATTERN.test(context.birthDate)) {
+    sanitized.birthDate = context.birthDate;
   }
 
   if (context.sexContext && SEX_CONTEXT_VALUES.has(context.sexContext)) {
@@ -61,14 +51,14 @@ export function sanitizeTasteSurveyRespondentContext(
 export function hasTasteSurveyRespondentContext(
   context: TasteSurveyRespondentContext,
 ) {
-  return Boolean(context.ageRange || context.sexContext || context.smokingStatus);
+  return Boolean(context.birthDate || context.sexContext || context.smokingStatus);
 }
 
 export function serializeTasteSurveyRespondentContext(
   context: TasteSurveyRespondentContext,
 ) {
   return {
-    age_range: context.ageRange ?? null,
+    birth_date: context.birthDate ?? null,
     sex_context: context.sexContext ?? null,
     smoking_status: context.smokingStatus ?? null,
   };

@@ -32,6 +32,7 @@ export interface DiningDishFeedbackDraft {
   rating: number;
   selectedChoiceId: string | null;
   selectedExperienceId?: string | null;
+  selectedExperienceIds?: string[];
 }
 
 export interface DiningFeedbackDraft {
@@ -235,6 +236,7 @@ export function createDiningFeedbackDraft(
         rating: 3,
         selectedChoiceId: dish.feedbackChoices[0]?.id ?? null,
         selectedExperienceId: null,
+        selectedExperienceIds: [],
       };
       return responses;
     },
@@ -257,21 +259,25 @@ export function createDiningFeedbackDraft(
         rating: 4,
         selectedChoiceId: 'starter-balanced',
         selectedExperienceId: 'sour-2',
+        selectedExperienceIds: ['sour-2'],
       },
       'dessert-black-sesame': {
         rating: 2,
         selectedChoiceId: 'sweet-front',
         selectedExperienceId: 'sweet-3',
+        selectedExperienceIds: ['sweet-3'],
       },
       'fish-kinmedai': {
         rating: 3,
         selectedChoiceId: 'butter-too-long',
         selectedExperienceId: 'fat-3',
+        selectedExperienceIds: ['fat-3'],
       },
       'main-hanwoo': {
         rating: 3,
         selectedChoiceId: 'umami-flat',
         selectedExperienceId: 'umami-1',
+        selectedExperienceIds: ['umami-1'],
       },
     },
     overallComment:

@@ -225,13 +225,19 @@ function buildDishFeedbackItems({
       .map<DishFeedbackItem | null>((dish) => {
         const response = draft.dishResponses[dish.id];
 
-        if (!response?.selectedChoiceId && !response?.selectedExperienceId) {
+        const selectedExperienceIds = [
+          ...(response?.selectedExperienceIds ?? []),
+          response?.selectedExperienceId ?? null,
+        ].filter((experienceId): experienceId is string => Boolean(experienceId));
+        const mainSelectedExperienceId = [...new Set(selectedExperienceIds)][0] ?? null;
+
+        if (!response?.selectedChoiceId && !mainSelectedExperienceId) {
           return null;
         }
 
         const selectedChoice =
           dish.feedbackChoices.find((choice) => choice.id === response.selectedChoiceId) ?? null;
-        const selectedExperience = findTasteExperience(response.selectedExperienceId);
+        const selectedExperience = findTasteExperience(mainSelectedExperienceId);
         const tasteTags = buildDishTasteTags({
           affectedTastes: selectedChoice?.affectedTastes ?? [],
           selectedExperience,
@@ -831,7 +837,10 @@ export default function ReservationPage({
                 chef_name: selectedReservation.chef,
                 dish_count: selectedScenario.dishes.length,
                 completed_dish_count: Object.values(nextDraft.dishResponses).filter(
-                  (response) => response.selectedChoiceId || response.selectedExperienceId,
+                  (response) =>
+                    response.selectedChoiceId ||
+                    response.selectedExperienceId ||
+                    (response.selectedExperienceIds?.length ?? 0) > 0,
                 ).length,
               });
               setFeedbackByReservationId((current) => ({
@@ -844,7 +853,10 @@ export default function ReservationPage({
           onSubmit={async () => {
             const nextDraft = activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario);
             const completedDishCount = Object.values(nextDraft.dishResponses).filter(
-              (response) => response.selectedChoiceId || response.selectedExperienceId,
+              (response) =>
+                response.selectedChoiceId ||
+                response.selectedExperienceId ||
+                (response.selectedExperienceIds?.length ?? 0) > 0,
             ).length;
 
             trackEvent('dining_feedback_submit', {

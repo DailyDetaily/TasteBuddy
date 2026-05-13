@@ -1,5 +1,4 @@
 import type {
-  TasteSurveyAgeRange,
   TasteSurveyContextFieldId,
   TasteSurveyInstrumentMetadata,
   TasteSurveyLikertScaleConfig,
@@ -49,22 +48,12 @@ export const TASTE_SURVEY_CONTEXT_COPY = {
   title: '설문 해석에 참고할 정보',
   description:
     '이 정보는 미각 설문을 더 안정적으로 해석하기 위한 참고값이에요. 진단이나 평가 목적이 아니며, 답변하지 않아도 설문을 계속할 수 있어요.',
-  ageRangeTitle: '연령대',
+  birthDateTitle: '생년월일',
   sexContextTitle: '성별 관련 정보',
   smokingStatusTitle: '흡연 상태',
 } as const;
 
 export const TASTE_SURVEY_CONTEXT_OPTIONS = {
-  ageRange: [
-    { value: 'teen', label: '10대' },
-    { value: '18_24', label: '18-24' },
-    { value: '25_34', label: '25-34' },
-    { value: '35_44', label: '35-44' },
-    { value: '45_54', label: '45-54' },
-    { value: '55_64', label: '55-64' },
-    { value: '65_plus', label: '65+' },
-    { value: 'prefer_not_to_say', label: '답변하지 않음' },
-  ] as const satisfies readonly { label: string; value: TasteSurveyAgeRange }[],
   sexContext: [
     { value: 'female', label: '여성' },
     { value: 'male', label: '남성' },
@@ -81,11 +70,11 @@ export const TASTE_SURVEY_CONTEXT_OPTIONS = {
 
 export const TASTE_SURVEY_CONTEXT_STEPS = [
   {
-    id: 'ageRange',
-    badgeLabel: '연령대',
-    title: '연령대를 선택해주세요.',
-    description: '비슷한 시기의 감각 반응을 더 안정적으로 해석하기 위한 참고값이에요.',
-    options: TASTE_SURVEY_CONTEXT_OPTIONS.ageRange,
+    id: 'birthDate',
+    badgeLabel: '생년월일',
+    title: '생년월일을 선택해주세요.',
+    description: '선택한 날짜는 미각 응답을 더 안정적으로 해석하기 위한 참고값으로만 사용됩니다.',
+    options: [],
   },
   {
     id: 'sexContext',

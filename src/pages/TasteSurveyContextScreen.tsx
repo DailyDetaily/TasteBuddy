@@ -1,5 +1,13 @@
 import { ChevronLeft as ChevronLeftIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
+import BirthDatePicker, {
+  formatBirthDate,
+  getDaysInMonth,
+  getDefaultBirthDateYears,
+  parseBirthDate,
+  type BirthDateParts,
+} from '../components/system/BirthDatePicker';
 import FlowStepCta from '../components/system/FlowStepCta';
 import OutlineBadge from '../components/system/OutlineBadge';
 import SelectionCard from '../components/system/SelectionCard';
@@ -10,7 +18,6 @@ import {
 } from '../constants/tasteSurveyConfig';
 import { ICON_TOKENS } from '../constants/designTokens';
 import type {
-  TasteSurveyAgeRange,
   TasteSurveyContextFieldId,
   TasteSurveyRespondentContext,
   TasteSurveySexContext,
@@ -18,15 +25,16 @@ import type {
 } from '../types/tasteSurvey';
 
 interface TasteSurveyContextScreenProps {
+  birthDate: string | null;
   context: TasteSurveyRespondentContext;
   currentIndex: number;
   onBack: () => void;
+  onBirthDateChange: (birthDate: string) => void;
   onChange: (context: TasteSurveyRespondentContext) => void;
   onContinue: () => void;
 }
 
 type ContextOptionValue =
-  | TasteSurveyAgeRange
   | TasteSurveySexContext
   | TasteSurveySmokingStatus;
 
@@ -42,10 +50,6 @@ function getNextContext(
   fieldId: TasteSurveyContextFieldId,
   value: ContextOptionValue,
 ): TasteSurveyRespondentContext {
-  if (fieldId === 'ageRange') {
-    return { ...context, ageRange: value as TasteSurveyAgeRange };
-  }
-
   if (fieldId === 'sexContext') {
     return { ...context, sexContext: value as TasteSurveySexContext };
   }
@@ -54,9 +58,11 @@ function getNextContext(
 }
 
 export default function TasteSurveyContextScreen({
+  birthDate,
   context,
   currentIndex,
   onBack,
+  onBirthDateChange,
   onChange,
   onContinue,
 }: TasteSurveyContextScreenProps) {
@@ -67,12 +73,49 @@ export default function TasteSurveyContextScreen({
   const step = TASTE_SURVEY_CONTEXT_STEPS[safeIndex];
   const selectedValue = getSelectedValue(context, step.id);
   const isLast = safeIndex === TASTE_SURVEY_CONTEXT_STEPS.length - 1;
+  const [draftBirthDateParts, setDraftBirthDateParts] = useState<BirthDateParts>(
+    () => parseBirthDate(birthDate),
+  );
+  const years = useMemo(getDefaultBirthDateYears, []);
+  const months = useMemo(() => Array.from({ length: 12 }, (_, index) => index + 1), []);
+  const days = useMemo(
+    () =>
+      Array.from(
+        { length: getDaysInMonth(draftBirthDateParts.year, draftBirthDateParts.month) },
+        (_, index) => index + 1,
+      ),
+    [draftBirthDateParts.month, draftBirthDateParts.year],
+  );
+
+  useEffect(() => {
+    setDraftBirthDateParts(parseBirthDate(birthDate));
+  }, [birthDate]);
+
+  const updateBirthDatePart = (field: keyof BirthDateParts, value: number) => {
+    setDraftBirthDateParts((current) => {
+      const next = { ...current, [field]: value };
+      const maxDay = getDaysInMonth(next.year, next.month);
+
+      if (next.day > maxDay) {
+        next.day = maxDay;
+      }
+
+      const nextBirthDate = formatBirthDate(next);
+      onBirthDateChange(nextBirthDate);
+      onChange({
+        ...context,
+        birthDate: nextBirthDate,
+      });
+
+      return next;
+    });
+  };
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-focus)] font-sans">
       <header className="z-20 flex w-full shrink-0 justify-center">
         <div
-          className="w-full max-w-[1440px] border-b border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-overlay)] backdrop-blur-md"
+          className="w-full max-w-[1440px] border-b border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-bg-focus)]"
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
           <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">
@@ -127,21 +170,35 @@ export default function TasteSurveyContextScreen({
             </p>
           </div>
 
-          <div className="tb-card-stack">
-            {step.options.map((option) => (
-              <SelectionCard
-                key={option.value}
-                className="min-h-[44px] items-center rounded-[20px]"
-                indicator="checkbox"
-                selected={selectedValue === option.value}
-                singleLine
-                title={option.label}
-                onClick={() => {
-                  onChange(getNextContext(context, step.id, option.value));
-                }}
+          {step.id === 'birthDate' ? (
+            <div className="rounded-[24px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-bg-focus)] px-4 pb-4 pt-4">
+              <BirthDatePicker
+                days={days}
+                months={months}
+                parts={draftBirthDateParts}
+                showConfirmButton={false}
+                title="생년월일"
+                years={years}
+                onChange={updateBirthDatePart}
               />
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="tb-card-stack">
+              {step.options.map((option) => (
+                <SelectionCard
+                  key={option.value}
+                  className="min-h-[44px] items-center rounded-[20px]"
+                  indicator="checkbox"
+                  selected={selectedValue === option.value}
+                  singleLine
+                  title={option.label}
+                  onClick={() => {
+                    onChange(getNextContext(context, step.id, option.value));
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
 

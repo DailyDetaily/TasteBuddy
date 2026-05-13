@@ -2,7 +2,6 @@ import { ChevronRight } from 'lucide-react';
 import type { CSSProperties } from 'react';
 
 import { PREFERENCE_INTAKE_QUESTIONS, type PreferenceIntakeProfile } from '../constants/preferenceIntakeData';
-import { TASTE_SURVEY_CONTEXT_OPTIONS } from '../constants/tasteSurveyConfig';
 import type { TasteSurveyRespondentContext } from '../types/tasteSurvey';
 
 interface ProfileIdentitySheetContentProps {
@@ -24,17 +23,6 @@ interface ProfileIdentitySheetContentProps {
 const dietaryRestrictionQuestion = PREFERENCE_INTAKE_QUESTIONS.find(
   (question) => question.id === 'dietaryRestrictions',
 );
-
-function resolveContextLabel<Field extends keyof typeof TASTE_SURVEY_CONTEXT_OPTIONS>(
-  field: Field,
-  value: TasteSurveyRespondentContext[Field] | undefined,
-) {
-  if (!value) {
-    return null;
-  }
-
-  return TASTE_SURVEY_CONTEXT_OPTIONS[field].find((option) => option.value === value)?.label ?? null;
-}
 
 function resolveCompactSexLabel(value: TasteSurveyRespondentContext['sexContext']) {
   if (value === 'male') {
@@ -120,7 +108,8 @@ function createReferenceSummary(
   const dietaryRestrictionCount = getDietaryRestrictionCount(profile);
   const dietaryRestrictionLabel =
     dietaryRestrictionCount > 0 ? `식이제한 ${dietaryRestrictionCount}개` : '식이제한 없음';
-  const ageLabel = getAgeLabelFromBirthDate(birthDate) ?? resolveContextLabel('ageRange', context.ageRange);
+  const birthDateLabel = birthDate ?? context.birthDate ?? null;
+  const ageLabel = getAgeLabelFromBirthDate(birthDateLabel);
   const sexLabel = resolveCompactSexLabel(context.sexContext);
   const smokingLabel = resolveCompactSmokingLabel(context.smokingStatus);
   const enteredLabels = [
@@ -130,7 +119,7 @@ function createReferenceSummary(
     dietaryRestrictionLabel,
   ].filter(Boolean);
   const missingLabels = [
-    ageLabel ? null : '연령',
+    ageLabel ? null : '생년월일',
     context.sexContext ? null : '성별',
     context.smokingStatus ? null : '흡연유무',
   ].filter(Boolean);

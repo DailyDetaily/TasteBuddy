@@ -395,7 +395,7 @@ function createTasteSurveyDraft(
 function hasCompleteTasteSurveyRespondentContext(
   context: TasteSurveyRespondentContext,
 ) {
-  return Boolean(context.ageRange && context.sexContext && context.smokingStatus);
+  return Boolean(context.birthDate && context.sexContext && context.smokingStatus);
 }
 
 function getTasteSurveyResponseList(
@@ -1603,15 +1603,18 @@ function MainApp() {
     setIsTasteSurveyIntroSheetOpen(true);
   };
 
-  const handleStartPreferenceIntakeFromTasteSurveyIntro = () => {
-    trackEvent('preference_intake_open', { source: 'taste_survey_intro_sheet' });
-    setIsTasteSurveyIntroSheetOpen(false);
-    setIsPreferenceIntakeSheetOpen(true);
+  const handleStartTasteSurveyFromIntro = () => {
+    trackEvent('taste_survey_intro_start', { source: 'taste_survey_intro_sheet' });
+    handleOpenTasteSurveySheetFlow(true, 'context');
   };
 
-  const handleOpenTasteSurveySheetFlow = (shouldClearResponses = false) => {
+  const handleOpenTasteSurveySheetFlow = (
+    shouldClearResponses = false,
+    initialStep: TasteSurveyFlowStep = 'intro',
+  ) => {
     trackEvent('taste_survey_sheet_open', { should_clear_responses: shouldClearResponses });
     resetTasteSurveyFlow(shouldClearResponses);
+    setTasteSurveyFlowStep(initialStep);
     setIsTasteSurveyIntroSheetOpen(false);
     setIsPreferenceIntakeSheetOpen(false);
     setIsTasteSurveySheetOpen(true);
@@ -1623,7 +1626,7 @@ function MainApp() {
     });
     setLatestPreferenceIntakeProfile(profile);
     setIsPreferenceIntakeSheetOpen(false);
-    handleOpenTasteSurveySheetFlow(true);
+    handleOpenTasteSurveySheetFlow(true, 'context');
   };
 
   const handleSkipPreferenceIntakeSheet = () => {
@@ -2147,9 +2150,11 @@ function MainApp() {
         )}
         {appState === 'calibration' && tasteSurveyFlowStep === 'context' && (
           <TasteSurveyContextScreen
+            birthDate={profileBirthDate ?? tasteSurveyRespondentContext.birthDate ?? null}
             context={tasteSurveyRespondentContext}
             currentIndex={currentSurveyContextIndex}
             onBack={handleBackFromTasteSurveyContext}
+            onBirthDateChange={setProfileBirthDate}
             onChange={handleChangeTasteSurveyRespondentContext}
             onContinue={handleNextTasteSurveyContext}
           />
@@ -2677,7 +2682,7 @@ function MainApp() {
               setIsProfileSetupSheetOpen(true);
             }}
             onReuseContext={handleSkipPreferenceIntakeSheet}
-            onStart={handleStartPreferenceIntakeFromTasteSurveyIntro}
+            onStart={handleStartTasteSurveyFromIntro}
             reuseContextLabel="건너뛰기"
           />
         </BottomSheetShell>
@@ -2713,7 +2718,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName={`${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-page)]`}
+          contentClassName={`${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-focus)]`}
           bodyClassName="p-0"
         >
           {tasteSurveyFlowStep === 'intro' && (
@@ -2776,9 +2781,11 @@ function MainApp() {
           )}
           {tasteSurveyFlowStep === 'context' && (
             <TasteSurveyContextScreen
+              birthDate={profileBirthDate ?? tasteSurveyRespondentContext.birthDate ?? null}
               context={tasteSurveyRespondentContext}
               currentIndex={currentSurveyContextIndex}
               onBack={handleBackFromTasteSurveyContext}
+              onBirthDateChange={setProfileBirthDate}
               onChange={handleChangeTasteSurveyRespondentContext}
               onContinue={handleNextTasteSurveyContext}
             />
