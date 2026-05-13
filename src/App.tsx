@@ -123,7 +123,7 @@ import {
   hasTasteSurveyRespondentContext,
   sanitizeTasteSurveyRespondentContext,
 } from './lib/tasteSurveyPersistence';
-import { trackEvent, trackPageView } from './lib/analytics';
+import { initializeAnalytics, trackEvent, trackPageView } from './lib/analytics';
 import type {
   TasteSurveyCompatibleResult,
   TasteSurveyLikertValue,
@@ -170,6 +170,7 @@ const BACKGROUND_CARD_TRANSITION = [
   `border-radius ${MOTION_TOKENS.durationMs.slowest}ms ${MOTION_TOKENS.easing.entrance}`,
   `box-shadow ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
 ].join(', ');
+const VIEWPORT_HEIGHT_CSS_VARIABLE = '--tb-viewport-height';
 
 const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v5';
 const LEGACY_USER_STATE_STORAGE_KEYS = [
@@ -242,6 +243,14 @@ function isTasteSurveyResponse(value: unknown): value is TasteSurveyResponse {
     typeof response.uncertain === 'boolean' &&
     (response.selectedValue === null || isTasteSurveyLikertValue(response.selectedValue))
   );
+}
+
+function getVisibleViewportHeight() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  return window.visualViewport?.height ?? window.innerHeight;
 }
 
 function sanitizeTasteSurveyResponses(value: unknown) {
@@ -939,6 +948,39 @@ function MainApp() {
     () => createTasteProfileAvatarStyle(latestTasteMeasurementSnapshot),
     [latestTasteMeasurementSnapshot],
   );
+
+  useEffect(() => {
+    initializeAnalytics();
+  }, []);
+
+  useEffect(() => {
+    const rootElement = document.documentElement;
+
+    const syncViewportHeight = () => {
+      const viewportHeight = getVisibleViewportHeight();
+
+      if (!viewportHeight) {
+        return;
+      }
+
+      rootElement.style.setProperty(VIEWPORT_HEIGHT_CSS_VARIABLE, `${viewportHeight}px`);
+    };
+
+    syncViewportHeight();
+
+    window.addEventListener('resize', syncViewportHeight);
+    window.addEventListener('orientationchange', syncViewportHeight);
+    window.visualViewport?.addEventListener('resize', syncViewportHeight);
+    window.visualViewport?.addEventListener('scroll', syncViewportHeight);
+
+    return () => {
+      window.removeEventListener('resize', syncViewportHeight);
+      window.removeEventListener('orientationchange', syncViewportHeight);
+      window.visualViewport?.removeEventListener('resize', syncViewportHeight);
+      window.visualViewport?.removeEventListener('scroll', syncViewportHeight);
+      rootElement.style.removeProperty(VIEWPORT_HEIGHT_CSS_VARIABLE);
+    };
+  }, []);
 
   useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
@@ -1926,7 +1968,7 @@ function MainApp() {
 
   return (
     <div
-      className={`flex min-h-[100dvh] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
+      className={`flex min-h-[var(--tb-viewport-height,100dvh)] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
         ? 'bg-black'
         : usesFocusViewportBackground
           ? 'bg-white'
@@ -1936,7 +1978,7 @@ function MainApp() {
     >
       <div
         ref={backgroundCardRef}
-        className={`relative flex h-[100dvh] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+        className={`relative flex h-[var(--tb-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
           }`}
       >
         <div
