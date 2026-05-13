@@ -255,13 +255,8 @@ function getVisibleViewportHeight() {
   const visualViewportHeight = window.visualViewport?.height ?? 0;
   const layoutViewportHeight = window.innerHeight;
   const documentViewportHeight = document.documentElement.clientHeight;
-  const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean };
-  const isStandaloneDisplay =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    navigatorWithStandalone.standalone === true;
-  const screenHeight = isStandaloneDisplay ? window.screen.height : 0;
 
-  return Math.max(visualViewportHeight, layoutViewportHeight, documentViewportHeight, screenHeight);
+  return Math.max(visualViewportHeight, layoutViewportHeight, documentViewportHeight);
 }
 
 function sanitizeTasteSurveyResponses(value: unknown) {
@@ -2346,7 +2341,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName={}
+          contentClassName={`${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-page)]`}
           bodyClassName="px-5 pb-1 pt-2"
           headerCenter={
             <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
@@ -2381,7 +2376,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName={}
+          contentClassName={`${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-page)]`}
           bodyClassName="overflow-y-auto px-5 pb-1 pt-2"
           headerCenter={
             <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
@@ -2597,7 +2592,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName={}
+          contentClassName={`${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-page)]`}
           bodyClassName="p-0"
         >
           <TasteSurveyIntroScreen
@@ -2651,7 +2646,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName={}
+          contentClassName={`${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-page)]`}
           bodyClassName="p-0"
         >
           {tasteSurveyFlowStep === 'intro' && (

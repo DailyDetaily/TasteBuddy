@@ -14,6 +14,8 @@ import { cn } from "../ui/utils";
 const BOTTOM_SHEET_HEADER_ICON_SIZE = ICON_TOKENS.size.lg;
 const BOTTOM_SHEET_HEADER_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const BOTTOM_SHEET_HEADER_ICON_STROKE = ICON_TOKENS.strokeWidth.regular;
+const BOTTOM_SHEET_STAGE_HEIGHT_CLASS =
+  "h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)] max-h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)]";
 const BOTTOM_SHEET_HEADER_ICON_BUTTON_CLASS =
   "flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)] active:opacity-70";
 
@@ -125,7 +127,8 @@ export default function BottomSheetShell({
       <DrawerContent
         overlayClassName={cn("z-40 bg-[rgba(0,0,0,0.6)]", overlayClassName)}
         className={cn(
-          "left-0 right-0 z-50 mx-auto h-[calc(var(--tb-viewport-height,100dvh)*0.95)] max-h-[calc(var(--tb-viewport-height,100dvh)*0.95)] max-w-[1440px] !rounded-t-[20px] border-0 bg-[var(--tb-color-bg-focus)] outline-none",
+          "left-0 right-0 z-50 mx-auto max-w-[1440px] !rounded-t-[20px] border-0 bg-[var(--tb-color-bg-focus)] outline-none",
+          BOTTOM_SHEET_STAGE_HEIGHT_CLASS,
           "data-[vaul-drawer-direction=bottom]:border-t-0",
           "[&>div:first-child]:mt-3 [&>div:first-child]:h-1.5 [&>div:first-child]:w-10 [&>div:first-child]:bg-[var(--tb-color-border-strong)]",
           contentClassName,
