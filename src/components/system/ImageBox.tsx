@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 import { ICON_TOKENS } from '../../constants/designTokens';
-import { getChefImageByName } from '../../constants/chefImages';
+import { getChefBundledImageByName, getChefImageByName } from '../../constants/chefImages';
 import TokenBox, { type TokenBoxSize } from './TokenBox';
 import { cn } from '../ui/utils';
 
@@ -76,10 +76,11 @@ export default function ImageBox({
   const effectiveFallback = fallback ?? (kind ? KIND_FALLBACK[kind] : 'generic');
   const FallbackIcon = FALLBACK_ICON[effectiveFallback];
   const effectiveSize = size ?? 'md';
-  const chefFallbackImageSrc = kind === 'chef' ? getChefImageByName(alt) : null;
+  const chefImageSrc = kind === 'chef' ? getChefImageByName(alt) : null;
+  const chefFallbackImageSrc = kind === 'chef' ? getChefBundledImageByName(alt) : null;
   const resolvedImageSrc = imageLoadFailed
     ? chefFallbackImageSrc
-    : imageSrc ?? chefFallbackImageSrc;
+    : imageSrc ?? chefImageSrc ?? chefFallbackImageSrc;
   const shouldApplySize = Boolean(size) || !className;
   const shouldShowImage = Boolean(resolvedImageSrc);
 

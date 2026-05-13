@@ -71,15 +71,21 @@ const CHEF_MEDIA_PATH_BY_NAME: Record<string, string> = {
   'Eun-hee Cho and Sung-bae Park': 'chefs/cho-eun-hee-park-sung-bae.png',
 };
 
-export function getChefImageByName(name: string) {
-  const normalizedName = name.replace(/\s*셰프$/, '');
-  const bundledImage = CHEF_IMAGE_BY_NAME[normalizedName];
+function normalizeChefImageName(name: string) {
+  return name.replace(/\s*셰프$/, '');
+}
 
-  if (bundledImage) {
-    return bundledImage;
-  }
+export function getChefBundledImageByName(name: string) {
+  return CHEF_IMAGE_BY_NAME[normalizeChefImageName(name)] ?? null;
+}
 
+export function getChefMediaImageByName(name: string) {
+  const normalizedName = normalizeChefImageName(name);
   const mediaPath = CHEF_MEDIA_PATH_BY_NAME[normalizedName];
 
   return mediaPath ? resolvePublicMediaPath(mediaPath) : null;
+}
+
+export function getChefImageByName(name: string) {
+  return getChefMediaImageByName(name) ?? getChefBundledImageByName(name);
 }

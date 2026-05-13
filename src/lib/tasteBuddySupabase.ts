@@ -1165,6 +1165,13 @@ function findReservationCatalogMatch(row: ReservationQueryRow) {
   );
 }
 
+function findKnownChefForRestaurant(restaurantName: string) {
+  return (
+    RESERVATION_CATALOG.find((reservation) => reservation.restaurant === restaurantName)?.chef ??
+    null
+  );
+}
+
 function isContentSeedExternalRef(externalRef: string | null | undefined) {
   return externalRef?.startsWith('content-seed:') ?? false;
 }
@@ -1182,7 +1189,9 @@ function mapReservationRowToRecord(row: ReservationQueryRow): ReservationRecord 
       ? localizeRestaurantName(rawRestaurantName)
       : fallbackReservation?.restaurant ?? '예약된 레스토랑';
   const chefName =
-    rawChefName !== null ? localizeChefName(rawChefName) : fallbackReservation?.chef ?? '셰프 미정';
+    rawChefName !== null
+      ? localizeChefName(rawChefName)
+      : fallbackReservation?.chef ?? findKnownChefForRestaurant(restaurantName) ?? '셰프 미정';
 
   return {
     id:
@@ -1192,8 +1201,8 @@ function mapReservationRowToRecord(row: ReservationQueryRow): ReservationRecord 
     restaurant: restaurantName,
     chef: chefName,
     chefImage:
-      getChefImageByName(chefName) ??
       resolvePublicMediaPath(rawChefAvatarPath) ??
+      getChefImageByName(chefName) ??
       fallbackReservation?.chefImage,
     date,
     time,

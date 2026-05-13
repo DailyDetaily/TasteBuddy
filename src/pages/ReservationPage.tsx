@@ -1,4 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+} from 'react';
 import {
   Clock as ClockIcon,
   Heart as HeartIcon,
@@ -256,9 +263,11 @@ function buildDishFeedbackItems({
 
 function FeedbackAuthorLine({
   nickname,
+  onOpenRestaurantDetail,
   restaurant,
 }: {
   nickname: string;
+  onOpenRestaurantDetail?: () => void;
   restaurant: string;
 }) {
   const lineRef = useRef<HTMLParagraphElement | null>(null);
@@ -338,7 +347,21 @@ function FeedbackAuthorLine({
         className="shrink-0 whitespace-nowrap"
       >
         님이&nbsp;
-        <span className="font-semibold">{restaurant}</span>의 후기를 남기셨습니다.
+        {onOpenRestaurantDetail ? (
+          <button
+            type="button"
+            className="font-semibold underline-offset-2 transition-colors hover:text-[var(--tb-color-text-primary)] hover:underline focus-visible:rounded-[var(--tb-radius-6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-strong)]"
+            onClick={(event) => {
+              event.stopPropagation();
+              onOpenRestaurantDetail();
+            }}
+          >
+            {restaurant}
+          </button>
+        ) : (
+          <span className="font-semibold">{restaurant}</span>
+        )}
+        의 후기를 남기셨습니다.
       </span>
     </p>
   );
@@ -350,6 +373,7 @@ function DishFeedbackCard({
   initials,
   item,
   nickname,
+  onOpenRestaurantDetail,
   onSelect,
 }: {
   avatarImageSrc?: string | null;
@@ -357,10 +381,28 @@ function DishFeedbackCard({
   initials: string;
   item: DishFeedbackItem;
   nickname: string;
+  onOpenRestaurantDetail?: () => void;
   onSelect: () => void;
 }) {
+  const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.defaultPrevented || event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelect();
+    }
+  };
+
   return (
-    <button type="button" className="block w-full text-left" onClick={onSelect}>
+    <div
+      role="button"
+      tabIndex={0}
+      className="block w-full text-left"
+      onClick={onSelect}
+      onKeyDown={handleCardKeyDown}
+    >
       <SectionCard hoverEffect className="gap-[12px]">
         <div className="flex w-full items-start gap-3">
           <div
@@ -378,6 +420,7 @@ function DishFeedbackCard({
           <div className="min-w-0 flex-1">
             <FeedbackAuthorLine
               nickname={nickname}
+              onOpenRestaurantDetail={onOpenRestaurantDetail}
               restaurant={item.reservation.restaurant}
             />
             <p className="mt-1 max-w-full truncate text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
@@ -462,7 +505,7 @@ function DishFeedbackCard({
           </button>
         </div>
       </SectionCard>
-    </button>
+    </div>
   );
 }
 
@@ -945,6 +988,11 @@ export default function ReservationPage({
                     initials={userInitials}
                     item={item}
                     nickname={feedbackAuthorName}
+                    onOpenRestaurantDetail={
+                      onOpenRestaurantDetail
+                        ? () => onOpenRestaurantDetail(item.reservation)
+                        : undefined
+                    }
                     onSelect={() => {
                       navigateToReservationLocation({
                         selectedId: item.reservation.id,
