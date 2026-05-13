@@ -1,6 +1,8 @@
+const PUBLIC_MEDIA_BASE_URL = import.meta.env.VITE_PUBLIC_MEDIA_BASE_URL;
+const R2_PUBLIC_MEDIA_BASE_URL = import.meta.env.VITE_R2_PUBLIC_MEDIA_BASE_URL;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ASSET_BUCKET =
   import.meta.env.VITE_SUPABASE_PUBLIC_ASSET_BUCKET ?? 'taste-buddy-assets';
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 function encodeStoragePath(path: string) {
   return path
@@ -21,12 +23,17 @@ export function resolvePublicMediaPath(path?: string | null) {
     return mediaPath;
   }
 
-  if (!SUPABASE_URL) {
+  const encodedPath = encodeStoragePath(mediaPath);
+  if (!encodedPath) {
     return null;
   }
 
-  const encodedPath = encodeStoragePath(mediaPath);
-  if (!encodedPath) {
+  const mediaBaseUrl = R2_PUBLIC_MEDIA_BASE_URL ?? PUBLIC_MEDIA_BASE_URL;
+  if (mediaBaseUrl) {
+    return `${mediaBaseUrl.replace(/\/$/, '')}/${encodedPath}`;
+  }
+
+  if (!SUPABASE_URL) {
     return null;
   }
 

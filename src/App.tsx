@@ -38,6 +38,7 @@ import BottomSheetShell, {
   BottomSheetIconButton,
 } from './components/system/BottomSheetShell';
 import ProfileIdentitySheetContent from './components/ProfileIdentitySheetContent';
+import ProfileEditSheetContent from './components/ProfileEditSheetContent';
 import ProfileSetupSheetContent from './components/ProfileSetupSheetContent';
 import SectionCard from './components/SectionCard';
 import { Button } from './components/ui/button';
@@ -107,6 +108,7 @@ import {
   subscribeToSupabaseAuthState,
   updateSupabaseProfileIdentity,
   verifySupabaseEmailOtp,
+  type SupabaseEmailOtpIntent,
 } from './lib/supabase';
 import { buildTasteSurveyCompatibleResult } from './lib/tasteSurveyScoring';
 import { TASTE_SURVEY_ITEMS } from './constants/tasteSurveyItems';
@@ -121,6 +123,7 @@ import {
   hasTasteSurveyRespondentContext,
   sanitizeTasteSurveyRespondentContext,
 } from './lib/tasteSurveyPersistence';
+import { trackEvent, trackPageView } from './lib/analytics';
 import type {
   TasteSurveyCompatibleResult,
   TasteSurveyLikertValue,
@@ -147,6 +150,10 @@ type TasteSurveyFlowStep =
   | 'profileIntro'
   | 'review'
   | 'result';
+interface MainNavigationLocation {
+  activeTab: TabType;
+  selectedRestaurantDetail: RestaurantDetailViewModel | null;
+}
 const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const MAIN_APP_BOTTOM_OFFSET =
   'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
@@ -178,6 +185,8 @@ interface PersistedUserState {
   latestRestaurantReadyGuidance: RestaurantReadyGuidance | null;
   latestTasteSurveyRespondentContext: TasteSurveyRespondentContext;
   latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
+  profileAvatarDataUrl: string | null;
+  profileBirthDate: string | null;
   tasteSurveyDraft: PersistedTasteSurveyDraft | null;
 }
 
@@ -483,7 +492,6 @@ function createTasteProfileAvatarStyle(
     ['50%', '42%'],
     ['18%', '58%'],
   ] as const;
-
   const meshLayers = entries
     .map((entry, index) => {
       const token = TASTE_TOKENS[entry.id];
@@ -510,6 +518,8 @@ function createEmptyPersistedUserState(): PersistedUserState {
     latestRestaurantReadyGuidance: null,
     latestTasteSurveyRespondentContext: {},
     latestTasteMeasurementSnapshot: null,
+    profileAvatarDataUrl: null,
+    profileBirthDate: null,
     tasteSurveyDraft: null,
   };
 }
@@ -610,6 +620,16 @@ function loadPersistedUserState(): PersistedUserState {
       parsedValue.latestTasteSurveyRespondentContext ??
       parsedValue.tasteSurveyDraft?.respondentContext,
     );
+    const profileAvatarDataUrl =
+      typeof parsedValue.profileAvatarDataUrl === 'string' &&
+        parsedValue.profileAvatarDataUrl.startsWith('data:image/')
+        ? parsedValue.profileAvatarDataUrl
+        : null;
+    const profileBirthDate =
+      typeof parsedValue.profileBirthDate === 'string' &&
+        /^\d{4}-\d{2}-\d{2}$/.test(parsedValue.profileBirthDate)
+        ? parsedValue.profileBirthDate
+        : null;
 
     return {
       hasCompletedInitialMeasurement:
@@ -618,6 +638,8 @@ function loadPersistedUserState(): PersistedUserState {
       latestRestaurantReadyGuidance,
       latestTasteSurveyRespondentContext,
       latestTasteMeasurementSnapshot,
+      profileAvatarDataUrl,
+      profileBirthDate,
       tasteSurveyDraft:
         isPersistedTasteSurveyDraft(parsedValue.tasteSurveyDraft)
           ? {
@@ -664,6 +686,12 @@ function MainApp() {
     useState<RestaurantReadyGuidance | null>(persistedUserState.latestRestaurantReadyGuidance);
   const [latestPreferenceIntakeProfile, setLatestPreferenceIntakeProfile] =
     useState<PreferenceIntakeProfile | null>(persistedUserState.latestPreferenceIntakeProfile);
+  const [profileAvatarDataUrl, setProfileAvatarDataUrl] = useState<string | null>(
+    persistedUserState.profileAvatarDataUrl,
+  );
+  const [profileBirthDate, setProfileBirthDate] = useState<string | null>(
+    persistedUserState.profileBirthDate,
+  );
   const [tasteSurveyFlowStep, setTasteSurveyFlowStep] =
     useState<TasteSurveyFlowStep>(
       persistedUserState.tasteSurveyDraft?.tasteSurveyFlowStep ?? 'intro',
@@ -705,11 +733,15 @@ function MainApp() {
     'idle' | 'submitting' | 'success' | 'error'
   >('idle');
   const [authEntryMessage, setAuthEntryMessage] = useState<string | null>(null);
+  const [authEntryIntent, setAuthEntryIntent] =
+    useState<SupabaseEmailOtpIntent>('start-with-email');
   const [authEntryStep, setAuthEntryStep] = useState<'email' | 'code'>('email');
   const [authEntryPendingEmail, setAuthEntryPendingEmail] = useState<string | null>(null);
   const [isAuthEntrySheetOpen, setIsAuthEntrySheetOpen] = useState(false);
   const [isAuthEntryCancelConfirmOpen, setIsAuthEntryCancelConfirmOpen] = useState(false);
   const [isProfileIdentitySheetOpen, setIsProfileIdentitySheetOpen] = useState(false);
+  const [isProfileEditSheetOpen, setIsProfileEditSheetOpen] = useState(false);
+  const [profileEditStatus, setProfileEditStatus] = useState<'idle' | 'submitting'>('idle');
   const [isProfileSetupSheetOpen, setIsProfileSetupSheetOpen] = useState(false);
   const [profileSetupStatus, setProfileSetupStatus] = useState<
     'idle' | 'submitting' | 'success' | 'error'
@@ -732,6 +764,7 @@ function MainApp() {
   const [isReservationFeedbackMapView, setIsReservationFeedbackMapView] = useState(false);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] =
     useState<RestaurantDetailViewModel | null>(null);
+  const mainNavigationStackRef = useRef<MainNavigationLocation[]>([]);
   const [isRestaurantDetailFeedbackMapView, setIsRestaurantDetailFeedbackMapView] = useState(false);
   const [globalSearchTrigger, setGlobalSearchTrigger] = useState(0);
   const [globalSearchCatalog, setGlobalSearchCatalog] = useState<RestaurantContentCatalog>({
@@ -745,6 +778,7 @@ function MainApp() {
   const isLayeredMeasurementSheetOpen =
     shouldLayerAuthEntrySheet ||
     isProfileIdentitySheetOpen ||
+    isProfileEditSheetOpen ||
     isProfileSetupSheetOpen ||
     isTasteSurveyIntroSheetOpen ||
     isPreferenceIntakeSheetOpen ||
@@ -774,6 +808,8 @@ function MainApp() {
           tasteSurveyRespondentContext,
         ),
         latestTasteMeasurementSnapshot,
+        profileAvatarDataUrl,
+        profileBirthDate,
         tasteSurveyDraft: nextTasteSurveyDraft,
       } satisfies PersistedUserState),
     );
@@ -784,6 +820,8 @@ function MainApp() {
     latestPreferenceIntakeProfile,
     latestRestaurantReadyGuidance,
     latestTasteMeasurementSnapshot,
+    profileAvatarDataUrl,
+    profileBirthDate,
     surveyResponses,
     tasteSurveyFlowStep,
     tasteSurveyRespondentContext,
@@ -903,6 +941,86 @@ function MainApp() {
   );
 
   useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const interactiveElement = target?.closest(
+        'button, a, [role="button"], [data-analytics-event]',
+      );
+
+      if (!interactiveElement) {
+        return;
+      }
+
+      const explicitEventName = interactiveElement.getAttribute('data-analytics-event');
+      const label =
+        interactiveElement.getAttribute('aria-label') ??
+        interactiveElement.getAttribute('title') ??
+        interactiveElement.textContent?.replace(/\s+/g, ' ').trim().slice(0, 80) ??
+        interactiveElement.tagName.toLowerCase();
+
+      trackEvent(explicitEventName || 'ui_interaction', {
+        app_state: appState,
+        active_tab: activeTab,
+        element_tag: interactiveElement.tagName.toLowerCase(),
+        element_label: label,
+      });
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, [activeTab, appState]);
+
+  useEffect(() => {
+    if (selectedRestaurantDetail) {
+      trackPageView(
+        `Taste Buddy - ${selectedRestaurantDetail.name}`,
+        `/restaurants/${selectedRestaurantDetail.id}`,
+        {
+          app_state: appState,
+          active_tab: activeTab,
+          restaurant_id: selectedRestaurantDetail.id,
+          restaurant_name: selectedRestaurantDetail.name,
+          chef_name: selectedRestaurantDetail.chefName,
+        },
+      );
+      return;
+    }
+
+    if (appState === 'main') {
+      trackPageView(`Taste Buddy - ${activeTab}`, `/${activeTab}`, {
+        app_state: appState,
+        active_tab: activeTab,
+        has_measurement_data: hasMeasurementData,
+      });
+      return;
+    }
+
+    const calibrationStepPath =
+      appState === 'calibration' ? `/${tasteSurveyFlowStep}` : '';
+
+    trackPageView(
+      `Taste Buddy - ${appState}${calibrationStepPath}`,
+      `/${appState}${calibrationStepPath}`,
+      {
+        app_state: appState,
+        taste_survey_step: appState === 'calibration' ? tasteSurveyFlowStep : undefined,
+        measurement_entry_point: measurementEntryPoint,
+        has_measurement_data: hasMeasurementData,
+      },
+    );
+  }, [
+    activeTab,
+    appState,
+    hasMeasurementData,
+    measurementEntryPoint,
+    selectedRestaurantDetail,
+    tasteSurveyFlowStep,
+  ]);
+
+  useEffect(() => {
     if (!hasMeasurementData || !isSupabaseConfigured) {
       return;
     }
@@ -957,19 +1075,159 @@ function MainApp() {
     latestPreferenceIntakeProfile,
   ]);
 
-  const handleTabChange = (tab: TabType) => {
+  const getCurrentMainNavigationLocation = (): MainNavigationLocation => ({
+    activeTab,
+    selectedRestaurantDetail,
+  });
+
+  const isSameMainNavigationLocation = (
+    left: MainNavigationLocation,
+    right: MainNavigationLocation,
+  ) =>
+    left.activeTab === right.activeTab &&
+    left.selectedRestaurantDetail?.id === right.selectedRestaurantDetail?.id;
+
+  const pushCurrentMainNavigationLocation = () => {
+    const currentLocation = getCurrentMainNavigationLocation();
+    const previousLocation = mainNavigationStackRef.current.at(-1);
+
+    if (previousLocation && isSameMainNavigationLocation(previousLocation, currentLocation)) {
+      return;
+    }
+
+    mainNavigationStackRef.current = [
+      ...mainNavigationStackRef.current.slice(-9),
+      currentLocation,
+    ];
+  };
+
+  const restoreMainNavigationLocation = (location: MainNavigationLocation) => {
+    trackEvent('main_navigation_restore', {
+      tab: location.activeTab,
+      has_restaurant_detail: Boolean(location.selectedRestaurantDetail),
+    });
+    setIsRestaurantDetailFeedbackMapView(false);
+    setSelectedRestaurantDetail(location.selectedRestaurantDetail);
+    setActiveTab(location.activeTab);
+  };
+
+  const goBackToPreviousMainLocation = (fallbackTab: TabType = activeTab) => {
+    const previousLocation = mainNavigationStackRef.current.pop();
+
+    if (previousLocation) {
+      restoreMainNavigationLocation(previousLocation);
+      return;
+    }
+
+    restoreMainNavigationLocation({
+      activeTab: fallbackTab,
+      selectedRestaurantDetail: null,
+    });
+  };
+
+  const navigateToTab = (tab: TabType) => {
+    if (activeTab === tab && selectedRestaurantDetail === null) {
+      return;
+    }
+
+    trackEvent('tab_select', {
+      from_tab: activeTab,
+      to_tab: tab,
+      from_restaurant_detail: Boolean(selectedRestaurantDetail),
+    });
+    pushCurrentMainNavigationLocation();
     setSelectedRestaurantDetail(null);
     setActiveTab(tab);
   };
 
+  const openRestaurantDetail = (restaurant: RestaurantDetailViewModel) => {
+    trackEvent('restaurant_detail_open', {
+      active_tab: activeTab,
+      restaurant_id: restaurant.id,
+      restaurant_name: restaurant.name,
+      chef_name: restaurant.chefName,
+    });
+    pushCurrentMainNavigationLocation();
+    setSelectedRestaurantDetail(restaurant);
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    navigateToTab(tab);
+  };
+
   const handleOpenProfileIdentitySheet = () => {
+    trackEvent('profile_sheet_open', {
+      is_anonymous_user: isAnonymousUser,
+      has_avatar: Boolean(profileAvatarDataUrl),
+    });
     setIsProfileIdentitySheetOpen(true);
   };
 
-  const handleEditProfileReferenceInfo = () => {
+  const handleOpenProfileEditSheet = () => {
+    trackEvent('profile_edit_open');
+    setProfileEditStatus('idle');
     setIsProfileIdentitySheetOpen(false);
-    setTasteSurveyIntroReturnTarget('profile');
-    setIsTasteSurveyIntroSheetOpen(true);
+    setIsProfileEditSheetOpen(true);
+  };
+
+  const handleBackToProfileIdentitySheet = () => {
+    trackEvent('profile_edit_back');
+    setIsProfileEditSheetOpen(false);
+    setIsProfileIdentitySheetOpen(true);
+  };
+
+  const handleSubmitProfileEdit = async (input: {
+    avatarImageDataUrl: string | null;
+    birthDate: string | null;
+    displayName: string;
+    nickname: string;
+    preferenceProfile: PreferenceIntakeProfile;
+    respondentContext: TasteSurveyRespondentContext;
+  }) => {
+    setProfileEditStatus('submitting');
+    trackEvent('profile_edit_submit', {
+      has_avatar: Boolean(input.avatarImageDataUrl),
+      has_birth_date: Boolean(input.birthDate),
+      has_display_name: Boolean(input.displayName.trim()),
+      has_nickname: Boolean(input.nickname.trim()),
+    });
+
+    const sanitizedContext = sanitizeTasteSurveyRespondentContext(input.respondentContext);
+    const nextDisplayName = input.displayName.trim();
+    const nextNickname = input.nickname.trim();
+    const currentDisplayName = currentUserDisplayName ?? '';
+    const currentNickname = currentUserNickname ?? '';
+
+    if (nextDisplayName !== currentDisplayName || nextNickname !== currentNickname) {
+      const result = await updateSupabaseProfileIdentity({
+        displayName: nextDisplayName,
+        nickname: nextNickname,
+      });
+
+      if (!result.ok) {
+        trackEvent('profile_edit_error', { reason: 'identity_update' });
+        setProfileEditStatus('idle');
+        return;
+      }
+
+      const session = await getCurrentSupabaseSession();
+      setSupabaseSession(session);
+    }
+
+    setProfileAvatarDataUrl(input.avatarImageDataUrl);
+    setProfileBirthDate(input.birthDate);
+    setTasteSurveyRespondentContext(sanitizedContext);
+    setLatestPreferenceIntakeProfile(input.preferenceProfile);
+    setProfileEditStatus('idle');
+    setIsProfileEditSheetOpen(false);
+    setIsProfileIdentitySheetOpen(true);
+    trackEvent('profile_edit_complete');
+  };
+
+  const handleLinkCurrentProfileEmail = () => {
+    trackEvent('profile_link_email_open');
+    setIsProfileIdentitySheetOpen(false);
+    openAuthEntrySheet('link-current-profile');
   };
 
   const handlePersistedMeasurement = (
@@ -977,6 +1235,11 @@ function MainApp() {
     source: 'quick_calibration' | 'tastick',
     options?: Parameters<typeof persistTasteMeasurementSnapshot>[2],
   ) => {
+    trackEvent('measurement_persist', {
+      source,
+      is_starter_profile: snapshot.source === 'broad-starter',
+      result_count: Object.keys(snapshot.results).length,
+    });
     void persistTasteMeasurementSnapshot(snapshot, source, options);
   };
 
@@ -999,14 +1262,28 @@ function MainApp() {
   }, [appState, hasMeasurementData]);
 
   const handleSplashComplete = () => {
+    trackEvent('splash_complete');
     setHasSplashDelayCompleted(true);
   };
 
-  const continueAfterAuthEntry = () => {
+  const openAuthEntrySheet = (intent: SupabaseEmailOtpIntent) => {
+    trackEvent('auth_entry_open', { intent });
+    setAuthEntryIntent(intent);
     setAuthEntryStatus('idle');
     setAuthEntryMessage(null);
     setAuthEntryStep('email');
     setAuthEntryPendingEmail(null);
+    setIsAuthEntryCancelConfirmOpen(false);
+    setIsAuthEntrySheetOpen(true);
+  };
+
+  const continueAfterAuthEntry = () => {
+    trackEvent('auth_entry_skip', { intent: authEntryIntent });
+    setAuthEntryStatus('idle');
+    setAuthEntryMessage(null);
+    setAuthEntryStep('email');
+    setAuthEntryPendingEmail(null);
+    setAuthEntryIntent('start-with-email');
     setIsAuthEntrySheetOpen(false);
     setTasteSurveyIntroReturnTarget('auth');
     setIsTasteSurveyIntroSheetOpen(true);
@@ -1014,6 +1291,7 @@ function MainApp() {
 
   const handleSubmitAuthEntryEmail = async (email: string) => {
     if (!email) {
+      trackEvent('auth_email_submit_invalid', { intent: authEntryIntent });
       setAuthEntryStatus('error');
       setAuthEntryMessage('친구들과 리뷰를 이어갈 이메일을 입력해 주세요.');
       return;
@@ -1021,13 +1299,19 @@ function MainApp() {
 
     setAuthEntryStatus('submitting');
     setAuthEntryMessage(null);
+    trackEvent('auth_email_submit', { intent: authEntryIntent });
 
-    const result = await sendSupabaseEmailOtp(email);
+    const result = await sendSupabaseEmailOtp(email, authEntryIntent);
+    trackEvent(result.ok ? 'auth_email_code_sent' : 'auth_email_code_error', {
+      intent: authEntryIntent,
+    });
 
     setAuthEntryStatus(result.ok ? 'success' : 'error');
     setAuthEntryMessage(
       result.ok
-        ? '이메일로 인증 코드를 보냈습니다.'
+        ? authEntryIntent === 'link-current-profile'
+          ? '현재 프로필을 연결할 인증 코드를 보냈습니다.'
+          : '이메일로 인증 코드를 보냈습니다.'
         : result.message,
     );
 
@@ -1039,6 +1323,7 @@ function MainApp() {
 
   const handleSubmitAuthEntryCode = async (code: string) => {
     if (!authEntryPendingEmail) {
+      trackEvent('auth_code_submit_error', { intent: authEntryIntent, reason: 'missing_email' });
       setAuthEntryStep('email');
       setAuthEntryStatus('error');
       setAuthEntryMessage('먼저 이메일을 입력해 주세요.');
@@ -1046,6 +1331,7 @@ function MainApp() {
     }
 
     if (code.length !== 6) {
+      trackEvent('auth_code_submit_error', { intent: authEntryIntent, reason: 'invalid_length' });
       setAuthEntryStatus('error');
       setAuthEntryMessage('이메일로 받은 6자리 코드를 입력해 주세요.');
       return;
@@ -1053,8 +1339,12 @@ function MainApp() {
 
     setAuthEntryStatus('submitting');
     setAuthEntryMessage(null);
+    trackEvent('auth_code_submit', { intent: authEntryIntent });
 
-    const result = await verifySupabaseEmailOtp(authEntryPendingEmail, code);
+    const result = await verifySupabaseEmailOtp(authEntryPendingEmail, code, authEntryIntent);
+    trackEvent(result.ok ? 'auth_code_verified' : 'auth_code_verify_error', {
+      intent: authEntryIntent,
+    });
 
     setAuthEntryStatus(result.ok ? 'success' : 'error');
     setAuthEntryMessage(result.message);
@@ -1068,13 +1358,21 @@ function MainApp() {
     setIsAuthEntrySheetOpen(false);
     setAuthEntryStep('email');
     setAuthEntryPendingEmail(null);
+    setAuthEntryIntent('start-with-email');
     setAuthEntryMessage(null);
+
+    if (authEntryIntent === 'link-current-profile') {
+      setIsProfileIdentitySheetOpen(true);
+      return;
+    }
+
     setProfileSetupStatus('idle');
     setProfileSetupMessage(null);
     setIsProfileSetupSheetOpen(true);
   };
 
   const handleBackToAuthEntryEmail = () => {
+    trackEvent('auth_entry_back_to_email', { intent: authEntryIntent });
     setIsAuthEntryCancelConfirmOpen(false);
     setAuthEntryStep('email');
     setAuthEntryPendingEmail(null);
@@ -1083,6 +1381,7 @@ function MainApp() {
   };
 
   const handleRequestCloseAuthEntry = () => {
+    trackEvent('auth_entry_close_request', { intent: authEntryIntent, step: authEntryStep });
     if (authEntryStep === 'code') {
       setIsAuthEntryCancelConfirmOpen(true);
       return;
@@ -1092,10 +1391,12 @@ function MainApp() {
   };
 
   const handleConfirmCloseAuthEntry = () => {
+    trackEvent('auth_entry_close_confirm', { intent: authEntryIntent, step: authEntryStep });
     setIsAuthEntryCancelConfirmOpen(false);
     setIsAuthEntrySheetOpen(false);
     setAuthEntryStep('email');
     setAuthEntryPendingEmail(null);
+    setAuthEntryIntent('start-with-email');
     setAuthEntryStatus('idle');
     setAuthEntryMessage(null);
   };
@@ -1104,6 +1405,8 @@ function MainApp() {
     if (!import.meta.env.DEV) {
       return;
     }
+
+    trackEvent('auth_entry_dev_bypass', { intent: authEntryIntent, step: authEntryStep });
 
     if (authEntryStep === 'email') {
       setAuthEntryPendingEmail('dev@tastebuddy.local');
@@ -1116,20 +1419,27 @@ function MainApp() {
     setIsAuthEntrySheetOpen(false);
     setAuthEntryStep('email');
     setAuthEntryPendingEmail(null);
+    setAuthEntryIntent('start-with-email');
     setAuthEntryStatus('idle');
     setAuthEntryMessage(null);
+
+    if (authEntryIntent === 'link-current-profile') {
+      setIsProfileIdentitySheetOpen(true);
+      return;
+    }
+
     setProfileSetupStatus('idle');
     setProfileSetupMessage(null);
     setIsProfileSetupSheetOpen(true);
   };
 
   const handleStartInitialMeasurementFlow = () => {
+    trackEvent('initial_measurement_start', {
+      auth_required: shouldShowAuthEntry,
+      has_measurement_data: hasMeasurementData,
+    });
     if (shouldShowAuthEntry) {
-      setAuthEntryStatus('idle');
-      setAuthEntryMessage(null);
-      setAuthEntryStep('email');
-      setAuthEntryPendingEmail(null);
-      setIsAuthEntrySheetOpen(true);
+      openAuthEntrySheet('start-with-email');
       return;
     }
 
@@ -1141,6 +1451,7 @@ function MainApp() {
     nickname: string;
   }) => {
     if (!input.displayName.trim() && !input.nickname.trim()) {
+      trackEvent('profile_setup_submit_error', { reason: 'missing_identity' });
       setProfileSetupStatus('error');
       setProfileSetupMessage('이름이나 닉네임 중 하나는 입력해 주세요.');
       return;
@@ -1148,8 +1459,13 @@ function MainApp() {
 
     setProfileSetupStatus('submitting');
     setProfileSetupMessage(null);
+    trackEvent('profile_setup_submit', {
+      has_display_name: Boolean(input.displayName.trim()),
+      has_nickname: Boolean(input.nickname.trim()),
+    });
 
     const result = await updateSupabaseProfileIdentity(input);
+    trackEvent(result.ok ? 'profile_setup_complete' : 'profile_setup_error');
 
     setProfileSetupStatus(result.ok ? 'success' : 'error');
     setProfileSetupMessage(result.message);
@@ -1168,11 +1484,13 @@ function MainApp() {
   };
 
   const handleStartPreferenceIntakeFromTasteSurveyIntro = () => {
+    trackEvent('preference_intake_open', { source: 'taste_survey_intro_sheet' });
     setIsTasteSurveyIntroSheetOpen(false);
     setIsPreferenceIntakeSheetOpen(true);
   };
 
   const handleOpenTasteSurveySheetFlow = (shouldClearResponses = false) => {
+    trackEvent('taste_survey_sheet_open', { should_clear_responses: shouldClearResponses });
     resetTasteSurveyFlow(shouldClearResponses);
     setIsTasteSurveyIntroSheetOpen(false);
     setIsPreferenceIntakeSheetOpen(false);
@@ -1180,12 +1498,16 @@ function MainApp() {
   };
 
   const handleCompletePreferenceIntakeSheet = (profile: PreferenceIntakeProfile) => {
+    trackEvent('preference_intake_complete', {
+      preference_count: Object.keys(profile).length,
+    });
     setLatestPreferenceIntakeProfile(profile);
     setIsPreferenceIntakeSheetOpen(false);
     handleOpenTasteSurveySheetFlow(true);
   };
 
   const handleSkipPreferenceIntakeSheet = () => {
+    trackEvent('preference_intake_skip', { source: 'sheet' });
     resetTasteSurveyFlow(true);
     setIsTasteSurveyIntroSheetOpen(false);
     setIsPreferenceIntakeSheetOpen(false);
@@ -1195,6 +1517,7 @@ function MainApp() {
   };
 
   const handleSkipTasteSurveySheetToHome = () => {
+    trackEvent('taste_survey_skip_to_home', { source: 'sheet' });
     setIsTasteSurveyIntroSheetOpen(false);
     setIsPreferenceIntakeSheetOpen(false);
     setIsTasteSurveySheetOpen(false);
@@ -1216,26 +1539,32 @@ function MainApp() {
   };
 
   const handleEnterTasteSurveyFlow = (shouldClearResponses = false) => {
+    trackEvent('taste_survey_flow_enter', { should_clear_responses: shouldClearResponses });
     resetTasteSurveyFlow(shouldClearResponses);
     setAppState('calibration');
   };
 
   const handleStartMeasurementFromMain = (originTab: TabType) => {
+    trackEvent('measurement_start', { origin_tab: originTab, mode: 'new' });
     setMeasurementEntryPoint('main');
     setMeasurementReturnTab(originTab);
+    pushCurrentMainNavigationLocation();
     handleEnterTasteSurveyFlow(true);
   };
 
   const handleStartRemeasurementFromMain = (originTab: TabType) => {
+    trackEvent('measurement_start', { origin_tab: originTab, mode: 'refresh' });
     setMeasurementEntryPoint('main');
     setMeasurementReturnTab(originTab);
+    pushCurrentMainNavigationLocation();
     handleEnterTasteSurveyFlow(true);
   };
 
   const handleExitMeasurementFlow = () => {
+    trackEvent('measurement_flow_exit', { entry_point: measurementEntryPoint });
     if (measurementEntryPoint === 'main') {
-      setActiveTab(measurementReturnTab);
       setAppState('main');
+      goBackToPreviousMainLocation(measurementReturnTab);
       return;
     }
 
@@ -1243,6 +1572,10 @@ function MainApp() {
   };
 
   const handleExitTasteSurveyFlow = () => {
+    trackEvent('taste_survey_flow_exit', {
+      entry_point: measurementEntryPoint,
+      step: tasteSurveyFlowStep,
+    });
     if (measurementEntryPoint === 'main') {
       handleExitMeasurementFlow();
       return;
@@ -1252,6 +1585,12 @@ function MainApp() {
   };
 
   const handleSelectSurveyLikert = (itemId: string, value: TasteSurveyLikertValue) => {
+    trackEvent('taste_survey_answer', {
+      item_id: itemId,
+      value,
+      question_index: currentSurveyIndex,
+      uncertain: false,
+    });
     setLatestSurveyCompatibleResult(null);
     setSurveyResponses((currentResponses) => ({
       ...currentResponses,
@@ -1264,6 +1603,11 @@ function MainApp() {
   };
 
   const handleSelectSurveyUncertain = (itemId: string) => {
+    trackEvent('taste_survey_answer', {
+      item_id: itemId,
+      question_index: currentSurveyIndex,
+      uncertain: true,
+    });
     setLatestSurveyCompatibleResult(null);
     setSurveyResponses((currentResponses) => ({
       ...currentResponses,
@@ -1285,6 +1629,10 @@ function MainApp() {
   };
 
   const handleNextTasteSurveyContext = () => {
+    trackEvent('taste_survey_context_next', {
+      context_index: currentSurveyContextIndex,
+      is_last_context: currentSurveyContextIndex >= TASTE_SURVEY_CONTEXT_STEPS.length - 1,
+    });
     if (currentSurveyContextIndex < TASTE_SURVEY_CONTEXT_STEPS.length - 1) {
       setCurrentSurveyContextIndex((previousIndex) => previousIndex + 1);
       return;
@@ -1294,6 +1642,7 @@ function MainApp() {
   };
 
   const handleBackFromTasteSurveyContext = () => {
+    trackEvent('taste_survey_context_back', { context_index: currentSurveyContextIndex });
     if (currentSurveyContextIndex > 0) {
       setCurrentSurveyContextIndex((previousIndex) => previousIndex - 1);
       return;
@@ -1307,6 +1656,10 @@ function MainApp() {
   };
 
   const handleNextSurveyQuestion = () => {
+    trackEvent('taste_survey_question_next', {
+      question_index: currentSurveyIndex,
+      is_last_question: currentSurveyIndex >= TASTE_SURVEY_ITEMS.length - 1,
+    });
     if (currentSurveyIndex < TASTE_SURVEY_ITEMS.length - 1) {
       setCurrentSurveyIndex((previousIndex) => previousIndex + 1);
       return;
@@ -1316,6 +1669,7 @@ function MainApp() {
   };
 
   const handleBackFromSurveyQuestion = () => {
+    trackEvent('taste_survey_question_back', { question_index: currentSurveyIndex });
     if (currentSurveyIndex > 0) {
       setCurrentSurveyIndex((previousIndex) => previousIndex - 1);
       return;
@@ -1331,6 +1685,10 @@ function MainApp() {
   };
 
   const handleSubmitTasteSurveyReview = () => {
+    trackEvent('taste_survey_review_submit', {
+      answered_count: Object.values(surveyResponses).filter(Boolean).length,
+      total_count: TASTE_SURVEY_ITEMS.length,
+    });
     const compatibleResult = buildCompatibleResultFromSurveyResponses(surveyResponses);
 
     setLatestSurveyCompatibleResult(compatibleResult);
@@ -1340,6 +1698,11 @@ function MainApp() {
   const handleCompleteTasteSurvey = () => {
     const compatibleResult =
       latestSurveyCompatibleResult ?? buildCompatibleResultFromSurveyResponses(surveyResponses);
+
+    trackEvent('taste_survey_complete', {
+      answered_count: Object.values(surveyResponses).filter(Boolean).length,
+      entry_point: measurementEntryPoint,
+    });
 
     setLatestTasteMeasurementSnapshot(compatibleResult.snapshot);
     setLatestRestaurantReadyGuidance(compatibleResult.starterGuidance);
@@ -1358,22 +1721,33 @@ function MainApp() {
   };
 
   const handleOpenImproveAccuracy = () => {
+    trackEvent('improve_accuracy_open', { origin_tab: activeTab });
     setMeasurementEntryPoint('main');
     setMeasurementReturnTab(activeTab);
+    pushCurrentMainNavigationLocation();
     setAppState('improve-accuracy');
   };
 
   const handleOpenSupportPanel = (panel: AppMenuSupportPanel) => {
+    trackEvent('support_panel_open', { panel });
     setIsMenuOpen(false);
     setActiveSupportPanel(panel);
   };
 
   const handleCloseSupportPanel = () => {
+    trackEvent('support_panel_close', { panel: activeSupportPanel });
     setActiveSupportPanel(null);
   };
 
   const handleOpenAuthProfile = () => {
+    trackEvent('auth_profile_open', { is_anonymous_user: isAnonymousUser });
     setIsMenuOpen(false);
+
+    if (isAnonymousUser) {
+      openAuthEntrySheet('link-current-profile');
+      return;
+    }
+
     setAuthProfileStatus('idle');
     setAuthProfileMessage(null);
     setIsAuthProfileOpen(true);
@@ -1381,6 +1755,7 @@ function MainApp() {
 
   const handleSubmitAuthEmail = async (email: string) => {
     if (!email) {
+      trackEvent('auth_profile_email_submit_error', { reason: 'missing_email' });
       setAuthProfileStatus('error');
       setAuthProfileMessage('프로필을 이어갈 이메일을 입력해 주세요.');
       return;
@@ -1388,10 +1763,14 @@ function MainApp() {
 
     setAuthProfileStatus('submitting');
     setAuthProfileMessage(null);
+    trackEvent('auth_profile_email_submit', { is_anonymous_user: isAnonymousUser });
 
     const result = isAnonymousUser
       ? await linkAnonymousSupabaseUserEmail(email)
       : await sendSupabaseMagicLink(email);
+    trackEvent(result.ok ? 'auth_profile_email_success' : 'auth_profile_email_error', {
+      is_anonymous_user: isAnonymousUser,
+    });
 
     setAuthProfileStatus(result.ok ? 'success' : 'error');
     setAuthProfileMessage(result.message);
@@ -1401,16 +1780,19 @@ function MainApp() {
   };
 
   const handleRequestLogout = () => {
+    trackEvent('logout_request');
     setIsMenuOpen(false);
     setIsLogoutConfirmOpen(true);
   };
 
   const handleRequestDeleteAccount = () => {
+    trackEvent('delete_account_request');
     setIsAuthProfileOpen(false);
     setIsDeleteAccountConfirmOpen(true);
   };
 
   const handleLogout = async () => {
+    trackEvent('logout_confirm');
     await signOutSupabaseSession();
 
     if (typeof window !== 'undefined') {
@@ -1423,9 +1805,11 @@ function MainApp() {
   };
 
   const handleDeleteAccount = async () => {
+    trackEvent('delete_account_confirm');
     setIsDeletingAccount(true);
 
     const result = await deleteCurrentSupabaseAccount();
+    trackEvent(result.ok ? 'delete_account_success' : 'delete_account_error');
 
     setIsDeletingAccount(false);
     setIsDeleteAccountConfirmOpen(false);
@@ -1443,6 +1827,7 @@ function MainApp() {
   };
 
   const handleMarkNotificationAsRead = (notificationId: string) => {
+    trackEvent('notification_mark_read', { notification_id: notificationId });
     setNotifications((current) =>
       current.map((notification) =>
         notification.id === notificationId
@@ -1455,6 +1840,9 @@ function MainApp() {
   };
 
   const handleMarkAllNotificationsAsRead = () => {
+    trackEvent('notification_mark_all_read', {
+      unread_count: notifications.filter((notification) => !notification.read).length,
+    });
     setNotifications((current) =>
       current.map((notification) => ({
         ...notification,
@@ -1466,6 +1854,7 @@ function MainApp() {
   };
 
   const handleOpenGlobalSearch = () => {
+    trackEvent('global_search_open', { origin_tab: activeTab });
     setIsNotificationOpen(false);
     setIsMenuOpen(false);
     setActiveSupportPanel(null);
@@ -1474,8 +1863,16 @@ function MainApp() {
 
   // Common overlay props
   const overlayProps = {
-    onOpenNotifications: () => setIsNotificationOpen(true),
-    onOpenMenu: () => setIsMenuOpen(true),
+    onOpenNotifications: () => {
+      trackEvent('notifications_open', {
+        unread_count: notifications.filter((notification) => !notification.read).length,
+      });
+      setIsNotificationOpen(true);
+    },
+    onOpenMenu: () => {
+      trackEvent('app_menu_open', { active_tab: activeTab });
+      setIsMenuOpen(true);
+    },
     hasUnreadNotifications: notifications.some((notification) => !notification.read),
   };
 
@@ -1683,8 +2080,8 @@ function MainApp() {
           <ImproveAccuracyScreen
             onConnectDevice={() => setAppState('tastick')}
             onSkip={() => {
-              setActiveTab(measurementReturnTab);
               setAppState('main');
+              goBackToPreviousMainLocation(measurementReturnTab);
             }}
           />
         )}
@@ -1703,6 +2100,7 @@ function MainApp() {
                     onOpenProfile={handleOpenProfileIdentitySheet}
                     showSearchAction={activeTab !== 'home'}
                     userInitials={userInitials}
+                    userAvatarImageSrc={profileAvatarDataUrl}
                     userAvatarStyle={userAvatarStyle}
                   />
                 </div>
@@ -1733,10 +2131,7 @@ function MainApp() {
             <RestaurantDetailPage
               measurementSnapshot={latestTasteMeasurementSnapshot}
               restaurant={selectedRestaurantDetail}
-              onBack={() => {
-                setIsRestaurantDetailFeedbackMapView(false);
-                setSelectedRestaurantDetail(null);
-              }}
+              onBack={() => goBackToPreviousMainLocation()}
               onFeedbackMapViewChange={setIsRestaurantDetailFeedbackMapView}
             />
           ) : (
@@ -1749,10 +2144,10 @@ function MainApp() {
                   onStartMeasurement={() => handleStartMeasurementFromMain('home')}
                   onStartRemeasurement={() => handleStartRemeasurementFromMain('home')}
                   onOpenRestaurantDetail={(chef) =>
-                    setSelectedRestaurantDetail(createRestaurantDetailFromChefMatch(chef))
+                    openRestaurantDetail(createRestaurantDetailFromChefMatch(chef))
                   }
                   onOpenRestaurantDetailFromSearch={(result) =>
-                    setSelectedRestaurantDetail(createRestaurantDetailFromSearchResult(result))
+                    openRestaurantDetail(createRestaurantDetailFromSearchResult(result))
                   }
                   {...overlayProps}
                 />
@@ -1769,7 +2164,7 @@ function MainApp() {
                     isActive={activeTab === 'analysis'}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     onOpenRestaurantDetail={(menu) =>
-                      setSelectedRestaurantDetail(createRestaurantDetailFromMenuRecommendation(menu))
+                      openRestaurantDetail(createRestaurantDetailFromMenuRecommendation(menu))
                     }
                     onStartMeasurement={() => handleStartMeasurementFromMain('analysis')}
                     {...overlayProps}
@@ -1787,10 +2182,14 @@ function MainApp() {
                   <ReservationPage
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     starterGuidance={latestRestaurantReadyGuidance}
+                    userAvatarImageSrc={profileAvatarDataUrl}
+                    userAvatarStyle={userAvatarStyle}
+                    userInitials={userInitials}
+                    userNickname={currentUserNickname ?? currentUserDisplayName}
                     onFeedbackMapViewChange={setIsReservationFeedbackMapView}
                     onRootViewChange={setIsReservationRootView}
                     onOpenRestaurantDetail={(reservation) =>
-                      setSelectedRestaurantDetail(createRestaurantDetailFromReservation(reservation))
+                      openRestaurantDetail(createRestaurantDetailFromReservation(reservation))
                     }
                     onStartMeasurement={() => handleStartRemeasurementFromMain('reservation')}
                     {...overlayProps}
@@ -1810,12 +2209,10 @@ function MainApp() {
                     starterGuidance={latestRestaurantReadyGuidance}
                     onOpenSupportPanel={handleOpenSupportPanel}
                     onOpenRestaurantDetail={(chef) =>
-                      setSelectedRestaurantDetail(createRestaurantDetailFromFavoriteChef(chef))
+                      openRestaurantDetail(createRestaurantDetailFromFavoriteChef(chef))
                     }
                     onStartMeasurement={() => handleStartMeasurementFromMain('profile')}
-                    onNavigateToReservation={(chefName: string) => {
-                      setActiveTab('reservation');
-                    }}
+                    onNavigateToReservation={() => navigateToTab('reservation')}
                     {...overlayProps}
                   />
                 ) : null}
@@ -1829,7 +2226,7 @@ function MainApp() {
           <HomeUnifiedSearch
             catalog={globalSearchCatalog}
             onOpenRestaurantDetail={(result) =>
-              setSelectedRestaurantDetail(createRestaurantDetailFromSearchResult(result))
+              openRestaurantDetail(createRestaurantDetailFromSearchResult(result))
             }
             openTrigger={globalSearchTrigger}
             reservations={globalSearchReservations}
@@ -1889,15 +2286,69 @@ function MainApp() {
           headerEnd={<BottomSheetCloseButton />}
         >
           <ProfileIdentitySheetContent
+            avatarImageDataUrl={profileAvatarDataUrl}
             avatarStyle={userAvatarStyle}
+            birthDate={profileBirthDate}
             displayName={currentUserDisplayName}
             email={currentUserEmail}
+            initials={userInitials}
+            isAnonymous={isAnonymousUser}
+            nickname={currentUserNickname}
+            preferenceProfile={latestPreferenceIntakeProfile}
+            respondentContext={tasteSurveyRespondentContext}
+            userTasteAccentStyle={userTasteAccentStyle}
+            onEditProfile={handleOpenProfileEditSheet}
+            onLinkCurrentProfile={handleLinkCurrentProfileEmail}
+          />
+        </BottomSheetShell>
+
+        <BottomSheetShell
+          open={isProfileEditSheetOpen}
+          onOpenChange={setIsProfileEditSheetOpen}
+          onDrag={(_, percentageDragged) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
+          }}
+          onRelease={(_, open) => {
+            applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
+          }}
+          contentClassName="h-[95vh] max-h-[95vh] bg-[var(--tb-color-bg-page)]"
+          bodyClassName="overflow-y-auto px-5 pb-1 pt-2"
+          headerCenter={
+            <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+              프로필 편집
+            </h2>
+          }
+          headerStart={
+            <BottomSheetIconButton
+              ariaLabel="프로필로 돌아가기"
+              icon={ChevronLeft}
+              onClick={handleBackToProfileIdentitySheet}
+            />
+          }
+          headerEnd={<BottomSheetCloseButton />}
+          footer={
+            <Button
+              className="h-12 w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] hover:bg-[var(--tb-color-text-secondary)]"
+              disabled={profileEditStatus === 'submitting'}
+              form="profile-edit-sheet-form"
+              type="submit"
+            >
+              {profileEditStatus === 'submitting' ? '저장 중' : '저장'}
+            </Button>
+          }
+        >
+          <ProfileEditSheetContent
+            avatarImageDataUrl={profileAvatarDataUrl}
+            avatarStyle={userAvatarStyle}
+            birthDate={profileBirthDate}
+            displayName={currentUserDisplayName}
+            formId="profile-edit-sheet-form"
             initials={userInitials}
             nickname={currentUserNickname}
             preferenceProfile={latestPreferenceIntakeProfile}
             respondentContext={tasteSurveyRespondentContext}
             userTasteAccentStyle={userTasteAccentStyle}
-            onEditReferenceInfo={handleEditProfileReferenceInfo}
+            onSubmit={handleSubmitProfileEdit}
           />
         </BottomSheetShell>
 
@@ -1922,7 +2373,7 @@ function MainApp() {
           bodyClassName="px-5 pb-1 pt-2"
           headerCenter={
             <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
-              로그인
+              {authEntryIntent === 'link-current-profile' ? '계정 연결' : '로그인'}
             </h2>
           }
           headerStart={
@@ -1959,9 +2410,11 @@ function MainApp() {
                     : '코드 보내는 중'
                   : authEntryStep === 'code'
                     ? '인증 코드 확인'
-                    : '다음'}
+                    : authEntryIntent === 'link-current-profile'
+                      ? '연결 코드 받기'
+                      : '다음'}
               </Button>
-              {authEntryStep === 'email' ? (
+              {authEntryStep === 'email' && authEntryIntent === 'start-with-email' ? (
                 <button
                   type="button"
                   onClick={continueAfterAuthEntry}
@@ -2350,7 +2803,7 @@ function MainApp() {
                     } else if (activeSupportPanel === 'notification-settings') {
                       setIsNotificationOpen(true);
                     } else {
-                      setActiveTab('profile');
+                      navigateToTab('profile');
                     }
 
                     handleCloseSupportPanel();

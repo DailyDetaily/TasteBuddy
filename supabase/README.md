@@ -24,6 +24,12 @@ These seed files are often produced or updated by the scripts in [`../scripts/`]
 
 External map providers are stored as a place index layer, separate from Taste Buddy's menu and taste interpretation data. See [`../docs/operations/place-index-api-sync.md`](../docs/operations/place-index-api-sync.md).
 
+### Media assets
+
+- [`migrations/20260513_media_assets_r2.sql`](./migrations/20260513_media_assets_r2.sql)
+
+Public media files live in Cloudflare R2. Supabase stores the metadata and relationships through `media_assets`, while existing fields such as `chefs.avatar_path` can continue to store object keys like `chefs/jungsik.png`. See [`../docs/operations/cloudflare-r2-media-storage.md`](../docs/operations/cloudflare-r2-media-storage.md).
+
 ### Edge Functions
 
 - [`functions/kakao-place-lookup`](./functions/kakao-place-lookup)

@@ -4,6 +4,7 @@ import { getTasteColor, getTasteTintSoft, getTasteTintSoftBorder } from '../../c
 import { cn } from '../ui/utils';
 
 interface TasteChipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+  colorTaste?: string;
   taste: string;
   tone?: 'taste' | 'neutral';
   value?: ReactNode;
@@ -11,6 +12,7 @@ interface TasteChipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children
 
 export default function TasteChip({
   className,
+  colorTaste,
   style,
   taste,
   tone = 'taste',
@@ -18,9 +20,10 @@ export default function TasteChip({
   ...props
 }: TasteChipProps) {
   const isNeutral = tone === 'neutral';
-  const color = isNeutral ? 'var(--tb-color-text-tertiary)' : getTasteColor(taste);
-  const backgroundColor = isNeutral ? 'var(--tb-color-surface-muted)' : getTasteTintSoft(taste);
-  const borderColor = isNeutral ? 'var(--tb-color-border-strong)' : getTasteTintSoftBorder(taste);
+  const resolvedTaste = colorTaste ?? taste;
+  const color = isNeutral ? 'var(--tb-color-text-tertiary)' : getTasteColor(resolvedTaste);
+  const backgroundColor = isNeutral ? 'var(--tb-color-surface-muted)' : getTasteTintSoft(resolvedTaste);
+  const borderColor = isNeutral ? 'var(--tb-color-border-strong)' : getTasteTintSoftBorder(resolvedTaste);
   const tasteLabelColor = isNeutral ? color : value ? 'var(--tb-color-text-primary)' : color;
 
   return (

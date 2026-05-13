@@ -33,6 +33,7 @@ interface TopAppBarProps {
   onOpenProfile?: () => void;
   rightActions?: ReactNode;
   showSearchAction?: boolean;
+  userAvatarImageSrc?: string | null;
   userAvatarStyle?: CSSProperties;
   userInitials?: string;
 }
@@ -50,6 +51,7 @@ export default function TopAppBar({
   onOpenProfile,
   rightActions,
   showSearchAction = false,
+  userAvatarImageSrc,
   userAvatarStyle,
   userInitials = 'TB',
 }: TopAppBarProps) {
@@ -103,11 +105,19 @@ export default function TopAppBar({
             >
               <div
                 className="flex items-center justify-center overflow-hidden rounded-full size-[32px] bg-[color:rgba(255,153,0,0.2)]"
-                style={userAvatarStyle}
+                style={userAvatarImageSrc ? undefined : userAvatarStyle}
               >
-                <span className="font-semibold text-[13px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]">
-                  {userInitials}
-                </span>
+                {userAvatarImageSrc ? (
+                  <img
+                    alt=""
+                    className="size-full object-cover"
+                    src={userAvatarImageSrc}
+                  />
+                ) : (
+                  <span className="font-semibold text-[13px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]">
+                    {userInitials}
+                  </span>
+                )}
               </div>
               <div className="absolute inset-0 pointer-events-none rounded-full border border-white/45 shadow-[inset_0_0_0_1px_rgba(15,15,15,0.08)]" />
             </button>

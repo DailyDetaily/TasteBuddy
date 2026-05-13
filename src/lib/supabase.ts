@@ -93,6 +93,8 @@ export function isAnonymousSupabaseSession(session: Session | null) {
   return Boolean(session?.user.is_anonymous);
 }
 
+export type SupabaseEmailOtpIntent = 'start-with-email' | 'link-current-profile';
+
 export async function sendSupabaseMagicLink(email: string) {
   if (!supabase) {
     return {
@@ -122,7 +124,10 @@ export async function sendSupabaseMagicLink(email: string) {
   };
 }
 
-export async function sendSupabaseEmailOtp(email: string) {
+export async function sendSupabaseEmailOtp(
+  email: string,
+  intent: SupabaseEmailOtpIntent = 'start-with-email',
+) {
   if (!supabase) {
     return {
       ok: false,
@@ -130,12 +135,18 @@ export async function sendSupabaseEmailOtp(email: string) {
     };
   }
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: getAuthRedirectUrl(),
-    },
-  });
+  const { error } =
+    intent === 'link-current-profile'
+      ? await supabase.auth.updateUser(
+          { email },
+          { emailRedirectTo: getAuthRedirectUrl() },
+        )
+      : await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: getAuthRedirectUrl(),
+          },
+        });
 
   if (error) {
     console.warn('Failed to send Supabase email OTP.', error);
@@ -147,11 +158,18 @@ export async function sendSupabaseEmailOtp(email: string) {
 
   return {
     ok: true,
-    message: '이메일로 인증 코드를 보냈습니다.',
+    message:
+      intent === 'link-current-profile'
+        ? '현재 프로필을 연결할 인증 코드를 보냈습니다.'
+        : '이메일로 인증 코드를 보냈습니다.',
   };
 }
 
-export async function verifySupabaseEmailOtp(email: string, token: string) {
+export async function verifySupabaseEmailOtp(
+  email: string,
+  token: string,
+  intent: SupabaseEmailOtpIntent = 'start-with-email',
+) {
   if (!supabase) {
     return {
       ok: false,
@@ -163,7 +181,7 @@ export async function verifySupabaseEmailOtp(email: string, token: string) {
   const { data, error } = await supabase.auth.verifyOtp({
     email,
     token,
-    type: 'email',
+    type: intent === 'link-current-profile' ? 'email_change' : 'email',
   });
 
   if (error) {
@@ -177,7 +195,10 @@ export async function verifySupabaseEmailOtp(email: string, token: string) {
 
   return {
     ok: true,
-    message: '이메일 인증이 완료되었습니다.',
+    message:
+      intent === 'link-current-profile'
+        ? '현재 프로필이 이메일에 연결되었습니다.'
+        : '이메일 인증이 완료되었습니다.',
     session: data.session,
   };
 }

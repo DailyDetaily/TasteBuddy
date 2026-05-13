@@ -25,6 +25,11 @@ VITE_SUPABASE_PUBLISHABLE_KEY="your-supabase-publishable-key"
 # Legacy fallback
 VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
 
+# Public media origin. Prefer the Cloudflare R2 custom domain.
+VITE_R2_PUBLIC_MEDIA_BASE_URL="https://media.your-domain.com"
+# Optional generic alias if the media origin is not R2-specific.
+VITE_PUBLIC_MEDIA_BASE_URL="https://media.your-domain.com"
+# Legacy fallback when no public media base URL is configured.
 VITE_SUPABASE_PUBLIC_ASSET_BUCKET="taste-buddy-assets"
 
 # Server-side only
@@ -43,10 +48,15 @@ GOOGLE_MAPS_API_KEY="your-google-maps-api-key"
 
 지금 앱은 `VITE_SUPABASE_PUBLISHABLE_KEY`를 먼저 읽고, 없으면 `VITE_SUPABASE_ANON_KEY`를 fallback으로 사용합니다.
 
-`chefs.avatar_path`처럼 DB에 저장된 상대 이미지 경로는
-`VITE_SUPABASE_PUBLIC_ASSET_BUCKET`의 public object URL로 해석됩니다. 예를 들어 bucket이
-`taste-buddy-assets`이고 DB 값이 `chefs/jungsik.png`이면 앱은 Supabase Storage의
-public asset을 먼저 사용하고, 없을 때만 로컬 fallback 이미지를 사용합니다.
+`chefs.avatar_path`처럼 DB에 저장된 상대 이미지 경로는 R2 public media origin으로 해석됩니다. 예를 들어
+`VITE_R2_PUBLIC_MEDIA_BASE_URL`이 `https://media.your-domain.com`이고 DB 값이
+`chefs/jungsik.png`이면 앱은 `https://media.your-domain.com/chefs/jungsik.png`를 먼저
+사용하고, 없을 때만 로컬 fallback 이미지를 사용합니다.
+
+`VITE_R2_PUBLIC_MEDIA_BASE_URL` 또는 `VITE_PUBLIC_MEDIA_BASE_URL`이 없으면 기존처럼
+`VITE_SUPABASE_PUBLIC_ASSET_BUCKET`의 Supabase Storage public object URL로 fallback합니다.
+
+R2 운영 기준은 [cloudflare-r2-media-storage.md](/Users/sinjunho/Desktop/Taste%20Buddy%20app/docs/operations/cloudflare-r2-media-storage.md#L1)를 참고하세요.
 
 ## 3. DB 스키마 적용
 
@@ -54,6 +64,7 @@ public asset을 먼저 사용하고, 없을 때만 로컬 fallback 이미지를 
 
 - [20260326_taste_buddy_mvp.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260326_taste_buddy_mvp.sql#L1)
 - [20260430_place_index.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260430_place_index.sql#L1)
+- [20260513_media_assets_r2.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260513_media_assets_r2.sql#L1)
 
 이 파일이 만들어주는 것:
 - `restaurants`
@@ -64,6 +75,7 @@ public asset을 먼저 사용하고, 없을 때만 로컬 fallback 이미지를 
 - `dish_inference_profiles`
 - 앱에서 쓰는 예약/측정/피드백 관련 테이블들
 - `restaurant_place_index`, `restaurant_operating_hours`
+- R2 object metadata용 `media_assets`
 
 ## 4. Anonymous auth 사용 여부
 

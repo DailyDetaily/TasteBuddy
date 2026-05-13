@@ -1,4 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import {
+  Clock as ClockIcon,
+  Heart as HeartIcon,
+  MessageCircle as MessageCircleIcon,
+  Share2 as Share2Icon,
+} from 'lucide-react';
 
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import TopAppBar from '../components/TopAppBar';
@@ -6,6 +12,8 @@ import SectionCard from '../components/SectionCard';
 import {
   DiningAiAnalysisScreen,
   DiningFeedbackScreen,
+  findTasteExperience,
+  type TasteAxisId,
 } from '../components/reservation/DiningFeedbackFlow';
 import ReservationCard from '../components/reservation/ReservationCard';
 import {
@@ -18,17 +26,17 @@ import {
   ReservationTimelineSection,
   type ReservationPersonalizationSummary,
 } from '../components/reservation/ReservationDetailSections';
-import PrimaryButton from '../components/system/PrimaryButton';
 import CardDetailLabel from '../components/system/CardDetailLabel';
-import ChefAvatar from '../components/system/ChefAvatar';
+import ImageBox from '../components/system/ImageBox';
 import PageSection from '../components/system/PageSection';
 import HospitalityEmptyState from '../components/system/HospitalityEmptyState';
-import SectionTitle from '../components/system/SectionTitle';
 import StatusChip from '../components/system/StatusChip';
 import TasteChip from '../components/system/TasteChip';
 import EmptyState from '../components/system/EmptyState';
 import {
   createDiningFeedbackDraft,
+  getDiningFeedbackScenario,
+  type DiningDishMetadata,
   type DiningFeedbackDraft,
   type DiningFeedbackScenario,
 } from '../constants/diningFeedbackData';
@@ -46,13 +54,417 @@ import {
   type ReservationRecord as Reservation,
 } from '../constants/reservationCatalog';
 import { ICON_TOKENS } from '../constants/designTokens';
+import { TASTE_TYPES } from '../constants/tasteColors';
 import {
   hydrateReservationPageData,
   submitDiningFeedbackToSupabase,
 } from '../lib/tasteBuddySupabase';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { trackEvent, trackPageView } from '../lib/analytics';
 
 type ReservationView = 'detail' | 'feedback' | 'analysis';
+
+interface ReservationNavigationLocation {
+  selectedId: number | null;
+  selectedView: ReservationView;
+}
+
+interface DishTasteTag {
+  colorTaste?: string;
+  label: string;
+}
+
+interface DishFeedbackItem {
+  courseLabel: string;
+  dish: DiningDishMetadata;
+  feedbackDateLabel: string;
+  feedbackTimestamp: number;
+  reservation: Reservation;
+  scenario: DiningFeedbackScenario;
+  synthesisSummary: string;
+  tasteTags: DishTasteTag[];
+}
+
+const FALLBACK_FEEDBACK_SCENARIOS = RESERVATION_CATALOG.reduce<Record<number, DiningFeedbackScenario>>(
+  (scenarios, reservation) => {
+    const scenario = getDiningFeedbackScenario(reservation.id);
+
+    if (scenario) {
+      scenarios[reservation.id] = scenario;
+    }
+
+    return scenarios;
+  },
+  {},
+);
+
+const RESTAURANT_LOCATION_LABELS: Record<string, string> = {
+  모수: '서울시 용산구',
+  정식당: '서울시 강남구',
+  '레스토랑 베누': '서울시 강남구',
+  '숍 리제 (Lysée)': '서울시 강남구',
+};
+
+function getRestaurantLocationLabel(restaurant: string) {
+  return RESTAURANT_LOCATION_LABELS[restaurant] ?? '서울시';
+}
+
+const TASTE_AXIS_LABEL_BY_ID: Record<TasteAxisId, string> = {
+  bitter: '쓴맛',
+  fat: '지방맛',
+  salty: '짠맛',
+  sour: '신맛',
+  sweet: '단맛',
+  umami: '감칠맛',
+};
+
+function isTasteLabel(taste: string) {
+  return TASTE_TYPES.includes(taste as (typeof TASTE_TYPES)[number]);
+}
+
+function buildDishTasteTags({
+  affectedTastes,
+  selectedExperience,
+}: {
+  affectedTastes: readonly string[];
+  selectedExperience: ReturnType<typeof findTasteExperience>;
+}) {
+  const tags: DishTasteTag[] = [];
+  const addTag = (tag: DishTasteTag) => {
+    if (!tags.some((existingTag) => existingTag.label === tag.label)) {
+      tags.push(tag);
+    }
+  };
+
+  if (selectedExperience) {
+    addTag({
+      colorTaste: TASTE_AXIS_LABEL_BY_ID[selectedExperience.axis],
+      label: selectedExperience.label,
+    });
+  }
+
+  affectedTastes.forEach((taste) => {
+    addTag({
+      colorTaste: isTasteLabel(taste) ? taste : undefined,
+      label: taste,
+    });
+  });
+
+  return tags;
+}
+
+function formatFeedbackDate(completedAt: string) {
+  const date = new Date(completedAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return completedAt;
+  }
+
+  return new Intl.DateTimeFormat('ko-KR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+}
+
+function buildDishFeedbackSynthesis({
+  dish,
+  selectedFeedbackReason,
+  tasteTags,
+}: {
+  dish: DiningDishMetadata;
+  selectedFeedbackReason: string | null;
+  tasteTags: DishTasteTag[];
+}) {
+  const tasteTagSummary =
+    tasteTags.length > 0
+      ? `${tasteTags.slice(0, 2).map((tag) => tag.label).join(', ')} 반응과 함께`
+      : '남긴 인상과 함께';
+  const interpretation =
+    selectedFeedbackReason ??
+    `${dish.title}에서 남긴 인상이 다음 다이닝 기준에 반영됩니다.`;
+
+  return `${tasteTagSummary} 보면, ${interpretation} 이 흐름은 다음 다이닝에서 중심 풍미와 끝맛을 조율하는 참고 기준이 됩니다.`;
+}
+
+function buildDishFeedbackItems({
+  feedbackByReservationId,
+  feedbackScenariosByReservationId,
+  reservations,
+}: {
+  feedbackByReservationId: Record<number, DiningFeedbackDraft>;
+  feedbackScenariosByReservationId: Record<number, DiningFeedbackScenario>;
+  reservations: Reservation[];
+}) {
+  return reservations.flatMap<DishFeedbackItem>((reservation) => {
+    const scenario = feedbackScenariosByReservationId[reservation.id] ?? FALLBACK_FEEDBACK_SCENARIOS[reservation.id];
+
+    if (!scenario) {
+      return [];
+    }
+
+    const draft = feedbackByReservationId[reservation.id] ?? (
+      reservation.status === 'completed' ? createDiningFeedbackDraft(scenario) : null
+    );
+
+    if (!draft) {
+      return [];
+    }
+
+    const feedbackTimestamp = new Date(scenario.completedAt).getTime();
+    const safeFeedbackTimestamp = Number.isNaN(feedbackTimestamp) ? 0 : feedbackTimestamp;
+
+    return scenario.dishes
+      .map<DishFeedbackItem | null>((dish) => {
+        const response = draft.dishResponses[dish.id];
+
+        if (!response?.selectedChoiceId && !response?.selectedExperienceId) {
+          return null;
+        }
+
+        const selectedChoice =
+          dish.feedbackChoices.find((choice) => choice.id === response.selectedChoiceId) ?? null;
+        const selectedExperience = findTasteExperience(response.selectedExperienceId);
+        const tasteTags = buildDishTasteTags({
+          affectedTastes: selectedChoice?.affectedTastes ?? [],
+          selectedExperience,
+        });
+
+        const selectedFeedbackReason =
+          selectedChoice?.reason ??
+          selectedExperience?.description ??
+          null;
+
+        return {
+          courseLabel: dish.courseLabel,
+          dish,
+          feedbackDateLabel: formatFeedbackDate(scenario.completedAt),
+          feedbackTimestamp: safeFeedbackTimestamp,
+          reservation,
+          scenario,
+          synthesisSummary: buildDishFeedbackSynthesis({
+            dish,
+            selectedFeedbackReason,
+            tasteTags,
+          }),
+          tasteTags,
+        };
+      })
+      .filter((item): item is DishFeedbackItem => Boolean(item));
+  }).sort((left, right) => right.feedbackTimestamp - left.feedbackTimestamp);
+}
+
+function FeedbackAuthorLine({
+  nickname,
+  restaurant,
+}: {
+  nickname: string;
+  restaurant: string;
+}) {
+  const lineRef = useRef<HTMLParagraphElement | null>(null);
+  const measureRef = useRef<HTMLSpanElement | null>(null);
+  const restRef = useRef<HTMLSpanElement | null>(null);
+  const [visibleNickname, setVisibleNickname] = useState(nickname);
+
+  useLayoutEffect(() => {
+    const lineElement = lineRef.current;
+    const measureElement = measureRef.current;
+    const restElement = restRef.current;
+
+    if (!lineElement || !measureElement || !restElement) {
+      return;
+    }
+
+    const getTextWidth = (text: string) => {
+      measureElement.textContent = text;
+      return measureElement.scrollWidth;
+    };
+    const nicknameCharacters = Array.from(nickname);
+
+    const updateVisibleNickname = () => {
+      const availableWidth = lineElement.clientWidth - restElement.scrollWidth;
+
+      if (nicknameCharacters.length <= 2 || getTextWidth(nickname) <= availableWidth) {
+        setVisibleNickname(nickname);
+        return;
+      }
+
+      let low = 2;
+      let high = nicknameCharacters.length - 1;
+      let bestFit = nicknameCharacters.slice(0, 2).join('');
+
+      while (low <= high) {
+        const middle = Math.floor((low + high) / 2);
+        const candidate = `${nicknameCharacters.slice(0, middle).join('')}..`;
+
+        if (getTextWidth(candidate) <= availableWidth) {
+          bestFit = nicknameCharacters.slice(0, middle).join('');
+          low = middle + 1;
+        } else {
+          high = middle - 1;
+        }
+      }
+
+      setVisibleNickname(`${bestFit}..`);
+    };
+
+    updateVisibleNickname();
+
+    const resizeObserver = new ResizeObserver(updateVisibleNickname);
+    resizeObserver.observe(lineElement);
+    resizeObserver.observe(restElement);
+    window.addEventListener('resize', updateVisibleNickname);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateVisibleNickname);
+    };
+  }, [nickname, restaurant]);
+
+  return (
+    <p
+      ref={lineRef}
+      className="relative flex min-w-0 max-w-full items-baseline overflow-hidden whitespace-nowrap text-[14px] font-normal leading-snug text-[var(--tb-color-text-primary)]"
+    >
+      <span
+        className="pointer-events-none invisible absolute left-0 top-0 whitespace-nowrap font-semibold"
+        ref={measureRef}
+      />
+      <span className="shrink-0 whitespace-nowrap font-semibold">
+        {visibleNickname}
+      </span>
+      <span
+        ref={restRef}
+        className="shrink-0 whitespace-nowrap"
+      >
+        님이&nbsp;
+        <span className="font-semibold">{restaurant}</span>의 후기를 남기셨습니다.
+      </span>
+    </p>
+  );
+}
+
+function DishFeedbackCard({
+  avatarImageSrc,
+  avatarStyle,
+  initials,
+  item,
+  nickname,
+  onSelect,
+}: {
+  avatarImageSrc?: string | null;
+  avatarStyle?: CSSProperties;
+  initials: string;
+  item: DishFeedbackItem;
+  nickname: string;
+  onSelect: () => void;
+}) {
+  return (
+    <button type="button" className="block w-full text-left" onClick={onSelect}>
+      <SectionCard hoverEffect className="gap-[12px]">
+        <div className="flex w-full items-start gap-3">
+          <div
+            className="flex size-[40px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-[color:rgba(255,153,0,0.2)]"
+            style={avatarImageSrc ? undefined : avatarStyle}
+          >
+            {avatarImageSrc ? (
+              <img alt="" className="size-full object-cover" src={avatarImageSrc} />
+            ) : (
+              <span className="text-[13px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]">
+                {initials}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <FeedbackAuthorLine
+              nickname={nickname}
+              restaurant={item.reservation.restaurant}
+            />
+            <p className="mt-1 max-w-full truncate text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
+              {getRestaurantLocationLabel(item.reservation.restaurant)}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex w-full items-start gap-[12px]">
+          <ImageBox
+            alt={`${item.dish.title} 메뉴 사진`}
+            className="size-[128px] shrink-0 rounded-[12px]"
+            fallbackIconSize={ICON_TOKENS.size.xl}
+            kind="menu"
+          />
+          <div className="min-w-0 grow">
+            <h2 className="text-[16px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
+              {item.dish.title}
+            </h2>
+            <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
+              {item.courseLabel} · 테이스팅 코스
+            </p>
+            <p className="mt-2 inline-flex items-center gap-1 text-[12px] font-normal text-[var(--tb-color-text-muted)]">
+              <ClockIcon
+                size={ICON_TOKENS.size.sm}
+                className="text-[var(--tb-color-icon-muted)]"
+                strokeWidth={1.8}
+              />
+              {item.feedbackDateLabel}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex w-full flex-wrap items-start gap-[6px]">
+          {item.tasteTags.length > 0 ? (
+            item.tasteTags.map((tag) => (
+              <TasteChip
+                colorTaste={tag.colorTaste}
+                key={`${item.dish.id}-${tag.label}`}
+                taste={tag.label}
+                tone={tag.colorTaste ? 'taste' : 'neutral'}
+              />
+            ))
+          ) : (
+            <TasteChip taste="미각 단어" tone="neutral" value="아직 없음" />
+          )}
+        </div>
+
+        <div className="w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+          <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
+            피드백 종합 해석
+          </p>
+          <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+            {item.synthesisSummary}
+          </p>
+        </div>
+
+        <div className="flex w-full items-center gap-2 border-t border-[rgba(15,15,15,0.08)] pt-[12px]">
+          <button
+            type="button"
+            aria-label="좋아요"
+            className="flex size-8 items-center justify-center rounded-full text-[var(--tb-color-text-muted)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <HeartIcon size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+          </button>
+          <button
+            type="button"
+            aria-label="댓글"
+            className="flex size-8 items-center justify-center rounded-full text-[var(--tb-color-text-muted)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <MessageCircleIcon size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+          </button>
+          <button
+            type="button"
+            aria-label="공유"
+            className="flex size-8 items-center justify-center rounded-full text-[var(--tb-color-text-muted)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Share2Icon size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+          </button>
+        </div>
+      </SectionCard>
+    </button>
+  );
+}
 
 function buildReservationPersonalizationSummary(
   measurementSnapshot: TasteMeasurementSnapshot,
@@ -186,6 +598,10 @@ interface ReservationPageProps {
   initialReservations?: Reservation[];
   measurementSnapshot: TasteMeasurementSnapshot;
   starterGuidance?: RestaurantReadyGuidance | null;
+  userAvatarImageSrc?: string | null;
+  userAvatarStyle?: CSSProperties;
+  userInitials?: string;
+  userNickname?: string | null;
   onFeedbackMapViewChange?: (isMapView: boolean) => void;
   onRootViewChange?: (isRootView: boolean) => void;
   onOpenRestaurantDetail?: (reservation: Reservation) => void;
@@ -200,6 +616,10 @@ export default function ReservationPage({
   initialReservations,
   measurementSnapshot,
   starterGuidance = null,
+  userAvatarImageSrc,
+  userAvatarStyle,
+  userInitials = 'JH',
+  userNickname = null,
   onFeedbackMapViewChange,
   onRootViewChange,
   onOpenRestaurantDetail,
@@ -218,18 +638,93 @@ export default function ReservationPage({
   );
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedView, setSelectedView] = useState<ReservationView>('detail');
+  const navigationStackRef = useRef<ReservationNavigationLocation[]>([]);
   const [feedbackByReservationId, setFeedbackByReservationId] = useState<Record<number, DiningFeedbackDraft>>({});
   const [feedbackScenariosByReservationId, setFeedbackScenariosByReservationId] = useState<
     Record<number, DiningFeedbackScenario>
-  >({});
-  const selectedReservation = reservations.find(r => r.id === selectedId);
+  >(FALLBACK_FEEDBACK_SCENARIOS);
+  const visibleReservations = reservations.length > 0 ? reservations : RESERVATION_CATALOG;
+  const selectedReservation = visibleReservations.find(r => r.id === selectedId);
   const selectedScenario = selectedReservation
-    ? feedbackScenariosByReservationId[selectedReservation.id] ?? null
+    ? feedbackScenariosByReservationId[selectedReservation.id] ?? FALLBACK_FEEDBACK_SCENARIOS[selectedReservation.id] ?? null
     : null;
   const activeFeedbackDraft =
     selectedReservation && selectedScenario
       ? feedbackByReservationId[selectedReservation.id] ?? createDiningFeedbackDraft(selectedScenario)
       : null;
+
+  const getCurrentNavigationLocation = (): ReservationNavigationLocation => ({
+    selectedId,
+    selectedView,
+  });
+
+  const navigateToReservationLocation = (
+    nextLocation: ReservationNavigationLocation,
+    options: { replace?: boolean } = {},
+  ) => {
+    const currentLocation = getCurrentNavigationLocation();
+
+    if (
+      currentLocation.selectedId === nextLocation.selectedId &&
+      currentLocation.selectedView === nextLocation.selectedView
+    ) {
+      return;
+    }
+
+    trackEvent('reservation_navigation', {
+      from_selected_id: currentLocation.selectedId,
+      from_view: currentLocation.selectedView,
+      to_selected_id: nextLocation.selectedId,
+      to_view: nextLocation.selectedView,
+      replace: Boolean(options.replace),
+    });
+
+    if (!options.replace) {
+      navigationStackRef.current = [
+        ...navigationStackRef.current.slice(-9),
+        currentLocation,
+      ];
+    }
+
+    setSelectedId(nextLocation.selectedId);
+    setSelectedView(nextLocation.selectedView);
+  };
+
+  const goBackToPreviousReservationLocation = (
+    fallback: ReservationNavigationLocation = { selectedId: null, selectedView: 'detail' },
+  ) => {
+    const previousLocation = navigationStackRef.current.pop() ?? fallback;
+
+    trackEvent('reservation_navigation_back', {
+      to_selected_id: previousLocation.selectedId,
+      to_view: previousLocation.selectedView,
+    });
+
+    setSelectedId(previousLocation.selectedId);
+    setSelectedView(previousLocation.selectedView);
+  };
+
+  useEffect(() => {
+    if (selectedReservation) {
+      trackPageView(
+        `Taste Buddy - Reservation ${selectedView}`,
+        `/reservation/${selectedReservation.id}/${selectedView}`,
+        {
+          reservation_id: selectedReservation.id,
+          reservation_status: selectedReservation.status,
+          restaurant_name: selectedReservation.restaurant,
+          chef_name: selectedReservation.chef,
+          selected_view: selectedView,
+        },
+      );
+      return;
+    }
+
+    trackPageView('Taste Buddy - Reservations', '/reservation', {
+      reservation_count: visibleReservations.length,
+      selected_view: selectedView,
+    });
+  }, [selectedReservation, selectedView, visibleReservations.length]);
 
   useEffect(() => {
     onRootViewChange?.(!selectedReservation);
@@ -279,16 +774,45 @@ export default function ReservationPage({
         <DiningFeedbackScreen
           scenario={selectedScenario}
           draft={activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario)}
-          onBack={() => setSelectedView('detail')}
+          onBack={() =>
+            goBackToPreviousReservationLocation({
+              selectedId: selectedReservation.id,
+              selectedView: 'detail',
+            })
+          }
           onChange={(nextDraft) =>
-            setFeedbackByReservationId((current) => ({
-              ...current,
-              [selectedReservation.id]: nextDraft,
-            }))
+            {
+              trackEvent('dining_feedback_change', {
+                reservation_id: selectedReservation.id,
+                restaurant_name: selectedReservation.restaurant,
+                chef_name: selectedReservation.chef,
+                dish_count: selectedScenario.dishes.length,
+                completed_dish_count: Object.values(nextDraft.dishResponses).filter(
+                  (response) => response.selectedChoiceId || response.selectedExperienceId,
+                ).length,
+              });
+              setFeedbackByReservationId((current) => ({
+                ...current,
+                [selectedReservation.id]: nextDraft,
+              }));
+            }
           }
           onMapViewChange={onFeedbackMapViewChange}
           onSubmit={async () => {
             const nextDraft = activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario);
+            const completedDishCount = Object.values(nextDraft.dishResponses).filter(
+              (response) => response.selectedChoiceId || response.selectedExperienceId,
+            ).length;
+
+            trackEvent('dining_feedback_submit', {
+              reservation_id: selectedReservation.id,
+              reservation_status: selectedReservation.status,
+              restaurant_name: selectedReservation.restaurant,
+              chef_name: selectedReservation.chef,
+              course_name: selectedReservation.course,
+              dish_count: selectedScenario.dishes.length,
+              completed_dish_count: completedDishCount,
+            });
 
             setFeedbackByReservationId((current) => ({
               ...current,
@@ -312,11 +836,20 @@ export default function ReservationPage({
                 },
                 scenario: selectedScenario,
               });
+              trackEvent('dining_feedback_persist_success', {
+                reservation_id: selectedReservation.id,
+              });
             } catch (error) {
+              trackEvent('dining_feedback_persist_error', {
+                reservation_id: selectedReservation.id,
+              });
               console.warn('Failed to persist dining feedback to Supabase.', error);
             }
 
-            setSelectedView('analysis');
+            navigateToReservationLocation({
+              selectedId: selectedReservation.id,
+              selectedView: 'analysis',
+            });
           }}
         />
       );
@@ -328,8 +861,21 @@ export default function ReservationPage({
           scenario={selectedScenario}
           draft={activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario)}
           measurementSnapshot={measurementSnapshot}
-          onBack={() => setSelectedView('feedback')}
-          onClose={() => setSelectedView('detail')}
+          onBack={() =>
+            goBackToPreviousReservationLocation({
+              selectedId: selectedReservation.id,
+              selectedView: 'detail',
+            })
+          }
+          onClose={() =>
+            navigateToReservationLocation(
+              {
+                selectedId: selectedReservation.id,
+                selectedView: 'detail',
+              },
+              { replace: true },
+            )
+          }
         />
       );
     }
@@ -341,11 +887,20 @@ export default function ReservationPage({
         feedbackSubmitted={Boolean(feedbackByReservationId[selectedReservation.id])}
         measurementSnapshot={measurementSnapshot}
         onBack={() => {
-          setSelectedId(null);
-          setSelectedView('detail');
+          goBackToPreviousReservationLocation();
         }}
-        onOpenFeedback={() => setSelectedView('feedback')}
-        onOpenAnalysis={() => setSelectedView('analysis')}
+        onOpenFeedback={() =>
+          navigateToReservationLocation({
+            selectedId: selectedReservation.id,
+            selectedView: 'feedback',
+          })
+        }
+        onOpenAnalysis={() =>
+          navigateToReservationLocation({
+            selectedId: selectedReservation.id,
+            selectedView: 'analysis',
+          })
+        }
         onOpenRestaurantDetail={onOpenRestaurantDetail}
         onStartMeasurement={onStartMeasurement}
         starterGuidance={starterGuidance}
@@ -353,134 +908,58 @@ export default function ReservationPage({
     );
   }
 
-  const upcoming = reservations.filter(r => r.status !== 'completed');
-  const completed = reservations.filter(r => r.status === 'completed');
+  const upcoming = visibleReservations.filter(r => r.status !== 'completed');
+  const completed = visibleReservations.filter(r => r.status === 'completed');
   const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
-  const featuredReservation = upcoming[0] ?? null;
-  const featuredSummary = featuredReservation
-    ? buildReservationPersonalizationSummary(
-      measurementSnapshot,
-      featuredReservation,
-      starterGuidance,
-    )
-    : null;
   const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
   const measurementHighlights = getTasteMeasurementEntries(measurementSnapshot).sort(
     (left, right) => right.valueMm - left.valueMm,
   );
   const topTasteLabels = measurementHighlights.slice(0, 2).map((entry) => entry.label);
   const remeasurementAccentTaste = measurementHighlights[0]?.label;
+  const dishFeedbackItems = buildDishFeedbackItems({
+    feedbackByReservationId,
+    feedbackScenariosByReservationId,
+    reservations: visibleReservations,
+  });
+  const feedbackAuthorName = userNickname?.trim() || userInitials;
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
           <div className="tb-card-stack">
-            <h1 className="font-bold text-[18px] text-[var(--tb-color-text-primary)] tracking-[-0.24px]">다이닝</h1>
-
-            {featuredReservation && featuredSummary && (
-              <SectionCard hoverEffect={false}>
-                <div className="flex flex-col gap-4 w-full">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <StatusChip
-                          color="var(--tb-color-text-primary)"
-                          backgroundColor="var(--tb-color-surface-base)"
-                        >
-                          {starterGuidance ? 'Restaurant-ready Profile' : 'Chef-ready Personalization'}
-                        </StatusChip>
-                        <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
-                          {featuredReservation.date}
-                        </span>
-                      </div>
-
-                      <div className="mt-3 flex items-center gap-3">
-                        <ChefAvatar
-                          alt={featuredReservation.chef}
-                          className="h-[40px] w-[40px] rounded-[var(--tb-radius-8)]"
-                          iconSize={ICON_TOKENS.size.lg}
-                          imageSrc={featuredReservation.chefImage}
-                          taste={featuredReservation.adjustments[0]?.taste}
-                          variant="neutral"
-                        />
-
-                        <div className="min-w-0">
-                          <p className="truncate text-[12px] font-medium text-[var(--tb-color-text-hint)]">
-                            {featuredReservation.restaurant}
-                          </p>
-                          <p className="truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                            {featuredReservation.chef} 셰프
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <StatusChip className="shrink-0 gap-1">
-                      <span>매칭</span>
-                      <span>{featuredReservation.matchRate}%</span>
-                    </StatusChip>
-                  </div>
-
-                  <h2 className="text-[18px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
-                    {featuredSummary.headline}
-                  </h2>
-
-                  <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                    {starterGuidance?.summaryLine ?? featuredReservation.diningPromise}
-                  </p>
-
-                  <div className="grid gap-2">
-                    <div className="rounded-[8px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
-                        게스트가 기대할 변화
-                      </p>
-                      <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                        {featuredSummary.guestMessage}
-                      </p>
-                    </div>
-
-                    <div className="rounded-[8px] bg-[var(--tb-color-surface-muted)] px-4 py-3">
-                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
-                        {starterGuidance ? '매장이 참고하는 포인트' : '셰프가 참고하는 포인트'}
-                      </p>
-                      <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                        {featuredSummary.chefGuidance[0] ?? featuredSummary.recommendationLogic}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {featuredSummary.primary.map((entry) => (
-                      <TasteChip key={entry.id} taste={entry.label} value="현재 더 또렷한 포인트" />
-                    ))}
-                    <TasteChip
-                      taste={featuredSummary.softest.label}
-                      value="부드럽게 연결할 포인트"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <PrimaryButton
-                      onClick={() => {
-                        setSelectedId(featuredReservation.id);
-                        setSelectedView('detail');
-                      }}
-                    >
-                      예약 개인화 자세히 보기
-                    </PrimaryButton>
-                    <button
-                      type="button"
-                      onClick={onStartMeasurement}
-                      className="self-center text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
-                    >
-                      {needsMeasurementRefresh ? '현재 프로필 다시 반영하기' : '현재 컨디션 한 번 더 반영하기'}
-                    </button>
-                  </div>
-                </div>
-              </SectionCard>
-            )}
+            <PageSection
+              contentClassName="flex flex-col gap-3"
+              title="나의 디시"
+              titleAs="h2"
+              titleSize="md"
+            >
+              {dishFeedbackItems.length > 0 ? (
+                dishFeedbackItems.map((item) => (
+                  <DishFeedbackCard
+                    key={`${item.scenario.reservationId}-${item.dish.id}`}
+                    avatarImageSrc={userAvatarImageSrc}
+                    avatarStyle={userAvatarStyle}
+                    initials={userInitials}
+                    item={item}
+                    nickname={feedbackAuthorName}
+                    onSelect={() => {
+                      navigateToReservationLocation({
+                        selectedId: item.reservation.id,
+                        selectedView: 'analysis',
+                      });
+                    }}
+                  />
+                ))
+              ) : (
+                <EmptyState
+                  title="아직 기록된 디시 피드백이 없어요"
+                  description="식후 피드백에서 기억나는 메뉴와 미각 단어를 남기면, 이곳에 나만의 디시 로그가 쌓입니다."
+                />
+              )}
+            </PageSection>
 
             {upcoming.length > 0 && (
               <TasteMeasurementMiniCta
@@ -526,8 +1005,10 @@ export default function ReservationPage({
                   key={r.id}
                   reservation={r}
                   onSelect={() => {
-                    setSelectedId(r.id);
-                    setSelectedView('detail');
+                    navigateToReservationLocation({
+                      selectedId: r.id,
+                      selectedView: 'detail',
+                    });
                   }}
                   onOpenRestaurantInfo={() => onOpenRestaurantDetail?.(r)}
                 />
@@ -549,8 +1030,10 @@ export default function ReservationPage({
                   key={r.id}
                   reservation={r}
                   onSelect={() => {
-                    setSelectedId(r.id);
-                    setSelectedView('detail');
+                    navigateToReservationLocation({
+                      selectedId: r.id,
+                      selectedView: 'detail',
+                    });
                   }}
                   onOpenRestaurantInfo={() => onOpenRestaurantDetail?.(r)}
                 />

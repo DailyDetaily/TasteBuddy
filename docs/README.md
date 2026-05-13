@@ -55,6 +55,7 @@ The important thing to know is that some of the most important docs live at the 
 - Catchtable workflow: [`operations/catchtable-menu-automation.md`](./operations/catchtable-menu-automation.md)
 - Batch run log: [`operations/catchtable-batch-run-2026-03-29.md`](./operations/catchtable-batch-run-2026-03-29.md)
 - Supabase setup: [`operations/supabase-connect-and-seed.md`](./operations/supabase-connect-and-seed.md)
+- Cloudflare R2 media storage: [`operations/cloudflare-r2-media-storage.md`](./operations/cloudflare-r2-media-storage.md)
 
 ## Notes
 

@@ -44,10 +44,10 @@ const returnIntentOptions = [
   { id: 'no', label: '다른 방향이 더 잘 맞을 것 같아요' },
 ] as const;
 
-type TasteAxisId = 'sweet' | 'sour' | 'salty' | 'bitter' | 'umami' | 'fat';
+export type TasteAxisId = 'sweet' | 'sour' | 'salty' | 'bitter' | 'umami' | 'fat';
 type DiningFeedbackStep = 'menu-select' | 'taste-checkin';
 
-interface TasteExperienceWord {
+export interface TasteExperienceWord {
   angleOffset: number;
   axis: TasteAxisId;
   description: string;
@@ -244,7 +244,7 @@ function getExperienceMappedRating(experience: TasteExperienceWord) {
   return 4;
 }
 
-function findTasteExperience(experienceId: string | null | undefined) {
+export function findTasteExperience(experienceId: string | null | undefined) {
   const exactMatch = tasteExperienceWords.find((experience) => experience.id === experienceId);
 
   if (exactMatch || !experienceId) {

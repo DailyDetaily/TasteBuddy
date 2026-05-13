@@ -47,6 +47,11 @@ import { hydrateRestaurantPlaceInfo } from '../lib/tasteBuddySupabase';
 
 type RestaurantDetailView = 'detail' | 'feedback' | 'analysis' | 'menuDetail';
 
+interface RestaurantNavigationLocation {
+  selectedMenuDetail: RestaurantMenuDetailViewModel | null;
+  selectedView: RestaurantDetailView;
+}
+
 export type RestaurantDetailViewModel = {
   id: string;
   category: string;
@@ -1145,6 +1150,7 @@ export default function RestaurantDetailPage({
   const [selectedView, setSelectedView] = useState<RestaurantDetailView>('detail');
   const [selectedMenuDetail, setSelectedMenuDetail] =
     useState<RestaurantMenuDetailViewModel | null>(null);
+  const navigationStackRef = useRef<RestaurantNavigationLocation[]>([]);
   const [feedbackDraft, setFeedbackDraft] = useState<DiningFeedbackDraft>(() =>
     createDiningFeedbackDraft(feedbackScenario),
   );
@@ -1158,6 +1164,47 @@ export default function RestaurantDetailPage({
   const iconButtonStyle = {
     height: ICON_TOKENS.container.lg,
     width: ICON_TOKENS.container.lg,
+  };
+
+  const getCurrentNavigationLocation = (): RestaurantNavigationLocation => ({
+    selectedMenuDetail,
+    selectedView,
+  });
+
+  const navigateToRestaurantLocation = (
+    nextLocation: RestaurantNavigationLocation,
+    options: { replace?: boolean } = {},
+  ) => {
+    const currentLocation = getCurrentNavigationLocation();
+
+    if (
+      currentLocation.selectedView === nextLocation.selectedView &&
+      currentLocation.selectedMenuDetail?.id === nextLocation.selectedMenuDetail?.id
+    ) {
+      return;
+    }
+
+    if (!options.replace) {
+      navigationStackRef.current = [
+        ...navigationStackRef.current.slice(-9),
+        currentLocation,
+      ];
+    }
+
+    setSelectedMenuDetail(nextLocation.selectedMenuDetail);
+    setSelectedView(nextLocation.selectedView);
+  };
+
+  const goBackToPreviousRestaurantLocation = (
+    fallback: RestaurantNavigationLocation = {
+      selectedMenuDetail: null,
+      selectedView: 'detail',
+    },
+  ) => {
+    const previousLocation = navigationStackRef.current.pop() ?? fallback;
+
+    setSelectedMenuDetail(previousLocation.selectedMenuDetail);
+    setSelectedView(previousLocation.selectedView);
   };
 
   useEffect(() => {
@@ -1203,6 +1250,7 @@ export default function RestaurantDetailPage({
     setFeedbackDraft(createDiningFeedbackDraft(feedbackScenario));
     setSelectedView('detail');
     setSelectedMenuDetail(null);
+    navigationStackRef.current = [];
   }, [detail.id, feedbackScenario]);
 
   useEffect(() => {
@@ -1219,10 +1267,15 @@ export default function RestaurantDetailPage({
     return (
       <DiningFeedbackScreen
         draft={feedbackDraft}
-        onBack={() => setSelectedView('detail')}
+        onBack={goBackToPreviousRestaurantLocation}
         onChange={setFeedbackDraft}
         onMapViewChange={onFeedbackMapViewChange}
-        onSubmit={() => setSelectedView('analysis')}
+        onSubmit={() =>
+          navigateToRestaurantLocation({
+            selectedMenuDetail: null,
+            selectedView: 'analysis',
+          })
+        }
         scenario={feedbackScenario}
       />
     );
@@ -1233,8 +1286,16 @@ export default function RestaurantDetailPage({
       <DiningAiAnalysisScreen
         draft={feedbackDraft}
         measurementSnapshot={measurementSnapshot ?? createInitialTasteMeasurementSnapshot()}
-        onBack={() => setSelectedView('feedback')}
-        onClose={() => setSelectedView('detail')}
+        onBack={goBackToPreviousRestaurantLocation}
+        onClose={() =>
+          navigateToRestaurantLocation(
+            {
+              selectedMenuDetail: null,
+              selectedView: 'detail',
+            },
+            { replace: true },
+          )
+        }
         scenario={feedbackScenario}
       />
     );
@@ -1244,8 +1305,13 @@ export default function RestaurantDetailPage({
     return (
       <RestaurantMenuDetailView
         menu={selectedMenuDetail}
-        onBack={() => setSelectedView('detail')}
-        onRecordDishMemory={() => setSelectedView('feedback')}
+        onBack={goBackToPreviousRestaurantLocation}
+        onRecordDishMemory={() =>
+          navigateToRestaurantLocation({
+            selectedMenuDetail,
+            selectedView: 'feedback',
+          })
+        }
       />
     );
   }
@@ -1285,14 +1351,21 @@ export default function RestaurantDetailPage({
             quickInfo={detail.info}
             restaurant={detail}
             onBookmarkClick={() => setIsBookmarkSheetOpen(true)}
-            onVisitedClick={() => setSelectedView('feedback')}
+            onVisitedClick={() =>
+              navigateToRestaurantLocation({
+                selectedMenuDetail: null,
+                selectedView: 'feedback',
+              })
+            }
           />
 
           <RestaurantMemorableDishCard
             dishes={detail.memorableDishes}
             onSelectDish={(dish, index) => {
-              setSelectedMenuDetail(buildMenuDetailViewModel(detail, dish, index));
-              setSelectedView('menuDetail');
+              navigateToRestaurantLocation({
+                selectedMenuDetail: buildMenuDetailViewModel(detail, dish, index),
+                selectedView: 'menuDetail',
+              });
             }}
           />
 

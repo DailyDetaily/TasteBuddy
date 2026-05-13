@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   HomeCardStack,
   buildReservationPersonalizationSummary,
   getChefImageByName,
+  getCurrentHomeCardPreviewData,
   getRecentChangeSummary,
   type HomeChefMatchCardData,
 } from '../components/home/HomeCards';
@@ -55,13 +56,13 @@ export default function HomePage({
   onOpenRestaurantDetailFromSearch,
   hasUnreadNotifications,
 }: HomePageProps) {
-  const fallbackReservations = isSupabaseConfigured && !disableHydration ? [] : RESERVATION_CATALOG;
-  const [reservations, setReservations] = useState<ReservationRecord[]>(fallbackReservations);
+  const [reservations, setReservations] = useState<ReservationRecord[]>(RESERVATION_CATALOG);
   const [contentCatalog, setContentCatalog] = useState<RestaurantContentCatalog>({
     chefs: [],
     dishes: [],
   });
   const [userLearnedCalibration, setUserLearnedCalibration] = useState<UserLearnedCalibration | null>(null);
+  const fallbackChefCards = useMemo(() => getCurrentHomeCardPreviewData().chefCards, []);
 
   useEffect(() => {
     if (disableHydration) return;
@@ -89,7 +90,17 @@ export default function HomePage({
     return null;
   }
 
-  const upcomingReservations = reservations.filter((reservation) => reservation.status !== 'completed');
+  const visibleReservations = reservations.length > 0 ? reservations : RESERVATION_CATALOG;
+  const personalizedChefCards = buildPersonalizedChefMatches({
+    calibration: userLearnedCalibration,
+    dishes: contentCatalog.dishes,
+    measurementSnapshot,
+    resolveChefImage: (dish) =>
+      resolveUsableImagePath(dish.chefAvatarPath) ?? getChefImageByName(dish.chef),
+  });
+  const chefCards = personalizedChefCards.length > 0 ? personalizedChefCards : fallbackChefCards;
+
+  const upcomingReservations = visibleReservations.filter((reservation) => reservation.status !== 'completed');
   const featuredReservation = upcomingReservations[0] ?? null;
   const featuredSummary = featuredReservation
     ? buildReservationPersonalizationSummary(
@@ -103,21 +114,13 @@ export default function HomePage({
   const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
   const recentChangeText = getRecentChangeSummary(measurementSnapshot);
 
-  const chefCards = buildPersonalizedChefMatches({
-    calibration: userLearnedCalibration,
-    dishes: contentCatalog.dishes,
-    measurementSnapshot,
-    resolveChefImage: (dish) =>
-      getChefImageByName(dish.chef) ?? resolveUsableImagePath(dish.chefAvatarPath),
-  });
-
   return (
     <main className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
       <header className="shrink-0 px-5 pb-4 pt-1">
         <HomeUnifiedSearch
           catalog={contentCatalog}
           onOpenRestaurantDetail={onOpenRestaurantDetailFromSearch}
-          reservations={reservations}
+          reservations={visibleReservations}
         />
       </header>
       <section className="flex-1 overflow-y-auto no-scrollbar" aria-label="홈 콘텐츠">
