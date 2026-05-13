@@ -248,6 +248,21 @@ function isTasteSurveyResponse(value: unknown): value is TasteSurveyResponse {
   );
 }
 
+function getVisibleViewportHeight() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const visualViewportHeight = window.visualViewport?.height ?? 0;
+  const layoutViewportHeight = window.innerHeight;
+  const documentViewportHeight = document.documentElement.clientHeight;
+  return Math.max(
+    visualViewportHeight,
+    layoutViewportHeight,
+    documentViewportHeight,
+  );
+}
+
 function isStandaloneDisplayMode() {
   if (typeof window === 'undefined') {
     return false;
@@ -290,29 +305,20 @@ function getSafeAreaInsetTop() {
   return Number.isFinite(safeAreaTop) ? safeAreaTop : 0;
 }
 
-function getViewportHeights() {
-  if (typeof window === 'undefined') {
-    return null;
+function getEdgeToEdgeViewportHeight(visibleViewportHeight: number) {
+  if (!isStandaloneDisplayMode() || !isTranslucentStandaloneStatusBar()) {
+    return visibleViewportHeight;
   }
 
-  const visualViewportHeight = window.visualViewport?.height ?? 0;
-  const layoutViewportHeight = window.innerHeight;
-  const documentViewportHeight = document.documentElement.clientHeight;
-  const visibleViewportHeight = Math.max(
-    visualViewportHeight,
-    layoutViewportHeight,
-    documentViewportHeight,
-  );
-  const shouldExtendBehindStatusBar =
-    isStandaloneDisplayMode() && isTranslucentStandaloneStatusBar();
-  const edgeToEdgeViewportHeight = shouldExtendBehindStatusBar
-    ? visibleViewportHeight + getSafeAreaInsetTop()
-    : visibleViewportHeight;
+  const safeAreaTop = getSafeAreaInsetTop();
+  const expandedViewportHeight = visibleViewportHeight + safeAreaTop;
+  const screenHeight = window.screen?.height ?? 0;
 
-  return {
-    edgeToEdgeViewportHeight,
-    visibleViewportHeight,
-  };
+  if (screenHeight > visibleViewportHeight) {
+    return Math.min(screenHeight, expandedViewportHeight);
+  }
+
+  return visibleViewportHeight;
 }
 
 function sanitizeTasteSurveyResponses(value: unknown) {
@@ -1019,19 +1025,16 @@ function MainApp() {
     const rootElement = document.documentElement;
 
     const syncViewportHeight = () => {
-      const viewportHeights = getViewportHeights();
+      const viewportHeight = getVisibleViewportHeight();
 
-      if (!viewportHeights) {
+      if (!viewportHeight) {
         return;
       }
 
-      rootElement.style.setProperty(
-        VIEWPORT_HEIGHT_CSS_VARIABLE,
-        `${viewportHeights.visibleViewportHeight}px`,
-      );
+      rootElement.style.setProperty(VIEWPORT_HEIGHT_CSS_VARIABLE, `${viewportHeight}px`);
       rootElement.style.setProperty(
         EDGE_TO_EDGE_VIEWPORT_HEIGHT_CSS_VARIABLE,
-        `${viewportHeights.edgeToEdgeViewportHeight}px`,
+        `${getEdgeToEdgeViewportHeight(viewportHeight)}px`,
       );
     };
 
@@ -2055,7 +2058,7 @@ function MainApp() {
 
   return (
     <div
-      className={`flex min-h-[var(--tb-edge-to-edge-viewport-height,100dvh)] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
+      className={`flex min-h-[var(--tb-edge-to-edge-viewport-height,var(--tb-viewport-height,100dvh))] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
         ? 'bg-black'
         : usesPageViewportBackground
           ? 'bg-[var(--tb-color-bg-page)]'
@@ -2065,7 +2068,7 @@ function MainApp() {
     >
       <div
         ref={backgroundCardRef}
-        className={`relative flex h-[var(--tb-edge-to-edge-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesPageViewportBackground ? 'bg-[var(--tb-color-bg-page)]' : 'bg-white'
+        className={`relative flex h-[var(--tb-edge-to-edge-viewport-height,var(--tb-viewport-height,100dvh))] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesPageViewportBackground ? 'bg-[var(--tb-color-bg-page)]' : 'bg-white'
           }`}
       >
         <div
