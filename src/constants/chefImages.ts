@@ -73,9 +73,13 @@ const CHEF_MEDIA_PATH_BY_NAME: Record<string, string> = {
 
 export function getChefImageByName(name: string) {
   const normalizedName = name.replace(/\s*셰프$/, '');
+  const bundledImage = CHEF_IMAGE_BY_NAME[normalizedName];
+
+  if (bundledImage) {
+    return bundledImage;
+  }
+
   const mediaPath = CHEF_MEDIA_PATH_BY_NAME[normalizedName];
 
-  return (mediaPath ? resolvePublicMediaPath(mediaPath) : null) ??
-    CHEF_IMAGE_BY_NAME[normalizedName] ??
-    null;
+  return mediaPath ? resolvePublicMediaPath(mediaPath) : null;
 }

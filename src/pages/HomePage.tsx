@@ -96,7 +96,7 @@ export default function HomePage({
     dishes: contentCatalog.dishes,
     measurementSnapshot,
     resolveChefImage: (dish) =>
-      resolveUsableImagePath(dish.chefAvatarPath) ?? getChefImageByName(dish.chef),
+      getChefImageByName(dish.chef) ?? resolveUsableImagePath(dish.chefAvatarPath),
   });
   const chefCards = personalizedChefCards.length > 0 ? personalizedChefCards : fallbackChefCards;
 

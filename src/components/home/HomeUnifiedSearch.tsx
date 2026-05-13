@@ -181,6 +181,11 @@ function resolveChefImage(
   reservations: ReservationRecord[],
   avatarPath?: string | null,
 ) {
+  const chefImage = getChefImageByName(name);
+  if (chefImage) {
+    return chefImage;
+  }
+
   const resolvedAvatarPath = resolveUsableImagePath(avatarPath);
   if (resolvedAvatarPath) {
     return resolvedAvatarPath;

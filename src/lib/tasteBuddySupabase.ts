@@ -1192,9 +1192,9 @@ function mapReservationRowToRecord(row: ReservationQueryRow): ReservationRecord 
     restaurant: restaurantName,
     chef: chefName,
     chefImage:
+      getChefImageByName(chefName) ??
       resolvePublicMediaPath(rawChefAvatarPath) ??
-      fallbackReservation?.chefImage ??
-      getChefImageByName(chefName),
+      fallbackReservation?.chefImage,
     date,
     time,
     externalRef: row.external_ref,

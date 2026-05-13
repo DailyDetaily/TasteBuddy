@@ -1936,9 +1936,11 @@ function MainApp() {
     shouldShowMainShell && !isReservationFeedbackMapView && !isRestaurantDetailFeedbackMapView;
   const shouldLetStatusBarShowContent =
     appState === 'main' && (isReservationFeedbackMapView || isRestaurantDetailFeedbackMapView);
-  const viewportBackgroundColor = usesFocusViewportBackground
-    ? FOCUS_VIEWPORT_BACKGROUND
-    : PAGE_VIEWPORT_BACKGROUND;
+  const viewportBackgroundColor = appState === 'splash'
+    ? PAGE_VIEWPORT_BACKGROUND
+    : usesFocusViewportBackground
+      ? FOCUS_VIEWPORT_BACKGROUND
+      : PAGE_VIEWPORT_BACKGROUND;
   const userTasteAccentStyle = useMemo(
     () => createUserTasteAccentStyle(resolveUserTasteAccent(latestTasteMeasurementSnapshot)),
     [latestTasteMeasurementSnapshot],
@@ -1971,14 +1973,16 @@ function MainApp() {
       className={`flex min-h-[var(--tb-viewport-height,100dvh)] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
         ? 'bg-black'
         : usesFocusViewportBackground
-          ? 'bg-white'
+          ? appState === 'splash'
+            ? 'bg-[var(--tb-color-bg-page)]'
+            : 'bg-white'
           : 'bg-[var(--tb-color-bg-page)]'
         }`}
       style={userTasteAccentStyle}
     >
       <div
         ref={backgroundCardRef}
-        className={`relative flex h-[var(--tb-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesFocusViewportBackground ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
+        className={`relative flex h-[var(--tb-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesFocusViewportBackground && appState !== 'splash' ? 'bg-white' : 'bg-[var(--tb-color-bg-page)]'
           }`}
       >
         <div
