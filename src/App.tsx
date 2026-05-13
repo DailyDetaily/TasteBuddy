@@ -171,6 +171,7 @@ const BACKGROUND_CARD_TRANSITION = [
   `box-shadow ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
 ].join(', ');
 const VIEWPORT_HEIGHT_CSS_VARIABLE = '--tb-viewport-height';
+const EDGE_TO_EDGE_VIEWPORT_HEIGHT_CSS_VARIABLE = '--tb-edge-to-edge-viewport-height';
 const BOTTOM_SHEET_STAGE_HEIGHT_CLASS =
   'h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)] max-h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)]';
 
@@ -247,7 +248,49 @@ function isTasteSurveyResponse(value: unknown): value is TasteSurveyResponse {
   );
 }
 
-function getVisibleViewportHeight() {
+function isStandaloneDisplayMode() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean };
+
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    navigatorWithStandalone.standalone === true
+  );
+}
+
+function isTranslucentStandaloneStatusBar() {
+  if (typeof document === 'undefined') {
+    return false;
+  }
+
+  const statusBarMeta = document.querySelector<HTMLMetaElement>(
+    'meta[name="apple-mobile-web-app-status-bar-style"]',
+  );
+
+  return statusBarMeta?.content === 'black-translucent';
+}
+
+function getSafeAreaInsetTop() {
+  if (typeof document === 'undefined') {
+    return 0;
+  }
+
+  const probe = document.createElement('div');
+  probe.style.position = 'fixed';
+  probe.style.top = '0';
+  probe.style.visibility = 'hidden';
+  probe.style.paddingTop = 'env(safe-area-inset-top)';
+  document.body.appendChild(probe);
+  const safeAreaTop = Number.parseFloat(window.getComputedStyle(probe).paddingTop);
+  probe.remove();
+
+  return Number.isFinite(safeAreaTop) ? safeAreaTop : 0;
+}
+
+function getViewportHeights() {
   if (typeof window === 'undefined') {
     return null;
   }
@@ -255,8 +298,21 @@ function getVisibleViewportHeight() {
   const visualViewportHeight = window.visualViewport?.height ?? 0;
   const layoutViewportHeight = window.innerHeight;
   const documentViewportHeight = document.documentElement.clientHeight;
+  const visibleViewportHeight = Math.max(
+    visualViewportHeight,
+    layoutViewportHeight,
+    documentViewportHeight,
+  );
+  const shouldExtendBehindStatusBar =
+    isStandaloneDisplayMode() && isTranslucentStandaloneStatusBar();
+  const edgeToEdgeViewportHeight = shouldExtendBehindStatusBar
+    ? visibleViewportHeight + getSafeAreaInsetTop()
+    : visibleViewportHeight;
 
-  return Math.max(visualViewportHeight, layoutViewportHeight, documentViewportHeight);
+  return {
+    edgeToEdgeViewportHeight,
+    visibleViewportHeight,
+  };
 }
 
 function sanitizeTasteSurveyResponses(value: unknown) {
@@ -963,13 +1019,20 @@ function MainApp() {
     const rootElement = document.documentElement;
 
     const syncViewportHeight = () => {
-      const viewportHeight = getVisibleViewportHeight();
+      const viewportHeights = getViewportHeights();
 
-      if (!viewportHeight) {
+      if (!viewportHeights) {
         return;
       }
 
-      rootElement.style.setProperty(VIEWPORT_HEIGHT_CSS_VARIABLE, `${viewportHeight}px`);
+      rootElement.style.setProperty(
+        VIEWPORT_HEIGHT_CSS_VARIABLE,
+        `${viewportHeights.visibleViewportHeight}px`,
+      );
+      rootElement.style.setProperty(
+        EDGE_TO_EDGE_VIEWPORT_HEIGHT_CSS_VARIABLE,
+        `${viewportHeights.edgeToEdgeViewportHeight}px`,
+      );
     };
 
     syncViewportHeight();
@@ -990,6 +1053,7 @@ function MainApp() {
       window.clearTimeout(settleViewportTimer);
       window.clearTimeout(finalViewportTimer);
       rootElement.style.removeProperty(VIEWPORT_HEIGHT_CSS_VARIABLE);
+      rootElement.style.removeProperty(EDGE_TO_EDGE_VIEWPORT_HEIGHT_CSS_VARIABLE);
     };
   }, []);
 
@@ -1991,7 +2055,7 @@ function MainApp() {
 
   return (
     <div
-      className={`flex min-h-[var(--tb-viewport-height,100dvh)] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
+      className={`flex min-h-[var(--tb-edge-to-edge-viewport-height,100dvh)] items-center justify-center overflow-hidden transition-colors ${isLayeredMeasurementSheetOpen
         ? 'bg-black'
         : usesPageViewportBackground
           ? 'bg-[var(--tb-color-bg-page)]'
@@ -2001,7 +2065,7 @@ function MainApp() {
     >
       <div
         ref={backgroundCardRef}
-        className={`relative flex h-[var(--tb-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesPageViewportBackground ? 'bg-[var(--tb-color-bg-page)]' : 'bg-white'
+        className={`relative flex h-[var(--tb-edge-to-edge-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesPageViewportBackground ? 'bg-[var(--tb-color-bg-page)]' : 'bg-white'
           }`}
       >
         <div
