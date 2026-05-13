@@ -1948,8 +1948,6 @@ function MainApp() {
   const shouldShowMainTopShell = shouldShowMainShell && selectedRestaurantDetail === null;
   const shouldShowMainBottomShell =
     shouldShowMainShell && !isReservationFeedbackMapView && !isRestaurantDetailFeedbackMapView;
-  const shouldLetStatusBarShowContent =
-    appState === 'main' && (isReservationFeedbackMapView || isRestaurantDetailFeedbackMapView);
   const usesPageViewportBackground =
     appState === 'splash' ||
     appState === 'main' ||
@@ -2007,13 +2005,6 @@ function MainApp() {
         className={`relative flex h-[var(--tb-viewport-height,100dvh)] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesPageViewportBackground ? 'bg-[var(--tb-color-bg-page)]' : 'bg-white'
           }`}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 top-0 z-[80] h-[var(--tb-safe-area-top)]"
-          style={{
-            backgroundColor: shouldLetStatusBarShowContent ? 'transparent' : viewportBackgroundColor,
-          }}
-        />
         {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}
         {appState === 'onboarding' && (
           <OnboardingScreen onComplete={handleStartInitialMeasurementFlow} />
