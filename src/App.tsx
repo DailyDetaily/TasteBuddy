@@ -171,6 +171,8 @@ const BACKGROUND_CARD_TRANSITION = [
   `box-shadow ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
 ].join(', ');
 const VIEWPORT_HEIGHT_CSS_VARIABLE = '--tb-viewport-height';
+const BOTTOM_SHEET_STAGE_HEIGHT_CLASS =
+  'h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)] max-h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)]';
 
 const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v5';
 const LEGACY_USER_STATE_STORAGE_KEYS = [
@@ -2344,7 +2346,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName="h-[95vh] max-h-[95vh] bg-[var(--tb-color-bg-page)]"
+          contentClassName={}
           bodyClassName="px-5 pb-1 pt-2"
           headerCenter={
             <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
@@ -2379,7 +2381,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName="h-[95vh] max-h-[95vh] bg-[var(--tb-color-bg-page)]"
+          contentClassName={}
           bodyClassName="overflow-y-auto px-5 pb-1 pt-2"
           headerCenter={
             <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
@@ -2435,7 +2437,7 @@ function MainApp() {
           }}
           contentClassName={
             authEntryStep === 'code'
-              ? 'h-[95vh] max-h-[95vh]'
+              ? BOTTOM_SHEET_STAGE_HEIGHT_CLASS
               : 'h-auto max-h-[72vh]'
           }
           bodyClassName="px-5 pb-1 pt-2"
@@ -2558,7 +2560,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName="h-[95vh] max-h-[95vh]"
+          contentClassName={BOTTOM_SHEET_STAGE_HEIGHT_CLASS}
           bodyClassName="px-5 pb-1 pt-2"
           headerCenter={
             <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
@@ -2595,7 +2597,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName="h-[95vh] max-h-[95vh] bg-[var(--tb-color-bg-page)]"
+          contentClassName={}
           bodyClassName="p-0"
         >
           <TasteSurveyIntroScreen
@@ -2627,7 +2629,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName="h-[95vh] max-h-[95vh]"
+          contentClassName={BOTTOM_SHEET_STAGE_HEIGHT_CLASS}
           bodyClassName="p-0"
         >
           <PreferenceIntakeScreen
@@ -2649,7 +2651,7 @@ function MainApp() {
           onRelease={(_, open) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName="h-[95vh] max-h-[95vh] bg-[var(--tb-color-bg-page)]"
+          contentClassName={}
           bodyClassName="p-0"
         >
           {tasteSurveyFlowStep === 'intro' && (
