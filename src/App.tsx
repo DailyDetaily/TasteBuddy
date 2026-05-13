@@ -172,7 +172,6 @@ const BACKGROUND_CARD_TRANSITION = [
 ].join(', ');
 const VIEWPORT_HEIGHT_CSS_VARIABLE = '--tb-viewport-height';
 const EDGE_TO_EDGE_VIEWPORT_HEIGHT_CSS_VARIABLE = '--tb-edge-to-edge-viewport-height';
-const SAFE_AREA_BOTTOM_CSS_VARIABLE = '--tb-safe-area-bottom';
 const BOTTOM_SHEET_STAGE_HEIGHT_CLASS =
   'h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)] max-h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)]';
 
@@ -312,7 +311,6 @@ function getViewportHeights() {
 
   return {
     edgeToEdgeViewportHeight,
-    shouldUseEdgeToEdgeSafeArea: shouldExtendBehindStatusBar,
     visibleViewportHeight,
   };
 }
@@ -1035,11 +1033,6 @@ function MainApp() {
         EDGE_TO_EDGE_VIEWPORT_HEIGHT_CSS_VARIABLE,
         `${viewportHeights.edgeToEdgeViewportHeight}px`,
       );
-      if (viewportHeights.shouldUseEdgeToEdgeSafeArea) {
-        rootElement.style.setProperty(SAFE_AREA_BOTTOM_CSS_VARIABLE, '0px');
-      } else {
-        rootElement.style.removeProperty(SAFE_AREA_BOTTOM_CSS_VARIABLE);
-      }
     };
 
     syncViewportHeight();
@@ -1061,7 +1054,6 @@ function MainApp() {
       window.clearTimeout(finalViewportTimer);
       rootElement.style.removeProperty(VIEWPORT_HEIGHT_CSS_VARIABLE);
       rootElement.style.removeProperty(EDGE_TO_EDGE_VIEWPORT_HEIGHT_CSS_VARIABLE);
-      rootElement.style.removeProperty(SAFE_AREA_BOTTOM_CSS_VARIABLE);
     };
   }, []);
 

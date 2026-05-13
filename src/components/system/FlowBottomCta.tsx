@@ -76,7 +76,7 @@ export default function FlowBottomCta({
       <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
         <div
           className={cn(
-            'tb-bottom-fade relative flex min-h-[var(--tb-size-bottom-fade-min-height)] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))]',
+            'tb-bottom-fade relative flex min-h-[calc(var(--tb-size-bottom-fade-min-height)+var(--tb-safe-area-bottom))] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))]',
             fadeClassName,
             contentClassName,
           )}
