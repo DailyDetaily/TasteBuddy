@@ -5,6 +5,7 @@ import {
   ChevronRight as ChevronRightIcon,
   CircleCheck as CircleCheckIcon,
   ChefHat as ChefHatIcon,
+  Image as ImageIcon,
   MessageSquareText as MessageSquareTextIcon,
   PenLine as PenLineIcon,
   Plus as PlusIcon,
@@ -17,6 +18,7 @@ const Camera = wrapIcon(CameraIcon);
 const ChevronRight = wrapIcon(ChevronRightIcon);
 const CheckCircle2 = wrapIcon(CircleCheckIcon);
 const ChefHat = wrapIcon(ChefHatIcon);
+const Image = wrapIcon(ImageIcon);
 const MessageSquareText = wrapIcon(MessageSquareTextIcon);
 const PenLine = wrapIcon(PenLineIcon);
 const Plus = wrapIcon(PlusIcon);
@@ -53,7 +55,12 @@ const returnIntentOptions = [
 ] as const;
 
 export type TasteAxisId = 'sweet' | 'sour' | 'salty' | 'bitter' | 'umami' | 'fat';
-type DiningFeedbackStep = 'menu-select' | 'taste-checkin' | 'detail-tags' | 'taste-reflection';
+type DiningFeedbackStep =
+  | 'menu-select'
+  | 'taste-checkin'
+  | 'detail-tags'
+  | 'taste-reflection'
+  | 'camera-capture';
 type DiningDetailTagCategoryId = 'balance' | 'flow' | 'texture' | 'aroma' | 'composition';
 
 interface DiningDetailTagCategory {
@@ -1439,6 +1446,7 @@ function DiningDetailTagSection({
       });
   const hasHiddenTags = !expanded && allTags.some((tag) => !visibleTagIds.has(tag.id));
   const canCollapse = expanded && allTags.length > DETAIL_TAG_COLLAPSED_VISIBLE_COUNT;
+  const shouldShowExpandControl = hasHiddenTags && collapsedTagLimit < allTags.length;
 
   useEffect(() => {
     const updateCollapsedTagLimit = () => {
@@ -1535,7 +1543,7 @@ function DiningDetailTagSection({
             </button>
           );
         })}
-        {hasHiddenTags ? (
+        {shouldShowExpandControl ? (
           <button
             type="button"
             onClick={onToggleExpanded}
@@ -1689,7 +1697,11 @@ export function DiningFeedbackScreen({
   const [activeCustomDetailCategoryId, setActiveCustomDetailCategoryId] = useState<string | null>(null);
   const [customDetailInputValue, setCustomDetailInputValue] = useState('');
   const [activeDetailExperienceIndex, setActiveDetailExperienceIndex] = useState(0);
+  const [cameraErrorMessage, setCameraErrorMessage] = useState<string | null>(null);
   const reflectionPhotoInputRef = useRef<HTMLInputElement | null>(null);
+  const reflectionGalleryInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
   const activeDish = (scenario.dishes[activeDishIndex] ?? scenario.dishes[0]) as DiningDishMetadata;
   const activeResponse = draft.dishResponses[activeDish.id] ?? {
     customDetailTags: {},
@@ -1726,6 +1738,58 @@ export function DiningFeedbackScreen({
       onMapViewChange?.(false);
     };
   }, [onMapViewChange]);
+
+  useEffect(() => {
+    if (feedbackStep !== 'camera-capture') {
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach((track) => track.stop());
+        cameraStreamRef.current = null;
+      }
+
+      return;
+    }
+
+    let isCancelled = false;
+
+    const startCamera = async () => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setCameraErrorMessage('이 기기에서는 카메라를 바로 열 수 없어요. 사진첩에서 선택해주세요.');
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+          audio: false,
+        });
+
+        if (isCancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        cameraStreamRef.current = stream;
+        setCameraErrorMessage(null);
+
+        if (cameraVideoRef.current) {
+          cameraVideoRef.current.srcObject = stream;
+          await cameraVideoRef.current.play().catch(() => undefined);
+        }
+      } catch {
+        setCameraErrorMessage('카메라 권한이 없어 사진첩에서만 선택할 수 있어요.');
+      }
+    };
+
+    void startCamera();
+
+    return () => {
+      isCancelled = true;
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach((track) => track.stop());
+        cameraStreamRef.current = null;
+      }
+    };
+  }, [feedbackStep]);
 
   const selectTasteExperience = (experience: TasteExperienceWord) => {
     const currentExperienceIds = getSelectedExperienceIds(activeResponse);
@@ -1823,8 +1887,26 @@ export function DiningFeedbackScreen({
     setFeedbackStep('taste-reflection');
   };
 
-  const openReflectionPhotoUpload = () => {
-    reflectionPhotoInputRef.current?.click();
+  const openCameraCapture = () => {
+    setCameraErrorMessage(null);
+    setFeedbackStep('camera-capture');
+  };
+
+  const openReflectionGallery = () => {
+    reflectionGalleryInputRef.current?.click();
+  };
+
+  const applyReflectionPhotoFile = (file: File) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      updateActiveDishResponse({
+        reflectionPhotoName: file.name,
+        reflectionPhotoPreviewUrl: typeof reader.result === 'string' ? reader.result : null,
+      });
+      setFeedbackStep('taste-reflection');
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleReflectionPhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -1834,16 +1916,34 @@ export function DiningFeedbackScreen({
       return;
     }
 
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      updateActiveDishResponse({
-        reflectionPhotoName: file.name,
-        reflectionPhotoPreviewUrl: typeof reader.result === 'string' ? reader.result : null,
-      });
-    };
-    reader.readAsDataURL(file);
+    applyReflectionPhotoFile(file);
     event.target.value = '';
+  };
+
+  const captureCameraPhoto = () => {
+    const video = cameraVideoRef.current;
+
+    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+      setCameraErrorMessage('카메라 화면을 불러온 뒤 다시 촬영해주세요.');
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      setCameraErrorMessage('사진을 저장하지 못했어요. 다시 시도해주세요.');
+      return;
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    updateActiveDishResponse({
+      reflectionPhotoName: `taste-reflection-${Date.now()}.jpg`,
+      reflectionPhotoPreviewUrl: canvas.toDataURL('image/jpeg', 0.92),
+    });
+    setFeedbackStep('taste-reflection');
   };
 
   const completeDetailTags = () => {
@@ -1881,6 +1981,11 @@ export function DiningFeedbackScreen({
     }
 
     if (feedbackStep === 'taste-reflection') {
+      setFeedbackStep('detail-tags');
+      return;
+    }
+
+    if (feedbackStep === 'camera-capture') {
       setFeedbackStep('detail-tags');
       return;
     }
@@ -1950,13 +2055,17 @@ export function DiningFeedbackScreen({
     <div
       className={cn(
         'relative flex h-full w-full flex-col animate-slideIn',
-        feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
+        feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' || feedbackStep === 'camera-capture'
           ? 'bg-[var(--tb-color-bg-focus)]'
           : 'bg-[var(--tb-color-bg-page)]',
       )}
     >
       <TopAppBar
-        appearance={feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' ? 'solid' : undefined}
+        appearance={
+          feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' || feedbackStep === 'camera-capture'
+            ? 'solid'
+            : undefined
+        }
         title="식후 피드백"
         showBack
         onBack={handleTopBack}
@@ -1964,7 +2073,9 @@ export function DiningFeedbackScreen({
       />
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="tb-section-stack px-5 pt-6 pb-[168px]">
-          {feedbackStep !== 'detail-tags' && feedbackStep !== 'taste-reflection' ? (
+          {feedbackStep !== 'detail-tags' &&
+          feedbackStep !== 'taste-reflection' &&
+          feedbackStep !== 'camera-capture' ? (
             <div className="flex flex-col gap-3">
               <div>
                 <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
@@ -2081,7 +2192,7 @@ export function DiningFeedbackScreen({
                     aria-label="미각 회고 페이지 열기"
                   >
                     <div className="min-w-0">
-                      <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                      <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                         짧은 미식 기록 추가
                       </p>
                     </div>
@@ -2101,7 +2212,7 @@ export function DiningFeedbackScreen({
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
-                          openReflectionPhotoUpload();
+                          openCameraCapture();
                         }}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
                         aria-label="미식 기록 사진 추가"
@@ -2147,7 +2258,14 @@ export function DiningFeedbackScreen({
             <PageSection>
               <div className="flex w-full flex-col gap-5">
                 <div className="text-left">
-                  <h1 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">
+                  <h1
+                    className="text-[18px] font-bold"
+                    style={{
+                      color: activeDetailExperience
+                        ? `var(--tb-taste-${activeDetailExperience.axis}-main)`
+                        : 'var(--tb-color-text-primary)',
+                    }}
+                  >
                     {activeDetailExperience?.label ?? '선택한 미각'}
                   </h1>
                   <p className="mt-1 text-[14px] font-semibold leading-relaxed text-[var(--tb-color-text-subtle)]">
@@ -2160,22 +2278,7 @@ export function DiningFeedbackScreen({
                     value={reflectionNote}
                     onChange={(event) => updateActiveDishResponse({ reflectionNote: event.target.value })}
                     className="min-h-[156px] w-full resize-none rounded-[20px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] px-4 py-3 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
-                    placeholder="예: 중반부터 산미가 정리해줘서 생선 뒤맛이 더 맑게 느껴졌어요."
                   />
-
-                  <button
-                    type="button"
-                    onClick={openReflectionPhotoUpload}
-                    className="flex w-full items-center justify-between gap-3 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-bg-focus)] p-3 text-left"
-                    aria-label="미식 기록 사진 추가"
-                  >
-                    <span className="min-w-0 truncate text-[13px] font-bold text-[var(--tb-color-text-primary)]">
-                      {reflectionPhotoName ?? '사진 추가'}
-                    </span>
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-icon-primary)]">
-                      <Camera size={ICON_TOKENS.size.md} strokeWidth={1.8} />
-                    </span>
-                  </button>
 
                   {reflectionPhotoPreviewUrl ? (
                     <img
@@ -2185,6 +2288,63 @@ export function DiningFeedbackScreen({
                     />
                   ) : null}
                 </div>
+              </div>
+            </PageSection>
+          ) : feedbackStep === 'camera-capture' ? (
+            <PageSection>
+              <div className="flex w-full flex-col gap-5">
+                <div className="text-left">
+                  <h1 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">사진 촬영</h1>
+                  <p className="mt-1 text-[14px] font-semibold leading-relaxed text-[var(--tb-color-text-subtle)]">
+                    접시가 가장 잘 보이는 장면을 남겨주세요.
+                  </p>
+                </div>
+
+                <div className="relative overflow-hidden rounded-[24px] bg-[var(--tb-color-surface-muted)]">
+                  <video
+                    ref={cameraVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="aspect-[3/4] w-full object-cover"
+                  />
+                  {cameraErrorMessage ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[rgba(255,255,255,0.92)] px-6 text-center">
+                      <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                        {cameraErrorMessage}
+                      </p>
+                    </div>
+                  ) : null}
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[rgba(0,0,0,0.20)] to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-5 pb-5">
+                    <button
+                      type="button"
+                      onClick={openReflectionGallery}
+                      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-[rgba(0,0,0,0.30)] text-white backdrop-blur-sm"
+                      aria-label="사진첩에서 선택"
+                    >
+                      <Image size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={captureCameraPhoto}
+                      className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white bg-white/90 text-[var(--tb-color-text-primary)]"
+                      aria-label="사진 촬영"
+                    >
+                      <span className="h-12 w-12 rounded-full border-2 border-[var(--tb-color-text-primary)]" />
+                    </button>
+                    <div className="h-12 w-12" aria-hidden="true" />
+                  </div>
+                </div>
+
+                <input
+                  ref={reflectionGalleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleReflectionPhotoChange}
+                  aria-label="사진첩에서 선택"
+                />
               </div>
             </PageSection>
           ) : (
@@ -2291,34 +2451,42 @@ export function DiningFeedbackScreen({
         </div>
       </div>
 
-      <FlowBottomCta
-        actionDisabled={feedbackStep === 'menu-select' && selectedDishIndex === null}
-        actionLabel={
-          feedbackStep === 'menu-select'
-            ? '선택한 메뉴 기록하기'
-            : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
-              ? '디테일 저장하기'
-              : '다음 다이닝에 반영하기'
-        }
-        helperText={
-          feedbackStep === 'menu-select'
-            ? selectedDish
-              ? `${selectedDish.courseLabel} · ${selectedDish.title}의 미각 인상을 기록합니다.`
-              : '가장 기억에 남는 메뉴 하나를 먼저 선택해주세요.'
-            : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
-              ? selectedDetailTagIds.length > 0
-                ? `${selectedDetailTagIds.length}개의 디테일 단서를 함께 저장합니다.`
-                : '태그를 고르지 않아도 미각 인상은 저장됩니다.'
-              : '저장 후 바로 어떤 점이 다음 다이닝에 반영되는지 확인할 수 있어요.'
-        }
-        onAction={
-          feedbackStep === 'menu-select'
-            ? moveToTasteCheckin
-            : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
-              ? completeDetailTags
-              : onSubmit
-        }
-      />
+      {feedbackStep !== 'camera-capture' ? (
+        <FlowBottomCta
+          actionDisabled={feedbackStep === 'menu-select' && selectedDishIndex === null}
+          actionLabel={
+            feedbackStep === 'menu-select'
+              ? '선택한 메뉴 기록하기'
+              : feedbackStep === 'taste-reflection'
+                ? '계속하기'
+                : feedbackStep === 'detail-tags'
+                  ? '디테일 저장하기'
+                  : '다음 다이닝에 반영하기'
+          }
+          helperText={
+            feedbackStep === 'menu-select'
+              ? selectedDish
+                ? `${selectedDish.courseLabel} · ${selectedDish.title}의 미각 인상을 기록합니다.`
+                : '가장 기억에 남는 메뉴 하나를 먼저 선택해주세요.'
+              : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
+                ? selectedDetailTagIds.length > 0
+                  ? `${selectedDetailTagIds.length}개의 디테일 단서를 함께 저장합니다.`
+                  : '태그를 고르지 않아도 미각 인상은 저장됩니다.'
+                : '저장 후 바로 어떤 점이 다음 다이닝에 반영되는지 확인할 수 있어요.'
+          }
+          onAction={
+            feedbackStep === 'menu-select'
+              ? moveToTasteCheckin
+              : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
+                ? completeDetailTags
+                : onSubmit
+          }
+          secondaryButtonLabel={feedbackStep === 'taste-reflection' ? '취소하기' : undefined}
+          onSecondaryButtonAction={
+            feedbackStep === 'taste-reflection' ? () => setFeedbackStep('detail-tags') : undefined
+          }
+        />
+      ) : null}
     </div>
   );
 }
