@@ -6,11 +6,14 @@ import {
   CircleCheck as CircleCheckIcon,
   ChefHat as ChefHatIcon,
   Image as ImageIcon,
+  SwitchCamera as SwitchCameraIcon,
   MessageSquareText as MessageSquareTextIcon,
   PenLine as PenLineIcon,
   Plus as PlusIcon,
   Search as SearchIcon,
   Sparkles as SparklesIcon,
+  X as XIcon,
+  Zap as ZapIcon,
 } from 'lucide-react';
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
 const ArrowRight = wrapIcon(ArrowRightIcon);
@@ -19,11 +22,14 @@ const ChevronRight = wrapIcon(ChevronRightIcon);
 const CheckCircle2 = wrapIcon(CircleCheckIcon);
 const ChefHat = wrapIcon(ChefHatIcon);
 const Image = wrapIcon(ImageIcon);
+const SwitchCamera = wrapIcon(SwitchCameraIcon);
 const MessageSquareText = wrapIcon(MessageSquareTextIcon);
 const PenLine = wrapIcon(PenLineIcon);
 const Plus = wrapIcon(PlusIcon);
 const Search = wrapIcon(SearchIcon);
 const Sparkles = wrapIcon(SparklesIcon);
+const X = wrapIcon(XIcon);
+const Zap = wrapIcon(ZapIcon);
 
 import SectionCard from '../SectionCard';
 import TopAppBar from '../TopAppBar';
@@ -1384,6 +1390,7 @@ function DiningDetailTagSection({
   inputValue,
   isInputOpen,
   onAddCustomTag,
+  onCloseInput,
   onChangeInputValue,
   onOpenInput,
   onToggleExpanded,
@@ -1397,6 +1404,7 @@ function DiningDetailTagSection({
   inputValue: string;
   isInputOpen: boolean;
   onAddCustomTag: () => void;
+  onCloseInput: () => void;
   onChangeInputValue: (value: string) => void;
   onOpenInput: () => void;
   onToggleExpanded: () => void;
@@ -1405,6 +1413,7 @@ function DiningDetailTagSection({
 }) {
   const selectedTagIdSet = new Set(selectedTagIds);
   const tagListRef = useRef<HTMLDivElement | null>(null);
+  const customInputRef = useRef<HTMLInputElement | null>(null);
   const [collapsedTagLimit, setCollapsedTagLimit] = useState(DETAIL_TAG_COLLAPSED_VISIBLE_COUNT);
   const standardTags = category.tags.map((tag) => ({ ...tag, custom: false }));
   const customTagItems = customTags.map((label) => ({
@@ -1435,15 +1444,15 @@ function DiningDetailTagSection({
   const visibleTags = expanded
     ? allTags
     : allTags.filter((tag, index) => {
-        const shouldShow =
-          index < collapsedTagLimit || selectedTagIdSet.has(tag.id) || tag.custom;
+      const shouldShow =
+        index < collapsedTagLimit || selectedTagIdSet.has(tag.id) || tag.custom;
 
-        if (shouldShow) {
-          visibleTagIds.add(tag.id);
-        }
+      if (shouldShow) {
+        visibleTagIds.add(tag.id);
+      }
 
-        return shouldShow;
-      });
+      return shouldShow;
+    });
   const hasHiddenTags = !expanded && allTags.some((tag) => !visibleTagIds.has(tag.id));
   const canCollapse = expanded && allTags.length > DETAIL_TAG_COLLAPSED_VISIBLE_COUNT;
   const shouldShowExpandControl = hasHiddenTags && collapsedTagLimit < allTags.length;
@@ -1493,6 +1502,12 @@ function DiningDetailTagSection({
     };
   }, [category.tags, customTags, expanded]);
 
+  useEffect(() => {
+    if (isInputOpen) {
+      customInputRef.current?.focus();
+    }
+  }, [isInputOpen]);
+
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
@@ -1505,14 +1520,50 @@ function DiningDetailTagSection({
       </div>
 
       <div ref={tagListRef} className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={onOpenInput}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
-          aria-label={`${category.label} 직접 입력`}
-        >
-          <Plus size={ICON_TOKENS.size.md} strokeWidth={1.8} />
-        </button>
+        {isInputOpen ? (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              onAddCustomTag();
+            }}
+            className={cn(
+              'inline-grid h-9 max-w-full items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)]',
+              inputValue ? 'min-w-9 grid-cols-[max-content] px-3' : 'w-9 grid-cols-[minmax(0,1fr)] px-3',
+            )}
+          >
+            {inputValue ? (
+              <span
+                className="invisible col-start-1 row-start-1 whitespace-pre text-[12px] font-semibold"
+                aria-hidden="true"
+              >
+                {inputValue}
+              </span>
+            ) : null}
+            <input
+              ref={customInputRef}
+              size={1}
+              value={inputValue}
+              onChange={(event) => onChangeInputValue(event.target.value)}
+              onBlur={() => {
+                if (!inputValue.trim()) {
+                  onCloseInput();
+                }
+              }}
+              className="col-start-1 row-start-1 h-full w-full min-w-0 bg-transparent p-0 text-center text-[12px] font-semibold text-[var(--tb-color-text-primary)] caret-[var(--tb-color-text-primary)] outline-none"
+              enterKeyHint="done"
+              aria-label={`${category.label} 직접 입력`}
+            />
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenInput}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+            aria-label={`${category.label} 직접 입력`}
+          >
+            <Plus size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+          </button>
+        )}
         {visibleTags.map((tag) => {
           const selected = selectedTagIdSet.has(tag.id);
 
@@ -1532,10 +1583,10 @@ function DiningDetailTagSection({
               style={
                 selected
                   ? ({
-                      backgroundColor: `var(--tb-taste-${accentAxis}-tint-surface)`,
-                      borderColor: `var(--tb-taste-${accentAxis}-tint-soft-border)`,
-                      color: `var(--tb-taste-${accentAxis}-tint-surface-text)`,
-                    } as CSSProperties)
+                    backgroundColor: `var(--tb-taste-${accentAxis}-tint-surface)`,
+                    borderColor: `var(--tb-taste-${accentAxis}-tint-soft-border)`,
+                    color: `var(--tb-taste-${accentAxis}-tint-surface-text)`,
+                  } as CSSProperties)
                   : undefined
               }
             >
@@ -1563,29 +1614,6 @@ function DiningDetailTagSection({
         ) : null}
       </div>
 
-      {isInputOpen ? (
-        <div className="flex items-center gap-2">
-          <input
-            value={inputValue}
-            onChange={(event) => onChangeInputValue(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                onAddCustomTag();
-              }
-            }}
-            className="min-w-0 flex-1 rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 py-2 text-[12px] text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
-            placeholder="직접 느낀 표현 입력"
-          />
-          <button
-            type="button"
-            onClick={onAddCustomTag}
-            className="rounded-full bg-[var(--tb-color-text-primary)] px-4 py-2 text-[12px] font-semibold text-[var(--tb-color-text-inverse)]"
-          >
-            완료
-          </button>
-        </div>
-      ) : null}
     </section>
   );
 }
@@ -1698,6 +1726,8 @@ export function DiningFeedbackScreen({
   const [customDetailInputValue, setCustomDetailInputValue] = useState('');
   const [activeDetailExperienceIndex, setActiveDetailExperienceIndex] = useState(0);
   const [cameraErrorMessage, setCameraErrorMessage] = useState<string | null>(null);
+  const [cameraFacingMode, setCameraFacingMode] = useState<'environment' | 'user'>('environment');
+  const [isCameraFlashOn, setIsCameraFlashOn] = useState(false);
   const reflectionPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const reflectionGalleryInputRef = useRef<HTMLInputElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -1745,6 +1775,7 @@ export function DiningFeedbackScreen({
         cameraStreamRef.current.getTracks().forEach((track) => track.stop());
         cameraStreamRef.current = null;
       }
+      setIsCameraFlashOn(false);
 
       return;
     }
@@ -1759,7 +1790,7 @@ export function DiningFeedbackScreen({
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
+          video: { facingMode: { ideal: cameraFacingMode } },
           audio: false,
         });
 
@@ -1789,7 +1820,7 @@ export function DiningFeedbackScreen({
         cameraStreamRef.current = null;
       }
     };
-  }, [feedbackStep]);
+  }, [cameraFacingMode, feedbackStep]);
 
   const selectTasteExperience = (experience: TasteExperienceWord) => {
     const currentExperienceIds = getSelectedExperienceIds(activeResponse);
@@ -1857,6 +1888,11 @@ export function DiningFeedbackScreen({
     setCustomDetailInputValue('');
   };
 
+  const closeCustomDetailInput = () => {
+    setActiveCustomDetailCategoryId(null);
+    setCustomDetailInputValue('');
+  };
+
   const addCustomDetailTag = (categoryId: string) => {
     const label = customDetailInputValue.trim();
 
@@ -1890,6 +1926,41 @@ export function DiningFeedbackScreen({
   const openCameraCapture = () => {
     setCameraErrorMessage(null);
     setFeedbackStep('camera-capture');
+  };
+
+  const closeCameraCapture = () => {
+    setCameraErrorMessage(null);
+    setFeedbackStep('detail-tags');
+  };
+
+  const switchCameraFacingMode = () => {
+    setCameraErrorMessage(null);
+    setIsCameraFlashOn(false);
+    setCameraFacingMode((currentFacingMode) => (currentFacingMode === 'environment' ? 'user' : 'environment'));
+  };
+
+  const toggleCameraFlash = async () => {
+    const track = cameraStreamRef.current?.getVideoTracks()[0];
+    const capabilities = track?.getCapabilities?.() as (MediaTrackCapabilities & { torch?: boolean }) | undefined;
+
+    if (!track || !capabilities?.torch) {
+      setIsCameraFlashOn(false);
+      setCameraErrorMessage('이 기기에서는 플래시를 바로 켤 수 없어요.');
+      return;
+    }
+
+    const nextFlashState = !isCameraFlashOn;
+
+    try {
+      await track.applyConstraints({
+        advanced: [{ torch: nextFlashState } as MediaTrackConstraintSet],
+      });
+      setIsCameraFlashOn(nextFlashState);
+      setCameraErrorMessage(null);
+    } catch {
+      setIsCameraFlashOn(false);
+      setCameraErrorMessage('플래시를 켜지 못했어요.');
+    }
   };
 
   const openReflectionGallery = () => {
@@ -2055,27 +2126,31 @@ export function DiningFeedbackScreen({
     <div
       className={cn(
         'relative flex h-full w-full flex-col animate-slideIn',
-        feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' || feedbackStep === 'camera-capture'
-          ? 'bg-[var(--tb-color-bg-focus)]'
-          : 'bg-[var(--tb-color-bg-page)]',
+        feedbackStep === 'camera-capture'
+          ? 'bg-black'
+          : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
+            ? 'bg-[var(--tb-color-bg-focus)]'
+            : 'bg-[var(--tb-color-bg-page)]',
       )}
     >
-      <TopAppBar
-        appearance={
-          feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' || feedbackStep === 'camera-capture'
-            ? 'solid'
-            : undefined
-        }
-        title="식후 피드백"
-        showBack
-        onBack={handleTopBack}
-        rightActions={<div className="h-10 w-10" aria-hidden="true" />}
-      />
-      <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="tb-section-stack px-5 pt-6 pb-[168px]">
+      {feedbackStep !== 'camera-capture' ? (
+        <TopAppBar
+          appearance={feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' ? 'solid' : undefined}
+          title="식후 피드백"
+          showBack
+          onBack={handleTopBack}
+          rightActions={<div className="h-10 w-10" aria-hidden="true" />}
+        />
+      ) : null}
+      <div className={cn(feedbackStep === 'camera-capture' ? 'flex-1 overflow-hidden' : 'flex-1 overflow-y-auto no-scrollbar')}>
+        <div
+          className={cn(
+            feedbackStep === 'camera-capture' ? 'h-full' : 'tb-section-stack px-5 pt-6 pb-[168px]',
+          )}
+        >
           {feedbackStep !== 'detail-tags' &&
-          feedbackStep !== 'taste-reflection' &&
-          feedbackStep !== 'camera-capture' ? (
+            feedbackStep !== 'taste-reflection' &&
+            feedbackStep !== 'camera-capture' ? (
             <div className="flex flex-col gap-3">
               <div>
                 <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
@@ -2163,8 +2238,8 @@ export function DiningFeedbackScreen({
                           type="button"
                           onClick={() => setActiveDetailExperienceIndex(index)}
                           className={cn(
-                            'h-8 w-8 rounded-full border transition-transform active:scale-95',
-                            isActive ? 'scale-110 shadow-[0_8px_18px_rgba(0,0,0,0.10)]' : 'opacity-70',
+                            'h-6 w-6 rounded-full border transition-transform active:scale-95',
+                            isActive ? 'scale-110' : 'opacity-70',
                           )}
                           style={{
                             backgroundColor: isActive
@@ -2188,7 +2263,7 @@ export function DiningFeedbackScreen({
                         openTasteReflection();
                       }
                     }}
-                    className="flex w-full max-w-[420px] cursor-pointer items-center justify-between gap-4 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] p-3 transition-colors hover:border-[var(--tb-color-border-default)]"
+                    className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] p-3 transition-colors hover:border-[var(--tb-color-border-default)]"
                     aria-label="미각 회고 페이지 열기"
                   >
                     <div className="min-w-0">
@@ -2244,6 +2319,7 @@ export function DiningFeedbackScreen({
                       inputValue={activeCustomDetailCategoryId === category.id ? customDetailInputValue : ''}
                       isInputOpen={activeCustomDetailCategoryId === category.id}
                       onAddCustomTag={() => addCustomDetailTag(category.id)}
+                      onCloseInput={closeCustomDetailInput}
                       onChangeInputValue={setCustomDetailInputValue}
                       onOpenInput={() => openCustomDetailInput(category.id)}
                       onToggleExpanded={() => toggleDetailCategoryExpanded(category.id)}
@@ -2291,62 +2367,78 @@ export function DiningFeedbackScreen({
               </div>
             </PageSection>
           ) : feedbackStep === 'camera-capture' ? (
-            <PageSection>
-              <div className="flex w-full flex-col gap-5">
-                <div className="text-left">
-                  <h1 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">사진 촬영</h1>
-                  <p className="mt-1 text-[14px] font-semibold leading-relaxed text-[var(--tb-color-text-subtle)]">
-                    접시가 가장 잘 보이는 장면을 남겨주세요.
-                  </p>
+            <div className="relative h-full w-full overflow-hidden bg-black">
+              <video
+                ref={cameraVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className={cn(
+                  'h-full w-full object-cover',
+                  cameraFacingMode === 'user' ? 'scale-x-[-1]' : undefined,
+                )}
+              />
+              {cameraErrorMessage ? (
+                <div className="absolute inset-x-5 top-[calc(env(safe-area-inset-top)+80px)] rounded-[20px] bg-black/55 px-4 py-3 text-center backdrop-blur-md">
+                  <p className="text-[13px] leading-relaxed text-white">{cameraErrorMessage}</p>
                 </div>
-
-                <div className="relative overflow-hidden rounded-[24px] bg-[var(--tb-color-surface-muted)]">
-                  <video
-                    ref={cameraVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="aspect-[3/4] w-full object-cover"
-                  />
-                  {cameraErrorMessage ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[rgba(255,255,255,0.92)] px-6 text-center">
-                      <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                        {cameraErrorMessage}
-                      </p>
-                    </div>
-                  ) : null}
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[rgba(0,0,0,0.20)] to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-5 pb-5">
-                    <button
-                      type="button"
-                      onClick={openReflectionGallery}
-                      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-[rgba(0,0,0,0.30)] text-white backdrop-blur-sm"
-                      aria-label="사진첩에서 선택"
-                    >
-                      <Image size={ICON_TOKENS.size.md} strokeWidth={1.8} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={captureCameraPhoto}
-                      className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white bg-white/90 text-[var(--tb-color-text-primary)]"
-                      aria-label="사진 촬영"
-                    >
-                      <span className="h-12 w-12 rounded-full border-2 border-[var(--tb-color-text-primary)]" />
-                    </button>
-                    <div className="h-12 w-12" aria-hidden="true" />
-                  </div>
-                </div>
-
-                <input
-                  ref={reflectionGalleryInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleReflectionPhotoChange}
+              ) : null}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/45 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/55 to-transparent" />
+              <button
+                type="button"
+                onClick={closeCameraCapture}
+                className="absolute left-4 top-[calc(env(safe-area-inset-top)+16px)] inline-flex h-11 w-11 items-center justify-center rounded-full text-white transition-colors active:bg-black/55"
+                aria-label="카메라 닫기"
+              >
+                <X size={ICON_TOKENS.size.lg} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                onClick={toggleCameraFlash}
+                className={cn(
+                  'absolute right-4 top-[calc(env(safe-area-inset-top)+16px)] inline-flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(124,124,124,0.5)] text-white backdrop-blur-md transition-colors active:bg-[rgba(96,96,96,0.82)]',
+                  isCameraFlashOn ? 'ring-1 ring-white/80' : undefined,
+                )}
+                aria-label={isCameraFlashOn ? '플래시 끄기' : '플래시 켜기'}
+              >
+                <Zap size={ICON_TOKENS.size.lg} strokeWidth={2} />
+              </button>
+              <div className="absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+24px)] flex items-center justify-between px-7">
+                <button
+                  type="button"
+                  onClick={openReflectionGallery}
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(124,124,124,0.5)] text-white backdrop-blur-md transition-colors active:bg-[rgba(96,96,96,0.82)]"
                   aria-label="사진첩에서 선택"
-                />
+                >
+                  <Image size={ICON_TOKENS.size.lg} strokeWidth={1.9} />
+                </button>
+                <button
+                  type="button"
+                  onClick={captureCameraPhoto}
+                  className="inline-flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-white bg-white/25 backdrop-blur-sm transition-transform active:scale-95"
+                  aria-label="사진 촬영"
+                >
+                  <span className="h-[58px] w-[58px] rounded-full bg-white" />
+                </button>
+                <button
+                  type="button"
+                  onClick={switchCameraFacingMode}
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(124,124,124,0.5)] text-white backdrop-blur-md transition-colors active:bg-[rgba(96,96,96,0.82)]"
+                  aria-label="전면 후면 카메라 전환"
+                >
+                  <SwitchCamera size={ICON_TOKENS.size.lg} strokeWidth={1.9} />
+                </button>
               </div>
-            </PageSection>
+              <input
+                ref={reflectionGalleryInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleReflectionPhotoChange}
+                aria-label="사진첩에서 선택"
+              />
+            </div>
           ) : (
             <PageSection title="코스별 미각 체크인" titleSize="md">
               <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
