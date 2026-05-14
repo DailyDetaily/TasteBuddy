@@ -2145,77 +2145,46 @@ export function DiningFeedbackScreen({
             </>
           ) : feedbackStep === 'taste-reflection' ? (
             <PageSection>
-              <div className="flex flex-col gap-5">
-                <div className="flex flex-col items-center gap-3 py-2 text-center">
-                  {activeDetailExperience ? (
-                    <div
-                      className="flex h-[132px] w-[132px] flex-col items-center justify-center rounded-full border px-4"
-                      style={{
-                        backgroundColor: `var(--tb-taste-${activeDetailExperience.axis}-tint-surface)`,
-                        borderColor: `var(--tb-taste-${activeDetailExperience.axis}-tint-soft-border)`,
-                        color: `var(--tb-taste-${activeDetailExperience.axis}-tint-surface-text)`,
-                      }}
-                    >
-                      <span className="text-[10px] font-semibold opacity-70">
-                        {activeDetailExperienceIndex === 0 ? '메인 미각' : '보조 미각'}
-                      </span>
-                      <span className="mt-2 text-[15px] font-bold leading-tight">
-                        {activeDetailExperience.label}
-                      </span>
-                    </div>
-                  ) : null}
-                  <div>
-                    <h1 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">
-                      미각 회고
-                    </h1>
-                    <p className="mt-1 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                      이 인상이 남은 순간을 짧게 적어두면 다음 다이닝에 더 잘 반영할 수 있어요.
-                    </p>
-                  </div>
+              <div className="flex w-full flex-col gap-5">
+                <div className="text-left">
+                  <h1 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">
+                    {activeDetailExperience?.label ?? '선택한 미각'}
+                  </h1>
+                  <p className="mt-1 text-[14px] font-semibold leading-relaxed text-[var(--tb-color-text-subtle)]">
+                    왜 느꼈는지 알려주세요.
+                  </p>
                 </div>
 
-                <SectionCard hoverEffect={false}>
-                  <div className="flex flex-col gap-4">
-                    <label className="flex flex-col gap-2">
-                      <span className="text-[13px] font-bold text-[var(--tb-color-text-primary)]">
-                        짧은 기록
-                      </span>
-                      <textarea
-                        value={reflectionNote}
-                        onChange={(event) => updateActiveDishResponse({ reflectionNote: event.target.value })}
-                        className="min-h-[120px] w-full resize-none rounded-[var(--tb-radius-14)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] px-4 py-3 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
-                        placeholder="예: 중반부터 산미가 정리해줘서 생선 뒤맛이 더 맑게 느껴졌어요."
-                      />
-                    </label>
+                <div className="flex w-full flex-col gap-4">
+                  <textarea
+                    value={reflectionNote}
+                    onChange={(event) => updateActiveDishResponse({ reflectionNote: event.target.value })}
+                    className="min-h-[156px] w-full resize-none rounded-[20px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] px-4 py-3 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
+                    placeholder="예: 중반부터 산미가 정리해줘서 생선 뒤맛이 더 맑게 느껴졌어요."
+                  />
 
-                    <div className="flex items-center justify-between gap-3 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-bg-focus)] p-3">
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-bold text-[var(--tb-color-text-primary)]">
-                          접시 사진
-                        </p>
-                        <p className="mt-1 truncate text-[12px] text-[var(--tb-color-text-subtle)]">
-                          {reflectionPhotoName ?? '사진을 추가하면 장면을 더 쉽게 떠올릴 수 있어요.'}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={openReflectionPhotoUpload}
-                        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-icon-primary)]"
-                        aria-label="미식 기록 사진 추가"
-                      >
-                        <Camera size={ICON_TOKENS.size.md} strokeWidth={1.8} />
-                      </button>
-                    </div>
+                  <button
+                    type="button"
+                    onClick={openReflectionPhotoUpload}
+                    className="flex w-full items-center justify-between gap-3 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-bg-focus)] p-3 text-left"
+                    aria-label="미식 기록 사진 추가"
+                  >
+                    <span className="min-w-0 truncate text-[13px] font-bold text-[var(--tb-color-text-primary)]">
+                      {reflectionPhotoName ?? '사진 추가'}
+                    </span>
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-icon-primary)]">
+                      <Camera size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+                    </span>
+                  </button>
 
-                    {reflectionPhotoPreviewUrl ? (
-                      <img
-                        src={reflectionPhotoPreviewUrl}
-                        alt={reflectionPhotoName ?? '미식 기록 사진'}
-                        className="aspect-[4/3] w-full rounded-[20px] object-cover"
-                      />
-                    ) : null}
-                  </div>
-                </SectionCard>
+                  {reflectionPhotoPreviewUrl ? (
+                    <img
+                      src={reflectionPhotoPreviewUrl}
+                      alt={reflectionPhotoName ?? '미식 기록 사진'}
+                      className="aspect-[4/3] w-full rounded-[20px] object-cover"
+                    />
+                  ) : null}
+                </div>
               </div>
             </PageSection>
           ) : (
