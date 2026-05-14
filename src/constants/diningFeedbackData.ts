@@ -30,6 +30,9 @@ export interface DiningFeedbackScenario {
 
 export interface DiningDishFeedbackDraft {
   customDetailTags?: Record<string, string[]>;
+  reflectionNote?: string;
+  reflectionPhotoName?: string | null;
+  reflectionPhotoPreviewUrl?: string | null;
   selectedDetailTagIds?: string[];
   rating: number;
   selectedChoiceId: string | null;
@@ -237,6 +240,9 @@ export function createDiningFeedbackDraft(
       responses[dish.id] = {
         rating: 3,
         selectedChoiceId: dish.feedbackChoices[0]?.id ?? null,
+        reflectionNote: '',
+        reflectionPhotoName: null,
+        reflectionPhotoPreviewUrl: null,
         selectedDetailTagIds: [],
         selectedExperienceId: null,
         selectedExperienceIds: [],

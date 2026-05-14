@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode } from 'react';
 import {
   ArrowRight as ArrowRightIcon,
+  Camera as CameraIcon,
   ChevronRight as ChevronRightIcon,
   CircleCheck as CircleCheckIcon,
   ChefHat as ChefHatIcon,
-  ImagePlus as ImagePlusIcon,
   MessageSquareText as MessageSquareTextIcon,
   PenLine as PenLineIcon,
   Plus as PlusIcon,
@@ -13,10 +13,10 @@ import {
 } from 'lucide-react';
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
 const ArrowRight = wrapIcon(ArrowRightIcon);
+const Camera = wrapIcon(CameraIcon);
 const ChevronRight = wrapIcon(ChevronRightIcon);
 const CheckCircle2 = wrapIcon(CircleCheckIcon);
 const ChefHat = wrapIcon(ChefHatIcon);
-const ImagePlus = wrapIcon(ImagePlusIcon);
 const MessageSquareText = wrapIcon(MessageSquareTextIcon);
 const PenLine = wrapIcon(PenLineIcon);
 const Plus = wrapIcon(PlusIcon);
@@ -53,7 +53,7 @@ const returnIntentOptions = [
 ] as const;
 
 export type TasteAxisId = 'sweet' | 'sour' | 'salty' | 'bitter' | 'umami' | 'fat';
-type DiningFeedbackStep = 'menu-select' | 'taste-checkin' | 'detail-tags';
+type DiningFeedbackStep = 'menu-select' | 'taste-checkin' | 'detail-tags' | 'taste-reflection';
 type DiningDetailTagCategoryId = 'balance' | 'flow' | 'texture' | 'aroma' | 'composition';
 
 interface DiningDetailTagCategory {
@@ -1397,6 +1397,8 @@ function DiningDetailTagSection({
   selectedTagIds: readonly string[];
 }) {
   const selectedTagIdSet = new Set(selectedTagIds);
+  const tagListRef = useRef<HTMLDivElement | null>(null);
+  const [collapsedTagLimit, setCollapsedTagLimit] = useState(DETAIL_TAG_COLLAPSED_VISIBLE_COUNT);
   const standardTags = category.tags.map((tag) => ({ ...tag, custom: false }));
   const customTagItems = customTags.map((label) => ({
     custom: true,
@@ -1404,12 +1406,30 @@ function DiningDetailTagSection({
     label,
   }));
   const allTags = [...standardTags, ...customTagItems];
+  const getEstimatedChipWidth = (label: string) => Math.min(160, Math.max(56, label.length * 13 + 32));
+  const getRowsNeeded = (chipWidths: number[], maxWidth: number) => {
+    let rows = 1;
+    let rowWidth = 0;
+
+    for (const chipWidth of chipWidths) {
+      const nextWidth = rowWidth === 0 ? chipWidth : rowWidth + 8 + chipWidth;
+
+      if (nextWidth > maxWidth && rowWidth > 0) {
+        rows += 1;
+        rowWidth = chipWidth;
+      } else {
+        rowWidth = nextWidth;
+      }
+    }
+
+    return rows;
+  };
   const visibleTagIds = new Set<string>();
   const visibleTags = expanded
     ? allTags
     : allTags.filter((tag, index) => {
         const shouldShow =
-          index < DETAIL_TAG_COLLAPSED_VISIBLE_COUNT || selectedTagIdSet.has(tag.id) || tag.custom;
+          index < collapsedTagLimit || selectedTagIdSet.has(tag.id) || tag.custom;
 
         if (shouldShow) {
           visibleTagIds.add(tag.id);
@@ -1419,6 +1439,51 @@ function DiningDetailTagSection({
       });
   const hasHiddenTags = !expanded && allTags.some((tag) => !visibleTagIds.has(tag.id));
   const canCollapse = expanded && allTags.length > DETAIL_TAG_COLLAPSED_VISIBLE_COUNT;
+
+  useEffect(() => {
+    const updateCollapsedTagLimit = () => {
+      const tagListWidth = tagListRef.current?.clientWidth ?? 0;
+
+      if (tagListWidth <= 0 || expanded) {
+        return;
+      }
+
+      const plusWidth = 36;
+      const moreWidth = 36;
+      const maxRows = 2;
+      const allChipWidths = [plusWidth, ...allTags.map((tag) => getEstimatedChipWidth(tag.label))];
+
+      if (getRowsNeeded(allChipWidths, tagListWidth) <= maxRows) {
+        setCollapsedTagLimit(allTags.length);
+        return;
+      }
+
+      let nextLimit = Math.min(allTags.length, DETAIL_TAG_COLLAPSED_VISIBLE_COUNT);
+
+      while (nextLimit > 0) {
+        const chipWidths = [
+          plusWidth,
+          ...allTags.slice(0, nextLimit).map((tag) => getEstimatedChipWidth(tag.label)),
+          moreWidth,
+        ];
+
+        if (getRowsNeeded(chipWidths, tagListWidth) <= maxRows) {
+          break;
+        }
+
+        nextLimit -= 1;
+      }
+
+      setCollapsedTagLimit(nextLimit);
+    };
+
+    updateCollapsedTagLimit();
+    window.addEventListener('resize', updateCollapsedTagLimit);
+
+    return () => {
+      window.removeEventListener('resize', updateCollapsedTagLimit);
+    };
+  }, [category.tags, customTags, expanded]);
 
   return (
     <section className="flex flex-col gap-3">
@@ -1431,7 +1496,7 @@ function DiningDetailTagSection({
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div ref={tagListRef} className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={onOpenInput}
@@ -1624,10 +1689,14 @@ export function DiningFeedbackScreen({
   const [activeCustomDetailCategoryId, setActiveCustomDetailCategoryId] = useState<string | null>(null);
   const [customDetailInputValue, setCustomDetailInputValue] = useState('');
   const [activeDetailExperienceIndex, setActiveDetailExperienceIndex] = useState(0);
+  const reflectionPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const activeDish = (scenario.dishes[activeDishIndex] ?? scenario.dishes[0]) as DiningDishMetadata;
   const activeResponse = draft.dishResponses[activeDish.id] ?? {
     customDetailTags: {},
     rating: 3,
+    reflectionNote: '',
+    reflectionPhotoName: null,
+    reflectionPhotoPreviewUrl: null,
     selectedChoiceId: null,
     selectedDetailTagIds: [],
     selectedExperienceId: null,
@@ -1642,6 +1711,9 @@ export function DiningFeedbackScreen({
     activeExperience;
   const selectedDetailTagIds = activeResponse.selectedDetailTagIds ?? [];
   const customDetailTags = activeResponse.customDetailTags ?? {};
+  const reflectionNote = activeResponse.reflectionNote ?? '';
+  const reflectionPhotoName = activeResponse.reflectionPhotoName ?? null;
+  const reflectionPhotoPreviewUrl = activeResponse.reflectionPhotoPreviewUrl ?? null;
   const completedDishCount = scenario.dishes.filter(
     (dish) => getSelectedExperienceIds(draft.dishResponses[dish.id]).length > 0,
   ).length;
@@ -1747,6 +1819,33 @@ export function DiningFeedbackScreen({
     setActiveCustomDetailCategoryId(null);
   };
 
+  const openTasteReflection = () => {
+    setFeedbackStep('taste-reflection');
+  };
+
+  const openReflectionPhotoUpload = () => {
+    reflectionPhotoInputRef.current?.click();
+  };
+
+  const handleReflectionPhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      updateActiveDishResponse({
+        reflectionPhotoName: file.name,
+        reflectionPhotoPreviewUrl: typeof reader.result === 'string' ? reader.result : null,
+      });
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  };
+
   const completeDetailTags = () => {
     setSelectedDishIndex(null);
     setActiveCustomDetailCategoryId(null);
@@ -1778,6 +1877,11 @@ export function DiningFeedbackScreen({
 
     if (feedbackStep === 'detail-tags') {
       setFeedbackStep('taste-checkin');
+      return;
+    }
+
+    if (feedbackStep === 'taste-reflection') {
+      setFeedbackStep('detail-tags');
       return;
     }
 
@@ -1846,13 +1950,13 @@ export function DiningFeedbackScreen({
     <div
       className={cn(
         'relative flex h-full w-full flex-col animate-slideIn',
-        feedbackStep === 'detail-tags'
+        feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
           ? 'bg-[var(--tb-color-bg-focus)]'
           : 'bg-[var(--tb-color-bg-page)]',
       )}
     >
       <TopAppBar
-        appearance={feedbackStep === 'detail-tags' ? 'solid' : undefined}
+        appearance={feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' ? 'solid' : undefined}
         title="식후 피드백"
         showBack
         onBack={handleTopBack}
@@ -1860,7 +1964,7 @@ export function DiningFeedbackScreen({
       />
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="tb-section-stack px-5 pt-6 pb-[168px]">
-          {feedbackStep !== 'detail-tags' ? (
+          {feedbackStep !== 'detail-tags' && feedbackStep !== 'taste-reflection' ? (
             <div className="flex flex-col gap-3">
               <div>
                 <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
@@ -1963,18 +2067,31 @@ export function DiningFeedbackScreen({
                     })}
                   </div>
 
-                  <div className="flex w-full max-w-[420px] items-center justify-between gap-4 rounded-[var(--tb-radius-18)] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] px-4 py-3">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={openTasteReflection}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openTasteReflection();
+                      }
+                    }}
+                    className="flex w-full max-w-[420px] cursor-pointer items-center justify-between gap-4 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] p-3 transition-colors hover:border-[var(--tb-color-border-default)]"
+                    aria-label="미각 회고 페이지 열기"
+                  >
                     <div className="min-w-0">
                       <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
                         짧은 미식 기록 추가
-                      </p>
-                      <p className="mt-1 text-[12px] leading-snug text-[var(--tb-color-text-subtle)]">
-                        떠오른 장면이나 접시 사진을 함께 남겨요.
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <button
                         type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openTasteReflection();
+                        }}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
                         aria-label="짧은 미식 기록 작성"
                       >
@@ -1982,12 +2099,24 @@ export function DiningFeedbackScreen({
                       </button>
                       <button
                         type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openReflectionPhotoUpload();
+                        }}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
                         aria-label="미식 기록 사진 추가"
                       >
-                        <ImagePlus size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+                        <Camera size={ICON_TOKENS.size.md} strokeWidth={1.8} />
                       </button>
                     </div>
+                    <input
+                      ref={reflectionPhotoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleReflectionPhotoChange}
+                      aria-label="미식 기록 사진 업로드"
+                    />
                   </div>
                 </div>
               </PageSection>
@@ -2014,6 +2143,81 @@ export function DiningFeedbackScreen({
                 </div>
               </PageSection>
             </>
+          ) : feedbackStep === 'taste-reflection' ? (
+            <PageSection>
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col items-center gap-3 py-2 text-center">
+                  {activeDetailExperience ? (
+                    <div
+                      className="flex h-[132px] w-[132px] flex-col items-center justify-center rounded-full border px-4"
+                      style={{
+                        backgroundColor: `var(--tb-taste-${activeDetailExperience.axis}-tint-surface)`,
+                        borderColor: `var(--tb-taste-${activeDetailExperience.axis}-tint-soft-border)`,
+                        color: `var(--tb-taste-${activeDetailExperience.axis}-tint-surface-text)`,
+                      }}
+                    >
+                      <span className="text-[10px] font-semibold opacity-70">
+                        {activeDetailExperienceIndex === 0 ? '메인 미각' : '보조 미각'}
+                      </span>
+                      <span className="mt-2 text-[15px] font-bold leading-tight">
+                        {activeDetailExperience.label}
+                      </span>
+                    </div>
+                  ) : null}
+                  <div>
+                    <h1 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">
+                      미각 회고
+                    </h1>
+                    <p className="mt-1 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                      이 인상이 남은 순간을 짧게 적어두면 다음 다이닝에 더 잘 반영할 수 있어요.
+                    </p>
+                  </div>
+                </div>
+
+                <SectionCard hoverEffect={false}>
+                  <div className="flex flex-col gap-4">
+                    <label className="flex flex-col gap-2">
+                      <span className="text-[13px] font-bold text-[var(--tb-color-text-primary)]">
+                        짧은 기록
+                      </span>
+                      <textarea
+                        value={reflectionNote}
+                        onChange={(event) => updateActiveDishResponse({ reflectionNote: event.target.value })}
+                        className="min-h-[120px] w-full resize-none rounded-[var(--tb-radius-14)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] px-4 py-3 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
+                        placeholder="예: 중반부터 산미가 정리해줘서 생선 뒤맛이 더 맑게 느껴졌어요."
+                      />
+                    </label>
+
+                    <div className="flex items-center justify-between gap-3 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-bg-focus)] p-3">
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-bold text-[var(--tb-color-text-primary)]">
+                          접시 사진
+                        </p>
+                        <p className="mt-1 truncate text-[12px] text-[var(--tb-color-text-subtle)]">
+                          {reflectionPhotoName ?? '사진을 추가하면 장면을 더 쉽게 떠올릴 수 있어요.'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={openReflectionPhotoUpload}
+                        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-icon-primary)]"
+                        aria-label="미식 기록 사진 추가"
+                      >
+                        <Camera size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+                      </button>
+                    </div>
+
+                    {reflectionPhotoPreviewUrl ? (
+                      <img
+                        src={reflectionPhotoPreviewUrl}
+                        alt={reflectionPhotoName ?? '미식 기록 사진'}
+                        className="aspect-[4/3] w-full rounded-[20px] object-cover"
+                      />
+                    ) : null}
+                  </div>
+                </SectionCard>
+              </div>
+            </PageSection>
           ) : (
             <PageSection title="코스별 미각 체크인" titleSize="md">
               <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
@@ -2123,7 +2327,7 @@ export function DiningFeedbackScreen({
         actionLabel={
           feedbackStep === 'menu-select'
             ? '선택한 메뉴 기록하기'
-            : feedbackStep === 'detail-tags'
+            : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
               ? '디테일 저장하기'
               : '다음 다이닝에 반영하기'
         }
@@ -2132,7 +2336,7 @@ export function DiningFeedbackScreen({
             ? selectedDish
               ? `${selectedDish.courseLabel} · ${selectedDish.title}의 미각 인상을 기록합니다.`
               : '가장 기억에 남는 메뉴 하나를 먼저 선택해주세요.'
-            : feedbackStep === 'detail-tags'
+            : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
               ? selectedDetailTagIds.length > 0
                 ? `${selectedDetailTagIds.length}개의 디테일 단서를 함께 저장합니다.`
                 : '태그를 고르지 않아도 미각 인상은 저장됩니다.'
@@ -2141,7 +2345,7 @@ export function DiningFeedbackScreen({
         onAction={
           feedbackStep === 'menu-select'
             ? moveToTasteCheckin
-            : feedbackStep === 'detail-tags'
+            : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
               ? completeDetailTags
               : onSubmit
         }
