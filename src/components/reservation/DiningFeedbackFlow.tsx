@@ -1,17 +1,25 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   ArrowRight as ArrowRightIcon,
+  ChevronRight as ChevronRightIcon,
   CircleCheck as CircleCheckIcon,
   ChefHat as ChefHatIcon,
+  ImagePlus as ImagePlusIcon,
   MessageSquareText as MessageSquareTextIcon,
+  PenLine as PenLineIcon,
+  Plus as PlusIcon,
   Search as SearchIcon,
   Sparkles as SparklesIcon,
 } from 'lucide-react';
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
 const ArrowRight = wrapIcon(ArrowRightIcon);
+const ChevronRight = wrapIcon(ChevronRightIcon);
 const CheckCircle2 = wrapIcon(CircleCheckIcon);
 const ChefHat = wrapIcon(ChefHatIcon);
+const ImagePlus = wrapIcon(ImagePlusIcon);
 const MessageSquareText = wrapIcon(MessageSquareTextIcon);
+const PenLine = wrapIcon(PenLineIcon);
+const Plus = wrapIcon(PlusIcon);
 const Search = wrapIcon(SearchIcon);
 const Sparkles = wrapIcon(SparklesIcon);
 
@@ -45,7 +53,92 @@ const returnIntentOptions = [
 ] as const;
 
 export type TasteAxisId = 'sweet' | 'sour' | 'salty' | 'bitter' | 'umami' | 'fat';
-type DiningFeedbackStep = 'menu-select' | 'taste-checkin';
+type DiningFeedbackStep = 'menu-select' | 'taste-checkin' | 'detail-tags';
+type DiningDetailTagCategoryId = 'balance' | 'flow' | 'texture' | 'aroma' | 'composition';
+
+interface DiningDetailTagCategory {
+  id: DiningDetailTagCategoryId;
+  label: string;
+  tags: readonly {
+    id: string;
+    label: string;
+  }[];
+}
+
+const DETAIL_TAG_COLLAPSED_VISIBLE_COUNT = 5;
+
+const diningDetailTagCategories: readonly DiningDetailTagCategory[] = [
+  {
+    id: 'balance',
+    label: '맛의 강도와 균형',
+    tags: [
+      { id: 'balance-clear-seasoning', label: '간이 선명함' },
+      { id: 'balance-well-balanced', label: '균형이 좋음' },
+      { id: 'balance-one-note-forward', label: '한 맛이 앞섬' },
+      { id: 'balance-sweet-support', label: '단맛이 받쳐줌' },
+      { id: 'balance-acid-cleans', label: '산미가 정리함' },
+      { id: 'balance-umami-depth', label: '감칠맛이 깊음' },
+      { id: 'balance-finish-heavy', label: '마무리가 무거움' },
+      { id: 'balance-intensity-high', label: '강도가 높음' },
+    ],
+  },
+  {
+    id: 'flow',
+    label: '입안의 흐름',
+    tags: [
+      { id: 'flow-first-clear', label: '처음에 선명함' },
+      { id: 'flow-middle-spreads', label: '중반에 퍼짐' },
+      { id: 'flow-deepens-late', label: '뒤로 갈수록 깊어짐' },
+      { id: 'flow-clean-finish', label: '피니시가 깨끗함' },
+      { id: 'flow-long-lasting', label: '오래 남음' },
+      { id: 'flow-quick-fade', label: '빠르게 사라짐' },
+      { id: 'flow-opens-next', label: '다음 맛을 열어줌' },
+      { id: 'flow-finish-piled', label: '끝에 쌓임' },
+    ],
+  },
+  {
+    id: 'texture',
+    label: '질감과 온도',
+    tags: [
+      { id: 'texture-soft', label: '부드러움' },
+      { id: 'texture-dense', label: '밀도 있음' },
+      { id: 'texture-light', label: '가벼움' },
+      { id: 'texture-coating', label: '코팅감 있음' },
+      { id: 'texture-dry', label: '건조함' },
+      { id: 'texture-temperature-right', label: '온도가 잘 맞음' },
+      { id: 'texture-cool-cleans', label: '차갑게 정리됨' },
+      { id: 'texture-warm-spreads', label: '따뜻하게 퍼짐' },
+    ],
+  },
+  {
+    id: 'aroma',
+    label: '향과 재료 인상',
+    tags: [
+      { id: 'aroma-seafood', label: '해산물 향' },
+      { id: 'aroma-meaty', label: '육향' },
+      { id: 'aroma-herbal', label: '허브 향' },
+      { id: 'aroma-fermented', label: '발효 향' },
+      { id: 'aroma-roasted', label: '구운 향' },
+      { id: 'aroma-smoky', label: '훈연 향' },
+      { id: 'aroma-fruity', label: '과일 향' },
+      { id: 'aroma-ingredient-clear', label: '재료감이 선명함' },
+    ],
+  },
+  {
+    id: 'composition',
+    label: '조리와 구성 단서',
+    tags: [
+      { id: 'composition-cook-point', label: '굽기가 좋음' },
+      { id: 'composition-sauce-leads', label: '소스가 이끎' },
+      { id: 'composition-fat-supports', label: '지방이 받쳐줌' },
+      { id: 'composition-acid-structure', label: '산미가 구조를 만듦' },
+      { id: 'composition-contrast-good', label: '대비가 좋음' },
+      { id: 'composition-connected', label: '재료 간 연결이 좋음' },
+      { id: 'composition-cooking-strong', label: '조리가 강함' },
+      { id: 'composition-course-fit', label: '구성감이 좋음' },
+    ],
+  },
+];
 
 export interface TasteExperienceWord {
   angleOffset: number;
@@ -666,6 +759,7 @@ function TasteExperienceMap({
     selectedExperienceIds[0] ?? null,
   );
   const [mapZoom, setMapZoom] = useState(1);
+  const [isFeedbackCardVisible, setIsFeedbackCardVisible] = useState(true);
   const selectedExperienceIdRef = useRef<string | null | undefined>(draftSelectedExperienceId);
   const resolvedSelectedExperience = findTasteExperience(draftSelectedExperienceId);
   const resolvedSelectedExperienceId = resolvedSelectedExperience?.id ?? draftSelectedExperienceId;
@@ -674,9 +768,9 @@ function TasteExperienceMap({
     selectedExperienceIds.length >= 3
       ? [...selectedExperienceIds]
       : [
-          ...selectedExperienceIds,
-          ...(resolvedSelectedExperienceId ? [resolvedSelectedExperienceId] : []),
-        ];
+        ...selectedExperienceIds,
+        ...(resolvedSelectedExperienceId ? [resolvedSelectedExperienceId] : []),
+      ];
 
   useEffect(() => {
     const nextSelectedExperienceId = selectedExperienceIds[0] ?? null;
@@ -747,6 +841,7 @@ function TasteExperienceMap({
       return;
     }
 
+    setIsFeedbackCardVisible(false);
     isSnappingRef.current = true;
     viewport.scrollTo({
       behavior: 'smooth',
@@ -756,6 +851,7 @@ function TasteExperienceMap({
 
     window.setTimeout(() => {
       isSnappingRef.current = false;
+      setIsFeedbackCardVisible(true);
     }, 420);
   };
 
@@ -851,6 +947,7 @@ function TasteExperienceMap({
     hasExploredMapRef.current = true;
     selectedExperienceIdRef.current = focusExperienceId;
     setDraftSelectedExperienceId(focusExperienceId);
+    setIsFeedbackCardVisible(false);
     isSnappingRef.current = true;
     viewport.scrollTo({
       behavior: 'smooth',
@@ -860,6 +957,7 @@ function TasteExperienceMap({
 
     window.setTimeout(() => {
       isSnappingRef.current = false;
+      setIsFeedbackCardVisible(true);
     }, 420);
   }, [focusExperienceId]);
 
@@ -869,6 +967,9 @@ function TasteExperienceMap({
     }
 
     hasExploredMapRef.current = true;
+    if (!isSnappingRef.current) {
+      setIsFeedbackCardVisible(false);
+    }
     window.requestAnimationFrame(selectClosestBubble);
 
     if (
@@ -996,6 +1097,84 @@ function TasteExperienceMap({
     (position) => position.experience.id === resolvedSelectedExperienceId,
   );
 
+  const focusBubblePosition = (bubblePosition: (typeof renderedBubblePositions)[number]) => {
+    const viewport = viewportRef.current;
+
+    if (!viewport) {
+      return;
+    }
+
+    selectedExperienceIdRef.current = bubblePosition.experience.id;
+    setDraftSelectedExperienceId(bubblePosition.experience.id);
+    setIsFeedbackCardVisible(false);
+    isSnappingRef.current = true;
+    viewport.scrollTo({
+      behavior: 'smooth',
+      left: bubblePosition.x * mapZoomRef.current,
+      top: bubblePosition.y * mapZoomRef.current,
+    });
+
+    window.setTimeout(() => {
+      isSnappingRef.current = false;
+      setIsFeedbackCardVisible(true);
+    }, 420);
+  };
+
+  const focusNextUnselectedBubbleTowardCenter = (currentExperienceId: string) => {
+    const currentPosition = renderedBubblePositions.find(
+      (position) => position.experience.id === currentExperienceId,
+    );
+
+    if (!currentPosition) {
+      return;
+    }
+
+    const currentCenterDistance = Math.hypot(
+      currentPosition.x - BUBBLE_MAP_NEUTRAL_POINT.x,
+      currentPosition.y - BUBBLE_MAP_NEUTRAL_POINT.y,
+    );
+    const centerDeltaX = BUBBLE_MAP_NEUTRAL_POINT.x - currentPosition.x;
+    const centerDeltaY = BUBBLE_MAP_NEUTRAL_POINT.y - currentPosition.y;
+    const centerDistance = Math.max(1, Math.hypot(centerDeltaX, centerDeltaY));
+    const targetX = currentPosition.x + (centerDeltaX / centerDistance) * BUBBLE_GRID_SPACING;
+    const targetY = currentPosition.y + (centerDeltaY / centerDistance) * BUBBLE_GRID_SPACING;
+    const nextBubblePosition = renderedBubblePositions
+      .filter((position) => !selectedExperienceIdSet.has(position.experience.id))
+      .reduce<(typeof renderedBubblePositions)[number] | null>((bestPosition, position) => {
+        const distanceFromTarget = Math.hypot(position.x - targetX, position.y - targetY);
+        const distanceFromCurrent = Math.hypot(position.x - currentPosition.x, position.y - currentPosition.y);
+        const nextCenterDistance = Math.hypot(
+          position.x - BUBBLE_MAP_NEUTRAL_POINT.x,
+          position.y - BUBBLE_MAP_NEUTRAL_POINT.y,
+        );
+        const score =
+          distanceFromTarget +
+          Math.abs(distanceFromCurrent - BUBBLE_GRID_SPACING) * 0.35 +
+          (nextCenterDistance > currentCenterDistance ? BUBBLE_GRID_SPACING * 2 : 0);
+
+        if (!bestPosition) {
+          return position;
+        }
+
+        const bestDistanceFromTarget = Math.hypot(bestPosition.x - targetX, bestPosition.y - targetY);
+        const bestDistanceFromCurrent = Math.hypot(bestPosition.x - currentPosition.x, bestPosition.y - currentPosition.y);
+        const bestCenterDistance = Math.hypot(
+          bestPosition.x - BUBBLE_MAP_NEUTRAL_POINT.x,
+          bestPosition.y - BUBBLE_MAP_NEUTRAL_POINT.y,
+        );
+        const bestScore =
+          bestDistanceFromTarget +
+          Math.abs(bestDistanceFromCurrent - BUBBLE_GRID_SPACING) * 0.35 +
+          (bestCenterDistance > currentCenterDistance ? BUBBLE_GRID_SPACING * 2 : 0);
+
+        return score < bestScore ? position : bestPosition;
+      }, null);
+
+    if (nextBubblePosition) {
+      focusBubblePosition(nextBubblePosition);
+    }
+  };
+
   return (
     <div className="relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-focus)]">
       <div
@@ -1078,7 +1257,14 @@ function TasteExperienceMap({
       </div>
 
       {selectedExperience ? (
-        <div className="absolute inset-x-0 bottom-[max(20px,var(--tb-safe-area-bottom))] z-30 px-5">
+        <div
+          className={cn(
+            'absolute inset-x-0 bottom-[max(20px,var(--tb-safe-area-bottom))] z-30 px-5 transition-all duration-200 ease-out',
+            isFeedbackCardVisible
+              ? 'translate-y-0 opacity-100'
+              : 'pointer-events-none translate-y-4 opacity-0',
+          )}
+        >
           <SectionCard hoverEffect={false} className="border-1 p-4">
             <div className="flex w-full items-center gap-4">
               <div className="min-w-0 flex-1">
@@ -1098,14 +1284,21 @@ function TasteExperienceMap({
               </div>
               <button
                 type="button"
-                onClick={() => onConfirm(selectedExperience)}
+                onClick={() => {
+                  if (selectedExperienceIds.length < 3 && selectedExperienceIdSet.has(selectedExperience.id)) {
+                    focusNextUnselectedBubbleTowardCenter(selectedExperience.id);
+                    return;
+                  }
+
+                  onConfirm(selectedExperience);
+                }}
                 className="pointer-events-auto ml-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] transition hover:opacity-90"
                 aria-label={
-                  selectedExperienceIdSet.has(selectedExperience.id)
-                    ? '현재 미각 인상 선택 취소하기'
-                    : selectedExperienceIds.length >= 3
+                  selectedExperienceIds.length >= 3
                     ? '선택한 미각 인상으로 계속하기'
-                    : '현재 미각 인상 선택하기'
+                    : selectedExperienceIdSet.has(selectedExperience.id)
+                      ? '다음 미각 후보로 이동하기'
+                      : '현재 미각 인상 선택하기'
                 }
               >
                 <ArrowRight size={ICON_TOKENS.size.md} strokeWidth={2} />
@@ -1130,7 +1323,7 @@ function TasteSelectionPriorityGuide({
     ? '메인 미각 선택'
     : selectedExperienceIds.length < 3
       ? '보조 미각 선택'
-      : '선택한 미각 인상';
+      : '미각 선택 완료';
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -1170,6 +1363,158 @@ function TasteSelectionPriorityGuide({
 function getSelectedChoice(dish: DiningDishMetadata, draft: DiningFeedbackDraft) {
   const selectedChoiceId = draft.dishResponses[dish.id]?.selectedChoiceId;
   return dish.feedbackChoices.find((choice) => choice.id === selectedChoiceId) ?? dish.feedbackChoices[0];
+}
+
+function getCustomDetailTagId(categoryId: string, label: string) {
+  return `custom:${categoryId}:${label.trim()}`;
+}
+
+function DiningDetailTagSection({
+  accentAxis,
+  category,
+  customTags,
+  expanded,
+  inputValue,
+  isInputOpen,
+  onAddCustomTag,
+  onChangeInputValue,
+  onOpenInput,
+  onToggleExpanded,
+  onToggleTag,
+  selectedTagIds,
+}: {
+  accentAxis: TasteAxisId;
+  category: DiningDetailTagCategory;
+  customTags: readonly string[];
+  expanded: boolean;
+  inputValue: string;
+  isInputOpen: boolean;
+  onAddCustomTag: () => void;
+  onChangeInputValue: (value: string) => void;
+  onOpenInput: () => void;
+  onToggleExpanded: () => void;
+  onToggleTag: (tagId: string) => void;
+  selectedTagIds: readonly string[];
+}) {
+  const selectedTagIdSet = new Set(selectedTagIds);
+  const standardTags = category.tags.map((tag) => ({ ...tag, custom: false }));
+  const customTagItems = customTags.map((label) => ({
+    custom: true,
+    id: getCustomDetailTagId(category.id, label),
+    label,
+  }));
+  const allTags = [...standardTags, ...customTagItems];
+  const visibleTagIds = new Set<string>();
+  const visibleTags = expanded
+    ? allTags
+    : allTags.filter((tag, index) => {
+        const shouldShow =
+          index < DETAIL_TAG_COLLAPSED_VISIBLE_COUNT || selectedTagIdSet.has(tag.id) || tag.custom;
+
+        if (shouldShow) {
+          visibleTagIds.add(tag.id);
+        }
+
+        return shouldShow;
+      });
+  const hasHiddenTags = !expanded && allTags.some((tag) => !visibleTagIds.has(tag.id));
+  const canCollapse = expanded && allTags.length > DETAIL_TAG_COLLAPSED_VISIBLE_COUNT;
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+          {category.label}
+        </h2>
+        <span className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">
+          선택사항
+        </span>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={onOpenInput}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+          aria-label={`${category.label} 직접 입력`}
+        >
+          <Plus size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+        </button>
+        {visibleTags.map((tag) => {
+          const selected = selectedTagIdSet.has(tag.id);
+
+          return (
+            <button
+              key={tag.id}
+              type="button"
+              onClick={() => onToggleTag(tag.id)}
+              className={cn(
+                'rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors',
+                selected
+                  ? ''
+                  : tag.custom
+                    ? 'border-dashed border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-subtle)]'
+                    : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-subtle)]',
+              )}
+              style={
+                selected
+                  ? ({
+                      backgroundColor: `var(--tb-taste-${accentAxis}-tint-surface)`,
+                      borderColor: `var(--tb-taste-${accentAxis}-tint-soft-border)`,
+                      color: `var(--tb-taste-${accentAxis}-tint-surface-text)`,
+                    } as CSSProperties)
+                  : undefined
+              }
+            >
+              {tag.label}
+            </button>
+          );
+        })}
+        {hasHiddenTags ? (
+          <button
+            type="button"
+            onClick={onToggleExpanded}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+            aria-label={`${category.label} 태그 더 보기`}
+          >
+            <ChevronRight size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+          </button>
+        ) : canCollapse ? (
+          <button
+            type="button"
+            onClick={onToggleExpanded}
+            className="rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-2 text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
+          >
+            접기
+          </button>
+        ) : null}
+      </div>
+
+      {isInputOpen ? (
+        <div className="flex items-center gap-2">
+          <input
+            value={inputValue}
+            onChange={(event) => onChangeInputValue(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                onAddCustomTag();
+              }
+            }}
+            className="min-w-0 flex-1 rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 py-2 text-[12px] text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
+            placeholder="직접 느낀 표현 입력"
+          />
+          <button
+            type="button"
+            onClick={onAddCustomTag}
+            className="rounded-full bg-[var(--tb-color-text-primary)] px-4 py-2 text-[12px] font-semibold text-[var(--tb-color-text-inverse)]"
+          >
+            완료
+          </button>
+        </div>
+      ) : null}
+    </section>
+  );
 }
 
 function softenRecommendationCopy(recommendation: string) {
@@ -1275,10 +1620,16 @@ export function DiningFeedbackScreen({
   const [activeDishIndex, setActiveDishIndex] = useState(0);
   const [isTasteSearchOpen, setIsTasteSearchOpen] = useState(false);
   const [searchedExperienceId, setSearchedExperienceId] = useState<string | null>(null);
+  const [expandedDetailCategoryIds, setExpandedDetailCategoryIds] = useState<string[]>([]);
+  const [activeCustomDetailCategoryId, setActiveCustomDetailCategoryId] = useState<string | null>(null);
+  const [customDetailInputValue, setCustomDetailInputValue] = useState('');
+  const [activeDetailExperienceIndex, setActiveDetailExperienceIndex] = useState(0);
   const activeDish = (scenario.dishes[activeDishIndex] ?? scenario.dishes[0]) as DiningDishMetadata;
   const activeResponse = draft.dishResponses[activeDish.id] ?? {
+    customDetailTags: {},
     rating: 3,
     selectedChoiceId: null,
+    selectedDetailTagIds: [],
     selectedExperienceId: null,
     selectedExperienceIds: [],
   };
@@ -1286,6 +1637,11 @@ export function DiningFeedbackScreen({
   const activeExperienceIds = getSelectedExperienceIds(activeResponse);
   const activeExperiences = getSelectedTasteExperiences(activeResponse);
   const activeExperience = activeExperiences[0] ?? null;
+  const activeDetailExperience =
+    activeExperiences[Math.min(activeDetailExperienceIndex, Math.max(0, activeExperiences.length - 1))] ??
+    activeExperience;
+  const selectedDetailTagIds = activeResponse.selectedDetailTagIds ?? [];
+  const customDetailTags = activeResponse.customDetailTags ?? {};
   const completedDishCount = scenario.dishes.filter(
     (dish) => getSelectedExperienceIds(draft.dishResponses[dish.id]).length > 0,
   ).length;
@@ -1331,6 +1687,73 @@ export function DiningFeedbackScreen({
     return nextExperienceIds;
   };
 
+  const updateActiveDishResponse = (nextResponse: Partial<typeof activeResponse>) => {
+    onChange({
+      ...draft,
+      dishResponses: {
+        ...draft.dishResponses,
+        [activeDish.id]: {
+          ...activeResponse,
+          ...nextResponse,
+        },
+      },
+    });
+  };
+
+  const toggleDetailTag = (tagId: string) => {
+    const nextSelectedTagIds = selectedDetailTagIds.includes(tagId)
+      ? selectedDetailTagIds.filter((selectedTagId) => selectedTagId !== tagId)
+      : [...selectedDetailTagIds, tagId];
+
+    updateActiveDishResponse({ selectedDetailTagIds: nextSelectedTagIds });
+  };
+
+  const toggleDetailCategoryExpanded = (categoryId: string) => {
+    setExpandedDetailCategoryIds((current) =>
+      current.includes(categoryId)
+        ? current.filter((expandedCategoryId) => expandedCategoryId !== categoryId)
+        : [...current, categoryId],
+    );
+  };
+
+  const openCustomDetailInput = (categoryId: string) => {
+    setActiveCustomDetailCategoryId(categoryId);
+    setCustomDetailInputValue('');
+  };
+
+  const addCustomDetailTag = (categoryId: string) => {
+    const label = customDetailInputValue.trim();
+
+    if (!label) {
+      return;
+    }
+
+    const currentCategoryTags = customDetailTags[categoryId] ?? [];
+    const nextCategoryTags = currentCategoryTags.includes(label)
+      ? currentCategoryTags
+      : [...currentCategoryTags, label];
+    const customTagId = getCustomDetailTagId(categoryId, label);
+
+    updateActiveDishResponse({
+      customDetailTags: {
+        ...customDetailTags,
+        [categoryId]: nextCategoryTags,
+      },
+      selectedDetailTagIds: selectedDetailTagIds.includes(customTagId)
+        ? selectedDetailTagIds
+        : [...selectedDetailTagIds, customTagId],
+    });
+    setCustomDetailInputValue('');
+    setActiveCustomDetailCategoryId(null);
+  };
+
+  const completeDetailTags = () => {
+    setSelectedDishIndex(null);
+    setActiveCustomDetailCategoryId(null);
+    setCustomDetailInputValue('');
+    setFeedbackStep('menu-select');
+  };
+
   const moveToTasteCheckin = () => {
     if (selectedDishIndex === null) {
       return;
@@ -1350,6 +1773,11 @@ export function DiningFeedbackScreen({
 
       setSearchedExperienceId(null);
       setFeedbackStep('menu-select');
+      return;
+    }
+
+    if (feedbackStep === 'detail-tags') {
+      setFeedbackStep('taste-checkin');
       return;
     }
 
@@ -1387,11 +1815,17 @@ export function DiningFeedbackScreen({
             setSearchedExperienceId(null);
           }}
           onConfirm={(experience) => {
+            if (activeExperienceIds.length >= 3) {
+              setSearchedExperienceId(null);
+              setExpandedDetailCategoryIds([]);
+              setActiveCustomDetailCategoryId(null);
+              setActiveDetailExperienceIndex(0);
+              setFeedbackStep('detail-tags');
+              return;
+            }
+
             const nextExperienceIds = selectTasteExperience(experience);
             setSearchedExperienceId(null);
-            if (nextExperienceIds.length >= 3) {
-              setFeedbackStep('menu-select');
-            }
           }}
         />
         <TasteWordSearch
@@ -1409,48 +1843,48 @@ export function DiningFeedbackScreen({
   }
 
   return (
-    <div className="relative flex h-full w-full flex-col bg-[var(--tb-color-bg-page)] animate-slideIn">
-      <TopAppBar title="식후 피드백" showBack onBack={handleTopBack} />
+    <div
+      className={cn(
+        'relative flex h-full w-full flex-col animate-slideIn',
+        feedbackStep === 'detail-tags'
+          ? 'bg-[var(--tb-color-bg-focus)]'
+          : 'bg-[var(--tb-color-bg-page)]',
+      )}
+    >
+      <TopAppBar
+        appearance={feedbackStep === 'detail-tags' ? 'solid' : undefined}
+        title="식후 피드백"
+        showBack
+        onBack={handleTopBack}
+        rightActions={<div className="h-10 w-10" aria-hidden="true" />}
+      />
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="tb-section-stack px-5 pt-6 pb-[168px]">
-          <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-base)]">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-wrap gap-2">
-                  <InfoPill>약 30초</InfoPill>
-                  <InfoPill>{feedbackStep === 'menu-select' ? '1단계' : '미각 인상 지도'}</InfoPill>
-                </div>
-                <div>
-                  <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
-                    {feedbackStep === 'menu-select' ? (
-                      <>
-                        어떤 메뉴를
-                        <br />
-                        먼저 기록할까요?
-                      </>
-                    ) : (
-                      <>
-                        이 음식이 어떻게 남았는지
-                        <br />
-                        가장 가까운 말을 골라주세요
-                      </>
-                    )}
-                  </h1>
-                  <p className={`mt-2 ${feedbackBodyClass}`}>
-                    {feedbackStep === 'menu-select'
-                      ? '모든 코스를 한 번에 평가하지 않아도 괜찮아요. 가장 선명하게 기억나는 메뉴부터 선택하면, 그 메뉴의 미각 인상만 차분히 기록할 수 있어요.'
-                      : '정답을 맞히는 평가가 아니라, 입안에 남은 인상을 이름 붙이는 체크인이에요. 중앙은 은은한 인상, 바깥으로 갈수록 강하게 남은 인상입니다.'}
-                  </p>
-                </div>
-                <p className="text-[12px] font-medium text-[var(--tb-color-text-faint)]">
-                  {scenario.courseName} · {scenario.restaurant}
+          {feedbackStep !== 'detail-tags' ? (
+            <div className="flex flex-col gap-3">
+              <div>
+                <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
+                  {feedbackStep === 'menu-select' ? (
+                    '어떤 메뉴를 먼저 기록할까요?'
+                  ) : (
+                    <>
+                      이 음식이 어떻게 남았는지
+                      <br />
+                      가장 가까운 말을 골라주세요
+                    </>
+                  )}
+                </h1>
+                <p className={`mt-1 ${feedbackBodyClass}`}>
+                  {feedbackStep === 'menu-select'
+                    ? '모든 코스를 한 번에 평가하지 않아도 괜찮아요. 가장 선명하게 기억나는 메뉴부터 선택하면, 그 메뉴의 미각 인상만 차분히 기록할 수 있어요.'
+                    : '정답을 맞히는 평가가 아니라, 입안에 남은 인상을 이름 붙이는 체크인이에요. 중앙은 은은한 인상, 바깥으로 갈수록 강하게 남은 인상입니다.'}
                 </p>
               </div>
-              <TokenBox backgroundToken="surface-base" textToken="text-primary">
-                <MessageSquareText size={ICON_TOKENS.size.lg} />
-              </TokenBox>
+              <p className="text-[12px] font-medium text-[var(--tb-color-text-faint)]">
+                {scenario.courseName} · {scenario.restaurant}
+              </p>
             </div>
-          </SectionCard>
+          ) : null}
 
           {feedbackStep === 'menu-select' ? (
             <PageSection>
@@ -1482,6 +1916,104 @@ export function DiningFeedbackScreen({
                 })}
               </div>
             </PageSection>
+          ) : feedbackStep === 'detail-tags' ? (
+            <>
+              <PageSection>
+                <div className="flex flex-col items-center gap-4 py-2">
+                  {activeDetailExperience ? (
+                    <div
+                      className="flex h-[176px] w-[176px] flex-col items-center justify-center rounded-full border px-5 text-center"
+                      style={{
+                        backgroundColor: `var(--tb-taste-${activeDetailExperience.axis}-tint-surface)`,
+                        borderColor: `var(--tb-taste-${activeDetailExperience.axis}-tint-soft-border)`,
+                        color: `var(--tb-taste-${activeDetailExperience.axis}-tint-surface-text)`,
+                      }}
+                    >
+                      <span className="text-[11px] font-semibold opacity-70">
+                        {activeDetailExperienceIndex === 0 ? '메인 미각' : '보조 미각'}
+                      </span>
+                      <span className="mt-2 text-[17px] font-bold leading-tight">
+                        {activeDetailExperience.label}
+                      </span>
+                    </div>
+                  ) : null}
+
+                  <div className="flex items-center justify-center gap-3">
+                    {activeExperiences.map((experience, index) => {
+                      const isActive = index === activeDetailExperienceIndex;
+
+                      return (
+                        <button
+                          key={experience.id}
+                          type="button"
+                          onClick={() => setActiveDetailExperienceIndex(index)}
+                          className={cn(
+                            'h-8 w-8 rounded-full border transition-transform active:scale-95',
+                            isActive ? 'scale-110 shadow-[0_8px_18px_rgba(0,0,0,0.10)]' : 'opacity-70',
+                          )}
+                          style={{
+                            backgroundColor: isActive
+                              ? `var(--tb-taste-${experience.axis}-tint-surface)`
+                              : `var(--tb-taste-${experience.axis}-tint-soft)`,
+                            borderColor: `var(--tb-taste-${experience.axis}-tint-soft-border)`,
+                          }}
+                          aria-label={`${index === 0 ? '메인' : '보조'} 미각 ${experience.label} 보기`}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex w-full max-w-[420px] items-center justify-between gap-4 rounded-[var(--tb-radius-18)] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                        짧은 미식 기록 추가
+                      </p>
+                      <p className="mt-1 text-[12px] leading-snug text-[var(--tb-color-text-subtle)]">
+                        떠오른 장면이나 접시 사진을 함께 남겨요.
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <button
+                        type="button"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+                        aria-label="짧은 미식 기록 작성"
+                      >
+                        <PenLine size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+                        aria-label="미식 기록 사진 추가"
+                      >
+                        <ImagePlus size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </PageSection>
+
+              <PageSection>
+                <div className="flex flex-col gap-7">
+                  {diningDetailTagCategories.map((category) => (
+                    <DiningDetailTagSection
+                      key={category.id}
+                      accentAxis={activeDetailExperience?.axis ?? 'umami'}
+                      category={category}
+                      customTags={customDetailTags[category.id] ?? []}
+                      expanded={expandedDetailCategoryIds.includes(category.id)}
+                      inputValue={activeCustomDetailCategoryId === category.id ? customDetailInputValue : ''}
+                      isInputOpen={activeCustomDetailCategoryId === category.id}
+                      onAddCustomTag={() => addCustomDetailTag(category.id)}
+                      onChangeInputValue={setCustomDetailInputValue}
+                      onOpenInput={() => openCustomDetailInput(category.id)}
+                      onToggleExpanded={() => toggleDetailCategoryExpanded(category.id)}
+                      onToggleTag={toggleDetailTag}
+                      selectedTagIds={selectedDetailTagIds}
+                    />
+                  ))}
+                </div>
+              </PageSection>
+            </>
           ) : (
             <PageSection title="코스별 미각 체크인" titleSize="md">
               <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
@@ -1588,15 +2120,31 @@ export function DiningFeedbackScreen({
 
       <FlowBottomCta
         actionDisabled={feedbackStep === 'menu-select' && selectedDishIndex === null}
-        actionLabel={feedbackStep === 'menu-select' ? '선택한 메뉴 기록하기' : '다음 다이닝에 반영하기'}
+        actionLabel={
+          feedbackStep === 'menu-select'
+            ? '선택한 메뉴 기록하기'
+            : feedbackStep === 'detail-tags'
+              ? '디테일 저장하기'
+              : '다음 다이닝에 반영하기'
+        }
         helperText={
           feedbackStep === 'menu-select'
             ? selectedDish
               ? `${selectedDish.courseLabel} · ${selectedDish.title}의 미각 인상을 기록합니다.`
               : '가장 기억에 남는 메뉴 하나를 먼저 선택해주세요.'
-            : '저장 후 바로 어떤 점이 다음 다이닝에 반영되는지 확인할 수 있어요.'
+            : feedbackStep === 'detail-tags'
+              ? selectedDetailTagIds.length > 0
+                ? `${selectedDetailTagIds.length}개의 디테일 단서를 함께 저장합니다.`
+                : '태그를 고르지 않아도 미각 인상은 저장됩니다.'
+              : '저장 후 바로 어떤 점이 다음 다이닝에 반영되는지 확인할 수 있어요.'
         }
-        onAction={feedbackStep === 'menu-select' ? moveToTasteCheckin : onSubmit}
+        onAction={
+          feedbackStep === 'menu-select'
+            ? moveToTasteCheckin
+            : feedbackStep === 'detail-tags'
+              ? completeDetailTags
+              : onSubmit
+        }
       />
     </div>
   );
