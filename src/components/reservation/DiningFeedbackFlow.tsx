@@ -1720,12 +1720,12 @@ export function DiningFeedbackScreen({
   const selectedDish = selectedDishIndex === null ? null : scenario.dishes[selectedDishIndex] ?? null;
 
   useEffect(() => {
-    onMapViewChange?.(feedbackStep === 'taste-checkin');
+    onMapViewChange?.(true);
 
     return () => {
       onMapViewChange?.(false);
     };
-  }, [feedbackStep, onMapViewChange]);
+  }, [onMapViewChange]);
 
   const selectTasteExperience = (experience: TasteExperienceWord) => {
     const currentExperienceIds = getSelectedExperienceIds(activeResponse);
