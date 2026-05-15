@@ -57,12 +57,23 @@ export default function SelectionCard({
           'flex size-[18px] shrink-0 items-center justify-center border transition-colors',
           !singleLine && 'mt-[2px]',
           indicator === 'checkbox' ? 'rounded-[6px]' : 'rounded-full',
-          selected
-            ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
-            : 'border-[var(--tb-color-border-disabled)] bg-transparent text-transparent',
+          indicator === 'radio' && selected
+            ? 'border-transparent bg-transparent text-[var(--tb-color-text-primary)] shadow-[inset_0_0_0_2px_var(--tb-color-text-primary)]'
+            : selected
+              ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
+              : 'border-[var(--tb-color-border-disabled)] bg-transparent text-transparent',
         )}
       >
-        <Checkmark size={ICON_TOKENS.size.xs} />
+        {indicator === 'radio' ? (
+          <span
+            className={cn(
+              'size-[8px] rounded-full transition-colors',
+              selected ? 'bg-[var(--tb-color-text-primary)]' : 'bg-transparent',
+            )}
+          />
+        ) : (
+          <Checkmark size={ICON_TOKENS.size.xs} />
+        )}
       </span>
 
       <span

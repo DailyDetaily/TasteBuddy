@@ -14,16 +14,13 @@ import {
   LegacyHomeTasteProfileDetailScreen,
 } from '../imports/Home';
 import PalateSignatureHeroCard from '../components/analysis/PalateSignatureHeroCard';
-import RealMenuRecommendationCard, {
-  type RealMenuRecommendationCardData,
-} from '../components/analysis/RealMenuRecommendationCard';
+import { type RealMenuRecommendationCardData } from '../components/analysis/RealMenuRecommendationCard';
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 import SectionCard from '../components/SectionCard';
 import InterpretationDetailDrawer, {
   type InterpretationDetailContent,
 } from '../components/system/InterpretationDetailDrawer';
 import CardDetailLabel from '../components/system/CardDetailLabel';
-import InsightSummaryCard, { InsightSummaryIndicator } from '../components/system/InsightSummaryCard';
 import InterpretationCard from '../components/system/InterpretationCard';
 import PageSection from '../components/system/PageSection';
 import ProfileConfidenceCard, {
@@ -53,8 +50,6 @@ import {
 import {
   hydrateRecentMeasurementSnapshots,
   hydrateReservationPageData,
-  hydrateRestaurantContentCatalog,
-  type RestaurantContentDish,
 } from '../lib/tasteBuddySupabase';
 import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reservationCatalog';
 import TasteChangePage from './TasteChangePage';
@@ -126,8 +121,6 @@ type ProfileChangeTrendPoint = {
   감칠맛: number;
   지방맛: number;
 };
-
-type RealMenuRecommendation = RealMenuRecommendationCardData;
 
 type AnalysisInsight = InterpretationDetailContent & {
   id: string;
@@ -1510,109 +1503,6 @@ function buildProfileChangeTrendData(
   return visiblePoints;
 }
 
-function buildTasteStrengthMap(snapshot: TasteMeasurementSnapshot) {
-  return getTasteMeasurementEntries(snapshot).reduce<Record<TasteId, number>>((accumulator, entry) => {
-    accumulator[entry.id] = entry.score / 100;
-    return accumulator;
-  }, {} as Record<TasteId, number>);
-}
-
-function scoreDishFit(
-  snapshot: TasteMeasurementSnapshot,
-  dish: RestaurantContentDish,
-  strongestTasteId: TasteId,
-) {
-  const tasteStrengthMap = buildTasteStrengthMap(snapshot);
-  const overlapScore =
-    TASTE_IDS.reduce((sum, tasteId) => sum + tasteStrengthMap[tasteId] * dish.tasteVector[tasteId], 0) /
-    TASTE_IDS.length;
-  const focusScore = tasteStrengthMap[strongestTasteId] * dish.tasteVector[strongestTasteId];
-
-  return Math.round(Math.min(0.99, overlapScore * 0.72 + focusScore * 0.18 + dish.confidence * 0.1) * 100);
-}
-
-function buildRecommendationReason(
-  dish: RestaurantContentDish,
-  strongestTaste: TasteMeasurementEntry,
-  weakestTaste: TasteMeasurementEntry,
-) {
-  const dominantTasteLabel = TASTE_TOKENS[dish.dominantTaste].label;
-  const ingredientLabel = dish.ingredients.slice(0, 2).join(' · ');
-
-  if (dish.dominantTaste === strongestTaste.id) {
-    return `${strongestTaste.label} 반응이 또렷한 지금은 ${dominantTasteLabel} 중심의 ${dish.title}이 더 선명하게 읽힐 가능성이 높아요.${ingredientLabel ? ` ${ingredientLabel} 구성이 그 결을 자연스럽게 밀어줍니다.` : ''}`;
-  }
-
-  if (dish.dominantTaste === weakestTaste.id) {
-    return `${weakestTaste.label}은 천천히 쌓이는 편이라 ${dish.title}처럼 ${dish.courseLabel.toLowerCase()} 흐름에서 부드럽게 이어지는 구성이 더 편안할 수 있어요.${ingredientLabel ? ` ${ingredientLabel}처럼 재료가 겹겹이 이어지는 점도 장점입니다.` : ''}`;
-  }
-
-  return `${dish.title}은 ${dominantTasteLabel} 축이 중심이고 현재 프로필과 비교적 고르게 맞는 실제 메뉴예요.${ingredientLabel ? ` 특히 ${ingredientLabel} 조합이 현재 반응과 잘 맞을 가능성이 있어요.` : ''}`;
-}
-
-function buildRealMenuRecommendations(
-  snapshot: TasteMeasurementSnapshot,
-  dishes: RestaurantContentDish[],
-) {
-  if (dishes.length === 0) {
-    return [] as RealMenuRecommendation[];
-  }
-
-  const strongestTaste = getStrongestTasteMeasurement(snapshot);
-  const weakestTaste = getWeakestTasteMeasurement(snapshot);
-  const seenDishKeys = new Set<string>();
-  const seenRestaurants = new Set<string>();
-  const rankedRecommendations = dishes
-    .map<RealMenuRecommendation>((dish) => ({
-      id: dish.id,
-      title: dish.title,
-      subtitle: dish.subtitle,
-      restaurant: dish.restaurant,
-      chef: dish.chef,
-      courseLabel: dish.courseLabel,
-      ingredients: dish.ingredients,
-      tasteLabel: TASTE_TOKENS[dish.dominantTaste].label,
-      fitScore: scoreDishFit(snapshot, dish, strongestTaste.id),
-      reason: buildRecommendationReason(dish, strongestTaste, weakestTaste),
-    }))
-    .sort((left, right) => right.fitScore - left.fitScore);
-  const diversified: RealMenuRecommendation[] = [];
-
-  for (const item of rankedRecommendations) {
-    const dishKey = `${item.restaurant}:${item.title}`;
-
-    if (seenDishKeys.has(dishKey) || seenRestaurants.has(item.restaurant)) {
-      continue;
-    }
-
-    seenDishKeys.add(dishKey);
-    seenRestaurants.add(item.restaurant);
-    diversified.push(item);
-
-    if (diversified.length === 3) {
-      return diversified;
-    }
-  }
-
-  for (const item of rankedRecommendations) {
-    const dishKey = `${item.restaurant}:${item.title}`;
-
-    if (seenDishKeys.has(dishKey)) {
-      continue;
-    }
-
-    seenDishKeys.add(dishKey);
-    diversified.push(item);
-
-    if (diversified.length === 3) {
-      break;
-    }
-  }
-
-  return diversified.slice(0, 3);
-}
-
-
 interface AnalysisPageProps {
   isActive?: boolean;
   measurementSnapshot: TasteMeasurementSnapshot;
@@ -1644,10 +1534,8 @@ export default function AnalysisPage({
     createTrendViewWindowFromRange('all', initialTrendDataBounds, initialTrendNavigationBounds),
   );
   const [selectedTasteIndex, setSelectedTasteIndex] = useState(0);
-  const [contentDishes, setContentDishes] = useState<RestaurantContentDish[]>([]);
   const [selectedInsight, setSelectedInsight] = useState<AnalysisInsight | null>(null);
   const [isInsightDrawerOpen, setIsInsightDrawerOpen] = useState(false);
-  const [showAllRealMenuRecommendations, setShowAllRealMenuRecommendations] = useState(true);
   const [showAllInsights, setShowAllInsights] = useState(false);
   const [activeLegacyDetail, setActiveLegacyDetail] = useState<'taste-profile' | 'special-note' | null>(null);
   const [isTasteChangePageOpen, setIsTasteChangePageOpen] = useState(false);
@@ -1692,11 +1580,6 @@ export default function AnalysisPage({
     nextStep: '예약 개인화와 셰프 가이드에는 산미와 단맛의 밀도를 조금 나눠 읽는 참고 포인트로 전달돼요. 레시피를 바꾸라는 뜻이 아니라, 현재 손님의 수용 리듬을 이해하는 수준이에요.',
     title: '셰프가 참고할 현재 프로필 가이드',
   };
-  const realMenuRecommendations = buildRealMenuRecommendations(measurementSnapshot, contentDishes);
-  const visibleRealMenuRecommendations = showAllRealMenuRecommendations
-    ? realMenuRecommendations
-    : realMenuRecommendations.slice(0, 1);
-  const canToggleRealMenuRecommendations = realMenuRecommendations.length > 1;
   const trendDataBounds = getTrendDataBounds(measurementTimeline, measurementSnapshot);
   const trendNavigationBounds = getTrendNavigationBounds(trendDataBounds);
   const activeTrendRange = selectedTrendRange;
@@ -1950,9 +1833,8 @@ export default function AnalysisPage({
     let isCancelled = false;
 
     void (async () => {
-      const [recentMeasurements, contentCatalog, reservationPageData] = await Promise.all([
+      const [recentMeasurements, reservationPageData] = await Promise.all([
         hydrateRecentMeasurementSnapshots(),
-        hydrateRestaurantContentCatalog(),
         hydrateReservationPageData(),
       ]);
 
@@ -1965,7 +1847,6 @@ export default function AnalysisPage({
 
       setMeasurementTimeline(nextMeasurements);
       setSelectedRadarMeasurementIndex(Math.max(0, nextMeasurements.length - 1));
-      setContentDishes(contentCatalog.dishes);
       setReservations(
         reservationPageData.reservations.length > 0
           ? reservationPageData.reservations
@@ -2735,62 +2616,6 @@ export default function AnalysisPage({
               })}
             </CardScrollList>
           </PageSection>
-
-          {/* 측정/피드백 변화 차트 */}
-          <InsightSummaryCard
-            as="button"
-            onClick={() => setIsTasteChangePageOpen(true)}
-            className="w-full cursor-pointer border border-[var(--tb-color-border-default)] text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
-            contentClassName="gap-0"
-            indicator={<InsightSummaryIndicator className="bg-[var(--tb-color-text-disabled)]" />}
-            title={hasTrendHistory ? '과거 측정 및 미각 변화 추이' : '현재 측정 기준 미각 분포 차트'}
-            action={(
-              <ChevronRightIcon
-                size={ICON_TOKENS.size.lg}
-                className="text-[var(--tb-color-icon-primary)]"
-              />
-            )}
-          >
-            <p className="text-[12px] font-normal text-[var(--tb-color-text-subtle)]">
-              전문가용 데이터 대시보드 열기
-            </p>
-          </InsightSummaryCard>
-
-          {realMenuRecommendations.length > 0 ? (
-            <PageSection
-              title={(
-                <div className="flex w-full items-center justify-between gap-3">
-                  <span>지금 프로필에 맞는 실제 메뉴</span>
-                  {canToggleRealMenuRecommendations ? (
-                    <button
-                      type="button"
-                      className="rounded-full"
-                      onClick={() => setShowAllRealMenuRecommendations((prev) => !prev)}
-                      aria-expanded={showAllRealMenuRecommendations}
-                      aria-label={showAllRealMenuRecommendations ? '실제 메뉴 접기' : '실제 메뉴 전체보기'}
-                    >
-                      <CardDetailLabel
-                        direction={showAllRealMenuRecommendations ? 'up' : 'down'}
-                        label={showAllRealMenuRecommendations ? '접기' : '전체보기'}
-                      />
-                    </button>
-                  ) : null}
-                </div>
-              )}
-              titleAs="div"
-              titleSize="md"
-            >
-              <div className="flex flex-col gap-3">
-                {visibleRealMenuRecommendations.map((menu) => (
-                  <RealMenuRecommendationCard
-                    key={menu.id}
-                    menu={menu}
-                    onOpenRestaurantDetail={onOpenRestaurantDetail}
-                  />
-                ))}
-              </div>
-            </PageSection>
-          ) : null}
 
           {/* 인사이트 */}
           <PageSection

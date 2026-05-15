@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
 import {
   Settings as SettingsIcon,
   ChevronRight as ChevronRightIcon,
@@ -11,12 +11,12 @@ import {
   Trophy as TrophyIcon,
   MessageCircle as MessageCircleIcon,
   Calendar as CalendarIcon,
-  Star as StarIcon
+  Star as StarIcon,
+  UserPlus as UserPlusIcon
 } from 'lucide-react';
 import React from 'react';
 
 import type { AppMenuSupportPanel } from '../components/AppMenuDrawer';
-import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, className, ...props }: any) => (
@@ -40,39 +40,44 @@ const Award = wrapIcon(TrophyIcon);
 const MessageCircle = wrapIcon(MessageCircleIcon);
 const Calendar = wrapIcon(CalendarIcon);
 const Star = wrapIcon(StarIcon);
+const UserPlus = wrapIcon(UserPlusIcon);
 const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 
 import SectionCard from '../components/SectionCard';
 import ChefAvatar from '../components/system/ChefAvatar';
 import OutlineBadge from '../components/system/OutlineBadge';
 import PageSection from '../components/system/PageSection';
-import TasteChip from '../components/system/TasteChip';
 import { ICON_TOKENS } from '../constants/designTokens';
 import { type ReservationRecord } from '../constants/reservationCatalog';
-import { getTasteColor } from '../constants/tasteColors';
+import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
 import {
   formatMeasurementDate,
-  formatMeasurementValue,
   getAverageMeasurementMm,
-  getStrongestTasteMeasurement,
-  getTasteMeasurementAgeLabel,
-  getTasteMeasurementEntries,
   getTasteProfileBadge,
   isBroadStarterMeasurementSnapshot,
-  isTasteMeasurementStale,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
+import { type RestaurantReadyGuidance } from '../constants/quickTasteCalibrationData';
 import {
-  getStarterAxisDisplayLabel,
-  type RestaurantReadyGuidance,
-} from '../constants/quickTasteCalibrationData';
-import { hydrateReservationPageData } from '../lib/tasteBuddySupabase';
+  hydrateRecentMeasurementSnapshots,
+  hydrateReservationPageData,
+} from '../lib/tasteBuddySupabase';
 
 interface ProfileStat {
   color: string;
   icon: React.ElementType;
   label: string;
   value: string;
+}
+
+export interface ProfileIdentityData {
+  avatarImageDataUrl?: string | null;
+  avatarStyle?: CSSProperties;
+  displayName?: string | null;
+  followerCount?: number;
+  followingCount?: number;
+  initials?: string | null;
+  nickname?: string | null;
 }
 
 export interface FavoriteChef {
@@ -83,18 +88,23 @@ export interface FavoriteChef {
   taste: string;
 }
 
+const DEFAULT_PROFILE_IDENTITY: Required<Pick<ProfileIdentityData, 'displayName' | 'followerCount' | 'followingCount' | 'initials'>> = {
+  displayName: 'Taste Buddy Guest',
+  followerCount: 0,
+  followingCount: 0,
+  initials: 'TB',
+};
+const DEFAULT_AVATAR_STYLE: CSSProperties = {
+  background:
+    'radial-gradient(circle at 28% 24%, rgba(255, 153, 0, 0.52), transparent 45%), radial-gradient(circle at 72% 76%, rgba(179, 114, 180, 0.38), transparent 44%), var(--tb-color-surface-muted)',
+};
+
 function formatChefName(name: string) {
   return name.endsWith('셰프') ? name : `${name} 셰프`;
 }
 
-function parseReservationDisplayDate(dateText: string) {
-  const [year, month, day] = dateText.split('.');
-  if (!year || !month || !day) {
-    return null;
-  }
-
-  const parsedDate = new Date(`${year}-${month}-${day}T00:00:00+09:00`);
-  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+function formatSocialCount(count: number | null | undefined) {
+  return Math.max(0, count ?? 0).toLocaleString('ko-KR');
 }
 
 function deriveFavoriteChefs(reservations: ReservationRecord[]): FavoriteChef[] {
@@ -121,29 +131,21 @@ function deriveFavoriteChefs(reservations: ReservationRecord[]): FavoriteChef[] 
 }
 
 function deriveProfileStats(
-  reservations: ReservationRecord[],
+  measurementSnapshots: TasteMeasurementSnapshot[],
   feedbackCount: number,
   averageRating: number | null,
 ): ProfileStat[] {
-  const reservationCount = reservations.length;
-  const reservationDates = reservations
-    .map((reservation) => parseReservationDisplayDate(reservation.date))
-    .filter((date): date is Date => date !== null)
+  const measurementDates = measurementSnapshots
+    .map((snapshot) => new Date(snapshot.measuredAt))
+    .filter((date) => !Number.isNaN(date.getTime()))
     .sort((left, right) => left.getTime() - right.getTime());
-  const firstReservationDate = reservationDates[0] ?? null;
-  const usageMonths = firstReservationDate
-    ? Math.max(
-        1,
-        Math.floor(
-          (Date.now() - firstReservationDate.getTime()) / (1000 * 60 * 60 * 24 * 30),
-        ),
-      )
-    : 0;
+  const firstMeasurementDate = measurementDates[0] ?? null;
+  const usagePeriodLabel = formatUsagePeriod(firstMeasurementDate);
 
   return [
     {
       label: 'TCS 보정',
-      value: `${reservationCount}회`,
+      value: `${measurementSnapshots.length}회`,
       icon: Award,
       color: '#FF9900',
     },
@@ -155,7 +157,7 @@ function deriveProfileStats(
     },
     {
       label: '이용 기간',
-      value: usageMonths > 0 ? `${usageMonths}개월` : '-',
+      value: usagePeriodLabel,
       icon: Calendar,
       color: '#7299FF',
     },
@@ -166,6 +168,66 @@ function deriveProfileStats(
       color: '#FBC02D',
     },
   ];
+}
+
+function formatUsagePeriod(startDate: Date | null) {
+  if (!startDate) {
+    return '-';
+  }
+
+  const elapsedDays = Math.max(
+    0,
+    Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+  );
+
+  if (elapsedDays === 0) {
+    return '오늘';
+  }
+
+  if (elapsedDays < 30) {
+    return `${elapsedDays}일`;
+  }
+
+  const elapsedMonths = Math.floor(elapsedDays / 30);
+
+  if (elapsedMonths < 12) {
+    return `${elapsedMonths}개월`;
+  }
+
+  const years = Math.floor(elapsedMonths / 12);
+  const months = elapsedMonths % 12;
+
+  return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
+}
+
+function getActualMeasurementSnapshots(
+  hydratedSnapshots: TasteMeasurementSnapshot[],
+  currentSnapshot: TasteMeasurementSnapshot,
+) {
+  if (hydratedSnapshots.length === 0) {
+    return [currentSnapshot];
+  }
+
+  const seenMeasuredAt = new Set<string>();
+  return [...hydratedSnapshots, currentSnapshot].filter((snapshot) => {
+    if (seenMeasuredAt.has(snapshot.measuredAt)) {
+      return false;
+    }
+
+    seenMeasuredAt.add(snapshot.measuredAt);
+    return true;
+  });
+}
+
+function getAverageFeedbackRating(feedbackEntries: DiningFeedbackDraft[]) {
+  if (feedbackEntries.length === 0) {
+    return null;
+  }
+
+  return (
+    feedbackEntries.reduce((sum, feedback) => sum + feedback.overallRating, 0) /
+    feedbackEntries.length
+  );
 }
 
 const settingsSections = [
@@ -188,70 +250,68 @@ const settingsSections = [
 interface ProfilePageProps {
   measurementSnapshot: TasteMeasurementSnapshot;
   starterGuidance?: RestaurantReadyGuidance | null;
+  profileIdentity?: ProfileIdentityData;
   onOpenSupportPanel?: (panel: AppMenuSupportPanel) => void;
   onStartMeasurement: () => void;
   onNavigateToReservation?: (chefName: string) => void;
   onOpenRestaurantDetail?: (chef: FavoriteChef) => void;
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
+  onOpenProfileSettings?: () => void;
   hasUnreadNotifications?: boolean;
 }
 
 export default function ProfilePage({
   measurementSnapshot,
   starterGuidance = null,
+  profileIdentity,
   onOpenSupportPanel,
   onStartMeasurement,
   onNavigateToReservation,
   onOpenRestaurantDetail,
   onOpenNotifications,
   onOpenMenu,
+  onOpenProfileSettings,
   hasUnreadNotifications,
 }: ProfilePageProps) {
   const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
-  const myTasteEntries = getTasteMeasurementEntries(measurementSnapshot);
-  const myTaste = myTasteEntries.map((entry) => ({
-    maxValue: 10,
-    taste: entry.label,
-    value: entry.valueMm,
-    qualitative:
-      isBroadStarterProfile
-        ? getStarterAxisDisplayLabel(entry.valueMm)
-        : entry.valueMm >= entry.averageMm + 0.5
-          ? '반응 빠름'
-          : entry.valueMm <= entry.averageMm - 0.5
-            ? '부드럽게 반응'
-            : '균형적',
-  }));
   const averageMeasurement = getAverageMeasurementMm(measurementSnapshot);
   const tasteProfileBadge = getTasteProfileBadge(averageMeasurement);
-  const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
-  const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
-  const remeasurementAccentTaste = getStrongestTasteMeasurement(measurementSnapshot).label;
+  const displayName = profileIdentity?.displayName?.trim() || DEFAULT_PROFILE_IDENTITY.displayName;
+  const nickname = profileIdentity?.nickname?.trim() ?? '';
+  const nicknameLabel = nickname ? `@${nickname}` : '닉네임 미설정';
+  const initials = profileIdentity?.initials?.trim() || DEFAULT_PROFILE_IDENTITY.initials;
+  const followerCount = profileIdentity?.followerCount ?? DEFAULT_PROFILE_IDENTITY.followerCount;
+  const followingCount = profileIdentity?.followingCount ?? DEFAULT_PROFILE_IDENTITY.followingCount;
+  const avatarStyle = profileIdentity?.avatarStyle ?? DEFAULT_AVATAR_STYLE;
+  const [isFriendAdded, setIsFriendAdded] = useState(false);
   const [favoriteChefs, setFavoriteChefs] = useState<FavoriteChef[]>([]);
-  const [stats, setStats] = useState<ProfileStat[]>(() => deriveProfileStats([], 0, null));
+  const [stats, setStats] = useState<ProfileStat[]>(() => deriveProfileStats([measurementSnapshot], 0, null));
 
   useEffect(() => {
     let isCancelled = false;
 
     void (async () => {
-      const hydratedData = await hydrateReservationPageData();
+      const [hydratedData, hydratedMeasurements] = await Promise.all([
+        hydrateReservationPageData(),
+        hydrateRecentMeasurementSnapshots(100),
+      ]);
 
       if (isCancelled) {
         return;
       }
 
       const feedbackEntries = Object.values(hydratedData.feedbackByReservationId);
-      const averageRating =
-        feedbackEntries.length > 0
-          ? feedbackEntries.reduce((sum, feedback) => sum + feedback.overallRating, 0) /
-            feedbackEntries.length
-          : null;
+      const actualMeasurements = getActualMeasurementSnapshots(
+        hydratedMeasurements,
+        measurementSnapshot,
+      );
+      const averageRating = getAverageFeedbackRating(feedbackEntries);
 
       setFavoriteChefs(deriveFavoriteChefs(hydratedData.reservations));
       setStats(
         deriveProfileStats(
-          hydratedData.reservations,
+          actualMeasurements,
           feedbackEntries.length,
           averageRating,
         ),
@@ -261,164 +321,83 @@ export default function ProfilePage({
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [measurementSnapshot]);
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
           <div className="tb-card-stack">
-            <div className="flex items-center gap-4">
-              <div className="relative rounded-full size-[64px]">
-                <div className="flex items-center justify-center rounded-full size-[64px] bg-[var(--tb-taste-sweet-bg)]">
-                  <span className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">JH</span>
+            <div className="relative rounded-[20px] bg-white p-3">
+              <button
+                type="button"
+                onClick={onOpenProfileSettings}
+                className="absolute right-3 top-3 flex items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-card)]"
+                style={{
+                  width: ICON_TOKENS.container.lg,
+                  height: ICON_TOKENS.container.lg,
+                }}
+                aria-label="프로필 설정 열기"
+              >
+                <Settings size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
+              </button>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4 pr-12">
+                  <div className="relative rounded-full p-[2px]">
+                    <div
+                      className="flex size-[68px] items-center justify-center overflow-hidden rounded-full"
+                      style={profileIdentity?.avatarImageDataUrl ? undefined : avatarStyle}
+                    >
+                      {profileIdentity?.avatarImageDataUrl ? (
+                        <img
+                          alt=""
+                          className="size-full object-cover"
+                          src={profileIdentity.avatarImageDataUrl}
+                        />
+                      ) : (
+                        <span className="text-[18px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
+                          {initials}
+                        </span>
+                      )}
+                    </div>
+                    <div className="pointer-events-none absolute inset-0 rounded-full border border-[var(--tb-color-border-avatar-soft)]" />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
+                    <span className="truncate text-[18px] font-bold text-[var(--tb-color-text-primary)]">{displayName}</span>
+                    <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                      {nicknameLabel}
+                    </span>
+                  </div>
                 </div>
-                <div className="pointer-events-none absolute inset-0 rounded-full border border-[var(--tb-color-border-avatar-soft)]" />
-              </div>
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">신준호</span>
-                <div className="flex items-center gap-2">
-                  <OutlineBadge>{isBroadStarterProfile ? 'Starter Profile' : tasteProfileBadge}</OutlineBadge>
-                  <span className="text-[12px] text-[var(--tb-color-text-muted)]">
-                    {isBroadStarterProfile
-                      ? '일반 식당에서도 바로 쓰는 질문 기반 시작 프로필'
-                      : averageMeasurement > 5
-                        ? '평균보다 민감한 프로필'
-                        : '균형 잡힌 프로필'}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex min-w-[64px] flex-col">
+                    <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                      {formatSocialCount(followerCount)}
+                    </span>
+                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">팔로워</span>
+                  </div>
+                  <div className="flex min-w-[64px] flex-col">
+                    <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                      {formatSocialCount(followingCount)}
+                    </span>
+                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">팔로잉</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsFriendAdded((current) => !current)}
+                    className="ml-auto flex h-9 items-center gap-2 rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[12px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                    aria-pressed={isFriendAdded}
+                  >
+                    <UserPlus size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
+                    <span>{isFriendAdded ? '친구 추가됨' : '친구 추가'}</span>
+                  </button>
                 </div>
-                <p className="mt-[2px] text-[11px] text-[var(--tb-color-text-hint)]">
-                  이 프로필은 다이닝 경험을 통해 더 정교해져요
-                </p>
-              </div>
-              <div className="ml-auto">
-                <button
-                  onClick={() => {
-                    const settingsEl = document.getElementById('profile-settings');
-                    settingsEl?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="flex items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-card)]"
-                  style={{
-                    width: ICON_TOKENS.container.lg,
-                    height: ICON_TOKENS.container.lg,
-                  }}
-                >
-                  <Settings size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
-                </button>
               </div>
             </div>
 
-            <SectionCard>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[12px] bg-[var(--tb-color-surface-muted)]">
-                    <span className="text-[10px] font-bold text-[var(--tb-color-text-primary)]">TB</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">테이스틱</span>
-                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">Tastick Pro</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <Bluetooth size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
-                    <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">연결됨</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Battery size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
-                    <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">87%</span>
-                  </div>
-                </div>
-              </div>
-              <div className="h-px w-full bg-[var(--tb-color-border-strong)]" />
-              <div className="flex items-center justify-between w-full">
-                <span className="text-[12px] text-[var(--tb-color-text-muted)]">마지막 측정</span>
-                <span className="text-[12px] font-medium text-[var(--tb-color-text-primary)]">
-                  {formatMeasurementDate(measurementSnapshot.measuredAt)}
-                </span>
-              </div>
-            </SectionCard>
-
-            <TasteMeasurementMiniCta
-              accentTaste={remeasurementAccentTaste}
-              title={
-                needsMeasurementRefresh
-                  ? isBroadStarterProfile
-                    ? '스타터 프로필을 더 정교하게 만들 수 있어요'
-                    : '미각 갱신 추천'
-                  : '현재 프로필 반영 완료'
-              }
-              actionFullWidth={!needsMeasurementRefresh}
-              padding={needsMeasurementRefresh ? 'default' : 'compact'}
-              description={
-                needsMeasurementRefresh
-                  ? isBroadStarterProfile
-                    ? `${measurementAgeLabel} 질문 기반 스타터 프로필이에요. 다시 점검하거나 식사 기록이 쌓이면 메뉴 추천과 매장 전달 포인트가 더 자연스러워집니다.`
-                    : `${measurementAgeLabel} 데이터예요. 예약 전에 갱신해두면 셰프용 캘리브레이션 가이드가 더 정밀해집니다.`
-                  : isBroadStarterProfile
-                    ? '질문 기반 시작 프로필이 반영되어 있어요. 식사 기록이 쌓일수록 더 정교해집니다.'
-                    : '가장 최근 입맛 상태가 반영되어 있습니다. 다시 측정할 수도 있어요.'
-              }
-              meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
-              actionLabel={needsMeasurementRefresh ? '프로필 업데이트' : '다시 측정'}
-              onAction={onStartMeasurement}
-              tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
-            />
-
-            {starterGuidance ? (
-              <SectionCard hoverEffect={false}>
-                <div className="flex flex-col gap-3 w-full">
-                  <div>
-                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                      {starterGuidance.surfaceLabel}
-                    </p>
-                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                      {starterGuidance.summaryLine}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {starterGuidance.topLabels.map((label) => (
-                      <TasteChip key={label} taste={label} value="잘 맞는 쪽" />
-                    ))}
-                    <TasteChip taste={starterGuidance.cautionLabel} value="조심할 포인트" />
-                  </div>
-                </div>
-              </SectionCard>
-            ) : null}
           </div>
 
-          <PageSection title={isBroadStarterProfile ? '지금 잘 받는 맛 강도' : '나의 미각'}>
-            <SectionCard>
-              <div className="flex flex-col gap-3 w-full">
-                {myTaste.map((item, index) => {
-                  const color = getTasteColor(item.taste);
-                  return (
-                    <div key={item.taste} className="flex items-center gap-3 w-full">
-                      <span className="w-[42px] text-[12px] font-medium text-[var(--tb-color-text-primary)]">
-                        {item.taste}
-                      </span>
-                      <div className="h-[8px] flex-1 overflow-hidden rounded-full bg-[var(--tb-color-border-subtle)]">
-                        <div
-                          className="h-full rounded-full transition-all duration-700 animate-grow"
-                          style={{
-                            width: `${(item.value / item.maxValue) * 100}%`,
-                            backgroundColor: color,
-                            animationDelay: `${index * 100}ms`,
-                            animationFillMode: 'both',
-                          }}
-                        />
-                      </div>
-                      <span className="w-[72px] text-right text-[12px] font-semibold" style={{ color }}>
-                        {item.qualitative}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </SectionCard>
-          </PageSection>
-
-          <PageSection title="활동 요약">
+          <PageSection title="활동 요약" titleSize="md">
             <div className="grid grid-cols-2 gap-3">
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
@@ -442,7 +421,7 @@ export default function ProfilePage({
             </div>
           </PageSection>
 
-          <PageSection title="즐겨찾기 셰프">
+          <PageSection title="즐겨찾기 셰프" titleSize="md">
             <div className="flex flex-col gap-3">
               {favoriteChefs.map((chef, index) => (
                 <SectionCard
@@ -487,6 +466,7 @@ export default function ProfilePage({
               key={section.title}
               id={sectionIndex === 0 ? 'profile-settings' : undefined}
               title={section.title}
+              titleSize="md"
             >
               <div className="flex flex-col gap-3">
                 {section.items.map((item) => {
@@ -526,6 +506,37 @@ export default function ProfilePage({
               </div>
             </PageSection>
           ))}
+
+          <SectionCard>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[12px] bg-[var(--tb-color-surface-muted)]">
+                  <span className="text-[10px] font-bold text-[var(--tb-color-text-primary)]">TB</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">테이스틱</span>
+                  <span className="text-[11px] text-[var(--tb-color-text-muted)]">Tastick Pro</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <Bluetooth size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
+                  <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">연결됨</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Battery size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
+                  <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">87%</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-px w-full bg-[var(--tb-color-border-strong)]" />
+            <div className="flex items-center justify-between w-full">
+              <span className="text-[12px] text-[var(--tb-color-text-muted)]">마지막 측정</span>
+              <span className="text-[12px] font-medium text-[var(--tb-color-text-primary)]">
+                {formatMeasurementDate(measurementSnapshot.measuredAt)}
+              </span>
+            </div>
+          </SectionCard>
 
           <div className="h-6" />
         </div>

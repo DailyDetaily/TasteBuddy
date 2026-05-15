@@ -40,12 +40,13 @@ interface ProfileEditSheetContentProps {
   respondentContext: TasteSurveyRespondentContext;
   userTasteAccentStyle: CSSProperties;
   onSubmit: (input: {
-    avatarImageDataUrl: string | null;
+    avatarFile: File | null;
     birthDate: string | null;
     displayName: string;
     nickname: string;
     preferenceProfile: PreferenceIntakeProfile;
     respondentContext: TasteSurveyRespondentContext;
+    shouldRemoveAvatar: boolean;
   }) => Promise<void> | void;
 }
 
@@ -70,8 +71,73 @@ const emptyPreferenceProfile: PreferenceIntakeProfile = {
   sharePreferenceWithRestaurant: null,
 };
 
+const PROFILE_AVATAR_SIZE = 512;
+const PROFILE_AVATAR_QUALITY = 0.84;
+const PROFILE_AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+
 function getInitialPreferenceProfile(profile: PreferenceIntakeProfile | null) {
   return profile ?? emptyPreferenceProfile;
+}
+
+async function loadImageFromFile(file: File) {
+  const sourceUrl = URL.createObjectURL(file);
+
+  try {
+    return await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('프로필 사진을 불러오지 못했습니다.'));
+      image.src = sourceUrl;
+    });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
+async function normalizeProfileAvatarFile(file: File) {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('이미지 파일만 업로드할 수 있습니다.');
+  }
+
+  if (file.size > PROFILE_AVATAR_MAX_BYTES) {
+    throw new Error('프로필 사진은 5MB 이하로 올려 주세요.');
+  }
+
+  const image = await loadImageFromFile(file);
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  if (!context) {
+    throw new Error('프로필 사진을 처리하지 못했습니다.');
+  }
+
+  const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
+  const sourceX = (image.naturalWidth - sourceSize) / 2;
+  const sourceY = (image.naturalHeight - sourceSize) / 2;
+
+  canvas.width = PROFILE_AVATAR_SIZE;
+  canvas.height = PROFILE_AVATAR_SIZE;
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceSize,
+    sourceSize,
+    0,
+    0,
+    PROFILE_AVATAR_SIZE,
+    PROFILE_AVATAR_SIZE,
+  );
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, 'image/webp', PROFILE_AVATAR_QUALITY);
+  });
+
+  if (!blob) {
+    throw new Error('프로필 사진을 저장 형식으로 변환하지 못했습니다.');
+  }
+
+  return new File([blob], 'profile-avatar.webp', { type: 'image/webp' });
 }
 
 function resolveOptionLabel(
@@ -116,9 +182,9 @@ export default function ProfileEditSheetContent({
   userTasteAccentStyle,
   onSubmit,
 }: ProfileEditSheetContentProps) {
-  const [draftAvatarImageDataUrl, setDraftAvatarImageDataUrl] = useState<string | null>(
-    avatarImageDataUrl,
-  );
+  const [draftAvatarPreviewUrl, setDraftAvatarPreviewUrl] = useState<string | null>(null);
+  const [draftAvatarFile, setDraftAvatarFile] = useState<File | null>(null);
+  const [shouldRemoveAvatar, setShouldRemoveAvatar] = useState(false);
   const [draftBirthDate, setDraftBirthDate] = useState<string | null>(birthDate);
   const [draftBirthDateParts, setDraftBirthDateParts] = useState<BirthDateParts>(
     parseBirthDate(birthDate),
@@ -133,7 +199,15 @@ export default function ProfileEditSheetContent({
   const [activePicker, setActivePicker] = useState<ProfileEditPicker>(null);
 
   useEffect(() => {
-    setDraftAvatarImageDataUrl(avatarImageDataUrl);
+    setDraftAvatarFile(null);
+    setDraftAvatarPreviewUrl((currentUrl) => {
+      if (currentUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(currentUrl);
+      }
+
+      return null;
+    });
+    setShouldRemoveAvatar(false);
     setDraftBirthDate(birthDate);
     setDraftBirthDateParts(parseBirthDate(birthDate));
     setDraftDisplayName(displayName ?? '');
@@ -141,6 +215,15 @@ export default function ProfileEditSheetContent({
     setDraftContext(respondentContext);
     setDraftPreferenceProfile(getInitialPreferenceProfile(preferenceProfile));
   }, [avatarImageDataUrl, birthDate, displayName, nickname, preferenceProfile, respondentContext]);
+
+  useEffect(
+    () => () => {
+      if (draftAvatarPreviewUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(draftAvatarPreviewUrl);
+      }
+    },
+    [draftAvatarPreviewUrl],
+  );
 
   const dietaryOptions = useMemo(
     () => dietaryQuestion?.options ?? [],
@@ -157,6 +240,10 @@ export default function ProfileEditSheetContent({
     [draftBirthDateParts.month, draftBirthDateParts.year],
   );
 
+  const draftAvatarImageSrc = shouldRemoveAvatar
+    ? null
+    : draftAvatarPreviewUrl ?? avatarImageDataUrl;
+
   const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
@@ -164,11 +251,24 @@ export default function ProfileEditSheetContent({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setDraftAvatarImageDataUrl(typeof reader.result === 'string' ? reader.result : null);
-    };
-    reader.readAsDataURL(file);
+    void (async () => {
+      try {
+        const normalizedFile = await normalizeProfileAvatarFile(file);
+        const previewUrl = URL.createObjectURL(normalizedFile);
+
+        setDraftAvatarPreviewUrl((currentUrl) => {
+          if (currentUrl?.startsWith('blob:')) {
+            URL.revokeObjectURL(currentUrl);
+          }
+
+          return previewUrl;
+        });
+        setDraftAvatarFile(normalizedFile);
+        setShouldRemoveAvatar(false);
+      } catch (error) {
+        console.warn('Failed to prepare profile avatar.', error);
+      }
+    })();
     event.target.value = '';
   };
 
@@ -220,7 +320,7 @@ export default function ProfileEditSheetContent({
     event.preventDefault();
 
     void onSubmit({
-      avatarImageDataUrl: draftAvatarImageDataUrl,
+      avatarFile: draftAvatarFile,
       birthDate: draftBirthDate,
       displayName: draftDisplayName.trim(),
       nickname: draftNickname.trim(),
@@ -229,6 +329,7 @@ export default function ProfileEditSheetContent({
         ...draftContext,
         birthDate: draftBirthDate ?? undefined,
       },
+      shouldRemoveAvatar,
     });
   };
 
@@ -244,13 +345,13 @@ export default function ProfileEditSheetContent({
           <div className="relative size-24 rounded-full">
             <div
               className="flex size-24 items-center justify-center overflow-hidden rounded-full"
-              style={draftAvatarImageDataUrl ? undefined : avatarStyle}
+              style={draftAvatarImageSrc ? undefined : avatarStyle}
             >
-              {draftAvatarImageDataUrl ? (
+              {draftAvatarImageSrc ? (
                 <img
                   alt=""
                   className="size-full object-cover"
-                  src={draftAvatarImageDataUrl}
+                  src={draftAvatarImageSrc}
                 />
               ) : (
                 <span className="text-[18px] font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.34)]">
@@ -278,11 +379,21 @@ export default function ProfileEditSheetContent({
                 type="file"
               />
             </label>
-            {draftAvatarImageDataUrl ? (
+            {draftAvatarImageSrc ? (
               <button
                 type="button"
                 className="px-1 py-1 text-[12px] font-semibold text-[var(--tb-color-text-faint)]"
-                onClick={() => setDraftAvatarImageDataUrl(null)}
+                onClick={() => {
+                  setDraftAvatarPreviewUrl((currentUrl) => {
+                    if (currentUrl?.startsWith('blob:')) {
+                      URL.revokeObjectURL(currentUrl);
+                    }
+
+                    return null;
+                  });
+                  setDraftAvatarFile(null);
+                  setShouldRemoveAvatar(true);
+                }}
               >
                 삭제
               </button>

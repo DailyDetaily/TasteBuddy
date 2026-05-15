@@ -22,7 +22,6 @@ import {
   findTasteExperience,
   type TasteAxisId,
 } from '../components/reservation/DiningFeedbackFlow';
-import ReservationCard from '../components/reservation/ReservationCard';
 import {
   ReservationChefCalibrationSection,
   ReservationChefSummary,
@@ -1050,56 +1049,6 @@ export default function ReservationPage({
               />
             )}
           </div>
-
-          {/* 다가오는 예약 */}
-          {upcoming.length > 0 && (
-            <PageSection
-              contentClassName="flex flex-col gap-3"
-              title="다가오는 다이닝"
-              titleAs="h3"
-              titleClassName="font-semibold text-[var(--tb-color-text-subtle)]"
-              titleSize="md"
-            >
-              {upcoming.map((r) => (
-                <ReservationCard
-                  key={r.id}
-                  reservation={r}
-                  onSelect={() => {
-                    navigateToReservationLocation({
-                      selectedId: r.id,
-                      selectedView: 'detail',
-                    });
-                  }}
-                  onOpenRestaurantInfo={() => onOpenRestaurantDetail?.(r)}
-                />
-              ))}
-            </PageSection>
-          )}
-
-          {/* 지난 예약 */}
-          {completed.length > 0 && (
-            <PageSection
-              contentClassName="flex flex-col gap-3"
-              title="지난 다이닝"
-              titleAs="h3"
-              titleClassName="font-semibold text-[var(--tb-color-text-subtle)]"
-              titleSize="md"
-            >
-              {completed.map((r) => (
-                <ReservationCard
-                  key={r.id}
-                  reservation={r}
-                  onSelect={() => {
-                    navigateToReservationLocation({
-                      selectedId: r.id,
-                      selectedView: 'detail',
-                    });
-                  }}
-                  onOpenRestaurantInfo={() => onOpenRestaurantDetail?.(r)}
-                />
-              ))}
-            </PageSection>
-          )}
 
           {isHydratingReservations && reservations.length === 0 && (
             <EmptyState

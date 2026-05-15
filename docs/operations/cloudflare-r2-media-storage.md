@@ -6,6 +6,7 @@ Taste Buddy는 Supabase를 관계형 데이터와 권한의 source of truth로 �
 
 ```text
 taste-buddy-public-media
+  user-avatars/{user-id}/{asset-id}.webp
   chefs/{chef-slug}.png
   restaurants/{restaurant-slug}/hero.webp
   menus/{restaurant-slug}/{source-slug}.webp
@@ -28,6 +29,26 @@ VITE_R2_PUBLIC_MEDIA_BASE_URL="https://media.your-domain.com"
 DB에는 전체 URL이 아니라 `chefs/jungsik.png` 같은 object key를 저장한다. 앱은 이 값을 `https://media.your-domain.com/chefs/jungsik.png`로 해석한다.
 
 기존 Supabase Storage fallback은 유지된다. `VITE_R2_PUBLIC_MEDIA_BASE_URL` 또는 `VITE_PUBLIC_MEDIA_BASE_URL`이 없으면 `VITE_SUPABASE_PUBLIC_ASSET_BUCKET`과 `VITE_SUPABASE_URL`로 public object URL을 만든다.
+
+## 프로필 사진 업로드
+
+사용자 프로필 사진은 앱에서 512px WebP로 정리한 뒤 Supabase Edge Function `upload-profile-avatar`를 통해 `taste-buddy-public-media/user-avatars/{user-id}/{asset-id}.webp`에 저장한다. `profiles.avatar_path`에는 전체 URL이 아니라 R2 object key만 저장한다.
+
+Edge Function에 필요한 secrets:
+
+```bash
+supabase secrets set \
+  R2_ACCOUNT_ID="..." \
+  R2_ACCESS_KEY_ID="..." \
+  R2_SECRET_ACCESS_KEY="..." \
+  R2_PUBLIC_MEDIA_BUCKET="taste-buddy-public-media"
+```
+
+배포:
+
+```bash
+supabase functions deploy upload-profile-avatar
+```
 
 ## Supabase 메타데이터
 

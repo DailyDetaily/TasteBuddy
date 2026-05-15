@@ -275,6 +275,7 @@ export async function deleteCurrentSupabaseAccount() {
 export async function updateSupabaseProfileIdentity(input: {
   displayName: string;
   nickname: string;
+  avatarPath?: string | null;
 }) {
   if (!supabase) {
     return {
@@ -295,11 +296,17 @@ export async function updateSupabaseProfileIdentity(input: {
 
   const displayName = input.displayName.trim();
   const nickname = input.nickname.trim();
+  const nextUserMetadata: Record<string, string | null> = {
+    display_name: displayName,
+    nickname,
+  };
+
+  if (input.avatarPath !== undefined) {
+    nextUserMetadata.avatar_path = input.avatarPath;
+  }
+
   const { error: metadataError } = await supabase.auth.updateUser({
-    data: {
-      display_name: displayName,
-      nickname,
-    },
+    data: nextUserMetadata,
   });
 
   if (metadataError) {
@@ -310,11 +317,17 @@ export async function updateSupabaseProfileIdentity(input: {
     };
   }
 
+  const nextProfileValues: Record<string, string | null> = {
+    display_name: displayName || nickname || null,
+  };
+
+  if (input.avatarPath !== undefined) {
+    nextProfileValues.avatar_path = input.avatarPath;
+  }
+
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({
-      display_name: displayName || nickname || null,
-    })
+    .update(nextProfileValues)
     .eq('id', userId);
 
   if (profileError) {
@@ -328,5 +341,96 @@ export async function updateSupabaseProfileIdentity(input: {
   return {
     ok: true,
     message: '프로필 정보가 저장되었습니다.',
+  };
+}
+
+export async function hydrateSupabaseProfileIdentity() {
+  if (!supabase) {
+    return {
+      ok: false,
+      avatarPath: null,
+      displayName: null,
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const session = await getCurrentSupabaseSession();
+  const userId = session?.user.id;
+
+  if (!userId) {
+    return {
+      ok: false,
+      avatarPath: null,
+      displayName: null,
+      message: '로그인 세션을 찾을 수 없습니다.',
+    };
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('avatar_path, display_name')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('Failed to hydrate Supabase profile identity.', error);
+    return {
+      ok: false,
+      avatarPath: null,
+      displayName: null,
+      message: error.message,
+    };
+  }
+
+  return {
+    ok: true,
+    avatarPath: typeof data?.avatar_path === 'string' ? data.avatar_path : null,
+    displayName: typeof data?.display_name === 'string' ? data.display_name : null,
+    message: '프로필 정보를 불러왔습니다.',
+  };
+}
+
+export async function uploadSupabaseProfileAvatar(file: File) {
+  if (!supabase) {
+    return {
+      ok: false,
+      avatarPath: null,
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const { data, error } = await supabase.functions.invoke('upload-profile-avatar', {
+    body: formData,
+  });
+
+  if (error) {
+    console.warn('Failed to upload Supabase profile avatar.', error);
+    return {
+      ok: false,
+      avatarPath: null,
+      message: error.message,
+    };
+  }
+
+  const avatarPath =
+    data && typeof data === 'object' && 'objectKey' in data && typeof data.objectKey === 'string'
+      ? data.objectKey
+      : null;
+
+  if (!avatarPath) {
+    return {
+      ok: false,
+      avatarPath: null,
+      message: '프로필 사진 업로드 응답이 올바르지 않습니다.',
+    };
+  }
+
+  return {
+    ok: true,
+    avatarPath,
+    message: '프로필 사진이 저장되었습니다.',
   };
 }

@@ -99,6 +99,7 @@ import {
   deleteCurrentSupabaseAccount,
   ensureSupabaseSession,
   getCurrentSupabaseSession,
+  hydrateSupabaseProfileIdentity,
   isAnonymousSupabaseSession,
   isSupabaseConfigured,
   linkAnonymousSupabaseUserEmail,
@@ -107,9 +108,11 @@ import {
   signOutSupabaseSession,
   subscribeToSupabaseAuthState,
   updateSupabaseProfileIdentity,
+  uploadSupabaseProfileAvatar,
   verifySupabaseEmailOtp,
   type SupabaseEmailOtpIntent,
 } from './lib/supabase';
+import { resolvePublicMediaPath } from './lib/mediaAssets';
 import { buildTasteSurveyCompatibleResult } from './lib/tasteSurveyScoring';
 import { TASTE_SURVEY_ITEMS } from './constants/tasteSurveyItems';
 import { TASTE_SURVEY_CONTEXT_STEPS } from './constants/tasteSurveyConfig';
@@ -190,6 +193,7 @@ interface PersistedUserState {
   latestTasteSurveyRespondentContext: TasteSurveyRespondentContext;
   latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
   profileAvatarDataUrl: string | null;
+  profileAvatarPath: string | null;
   profileBirthDate: string | null;
   tasteSurveyDraft: PersistedTasteSurveyDraft | null;
 }
@@ -596,6 +600,7 @@ function createEmptyPersistedUserState(): PersistedUserState {
     latestTasteSurveyRespondentContext: {},
     latestTasteMeasurementSnapshot: null,
     profileAvatarDataUrl: null,
+    profileAvatarPath: null,
     profileBirthDate: null,
     tasteSurveyDraft: null,
   };
@@ -702,6 +707,11 @@ function loadPersistedUserState(): PersistedUserState {
         parsedValue.profileAvatarDataUrl.startsWith('data:image/')
         ? parsedValue.profileAvatarDataUrl
         : null;
+    const profileAvatarPath =
+      typeof parsedValue.profileAvatarPath === 'string' &&
+        parsedValue.profileAvatarPath.trim().length > 0
+        ? parsedValue.profileAvatarPath
+        : null;
     const profileBirthDate =
       typeof parsedValue.profileBirthDate === 'string' &&
         /^\d{4}-\d{2}-\d{2}$/.test(parsedValue.profileBirthDate)
@@ -716,6 +726,7 @@ function loadPersistedUserState(): PersistedUserState {
       latestTasteSurveyRespondentContext,
       latestTasteMeasurementSnapshot,
       profileAvatarDataUrl,
+      profileAvatarPath,
       profileBirthDate,
       tasteSurveyDraft:
         isPersistedTasteSurveyDraft(parsedValue.tasteSurveyDraft)
@@ -765,6 +776,9 @@ function MainApp() {
     useState<PreferenceIntakeProfile | null>(persistedUserState.latestPreferenceIntakeProfile);
   const [profileAvatarDataUrl, setProfileAvatarDataUrl] = useState<string | null>(
     persistedUserState.profileAvatarDataUrl,
+  );
+  const [profileAvatarPath, setProfileAvatarPath] = useState<string | null>(
+    persistedUserState.profileAvatarPath,
   );
   const [profileBirthDate, setProfileBirthDate] = useState<string | null>(
     persistedUserState.profileBirthDate,
@@ -875,21 +889,26 @@ function MainApp() {
           )
           : null;
 
-    window.localStorage.setItem(
-      USER_STATE_STORAGE_KEY,
-      JSON.stringify({
-        hasCompletedInitialMeasurement,
-        latestPreferenceIntakeProfile,
-        latestRestaurantReadyGuidance,
-        latestTasteSurveyRespondentContext: sanitizeTasteSurveyRespondentContext(
-          tasteSurveyRespondentContext,
-        ),
-        latestTasteMeasurementSnapshot,
-        profileAvatarDataUrl,
-        profileBirthDate,
-        tasteSurveyDraft: nextTasteSurveyDraft,
-      } satisfies PersistedUserState),
-    );
+    try {
+      window.localStorage.setItem(
+        USER_STATE_STORAGE_KEY,
+        JSON.stringify({
+          hasCompletedInitialMeasurement,
+          latestPreferenceIntakeProfile,
+          latestRestaurantReadyGuidance,
+          latestTasteSurveyRespondentContext: sanitizeTasteSurveyRespondentContext(
+            tasteSurveyRespondentContext,
+          ),
+          latestTasteMeasurementSnapshot,
+          profileAvatarDataUrl: null,
+          profileAvatarPath,
+          profileBirthDate,
+          tasteSurveyDraft: nextTasteSurveyDraft,
+        } satisfies PersistedUserState),
+      );
+    } catch (error) {
+      console.warn('Failed to persist Taste Buddy user state.', error);
+    }
   }, [
     currentSurveyContextIndex,
     currentSurveyIndex,
@@ -897,7 +916,7 @@ function MainApp() {
     latestPreferenceIntakeProfile,
     latestRestaurantReadyGuidance,
     latestTasteMeasurementSnapshot,
-    profileAvatarDataUrl,
+    profileAvatarPath,
     profileBirthDate,
     surveyResponses,
     tasteSurveyFlowStep,
@@ -1010,12 +1029,41 @@ function MainApp() {
     ? isAnonymousSupabaseSession(supabaseSession) || !currentUserEmail
     : true;
   const shouldShowAuthEntry = isSupabaseConfigured && isAnonymousUser;
-  const userInitials = getUserInitials(currentUserDisplayName, currentUserEmail);
+  const userInitials = getUserInitials(currentUserDisplayName ?? currentUserNickname, currentUserEmail);
   const userLabel = currentUserProfileLabel || (currentUserEmail ? '프로필 연결됨' : 'Taste Buddy Guest');
   const userAvatarStyle = useMemo(
     () => createTasteProfileAvatarStyle(latestTasteMeasurementSnapshot),
     [latestTasteMeasurementSnapshot],
   );
+  const profileAvatarImageSrc = useMemo(
+    () => resolvePublicMediaPath(profileAvatarPath) ?? profileAvatarDataUrl,
+    [profileAvatarDataUrl, profileAvatarPath],
+  );
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabaseSession) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void (async () => {
+      const result = await hydrateSupabaseProfileIdentity();
+
+      if (isCancelled || !result.ok) {
+        return;
+      }
+
+      setProfileAvatarPath(result.avatarPath);
+      if (result.avatarPath) {
+        setProfileAvatarDataUrl(null);
+      }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [supabaseSession?.user.id]);
 
   useEffect(() => {
     initializeAnalytics();
@@ -1278,7 +1326,7 @@ function MainApp() {
   const handleOpenProfileIdentitySheet = () => {
     trackEvent('profile_sheet_open', {
       is_anonymous_user: isAnonymousUser,
-      has_avatar: Boolean(profileAvatarDataUrl),
+      has_avatar: Boolean(profileAvatarImageSrc),
     });
     setIsProfileIdentitySheetOpen(true);
   };
@@ -1297,16 +1345,17 @@ function MainApp() {
   };
 
   const handleSubmitProfileEdit = async (input: {
-    avatarImageDataUrl: string | null;
+    avatarFile: File | null;
     birthDate: string | null;
     displayName: string;
     nickname: string;
     preferenceProfile: PreferenceIntakeProfile;
     respondentContext: TasteSurveyRespondentContext;
+    shouldRemoveAvatar: boolean;
   }) => {
     setProfileEditStatus('submitting');
     trackEvent('profile_edit_submit', {
-      has_avatar: Boolean(input.avatarImageDataUrl),
+      has_avatar: Boolean(input.avatarFile) || (!input.shouldRemoveAvatar && Boolean(profileAvatarImageSrc)),
       has_birth_date: Boolean(input.birthDate),
       has_display_name: Boolean(input.displayName.trim()),
       has_nickname: Boolean(input.nickname.trim()),
@@ -1317,9 +1366,27 @@ function MainApp() {
     const nextNickname = input.nickname.trim();
     const currentDisplayName = currentUserDisplayName ?? '';
     const currentNickname = currentUserNickname ?? '';
+    let nextAvatarPath = input.shouldRemoveAvatar ? null : profileAvatarPath;
 
-    if (nextDisplayName !== currentDisplayName || nextNickname !== currentNickname) {
+    if (input.avatarFile) {
+      const avatarUploadResult = await uploadSupabaseProfileAvatar(input.avatarFile);
+
+      if (!avatarUploadResult.ok || !avatarUploadResult.avatarPath) {
+        trackEvent('profile_edit_error', { reason: 'avatar_upload' });
+        setProfileEditStatus('idle');
+        return;
+      }
+
+      nextAvatarPath = avatarUploadResult.avatarPath;
+    }
+
+    if (
+      nextDisplayName !== currentDisplayName ||
+      nextNickname !== currentNickname ||
+      nextAvatarPath !== profileAvatarPath
+    ) {
       const result = await updateSupabaseProfileIdentity({
+        avatarPath: nextAvatarPath,
         displayName: nextDisplayName,
         nickname: nextNickname,
       });
@@ -1334,7 +1401,8 @@ function MainApp() {
       setSupabaseSession(session);
     }
 
-    setProfileAvatarDataUrl(input.avatarImageDataUrl);
+    setProfileAvatarDataUrl(null);
+    setProfileAvatarPath(nextAvatarPath);
     setProfileBirthDate(input.birthDate);
     setTasteSurveyRespondentContext(sanitizedContext);
     setLatestPreferenceIntakeProfile(input.preferenceProfile);
@@ -2237,7 +2305,7 @@ function MainApp() {
                     onOpenProfile={handleOpenProfileIdentitySheet}
                     showSearchAction={activeTab !== 'home'}
                     userInitials={userInitials}
-                    userAvatarImageSrc={profileAvatarDataUrl}
+                    userAvatarImageSrc={profileAvatarImageSrc}
                     userAvatarStyle={userAvatarStyle}
                   />
                 </div>
@@ -2319,7 +2387,7 @@ function MainApp() {
                   <ReservationPage
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     starterGuidance={latestRestaurantReadyGuidance}
-                    userAvatarImageSrc={profileAvatarDataUrl}
+                    userAvatarImageSrc={profileAvatarImageSrc}
                     userAvatarStyle={userAvatarStyle}
                     userInitials={userInitials}
                     userNickname={currentUserNickname ?? currentUserDisplayName}
@@ -2343,6 +2411,15 @@ function MainApp() {
                 {latestTasteMeasurementSnapshot ? (
                   <ProfilePage
                     measurementSnapshot={latestTasteMeasurementSnapshot}
+                    profileIdentity={{
+                      avatarImageDataUrl: profileAvatarImageSrc,
+                      avatarStyle: userAvatarStyle,
+                      displayName: currentUserDisplayName ?? currentUserNickname,
+                      followerCount: 0,
+                      followingCount: 0,
+                      initials: userInitials,
+                      nickname: currentUserNickname ?? currentUserDisplayName,
+                    }}
                     starterGuidance={latestRestaurantReadyGuidance}
                     onOpenSupportPanel={handleOpenSupportPanel}
                     onOpenRestaurantDetail={(chef) =>
@@ -2350,6 +2427,7 @@ function MainApp() {
                     }
                     onStartMeasurement={() => handleStartMeasurementFromMain('profile')}
                     onNavigateToReservation={() => navigateToTab('reservation')}
+                    onOpenProfileSettings={handleOpenProfileIdentitySheet}
                     {...overlayProps}
                   />
                 ) : null}
@@ -2423,7 +2501,7 @@ function MainApp() {
           headerEnd={<BottomSheetCloseButton />}
         >
           <ProfileIdentitySheetContent
-            avatarImageDataUrl={profileAvatarDataUrl}
+            avatarImageDataUrl={profileAvatarImageSrc}
             avatarStyle={userAvatarStyle}
             birthDate={profileBirthDate}
             displayName={currentUserDisplayName}
@@ -2475,7 +2553,7 @@ function MainApp() {
           }
         >
           <ProfileEditSheetContent
-            avatarImageDataUrl={profileAvatarDataUrl}
+            avatarImageDataUrl={profileAvatarImageSrc}
             avatarStyle={userAvatarStyle}
             birthDate={profileBirthDate}
             displayName={currentUserDisplayName}
