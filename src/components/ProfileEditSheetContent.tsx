@@ -35,10 +35,13 @@ interface ProfileEditSheetContentProps {
   displayName: string | null;
   formId: string;
   initials: string;
+  isSubmitting?: boolean;
   nickname: string | null;
   preferenceProfile: PreferenceIntakeProfile | null;
   respondentContext: TasteSurveyRespondentContext;
+  statusMessage?: string | null;
   userTasteAccentStyle: CSSProperties;
+  onAvatarPreparationChange?: (isPreparing: boolean) => void;
   onSubmit: (input: {
     avatarFile: File | null;
     birthDate: string | null;
@@ -176,14 +179,19 @@ export default function ProfileEditSheetContent({
   displayName,
   formId,
   initials,
+  isSubmitting = false,
   nickname,
   preferenceProfile,
   respondentContext,
+  statusMessage,
   userTasteAccentStyle,
+  onAvatarPreparationChange,
   onSubmit,
 }: ProfileEditSheetContentProps) {
   const [draftAvatarPreviewUrl, setDraftAvatarPreviewUrl] = useState<string | null>(null);
   const [draftAvatarFile, setDraftAvatarFile] = useState<File | null>(null);
+  const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
+  const [isPreparingAvatar, setIsPreparingAvatar] = useState(false);
   const [shouldRemoveAvatar, setShouldRemoveAvatar] = useState(false);
   const [draftBirthDate, setDraftBirthDate] = useState<string | null>(birthDate);
   const [draftBirthDateParts, setDraftBirthDateParts] = useState<BirthDateParts>(
@@ -200,6 +208,9 @@ export default function ProfileEditSheetContent({
 
   useEffect(() => {
     setDraftAvatarFile(null);
+    setAvatarMessage(null);
+    setIsPreparingAvatar(false);
+    onAvatarPreparationChange?.(false);
     setDraftAvatarPreviewUrl((currentUrl) => {
       if (currentUrl?.startsWith('blob:')) {
         URL.revokeObjectURL(currentUrl);
@@ -214,7 +225,15 @@ export default function ProfileEditSheetContent({
     setDraftNickname(nickname ?? '');
     setDraftContext(respondentContext);
     setDraftPreferenceProfile(getInitialPreferenceProfile(preferenceProfile));
-  }, [avatarImageDataUrl, birthDate, displayName, nickname, preferenceProfile, respondentContext]);
+  }, [
+    avatarImageDataUrl,
+    birthDate,
+    displayName,
+    nickname,
+    onAvatarPreparationChange,
+    preferenceProfile,
+    respondentContext,
+  ]);
 
   useEffect(
     () => () => {
@@ -251,6 +270,10 @@ export default function ProfileEditSheetContent({
       return;
     }
 
+    setAvatarMessage('사진을 프로필용 이미지로 준비하고 있어요.');
+    setIsPreparingAvatar(true);
+    onAvatarPreparationChange?.(true);
+
     void (async () => {
       try {
         const normalizedFile = await normalizeProfileAvatarFile(file);
@@ -264,9 +287,18 @@ export default function ProfileEditSheetContent({
           return previewUrl;
         });
         setDraftAvatarFile(normalizedFile);
+        setAvatarMessage('사진이 준비되었어요. 저장을 누르면 프로필에 반영됩니다.');
         setShouldRemoveAvatar(false);
       } catch (error) {
         console.warn('Failed to prepare profile avatar.', error);
+        setAvatarMessage(
+          error instanceof Error
+            ? error.message
+            : '프로필 사진을 준비하지 못했습니다. 다른 이미지를 선택해 주세요.',
+        );
+      } finally {
+        setIsPreparingAvatar(false);
+        onAvatarPreparationChange?.(false);
       }
     })();
     event.target.value = '';
@@ -318,6 +350,10 @@ export default function ProfileEditSheetContent({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isPreparingAvatar || isSubmitting) {
+      return;
+    }
 
     void onSubmit({
       avatarFile: draftAvatarFile,
@@ -375,6 +411,7 @@ export default function ProfileEditSheetContent({
               <input
                 accept="image/*"
                 className="sr-only"
+                disabled={isPreparingAvatar || isSubmitting}
                 onChange={handleAvatarChange}
                 type="file"
               />
@@ -392,6 +429,7 @@ export default function ProfileEditSheetContent({
                     return null;
                   });
                   setDraftAvatarFile(null);
+                  setAvatarMessage('프로필 사진을 삭제하려면 저장을 눌러 주세요.');
                   setShouldRemoveAvatar(true);
                 }}
               >
@@ -399,6 +437,18 @@ export default function ProfileEditSheetContent({
               </button>
             ) : null}
           </div>
+          {avatarMessage || statusMessage ? (
+            <p
+              className="max-w-[260px] text-center text-[12px] leading-relaxed"
+              style={{
+                color: statusMessage
+                  ? 'var(--tb-color-feedback-danger, #b42318)'
+                  : 'var(--tb-color-text-muted)',
+              }}
+            >
+              {statusMessage ?? avatarMessage}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-4">

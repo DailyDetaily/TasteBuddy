@@ -126,6 +126,11 @@ import {
   hasTasteSurveyRespondentContext,
   sanitizeTasteSurveyRespondentContext,
 } from './lib/tasteSurveyPersistence';
+import {
+  deleteLocalProfileAvatar,
+  loadLocalProfileAvatarObjectUrl,
+  saveLocalProfileAvatar,
+} from './lib/localProfileAvatar';
 import { initializeAnalytics, trackEvent, trackPageView } from './lib/analytics';
 import type {
   TasteSurveyCompatibleResult,
@@ -833,6 +838,8 @@ function MainApp() {
   const [isProfileIdentitySheetOpen, setIsProfileIdentitySheetOpen] = useState(false);
   const [isProfileEditSheetOpen, setIsProfileEditSheetOpen] = useState(false);
   const [profileEditStatus, setProfileEditStatus] = useState<'idle' | 'submitting'>('idle');
+  const [profileEditMessage, setProfileEditMessage] = useState<string | null>(null);
+  const [isProfileAvatarPreparing, setIsProfileAvatarPreparing] = useState(false);
   const [isProfileSetupSheetOpen, setIsProfileSetupSheetOpen] = useState(false);
   const [profileSetupStatus, setProfileSetupStatus] = useState<
     'idle' | 'submitting' | 'success' | 'error'
@@ -1039,6 +1046,34 @@ function MainApp() {
     () => resolvePublicMediaPath(profileAvatarPath) ?? profileAvatarDataUrl,
     [profileAvatarDataUrl, profileAvatarPath],
   );
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    void (async () => {
+      try {
+        const localAvatarObjectUrl = await loadLocalProfileAvatarObjectUrl();
+
+        if (isCancelled || !localAvatarObjectUrl) {
+          return;
+        }
+
+        setProfileAvatarDataUrl((currentUrl) => {
+          if (currentUrl?.startsWith('blob:')) {
+            URL.revokeObjectURL(currentUrl);
+          }
+
+          return localAvatarObjectUrl;
+        });
+      } catch (error) {
+        console.warn('Failed to load local profile avatar.', error);
+      }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabaseSession) {
@@ -1334,6 +1369,8 @@ function MainApp() {
   const handleOpenProfileEditSheet = () => {
     trackEvent('profile_edit_open');
     setProfileEditStatus('idle');
+    setProfileEditMessage(null);
+    setIsProfileAvatarPreparing(false);
     setIsProfileIdentitySheetOpen(false);
     setIsProfileEditSheetOpen(true);
   };
@@ -1354,6 +1391,7 @@ function MainApp() {
     shouldRemoveAvatar: boolean;
   }) => {
     setProfileEditStatus('submitting');
+    setProfileEditMessage(null);
     trackEvent('profile_edit_submit', {
       has_avatar: Boolean(input.avatarFile) || (!input.shouldRemoveAvatar && Boolean(profileAvatarImageSrc)),
       has_birth_date: Boolean(input.birthDate),
@@ -1367,32 +1405,66 @@ function MainApp() {
     const currentDisplayName = currentUserDisplayName ?? '';
     const currentNickname = currentUserNickname ?? '';
     let nextAvatarPath = input.shouldRemoveAvatar ? null : profileAvatarPath;
+    let nextLocalAvatarUrl: string | null = input.shouldRemoveAvatar ? null : profileAvatarDataUrl;
+    let shouldSyncAvatarPath = input.shouldRemoveAvatar;
+
+    if (input.shouldRemoveAvatar) {
+      try {
+        await deleteLocalProfileAvatar();
+      } catch (error) {
+        console.warn('Failed to delete local profile avatar.', error);
+      }
+    }
 
     if (input.avatarFile) {
       const avatarUploadResult = await uploadSupabaseProfileAvatar(input.avatarFile);
 
-      if (!avatarUploadResult.ok || !avatarUploadResult.avatarPath) {
-        trackEvent('profile_edit_error', { reason: 'avatar_upload' });
-        setProfileEditStatus('idle');
-        return;
+      if (avatarUploadResult.ok && avatarUploadResult.avatarPath) {
+        nextAvatarPath = avatarUploadResult.avatarPath;
+        nextLocalAvatarUrl = null;
+        shouldSyncAvatarPath = true;
+        try {
+          await deleteLocalProfileAvatar();
+        } catch (error) {
+          console.warn('Failed to clear local profile avatar fallback.', error);
+        }
+      } else {
+        try {
+          nextLocalAvatarUrl = await saveLocalProfileAvatar(input.avatarFile);
+          nextAvatarPath = null;
+          shouldSyncAvatarPath = false;
+          trackEvent('profile_edit_avatar_local_fallback', {
+            reason: avatarUploadResult.message ?? 'edge_function_unavailable',
+          });
+        } catch (error) {
+          trackEvent('profile_edit_error', { reason: 'avatar_local_fallback' });
+          setProfileEditMessage(
+            error instanceof Error
+              ? error.message
+              : '프로필 사진을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+          );
+          setProfileEditStatus('idle');
+          return;
+        }
       }
-
-      nextAvatarPath = avatarUploadResult.avatarPath;
     }
 
     if (
       nextDisplayName !== currentDisplayName ||
       nextNickname !== currentNickname ||
-      nextAvatarPath !== profileAvatarPath
+      shouldSyncAvatarPath
     ) {
       const result = await updateSupabaseProfileIdentity({
-        avatarPath: nextAvatarPath,
+        ...(shouldSyncAvatarPath ? { avatarPath: nextAvatarPath } : {}),
         displayName: nextDisplayName,
         nickname: nextNickname,
       });
 
       if (!result.ok) {
         trackEvent('profile_edit_error', { reason: 'identity_update' });
+        setProfileEditMessage(
+          result.message || '프로필 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        );
         setProfileEditStatus('idle');
         return;
       }
@@ -1401,12 +1473,20 @@ function MainApp() {
       setSupabaseSession(session);
     }
 
-    setProfileAvatarDataUrl(null);
+    setProfileAvatarDataUrl((currentUrl) => {
+      if (currentUrl?.startsWith('blob:') && currentUrl !== nextLocalAvatarUrl) {
+        URL.revokeObjectURL(currentUrl);
+      }
+
+      return nextLocalAvatarUrl;
+    });
     setProfileAvatarPath(nextAvatarPath);
     setProfileBirthDate(input.birthDate);
     setTasteSurveyRespondentContext(sanitizedContext);
     setLatestPreferenceIntakeProfile(input.preferenceProfile);
     setProfileEditStatus('idle');
+    setProfileEditMessage(null);
+    setIsProfileAvatarPreparing(false);
     setIsProfileEditSheetOpen(false);
     setIsProfileIdentitySheetOpen(true);
     trackEvent('profile_edit_complete');
@@ -2544,11 +2624,15 @@ function MainApp() {
           footer={
             <Button
               className="h-12 w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] hover:bg-[var(--tb-color-text-secondary)]"
-              disabled={profileEditStatus === 'submitting'}
+              disabled={profileEditStatus === 'submitting' || isProfileAvatarPreparing}
               form="profile-edit-sheet-form"
               type="submit"
             >
-              {profileEditStatus === 'submitting' ? '저장 중' : '저장'}
+              {isProfileAvatarPreparing
+                ? '사진 준비 중'
+                : profileEditStatus === 'submitting'
+                  ? '저장 중'
+                  : '저장'}
             </Button>
           }
         >
@@ -2559,10 +2643,13 @@ function MainApp() {
             displayName={currentUserDisplayName}
             formId="profile-edit-sheet-form"
             initials={userInitials}
+            isSubmitting={profileEditStatus === 'submitting'}
             nickname={currentUserNickname}
             preferenceProfile={latestPreferenceIntakeProfile}
             respondentContext={tasteSurveyRespondentContext}
+            statusMessage={profileEditMessage}
             userTasteAccentStyle={userTasteAccentStyle}
+            onAvatarPreparationChange={setIsProfileAvatarPreparing}
             onSubmit={handleSubmitProfileEdit}
           />
         </BottomSheetShell>
