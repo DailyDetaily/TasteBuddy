@@ -77,6 +77,7 @@ const emptyPreferenceProfile: PreferenceIntakeProfile = {
 const PROFILE_AVATAR_SIZE = 512;
 const PROFILE_AVATAR_QUALITY = 0.84;
 const PROFILE_AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+const PROFILE_AVATAR_OUTPUT_TYPE = 'image/webp';
 
 function getInitialPreferenceProfile(profile: PreferenceIntakeProfile | null) {
   return profile ?? emptyPreferenceProfile;
@@ -133,14 +134,17 @@ async function normalizeProfileAvatarFile(file: File) {
   );
 
   const blob = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob(resolve, 'image/webp', PROFILE_AVATAR_QUALITY);
+    canvas.toBlob(resolve, PROFILE_AVATAR_OUTPUT_TYPE, PROFILE_AVATAR_QUALITY);
   });
 
   if (!blob) {
     throw new Error('프로필 사진을 저장 형식으로 변환하지 못했습니다.');
   }
 
-  return new File([blob], 'profile-avatar.webp', { type: 'image/webp' });
+  const outputType = blob.type || 'image/png';
+  const outputExtension = outputType === 'image/webp' ? 'webp' : 'png';
+
+  return new File([blob], `profile-avatar.${outputExtension}`, { type: outputType });
 }
 
 function resolveOptionLabel(

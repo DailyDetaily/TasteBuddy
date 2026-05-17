@@ -8,6 +8,19 @@ const corsHeaders = {
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const PUBLIC_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+const ALLOWED_AVATAR_TYPES = new Set(['image/webp', 'image/png', 'image/jpeg']);
+
+function getAvatarExtension(contentType: string) {
+  if (contentType === 'image/webp') {
+    return 'webp';
+  }
+
+  if (contentType === 'image/jpeg') {
+    return 'jpg';
+  }
+
+  return 'png';
+}
 
 function jsonResponse(body: unknown, init: ResponseInit = {}) {
   return new Response(JSON.stringify(body), {
@@ -192,11 +205,11 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: 'Avatar file is too large' }, { status: 413 });
   }
 
-  if (file.type !== 'image/webp') {
-    return jsonResponse({ error: 'Avatar file must be image/webp' }, { status: 415 });
+  if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+    return jsonResponse({ error: 'Avatar file must be a supported image type' }, { status: 415 });
   }
 
-  const objectKey = `user-avatars/${userData.user.id}/${crypto.randomUUID()}.webp`;
+  const objectKey = `user-avatars/${userData.user.id}/${crypto.randomUUID()}.${getAvatarExtension(file.type)}`;
   const payload = await file.arrayBuffer();
 
   try {
