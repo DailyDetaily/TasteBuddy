@@ -79,6 +79,36 @@ const PROFILE_AVATAR_QUALITY = 0.84;
 const PROFILE_AVATAR_MAX_BYTES = 5 * 1024 * 1024;
 const PROFILE_AVATAR_OUTPUT_TYPE = 'image/webp';
 
+function detectImageTypeFromBytes(bytes: Uint8Array) {
+  if (
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  ) {
+    return { extension: 'webp', type: 'image/webp' };
+  }
+
+  if (
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47
+  ) {
+    return { extension: 'png', type: 'image/png' };
+  }
+
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return { extension: 'jpg', type: 'image/jpeg' };
+  }
+
+  return null;
+}
+
 function getInitialPreferenceProfile(profile: PreferenceIntakeProfile | null) {
   return profile ?? emptyPreferenceProfile;
 }
@@ -141,10 +171,13 @@ async function normalizeProfileAvatarFile(file: File) {
     throw new Error('프로필 사진을 저장 형식으로 변환하지 못했습니다.');
   }
 
-  const outputType = blob.type || 'image/png';
-  const outputExtension = outputType === 'image/webp' ? 'webp' : 'png';
+  const buffer = await blob.arrayBuffer();
+  const detectedImageType = detectImageTypeFromBytes(new Uint8Array(buffer));
+  const outputType = detectedImageType?.type ?? (blob.type || 'image/png');
+  const outputExtension =
+    detectedImageType?.extension ?? (outputType === 'image/webp' ? 'webp' : 'png');
 
-  return new File([blob], `profile-avatar.${outputExtension}`, { type: outputType });
+  return new File([buffer], `profile-avatar.${outputExtension}`, { type: outputType });
 }
 
 function resolveOptionLabel(

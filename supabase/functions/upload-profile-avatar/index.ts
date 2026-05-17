@@ -10,16 +10,36 @@ const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const PUBLIC_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 const ALLOWED_AVATAR_TYPES = new Set(['image/webp', 'image/png', 'image/jpeg']);
 
-function getAvatarExtension(contentType: string) {
-  if (contentType === 'image/webp') {
-    return 'webp';
+function detectAvatarImageType(payload: ArrayBuffer) {
+  const bytes = new Uint8Array(payload);
+
+  if (
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  ) {
+    return { extension: 'webp', type: 'image/webp' };
   }
 
-  if (contentType === 'image/jpeg') {
-    return 'jpg';
+  if (
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47
+  ) {
+    return { extension: 'png', type: 'image/png' };
   }
 
-  return 'png';
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return { extension: 'jpg', type: 'image/jpeg' };
+  }
+
+  return null;
 }
 
 function jsonResponse(body: unknown, init: ResponseInit = {}) {
@@ -205,19 +225,21 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: 'Avatar file is too large' }, { status: 413 });
   }
 
-  if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+  const payload = await file.arrayBuffer();
+  const detectedImageType = detectAvatarImageType(payload);
+
+  if (!detectedImageType || !ALLOWED_AVATAR_TYPES.has(detectedImageType.type)) {
     return jsonResponse({ error: 'Avatar file must be a supported image type' }, { status: 415 });
   }
 
-  const objectKey = `user-avatars/${userData.user.id}/${crypto.randomUUID()}.${getAvatarExtension(file.type)}`;
-  const payload = await file.arrayBuffer();
+  const objectKey = `user-avatars/${userData.user.id}/${crypto.randomUUID()}.${detectedImageType.extension}`;
 
   try {
     await uploadToR2({
       accessKeyId: r2AccessKeyId,
       accountId: r2AccountId,
       bucket: r2Bucket,
-      contentType: file.type,
+      contentType: detectedImageType.type,
       objectKey,
       payload,
       secretAccessKey: r2SecretAccessKey,
