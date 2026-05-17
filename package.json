@@ -50,13 +50,13 @@
             "vaul": "^1.1.2"
       },
       "devDependencies": {
-            "@tailwindcss/vite": "^4.1.17",
+            "@tailwindcss/vite": "4.1.17",
             "@types/node": "^20.10.0",
             "@types/react": "^19.2.7",
             "@types/react-dom": "^19.2.3",
             "@vitejs/plugin-react-swc": "^3.10.2",
             "supabase": "^2.98.2",
-            "tailwindcss": "^4.1.17",
+            "tailwindcss": "4.1.17",
             "vite": "6.3.5",
             "vite-plugin-pwa": "^1.2.0"
       },
