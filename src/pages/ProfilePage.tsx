@@ -74,6 +74,7 @@ export interface ProfileIdentityData {
   avatarImageDataUrl?: string | null;
   avatarStyle?: CSSProperties;
   displayName?: string | null;
+  friendCount?: number;
   followerCount?: number;
   followingCount?: number;
   initials?: string | null;
@@ -283,8 +284,8 @@ export default function ProfilePage({
   const initials = profileIdentity?.initials?.trim() || DEFAULT_PROFILE_IDENTITY.initials;
   const followerCount = profileIdentity?.followerCount ?? DEFAULT_PROFILE_IDENTITY.followerCount;
   const followingCount = profileIdentity?.followingCount ?? DEFAULT_PROFILE_IDENTITY.followingCount;
+  const friendCount = profileIdentity?.friendCount ?? 0;
   const avatarStyle = profileIdentity?.avatarStyle ?? DEFAULT_AVATAR_STYLE;
-  const [isFriendAdded, setIsFriendAdded] = useState(false);
   const [favoriteChefs, setFavoriteChefs] = useState<FavoriteChef[]>([]);
   const [stats, setStats] = useState<ProfileStat[]>(() => deriveProfileStats([measurementSnapshot], 0, null));
 
@@ -382,14 +383,19 @@ export default function ProfilePage({
                     </span>
                     <span className="text-[11px] text-[var(--tb-color-text-muted)]">팔로잉</span>
                   </div>
+                  <div className="flex min-w-[64px] flex-col">
+                    <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                      {formatSocialCount(friendCount)}
+                    </span>
+                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">친구</span>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setIsFriendAdded((current) => !current)}
+                    onClick={onOpenProfileSettings}
                     className="ml-auto flex h-9 items-center gap-2 rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[12px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
-                    aria-pressed={isFriendAdded}
                   >
                     <UserPlus size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
-                    <span>{isFriendAdded ? '친구 추가됨' : '친구 추가'}</span>
+                    <span>친구 찾기</span>
                   </button>
                 </div>
               </div>

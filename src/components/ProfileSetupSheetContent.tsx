@@ -66,6 +66,9 @@ export default function ProfileSetupSheetContent({
             type="text"
             value={nickname}
           />
+          <span className="text-[11px] leading-relaxed text-[var(--tb-color-text-faint)]">
+            닉네임은 친구가 나를 찾는 고유 이름으로 사용됩니다.
+          </span>
         </label>
       </form>
 

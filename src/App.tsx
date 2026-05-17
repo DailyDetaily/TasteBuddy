@@ -99,10 +99,13 @@ import {
   deleteCurrentSupabaseAccount,
   ensureSupabaseSession,
   getCurrentSupabaseSession,
+  hydrateSupabaseFriendSummary,
   hydrateSupabaseProfileIdentity,
   isAnonymousSupabaseSession,
   isSupabaseConfigured,
   linkAnonymousSupabaseUserEmail,
+  addSupabaseFriendByNickname,
+  searchSupabaseProfilesByNickname,
   sendSupabaseEmailOtp,
   sendSupabaseMagicLink,
   signOutSupabaseSession,
@@ -110,6 +113,7 @@ import {
   updateSupabaseProfileIdentity,
   uploadSupabaseProfileAvatar,
   verifySupabaseEmailOtp,
+  type DiningFriendProfile,
   type SupabaseEmailOtpIntent,
 } from './lib/supabase';
 import { resolvePublicMediaPath } from './lib/mediaAssets';
@@ -839,6 +843,7 @@ function MainApp() {
   const [isProfileEditSheetOpen, setIsProfileEditSheetOpen] = useState(false);
   const [profileEditStatus, setProfileEditStatus] = useState<'idle' | 'submitting'>('idle');
   const [profileEditMessage, setProfileEditMessage] = useState<string | null>(null);
+  const [profileFriendCount, setProfileFriendCount] = useState(0);
   const [isProfileAvatarPreparing, setIsProfileAvatarPreparing] = useState(false);
   const [isProfileSetupSheetOpen, setIsProfileSetupSheetOpen] = useState(false);
   const [profileSetupStatus, setProfileSetupStatus] = useState<
@@ -1093,6 +1098,29 @@ function MainApp() {
       if (result.avatarPath) {
         setProfileAvatarDataUrl(null);
       }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [supabaseSession?.user.id]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabaseSession) {
+      setProfileFriendCount(0);
+      return;
+    }
+
+    let isCancelled = false;
+
+    void (async () => {
+      const result = await hydrateSupabaseFriendSummary();
+
+      if (isCancelled || !result.ok) {
+        return;
+      }
+
+      setProfileFriendCount(result.friendCount);
     })();
 
     return () => {
@@ -1496,6 +1524,31 @@ function MainApp() {
     trackEvent('profile_link_email_open');
     setIsProfileIdentitySheetOpen(false);
     openAuthEntrySheet('link-current-profile');
+  };
+
+  const handleSearchDiningFriends = async (query: string) => {
+    trackEvent('friend_search_submit', {
+      has_query: Boolean(query.trim()),
+    });
+
+    return searchSupabaseProfilesByNickname(query);
+  };
+
+  const handleAddDiningFriend = async (friend: DiningFriendProfile) => {
+    trackEvent('friend_add_submit', {
+      friend_id: friend.id,
+    });
+
+    const result = await addSupabaseFriendByNickname(friend.nickname);
+
+    if (result.ok) {
+      const summary = await hydrateSupabaseFriendSummary();
+      if (summary.ok) {
+        setProfileFriendCount(summary.friendCount);
+      }
+    }
+
+    return result;
   };
 
   const handlePersistedMeasurement = (
@@ -2434,6 +2487,8 @@ function MainApp() {
                   onOpenRestaurantDetailFromSearch={(result) =>
                     openRestaurantDetail(createRestaurantDetailFromSearchResult(result))
                   }
+                  onAddFriend={handleAddDiningFriend}
+                  onSearchFriends={handleSearchDiningFriends}
                   {...overlayProps}
                 />
               </div>
@@ -2495,8 +2550,7 @@ function MainApp() {
                       avatarImageDataUrl: profileAvatarImageSrc,
                       avatarStyle: userAvatarStyle,
                       displayName: currentUserDisplayName ?? currentUserNickname,
-                      followerCount: 0,
-                      followingCount: 0,
+                      friendCount: profileFriendCount,
                       initials: userInitials,
                       nickname: currentUserNickname ?? currentUserDisplayName,
                     }}
@@ -2520,9 +2574,11 @@ function MainApp() {
         {appState === 'main' ? (
           <HomeUnifiedSearch
             catalog={globalSearchCatalog}
+            onAddFriend={handleAddDiningFriend}
             onOpenRestaurantDetail={(result) =>
               openRestaurantDetail(createRestaurantDetailFromSearchResult(result))
             }
+            onSearchFriends={handleSearchDiningFriends}
             openTrigger={globalSearchTrigger}
             reservations={globalSearchReservations}
             showTrigger={false}
@@ -2592,8 +2648,11 @@ function MainApp() {
             preferenceProfile={latestPreferenceIntakeProfile}
             respondentContext={tasteSurveyRespondentContext}
             userTasteAccentStyle={userTasteAccentStyle}
+            friendCount={profileFriendCount}
+            onAddFriend={handleAddDiningFriend}
             onEditProfile={handleOpenProfileEditSheet}
             onLinkCurrentProfile={handleLinkCurrentProfileEmail}
+            onSearchFriends={handleSearchDiningFriends}
           />
         </BottomSheetShell>
 

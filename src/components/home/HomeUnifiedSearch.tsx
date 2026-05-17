@@ -9,6 +9,7 @@ import {
   Sparkles,
   Store,
   Utensils,
+  UserPlus,
 } from 'lucide-react';
 
 import ChefAvatar from '../system/ChefAvatar';
@@ -30,6 +31,7 @@ import {
   getRestaurantBookmarkKey,
   isRestaurantBookmarked,
 } from '../restaurant/RestaurantBookmarkSheet';
+import type { DiningFriendProfile } from '../../lib/supabase';
 
 const HOME_RECENT_SEARCH_STORAGE_KEY = 'tastebuddy-home-recent-searches-v1';
 const MAX_RECENT_SEARCHES = 5;
@@ -96,6 +98,7 @@ export type HomeSearchResult = {
 
 type SearchGroups = {
   chefs: HomeSearchResult[];
+  friends: DiningFriendProfile[];
   menus: HomeSearchResult[];
   restaurants: HomeSearchResult[];
   totalCount: number;
@@ -103,7 +106,13 @@ type SearchGroups = {
 
 interface HomeUnifiedSearchProps {
   catalog: RestaurantContentCatalog;
+  onAddFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
   onOpenRestaurantDetail?: (result: HomeSearchResult) => void;
+  onSearchFriends?: (query: string) => Promise<{
+    ok: boolean;
+    friends: DiningFriendProfile[];
+    message: string;
+  }>;
   openTrigger?: number;
   reservations: ReservationRecord[];
   showTrigger?: boolean;
@@ -747,9 +756,81 @@ function SearchSection({
   );
 }
 
+function FriendSearchSection({
+  addingFriendId,
+  friends,
+  onAddFriend,
+}: {
+  addingFriendId: string | null;
+  friends: DiningFriendProfile[];
+  onAddFriend: (friend: DiningFriendProfile) => void;
+}) {
+  return (
+    <section className="tb-section-stack" aria-label="사용자">
+      <div className="flex items-center justify-between">
+        <h3 className={SEARCH_SECTION_TITLE_CLASS_NAME}>사용자</h3>
+        <span className={SEARCH_SECTION_COUNT_CLASS_NAME}>{friends.length}명</span>
+      </div>
+      <ul className="grid gap-3">
+        {friends.map((friend) => (
+          <li key={friend.id} className="list-none">
+            <div
+              className={cn(
+                SEARCH_RESULT_CARD_CLASS_NAME,
+                SEARCH_RESULT_CARD_UNSELECTED_CLASS_NAME,
+              )}
+            >
+              <div className={SEARCH_RESULT_CARD_BODY_CLASS_NAME}>
+                <div className="flex w-full items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <ChefAvatar
+                      alt={friend.displayName || friend.nickname}
+                      className="h-[40px] w-[40px] shrink-0 rounded-[var(--tb-radius-10)] object-cover"
+                      iconSize={ICON_TOKENS.size.lg}
+                      imageSrc={friend.avatarPath}
+                      variant="neutral"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                        {friend.displayName || 'Taste Buddy Guest'}
+                      </span>
+                      <span className="block truncate text-[11px] text-[var(--tb-color-text-muted)]">
+                        @{friend.nickname} · 다이닝 친구
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onAddFriend(friend)}
+                    disabled={friend.isFriend || addingFriendId === friend.id}
+                    aria-label={friend.isFriend ? '이미 추가된 친구' : '다이닝 친구 추가'}
+                    title={friend.isFriend ? '이미 추가된 친구' : '다이닝 친구 추가'}
+                    className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-[var(--tb-color-border-default)] px-3 text-[11px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)] disabled:opacity-55"
+                  >
+                    <UserPlus size={ICON_TOKENS.size.sm} strokeWidth={2.1} />
+                    <span>
+                      {friend.isFriend
+                        ? '추가됨'
+                        : addingFriendId === friend.id
+                          ? '추가 중'
+                          : '추가'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function HomeUnifiedSearch({
   catalog,
+  onAddFriend,
   onOpenRestaurantDetail,
+  onSearchFriends,
   openTrigger,
   reservations,
   showTrigger = true,
@@ -764,6 +845,10 @@ export default function HomeUnifiedSearch({
   const [bookmarkedRestaurantKeys, setBookmarkedRestaurantKeys] = useState<string[]>([]);
   const [kakaoResults, setKakaoResults] = useState<HomeSearchResult[]>([]);
   const [isKakaoSearching, setIsKakaoSearching] = useState(false);
+  const [friendResults, setFriendResults] = useState<DiningFriendProfile[]>([]);
+  const [isFriendSearching, setIsFriendSearching] = useState(false);
+  const [friendSearchMessage, setFriendSearchMessage] = useState<string | null>(null);
+  const [addingFriendId, setAddingFriendId] = useState<string | null>(null);
   const [, setBookmarkSyncIndex] = useState(0);
 
   const restaurantResults = buildRestaurantResults(catalog, reservations);
@@ -778,15 +863,19 @@ export default function HomeUnifiedSearch({
     hasSearchableCompleteCharacter(normalizeSearchValue(query)) &&
     filteredRestaurants.length === 0 &&
     filteredChefs.length === 0 &&
-    filteredMenus.length === 0;
+    filteredMenus.length === 0 &&
+    friendResults.length === 0 &&
+    !isFriendSearching;
   const visibleKakaoResults = shouldSearchKakao ? kakaoResults : [];
   const searchGroups: SearchGroups = {
     restaurants: filteredRestaurants.length > 0 ? filteredRestaurants : visibleKakaoResults,
     chefs: filteredChefs,
+    friends: friendResults,
     menus: filteredMenus,
     totalCount:
       filteredRestaurants.length +
       filteredChefs.length +
+      friendResults.length +
       filteredMenus.length +
       visibleKakaoResults.length,
   };
@@ -850,6 +939,39 @@ export default function HomeUnifiedSearch({
     };
   }, [query, shouldSearchKakao]);
 
+  useEffect(() => {
+    const nextQuery = query.trim();
+
+    if (!onSearchFriends || nextQuery.length < 2 || !hasSearchableCompleteCharacter(nextQuery)) {
+      setFriendResults([]);
+      setFriendSearchMessage(null);
+      setIsFriendSearching(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setIsFriendSearching(true);
+
+    const timeoutId = window.setTimeout(() => {
+      void (async () => {
+        const result = await onSearchFriends(nextQuery);
+
+        if (isCancelled) {
+          return;
+        }
+
+        setFriendResults(result.ok ? result.friends : []);
+        setFriendSearchMessage(result.ok ? null : result.message);
+        setIsFriendSearching(false);
+      })();
+    }, 220);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [query]);
+
   const handleSuggestionSelect = (value: string) => {
     setQuery(value);
     updateRecentSearches(value);
@@ -866,6 +988,27 @@ export default function HomeUnifiedSearch({
     }
 
     setSelectedResult(result);
+  };
+
+  const handleFriendAdd = async (friend: DiningFriendProfile) => {
+    if (!onAddFriend) {
+      return;
+    }
+
+    setAddingFriendId(friend.id);
+    setFriendSearchMessage(null);
+    const result = await onAddFriend(friend);
+    setAddingFriendId(null);
+    setFriendSearchMessage(result.message);
+
+    if (result.ok) {
+      setFriendResults((currentResults) =>
+        currentResults.map((item) =>
+          item.id === friend.id ? { ...item, isFriend: true } : item,
+        ),
+      );
+      updateRecentSearches(`@${friend.nickname}`);
+    }
   };
 
   const handleClearQuery = () => {
@@ -983,7 +1126,7 @@ export default function HomeUnifiedSearch({
             className={SEARCH_BAR_FIELD_CLASS_NAME}
           >
             <span className="truncate text-[13px] font-medium text-[#5D6672]">
-              레스토랑, 메뉴, 셰프 검색
+              레스토랑, 메뉴, 셰프, 닉네임 검색
             </span>
           </button>
           <button
@@ -1005,7 +1148,7 @@ export default function HomeUnifiedSearch({
           onClose={handleClose}
           onQueryChange={setQuery}
           onSubmit={handleSubmit}
-          placeholder="레스토랑, 메뉴, 셰프 검색"
+          placeholder="레스토랑, 메뉴, 셰프, 닉네임 검색"
           query={query}
         >
                 <div className="tb-section-stack">
@@ -1046,7 +1189,7 @@ export default function HomeUnifiedSearch({
                             추천 탐색
                           </h3>
                           <p className={SEARCH_RESULT_DESCRIPTION_CLASS_NAME}>
-                            레스토랑을 먼저, 셰프와 메뉴를 함께 비교할 수 있도록 정리했어요.
+                            레스토랑을 먼저, 셰프와 메뉴, 다이닝 친구까지 함께 찾을 수 있어요.
                           </p>
                         </div>
                         <div className={SEARCH_SUGGESTION_ITEMS_CLASS_NAME}>
@@ -1067,7 +1210,7 @@ export default function HomeUnifiedSearch({
                           총 {searchGroups.totalCount}개 결과
                         </p>
                         <p className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">
-                          레스토랑 우선 정렬
+                          레스토랑 · 사용자 함께 정렬
                         </p>
                       </div>
 
@@ -1097,6 +1240,14 @@ export default function HomeUnifiedSearch({
                         />
                       ) : null}
 
+                      {searchGroups.friends.length > 0 ? (
+                        <FriendSearchSection
+                          addingFriendId={addingFriendId}
+                          friends={searchGroups.friends}
+                          onAddFriend={(friend) => void handleFriendAdd(friend)}
+                        />
+                      ) : null}
+
                       {searchGroups.menus.length > 0 ? (
                         <SearchSection
                           bookmarkedRestaurantKeys={bookmarkedRestaurantKeys}
@@ -1109,21 +1260,34 @@ export default function HomeUnifiedSearch({
                           onSelect={handleResultSelect}
                         />
                       ) : null}
+
+                      {friendSearchMessage ? (
+                        <p className="text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">
+                          {friendSearchMessage}
+                        </p>
+                      ) : null}
                     </>
-                  ) : isKakaoSearching ? (
+                  ) : isKakaoSearching || isFriendSearching ? (
                     <div className={SEARCH_EMPTY_STATE_CLASS_NAME}>
                       <EmptyState
                         icon={<Search size={APP_LUCIDE_ICON_SIZE_M} />}
-                        title="카카오에서 식당 정보를 확인하고 있어요"
-                        description="Taste Buddy에 아직 없는 식당도 같은 상세 페이지에서 먼저 확인할 수 있어요."
+                        title={isFriendSearching ? '닉네임을 확인하고 있어요' : '카카오에서 식당 정보를 확인하고 있어요'}
+                        description={
+                          isFriendSearching
+                            ? '친구가 나를 찾는 고유 닉네임과 함께 비교하고 있어요.'
+                            : 'Taste Buddy에 아직 없는 식당도 같은 상세 페이지에서 먼저 확인할 수 있어요.'
+                        }
                       />
                     </div>
                   ) : (
                     <div className={SEARCH_EMPTY_STATE_CLASS_NAME}>
                       <EmptyState
                         icon={<Search size={APP_LUCIDE_ICON_SIZE_M} />}
-                        title="아직 맞는 결과를 찾지 못했어요"
-                        description="레스토랑 이름, 셰프 이름, 코스명으로 다시 시도해보세요. 추천 탐색 키워드로 시작해도 좋아요."
+                        title={friendSearchMessage ? '닉네임 검색을 확인하지 못했어요' : '아직 맞는 결과를 찾지 못했어요'}
+                        description={
+                          friendSearchMessage ??
+                          '레스토랑 이름, 셰프 이름, 코스명, 친구 닉네임으로 다시 시도해보세요. 추천 탐색 키워드로 시작해도 좋아요.'
+                        }
                       />
                       {suggestions.length > 0 ? (
                         <div className="mt-2 flex flex-wrap justify-center gap-2 px-4 pb-2">

@@ -461,6 +461,7 @@ export default function ProfileEditSheetContent({
           <ProfileEditTextField
             label="닉네임"
             placeholder="Taste Buddy에서 사용할 이름"
+            helperText="친구가 나를 찾는 고유 닉네임입니다."
             value={draftNickname}
             onChange={setDraftNickname}
           />
@@ -566,11 +567,13 @@ export default function ProfileEditSheetContent({
 }
 
 function ProfileEditTextField({
+  helperText,
   label,
   onChange,
   placeholder,
   value,
 }: {
+  helperText?: string;
   label: string;
   onChange: (value: string) => void;
   placeholder: string;
@@ -588,6 +591,11 @@ function ProfileEditTextField({
         type="text"
         value={value}
       />
+      {helperText ? (
+        <span className="text-[11px] leading-relaxed text-[var(--tb-color-text-faint)]">
+          {helperText}
+        </span>
+      ) : null}
     </label>
   );
 }

@@ -272,6 +272,26 @@ export async function deleteCurrentSupabaseAccount() {
   };
 }
 
+export interface DiningFriendProfile {
+  avatarPath: string | null;
+  displayName: string | null;
+  id: string;
+  isFriend: boolean;
+  nickname: string;
+}
+
+function normalizeNicknameForProfile(input: string) {
+  return input.trim().replace(/^@+/, '');
+}
+
+function getProfileIdentityErrorMessage(error: { code?: string; message?: string }) {
+  if (error.code === '23505' || error.message?.toLowerCase().includes('profiles_nickname_unique_idx')) {
+    return '이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해 주세요.';
+  }
+
+  return error.message ?? '프로필 정보를 저장하지 못했습니다.';
+}
+
 export async function updateSupabaseProfileIdentity(input: {
   displayName: string;
   nickname: string;
@@ -295,7 +315,7 @@ export async function updateSupabaseProfileIdentity(input: {
   }
 
   const displayName = input.displayName.trim();
-  const nickname = input.nickname.trim();
+  const nickname = normalizeNicknameForProfile(input.nickname);
   const nextUserMetadata: Record<string, string | null> = {
     display_name: displayName,
     nickname,
@@ -305,20 +325,9 @@ export async function updateSupabaseProfileIdentity(input: {
     nextUserMetadata.avatar_path = input.avatarPath;
   }
 
-  const { error: metadataError } = await supabase.auth.updateUser({
-    data: nextUserMetadata,
-  });
-
-  if (metadataError) {
-    console.warn('Failed to update Supabase user metadata.', metadataError);
-    return {
-      ok: false,
-      message: metadataError.message,
-    };
-  }
-
   const nextProfileValues: Record<string, string | null> = {
     display_name: displayName || nickname || null,
+    nickname: nickname || null,
   };
 
   if (input.avatarPath !== undefined) {
@@ -334,7 +343,19 @@ export async function updateSupabaseProfileIdentity(input: {
     console.warn('Failed to update Supabase profile identity.', profileError);
     return {
       ok: false,
-      message: profileError.message,
+      message: getProfileIdentityErrorMessage(profileError),
+    };
+  }
+
+  const { error: metadataError } = await supabase.auth.updateUser({
+    data: nextUserMetadata,
+  });
+
+  if (metadataError) {
+    console.warn('Failed to update Supabase user metadata.', metadataError);
+    return {
+      ok: false,
+      message: metadataError.message,
     };
   }
 
@@ -368,7 +389,7 @@ export async function hydrateSupabaseProfileIdentity() {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('avatar_path, display_name')
+    .select('avatar_path, display_name, nickname')
     .eq('id', userId)
     .maybeSingle();
 
@@ -386,7 +407,122 @@ export async function hydrateSupabaseProfileIdentity() {
     ok: true,
     avatarPath: typeof data?.avatar_path === 'string' ? data.avatar_path : null,
     displayName: typeof data?.display_name === 'string' ? data.display_name : null,
+    nickname: typeof data?.nickname === 'string' ? data.nickname : null,
     message: '프로필 정보를 불러왔습니다.',
+  };
+}
+
+export async function searchSupabaseProfilesByNickname(query: string) {
+  if (!supabase) {
+    return {
+      ok: false,
+      friends: [],
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const normalizedQuery = normalizeNicknameForProfile(query);
+
+  if (normalizedQuery.length < 2) {
+    return {
+      ok: false,
+      friends: [],
+      message: '닉네임을 두 글자 이상 입력해 주세요.',
+    };
+  }
+
+  const { data, error } = await supabase.rpc('search_profiles_by_nickname', {
+    search_query: normalizedQuery,
+  });
+
+  if (error) {
+    console.warn('Failed to search Supabase profiles by nickname.', error);
+    return {
+      ok: false,
+      friends: [],
+      message: error.message,
+    };
+  }
+
+  return {
+    ok: true,
+    friends: (Array.isArray(data) ? data : []).flatMap((item): DiningFriendProfile[] => {
+      const nickname = typeof item.nickname === 'string' ? item.nickname : '';
+
+      if (!nickname || typeof item.id !== 'string') {
+        return [];
+      }
+
+      return [{
+        avatarPath: typeof item.avatar_path === 'string' ? item.avatar_path : null,
+        displayName: typeof item.display_name === 'string' ? item.display_name : null,
+        id: item.id,
+        isFriend: Boolean(item.is_friend),
+        nickname,
+      }];
+    }),
+    message: '닉네임 검색을 완료했습니다.',
+  };
+}
+
+export async function addSupabaseFriendByNickname(nickname: string) {
+  if (!supabase) {
+    return {
+      ok: false,
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const normalizedNickname = normalizeNicknameForProfile(nickname);
+
+  const { data, error } = await supabase.rpc('add_friend_by_nickname', {
+    target_nickname: normalizedNickname,
+  });
+
+  if (error) {
+    console.warn('Failed to add Supabase friend by nickname.', error);
+    return {
+      ok: false,
+      message: error.message,
+    };
+  }
+
+  const result = Array.isArray(data) ? data[0] : null;
+
+  return {
+    ok: Boolean(result?.ok),
+    message: typeof result?.message === 'string'
+      ? result.message
+      : '친구 추가 결과를 확인하지 못했습니다.',
+  };
+}
+
+export async function hydrateSupabaseFriendSummary() {
+  if (!supabase) {
+    return {
+      ok: false,
+      friendCount: 0,
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const { data, error } = await supabase.rpc('get_friend_summary');
+
+  if (error) {
+    console.warn('Failed to hydrate Supabase friend summary.', error);
+    return {
+      ok: false,
+      friendCount: 0,
+      message: error.message,
+    };
+  }
+
+  const result = Array.isArray(data) ? data[0] : null;
+
+  return {
+    ok: true,
+    friendCount: Number(result?.friend_count ?? 0),
+    message: '친구 요약을 불러왔습니다.',
   };
 }
 

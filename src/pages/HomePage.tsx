@@ -25,7 +25,7 @@ import {
   buildPersonalizedChefMatches,
   resolveUsableImagePath,
 } from '../lib/chefMatching';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured, type DiningFriendProfile } from '../lib/supabase';
 import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reservationCatalog';
 import type { UserLearnedCalibration } from '../types/tastePersonalization';
 
@@ -40,6 +40,12 @@ interface HomePageProps {
   onOpenMenu?: () => void;
   onOpenRestaurantDetail?: (chef: HomeChefMatchCardData) => void;
   onOpenRestaurantDetailFromSearch?: (result: HomeSearchResult) => void;
+  onAddFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
+  onSearchFriends?: (query: string) => Promise<{
+    ok: boolean;
+    friends: DiningFriendProfile[];
+    message: string;
+  }>;
   hasUnreadNotifications?: boolean;
 }
 
@@ -54,6 +60,8 @@ export default function HomePage({
   onOpenMenu,
   onOpenRestaurantDetail,
   onOpenRestaurantDetailFromSearch,
+  onAddFriend,
+  onSearchFriends,
   hasUnreadNotifications,
 }: HomePageProps) {
   const [reservations, setReservations] = useState<ReservationRecord[]>(RESERVATION_CATALOG);
@@ -119,7 +127,9 @@ export default function HomePage({
       <header className="shrink-0 px-5 pb-4 pt-1">
         <HomeUnifiedSearch
           catalog={contentCatalog}
+          onAddFriend={onAddFriend}
           onOpenRestaurantDetail={onOpenRestaurantDetailFromSearch}
+          onSearchFriends={onSearchFriends}
           reservations={visibleReservations}
         />
       </header>
