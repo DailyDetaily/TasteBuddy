@@ -280,6 +280,8 @@ export interface DiningFriendProfile {
   nickname: string;
 }
 
+export type ProfileConnectionKind = 'followers' | 'following';
+
 function normalizeNicknameForProfile(input: string) {
   return input.trim().replace(/^@+/, '');
 }
@@ -290,6 +292,10 @@ function getProfileIdentityErrorMessage(error: { code?: string; message?: string
   }
 
   return error.message ?? '프로필 정보를 저장하지 못했습니다.';
+}
+
+function isMissingSupabaseRpcError(error: { message?: string }) {
+  return error.message?.toLowerCase().includes('could not find the function') ?? false;
 }
 
 export async function updateSupabaseProfileIdentity(input: {
@@ -501,7 +507,8 @@ export async function hydrateSupabaseFriendSummary() {
   if (!supabase) {
     return {
       ok: false,
-      friendCount: 0,
+      followerCount: 0,
+      followingCount: 0,
       message: 'Supabase 환경 변수가 설정되지 않았습니다.',
     };
   }
@@ -512,7 +519,8 @@ export async function hydrateSupabaseFriendSummary() {
     console.warn('Failed to hydrate Supabase friend summary.', error);
     return {
       ok: false,
-      friendCount: 0,
+      followerCount: 0,
+      followingCount: 0,
       message: error.message,
     };
   }
@@ -521,8 +529,54 @@ export async function hydrateSupabaseFriendSummary() {
 
   return {
     ok: true,
-    friendCount: Number(result?.friend_count ?? 0),
+    followerCount: Number(result?.follower_count ?? result?.friend_count ?? 0),
+    followingCount: Number(result?.following_count ?? result?.friend_count ?? 0),
     message: '친구 요약을 불러왔습니다.',
+  };
+}
+
+export async function hydrateSupabaseProfileConnections(kind: ProfileConnectionKind) {
+  if (!supabase) {
+    return {
+      ok: false,
+      friends: [],
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const { data, error } = await supabase.rpc('get_profile_connections', {
+    connection_kind: kind,
+  });
+
+  if (error) {
+    console.warn('Failed to hydrate Supabase profile connections.', error);
+    return {
+      ok: false,
+      friends: [],
+      message: isMissingSupabaseRpcError(error)
+        ? '팔로워/팔로잉 목록을 불러오려면 Supabase SQL Editor에서 최신 친구 기능 SQL을 다시 실행해야 합니다.'
+        : error.message,
+    };
+  }
+
+  return {
+    ok: true,
+    friends: (Array.isArray(data) ? data : []).flatMap((item): DiningFriendProfile[] => {
+      const nickname = typeof item.nickname === 'string' ? item.nickname : '';
+
+      if (typeof item.id !== 'string') {
+        return [];
+      }
+
+      return [{
+        avatarPath: typeof item.avatar_path === 'string' ? item.avatar_path : null,
+        displayName: typeof item.display_name === 'string' ? item.display_name : null,
+        id: item.id,
+        isFriend: Boolean(item.is_friend),
+        nickname,
+      }];
+    }),
+    message: '프로필 연결 목록을 불러왔습니다.',
   };
 }
 

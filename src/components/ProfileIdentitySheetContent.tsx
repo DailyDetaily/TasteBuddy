@@ -321,7 +321,7 @@ export default function ProfileIdentitySheetContent({
             </p>
           </div>
           <div className="shrink-0 rounded-full bg-[var(--tb-color-surface-muted)] px-3 py-1 text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
-            {friendCount.toLocaleString('ko-KR')}명
+            팔로잉 {friendCount.toLocaleString('ko-KR')}명
           </div>
         </div>
 

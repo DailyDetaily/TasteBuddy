@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { ChevronLeft, X } from 'lucide-react';
+import { ChevronLeft, UserPlus, X } from 'lucide-react';
 
 import Home from './pages/HomePage';
 import AnalysisPage from './pages/AnalysisPage';
@@ -100,6 +100,7 @@ import {
   ensureSupabaseSession,
   getCurrentSupabaseSession,
   hydrateSupabaseFriendSummary,
+  hydrateSupabaseProfileConnections,
   hydrateSupabaseProfileIdentity,
   isAnonymousSupabaseSession,
   isSupabaseConfigured,
@@ -114,6 +115,7 @@ import {
   uploadSupabaseProfileAvatar,
   verifySupabaseEmailOtp,
   type DiningFriendProfile,
+  type ProfileConnectionKind,
   type SupabaseEmailOtpIntent,
 } from './lib/supabase';
 import { resolvePublicMediaPath } from './lib/mediaAssets';
@@ -843,7 +845,8 @@ function MainApp() {
   const [isProfileEditSheetOpen, setIsProfileEditSheetOpen] = useState(false);
   const [profileEditStatus, setProfileEditStatus] = useState<'idle' | 'submitting'>('idle');
   const [profileEditMessage, setProfileEditMessage] = useState<string | null>(null);
-  const [profileFriendCount, setProfileFriendCount] = useState(0);
+  const [profileFollowerCount, setProfileFollowerCount] = useState(0);
+  const [profileFollowingCount, setProfileFollowingCount] = useState(0);
   const [isProfileAvatarPreparing, setIsProfileAvatarPreparing] = useState(false);
   const [isProfileSetupSheetOpen, setIsProfileSetupSheetOpen] = useState(false);
   const [profileSetupStatus, setProfileSetupStatus] = useState<
@@ -855,6 +858,8 @@ function MainApp() {
     useState<'auth' | 'profile'>('profile');
   const [isPreferenceIntakeSheetOpen, setIsPreferenceIntakeSheetOpen] = useState(false);
   const [isTasteSurveySheetOpen, setIsTasteSurveySheetOpen] = useState(false);
+  const [profileConnectionView, setProfileConnectionView] =
+    useState<ProfileConnectionKind | null>(null);
 
   // Overlay states
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -1107,7 +1112,8 @@ function MainApp() {
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabaseSession) {
-      setProfileFriendCount(0);
+      setProfileFollowerCount(0);
+      setProfileFollowingCount(0);
       return;
     }
 
@@ -1120,7 +1126,8 @@ function MainApp() {
         return;
       }
 
-      setProfileFriendCount(result.friendCount);
+      setProfileFollowerCount(result.followerCount);
+      setProfileFollowingCount(result.followingCount);
     })();
 
     return () => {
@@ -1131,6 +1138,12 @@ function MainApp() {
   useEffect(() => {
     initializeAnalytics();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'profile') {
+      setProfileConnectionView(null);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const rootElement = document.documentElement;
@@ -1544,11 +1557,20 @@ function MainApp() {
     if (result.ok) {
       const summary = await hydrateSupabaseFriendSummary();
       if (summary.ok) {
-        setProfileFriendCount(summary.friendCount);
+        setProfileFollowerCount(summary.followerCount);
+        setProfileFollowingCount(summary.followingCount);
       }
     }
 
     return result;
+  };
+
+  const handleLoadProfileConnections = async (kind: ProfileConnectionKind) => {
+    trackEvent('profile_connections_open', {
+      kind,
+    });
+
+    return hydrateSupabaseProfileConnections(kind);
   };
 
   const handlePersistedMeasurement = (
@@ -2216,6 +2238,12 @@ function MainApp() {
   const shouldShowMainTopShell = shouldShowMainShell && selectedRestaurantDetail === null;
   const shouldShowMainBottomShell =
     shouldShowMainShell && !isReservationFeedbackMapView && !isRestaurantDetailFeedbackMapView;
+  const profileConnectionTopBarTitle =
+    activeTab === 'profile' && profileConnectionView
+      ? profileConnectionView === 'followers'
+        ? '팔로워'
+        : '팔로잉'
+      : null;
   const shouldLetStatusBarShowContent =
     appState === 'main' && (isReservationFeedbackMapView || isRestaurantDetailFeedbackMapView);
   const usesPageViewportBackground =
@@ -2430,6 +2458,10 @@ function MainApp() {
               <div className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center">
                 <div className="pointer-events-auto w-full max-w-[1440px]">
                   <TopAppBar
+                    appearance={profileConnectionTopBarTitle ? 'solid' : 'default'}
+                    showBack={Boolean(profileConnectionTopBarTitle)}
+                    title={profileConnectionTopBarTitle ?? undefined}
+                    onBack={() => setProfileConnectionView(null)}
                     onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
                     onOpenSearch={handleOpenGlobalSearch}
                     onOpenNotifications={overlayProps.onOpenNotifications}
@@ -2440,6 +2472,18 @@ function MainApp() {
                     userInitials={userInitials}
                     userAvatarImageSrc={profileAvatarImageSrc}
                     userAvatarStyle={userAvatarStyle}
+                    rightActions={
+                      profileConnectionTopBarTitle ? (
+                        <button
+                          type="button"
+                          onClick={handleOpenProfileIdentitySheet}
+                          className="flex size-10 items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                          aria-label="친구 추가"
+                        >
+                          <UserPlus size={20} strokeWidth={2} />
+                        </button>
+                      ) : undefined
+                    }
                   />
                 </div>
               </div>
@@ -2550,11 +2594,16 @@ function MainApp() {
                       avatarImageDataUrl: profileAvatarImageSrc,
                       avatarStyle: userAvatarStyle,
                       displayName: currentUserDisplayName ?? currentUserNickname,
-                      friendCount: profileFriendCount,
+                      followerCount: profileFollowerCount,
+                      followingCount: profileFollowingCount,
                       initials: userInitials,
                       nickname: currentUserNickname ?? currentUserDisplayName,
                     }}
                     starterGuidance={latestRestaurantReadyGuidance}
+                    onAddFriend={handleAddDiningFriend}
+                    activeConnectionView={profileConnectionView}
+                    onConnectionViewChange={setProfileConnectionView}
+                    onLoadConnections={handleLoadProfileConnections}
                     onOpenSupportPanel={handleOpenSupportPanel}
                     onOpenRestaurantDetail={(chef) =>
                       openRestaurantDetail(createRestaurantDetailFromFavoriteChef(chef))
@@ -2648,7 +2697,7 @@ function MainApp() {
             preferenceProfile={latestPreferenceIntakeProfile}
             respondentContext={tasteSurveyRespondentContext}
             userTasteAccentStyle={userTasteAccentStyle}
-            friendCount={profileFriendCount}
+            friendCount={profileFollowingCount}
             onAddFriend={handleAddDiningFriend}
             onEditProfile={handleOpenProfileEditSheet}
             onLinkCurrentProfile={handleLinkCurrentProfileEmail}

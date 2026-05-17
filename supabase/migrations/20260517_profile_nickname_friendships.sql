@@ -20,6 +20,14 @@ where
   and ranked_auth_profiles.nickname is not null
   and ranked_auth_profiles.nickname_rank = 1;
 
+update public.profiles profiles
+set avatar_path = nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), '')
+from auth.users users
+where
+  profiles.id = users.id
+  and profiles.avatar_path is null
+  and nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), '') is not null;
+
 create unique index if not exists profiles_nickname_unique_idx
 on public.profiles (lower(nickname))
 where nickname is not null and btrim(nickname) <> '';
@@ -32,11 +40,10 @@ create table if not exists public.profile_friendships (
   constraint profile_friendships_not_self check (requester_id <> addressee_id)
 );
 
-create unique index if not exists profile_friendships_pair_unique_idx
-on public.profile_friendships (
-  least(requester_id, addressee_id),
-  greatest(requester_id, addressee_id)
-);
+drop index if exists public.profile_friendships_pair_unique_idx;
+
+create unique index if not exists profile_friendships_direction_unique_idx
+on public.profile_friendships (requester_id, addressee_id);
 
 alter table public.profile_friendships enable row level security;
 
@@ -72,18 +79,21 @@ begin
     id,
     email,
     display_name,
+    avatar_path,
     nickname
   )
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data ->> 'display_name', split_part(coalesce(new.email, ''), '@', 1)),
+    nullif(btrim(new.raw_user_meta_data ->> 'avatar_path'), ''),
     nullif(btrim(new.raw_user_meta_data ->> 'nickname'), '')
   )
   on conflict (id) do update
   set
     email = excluded.email,
     display_name = coalesce(excluded.display_name, public.profiles.display_name),
+    avatar_path = coalesce(excluded.avatar_path, public.profiles.avatar_path),
     nickname = coalesce(excluded.nickname, public.profiles.nickname);
 
   return new;
@@ -106,15 +116,16 @@ as $$
     p.id,
     p.display_name,
     p.nickname,
-    p.avatar_path,
+    coalesce(p.avatar_path, nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), '')) as avatar_path,
     exists (
       select 1
       from public.profile_friendships friendship
       where
-        (friendship.requester_id = auth.uid() and friendship.addressee_id = p.id)
-        or (friendship.addressee_id = auth.uid() and friendship.requester_id = p.id)
+        friendship.requester_id = auth.uid()
+        and friendship.addressee_id = p.id
     ) as is_friend
   from public.profiles p
+  left join auth.users users on users.id = p.id
   where
     auth.uid() is not null
     and p.id <> auth.uid()
@@ -169,15 +180,64 @@ begin
 end;
 $$;
 
+drop function if exists public.get_friend_summary();
+
 create or replace function public.get_friend_summary()
 returns table (
-  friend_count bigint
+  follower_count bigint,
+  following_count bigint
 )
 language sql
 security definer
 set search_path = public
 as $$
-  select count(*)::bigint as friend_count
+  select
+    count(*) filter (where friendship.addressee_id = auth.uid())::bigint as follower_count,
+    count(*) filter (where friendship.requester_id = auth.uid())::bigint as following_count
   from public.profile_friendships friendship
   where friendship.requester_id = auth.uid() or friendship.addressee_id = auth.uid();
 $$;
+
+create or replace function public.get_profile_connections(connection_kind text)
+returns table (
+  id uuid,
+  display_name text,
+  nickname text,
+  avatar_path text,
+  is_friend boolean
+)
+language sql
+security definer
+set search_path = public
+as $$
+  with connection_profiles as (
+    select
+      case
+        when connection_kind = 'followers' then friendship.requester_id
+        else friendship.addressee_id
+      end as profile_id
+    from public.profile_friendships friendship
+    where
+      (connection_kind = 'followers' and friendship.addressee_id = auth.uid())
+      or (connection_kind = 'following' and friendship.requester_id = auth.uid())
+  )
+  select
+    profiles.id,
+    profiles.display_name,
+    profiles.nickname,
+    coalesce(profiles.avatar_path, nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), '')) as avatar_path,
+    exists (
+      select 1
+      from public.profile_friendships following
+      where
+        following.requester_id = auth.uid()
+        and following.addressee_id = profiles.id
+    ) as is_friend
+  from connection_profiles
+  join public.profiles profiles on profiles.id = connection_profiles.profile_id
+  left join auth.users users on users.id = profiles.id
+  where auth.uid() is not null
+  order by profiles.display_name nulls last, profiles.nickname nulls last, profiles.created_at desc;
+$$;
+
+notify pgrst, 'reload schema';

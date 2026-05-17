@@ -62,6 +62,11 @@ import {
   hydrateRecentMeasurementSnapshots,
   hydrateReservationPageData,
 } from '../lib/tasteBuddySupabase';
+import { resolvePublicMediaPath } from '../lib/mediaAssets';
+import type {
+  DiningFriendProfile,
+  ProfileConnectionKind,
+} from '../lib/supabase';
 
 interface ProfileStat {
   color: string;
@@ -74,7 +79,6 @@ export interface ProfileIdentityData {
   avatarImageDataUrl?: string | null;
   avatarStyle?: CSSProperties;
   displayName?: string | null;
-  friendCount?: number;
   followerCount?: number;
   followingCount?: number;
   initials?: string | null;
@@ -106,6 +110,17 @@ function formatChefName(name: string) {
 
 function formatSocialCount(count: number | null | undefined) {
   return Math.max(0, count ?? 0).toLocaleString('ko-KR');
+}
+
+function getConnectionProfileInitials(friend: DiningFriendProfile) {
+  const source = friend.displayName?.trim() || friend.nickname.trim() || 'TB';
+  const characters = Array.from(source.replace(/^@+/, ''));
+
+  return characters.slice(0, 2).join('').toUpperCase() || 'TB';
+}
+
+function getConnectionProfileAvatarSrc(friend: DiningFriendProfile) {
+  return resolvePublicMediaPath(friend.avatarPath);
 }
 
 function deriveFavoriteChefs(reservations: ReservationRecord[]): FavoriteChef[] {
@@ -259,6 +274,14 @@ interface ProfilePageProps {
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
   onOpenProfileSettings?: () => void;
+  onAddFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
+  activeConnectionView?: ProfileConnectionKind | null;
+  onConnectionViewChange?: (kind: ProfileConnectionKind | null) => void;
+  onLoadConnections?: (kind: ProfileConnectionKind) => Promise<{
+    ok: boolean;
+    friends: DiningFriendProfile[];
+    message: string;
+  }>;
   hasUnreadNotifications?: boolean;
 }
 
@@ -273,6 +296,10 @@ export default function ProfilePage({
   onOpenNotifications,
   onOpenMenu,
   onOpenProfileSettings,
+  onAddFriend,
+  activeConnectionView = null,
+  onConnectionViewChange,
+  onLoadConnections,
   hasUnreadNotifications,
 }: ProfilePageProps) {
   const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
@@ -284,8 +311,11 @@ export default function ProfilePage({
   const initials = profileIdentity?.initials?.trim() || DEFAULT_PROFILE_IDENTITY.initials;
   const followerCount = profileIdentity?.followerCount ?? DEFAULT_PROFILE_IDENTITY.followerCount;
   const followingCount = profileIdentity?.followingCount ?? DEFAULT_PROFILE_IDENTITY.followingCount;
-  const friendCount = profileIdentity?.friendCount ?? 0;
   const avatarStyle = profileIdentity?.avatarStyle ?? DEFAULT_AVATAR_STYLE;
+  const [connectionProfiles, setConnectionProfiles] = useState<DiningFriendProfile[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
+  const [addingConnectionId, setAddingConnectionId] = useState<string | null>(null);
   const [favoriteChefs, setFavoriteChefs] = useState<FavoriteChef[]>([]);
   const [stats, setStats] = useState<ProfileStat[]>(() => deriveProfileStats([measurementSnapshot], 0, null));
 
@@ -323,6 +353,145 @@ export default function ProfilePage({
       isCancelled = true;
     };
   }, [measurementSnapshot]);
+
+  useEffect(() => {
+    if (!activeConnectionView || !onLoadConnections) {
+      return;
+    }
+
+    let isCancelled = false;
+    setConnectionStatus('loading');
+    setConnectionMessage(null);
+
+    void (async () => {
+      const result = await onLoadConnections(activeConnectionView);
+
+      if (isCancelled) {
+        return;
+      }
+
+      setConnectionProfiles(result.friends);
+      setConnectionStatus(result.ok ? 'success' : 'error');
+      setConnectionMessage(result.ok ? null : result.message);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeConnectionView, onLoadConnections]);
+
+  const openConnectionView = (kind: ProfileConnectionKind) => {
+    onConnectionViewChange?.(kind);
+    setConnectionProfiles([]);
+    setConnectionStatus('idle');
+    setConnectionMessage(null);
+  };
+
+  const handleAddConnectionFriend = async (friend: DiningFriendProfile) => {
+    if (!onAddFriend) {
+      return;
+    }
+
+    setAddingConnectionId(friend.id);
+    const result = await onAddFriend(friend);
+    setAddingConnectionId(null);
+    setConnectionMessage(result.message);
+
+    if (result.ok) {
+      setConnectionProfiles((currentProfiles) =>
+        currentProfiles.map((item) =>
+          item.id === friend.id ? { ...item, isFriend: true } : item,
+        ),
+      );
+    }
+  };
+
+  if (activeConnectionView) {
+    const connectionTitle = activeConnectionView === 'followers' ? '팔로워' : '팔로잉';
+    const emptyDescription =
+      activeConnectionView === 'followers'
+        ? '아직 나를 팔로우한 다이닝 친구가 없습니다.'
+        : '아직 내가 팔로우한 다이닝 친구가 없습니다.';
+
+    return (
+      <div className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
+        <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-20 pt-5">
+          <div className="flex flex-col gap-3">
+            {connectionStatus === 'loading' ? (
+              <div className="rounded-[20px] bg-white p-4 text-[13px] font-semibold text-[var(--tb-color-text-muted)]">
+                {connectionTitle} 목록을 불러오고 있어요.
+              </div>
+            ) : null}
+
+            {connectionStatus !== 'loading' && connectionProfiles.length === 0 ? (
+              <div className="rounded-[20px] bg-white p-4">
+                <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                  {connectionTitle} 목록이 비어 있어요
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                  {connectionMessage ?? emptyDescription}
+                </p>
+              </div>
+            ) : null}
+
+            {connectionProfiles.map((friend) => {
+              const avatarImageSrc = getConnectionProfileAvatarSrc(friend);
+
+              return (
+                <div
+                  key={friend.id}
+                  className="flex items-center gap-3 rounded-[20px] bg-white p-3"
+                >
+                  <div
+                    className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center overflow-hidden rounded-full"
+                    style={avatarImageSrc ? undefined : DEFAULT_AVATAR_STYLE}
+                    role="img"
+                    aria-label={friend.displayName || friend.nickname || 'Taste Buddy Guest'}
+                  >
+                    {avatarImageSrc ? (
+                      <img
+                        alt=""
+                        className="size-full object-cover"
+                        src={avatarImageSrc}
+                      />
+                    ) : (
+                      <span className="text-[13px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.22)]">
+                        {getConnectionProfileInitials(friend)}
+                      </span>
+                    )}
+                    <div className="pointer-events-none absolute inset-0 rounded-full border border-white/60 shadow-[inset_0_0_0_1px_rgba(15,15,15,0.08)]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                      {friend.displayName || 'Taste Buddy Guest'}
+                    </p>
+                    <p className="mt-[2px] truncate text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
+                      {friend.nickname ? `@${friend.nickname}` : '닉네임 미설정'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleAddConnectionFriend(friend)}
+                    disabled={friend.isFriend || addingConnectionId === friend.id}
+                    className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-[var(--tb-color-border-default)] px-3 text-[11px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)] disabled:opacity-55"
+                  >
+                    <UserPlus size={ICON_TOKENS.size.sm} />
+                    <span>
+                      {friend.isFriend
+                        ? '팔로잉'
+                        : addingConnectionId === friend.id
+                          ? '추가 중'
+                          : '팔로우'}
+                    </span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
@@ -371,24 +540,26 @@ export default function ProfilePage({
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex min-w-[64px] flex-col">
+                  <button
+                    type="button"
+                    onClick={() => openConnectionView('followers')}
+                    className="flex min-w-[64px] flex-col rounded-[8px] text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                  >
                     <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                       {formatSocialCount(followerCount)}
                     </span>
                     <span className="text-[11px] text-[var(--tb-color-text-muted)]">팔로워</span>
-                  </div>
-                  <div className="flex min-w-[64px] flex-col">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openConnectionView('following')}
+                    className="flex min-w-[64px] flex-col rounded-[8px] text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                  >
                     <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                       {formatSocialCount(followingCount)}
                     </span>
                     <span className="text-[11px] text-[var(--tb-color-text-muted)]">팔로잉</span>
-                  </div>
-                  <div className="flex min-w-[64px] flex-col">
-                    <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                      {formatSocialCount(friendCount)}
-                    </span>
-                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">친구</span>
-                  </div>
+                  </button>
                   <button
                     type="button"
                     onClick={onOpenProfileSettings}
