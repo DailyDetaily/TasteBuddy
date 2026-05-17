@@ -1,25 +1,14 @@
-# Taste Buddy Scoped Instructions
+# Taste Buddy Codex Rules
 
-이 저장소는 크게 두 층으로 나뉜다.
+Taste Buddy는 미각 프로필을 해석해 다음 다이닝 경험을 개인화하는 premium service다.
 
-1. `src/`의 React 앱
-2. `scripts/`, `docs/content/`, `supabase/`의 콘텐츠/데이터 파이프라인
-
-공통 source of truth:
-
-- 제품 경험: [`src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](./src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
-- 시각 시스템: [`DESIGN.md`](./DESIGN.md)
-- 구조와 파일 배치: [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`CONTRIBUTING.md`](./CONTRIBUTING.md)
-
-경로별로 더 작은 지침을 우선 적용한다.
-
-- `src/pages/*` 작업: [`src/pages/AGENTS.md`](./src/pages/AGENTS.md)
-- `src/components/*` 작업: [`src/components/AGENTS.md`](./src/components/AGENTS.md)
-- `src/components/system/*` 작업: [`src/components/system/AGENTS.md`](./src/components/system/AGENTS.md)
-- `src/components/ui/*` 작업: [`src/components/ui/AGENTS.md`](./src/components/ui/AGENTS.md)
-
-기본 가드레일:
-
-- generated/artifact 폴더에서 작업을 시작하지 않는다: `dist/`, `tmp/`, `test-results/`, `.tmp-playwright/`, `node_modules/`
-- app UI와 content/data pipeline 변경을 혼동하지 않는다
-- 디자인 토큰이나 공용 시각 규칙이 바뀌면 `DESIGN.md`, `src/styles/design-system.css`, `src/constants/designTokens.ts`까지 같이 확인한다
+- UX는 calm, premium, precise. Raw data보다 해석과 다음 행동을 먼저 보여준다.
+- 의료/실험실/일반 예약/취향 테스트처럼 보이는 방향은 피한다.
+- 하드웨어는 optional layer, 셰프 가이드는 존중하는 톤으로 쓴다.
+- 필요 시 제품/디자인/구조 기준은 `src/guidelines/...`, `DESIGN.md`, `docs/AI_DESIGN_SYSTEM.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`를 확인한다.
+- 경로별 `AGENTS.md`가 있으면 우선 적용한다.
+- UI는 기존 `src/components/system/`과 디자인 토큰을 먼저 재사용한다.
+- `src/` 앱 UI와 `scripts/`, `docs/content/`, `supabase/` 데이터 파이프라인을 구분한다.
+- 토큰 절약을 위해 브라우저 자동화는 꼭 필요할 때만 쓰고, 파일은 필요한 범위만 읽으며, 큰 diff/log는 제한하고, 문서-only 변경에는 빌드를 생략한다.
+- `dist/`, `tmp/`, `test-results/`, `.tmp-playwright/`, `node_modules/`에서 작업을 시작하지 않는다.
+- 가능하면 변경 후 `npm run build`.

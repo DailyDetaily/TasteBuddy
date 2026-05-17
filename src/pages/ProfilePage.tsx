@@ -426,7 +426,9 @@ export default function ProfilePage({
             {connectionStatus !== 'loading' && connectionProfiles.length === 0 ? (
               <div className="rounded-[20px] bg-white p-4">
                 <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
-                  {connectionTitle} 목록이 비어 있어요
+                  {connectionStatus === 'error'
+                    ? `${connectionTitle} 목록을 불러오지 못했어요`
+                    : `${connectionTitle} 목록이 비어 있어요`}
                 </p>
                 <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                   {connectionMessage ?? emptyDescription}

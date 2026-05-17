@@ -21,12 +21,20 @@ where
   and ranked_auth_profiles.nickname_rank = 1;
 
 update public.profiles profiles
-set avatar_path = nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), '')
+set avatar_path = coalesce(
+  nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), ''),
+  nullif(btrim(users.raw_user_meta_data ->> 'avatar_url'), ''),
+  nullif(btrim(users.raw_user_meta_data ->> 'picture'), '')
+)
 from auth.users users
 where
   profiles.id = users.id
   and profiles.avatar_path is null
-  and nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), '') is not null;
+  and coalesce(
+    nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), ''),
+    nullif(btrim(users.raw_user_meta_data ->> 'avatar_url'), ''),
+    nullif(btrim(users.raw_user_meta_data ->> 'picture'), '')
+  ) is not null;
 
 create unique index if not exists profiles_nickname_unique_idx
 on public.profiles (lower(nickname))
@@ -86,7 +94,11 @@ begin
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data ->> 'display_name', split_part(coalesce(new.email, ''), '@', 1)),
-    nullif(btrim(new.raw_user_meta_data ->> 'avatar_path'), ''),
+    coalesce(
+      nullif(btrim(new.raw_user_meta_data ->> 'avatar_path'), ''),
+      nullif(btrim(new.raw_user_meta_data ->> 'avatar_url'), ''),
+      nullif(btrim(new.raw_user_meta_data ->> 'picture'), '')
+    ),
     nullif(btrim(new.raw_user_meta_data ->> 'nickname'), '')
   )
   on conflict (id) do update
@@ -116,7 +128,12 @@ as $$
     p.id,
     p.display_name,
     p.nickname,
-    coalesce(p.avatar_path, nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), '')) as avatar_path,
+    coalesce(
+      p.avatar_path,
+      nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), ''),
+      nullif(btrim(users.raw_user_meta_data ->> 'avatar_url'), ''),
+      nullif(btrim(users.raw_user_meta_data ->> 'picture'), '')
+    ) as avatar_path,
     exists (
       select 1
       from public.profile_friendships friendship
@@ -225,7 +242,12 @@ as $$
     profiles.id,
     profiles.display_name,
     profiles.nickname,
-    coalesce(profiles.avatar_path, nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), '')) as avatar_path,
+    coalesce(
+      profiles.avatar_path,
+      nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), ''),
+      nullif(btrim(users.raw_user_meta_data ->> 'avatar_url'), ''),
+      nullif(btrim(users.raw_user_meta_data ->> 'picture'), '')
+    ) as avatar_path,
     exists (
       select 1
       from public.profile_friendships following

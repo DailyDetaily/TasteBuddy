@@ -298,6 +298,12 @@ function isMissingSupabaseRpcError(error: { message?: string }) {
   return error.message?.toLowerCase().includes('could not find the function') ?? false;
 }
 
+function getSupabaseMetadataAvatarPath(metadata: Record<string, unknown> | null | undefined) {
+  const avatarPath = metadata?.avatar_path ?? metadata?.avatar_url ?? metadata?.picture;
+
+  return typeof avatarPath === 'string' && avatarPath.trim() ? avatarPath.trim() : null;
+}
+
 export async function updateSupabaseProfileIdentity(input: {
   displayName: string;
   nickname: string;
@@ -409,9 +415,27 @@ export async function hydrateSupabaseProfileIdentity() {
     };
   }
 
+  const metadataAvatarPath = getSupabaseMetadataAvatarPath(session.user.user_metadata);
+  const avatarPath =
+    typeof data?.avatar_path === 'string' && data.avatar_path.trim()
+      ? data.avatar_path
+      : metadataAvatarPath;
+
+  if (!data?.avatar_path && metadataAvatarPath) {
+    void supabase
+      .from('profiles')
+      .update({ avatar_path: metadataAvatarPath })
+      .eq('id', userId)
+      .then(({ error: syncError }) => {
+        if (syncError) {
+          console.warn('Failed to sync Supabase profile avatar metadata.', syncError);
+        }
+      });
+  }
+
   return {
     ok: true,
-    avatarPath: typeof data?.avatar_path === 'string' ? data.avatar_path : null,
+    avatarPath,
     displayName: typeof data?.display_name === 'string' ? data.display_name : null,
     nickname: typeof data?.nickname === 'string' ? data.nickname : null,
     message: '프로필 정보를 불러왔습니다.',
