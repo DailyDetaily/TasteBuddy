@@ -223,6 +223,7 @@ export default function ProfileIdentitySheetContent({
                 <img
                   alt=""
                   className="size-full object-cover"
+                  referrerPolicy="no-referrer"
                   src={avatarImageDataUrl}
                 />
               ) : (

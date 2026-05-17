@@ -415,7 +415,12 @@ function DishFeedbackCard({
             style={avatarImageSrc ? undefined : avatarStyle}
           >
             {avatarImageSrc ? (
-              <img alt="" className="size-full object-cover" src={avatarImageSrc} />
+              <img
+                alt=""
+                className="size-full object-cover"
+                referrerPolicy="no-referrer"
+                src={avatarImageSrc}
+              />
             ) : (
               <span className="text-[13px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]">
                 {initials}

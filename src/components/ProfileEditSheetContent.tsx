@@ -424,6 +424,7 @@ export default function ProfileEditSheetContent({
                 <img
                   alt=""
                   className="size-full object-cover"
+                  referrerPolicy="no-referrer"
                   src={draftAvatarImageSrc}
                 />
               ) : (
