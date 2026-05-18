@@ -16,6 +16,7 @@ import RestaurantDetailPage, {
 } from './pages/RestaurantDetailPage';
 import ReservationPage from './pages/ReservationPage';
 import ProfilePage from './pages/ProfilePage';
+import SavedRestaurantListPage from './pages/SavedRestaurantListPage';
 import SplashScreen from './pages/SplashScreen';
 import { AuthEntryForm } from './pages/AuthEntryScreen';
 import OnboardingScreen from './pages/OnboardingScreen';
@@ -37,6 +38,7 @@ import BottomSheetShell, {
   BottomSheetCloseButton,
   BottomSheetIconButton,
 } from './components/system/BottomSheetShell';
+import ActionOverlayCard from './components/system/ActionOverlayCard';
 import ProfileIdentitySheetContent from './components/ProfileIdentitySheetContent';
 import ProfileEditSheetContent from './components/ProfileEditSheetContent';
 import ProfileSetupSheetContent from './components/ProfileSetupSheetContent';
@@ -91,6 +93,7 @@ import {
   type RestaurantContentCatalog,
 } from './lib/tasteBuddySupabase';
 import HomeUnifiedSearch from './components/home/HomeUnifiedSearch';
+import type { RestaurantBookmarkRecord } from './components/restaurant/RestaurantBookmarkSheet';
 import {
   RESERVATION_CATALOG,
   type ReservationRecord,
@@ -126,7 +129,7 @@ import {
   createUserTasteAccentStyle,
   resolveUserTasteAccent,
 } from './lib/userTasteAccent';
-import { MOTION_TOKENS, TASTE_TOKENS } from './constants/designTokens';
+import { ICON_TOKENS, MOTION_TOKENS, TASTE_TOKENS } from './constants/designTokens';
 import {
   buildTasteSurveyMeasurementRawPayload,
   hasTasteSurveyRespondentContext,
@@ -166,6 +169,7 @@ type TasteSurveyFlowStep =
   | 'result';
 interface MainNavigationLocation {
   activeTab: TabType;
+  isSavedRestaurantListOpen: boolean;
   selectedRestaurantDetail: RestaurantDetailViewModel | null;
 }
 const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
@@ -772,6 +776,12 @@ function MainApp() {
     shouldStartFromOnboarding ? 'onboarding' : 'splash',
   );
   const [activeTab, setActiveTab] = useState<TabType>('home');
+  const [tabResetKeys, setTabResetKeys] = useState<Record<TabType, number>>({
+    analysis: 0,
+    home: 0,
+    profile: 0,
+    reservation: 0,
+  });
   const [measurementEntryPoint, setMeasurementEntryPoint] =
     useState<MeasurementEntryPoint>('initial');
   const [measurementReturnTab, setMeasurementReturnTab] = useState<TabType>('home');
@@ -848,6 +858,8 @@ function MainApp() {
   const [profileFollowerCount, setProfileFollowerCount] = useState(0);
   const [profileFollowingCount, setProfileFollowingCount] = useState(0);
   const [isProfileAvatarPreparing, setIsProfileAvatarPreparing] = useState(false);
+  const [isProfileAvatarEditorOpen, setIsProfileAvatarEditorOpen] = useState(false);
+  const [isProfileEditDeleteConfirmOpen, setIsProfileEditDeleteConfirmOpen] = useState(false);
   const [isProfileSetupSheetOpen, setIsProfileSetupSheetOpen] = useState(false);
   const [profileSetupStatus, setProfileSetupStatus] = useState<
     'idle' | 'submitting' | 'success' | 'error'
@@ -860,6 +872,7 @@ function MainApp() {
   const [isTasteSurveySheetOpen, setIsTasteSurveySheetOpen] = useState(false);
   const [profileConnectionView, setProfileConnectionView] =
     useState<ProfileConnectionKind | null>(null);
+  const [isSavedRestaurantListOpen, setIsSavedRestaurantListOpen] = useState(false);
 
   // Overlay states
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -1321,6 +1334,7 @@ function MainApp() {
 
   const getCurrentMainNavigationLocation = (): MainNavigationLocation => ({
     activeTab,
+    isSavedRestaurantListOpen,
     selectedRestaurantDetail,
   });
 
@@ -1329,6 +1343,7 @@ function MainApp() {
     right: MainNavigationLocation,
   ) =>
     left.activeTab === right.activeTab &&
+    left.isSavedRestaurantListOpen === right.isSavedRestaurantListOpen &&
     left.selectedRestaurantDetail?.id === right.selectedRestaurantDetail?.id;
 
   const pushCurrentMainNavigationLocation = () => {
@@ -1351,6 +1366,7 @@ function MainApp() {
       has_restaurant_detail: Boolean(location.selectedRestaurantDetail),
     });
     setIsRestaurantDetailFeedbackMapView(false);
+    setIsSavedRestaurantListOpen(location.isSavedRestaurantListOpen);
     setSelectedRestaurantDetail(location.selectedRestaurantDetail);
     setActiveTab(location.activeTab);
   };
@@ -1365,6 +1381,7 @@ function MainApp() {
 
     restoreMainNavigationLocation({
       activeTab: fallbackTab,
+      isSavedRestaurantListOpen: false,
       selectedRestaurantDetail: null,
     });
   };
@@ -1380,6 +1397,7 @@ function MainApp() {
       from_restaurant_detail: Boolean(selectedRestaurantDetail),
     });
     pushCurrentMainNavigationLocation();
+    setIsSavedRestaurantListOpen(false);
     setSelectedRestaurantDetail(null);
     setActiveTab(tab);
   };
@@ -1395,8 +1413,42 @@ function MainApp() {
     setSelectedRestaurantDetail(restaurant);
   };
 
+  const handleOpenSavedRestaurantList = () => {
+    trackEvent('saved_restaurant_list_open', {
+      active_tab: activeTab,
+    });
+    setProfileConnectionView(null);
+    setIsSavedRestaurantListOpen(true);
+  };
+
+  const handleOpenSavedRestaurantDetail = (bookmark: RestaurantBookmarkRecord) => {
+    openRestaurantDetail(
+      createRestaurantDetailFromFavoriteChef({
+        image: null,
+        matchRate: 70,
+        name: bookmark.chefName,
+        restaurant: bookmark.restaurantName,
+        taste: '감칠맛',
+      }),
+    );
+  };
+
   const handleTabChange = (tab: TabType) => {
-    navigateToTab(tab);
+    trackEvent('tab_select', {
+      from_tab: activeTab,
+      to_tab: tab,
+      from_restaurant_detail: Boolean(selectedRestaurantDetail),
+    });
+    setTabResetKeys((current) => ({
+      ...current,
+      [tab]: current[tab] + 1,
+    }));
+    setProfileConnectionView(null);
+    setIsSavedRestaurantListOpen(false);
+    setIsReservationFeedbackMapView(false);
+    setIsRestaurantDetailFeedbackMapView(false);
+    setSelectedRestaurantDetail(null);
+    setActiveTab(tab);
   };
 
   const handleOpenProfileIdentitySheet = () => {
@@ -1412,12 +1464,16 @@ function MainApp() {
     setProfileEditStatus('idle');
     setProfileEditMessage(null);
     setIsProfileAvatarPreparing(false);
+    setIsProfileAvatarEditorOpen(false);
+    setIsProfileEditDeleteConfirmOpen(false);
     setIsProfileIdentitySheetOpen(false);
     setIsProfileEditSheetOpen(true);
   };
 
   const handleBackToProfileIdentitySheet = () => {
     trackEvent('profile_edit_back');
+    setIsProfileAvatarEditorOpen(false);
+    setIsProfileEditDeleteConfirmOpen(false);
     setIsProfileEditSheetOpen(false);
     setIsProfileIdentitySheetOpen(true);
   };
@@ -1796,7 +1852,7 @@ function MainApp() {
     if (!input.displayName.trim() && !input.nickname.trim()) {
       trackEvent('profile_setup_submit_error', { reason: 'missing_identity' });
       setProfileSetupStatus('error');
-      setProfileSetupMessage('이름이나 닉네임 중 하나는 입력해 주세요.');
+      setProfileSetupMessage('이름이나 버디네임 중 하나는 입력해 주세요.');
       return;
     }
 
@@ -2159,6 +2215,7 @@ function MainApp() {
 
     setIsDeletingAccount(false);
     setIsDeleteAccountConfirmOpen(false);
+    setIsProfileEditDeleteConfirmOpen(false);
 
     if (!result.ok) {
       setAuthProfileStatus('error');
@@ -2237,13 +2294,19 @@ function MainApp() {
     (selectedRestaurantDetail !== null || activeTab !== 'reservation' || isReservationRootView);
   const shouldShowMainTopShell = shouldShowMainShell && selectedRestaurantDetail === null;
   const shouldShowMainBottomShell =
-    shouldShowMainShell && !isReservationFeedbackMapView && !isRestaurantDetailFeedbackMapView;
+    shouldShowMainShell &&
+    !isSavedRestaurantListOpen &&
+    !isReservationFeedbackMapView &&
+    !isRestaurantDetailFeedbackMapView;
   const profileConnectionTopBarTitle =
     activeTab === 'profile' && profileConnectionView
       ? profileConnectionView === 'followers'
         ? '팔로워'
         : '팔로잉'
       : null;
+  const profileSavedListTopBarTitle =
+    activeTab === 'profile' && isSavedRestaurantListOpen ? '저장리스트' : null;
+  const mainTopBarTitle = profileSavedListTopBarTitle ?? profileConnectionTopBarTitle;
   const shouldLetStatusBarShowContent =
     appState === 'main' && (isReservationFeedbackMapView || isRestaurantDetailFeedbackMapView);
   const usesPageViewportBackground =
@@ -2265,6 +2328,21 @@ function MainApp() {
     () => createUserTasteAccentStyle(resolveUserTasteAccent(latestTasteMeasurementSnapshot)),
     [latestTasteMeasurementSnapshot],
   );
+
+  useEffect(() => {
+    const rootElement = document.documentElement;
+    const accentEntries = Object.entries(userTasteAccentStyle);
+
+    accentEntries.forEach(([propertyName, propertyValue]) => {
+      rootElement.style.setProperty(propertyName, String(propertyValue));
+    });
+
+    return () => {
+      accentEntries.forEach(([propertyName]) => {
+        rootElement.style.removeProperty(propertyName);
+      });
+    };
+  }, [userTasteAccentStyle]);
 
   useEffect(() => {
     const rootElement = document.documentElement;
@@ -2458,10 +2536,17 @@ function MainApp() {
               <div className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center">
                 <div className="pointer-events-auto w-full max-w-[1440px]">
                   <TopAppBar
-                    appearance={profileConnectionTopBarTitle ? 'solid' : 'default'}
-                    showBack={Boolean(profileConnectionTopBarTitle)}
-                    title={profileConnectionTopBarTitle ?? undefined}
-                    onBack={() => setProfileConnectionView(null)}
+                    appearance={mainTopBarTitle ? 'solid' : 'default'}
+                    showBack={Boolean(mainTopBarTitle)}
+                    title={mainTopBarTitle ?? undefined}
+                    onBack={() => {
+                      if (profileSavedListTopBarTitle) {
+                        setIsSavedRestaurantListOpen(false);
+                        return;
+                      }
+
+                      setProfileConnectionView(null);
+                    }}
                     onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
                     onOpenSearch={handleOpenGlobalSearch}
                     onOpenNotifications={overlayProps.onOpenNotifications}
@@ -2473,7 +2558,15 @@ function MainApp() {
                     userAvatarImageSrc={profileAvatarImageSrc}
                     userAvatarStyle={userAvatarStyle}
                     rightActions={
-                      profileConnectionTopBarTitle ? (
+                      profileSavedListTopBarTitle ? (
+                        <div
+                          aria-hidden="true"
+                          style={{
+                            width: ICON_TOKENS.container.lg,
+                            height: ICON_TOKENS.container.lg,
+                          }}
+                        />
+                      ) : profileConnectionTopBarTitle ? (
                         <button
                           type="button"
                           onClick={handleOpenProfileIdentitySheet}
@@ -2520,6 +2613,7 @@ function MainApp() {
             <>
               <div className={activeTab === 'home' ? 'h-full w-full' : 'hidden'}>
                 <Home
+                  key={`home-${tabResetKeys.home}`}
                   hasMeasurementData={hasMeasurementData}
                   measurementSnapshot={latestTasteMeasurementSnapshot}
                   starterGuidance={latestRestaurantReadyGuidance}
@@ -2545,6 +2639,7 @@ function MainApp() {
               >
                 {latestTasteMeasurementSnapshot ? (
                   <AnalysisPage
+                    key={`analysis-${tabResetKeys.analysis}`}
                     isActive={activeTab === 'analysis'}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     onOpenRestaurantDetail={(menu) =>
@@ -2564,6 +2659,7 @@ function MainApp() {
               >
                 {latestTasteMeasurementSnapshot ? (
                   <ReservationPage
+                    key={`reservation-${tabResetKeys.reservation}`}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     starterGuidance={latestRestaurantReadyGuidance}
                     userAvatarImageSrc={profileAvatarImageSrc}
@@ -2587,8 +2683,18 @@ function MainApp() {
                     : 'hidden'
                 }
               >
-                {latestTasteMeasurementSnapshot ? (
+                {latestTasteMeasurementSnapshot && isSavedRestaurantListOpen ? (
+                  <SavedRestaurantListPage
+                    catalog={globalSearchCatalog}
+                    fallbackRestaurants={globalSearchReservations}
+                    onOpenFallbackRestaurant={(reservation) =>
+                      openRestaurantDetail(createRestaurantDetailFromReservation(reservation))
+                    }
+                    onOpenRestaurant={handleOpenSavedRestaurantDetail}
+                  />
+                ) : latestTasteMeasurementSnapshot ? (
                   <ProfilePage
+                    key={`profile-${tabResetKeys.profile}`}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     profileIdentity={{
                       avatarImageDataUrl: profileAvatarImageSrc,
@@ -2608,6 +2714,7 @@ function MainApp() {
                     onOpenRestaurantDetail={(chef) =>
                       openRestaurantDetail(createRestaurantDetailFromFavoriteChef(chef))
                     }
+                    onOpenSavedList={handleOpenSavedRestaurantList}
                     onStartMeasurement={() => handleStartMeasurementFromMain('profile')}
                     onNavigateToReservation={() => navigateToTab('reservation')}
                     onOpenProfileSettings={handleOpenProfileIdentitySheet}
@@ -2707,41 +2814,111 @@ function MainApp() {
 
         <BottomSheetShell
           open={isProfileEditSheetOpen}
-          onOpenChange={setIsProfileEditSheetOpen}
+          dismissible={!isProfileAvatarEditorOpen}
+          onOpenChange={(open) => {
+            setIsProfileEditSheetOpen(open);
+            if (!open) {
+              setIsProfileAvatarEditorOpen(false);
+              setIsProfileEditDeleteConfirmOpen(false);
+            }
+          }}
           onDrag={(_, percentageDragged) => {
+            if (isProfileAvatarEditorOpen) {
+              return;
+            }
+
             applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
           }}
           onRelease={(_, open) => {
+            if (isProfileAvatarEditorOpen) {
+              return;
+            }
+
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName={`${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-page)]`}
-          bodyClassName="overflow-y-auto px-5 pb-1 pt-2"
+          overlayClassName={isProfileAvatarEditorOpen ? "pointer-events-none !bg-transparent" : undefined}
+          contentClassName={
+            isProfileAvatarEditorOpen
+              ? "!fixed !bottom-0 !left-0 !right-0 !top-0 !z-[90] !mx-0 !mb-0 !mt-0 !h-[var(--tb-viewport-height,100dvh)] !max-h-none !w-screen !max-w-none !translate-y-0 !transform-none !rounded-none !border-0 !bg-[var(--tb-color-bg-page)] !shadow-none data-[vaul-drawer-direction=bottom]:!bottom-0 data-[vaul-drawer-direction=bottom]:!left-0 data-[vaul-drawer-direction=bottom]:!right-0 data-[vaul-drawer-direction=bottom]:!top-0 data-[vaul-drawer-direction=bottom]:!mt-0 data-[vaul-drawer-direction=bottom]:!max-h-none data-[vaul-drawer-direction=bottom]:!rounded-none data-[vaul-drawer-direction=bottom]:!border-t-0 [&>div:first-child]:hidden"
+              : `${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-page)]`
+          }
+          bodyClassName={
+            isProfileAvatarEditorOpen
+              ? "relative overflow-hidden px-0 pb-0 pt-0"
+              : "overflow-y-auto px-5 pb-1 pt-2"
+          }
           headerCenter={
-            <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
-              프로필 편집
-            </h2>
+            isProfileAvatarEditorOpen
+              ? undefined
+              : (
+                <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+                  프로필 편집
+                </h2>
+              )
           }
           headerStart={
-            <BottomSheetIconButton
-              ariaLabel="프로필로 돌아가기"
-              icon={ChevronLeft}
-              onClick={handleBackToProfileIdentitySheet}
-            />
+            isProfileAvatarEditorOpen
+              ? undefined
+              : (
+                <BottomSheetIconButton
+                  ariaLabel="프로필로 돌아가기"
+                  icon={ChevronLeft}
+                  onClick={handleBackToProfileIdentitySheet}
+                />
+              )
           }
-          headerEnd={<BottomSheetCloseButton />}
+          headerEnd={isProfileAvatarEditorOpen ? undefined : <BottomSheetCloseButton />}
           footer={
-            <Button
-              className="h-12 w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] hover:bg-[var(--tb-color-text-secondary)]"
-              disabled={profileEditStatus === 'submitting' || isProfileAvatarPreparing}
-              form="profile-edit-sheet-form"
-              type="submit"
-            >
-              {isProfileAvatarPreparing
-                ? '사진 준비 중'
-                : profileEditStatus === 'submitting'
-                  ? '저장 중'
-                  : '저장'}
-            </Button>
+            isProfileAvatarEditorOpen
+              ? undefined
+              : (
+                <div className="flex w-full flex-col gap-2">
+                  <Button
+                    className="h-12 w-full rounded-[var(--tb-radius-12)] bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:bg-[#df2b4d]"
+                    disabled={profileEditStatus === 'submitting' || isProfileAvatarPreparing || isDeletingAccount}
+                    type="button"
+                    onClick={() => {
+                      trackEvent('profile_edit_delete_account_request');
+                      setIsProfileEditDeleteConfirmOpen(true);
+                    }}
+                  >
+                    내 계정 삭제하기
+                  </Button>
+                  <Button
+                    className="h-12 w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] hover:bg-[var(--tb-color-text-secondary)]"
+                    disabled={profileEditStatus === 'submitting' || isProfileAvatarPreparing}
+                    form="profile-edit-sheet-form"
+                    type="submit"
+                  >
+                    {isProfileAvatarPreparing
+                      ? '사진 준비 중'
+                      : profileEditStatus === 'submitting'
+                        ? '저장 중'
+                        : '저장'}
+                  </Button>
+                </div>
+              )
+          }
+          floatingLayer={
+            isProfileEditDeleteConfirmOpen && !isProfileAvatarEditorOpen ? (
+              <ActionOverlayCard
+                layout="split"
+                title="계속 하시겠습니까? 이 사용자의 모든 데이터가 완전히 삭제됩니다."
+                actions={[
+                  {
+                    label: '아니오',
+                    onClick: () => setIsProfileEditDeleteConfirmOpen(false),
+                    disabled: isDeletingAccount,
+                  },
+                  {
+                    label: isDeletingAccount ? '삭제 중' : '예',
+                    onClick: handleDeleteAccount,
+                    disabled: isDeletingAccount,
+                    tone: 'destructive',
+                  },
+                ]}
+              />
+            ) : undefined
           }
         >
           <ProfileEditSheetContent
@@ -2758,6 +2935,7 @@ function MainApp() {
             statusMessage={profileEditMessage}
             userTasteAccentStyle={userTasteAccentStyle}
             onAvatarPreparationChange={setIsProfileAvatarPreparing}
+            onAvatarEditorOpenChange={setIsProfileAvatarEditorOpen}
             onSubmit={handleSubmitProfileEdit}
           />
         </BottomSheetShell>

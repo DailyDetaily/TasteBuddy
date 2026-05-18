@@ -158,7 +158,7 @@ export default function ProfileIdentitySheetContent({
   onSearchFriends,
 }: ProfileIdentitySheetContentProps) {
   const nameLabel = displayName || '이름 미설정';
-  const nicknameLabel = nickname || '닉네임 미설정';
+  const nicknameLabel = nickname || '버디네임 미설정';
   const referenceSummary = createReferenceSummary(
     birthDate,
     respondentContext,
@@ -183,7 +183,7 @@ export default function ProfileIdentitySheetContent({
       result.ok
         ? result.friends.length > 0
           ? `${result.friends.length}명의 다이닝 친구를 찾았습니다.`
-          : '일치하는 닉네임을 찾지 못했습니다.'
+          : '일치하는 버디네임을 찾지 못했습니다.'
         : result.message,
     );
   };
@@ -318,7 +318,7 @@ export default function ProfileIdentitySheetContent({
               다이닝 친구
             </p>
             <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-              닉네임으로 친구를 찾아 다음 다이닝 취향 기록을 함께 이어갈 수 있어요.
+              버디네임으로 친구를 찾아 다음 다이닝 취향 기록을 함께 이어갈 수 있어요.
             </p>
           </div>
           <div className="shrink-0 rounded-full bg-[var(--tb-color-surface-muted)] px-3 py-1 text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
@@ -328,12 +328,12 @@ export default function ProfileIdentitySheetContent({
 
         <form className="mt-3 flex gap-2" onSubmit={handleFriendSearch}>
           <label className="min-w-0 flex-1">
-            <span className="sr-only">친구 닉네임 검색</span>
+            <span className="sr-only">친구 버디네임 검색</span>
             <input
               autoComplete="off"
               className="h-11 w-full rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-white px-3 text-[13px] font-semibold text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
               onChange={(event) => setFriendQuery(event.target.value)}
-              placeholder="@nickname"
+              placeholder="@buddyname"
               type="search"
               value={friendQuery}
             />

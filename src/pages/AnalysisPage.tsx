@@ -2055,7 +2055,7 @@ export default function AnalysisPage({
             type="button"
             key={option.id}
             onClick={() => handleSelectTrendRange(option.id)}
-            className={`h-auto flex-none rounded-full border px-[14px] py-[8px] text-[13px] font-semibold transition-colors ${activeTrendRange === option.id
+            className={`h-8 flex-none rounded-full border px-[14px] py-0 text-[13px] font-semibold transition-colors ${activeTrendRange === option.id
               ? ''
               : 'border-transparent bg-transparent text-[var(--tb-color-text-tertiary)]'
               }`}

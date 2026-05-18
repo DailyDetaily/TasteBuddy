@@ -14,6 +14,7 @@ import {
 
 import ChefAvatar from '../system/ChefAvatar';
 import Chip from '../system/Chip';
+import CompactCard from '../system/CompactCard';
 import EmptyState from '../system/EmptyState';
 import SearchOverlayShell from '../search/SearchOverlayShell';
 import { cn } from '../ui/utils';
@@ -30,8 +31,11 @@ import {
   RESTAURANT_BOOKMARKS_CHANGED_EVENT,
   getRestaurantBookmarkKey,
   isRestaurantBookmarked,
+  removeRestaurantBookmark,
+  saveRestaurantBookmarkRecord,
 } from '../restaurant/RestaurantBookmarkSheet';
 import type { DiningFriendProfile } from '../../lib/supabase';
+import { getRestaurantInfo } from '../../pages/RestaurantDetailPage';
 
 const HOME_RECENT_SEARCH_STORAGE_KEY = 'tastebuddy-home-recent-searches-v1';
 const MAX_RECENT_SEARCHES = 5;
@@ -228,7 +232,7 @@ function buildRestaurantResults(
       id: `restaurant-${key}`,
       type: 'restaurant',
       label: dish.restaurant,
-      subLabel: `${formatChefName(chefName)} · 대표 메뉴 ${Math.min(signatureItems.length, 2)}개`,
+      subLabel: getRestaurantInfo(dish.restaurant).address,
       restaurant: dish.restaurant,
       chef: chefName,
       image: existingResult?.image ?? resolveChefImage(chefName, reservations, dish.chefAvatarPath),
@@ -257,8 +261,7 @@ function buildRestaurantResults(
       id: existingResult?.id ?? `restaurant-reservation-${reservation.id}`,
       type: 'restaurant',
       label: reservation.restaurant,
-      subLabel:
-        existingResult?.subLabel ?? `${formatChefName(reservation.chef)} · 예약 기반 탐색`,
+      subLabel: existingResult?.subLabel ?? getRestaurantInfo(reservation.restaurant).address,
       restaurant: reservation.restaurant,
       chef: existingResult?.chef ?? reservation.chef,
       image: existingResult?.image ?? reservation.chefImage ?? getChefImageByName(reservation.chef),
@@ -471,7 +474,7 @@ function buildKakaoSearchResult(place: Awaited<ReturnType<typeof searchKakaoRest
     id: `kakao-restaurant-${place.placeId ?? normalizeSearchValue(`${name}-${address ?? ''}`)}`,
     type: 'restaurant',
     label: name,
-    subLabel: address ? `카카오 장소 정보 · ${address}` : '카카오 장소 정보',
+    subLabel: address ?? '주소 확인 중',
     restaurant: name,
     chef: 'Taste Buddy 분석 준비 중',
     image: null,
@@ -656,7 +659,8 @@ function SearchSection({
               key={result.id}
               className="list-none"
             >
-              <div
+              <CompactCard
+                as="div"
                 role="button"
                 tabIndex={0}
                 onClick={() => onSelect(result)}
@@ -669,32 +673,25 @@ function SearchSection({
                 aria-pressed={isSelected}
                 title={result.matchMeta}
                 className={cn(
-                  SEARCH_RESULT_CARD_CLASS_NAME,
                   isSelected
-                    ? SEARCH_RESULT_CARD_SELECTED_CLASS_NAME
-                    : SEARCH_RESULT_CARD_UNSELECTED_CLASS_NAME,
+                    ? 'bg-[var(--tb-user-accent-tint-soft)]'
+                    : 'hover:bg-[var(--tb-color-surface-card-hover)]',
                 )}
-              >
-                <div className={SEARCH_RESULT_CARD_BODY_CLASS_NAME}>
-                  <div className="flex w-full items-center justify-between gap-3">
-                    <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <ChefAvatar
-                        alt={result.chef}
-                        className="h-[40px] w-[40px] shrink-0 rounded-[var(--tb-radius-10)] object-cover"
-                        iconSize={ICON_TOKENS.size.lg}
-                        imageSrc={result.image}
-                        variant="neutral"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <span className="block truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                          {result.label}
-                        </span>
-                        <span className="block truncate text-[11px] text-[var(--tb-color-text-muted)]">
-                          {result.subLabel}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex shrink-0 items-center justify-end gap-0">
+                media={
+                  <ChefAvatar
+                    alt={result.chef}
+                    className="h-[40px] w-[40px] shrink-0 rounded-[var(--tb-radius-10)] object-cover"
+                    iconSize={ICON_TOKENS.size.lg}
+                    imageSrc={result.image}
+                    variant="neutral"
+                  />
+                }
+                heading={result.label}
+                metadata={result.subLabel}
+                headingClassName="font-semibold"
+                metadataClassName="font-normal"
+                actions={
+                  <div className="flex items-center justify-end gap-0">
                       <button
                         type="button"
                         onClick={(event) => {
@@ -744,10 +741,9 @@ function SearchSection({
                       >
                         <BookmarkIcon size={SEARCH_RESULT_ACTION_ICON_SIZE} strokeWidth={1.8} />
                       </button>
-                    </div>
                   </div>
-                </div>
-              </div>
+                }
+              />
             </li>
           );
         })}
@@ -1027,9 +1023,20 @@ export default function HomeUnifiedSearch({
 
   const toggleBookmarkedResult = (result: HomeSearchResult) => {
     const restaurantKey = getRestaurantBookmarkKey(result.restaurant);
+    const isCurrentlyBookmarked = isRestaurantBookmarked(result.restaurant);
+
+    if (isCurrentlyBookmarked) {
+      removeRestaurantBookmark(result.restaurant);
+    } else {
+      saveRestaurantBookmarkRecord({
+        chefName: result.chef,
+        restaurantId: result.id,
+        restaurantName: result.restaurant,
+      });
+    }
 
     setBookmarkedRestaurantKeys((current) =>
-      current.includes(restaurantKey)
+      isCurrentlyBookmarked || current.includes(restaurantKey)
         ? current.filter((item) => item !== restaurantKey)
         : [...current, restaurantKey],
     );
@@ -1125,8 +1132,8 @@ export default function HomeUnifiedSearch({
             aria-label="통합 검색 열기"
             className={SEARCH_BAR_FIELD_CLASS_NAME}
           >
-            <span className="truncate text-[13px] font-medium text-[#5D6672]">
-              레스토랑, 메뉴, 셰프, 닉네임 검색
+            <span className="truncate text-[13px] font-medium text-[var(--tb-color-text-muted)]">
+              레스토랑, 메뉴, 셰프, 버디 검색
             </span>
           </button>
           <button
@@ -1148,7 +1155,7 @@ export default function HomeUnifiedSearch({
           onClose={handleClose}
           onQueryChange={setQuery}
           onSubmit={handleSubmit}
-          placeholder="레스토랑, 메뉴, 셰프, 닉네임 검색"
+          placeholder="레스토랑, 메뉴, 셰프, 버디 검색"
           query={query}
         >
                 <div className="tb-section-stack">
@@ -1271,10 +1278,10 @@ export default function HomeUnifiedSearch({
                     <div className={SEARCH_EMPTY_STATE_CLASS_NAME}>
                       <EmptyState
                         icon={<Search size={APP_LUCIDE_ICON_SIZE_M} />}
-                        title={isFriendSearching ? '닉네임을 확인하고 있어요' : '카카오에서 식당 정보를 확인하고 있어요'}
+                        title={isFriendSearching ? '버디네임을 확인하고 있어요' : '카카오에서 식당 정보를 확인하고 있어요'}
                         description={
                           isFriendSearching
-                            ? '친구가 나를 찾는 고유 닉네임과 함께 비교하고 있어요.'
+                            ? '친구가 나를 찾는 고유 버디네임과 함께 비교하고 있어요.'
                             : 'Taste Buddy에 아직 없는 식당도 같은 상세 페이지에서 먼저 확인할 수 있어요.'
                         }
                       />
@@ -1283,10 +1290,10 @@ export default function HomeUnifiedSearch({
                     <div className={SEARCH_EMPTY_STATE_CLASS_NAME}>
                       <EmptyState
                         icon={<Search size={APP_LUCIDE_ICON_SIZE_M} />}
-                        title={friendSearchMessage ? '닉네임 검색을 확인하지 못했어요' : '아직 맞는 결과를 찾지 못했어요'}
+                        title={friendSearchMessage ? '버디네임 검색을 확인하지 못했어요' : '아직 맞는 결과를 찾지 못했어요'}
                         description={
                           friendSearchMessage ??
-                          '레스토랑 이름, 셰프 이름, 코스명, 친구 닉네임으로 다시 시도해보세요. 추천 탐색 키워드로 시작해도 좋아요.'
+                          '레스토랑 이름, 셰프 이름, 코스명, 친구 버디네임으로 다시 시도해보세요. 추천 탐색 키워드로 시작해도 좋아요.'
                         }
                       />
                       {suggestions.length > 0 ? (

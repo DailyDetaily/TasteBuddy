@@ -55,7 +55,7 @@ export default function ProfileSetupSheetContent({
         </label>
         <label className="flex flex-col gap-2">
           <span className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-            닉네임
+            버디네임
           </span>
           <input
             autoComplete="nickname"
@@ -67,7 +67,7 @@ export default function ProfileSetupSheetContent({
             value={nickname}
           />
           <span className="text-[11px] leading-relaxed text-[var(--tb-color-text-faint)]">
-            닉네임은 친구가 나를 찾는 고유 이름으로 사용됩니다.
+            버디네임은 친구가 나를 찾는 고유 이름으로 사용됩니다.
           </span>
         </label>
       </form>

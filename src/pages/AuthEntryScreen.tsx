@@ -5,6 +5,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '../components/ui/input-otp';
+import ActionOverlayCard from '../components/system/ActionOverlayCard';
 
 interface AuthEntryScreenProps {
   formId?: string;
@@ -144,42 +145,24 @@ export function AuthEntryForm({
       ) : null}
 
       {isCodeOptionOpen ? (
-        <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/35 px-5"
-          onClick={() => setIsCodeOptionOpen(false)}
-        >
-          <div
-            className="w-full max-w-[320px] rounded-[20px] bg-[var(--tb-color-bg-focus)] p-4 shadow-[var(--tb-shadow-drawer)]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3 className="mb-4 text-center text-[16px] font-bold text-[var(--tb-color-text-primary)]">
-              도움이 필요하세요?
-            </h3>
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={handleResendCode}
-                disabled={!pendingEmail || isSubmitting}
-                className="h-11 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-opacity hover:bg-[var(--tb-color-border-subtle)] disabled:opacity-45"
-              >
-                코드 다시 전송하기
-              </button>
-              <button
-                type="button"
-                className="h-11 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-border-subtle)]"
-              >
-                비밀번호로 로그인하기
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCodeOptionOpen(false)}
-                className="h-11 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-border-subtle)]"
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
+        <ActionOverlayCard
+          title="도움이 필요하세요?"
+          onBackdropClick={() => setIsCodeOptionOpen(false)}
+          actions={[
+            {
+              label: '코드 다시 전송하기',
+              onClick: handleResendCode,
+              disabled: !pendingEmail || isSubmitting,
+            },
+            {
+              label: '비밀번호로 로그인하기',
+            },
+            {
+              label: '취소',
+              onClick: () => setIsCodeOptionOpen(false),
+            },
+          ]}
+        />
       ) : null}
     </section>
   );

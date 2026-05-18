@@ -1,16 +1,33 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Bookmark, CheckCircle, CirclePlus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  Beef,
+  CakeSlice,
+  Coffee,
+  CookingPot,
+  Croissant,
+  CupSoda,
+  Dessert,
+  EggFried,
+  Fish,
+  Salad,
+  Sandwich,
+  Soup,
+  Utensils,
+  Wine,
+  type LucideIcon,
+  Bookmark,
+  CirclePlus,
+} from 'lucide-react';
 
-import BottomSheetShell, { BottomSheetCloseButton } from '../system/BottomSheetShell';
+import BottomSheetShell from '../system/BottomSheetShell';
 import Chip from '../system/Chip';
+import ImageBox from '../system/ImageBox';
 import PrimaryButton from '../system/PrimaryButton';
-import SelectionCard from '../system/SelectionCard';
-import SectionTitle from '../system/SectionTitle';
 import { Input } from '../ui/input';
-import { ICON_TOKENS } from '../../constants/designTokens';
+import { ICON_TOKENS, TASTE_TOKENS } from '../../constants/designTokens';
 import type { RestaurantDetailViewModel } from '../../pages/RestaurantDetailPage';
 
-interface BookmarkList {
+export interface BookmarkList {
   id: string;
   name: string;
   description: string;
@@ -24,17 +41,24 @@ export interface RestaurantBookmarkRecord {
   savedAt: string;
 }
 
+type RestaurantBookmarkRecordInput = Pick<
+  RestaurantBookmarkRecord,
+  'chefName' | 'restaurantId' | 'restaurantName'
+>;
+
 interface RestaurantBookmarkSheetProps {
+  newListAccentColor?: string;
   onSaved?: () => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   restaurant: RestaurantDetailViewModel;
 }
 
-type BookmarkSheetMode = 'select' | 'create' | 'done';
+type BookmarkSheetMode = 'select' | 'create';
 
 const LIST_STORAGE_KEY = 'tastebuddy-restaurant-bookmark-lists-v1';
 const BOOKMARK_STORAGE_KEY = 'tastebuddy-restaurant-bookmarks-v1';
+export const DEFAULT_BOOKMARK_LIST_ID = 'default-saved';
 export const RESTAURANT_BOOKMARKS_CHANGED_EVENT = 'tastebuddy-restaurant-bookmarks-changed';
 
 const LIST_SUGGESTIONS = [
@@ -65,7 +89,54 @@ const LIST_SUGGESTIONS = [
   },
 ] satisfies BookmarkList[];
 
-function loadBookmarkLists() {
+const LIST_THUMBNAIL_ICONS = [
+  Beef,
+  CakeSlice,
+  Coffee,
+  CookingPot,
+  Croissant,
+  CupSoda,
+  Dessert,
+  EggFried,
+  Fish,
+  Salad,
+  Sandwich,
+  Soup,
+  Utensils,
+  Wine,
+] satisfies LucideIcon[];
+
+const LIST_THUMBNAIL_TASTE_IDS = [
+  'sweet',
+  'sour',
+  'bitter',
+  'salty',
+  'umami',
+  'fat',
+] as const;
+
+function getStableHash(value: string) {
+  return Array.from(value).reduce(
+    (total, character) => total + character.charCodeAt(0),
+    0,
+  );
+}
+
+function getStableListIcon(listId: string) {
+  const hash = getStableHash(listId);
+
+  return LIST_THUMBNAIL_ICONS[hash % LIST_THUMBNAIL_ICONS.length] ?? Utensils;
+}
+
+function getStableListTastePalette(listId: string) {
+  const hash = getStableHash(listId);
+  const tasteId =
+    LIST_THUMBNAIL_TASTE_IDS[hash % LIST_THUMBNAIL_TASTE_IDS.length] ?? 'sweet';
+
+  return TASTE_TOKENS[tasteId].palette;
+}
+
+export function loadBookmarkLists() {
   if (typeof window === 'undefined') {
     return [] as BookmarkList[];
   }
@@ -90,6 +161,15 @@ function loadBookmarkLists() {
   } catch {
     return [];
   }
+}
+
+export function saveBookmarkLists(lists: BookmarkList[]) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(LIST_STORAGE_KEY, JSON.stringify(lists));
+  window.dispatchEvent(new Event(RESTAURANT_BOOKMARKS_CHANGED_EVENT));
 }
 
 export function getRestaurantBookmarkKey(value: string) {
@@ -138,22 +218,33 @@ export function isRestaurantBookmarked(restaurantName: string) {
   );
 }
 
+function getRestaurantBookmarkListId(restaurantName: string) {
+  const targetKey = getRestaurantBookmarkKey(restaurantName);
+
+  return loadRestaurantBookmarks().find(
+    (bookmark) => getRestaurantBookmarkKey(bookmark.restaurantName) === targetKey,
+  )?.listId ?? null;
+}
+
 function createListId(name: string) {
   return `list-${name.trim().replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
 }
 
-function saveRestaurantBookmark(restaurant: RestaurantDetailViewModel, listId: string) {
+export function saveRestaurantBookmarkRecord(
+  record: RestaurantBookmarkRecordInput,
+  listId = DEFAULT_BOOKMARK_LIST_ID,
+) {
   if (typeof window === 'undefined') {
     return;
   }
 
   const currentBookmarks = loadRestaurantBookmarks();
-  const restaurantKey = getRestaurantBookmarkKey(restaurant.name);
+  const restaurantKey = getRestaurantBookmarkKey(record.restaurantName);
   const nextRecord: RestaurantBookmarkRecord = {
-    chefName: restaurant.chef.name,
+    chefName: record.chefName,
     listId,
-    restaurantId: restaurant.id,
-    restaurantName: restaurant.name,
+    restaurantId: record.restaurantId,
+    restaurantName: record.restaurantName,
     savedAt: new Date().toISOString(),
   };
   const nextBookmarks = [
@@ -167,7 +258,40 @@ function saveRestaurantBookmark(restaurant: RestaurantDetailViewModel, listId: s
   window.dispatchEvent(new Event(RESTAURANT_BOOKMARKS_CHANGED_EVENT));
 }
 
+function saveRestaurantBookmark(
+  restaurant: RestaurantDetailViewModel,
+  listId = DEFAULT_BOOKMARK_LIST_ID,
+) {
+  saveRestaurantBookmarkRecord(
+    {
+      chefName: restaurant.chef.name,
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+    },
+    listId,
+  );
+}
+
+export function saveRestaurantBookmarkToDefault(restaurant: RestaurantDetailViewModel) {
+  saveRestaurantBookmark(restaurant, DEFAULT_BOOKMARK_LIST_ID);
+}
+
+export function removeRestaurantBookmark(restaurantName: string) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const restaurantKey = getRestaurantBookmarkKey(restaurantName);
+  const nextBookmarks = loadRestaurantBookmarks().filter(
+    (bookmark) => getRestaurantBookmarkKey(bookmark.restaurantName) !== restaurantKey,
+  );
+
+  window.localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(nextBookmarks));
+  window.dispatchEvent(new Event(RESTAURANT_BOOKMARKS_CHANGED_EVENT));
+}
+
 export default function RestaurantBookmarkSheet({
+  newListAccentColor,
   onSaved,
   onOpenChange,
   open,
@@ -175,19 +299,15 @@ export default function RestaurantBookmarkSheet({
 }: RestaurantBookmarkSheetProps) {
   const [lists, setLists] = useState<BookmarkList[]>(loadBookmarkLists);
   const [mode, setMode] = useState<BookmarkSheetMode>('select');
-  const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [customListName, setCustomListName] = useState('');
-  const [savedList, setSavedList] = useState<BookmarkList | null>(null);
+  const [bookmarkedListId, setBookmarkedListId] = useState<string | null>(null);
   const hasLists = lists.length > 0;
   const isCreating = mode === 'create' || !hasLists;
   const selectedSuggestion = LIST_SUGGESTIONS.find(
     (suggestion) => suggestion.name === customListName,
   );
-  const canSave = isCreating ? customListName.trim().length > 0 : selectedListId !== null;
-  const activeList = useMemo(
-    () => lists.find((list) => list.id === selectedListId) ?? null,
-    [lists, selectedListId],
-  );
+  const canSave = isCreating ? customListName.trim().length > 0 : true;
+  const restaurantImageSrc = restaurant.heroImageUrl ?? restaurant.chef.avatarUrl ?? null;
 
   useEffect(() => {
     if (!open) {
@@ -195,19 +315,21 @@ export default function RestaurantBookmarkSheet({
     }
 
     const nextLists = loadBookmarkLists();
-    setLists(nextLists);
-    setMode(nextLists.length > 0 ? 'select' : 'create');
-    setSelectedListId(nextLists[0]?.id ?? null);
-    setCustomListName('');
-    setSavedList(null);
-  }, [open]);
+    let nextBookmarkedListId = getRestaurantBookmarkListId(restaurant.name);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
+    if (!nextBookmarkedListId) {
+      saveRestaurantBookmark(restaurant);
+      nextBookmarkedListId = DEFAULT_BOOKMARK_LIST_ID;
     }
 
-    window.localStorage.setItem(LIST_STORAGE_KEY, JSON.stringify(lists));
+    setLists(nextLists);
+    setMode(nextLists.length > 0 ? 'select' : 'create');
+    setCustomListName('');
+    setBookmarkedListId(nextBookmarkedListId);
+  }, [open, restaurant.chef.name, restaurant.id, restaurant.name]);
+
+  useEffect(() => {
+    saveBookmarkLists(lists);
   }, [lists]);
 
   const handleSave = () => {
@@ -228,164 +350,201 @@ export default function RestaurantBookmarkSheet({
       setLists((current) => [nextList, ...current]);
       saveRestaurantBookmark(restaurant, nextList.id);
       onSaved?.();
-      setSavedList(nextList);
-      setSelectedListId(nextList.id);
-      setMode('done');
+      setBookmarkedListId(nextList.id);
+      onOpenChange(false);
       return;
     }
-
-    if (!activeList) {
-      return;
-    }
-
-    saveRestaurantBookmark(restaurant, activeList.id);
-    onSaved?.();
-    setSavedList(activeList);
-    setMode('done');
   };
 
-  const footer = mode === 'done' ? (
-    <PrimaryButton onClick={() => onOpenChange(false)}>완료</PrimaryButton>
-  ) : (
+  const handleRemoveBookmark = () => {
+    removeRestaurantBookmark(restaurant.name);
+    setBookmarkedListId(null);
+    onOpenChange(false);
+  };
+
+  const handleMoveToList = (list: BookmarkList) => {
+    saveRestaurantBookmark(restaurant, list.id);
+    onSaved?.();
+    setBookmarkedListId(list.id);
+    onOpenChange(false);
+  };
+
+  const footer = isCreating ? (
     <PrimaryButton disabled={!canSave} onClick={handleSave}>
-      {isCreating ? '리스트 만들고 저장' : '저장하기'}
+      리스트 만들고 저장
     </PrimaryButton>
-  );
+  ) : null;
 
   return (
     <BottomSheetShell
       open={open}
       onOpenChange={onOpenChange}
-      headerEnd={<BottomSheetCloseButton />}
-      contentClassName="h-auto max-h-[88vh]"
-      bodyClassName="overflow-y-auto no-scrollbar px-5 pb-2"
+      contentClassName="h-auto max-h-[88vh] bg-[var(--tb-color-surface-base)]"
+      bodyClassName="overflow-y-auto no-scrollbar px-0 pb-0"
       footer={footer}
     >
-      {mode === 'done' && savedList ? (
-        <div className="flex flex-col items-center gap-5 pt-4 text-center">
-          <div className="flex size-[48px] items-center justify-center rounded-full bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-primary)]">
-            <CheckCircle size={ICON_TOKENS.size.xl} strokeWidth={1.8} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <SectionTitle as="h2" size="lg">
-              북마크에 저장했어요
-            </SectionTitle>
-            <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-muted)]">
-              예약 전 다시 비교할 때 이 리스트 기준으로 차분히 확인할 수 있어요.
-            </p>
-          </div>
-
-          <div className="w-full rounded-[20px] bg-[var(--tb-color-surface-muted)] px-4 py-4 text-left">
-            <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
-              저장된 레스토랑
-            </p>
-            <p className="mt-2 text-[16px] font-bold text-[var(--tb-color-text-primary)]">
-              {restaurant.name}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Chip size="sm" tone="neutral" variant="soft">
-                {savedList.name}
-              </Chip>
-              <Chip size="sm" tone="neutral" variant="soft">
-                {restaurant.chef.name} 셰프
-              </Chip>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-5 pt-1">
-          <div className="flex items-start gap-3">
-            <div className="flex size-[40px] shrink-0 items-center justify-center rounded-[12px] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-secondary)]">
-              <Bookmark size={ICON_TOKENS.size.lg} strokeWidth={1.8} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <SectionTitle as="h2" size="lg">
-                {isCreating ? '어떤 리스트로 저장할까요?' : '저장할 리스트를 선택하세요'}
-              </SectionTitle>
-              <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                {isCreating
-                  ? '리스트 이름을 정해두면 예약 전 내 미각 기준으로 다시 판단하기 쉬워요.'
-                  : '이미 만들어둔 리스트에 저장하거나 새로운 리스트를 만들 수 있어요.'}
-              </p>
-            </div>
-          </div>
-
-          {!isCreating ? (
-            <div className="flex flex-col gap-3">
-              {lists.map((list) => (
-                <SelectionCard
-                  key={list.id}
-                  title={list.name}
-                  description={list.description}
-                  selected={selectedListId === list.id}
-                  onClick={() => setSelectedListId(list.id)}
+      <div className="flex flex-col">
+        {bookmarkedListId ? (
+          <section
+            aria-label="현재 저장 상태"
+            className="flex flex-col gap-2 bg-[var(--tb-color-surface-base)] px-5 py-3"
+          >
+            <button
+              type="button"
+              onClick={handleRemoveBookmark}
+              className="flex w-full items-center gap-3 rounded-[12px] bg-transparent text-left transition-colors] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2 active:scale-[0.99]"
+            >
+              <ImageBox
+                alt={restaurant.name}
+                fallback="restaurant"
+                imageSrc={restaurantImageSrc}
+                className="size-[52px] rounded-[12px]"
+                imageClassName="object-cover"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[15px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+                  저장됨
+                </span>
+                <span className="mt-1 block truncate text-[13px] font-medium leading-snug text-[var(--tb-color-text-muted)]">
+                  공개 리스트
+                </span>
+              </span>
+              <span
+                aria-hidden="true"
+                className="flex size-10 shrink-0 items-center justify-center text-[var(--tb-color-text-primary)]"
+              >
+                <Bookmark
+                  size={ICON_TOKENS.size.xl}
+                  strokeWidth={0}
+                  fill="currentColor"
                 />
-              ))}
+              </span>
+            </button>
+          </section>
+        ) : null}
+
+        {bookmarkedListId && !isCreating ? (
+          <div
+            aria-hidden="true"
+            className="mx-5 h-px bg-[var(--tb-color-border-default)]"
+          />
+        ) : null}
+
+        {!isCreating ? (
+          <section
+            aria-label="저장 리스트"
+            className="bg-[var(--tb-color-bg-focus)] min-h-[252px] px-5 py-5"
+          >
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <p className="text-[16px] font-bold text-[var(--tb-color-text-primary)]">
+                리스트
+              </p>
               <button
                 type="button"
                 onClick={() => {
                   setMode('create');
                   setCustomListName('');
                 }}
-                className="flex min-h-[48px] items-center justify-center gap-2 rounded-[12px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                className="text-[11px] font-bold transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-user-accent-tint-soft-border)]"
+                style={{
+                  color: newListAccentColor ?? 'var(--tb-user-accent-main, var(--tb-taste-sweet-accent))',
+                }}
               >
-                <CirclePlus size={ICON_TOKENS.size.md} strokeWidth={1.8} />
-                새로운 리스트 만들기
+                새 리스트
               </button>
             </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap gap-2">
-                {LIST_SUGGESTIONS.map((suggestion) => (
-                  <Chip
-                    key={suggestion.id}
-                    role="button"
-                    tabIndex={0}
-                    size="md"
-                    tone="neutral"
-                    variant={customListName === suggestion.name ? 'solid' : 'soft'}
-                    onClick={() => setCustomListName(suggestion.name)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        setCustomListName(suggestion.name);
-                      }
-                    }}
-                    className="cursor-pointer"
+            <div className="flex flex-col gap-3">
+              {lists.map((list) => {
+                const ListThumbnailIcon = getStableListIcon(list.id);
+                const listThumbnailPalette = getStableListTastePalette(list.id);
+
+                return (
+                  <button
+                    key={list.id}
+                    type="button"
+                    onClick={() => handleMoveToList(list)}
+                    className="flex w-full items-center gap-3 rounded-[12px] bg-transparent text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2 active:scale-[0.99]"
                   >
-                    {suggestion.name}
-                  </Chip>
-                ))}
-              </div>
-
-              <label className="flex flex-col gap-2">
-                <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
-                  직접 입력
-                </span>
-                <Input
-                  value={customListName}
-                  onChange={(event) => setCustomListName(event.target.value)}
-                  placeholder="예: 부모님과 가볼 곳"
-                  className="h-[48px] rounded-[12px] border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-4 text-[14px] text-[var(--tb-color-text-primary)] placeholder:text-[var(--tb-color-text-hint)] focus-visible:ring-[var(--tb-color-border-default)]"
-                />
-              </label>
-
-              {hasLists ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('select');
-                    setCustomListName('');
-                  }}
-                  className="self-start text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
-                >
-                  기존 리스트로 돌아가기
-                </button>
-              ) : null}
+                    <span
+                      className="flex size-[52px] shrink-0 items-center justify-center rounded-[12px]"
+                      style={{
+                        backgroundColor: listThumbnailPalette.tintSurface,
+                        color: listThumbnailPalette.main,
+                      }}
+                    >
+                      <ListThumbnailIcon size={ICON_TOKENS.size.lg} strokeWidth={1.8} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+                        {list.name}
+                      </span>
+                      <span className="mt-1 block truncate text-[13px] font-medium leading-snug text-[var(--tb-color-text-muted)]">
+                        공개 리스트
+                      </span>
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="flex size-10 shrink-0 items-center justify-center text-[var(--tb-color-icon-muted)]"
+                    >
+                      <CirclePlus size={ICON_TOKENS.size.xl} strokeWidth={1.8} />
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          )}
-        </div>
-      )}
+          </section>
+        ) : (
+          <div className="flex flex-col gap-4 bg-[var(--tb-color-bg-page)] px-5 py-4">
+            <div className="flex flex-wrap gap-2">
+              {LIST_SUGGESTIONS.map((suggestion) => (
+                <Chip
+                  key={suggestion.id}
+                  role="button"
+                  tabIndex={0}
+                  size="md"
+                  tone="neutral"
+                  variant={customListName === suggestion.name ? 'solid' : 'soft'}
+                  onClick={() => setCustomListName(suggestion.name)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setCustomListName(suggestion.name);
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  {suggestion.name}
+                </Chip>
+              ))}
+            </div>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
+                직접 입력
+              </span>
+              <Input
+                value={customListName}
+                onChange={(event) => setCustomListName(event.target.value)}
+                placeholder="예: 부모님과 가볼 곳"
+                className="h-[48px] rounded-[12px] border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-4 text-[14px] text-[var(--tb-color-text-primary)] placeholder:text-[var(--tb-color-text-hint)] focus-visible:ring-[var(--tb-color-border-default)]"
+              />
+            </label>
+
+            {hasLists ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('select');
+                  setCustomListName('');
+                }}
+                className="self-start text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
+              >
+                기존 리스트로 돌아가기
+              </button>
+            ) : null}
+          </div>
+        )}
+      </div>
     </BottomSheetShell>
   );
 }

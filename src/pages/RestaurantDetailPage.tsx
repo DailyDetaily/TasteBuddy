@@ -717,7 +717,7 @@ function isEatanicGardenRestaurant(restaurantName: string) {
   return normalizedName.includes('이타닉가든') || normalizedName.includes('eatanicgarden');
 }
 
-function getRestaurantInfo(restaurantName: string) {
+export function getRestaurantInfo(restaurantName: string) {
   const normalizedName = normalizeRestaurantName(restaurantName);
 
   if (normalizedName.includes('이타닉가든') || normalizedName.includes('eatanicgarden')) {

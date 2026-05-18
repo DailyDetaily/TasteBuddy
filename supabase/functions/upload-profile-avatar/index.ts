@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS',
   'Access-Control-Allow-Origin': '*',
 };
 
@@ -65,6 +65,10 @@ function encodeS3Path(path: string) {
     .filter(Boolean)
     .map((segment) => encodeURIComponent(segment))
     .join('/');
+}
+
+function encodeS3QueryValue(value: string) {
+  return encodeURIComponent(value).replace(/%2F/g, '%2F');
 }
 
 function getAmzDates(date = new Date()) {
@@ -172,12 +176,92 @@ async function uploadToR2(input: {
   }
 }
 
+async function signedR2Request(input: {
+  accessKeyId: string;
+  accountId: string;
+  bucket: string;
+  method: 'DELETE' | 'GET';
+  objectKey?: string;
+  query?: Record<string, string>;
+  secretAccessKey: string;
+}) {
+  const host = `${input.accountId}.r2.cloudflarestorage.com`;
+  const canonicalUri = input.objectKey
+    ? `/${encodeS3Path(`${input.bucket}/${input.objectKey}`)}`
+    : `/${encodeS3Path(input.bucket)}`;
+  const sortedQueryEntries = Object.entries(input.query ?? {}).sort(([leftKey], [rightKey]) =>
+    leftKey.localeCompare(rightKey),
+  );
+  const canonicalQueryString = sortedQueryEntries
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeS3QueryValue(value)}`)
+    .join('&');
+  const url = `https://${host}${canonicalUri}${canonicalQueryString ? `?${canonicalQueryString}` : ''}`;
+  const { amzDate, dateStamp } = getAmzDates();
+  const payloadHash = await sha256Hex('');
+  const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
+  const headersToSign = {
+    host,
+    'x-amz-content-sha256': payloadHash,
+    'x-amz-date': amzDate,
+  };
+  const sortedHeaderNames = Object.keys(headersToSign).sort();
+  const canonicalHeaders = sortedHeaderNames
+    .map((headerName) => `${headerName}:${headersToSign[headerName as keyof typeof headersToSign]}`)
+    .join('\n');
+  const signedHeaders = sortedHeaderNames.join(';');
+  const canonicalRequest = [
+    input.method,
+    canonicalUri,
+    canonicalQueryString,
+    `${canonicalHeaders}\n`,
+    signedHeaders,
+    payloadHash,
+  ].join('\n');
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    amzDate,
+    credentialScope,
+    await sha256Hex(canonicalRequest),
+  ].join('\n');
+  const signingKey = await getSigningKey(input.secretAccessKey, dateStamp);
+  const signature = toHex(await hmac(signingKey, stringToSign));
+  const authorization = [
+    `AWS4-HMAC-SHA256 Credential=${input.accessKeyId}/${credentialScope}`,
+    `SignedHeaders=${signedHeaders}`,
+    `Signature=${signature}`,
+  ].join(', ');
+
+  return fetch(url, {
+    method: input.method,
+    headers: {
+      Authorization: authorization,
+      'x-amz-content-sha256': payloadHash,
+      'x-amz-date': amzDate,
+    },
+  });
+}
+
+function decodeXmlValue(value: string) {
+  return value
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function parseR2ObjectKeys(xml: string) {
+  return [...xml.matchAll(/<Key>(.*?)<\/Key>/g)]
+    .map((match) => decodeXmlValue(match[1] ?? ''))
+    .filter(Boolean);
+}
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  if (request.method !== 'POST') {
+  if (!['DELETE', 'GET', 'POST'].includes(request.method)) {
     return jsonResponse({ error: 'Method not allowed' }, { status: 405 });
   }
 
@@ -212,6 +296,72 @@ Deno.serve(async (request) => {
 
   if (userError || !userData.user) {
     return jsonResponse({ error: 'Invalid authenticated session' }, { status: 401 });
+  }
+
+  const userAvatarPrefix = `user-avatars/${userData.user.id}/`;
+
+  if (request.method === 'GET') {
+    try {
+      const response = await signedR2Request({
+        accessKeyId: r2AccessKeyId,
+        accountId: r2AccountId,
+        bucket: r2Bucket,
+        method: 'GET',
+        query: {
+          'list-type': '2',
+          prefix: userAvatarPrefix,
+        },
+        secretAccessKey: r2SecretAccessKey,
+      });
+
+      if (!response.ok) {
+        throw new Error(`R2 list failed: ${response.status} ${await response.text()}`);
+      }
+
+      const xml = await response.text();
+      const objectKeys = parseR2ObjectKeys(xml).filter((objectKey) =>
+        objectKey.startsWith(userAvatarPrefix),
+      );
+
+      return jsonResponse({
+        avatars: objectKeys.map((objectKey) => ({ objectKey })),
+      });
+    } catch (error) {
+      console.error(error);
+      return jsonResponse({ error: 'Failed to list avatars' }, { status: 502 });
+    }
+  }
+
+  if (request.method === 'DELETE') {
+    const body = await request.json().catch(() => null);
+    const objectKey =
+      body && typeof body === 'object' && 'objectKey' in body && typeof body.objectKey === 'string'
+        ? body.objectKey
+        : null;
+
+    if (!objectKey || !objectKey.startsWith(userAvatarPrefix)) {
+      return jsonResponse({ error: 'Invalid avatar object key' }, { status: 400 });
+    }
+
+    try {
+      const response = await signedR2Request({
+        accessKeyId: r2AccessKeyId,
+        accountId: r2AccountId,
+        bucket: r2Bucket,
+        method: 'DELETE',
+        objectKey,
+        secretAccessKey: r2SecretAccessKey,
+      });
+
+      if (!response.ok && response.status !== 404) {
+        throw new Error(`R2 delete failed: ${response.status} ${await response.text()}`);
+      }
+
+      return jsonResponse({ objectKey });
+    } catch (error) {
+      console.error(error);
+      return jsonResponse({ error: 'Failed to delete avatar' }, { status: 502 });
+    }
   }
 
   const formData = await request.formData();

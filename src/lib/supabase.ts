@@ -648,3 +648,71 @@ export async function uploadSupabaseProfileAvatar(file: File) {
     message: '프로필 사진이 저장되었습니다.',
   };
 }
+
+export async function listSupabaseProfileAvatars() {
+  if (!supabase) {
+    return {
+      ok: false,
+      avatarPaths: [] as string[],
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const { data, error } = await supabase.functions.invoke('upload-profile-avatar', {
+    method: 'GET',
+  });
+
+  if (error) {
+    console.warn('Failed to list Supabase profile avatars.', error);
+    return {
+      ok: false,
+      avatarPaths: [] as string[],
+      message: error.message,
+    };
+  }
+
+  const avatars =
+    data && typeof data === 'object' && 'avatars' in data && Array.isArray(data.avatars)
+      ? data.avatars
+      : [];
+  const avatarPaths = avatars
+    .map((item) =>
+      item && typeof item === 'object' && 'objectKey' in item && typeof item.objectKey === 'string'
+        ? item.objectKey
+        : null,
+    )
+    .filter((item): item is string => Boolean(item));
+
+  return {
+    ok: true,
+    avatarPaths,
+    message: '프로필 사진 목록을 불러왔습니다.',
+  };
+}
+
+export async function deleteSupabaseProfileAvatar(avatarPath: string) {
+  if (!supabase) {
+    return {
+      ok: false,
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const { error } = await supabase.functions.invoke('upload-profile-avatar', {
+    body: { objectKey: avatarPath },
+    method: 'DELETE',
+  });
+
+  if (error) {
+    console.warn('Failed to delete Supabase profile avatar.', error);
+    return {
+      ok: false,
+      message: error.message,
+    };
+  }
+
+  return {
+    ok: true,
+    message: '프로필 사진을 삭제했습니다.',
+  };
+}

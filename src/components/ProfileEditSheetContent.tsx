@@ -2,8 +2,10 @@ import { Camera, ChevronDown, X } from 'lucide-react';
 import {
   ChangeEvent,
   FormEvent,
+  type PointerEvent as ReactPointerEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
 } from 'react';
@@ -13,6 +15,12 @@ import {
   type PreferenceIntakeProfile,
 } from '../constants/preferenceIntakeData';
 import { TASTE_SURVEY_CONTEXT_OPTIONS } from '../constants/tasteSurveyConfig';
+import { resolvePublicMediaPath } from '../lib/mediaAssets';
+import {
+  deleteSupabaseProfileAvatar,
+  listSupabaseProfileAvatars,
+} from '../lib/supabase';
+import ProfileAvatarEditorScreen from './ProfileAvatarEditorScreen';
 import BirthDatePicker, {
   formatBirthDate,
   getBirthDateLabel,
@@ -42,6 +50,7 @@ interface ProfileEditSheetContentProps {
   statusMessage?: string | null;
   userTasteAccentStyle: CSSProperties;
   onAvatarPreparationChange?: (isPreparing: boolean) => void;
+  onAvatarEditorOpenChange?: (isOpen: boolean) => void;
   onSubmit: (input: {
     avatarFile: File | null;
     birthDate: string | null;
@@ -75,9 +84,52 @@ const emptyPreferenceProfile: PreferenceIntakeProfile = {
 };
 
 const PROFILE_AVATAR_SIZE = 512;
+const PROFILE_AVATAR_EDITOR_SIZE = 240;
 const PROFILE_AVATAR_QUALITY = 0.84;
 const PROFILE_AVATAR_MAX_BYTES = 5 * 1024 * 1024;
 const PROFILE_AVATAR_OUTPUT_TYPE = 'image/webp';
+const PROFILE_AVATAR_MIN_SCALE = 1;
+const PROFILE_AVATAR_MAX_SCALE = 3;
+
+interface AvatarCropState {
+  naturalHeight: number;
+  naturalWidth: number;
+  offsetX: number;
+  offsetY: number;
+  scale: number;
+  sourceUrl: string;
+}
+
+interface AvatarAlbumItem extends AvatarCropState {
+  id: string;
+  label: string;
+}
+
+interface StoredAvatarItem {
+  id: string;
+  path: string;
+  src: string;
+}
+
+interface AvatarCropOffset {
+  x: number;
+  y: number;
+}
+
+interface AvatarPointerPosition {
+  x: number;
+  y: number;
+}
+
+interface AvatarGestureState {
+  initialCenterX: number;
+  initialCenterY: number;
+  initialDistance: number;
+  pointerId: number | null;
+  startOffsetX: number;
+  startOffsetY: number;
+  startScale: number;
+}
 
 function detectImageTypeFromBytes(bytes: Uint8Array) {
   if (
@@ -113,22 +165,42 @@ function getInitialPreferenceProfile(profile: PreferenceIntakeProfile | null) {
   return profile ?? emptyPreferenceProfile;
 }
 
-async function loadImageFromFile(file: File) {
-  const sourceUrl = URL.createObjectURL(file);
-
-  try {
-    return await new Promise<HTMLImageElement>((resolve, reject) => {
+async function loadImageFromUrl(sourceUrl: string) {
+  const loadImage = (useAnonymousCors: boolean) =>
+    new Promise<HTMLImageElement>((resolve, reject) => {
       const image = new Image();
+
+      if (useAnonymousCors) {
+        image.crossOrigin = 'anonymous';
+      }
+
       image.onload = () => resolve(image);
       image.onerror = () => reject(new Error('프로필 사진을 불러오지 못했습니다.'));
       image.src = sourceUrl;
     });
-  } finally {
-    URL.revokeObjectURL(sourceUrl);
+
+  try {
+    return await loadImage(true);
+  } catch (error) {
+    if (sourceUrl.startsWith('blob:') || sourceUrl.startsWith('data:')) {
+      throw error;
+    }
+
+    return await loadImage(false);
   }
 }
 
-async function normalizeProfileAvatarFile(file: File) {
+async function loadCanvasSafeImageFromUrl(sourceUrl: string) {
+  return await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('프로필 사진을 불러오지 못했습니다.'));
+    image.src = sourceUrl;
+  });
+}
+
+function validateProfileAvatarFile(file: File) {
   if (!file.type.startsWith('image/')) {
     throw new Error('이미지 파일만 업로드할 수 있습니다.');
   }
@@ -136,8 +208,69 @@ async function normalizeProfileAvatarFile(file: File) {
   if (file.size > PROFILE_AVATAR_MAX_BYTES) {
     throw new Error('프로필 사진은 5MB 이하로 올려 주세요.');
   }
+}
 
-  const image = await loadImageFromFile(file);
+function getAvatarCropLayout(cropState: AvatarCropState, editorSize = PROFILE_AVATAR_EDITOR_SIZE) {
+  const baseScale = Math.max(
+    editorSize / cropState.naturalWidth,
+    editorSize / cropState.naturalHeight,
+  );
+  const renderedWidth = cropState.naturalWidth * baseScale * cropState.scale;
+  const renderedHeight = cropState.naturalHeight * baseScale * cropState.scale;
+
+  return {
+    height: renderedHeight,
+    left: (editorSize - renderedWidth) / 2 + cropState.offsetX,
+    top: (editorSize - renderedHeight) / 2 + cropState.offsetY,
+    width: renderedWidth,
+  };
+}
+
+function clampAvatarCropOffset(
+  cropState: AvatarCropState,
+  nextOffset: AvatarCropOffset,
+  editorSize = PROFILE_AVATAR_EDITOR_SIZE,
+) {
+  const layout = getAvatarCropLayout(
+    {
+      ...cropState,
+      offsetX: 0,
+      offsetY: 0,
+    },
+    editorSize,
+  );
+  const maxOffsetX = Math.max(0, (layout.width - editorSize) / 2);
+  const maxOffsetY = Math.max(0, (layout.height - editorSize) / 2);
+
+  return {
+    x: Math.min(maxOffsetX, Math.max(-maxOffsetX, nextOffset.x)),
+    y: Math.min(maxOffsetY, Math.max(-maxOffsetY, nextOffset.y)),
+  };
+}
+
+function clampAvatarScale(nextScale: number) {
+  return Math.min(
+    PROFILE_AVATAR_MAX_SCALE,
+    Math.max(PROFILE_AVATAR_MIN_SCALE, nextScale),
+  );
+}
+
+function getPointerDistance(firstPointer: AvatarPointerPosition, secondPointer: AvatarPointerPosition) {
+  return Math.hypot(secondPointer.x - firstPointer.x, secondPointer.y - firstPointer.y);
+}
+
+function getPointerCenter(firstPointer: AvatarPointerPosition, secondPointer: AvatarPointerPosition) {
+  return {
+    x: (firstPointer.x + secondPointer.x) / 2,
+    y: (firstPointer.y + secondPointer.y) / 2,
+  };
+}
+
+async function createCroppedProfileAvatarFile(
+  cropState: AvatarCropState,
+  editorSize = PROFILE_AVATAR_EDITOR_SIZE,
+) {
+  const image = await loadCanvasSafeImageFromUrl(cropState.sourceUrl);
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
 
@@ -145,22 +278,17 @@ async function normalizeProfileAvatarFile(file: File) {
     throw new Error('프로필 사진을 처리하지 못했습니다.');
   }
 
-  const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
-  const sourceX = (image.naturalWidth - sourceSize) / 2;
-  const sourceY = (image.naturalHeight - sourceSize) / 2;
+  const layout = getAvatarCropLayout(cropState, editorSize);
+  const outputScale = PROFILE_AVATAR_SIZE / editorSize;
 
   canvas.width = PROFILE_AVATAR_SIZE;
   canvas.height = PROFILE_AVATAR_SIZE;
   context.drawImage(
     image,
-    sourceX,
-    sourceY,
-    sourceSize,
-    sourceSize,
-    0,
-    0,
-    PROFILE_AVATAR_SIZE,
-    PROFILE_AVATAR_SIZE,
+    layout.left * outputScale,
+    layout.top * outputScale,
+    layout.width * outputScale,
+    layout.height * outputScale,
   );
 
   const blob = await new Promise<Blob | null>((resolve) => {
@@ -223,10 +351,14 @@ export default function ProfileEditSheetContent({
   statusMessage,
   userTasteAccentStyle,
   onAvatarPreparationChange,
+  onAvatarEditorOpenChange,
   onSubmit,
 }: ProfileEditSheetContentProps) {
   const [draftAvatarPreviewUrl, setDraftAvatarPreviewUrl] = useState<string | null>(null);
   const [draftAvatarFile, setDraftAvatarFile] = useState<File | null>(null);
+  const [avatarCropState, setAvatarCropState] = useState<AvatarCropState | null>(null);
+  const [avatarAlbumItems, setAvatarAlbumItems] = useState<AvatarAlbumItem[]>([]);
+  const [storedAvatarItems, setStoredAvatarItems] = useState<StoredAvatarItem[]>([]);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
   const [isPreparingAvatar, setIsPreparingAvatar] = useState(false);
   const [shouldRemoveAvatar, setShouldRemoveAvatar] = useState(false);
@@ -242,12 +374,123 @@ export default function ProfileEditSheetContent({
     getInitialPreferenceProfile(preferenceProfile),
   );
   const [activePicker, setActivePicker] = useState<ProfileEditPicker>(null);
+  const [avatarEditorSize, setAvatarEditorSize] = useState(PROFILE_AVATAR_EDITOR_SIZE);
+  const avatarEditorRef = useRef<HTMLDivElement | null>(null);
+  const avatarCropSourceUrlRef = useRef<string | null>(null);
+  const avatarAlbumSourceUrlsRef = useRef<Set<string>>(new Set());
+  const avatarPointersRef = useRef<Map<number, AvatarPointerPosition>>(new Map());
+  const avatarGestureStateRef = useRef<AvatarGestureState | null>(null);
+  const revokeAvatarCropSourceUrl = (sourceUrl: string) => {
+    if (
+      sourceUrl.startsWith('blob:') &&
+      !avatarAlbumSourceUrlsRef.current.has(sourceUrl) &&
+      sourceUrl !== draftAvatarPreviewUrl
+    ) {
+      URL.revokeObjectURL(sourceUrl);
+    }
+  };
+
+  const selectAvatarSourceForEditing = (sourceUrl: string, label: string) => {
+    setAvatarMessage('사진 위치와 크기를 맞춘 뒤 적용해 주세요.');
+
+    void (async () => {
+      try {
+        const image = await loadImageFromUrl(sourceUrl);
+
+        avatarPointersRef.current.clear();
+        avatarGestureStateRef.current = null;
+        setAvatarCropState((currentCropState) => {
+          if (currentCropState) {
+            revokeAvatarCropSourceUrl(currentCropState.sourceUrl);
+          }
+
+          return {
+            naturalHeight: image.naturalHeight,
+            naturalWidth: image.naturalWidth,
+            offsetX: 0,
+            offsetY: 0,
+            scale: 1,
+            sourceUrl,
+          };
+        });
+        setDraftAvatarFile(null);
+        setShouldRemoveAvatar(false);
+      } catch (error) {
+        console.warn('Failed to select profile avatar for editing.', error);
+        setAvatarMessage(`${label}을 편집 화면으로 불러오지 못했습니다.`);
+      }
+    })();
+  };
+
+  const selectAvatarAlbumItem = (item: AvatarAlbumItem) => {
+    avatarPointersRef.current.clear();
+    avatarGestureStateRef.current = null;
+    setAvatarCropState((currentCropState) => {
+      if (currentCropState) {
+        revokeAvatarCropSourceUrl(currentCropState.sourceUrl);
+      }
+
+      return {
+        naturalHeight: item.naturalHeight,
+        naturalWidth: item.naturalWidth,
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        sourceUrl: item.sourceUrl,
+      };
+    });
+    setDraftAvatarFile(null);
+    setShouldRemoveAvatar(false);
+    setAvatarMessage('사진 위치와 크기를 맞춘 뒤 적용해 주세요.');
+  };
+
+  const deleteStoredAvatarItem = (item: StoredAvatarItem) => {
+    setAvatarMessage('프로필 사진을 삭제하고 있어요.');
+
+    void (async () => {
+      const result = await deleteSupabaseProfileAvatar(item.path);
+
+      if (!result.ok) {
+        setAvatarMessage(result.message || '프로필 사진을 삭제하지 못했습니다.');
+        return;
+      }
+
+      setStoredAvatarItems((currentItems) =>
+        currentItems.filter((currentItem) => currentItem.path !== item.path),
+      );
+
+      if (avatarCropState?.sourceUrl === item.src) {
+        setAvatarCropState(null);
+      }
+
+      if (avatarImageDataUrl === item.src) {
+        setDraftAvatarPreviewUrl(null);
+        setDraftAvatarFile(null);
+        setShouldRemoveAvatar(true);
+      }
+
+      setAvatarMessage('프로필 사진을 삭제했습니다.');
+    })();
+  };
 
   useEffect(() => {
     setDraftAvatarFile(null);
     setAvatarMessage(null);
     setIsPreparingAvatar(false);
     onAvatarPreparationChange?.(false);
+    setAvatarCropState((currentCropState) => {
+      if (currentCropState) {
+        revokeAvatarCropSourceUrl(currentCropState.sourceUrl);
+      }
+
+      return null;
+    });
+    setAvatarAlbumItems((currentItems) => {
+      currentItems.forEach((item) => URL.revokeObjectURL(item.sourceUrl));
+
+      return [];
+    });
+    setStoredAvatarItems([]);
     setDraftAvatarPreviewUrl((currentUrl) => {
       if (currentUrl?.startsWith('blob:')) {
         URL.revokeObjectURL(currentUrl);
@@ -281,6 +524,111 @@ export default function ProfileEditSheetContent({
     [draftAvatarPreviewUrl],
   );
 
+  useEffect(() => {
+    avatarCropSourceUrlRef.current = avatarCropState?.sourceUrl ?? null;
+  }, [avatarCropState?.sourceUrl]);
+
+  useEffect(() => {
+    if (!avatarCropState) {
+      return;
+    }
+
+    let isActive = true;
+
+    void (async () => {
+      const result = await listSupabaseProfileAvatars();
+
+      if (!isActive || !result.ok) {
+        return;
+      }
+
+      setStoredAvatarItems(
+        result.avatarPaths
+          .map((path) => {
+            const src = resolvePublicMediaPath(path);
+
+            return src
+              ? {
+                id: path,
+                path,
+                src,
+              }
+              : null;
+          })
+          .filter((item): item is StoredAvatarItem => Boolean(item)),
+      );
+    })();
+
+    return () => {
+      isActive = false;
+    };
+  }, [avatarCropState]);
+
+  useEffect(() => {
+    avatarAlbumSourceUrlsRef.current = new Set(
+      avatarAlbumItems.map((item) => item.sourceUrl),
+    );
+  }, [avatarAlbumItems]);
+
+  useEffect(() => {
+    onAvatarEditorOpenChange?.(Boolean(avatarCropState));
+  }, [avatarCropState, onAvatarEditorOpenChange]);
+
+  useEffect(
+    () => () => {
+      if (avatarCropSourceUrlRef.current) {
+        revokeAvatarCropSourceUrl(avatarCropSourceUrlRef.current);
+      }
+
+      avatarAlbumSourceUrlsRef.current.forEach((sourceUrl) => URL.revokeObjectURL(sourceUrl));
+      avatarPointersRef.current.clear();
+      avatarGestureStateRef.current = null;
+      onAvatarEditorOpenChange?.(false);
+    },
+    [onAvatarEditorOpenChange],
+  );
+
+  useEffect(() => {
+    const editorElement = avatarEditorRef.current;
+
+    if (!editorElement || !avatarCropState) {
+      return;
+    }
+
+    const updateEditorSize = () => {
+      const nextSize = Math.max(240, Math.round(editorElement.getBoundingClientRect().width));
+      setAvatarEditorSize(nextSize);
+      setAvatarCropState((currentCropState) => {
+        if (!currentCropState) {
+          return currentCropState;
+        }
+
+        const nextOffset = clampAvatarCropOffset(
+          currentCropState,
+          {
+            x: currentCropState.offsetX,
+            y: currentCropState.offsetY,
+          },
+          nextSize,
+        );
+
+        return {
+          ...currentCropState,
+          offsetX: nextOffset.x,
+          offsetY: nextOffset.y,
+        };
+      });
+    };
+
+    updateEditorSize();
+    const resizeObserver = new ResizeObserver(updateEditorSize);
+    resizeObserver.observe(editorElement);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [avatarCropState?.sourceUrl]);
+
   const dietaryOptions = useMemo(
     () => dietaryQuestion?.options ?? [],
     [],
@@ -299,11 +647,309 @@ export default function ProfileEditSheetContent({
   const draftAvatarImageSrc = shouldRemoveAvatar
     ? null
     : draftAvatarPreviewUrl ?? avatarImageDataUrl;
+  const avatarCropLayout = avatarCropState
+    ? getAvatarCropLayout(avatarCropState, avatarEditorSize)
+    : null;
+  const avatarLibraryItems = [
+    ...avatarAlbumItems.map((item) => ({
+      id: item.id,
+      isEditing: avatarCropState?.sourceUrl === item.sourceUrl,
+      label: item.label,
+      onSelect: () => selectAvatarAlbumItem(item),
+      src: item.sourceUrl,
+    })),
+    draftAvatarPreviewUrl
+      ? {
+        id: 'prepared-avatar',
+        isEditing: avatarCropState?.sourceUrl === draftAvatarPreviewUrl,
+        label: '편집한 사진',
+        onSelect: () => selectAvatarSourceForEditing(draftAvatarPreviewUrl, '편집한 사진'),
+        src: draftAvatarPreviewUrl,
+      }
+      : null,
+    avatarImageDataUrl
+      ? {
+        id: 'current-avatar',
+        isEditing: avatarCropState?.sourceUrl === avatarImageDataUrl,
+        label: '현재 사진',
+        onSelect: () => selectAvatarSourceForEditing(avatarImageDataUrl, '현재 사진'),
+        src: avatarImageDataUrl,
+      }
+      : null,
+  ].filter(
+    (item): item is {
+      id: string;
+      isEditing?: boolean;
+      isRemovable?: boolean;
+      label: string;
+      onRemove?: () => void;
+      onSelect?: () => void;
+      src: string;
+    } => Boolean(item),
+  );
+  const avatarHistoryItems = [
+    draftAvatarPreviewUrl
+      ? {
+        id: 'prepared-avatar-history',
+        label: '편집한 사진',
+        src: draftAvatarPreviewUrl,
+      }
+      : null,
+    ...storedAvatarItems.map((item) => ({
+        id: `stored-avatar-${item.path}`,
+        isRemovable: true,
+        label: item.src === avatarImageDataUrl ? '현재 프로필 사진' : '저장된 프로필 사진',
+        onRemove: () => deleteStoredAvatarItem(item),
+        src: item.src,
+      })),
+  ].filter(
+    (item): item is {
+      id: string;
+      isRemovable?: boolean;
+      label: string;
+      onRemove?: () => void;
+      src: string;
+    } => Boolean(item),
+  );
 
   const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files ?? []);
 
-    if (!file) {
+    if (files.length === 0) {
+      return;
+    }
+
+    setAvatarMessage('사진 위치와 크기를 맞춘 뒤 적용해 주세요.');
+
+    void (async () => {
+      const pendingSourceUrls: string[] = [];
+
+      try {
+        const nextAlbumItems = await Promise.all(
+          files.map(async (file, index) => {
+            validateProfileAvatarFile(file);
+            const sourceUrl = URL.createObjectURL(file);
+            pendingSourceUrls.push(sourceUrl);
+            const image = await loadImageFromUrl(sourceUrl);
+
+            return {
+              id: `selected-avatar-${Date.now()}-${index}`,
+              label: file.name || `선택한 사진 ${index + 1}`,
+              naturalHeight: image.naturalHeight,
+              naturalWidth: image.naturalWidth,
+              offsetX: 0,
+              offsetY: 0,
+              scale: 1,
+              sourceUrl,
+            };
+          }),
+        );
+        const primaryAlbumItem = nextAlbumItems[0];
+
+        avatarPointersRef.current.clear();
+        avatarGestureStateRef.current = null;
+        avatarAlbumSourceUrlsRef.current = new Set(
+          nextAlbumItems.map((item) => item.sourceUrl),
+        );
+        setAvatarCropState((currentCropState) => {
+          if (currentCropState) {
+            revokeAvatarCropSourceUrl(currentCropState.sourceUrl);
+          }
+
+          return {
+            naturalHeight: primaryAlbumItem.naturalHeight,
+            naturalWidth: primaryAlbumItem.naturalWidth,
+            offsetX: 0,
+            offsetY: 0,
+            scale: 1,
+            sourceUrl: primaryAlbumItem.sourceUrl,
+          };
+        });
+        pendingSourceUrls.length = 0;
+
+        setAvatarAlbumItems((currentItems) => {
+          currentItems.forEach((item) => URL.revokeObjectURL(item.sourceUrl));
+
+          return nextAlbumItems;
+        });
+
+        setDraftAvatarPreviewUrl((currentUrl) => {
+          if (currentUrl?.startsWith('blob:')) {
+            URL.revokeObjectURL(currentUrl);
+          }
+
+          return null;
+        });
+        setDraftAvatarFile(null);
+        setShouldRemoveAvatar(false);
+      } catch (error) {
+        pendingSourceUrls.forEach((sourceUrl) => URL.revokeObjectURL(sourceUrl));
+
+        console.warn('Failed to prepare profile avatar.', error);
+        setAvatarMessage(
+          error instanceof Error
+            ? error.message
+            : '프로필 사진을 준비하지 못했습니다. 다른 이미지를 선택해 주세요.',
+        );
+      }
+    })();
+    event.target.value = '';
+  };
+
+  const handleAvatarCropPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!avatarCropState) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    avatarPointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    const activePointers = Array.from(avatarPointersRef.current.values());
+
+    if (activePointers.length >= 2) {
+      const [firstPointer, secondPointer] = activePointers;
+      const center = getPointerCenter(firstPointer, secondPointer);
+
+      avatarGestureStateRef.current = {
+        initialCenterX: center.x,
+        initialCenterY: center.y,
+        initialDistance: Math.max(1, getPointerDistance(firstPointer, secondPointer)),
+        pointerId: null,
+        startOffsetX: avatarCropState.offsetX,
+        startOffsetY: avatarCropState.offsetY,
+        startScale: avatarCropState.scale,
+      };
+      return;
+    }
+
+    avatarGestureStateRef.current = {
+      initialCenterX: event.clientX,
+      initialCenterY: event.clientY,
+      initialDistance: 1,
+      pointerId: event.pointerId,
+      startOffsetX: avatarCropState.offsetX,
+      startOffsetY: avatarCropState.offsetY,
+      startScale: avatarCropState.scale,
+    };
+  };
+
+  const handleAvatarCropPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!avatarCropState || !avatarPointersRef.current.has(event.pointerId)) {
+      return;
+    }
+
+    event.preventDefault();
+    avatarPointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    const activePointers = Array.from(avatarPointersRef.current.values());
+    const gestureState = avatarGestureStateRef.current;
+
+    if (!gestureState) {
+      return;
+    }
+
+    if (activePointers.length >= 2) {
+      const [firstPointer, secondPointer] = activePointers;
+      const center = getPointerCenter(firstPointer, secondPointer);
+      const nextScale = clampAvatarScale(
+        gestureState.startScale *
+          (getPointerDistance(firstPointer, secondPointer) / gestureState.initialDistance),
+      );
+      const nextCropState = {
+        ...avatarCropState,
+        scale: nextScale,
+      };
+      const nextOffset = clampAvatarCropOffset(
+        nextCropState,
+        {
+          x: gestureState.startOffsetX + center.x - gestureState.initialCenterX,
+          y: gestureState.startOffsetY + center.y - gestureState.initialCenterY,
+        },
+        avatarEditorSize,
+      );
+
+      setAvatarCropState((currentCropState) =>
+        currentCropState
+          ? {
+            ...currentCropState,
+            offsetX: nextOffset.x,
+            offsetY: nextOffset.y,
+            scale: nextScale,
+          }
+          : currentCropState,
+      );
+      return;
+    }
+
+    if (gestureState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const nextOffset = clampAvatarCropOffset(
+      avatarCropState,
+      {
+        x: gestureState.startOffsetX + event.clientX - gestureState.initialCenterX,
+        y: gestureState.startOffsetY + event.clientY - gestureState.initialCenterY,
+      },
+      avatarEditorSize,
+    );
+
+    setAvatarCropState((currentCropState) =>
+      currentCropState
+        ? {
+          ...currentCropState,
+          offsetX: nextOffset.x,
+          offsetY: nextOffset.y,
+        }
+        : currentCropState,
+    );
+  };
+
+  const handleAvatarCropPointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    avatarPointersRef.current.delete(event.pointerId);
+
+    const activePointerEntries = Array.from(avatarPointersRef.current.entries());
+
+    if (!avatarCropState || activePointerEntries.length === 0) {
+      avatarGestureStateRef.current = null;
+      return;
+    }
+
+    const [remainingPointerId, remainingPointer] = activePointerEntries[0];
+
+    avatarGestureStateRef.current = {
+      initialCenterX: remainingPointer.x,
+      initialCenterY: remainingPointer.y,
+      initialDistance: 1,
+      pointerId: remainingPointerId,
+      startOffsetX: avatarCropState.offsetX,
+      startOffsetY: avatarCropState.offsetY,
+      startScale: avatarCropState.scale,
+    };
+  };
+
+  const cancelAvatarCrop = () => {
+    avatarPointersRef.current.clear();
+    avatarGestureStateRef.current = null;
+    setAvatarCropState((currentCropState) => {
+      if (currentCropState) {
+        URL.revokeObjectURL(currentCropState.sourceUrl);
+      }
+
+      return null;
+    });
+    setAvatarMessage(null);
+  };
+
+  const applyAvatarCrop = () => {
+    if (!avatarCropState || isPreparingAvatar || isSubmitting) {
       return;
     }
 
@@ -313,8 +959,11 @@ export default function ProfileEditSheetContent({
 
     void (async () => {
       try {
-        const normalizedFile = await normalizeProfileAvatarFile(file);
-        const previewUrl = URL.createObjectURL(normalizedFile);
+        const croppedFile = await createCroppedProfileAvatarFile(
+          avatarCropState,
+          avatarEditorSize,
+        );
+        const previewUrl = URL.createObjectURL(croppedFile);
 
         setDraftAvatarPreviewUrl((currentUrl) => {
           if (currentUrl?.startsWith('blob:')) {
@@ -323,11 +972,20 @@ export default function ProfileEditSheetContent({
 
           return previewUrl;
         });
-        setDraftAvatarFile(normalizedFile);
-        setAvatarMessage('사진이 준비되었어요. 저장을 누르면 프로필에 반영됩니다.');
+        setDraftAvatarFile(croppedFile);
         setShouldRemoveAvatar(false);
+        setAvatarMessage('사진이 준비되었어요. 저장을 누르면 프로필에 반영됩니다.');
+        avatarPointersRef.current.clear();
+        avatarGestureStateRef.current = null;
+        setAvatarCropState((currentCropState) => {
+          if (currentCropState) {
+            URL.revokeObjectURL(currentCropState.sourceUrl);
+          }
+
+          return null;
+        });
       } catch (error) {
-        console.warn('Failed to prepare profile avatar.', error);
+        console.warn('Failed to crop profile avatar.', error);
         setAvatarMessage(
           error instanceof Error
             ? error.message
@@ -338,7 +996,6 @@ export default function ProfileEditSheetContent({
         onAvatarPreparationChange?.(false);
       }
     })();
-    event.target.value = '';
   };
 
   const updateBirthDatePart = (field: keyof BirthDateParts, value: number) => {
@@ -388,6 +1045,11 @@ export default function ProfileEditSheetContent({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (avatarCropState) {
+      setAvatarMessage('사진 편집을 적용한 뒤 저장해 주세요.');
+      return;
+    }
+
     if (isPreparingAvatar || isSubmitting) {
       return;
     }
@@ -405,6 +1067,29 @@ export default function ProfileEditSheetContent({
       shouldRemoveAvatar,
     });
   };
+
+  if (avatarCropState && avatarCropLayout) {
+    return (
+      <ProfileAvatarEditorScreen
+        avatarCropLayout={avatarCropLayout}
+        avatarCropState={avatarCropState}
+        avatarEditorRef={avatarEditorRef}
+        avatarHistoryItems={avatarHistoryItems}
+        avatarLibraryItems={avatarLibraryItems}
+        avatarMessage={avatarMessage}
+        isPreparingAvatar={isPreparingAvatar}
+        isSubmitting={isSubmitting}
+        userTasteAccentStyle={userTasteAccentStyle}
+        onAvatarChange={handleAvatarChange}
+        onCancel={cancelAvatarCrop}
+        onComplete={applyAvatarCrop}
+        onPointerCancel={handleAvatarCropPointerEnd}
+        onPointerDown={handleAvatarCropPointerDown}
+        onPointerMove={handleAvatarCropPointerMove}
+        onPointerUp={handleAvatarCropPointerEnd}
+      />
+    );
+  }
 
   return (
     <>
@@ -445,7 +1130,7 @@ export default function ProfileEditSheetContent({
               }}
             >
               <Camera aria-hidden="true" className="size-4" strokeWidth={2} />
-              사진 추가
+              사진 편집
               <input
                 accept="image/*"
                 className="sr-only"
@@ -454,11 +1139,18 @@ export default function ProfileEditSheetContent({
                 type="file"
               />
             </label>
-            {draftAvatarImageSrc ? (
+            {draftAvatarImageSrc || avatarCropState ? (
               <button
                 type="button"
                 className="px-1 py-1 text-[12px] font-semibold text-[var(--tb-color-text-faint)]"
                 onClick={() => {
+                  setAvatarCropState((currentCropState) => {
+                    if (currentCropState) {
+                      URL.revokeObjectURL(currentCropState.sourceUrl);
+                    }
+
+                    return null;
+                  });
                   setDraftAvatarPreviewUrl((currentUrl) => {
                     if (currentUrl?.startsWith('blob:')) {
                       URL.revokeObjectURL(currentUrl);
@@ -477,7 +1169,7 @@ export default function ProfileEditSheetContent({
           </div>
           {avatarMessage || statusMessage ? (
             <p
-              className="max-w-[260px] text-center text-[12px] leading-relaxed"
+              className="text-center text-[12px] leading-relaxed"
               style={{
                 color: statusMessage
                   ? 'var(--tb-color-feedback-danger, #b42318)'
@@ -497,9 +1189,9 @@ export default function ProfileEditSheetContent({
             onChange={setDraftDisplayName}
           />
           <ProfileEditTextField
-            label="닉네임"
+            label="버디네임"
             placeholder="Taste Buddy에서 사용할 이름"
-            helperText="친구가 나를 찾는 고유 닉네임입니다."
+            helperText="친구가 나를 찾는 고유 버디네임입니다."
             value={draftNickname}
             onChange={setDraftNickname}
           />

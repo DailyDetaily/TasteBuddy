@@ -66,7 +66,7 @@ export default function TopAppBar({
         appearance === 'transparent'
           ? 'w-full shrink-0 border-b border-transparent bg-transparent'
           : appearance === 'solid'
-            ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-focus)]'
+            ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]'
             : 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70'
       }
       style={{ paddingTop: 'var(--tb-safe-area-top)' }}
@@ -104,7 +104,7 @@ export default function TopAppBar({
               className="relative shrink-0 rounded-full size-[32px] transition-transform active:scale-[0.98]"
             >
               <div
-                className="flex items-center justify-center overflow-hidden rounded-full size-[32px] bg-[color:rgba(255,153,0,0.2)]"
+                className="flex items-center justify-center overflow-hidden rounded-full size-[32px] bg-transparent"
                 style={userAvatarImageSrc ? undefined : userAvatarStyle}
               >
                 {userAvatarImageSrc ? (

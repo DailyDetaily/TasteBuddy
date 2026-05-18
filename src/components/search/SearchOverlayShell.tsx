@@ -10,6 +10,8 @@ const SEARCH_BAR_ICON_BUTTON_CLASS_NAME =
   'flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[#303946] transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
 const SEARCH_OVERLAY_TOP_OFFSET =
   'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
+const SEARCH_OVERLAY_BOTTOM_OFFSET =
+  'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
 const SEARCH_PANEL_HEADER_CLASS_NAME =
   'border-b border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/95 px-5 pb-4 pt-1 backdrop-blur-sm';
 const SEARCH_PANEL_BODY_CLASS_NAME = 'flex-1 overflow-y-auto no-scrollbar px-5 pb-8 pt-4';
@@ -39,10 +41,16 @@ export default function SearchOverlayShell({
 }: SearchOverlayShellProps) {
   return (
     <>
-      <div className="fixed inset-0 z-[35] bg-[var(--tb-color-bg-page)] animate-fadeIn" />
       <div
-        className="fixed inset-x-0 bottom-0 z-[56] flex justify-center"
-        style={{ top: SEARCH_OVERLAY_TOP_OFFSET }}
+        className="fixed inset-x-0 top-0 z-[35] bg-[var(--tb-color-bg-page)] animate-fadeIn"
+        style={{ bottom: SEARCH_OVERLAY_BOTTOM_OFFSET }}
+      />
+      <div
+        className="fixed inset-x-0 z-[56] flex justify-center"
+        style={{
+          top: SEARCH_OVERLAY_TOP_OFFSET,
+          bottom: SEARCH_OVERLAY_BOTTOM_OFFSET,
+        }}
       >
         <div className="flex h-full w-full max-w-[1440px] flex-col">
           <div className={SEARCH_PANEL_HEADER_CLASS_NAME}>
@@ -62,7 +70,7 @@ export default function SearchOverlayShell({
                   autoCapitalize="none"
                   spellCheck={false}
                   placeholder={placeholder}
-                  className="h-full min-w-0 flex-1 border-none bg-transparent pr-8 text-[13px] font-medium text-[#303946] outline-none placeholder:text-[#5D6672]"
+                  className="h-full min-w-0 flex-1 border-none bg-transparent pr-8 text-[13px] font-medium text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-muted)] focus:ring-0"
                 />
                 {query ? (
                   <button

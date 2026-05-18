@@ -47,7 +47,7 @@ export default function TasteChangePage({ children, onBack, onOpenMenu, topSlot 
         </div>
       ) : null}
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className={`tb-section-stack px-0 pb-20 animate-fadeIn ${topSlot ? 'pt-[57px]' : 'pt-5'}`}>
+        <div className={`tb-section-stack px-0 pb-20 animate-fadeIn ${topSlot ? 'pt-[53px]' : 'pt-5'}`}>
           {children}
         </div>
       </div>
