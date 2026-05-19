@@ -159,7 +159,7 @@ function deriveProfileStats(
       color: '#B372B4',
     },
     {
-      label: '저장 리스트',
+      label: '테이스트 리스트',
       value: `${savedListCount}개`,
       icon: Bookmark,
       color: '#7299FF',
@@ -306,7 +306,7 @@ export default function ProfilePage({
 
       setStats((currentStats) =>
         currentStats.map((stat) =>
-          stat.label === '저장 리스트'
+          stat.label === '테이스트 리스트'
             ? { ...stat, value: `${savedListCount}곳` }
             : stat,
         ),
@@ -552,7 +552,7 @@ export default function ProfilePage({
                 return (
                   <SectionCard
                     key={index}
-                    onClick={stat.label === '저장 리스트' ? onOpenSavedList : undefined}
+                    onClick={stat.label === '테이스트 리스트' ? onOpenSavedList : undefined}
                   >
                     <div className="flex items-center gap-2 w-full">
                       <div

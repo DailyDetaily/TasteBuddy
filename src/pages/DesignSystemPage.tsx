@@ -93,6 +93,7 @@ import TastePointArrowBox, {
   type TastePointArrowBoxSize,
   type TastePointArrowBoxTrend,
 } from "../components/system/TastePointArrowBox";
+import ToastSurface from "../components/system/ToastSurface";
 import {
   Alert,
   AlertDescription,
@@ -227,6 +228,7 @@ const COMPONENT_ARCHITECTURE_GROUPS = [
       "StatusChip",
       "TasteChip",
       "TastePointArrowBox",
+      "ToastSurface",
     ],
   },
   {
@@ -3136,13 +3138,38 @@ export default function DesignSystemPage() {
                           </label>
                         ))}
                       </RadioGroup>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[13px] text-[var(--tb-color-text-primary)]">Push 알림</span>
-                        <Switch checked={fieldSwitch} onCheckedChange={setFieldSwitch} disabled={fieldDisabled} />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+	                      <div className="flex items-center justify-between">
+	                        <span className="text-[13px] text-[var(--tb-color-text-primary)]">Push 알림</span>
+	                        <Switch checked={fieldSwitch} onCheckedChange={setFieldSwitch} disabled={fieldDisabled} />
+	                      </div>
+	                      <div className="grid gap-2 rounded-[12px] bg-[var(--tb-color-surface-base)] p-3">
+	                        <span className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
+	                          Switch sizes
+	                        </span>
+	                        <div className="flex flex-wrap items-center gap-4">
+	                          {[
+	                            { label: "sm", size: "sm" as const },
+	                            { label: "md", size: "md" as const },
+	                            { label: "lg", size: "lg" as const },
+	                          ].map((item) => (
+	                            <label
+	                              key={item.size}
+	                              className="flex items-center gap-2 text-[12px] font-semibold text-[var(--tb-color-text-secondary)]"
+	                            >
+	                              <Switch
+	                                size={item.size}
+	                                checked={fieldSwitch}
+	                                onCheckedChange={setFieldSwitch}
+	                                disabled={fieldDisabled}
+	                              />
+	                              {item.label}
+	                            </label>
+	                          ))}
+	                        </div>
+	                      </div>
+	                    </div>
+	                  </CardContent>
+	                </Card>
               </div>
 
               <div className="grid gap-3">
@@ -3398,7 +3425,7 @@ export default function DesignSystemPage() {
           <PlaygroundSection
             id="feedback"
             title="Feedback"
-            description="Alerts, progress, skeleton, empty states, spinner, and toast-like surfaces that help review the current interaction language. The toast wrapper exists in code but is not wired to the active app flow."
+            description="Alerts, progress, skeleton, empty states, spinner, and toast surfaces that help review the current interaction language."
             controls={
               <>
                 <SliderControl label="Progress" value={progress} min={0} max={100} unit="%" onChange={setProgress} />
@@ -3524,20 +3551,30 @@ export default function DesignSystemPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Toast surface</p>
-                      <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">Sonner wrapper exists in code but is not wired into active screens.</p>
+                      <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">테이스트 리스트 액션 뒤에 뜨는 실제 앱 토스트 표면입니다.</p>
                     </div>
-                    <StatusTag tone="unused">Defined but unused</StatusTag>
+                    <StatusTag tone="used">Currently used</StatusTag>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <SectionEyebrow>Toast surface</SectionEyebrow>
+                    <SectionEyebrow>ToastSurface</SectionEyebrow>
                   </div>
-                  <div className="mt-4 flex items-start gap-3 rounded-[20px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-4 py-3 shadow-[var(--tb-shadow-soft)]">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--tb-color-text-primary)] text-white">
-                      <CircleCheckIcon size={ICON_TOKENS.size.md} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">프로필이 저장되었습니다</p>
-                      <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">실제 toast로 연결하려면 src/components/ui/sonner.tsx + theme wiring이 필요합니다.</p>
+                  <div className="mt-4 grid gap-3 rounded-[20px] bg-[var(--tb-color-bg-page)] p-4">
+                    <ToastSurface
+                      actionLabel="보기"
+                      media={(
+                        <span className="flex size-10 items-center justify-center rounded-[12px] bg-[var(--tb-taste-umami-tint-surface)] text-[var(--tb-taste-umami-main)]">
+                          <UtensilsIcon size={ICON_TOKENS.size.md} strokeWidth={1.8} />
+                        </span>
+                      )}
+                      message="나중에 비교할 곳에 저장됨"
+                    />
+                    <div className="rounded-[16px] bg-[var(--tb-color-surface-base)] px-3 py-3">
+                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
+                        Usage
+                      </p>
+                      <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                        고정 위치는 화면별 컨테이너가 담당하고, ToastSurface는 media, message, action label만 렌더링합니다.
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -1006,8 +1006,12 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "ReservationPage에서 실제로 사용하는 empty state 피드백 컴포넌트입니다.",
     },
     {
+      file: "src/components/system/ToastSurface.tsx",
+      note: "테이스트 리스트 액션 뒤에 뜨는 실제 앱 토스트 표면입니다.",
+    },
+    {
       file: "src/components/ui/sonner.tsx",
-      note: "toast wrapper는 존재하지만 현재 화면에는 연결되어 있지 않습니다.",
+      note: "generic toast wrapper입니다. 제품 액션 토스트 표면은 ToastSurface가 담당합니다.",
     },
   ],
   overlay: [

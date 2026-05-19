@@ -27,15 +27,16 @@ import {
 } from '../../lib/tasteBuddySupabase';
 import { resolveUsableImagePath } from '../../lib/chefMatching';
 import { getChefImageByName } from './HomeCards';
-import {
+import RestaurantBookmarkSheet, {
   RESTAURANT_BOOKMARKS_CHANGED_EVENT,
   getRestaurantBookmarkKey,
   isRestaurantBookmarked,
-  removeRestaurantBookmark,
-  saveRestaurantBookmarkRecord,
 } from '../restaurant/RestaurantBookmarkSheet';
 import type { DiningFriendProfile } from '../../lib/supabase';
-import { getRestaurantInfo } from '../../pages/RestaurantDetailPage';
+import {
+  createRestaurantDetailFromSearchResult,
+  getRestaurantInfo,
+} from '../../pages/RestaurantDetailPage';
 
 const HOME_RECENT_SEARCH_STORAGE_KEY = 'tastebuddy-home-recent-searches-v1';
 const MAX_RECENT_SEARCHES = 5;
@@ -845,6 +846,7 @@ export default function HomeUnifiedSearch({
   const [isFriendSearching, setIsFriendSearching] = useState(false);
   const [friendSearchMessage, setFriendSearchMessage] = useState<string | null>(null);
   const [addingFriendId, setAddingFriendId] = useState<string | null>(null);
+  const [bookmarkSheetResult, setBookmarkSheetResult] = useState<HomeSearchResult | null>(null);
   const [, setBookmarkSyncIndex] = useState(0);
 
   const restaurantResults = buildRestaurantResults(catalog, reservations);
@@ -875,6 +877,8 @@ export default function HomeUnifiedSearch({
       filteredMenus.length +
       visibleKakaoResults.length,
   };
+  const bookmarkSheetTargetResult =
+    bookmarkSheetResult ?? searchGroups.restaurants[0] ?? restaurantResults[0] ?? null;
 
   const updateRecentSearches = (value: string) => {
     const nextValue = value.trim();
@@ -1022,24 +1026,7 @@ export default function HomeUnifiedSearch({
   };
 
   const toggleBookmarkedResult = (result: HomeSearchResult) => {
-    const restaurantKey = getRestaurantBookmarkKey(result.restaurant);
-    const isCurrentlyBookmarked = isRestaurantBookmarked(result.restaurant);
-
-    if (isCurrentlyBookmarked) {
-      removeRestaurantBookmark(result.restaurant);
-    } else {
-      saveRestaurantBookmarkRecord({
-        chefName: result.chef,
-        restaurantId: result.id,
-        restaurantName: result.restaurant,
-      });
-    }
-
-    setBookmarkedRestaurantKeys((current) =>
-      isCurrentlyBookmarked || current.includes(restaurantKey)
-        ? current.filter((item) => item !== restaurantKey)
-        : [...current, restaurantKey],
-    );
+    setBookmarkSheetResult(result);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -1313,6 +1300,29 @@ export default function HomeUnifiedSearch({
         </SearchOverlayShell>
       ) : null
       }
+      {bookmarkSheetTargetResult ? (
+        <RestaurantBookmarkSheet
+          open={bookmarkSheetResult !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setBookmarkSheetResult(null);
+            }
+          }}
+          onSaved={() => {
+            const restaurantName = bookmarkSheetResult?.restaurant;
+
+            if (!restaurantName) {
+              return;
+            }
+
+            const restaurantKey = getRestaurantBookmarkKey(restaurantName);
+            setBookmarkedRestaurantKeys((current) =>
+              current.includes(restaurantKey) ? current : [...current, restaurantKey],
+            );
+          }}
+          restaurant={createRestaurantDetailFromSearchResult(bookmarkSheetTargetResult)}
+        />
+      ) : null}
     </>
   );
 }

@@ -2305,7 +2305,7 @@ function MainApp() {
         : '팔로잉'
       : null;
   const profileSavedListTopBarTitle =
-    activeTab === 'profile' && isSavedRestaurantListOpen ? '저장리스트' : null;
+    activeTab === 'profile' && isSavedRestaurantListOpen ? '테이스트 리스트' : null;
   const mainTopBarTitle = profileSavedListTopBarTitle ?? profileConnectionTopBarTitle;
   const shouldLetStatusBarShowContent =
     appState === 'main' && (isReservationFeedbackMapView || isRestaurantDetailFeedbackMapView);
