@@ -169,7 +169,7 @@ import {
   persistDesignTokenRuntimeState,
   type DesignTokenRuntimeState,
 } from "../lib/designTokenRuntime";
-import { getFallbackNotifications, type AppNotification } from "../lib/notificationsSupabase";
+import { type AppNotification } from "../lib/notificationsSupabase";
 import ImproveAccuracyScreen from "./ImproveAccuracyScreen";
 import ReservationConfirmationScreen from "./ReservationConfirmationScreen";
 
@@ -352,6 +352,45 @@ const GENERIC_BUTTON_VARIANTS: GenericButtonVariant[] = [
   "ghost",
   "link",
 ];
+
+function getNotificationPanelPreviewNotifications(): AppNotification[] {
+  const now = Date.now();
+
+  return [
+    {
+      id: "preview-notification-guidance-ready",
+      type: "guidance_ready",
+      title: "셰프 가이드 준비",
+      body: "예약 프로필이 셰프가 참고할 수 있는 보정 가이드로 정리되었습니다.",
+      createdAt: new Date(now - 5 * 60 * 1000).toISOString(),
+      read: false,
+    },
+    {
+      id: "preview-notification-follower-added",
+      type: "follower_added",
+      title: "새 팔로워",
+      body: "민서님이 당신의 다이닝 기록을 팔로우하기 시작했습니다.",
+      createdAt: new Date(now - 30 * 60 * 1000).toISOString(),
+      read: false,
+    },
+    {
+      id: "preview-notification-reservation-confirmed",
+      type: "reservation_confirmed",
+      title: "예약 개인화 진행",
+      body: "다음 다이닝을 위해 현재 프로필 기준의 개인화 준비가 시작되었습니다.",
+      createdAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+      read: false,
+    },
+    {
+      id: "preview-notification-feedback-request",
+      type: "feedback_request",
+      title: "식후 피드백 반영",
+      body: "남긴 피드백이 다음 다이닝 기준을 더 섬세하게 만드는 데 쓰입니다.",
+      createdAt: new Date(now - 24 * 60 * 60 * 1000).toISOString(),
+      read: true,
+    },
+  ];
+}
 const GENERIC_BADGE_VARIANTS: GenericBadgeVariant[] = [
   "default",
   "secondary",
@@ -1039,7 +1078,7 @@ export default function DesignSystemPage() {
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [menuDrawerOpen, setMenuDrawerOpen] = useState(false);
   const [previewNotifications, setPreviewNotifications] = useState<AppNotification[]>(() =>
-    getFallbackNotifications(),
+    getNotificationPanelPreviewNotifications(),
   );
   const [accentTaste, setAccentTaste] = useState<TasteId>(PLAYGROUND_DEFAULTS.accentTaste);
   const [statusKey, setStatusKey] = useState<AppStatus>("preparing");

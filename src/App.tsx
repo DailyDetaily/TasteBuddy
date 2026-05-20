@@ -79,7 +79,6 @@ import {
 } from './constants/preferenceIntakeData';
 import { clearAppliedDesignTokenRuntimeState } from './lib/designTokenRuntime';
 import {
-  getFallbackNotifications,
   hydrateNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
@@ -470,6 +469,13 @@ function getSessionProfileLabel(session: Session | null) {
   return nickname || displayName || null;
 }
 
+function hasProfileIdentity(input: {
+  displayName?: string | null;
+  nickname?: string | null;
+}) {
+  return Boolean(input.displayName?.trim() || input.nickname?.trim());
+}
+
 const HANGUL_INITIAL_ROMAN = [
   'G',
   'K',
@@ -834,8 +840,10 @@ function MainApp() {
   const [hasHydratedRemoteMeasurement, setHasHydratedRemoteMeasurement] = useState(
     shouldStartFromOnboarding || !isSupabaseConfigured,
   );
-  const [notifications, setNotifications] = useState<AppNotification[]>(getFallbackNotifications);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
+  const [hydratedProfileDisplayName, setHydratedProfileDisplayName] = useState<string | null>(null);
+  const [hydratedProfileNickname, setHydratedProfileNickname] = useState<string | null>(null);
   const [isAuthProfileOpen, setIsAuthProfileOpen] = useState(false);
   const [authProfileStatus, setAuthProfileStatus] = useState<
     'idle' | 'submitting' | 'success' | 'error'
@@ -1052,9 +1060,11 @@ function MainApp() {
   const hasMeasurementData =
     hasCompletedInitialMeasurement && latestTasteMeasurementSnapshot !== null;
   const currentUserEmail = getSessionEmail(supabaseSession);
-  const currentUserDisplayName = getSessionDisplayName(supabaseSession);
-  const currentUserNickname = getSessionNickname(supabaseSession);
-  const currentUserProfileLabel = getSessionProfileLabel(supabaseSession);
+  const sessionDisplayName = getSessionDisplayName(supabaseSession);
+  const sessionNickname = getSessionNickname(supabaseSession);
+  const currentUserDisplayName = hydratedProfileDisplayName ?? sessionDisplayName;
+  const currentUserNickname = hydratedProfileNickname ?? sessionNickname;
+  const currentUserProfileLabel = currentUserNickname ?? currentUserDisplayName;
   const isAnonymousUser = isSupabaseConfigured
     ? isAnonymousSupabaseSession(supabaseSession) || !currentUserEmail
     : true;
@@ -1100,6 +1110,8 @@ function MainApp() {
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabaseSession) {
+      setHydratedProfileDisplayName(null);
+      setHydratedProfileNickname(null);
       return;
     }
 
@@ -1113,6 +1125,8 @@ function MainApp() {
       }
 
       setProfileAvatarPath(result.avatarPath);
+      setHydratedProfileDisplayName(result.displayName);
+      setHydratedProfileNickname(result.nickname);
       if (result.avatarPath) {
         setProfileAvatarDataUrl(null);
       }
@@ -1568,6 +1582,8 @@ function MainApp() {
 
       const session = await getCurrentSupabaseSession();
       setSupabaseSession(session);
+      setHydratedProfileDisplayName(nextDisplayName || nextNickname || null);
+      setHydratedProfileNickname(nextNickname || null);
     }
 
     setProfileAvatarDataUrl((currentUrl) => {
@@ -1619,6 +1635,12 @@ function MainApp() {
     }
 
     return result;
+  };
+
+  const refreshNotifications = async () => {
+    const nextNotifications = await hydrateNotifications();
+    setNotifications(nextNotifications);
+    return nextNotifications;
   };
 
   const handleLoadProfileConnections = async (kind: ProfileConnectionKind) => {
@@ -1684,6 +1706,58 @@ function MainApp() {
     setAuthEntryPendingEmail(null);
     setAuthEntryIntent('start-with-email');
     setIsAuthEntrySheetOpen(false);
+    setTasteSurveyIntroReturnTarget('auth');
+    setIsTasteSurveyIntroSheetOpen(true);
+  };
+
+  const continueAfterVerifiedEmailLogin = async (session: Session | null) => {
+    const identityResult = await hydrateSupabaseProfileIdentity();
+    const sessionIdentity = {
+      displayName: getSessionDisplayName(session),
+      nickname: getSessionNickname(session),
+    };
+    const hasExistingIdentity =
+      (identityResult.ok && hasProfileIdentity(identityResult)) ||
+      hasProfileIdentity(sessionIdentity);
+
+    if (identityResult.ok) {
+      setProfileAvatarPath(identityResult.avatarPath);
+      setHydratedProfileDisplayName(identityResult.displayName);
+      setHydratedProfileNickname(identityResult.nickname);
+
+      if (identityResult.avatarPath) {
+        setProfileAvatarDataUrl(null);
+      }
+    }
+
+    if (!hasExistingIdentity) {
+      setProfileSetupStatus('idle');
+      setProfileSetupMessage(null);
+      setIsProfileSetupSheetOpen(true);
+      return;
+    }
+
+    const remoteSnapshot = await hydrateLatestMeasurementSnapshot();
+
+    if (remoteSnapshot) {
+      setLatestTasteMeasurementSnapshot(remoteSnapshot);
+      setHasCompletedInitialMeasurement(true);
+      setLatestRestaurantReadyGuidance((current) =>
+        current
+          ? mergeRestaurantReadyGuidanceWithSnapshot(current, remoteSnapshot)
+          : createFallbackRestaurantReadyGuidance(remoteSnapshot),
+      );
+      setActiveTab('home');
+      setAppState('main');
+      return;
+    }
+
+    if (hasMeasurementData) {
+      setActiveTab('home');
+      setAppState('main');
+      return;
+    }
+
     setTasteSurveyIntroReturnTarget('auth');
     setIsTasteSurveyIntroSheetOpen(true);
   };
@@ -1765,9 +1839,7 @@ function MainApp() {
       return;
     }
 
-    setProfileSetupStatus('idle');
-    setProfileSetupMessage(null);
-    setIsProfileSetupSheetOpen(true);
+    await continueAfterVerifiedEmailLogin(session);
   };
 
   const handleBackToAuthEntryEmail = () => {
@@ -1875,6 +1947,8 @@ function MainApp() {
 
     const session = await getCurrentSupabaseSession();
     setSupabaseSession(session);
+    setHydratedProfileDisplayName(input.displayName.trim() || input.nickname.trim() || null);
+    setHydratedProfileNickname(input.nickname.trim() || null);
     setIsProfileSetupSheetOpen(false);
     setProfileSetupStatus('idle');
     setProfileSetupMessage(null);
@@ -2270,6 +2344,7 @@ function MainApp() {
       trackEvent('notifications_open', {
         unread_count: notifications.filter((notification) => !notification.read).length,
       });
+      void refreshNotifications();
       setIsNotificationOpen(true);
     },
     onOpenMenu: () => {

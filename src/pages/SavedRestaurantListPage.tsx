@@ -421,7 +421,7 @@ export default function SavedRestaurantListPage({
                   {selectedList.name}
                 </p>
                 <p className="mt-[3px] truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                  {getBookmarkListVisibilityLabel(selectedList)} · {selectedListBookmarks.length}곳
+                  {getBookmarkListVisibilityLabel(selectedList)} · {selectedListBookmarks.length}
                 </p>
               </div>
             </div>
@@ -457,10 +457,7 @@ export default function SavedRestaurantListPage({
                     {list.name}
                   </p>
                   <p className="mt-[3px] truncate text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
-                    {getBookmarkListVisibilityLabel(list)} · {count}곳
-                  </p>
-                  <p className="mt-1 truncate text-[11px] text-[var(--tb-color-text-subtle)]">
-                    {list.description}
+                    {getBookmarkListVisibilityLabel(list)} · {count}
                   </p>
                 </div>
                 <ChevronRight

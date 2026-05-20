@@ -5,7 +5,8 @@ import {
   CalendarCheck as CalendarCheckIcon,
   Bell as BellIcon,
   Utensils as UtensilsIcon,
-  CircleCheck as CircleCheckIcon
+  CircleCheck as CircleCheckIcon,
+  UserPlus as UserPlusIcon
 } from 'lucide-react';
 import React from 'react';
 import {
@@ -24,6 +25,7 @@ const CalendarCheck = wrapIcon(CalendarCheckIcon);
 const Bell = wrapIcon(BellIcon);
 const Utensils = wrapIcon(UtensilsIcon);
 const CheckCircle = wrapIcon(CircleCheckIcon);
+const UserPlus = wrapIcon(UserPlusIcon);
 const PANEL_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
 const PANEL_ACTION_BUTTON_SIZE = ICON_TOKENS.container.md;
 const NOTIFICATION_ITEM_ICON_SIZE = ICON_TOKENS.size.md;
@@ -56,6 +58,12 @@ function getNotificationPresentation(notification: AppNotification) {
         icon: Utensils,
         iconBg: 'var(--tb-taste-sweet-bg)',
         iconColor: 'var(--tb-taste-sweet-main)',
+      };
+    case 'follower_added':
+      return {
+        icon: UserPlus,
+        iconBg: 'var(--tb-taste-umami-bg)',
+        iconColor: 'var(--tb-taste-umami-main)',
       };
     case 'measurement_reminder':
     case 'system':
@@ -127,7 +135,16 @@ export default function NotificationPanel({
 
             {/* Notification List */}
             <div className="flex flex-col gap-2 p-2">
-              {notifications.map((notification) => {
+              {notifications.length === 0 ? (
+                <div className="px-4 py-8 text-center">
+                  <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
+                    새 알림이 없습니다
+                  </p>
+                  <p className="mt-2 text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
+                    예약 준비, 셰프 가이드, 식후 피드백처럼 다음 다이닝에 필요한 업데이트가 생기면 이곳에 모아둘게요.
+                  </p>
+                </div>
+              ) : notifications.map((notification) => {
                 const { icon: Icon, iconBg, iconColor } = getNotificationPresentation(notification);
                 return (
                   <button

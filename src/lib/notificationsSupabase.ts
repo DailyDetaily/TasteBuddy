@@ -5,6 +5,7 @@ export type AppNotificationType =
   | 'reservation_confirmed'
   | 'measurement_reminder'
   | 'feedback_request'
+  | 'follower_added'
   | 'system';
 
 export interface AppNotification {
@@ -25,69 +26,28 @@ interface NotificationRow {
   type: AppNotificationType;
 }
 
-interface NotificationSeed {
-  body: string;
-  createdAt: string;
-  read: boolean;
-  title: string;
-  type: AppNotificationType;
-}
+const LEGACY_SEED_NOTIFICATION_SIGNATURES = new Set([
+  'guidance_ready::TCS 준비 완료::레스토랑 베누의 황정인 셰프가 보정 전략을 완료했습니다.',
+  'reservation_confirmed::예약 확정::숍 리제 (Lysée) 봄 시즌 테이스팅 코스 예약이 확정되었습니다.',
+  'measurement_reminder::미각 재측정 추천::마지막 측정 후 7일이 지났어요. 다이닝 전 한 번 더 측정하면 정확도가 높아져요.',
+  'feedback_request::식후 피드백 요청::정식당 다이닝은 어떠셨나요? 짧은 피드백으로 다음 경험을 개선할 수 있어요.',
+]);
 
-function buildNotificationSeeds(): NotificationSeed[] {
-  const now = Date.now();
-
-  return [
-    {
-      type: 'guidance_ready',
-      title: 'TCS 준비 완료',
-      body: '레스토랑 베누의 황정인 셰프가 보정 전략을 완료했습니다.',
-      createdAt: new Date(now - 5 * 60 * 1000).toISOString(),
-      read: false,
-    },
-    {
-      type: 'reservation_confirmed',
-      title: '예약 확정',
-      body: '숍 리제 (Lysée) 봄 시즌 테이스팅 코스 예약이 확정되었습니다.',
-      createdAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
-      read: false,
-    },
-    {
-      type: 'measurement_reminder',
-      title: '미각 재측정 추천',
-      body: '마지막 측정 후 7일이 지났어요. 다이닝 전 한 번 더 측정하면 정확도가 높아져요.',
-      createdAt: new Date(now - 24 * 60 * 60 * 1000).toISOString(),
-      read: true,
-    },
-    {
-      type: 'feedback_request',
-      title: '식후 피드백 요청',
-      body: '정식당 다이닝은 어떠셨나요? 짧은 피드백으로 다음 경험을 개선할 수 있어요.',
-      createdAt: new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      read: true,
-    },
-  ];
+function getNotificationSignature(row: NotificationRow) {
+  return `${row.type}::${row.title}::${row.body}`;
 }
 
 function toAppNotifications(rows: NotificationRow[]): AppNotification[] {
-  return rows.map((row) => ({
-    id: row.id,
-    type: row.type,
-    title: row.title,
-    body: row.body,
-    createdAt: row.created_at,
-    read: Boolean(row.read_at),
-  }));
-}
-
-export function getFallbackNotifications(): AppNotification[] {
-  return buildNotificationSeeds().map((seed, index) => ({
-    id: `fallback-notification-${index + 1}`,
-    type: seed.type,
-    title: seed.title,
-    body: seed.body,
-    createdAt: seed.createdAt,
-    read: seed.read,
-  }));
+  return rows
+    .filter((row) => !LEGACY_SEED_NOTIFICATION_SIGNATURES.has(getNotificationSignature(row)))
+    .map((row) => ({
+      id: row.id,
+      type: row.type,
+      title: row.title,
+      body: row.body,
+      createdAt: row.created_at,
+      read: Boolean(row.read_at),
+    }));
 }
 
 export function formatNotificationRelativeTime(createdAt: string) {
@@ -134,50 +94,22 @@ async function fetchNotificationRows(userId: string): Promise<NotificationRow[]>
   return (data ?? []) as NotificationRow[];
 }
 
-async function seedNotifications(userId: string) {
-  if (!supabase) {
-    return;
-  }
-
-  const seeds = buildNotificationSeeds();
-  const { error } = await supabase.from('notifications').insert(
-    seeds.map((seed) => ({
-      user_id: userId,
-      type: seed.type,
-      title: seed.title,
-      body: seed.body,
-      created_at: seed.createdAt,
-      read_at: seed.read ? seed.createdAt : null,
-    })),
-  );
-
-  if (error) {
-    throw error;
-  }
-}
-
 export async function hydrateNotifications(): Promise<AppNotification[]> {
   if (!supabase || !isSupabaseConfigured) {
-    return getFallbackNotifications();
+    return [];
   }
 
   const userId = await getAuthenticatedUserId();
   if (!userId) {
-    return getFallbackNotifications();
+    return [];
   }
 
   try {
-    let rows = await fetchNotificationRows(userId);
-
-    if (rows.length === 0) {
-      await seedNotifications(userId);
-      rows = await fetchNotificationRows(userId);
-    }
-
+    const rows = await fetchNotificationRows(userId);
     return toAppNotifications(rows);
   } catch (error) {
     console.warn('Failed to hydrate notifications from Supabase.', error);
-    return getFallbackNotifications();
+    return [];
   }
 }
 
