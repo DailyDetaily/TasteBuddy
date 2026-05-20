@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import React, { type CSSProperties, type ReactNode } from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
+import TasteProfileAvatar from './system/TasteProfileAvatar';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, fontSize, style, ...props }: any) => (
@@ -103,24 +104,13 @@ export default function TopAppBar({
               aria-label="프로필 확인 및 편집"
               className="relative shrink-0 rounded-full size-[32px] transition-transform active:scale-[0.98]"
             >
-              <div
-                className="flex items-center justify-center overflow-hidden rounded-full size-[32px] bg-transparent"
-                style={userAvatarImageSrc ? undefined : userAvatarStyle}
-              >
-                {userAvatarImageSrc ? (
-                  <img
-                    alt=""
-                    className="size-full object-cover"
-                    referrerPolicy="no-referrer"
-                    src={userAvatarImageSrc}
-                  />
-                ) : (
-                  <span className="font-semibold text-[13px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]">
-                    {userInitials}
-                  </span>
-                )}
-              </div>
-              <div className="absolute inset-0 pointer-events-none rounded-full border border-white/45 shadow-[inset_0_0_0_1px_rgba(15,15,15,0.08)]" />
+              <TasteProfileAvatar
+                className="size-[32px]"
+                imageSrc={userAvatarImageSrc}
+                initials={userInitials}
+                size="sm"
+                style={userAvatarStyle}
+              />
             </button>
           )}
         </div>

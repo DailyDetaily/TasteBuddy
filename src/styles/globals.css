@@ -302,6 +302,57 @@ html {
   transform-origin: left;
 }
 
+@keyframes taste-experience-map-veil {
+  0%,
+  48% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes taste-experience-bubble-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  54% {
+    opacity: 1;
+    transform: scale(1.045);
+  }
+
+  74% {
+    transform: scale(0.985);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.taste-experience-map-intro-veil {
+  animation: taste-experience-map-veil 0.54s ease-out forwards;
+}
+
+.taste-experience-bubble-intro {
+  animation-fill-mode: both;
+  animation-name: taste-experience-bubble-enter;
+  animation-timing-function: cubic-bezier(0.18, 0.92, 0.2, 1);
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taste-experience-map-intro-veil,
+  .taste-experience-bubble-intro {
+    animation-delay: 0ms !important;
+    animation-duration: 1ms !important;
+  }
+}
+
 @keyframes symbol-bloom-move {
   0% {
     transform: translateX(68.5px) scale(0);

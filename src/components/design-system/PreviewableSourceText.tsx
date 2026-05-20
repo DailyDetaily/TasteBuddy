@@ -18,7 +18,7 @@ const FILE_PATH_SEGMENT_PATTERN = /^src\/[A-Za-z0-9_./-]+\.(?:tsx|ts|css|md)$/;
 
 function getVariantClassName(variant: Exclude<SourceFileLinkVariant, 'chip'>) {
   if (variant === 'block') {
-    return 'inline-flex cursor-pointer items-center font-mono text-[11px] text-[var(--tb-color-text-primary)]';
+    return 'block min-w-0 max-w-full cursor-pointer whitespace-normal break-all font-mono text-[11px] leading-relaxed text-[var(--tb-color-text-primary)]';
   }
 
   return 'inline cursor-pointer text-current underline decoration-[rgba(15,15,15,0.25)] underline-offset-[0.18em] transition-colors';

@@ -39,10 +39,13 @@ import BottomSheetShell, {
   BottomSheetIconButton,
 } from './components/system/BottomSheetShell';
 import ActionOverlayCard from './components/system/ActionOverlayCard';
+import {
+  createTasteProfileAvatarInitials,
+  createTasteProfileAvatarStyle,
+} from './components/system/TasteProfileAvatar';
 import ProfileIdentitySheetContent from './components/ProfileIdentitySheetContent';
 import ProfileEditSheetContent from './components/ProfileEditSheetContent';
 import ProfileSetupSheetContent from './components/ProfileSetupSheetContent';
-import SectionCard from './components/SectionCard';
 import { Button } from './components/ui/button';
 import {
   AlertDialog,
@@ -55,16 +58,8 @@ import {
   AlertDialogTitle,
 } from './components/ui/alert-dialog';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from './components/ui/dialog';
-import {
   DEFAULT_TASTE_MEASUREMENT_RESULTS,
   createTasteMeasurementSnapshot,
-  getTasteMeasurementEntries,
   type TasteMeasurementSnapshot,
 } from './constants/tasteMeasurementData';
 import {
@@ -79,6 +74,7 @@ import {
 } from './constants/preferenceIntakeData';
 import { clearAppliedDesignTokenRuntimeState } from './lib/designTokenRuntime';
 import {
+  createFollowerCountNotification,
   hydrateNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
@@ -105,6 +101,7 @@ import {
   hydrateSupabaseProfileConnections,
   hydrateSupabaseProfileIdentity,
   isAnonymousSupabaseSession,
+  isMissingSupabaseEmailAccountError,
   isSupabaseConfigured,
   linkAnonymousSupabaseUserEmail,
   addSupabaseFriendByNickname,
@@ -128,7 +125,7 @@ import {
   createUserTasteAccentStyle,
   resolveUserTasteAccent,
 } from './lib/userTasteAccent';
-import { ICON_TOKENS, MOTION_TOKENS, TASTE_TOKENS } from './constants/designTokens';
+import { ICON_TOKENS, MOTION_TOKENS } from './constants/designTokens';
 import {
   buildTasteSurveyMeasurementRawPayload,
   hasTasteSurveyRespondentContext,
@@ -193,6 +190,7 @@ const BOTTOM_SHEET_STAGE_HEIGHT_CLASS =
   'h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)] max-h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)]';
 
 const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v5';
+const FOLLOWER_COUNT_STORAGE_KEY = 'tastebuddy-last-seen-follower-count-v2';
 const LEGACY_USER_STATE_STORAGE_KEYS = [
   'tastebuddy-user-state-v1',
   'tastebuddy-user-state-v2',
@@ -476,141 +474,8 @@ function hasProfileIdentity(input: {
   return Boolean(input.displayName?.trim() || input.nickname?.trim());
 }
 
-const HANGUL_INITIAL_ROMAN = [
-  'G',
-  'K',
-  'N',
-  'D',
-  'T',
-  'R',
-  'M',
-  'B',
-  'P',
-  'S',
-  'S',
-  '',
-  'J',
-  'J',
-  'C',
-  'K',
-  'T',
-  'P',
-  'H',
-] as const;
-
-const HANGUL_VOWEL_ROMAN_INITIAL = [
-  'A',
-  'A',
-  'Y',
-  'Y',
-  'E',
-  'E',
-  'Y',
-  'Y',
-  'O',
-  'W',
-  'W',
-  'W',
-  'Y',
-  'U',
-  'W',
-  'W',
-  'W',
-  'Y',
-  'E',
-  'I',
-  'I',
-] as const;
-
-function getRomanizedNameInitial(character: string) {
-  const codePoint = character.charCodeAt(0);
-
-  if (codePoint < 0xac00 || codePoint > 0xd7a3) {
-    return character;
-  }
-
-  const syllableOffset = codePoint - 0xac00;
-  const initialIndex = Math.floor(syllableOffset / 588);
-  const vowelIndex = Math.floor((syllableOffset % 588) / 28);
-
-  return HANGUL_INITIAL_ROMAN[initialIndex] || HANGUL_VOWEL_ROMAN_INITIAL[vowelIndex] || character;
-}
-
 function getUserInitials(displayName: string | null, email: string | null) {
-  const source = displayName?.trim() || email?.split('@')[0] || '';
-
-  if (!source) {
-    return 'TB';
-  }
-
-  const nameParts = source
-    .split(/[\s._-]+/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  if (nameParts.length >= 2) {
-    return nameParts
-      .slice(0, 2)
-      .map((part) => getRomanizedNameInitial(part[0] ?? ''))
-      .join('')
-      .toUpperCase();
-  }
-
-  const compactName = (nameParts[0] ?? source).replace(/[^a-zA-Z0-9가-힣]/g, '');
-
-  if (!compactName) {
-    return 'TB';
-  }
-
-  const nameCharacters = Array.from(compactName);
-  const initialsSource =
-    displayName?.trim() && /^[가-힣]{3,}$/.test(compactName)
-      ? nameCharacters.slice(1, 3)
-      : nameCharacters.slice(0, 2);
-
-  return initialsSource
-    .map(getRomanizedNameInitial)
-    .join('')
-    .toUpperCase();
-}
-
-function createTasteProfileAvatarStyle(
-  snapshot: TasteMeasurementSnapshot | null,
-): CSSProperties {
-  if (!snapshot) {
-    return {
-      background:
-        'radial-gradient(circle at 28% 24%, rgba(255, 153, 0, 0.52), transparent 45%), radial-gradient(circle at 72% 76%, rgba(251, 192, 45, 0.38), transparent 44%), #FFE8C1',
-    };
-  }
-
-  const entries = getTasteMeasurementEntries(snapshot);
-  const totalValue = entries.reduce((sum, entry) => sum + Math.max(entry.valueMm, 0.1), 0);
-  const positions = [
-    ['26%', '24%'],
-    ['72%', '22%'],
-    ['78%', '70%'],
-    ['32%', '78%'],
-    ['50%', '42%'],
-    ['18%', '58%'],
-  ] as const;
-  const meshLayers = entries
-    .map((entry, index) => {
-      const token = TASTE_TOKENS[entry.id];
-      const ratio = Math.max(entry.valueMm, 0.1) / totalValue;
-      const alpha = Math.min(0.72, 0.22 + ratio * 2.6);
-      const radius = Math.min(66, 34 + ratio * 150);
-      const [x, y] = positions[index] ?? ['50%', '50%'];
-
-      return `radial-gradient(circle at ${x} ${y}, ${token.palette.main}${Math.round(alpha * 255)
-        .toString(16)
-        .padStart(2, '0')} 0%, transparent ${radius.toFixed(0)}%)`;
-    })
-    .join(', ');
-
-  return {
-    background: `${meshLayers}, var(--tb-color-surface-muted)`,
-  };
+  return createTasteProfileAvatarInitials(displayName, email);
 }
 
 function createEmptyPersistedUserState(): PersistedUserState {
@@ -1161,6 +1026,44 @@ function MainApp() {
       isCancelled = true;
     };
   }, [supabaseSession?.user.id]);
+
+  useEffect(() => {
+    const userId = supabaseSession?.user.id;
+    if (!isSupabaseConfigured || !userId) {
+      return;
+    }
+
+    const storageKey = `${FOLLOWER_COUNT_STORAGE_KEY}:${userId}`;
+    const storedValue = window.localStorage.getItem(storageKey);
+    const lastSeenFollowerCount = storedValue ? Number.parseInt(storedValue, 10) : 0;
+
+    if (Number.isNaN(lastSeenFollowerCount) || profileFollowerCount <= lastSeenFollowerCount) {
+      window.localStorage.setItem(storageKey, String(profileFollowerCount));
+      return;
+    }
+
+    window.localStorage.setItem(storageKey, String(profileFollowerCount));
+
+    void (async () => {
+      const currentNotifications = await hydrateNotifications();
+      if (
+        currentNotifications.some(
+          (notification) => notification.title === '새 팔로워' && !notification.read,
+        )
+      ) {
+        setNotifications(currentNotifications);
+        return;
+      }
+
+      const createdNotification = await createFollowerCountNotification(profileFollowerCount);
+      if (!createdNotification) {
+        return;
+      }
+
+      const nextNotifications = await hydrateNotifications();
+      setNotifications(nextNotifications);
+    })();
+  }, [profileFollowerCount, supabaseSession?.user.id]);
 
   useEffect(() => {
     initializeAnalytics();
@@ -1774,21 +1677,37 @@ function MainApp() {
     setAuthEntryMessage(null);
     trackEvent('auth_email_submit', { intent: authEntryIntent });
 
-    const result = await sendSupabaseEmailOtp(email, authEntryIntent);
+    let effectiveIntent = authEntryIntent;
+    let result = await sendSupabaseEmailOtp(email, authEntryIntent, {
+      shouldCreateUser: authEntryIntent !== 'start-with-email',
+    });
+
+    if (
+      authEntryIntent === 'start-with-email' &&
+      isAnonymousUser &&
+      !result.ok &&
+      isMissingSupabaseEmailAccountError(result.message)
+    ) {
+      effectiveIntent = 'link-current-profile';
+      trackEvent('auth_email_auto_signup_from_login', { reason: 'email_not_found' });
+      result = await sendSupabaseEmailOtp(email, effectiveIntent);
+    }
+
     trackEvent(result.ok ? 'auth_email_code_sent' : 'auth_email_code_error', {
-      intent: authEntryIntent,
+      intent: effectiveIntent,
     });
 
     setAuthEntryStatus(result.ok ? 'success' : 'error');
     setAuthEntryMessage(
       result.ok
-        ? authEntryIntent === 'link-current-profile'
+        ? effectiveIntent === 'link-current-profile'
           ? '현재 프로필을 연결할 인증 코드를 보냈습니다.'
           : '이메일로 인증 코드를 보냈습니다.'
         : result.message,
     );
 
     if (result.ok) {
+      setAuthEntryIntent(effectiveIntent);
       setAuthEntryPendingEmail(email);
       setAuthEntryStep('code');
     }
@@ -2227,6 +2146,12 @@ function MainApp() {
     setAuthProfileStatus('idle');
     setAuthProfileMessage(null);
     setIsAuthProfileOpen(true);
+  };
+
+  const handleOpenExistingEmailLogin = () => {
+    trackEvent('auth_existing_email_login_open', { is_anonymous_user: isAnonymousUser });
+    setIsMenuOpen(false);
+    openAuthEntrySheet('start-with-email');
   };
 
   const handleSubmitAuthEmail = async (email: string) => {
@@ -2828,11 +2753,14 @@ function MainApp() {
           onClose={() => setIsMenuOpen(false)}
           onOpenSupportPanel={handleOpenSupportPanel}
           onOpenAuth={handleOpenAuthProfile}
+          onOpenLogin={handleOpenExistingEmailLogin}
           onStartMeasurement={() => handleStartMeasurementFromMain(activeTab)}
           onImproveAccuracy={handleOpenImproveAccuracy}
           onRequestLogout={handleRequestLogout}
           isAnonymousUser={isAnonymousUser}
           userEmail={currentUserEmail}
+          userAvatarImageSrc={profileAvatarImageSrc}
+          userAvatarStyle={userAvatarStyle}
           userInitials={userInitials}
           userLabel={userLabel}
         />
@@ -3349,144 +3277,102 @@ function MainApp() {
           )}
         </BottomSheetShell>
 
-        <Dialog
-          open={activeSupportPanel !== null}
-          onOpenChange={(open) => {
-            if (!open) {
-              handleCloseSupportPanel();
+        {activeSupportPanel ? (
+          <ActionOverlayCard
+            cardClassName="max-w-[360px]"
+            title={
+              activeSupportPanel === 'notification-settings'
+                ? '보정 알림 설정'
+                : activeSupportPanel === 'help'
+                  ? '도움말'
+                  : '앱 정보'
             }
-          }}
-        >
-          {activeSupportPanel ? (
-            <DialogContent className="max-w-[calc(100%-1rem)] rounded-[28px] border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] p-0 shadow-[var(--tb-shadow-drawer)] sm:max-w-[520px]">
-              <DialogHeader className="px-5 pt-5">
-                <DialogTitle className="text-[18px] text-[var(--tb-color-text-primary)]">
-                  {activeSupportPanel === 'notification-settings'
-                    ? '보정 알림 설정'
-                    : activeSupportPanel === 'help'
-                      ? '도움말'
-                      : '앱 정보'}
-                </DialogTitle>
-                <DialogDescription className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                  {activeSupportPanel === 'notification-settings'
-                    ? '다이닝 전 미각 측정 알림은 현재 프로필 기준으로 이어집니다.'
-                    : activeSupportPanel === 'help'
-                      ? 'Taste Buddy는 현재 입맛을 셰프가 읽기 쉬운 언어로 바꾸는 데서 시작합니다.'
-                      : 'Taste Buddy v1.0.0은 다음 예약을 더 정교하게 맞추는 프리미엄 다이닝 개인화 서비스입니다.'}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="flex flex-col gap-3 px-5 pb-5 pt-4">
-                {activeSupportPanel === 'notification-settings' ? (
-                  <>
-                    <SectionCard hoverEffect={false}>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                          알림이 하는 일
-                        </p>
-                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                          최근 측정과 예약 흐름을 기준으로, 다음 다이닝 전에 다시 점검하면 좋은 시점을 알려줍니다.
-                        </p>
-                      </div>
-                    </SectionCard>
-                    <SectionCard hoverEffect={false}>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                          어디서 확인하나요
-                        </p>
-                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                          오른쪽 상단 알림 패널에서 예약, 피드백, 보정 관련 메시지를 모아볼 수 있어요.
-                        </p>
-                      </div>
-                    </SectionCard>
-                  </>
-                ) : activeSupportPanel === 'help' ? (
-                  <>
-                    <SectionCard hoverEffect={false}>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                          1. 미각 설문
-                        </p>
-                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                          최근 식사에서 반복된 감각 반응을 바탕으로 현재 입맛의 기준을 잡고, 첫 예약에 바로 쓸 수 있는 프로필을 만듭니다.
-                        </p>
-                      </div>
-                    </SectionCard>
-                    <SectionCard hoverEffect={false}>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                          2. 예약 개인화
-                        </p>
-                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                          예약과 셰프 준비를 지금의 반응으로 해석해, 식사 전 전달이 더 자연스럽게 이어지도록 돕습니다.
-                        </p>
-                      </div>
-                    </SectionCard>
-                    <SectionCard hoverEffect={false}>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                          3. 식후 피드백
-                        </p>
-                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                          한 줄 피드백만으로도 다음 예약과 셰프 가이드가 조금씩 더 정교해집니다.
-                        </p>
-                      </div>
-                    </SectionCard>
-                  </>
-                ) : (
-                  <>
-                    <SectionCard hoverEffect={false}>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                          현재 버전
-                        </p>
-                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                          Taste Buddy v1.0.0
-                        </p>
-                      </div>
-                    </SectionCard>
-                    <SectionCard hoverEffect={false}>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                          제품 방향
-                        </p>
-                        <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                          현재 입맛을 해석해, 다음 식사가 더 잘 맞도록 셰프와 사용자를 중간에서 연결합니다.
-                        </p>
-                      </div>
-                    </SectionCard>
-                  </>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-3 px-5 pb-5">
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (activeSupportPanel === 'help') {
-                      handleStartMeasurementFromMain(activeTab);
-                    } else if (activeSupportPanel === 'notification-settings') {
-                      setIsNotificationOpen(true);
-                    } else {
-                      navigateToTab('profile');
-                    }
-
-                    handleCloseSupportPanel();
-                  }}
-                >
-                  {activeSupportPanel === 'help'
+            description={
+              activeSupportPanel === 'notification-settings'
+                ? '다이닝 전 미각 측정 알림은 현재 프로필 기준으로 이어집니다.'
+                : activeSupportPanel === 'help'
+                  ? 'Taste Buddy는 현재 입맛을 셰프가 읽기 쉬운 언어로 바꾸는 데서 시작합니다.'
+                  : 'Taste Buddy v1.0.0은 다음 예약을 더 정교하게 맞추는 프리미엄 다이닝 개인화 서비스입니다.'
+            }
+            onBackdropClick={handleCloseSupportPanel}
+            actions={[
+              {
+                label:
+                  activeSupportPanel === 'help'
                     ? '미각 재측정 시작'
                     : activeSupportPanel === 'notification-settings'
                       ? '알림 센터 열기'
-                      : '프로필 보기'}
-                </Button>
-                <Button type="button" variant="outline" onClick={handleCloseSupportPanel}>
-                  닫기
-                </Button>
-              </div>
-            </DialogContent>
-          ) : null}
-        </Dialog>
+                      : '프로필 보기',
+                onClick: () => {
+                  if (activeSupportPanel === 'help') {
+                    handleStartMeasurementFromMain(activeTab);
+                  } else if (activeSupportPanel === 'notification-settings') {
+                    setIsNotificationOpen(true);
+                  } else {
+                    navigateToTab('profile');
+                  }
+
+                  handleCloseSupportPanel();
+                },
+              },
+              {
+                label: '닫기',
+                onClick: handleCloseSupportPanel,
+              },
+            ]}
+          >
+            <div className="flex w-full flex-col gap-3 text-left">
+              {(activeSupportPanel === 'notification-settings'
+                ? [
+                  {
+                    label: '알림이 하는 일',
+                    body: '최근 측정과 예약 흐름을 기준으로, 다음 다이닝 전에 다시 점검하면 좋은 시점을 알려줍니다.',
+                  },
+                  {
+                    label: '어디서 확인하나요',
+                    body: '오른쪽 상단 알림 패널에서 예약, 피드백, 보정 관련 메시지를 모아볼 수 있어요.',
+                  },
+                ]
+                : activeSupportPanel === 'help'
+                  ? [
+                    {
+                      label: '1. 미각 설문',
+                      body: '최근 식사에서 반복된 감각 반응을 바탕으로 현재 입맛의 기준을 잡고, 첫 예약에 바로 쓸 수 있는 프로필을 만듭니다.',
+                    },
+                    {
+                      label: '2. 예약 개인화',
+                      body: '예약과 셰프 준비를 지금의 반응으로 해석해, 식사 전 전달이 더 자연스럽게 이어지도록 돕습니다.',
+                    },
+                    {
+                      label: '3. 식후 피드백',
+                      body: '한 줄 피드백만으로도 다음 예약과 셰프 가이드가 조금씩 더 정교해집니다.',
+                    },
+                  ]
+                  : [
+                    {
+                      label: '현재 버전',
+                      body: 'Taste Buddy v1.0.0',
+                    },
+                    {
+                      label: '제품 방향',
+                      body: '현재 입맛을 해석해, 다음 식사가 더 잘 맞도록 셰프와 사용자를 중간에서 연결합니다.',
+                    },
+                  ]).map((item) => (
+                    <div
+                      key={item.label}
+                      className="border-t border-[var(--tb-color-border-subtle)] pt-3 first:border-t-0 first:pt-0"
+                    >
+                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">
+                        {item.body}
+                      </p>
+                    </div>
+                  ))}
+            </div>
+          </ActionOverlayCard>
+        ) : null}
 
         <AlertDialog
           open={isLogoutConfirmOpen}

@@ -507,6 +507,11 @@ const BUBBLE_GRID_SEARCH_RANGE = 12;
 const BUBBLE_RELAXATION_ITERATIONS = 12;
 const BUBBLE_MAP_ZOOM_MIN = 0.72;
 const BUBBLE_MAP_ZOOM_MAX = 1.42;
+const BUBBLE_INTRO_PRIMARY_DELAY_MS = 440;
+const BUBBLE_INTRO_PRIMARY_STEP_MS = 76;
+const BUBBLE_INTRO_OUTER_DELAY_MS = 900;
+const BUBBLE_INTRO_OUTER_SPREAD_MS = 1260;
+const BUBBLE_INTRO_DURATION_MS = 680;
 
 interface TasteExperienceHexPoint {
   angle: number;
@@ -653,6 +658,46 @@ const tasteExperienceBubblePositions = baseTasteExperienceBubblePositions.map((p
     y: targetPosition.y,
   };
 });
+const tasteExperienceIntroPrimaryIds = tasteExperienceAxes.map((axis) => `${axis.id}-${axis.words[0].key}`);
+const tasteExperienceIntroPrimaryIdSet = new Set(tasteExperienceIntroPrimaryIds);
+const tasteExperienceIntroOuterPositions = tasteExperienceBubblePositions
+  .filter((position) => !tasteExperienceIntroPrimaryIdSet.has(position.experience.id))
+  .sort((leftPosition, rightPosition) => {
+    const leftDistance = Math.hypot(
+      leftPosition.x - BUBBLE_MAP_CENTER,
+      leftPosition.y - BUBBLE_MAP_CENTER,
+    );
+    const rightDistance = Math.hypot(
+      rightPosition.x - BUBBLE_MAP_CENTER,
+      rightPosition.y - BUBBLE_MAP_CENTER,
+    );
+    const leftAngle = Math.atan2(leftPosition.y - BUBBLE_MAP_CENTER, leftPosition.x - BUBBLE_MAP_CENTER);
+    const rightAngle = Math.atan2(rightPosition.y - BUBBLE_MAP_CENTER, rightPosition.x - BUBBLE_MAP_CENTER);
+
+    return leftDistance - rightDistance || leftAngle - rightAngle;
+  });
+const tasteExperienceIntroDelayById = new Map<string, number>([
+  ...tasteExperienceIntroPrimaryIds.map((id, index) => [
+    id,
+    BUBBLE_INTRO_PRIMARY_DELAY_MS + index * BUBBLE_INTRO_PRIMARY_STEP_MS,
+  ] as const),
+  ...tasteExperienceIntroOuterPositions.map((position, index) => {
+    const progress =
+      tasteExperienceIntroOuterPositions.length <= 1
+        ? 1
+        : index / (tasteExperienceIntroOuterPositions.length - 1);
+    const acceleratingProgress = Math.pow(progress, 0.62);
+
+    return [
+      position.experience.id,
+      BUBBLE_INTRO_OUTER_DELAY_MS + acceleratingProgress * BUBBLE_INTRO_OUTER_SPREAD_MS,
+    ] as const;
+  }),
+]);
+
+function getTasteExperienceIntroDelay(experienceId: string) {
+  return tasteExperienceIntroDelayById.get(experienceId) ?? BUBBLE_INTRO_OUTER_DELAY_MS;
+}
 
 function getTasteExperienceBubbleRenderPositions(selectedExperienceIds: readonly string[]) {
   const selectedIdSet = new Set(selectedExperienceIds);
@@ -1205,7 +1250,8 @@ function TasteExperienceMap({
   };
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-focus)]">
+    <div className="taste-experience-map-intro relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-focus)]">
+      <div className="pointer-events-none absolute inset-0 z-50 bg-white taste-experience-map-intro-veil" />
       <div
         ref={viewportRef}
         onScroll={handleMapScroll}
@@ -1243,6 +1289,7 @@ function TasteExperienceMap({
               const distanceFromSelected = selectedBubblePosition
                 ? Math.hypot(x - selectedBubblePosition.x, y - selectedBubblePosition.y)
                 : undefined;
+              const introDelay = getTasteExperienceIntroDelay(experience.id);
 
               return (
                 <div
@@ -1255,29 +1302,40 @@ function TasteExperienceMap({
                     onToggleSelection?.(experience);
                   }}
                   className={cn(
-                    'pointer-events-auto absolute flex -translate-x-1/2 -translate-y-1/2 cursor-pointer select-none items-center justify-center rounded-full px-4 text-center text-[14px] font-bold leading-tight transition-all duration-300 ease-out',
-                    isSelected ? 'z-[4] border shadow-[0_18px_46px_rgba(0,0,0,0.12)]' : 'z-[3] border-0 shadow-none',
+                    'pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer select-none transition-all duration-300 ease-out',
+                    isSelected ? 'z-[4]' : 'z-[3]',
                   )}
                   style={{
-                    ...getTasteExperienceStyle(experience.axis, experience.intensity, {
-                      distanceFromSelected,
-                      isSelected,
-                    }),
                     height: size,
                     left: x,
                     top: y,
                     width: size,
                   }}
                 >
-                  {priorityIndex >= 0 ? (
-                    <span className="absolute left-1/2 top-[34%] -translate-x-1/2 text-[10px] font-semibold leading-none opacity-70">
-                      {priorityIndex === 0 ? '메인 미각' : '보조 미각'}
-                    </span>
-                  ) : null}
-                  <BubbleLabel
-                    isSelected={isSelected}
-                    label={experience.label}
-                  />
+                  <div
+                    className={cn(
+                      'taste-experience-bubble-intro relative flex h-full w-full items-center justify-center rounded-full px-4 text-center text-[14px] font-bold leading-tight transition-all duration-300 ease-out',
+                      isSelected ? 'border shadow-[0_18px_46px_rgba(0,0,0,0.12)]' : 'border-0 shadow-none',
+                    )}
+                    style={{
+                      ...getTasteExperienceStyle(experience.axis, experience.intensity, {
+                        distanceFromSelected,
+                        isSelected,
+                      }),
+                      animationDelay: `${introDelay}ms`,
+                      animationDuration: `${BUBBLE_INTRO_DURATION_MS}ms`,
+                    }}
+                  >
+                    {priorityIndex >= 0 ? (
+                      <span className="absolute left-1/2 top-[34%] -translate-x-1/2 text-[10px] font-semibold leading-none opacity-70">
+                        {priorityIndex === 0 ? '메인 미각' : '보조 미각'}
+                      </span>
+                    ) : null}
+                    <BubbleLabel
+                      isSelected={isSelected}
+                      label={experience.label}
+                    />
+                  </div>
                 </div>
               );
             })}

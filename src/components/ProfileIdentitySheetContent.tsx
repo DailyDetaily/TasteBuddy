@@ -4,6 +4,7 @@ import { useState, type CSSProperties, type FormEvent } from 'react';
 import { PREFERENCE_INTAKE_QUESTIONS, type PreferenceIntakeProfile } from '../constants/preferenceIntakeData';
 import type { DiningFriendProfile } from '../lib/supabase';
 import type { TasteSurveyRespondentContext } from '../types/tasteSurvey';
+import TasteProfileAvatar from './system/TasteProfileAvatar';
 
 interface ProfileIdentitySheetContentProps {
   avatarImageDataUrl: string | null;
@@ -214,26 +215,12 @@ export default function ProfileIdentitySheetContent({
         className="rounded-[var(--tb-radius-20)] bg-[var(--tb-color-bg-focus)] p-3 text-left transition-transform active:scale-[0.99]"
       >
         <div className="flex items-center gap-4">
-          <div className="relative size-16 shrink-0 rounded-full">
-            <div
-              className="flex size-16 items-center justify-center overflow-hidden rounded-full"
-              style={avatarImageDataUrl ? undefined : avatarStyle}
-            >
-              {avatarImageDataUrl ? (
-                <img
-                  alt=""
-                  className="size-full object-cover"
-                  referrerPolicy="no-referrer"
-                  src={avatarImageDataUrl}
-                />
-              ) : (
-                <span className="text-[18px] font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.34)]">
-                  {initials}
-                </span>
-              )}
-            </div>
-            <div className="pointer-events-none absolute inset-0 rounded-full border border-white/50 shadow-[inset_0_0_0_1px_rgba(15,15,15,0.08)]" />
-          </div>
+          <TasteProfileAvatar
+            imageSrc={avatarImageDataUrl}
+            initials={initials}
+            size="md"
+            style={avatarStyle}
+          />
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-[18px] font-bold leading-snug text-[var(--tb-color-text-primary)]">

@@ -14,6 +14,11 @@ import {
   type AppNotification,
 } from '../lib/notificationsSupabase';
 import { ICON_TOKENS } from '../constants/designTokens';
+import { resolvePublicMediaPath } from '../lib/mediaAssets';
+import CompactCard from './system/CompactCard';
+import TasteProfileAvatar, {
+  createTasteProfileAvatarInitials,
+} from './system/TasteProfileAvatar';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, fontSize, style, ...props }: any) => (
@@ -74,6 +79,26 @@ function getNotificationPresentation(notification: AppNotification) {
         iconColor: 'var(--tb-color-warning)',
       };
   }
+}
+
+function getPayloadString(notification: AppNotification, key: string) {
+  const value = notification.payload[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function getFollowerNotificationNickname(notification: AppNotification) {
+  return (
+    getPayloadString(notification, 'follower_nickname') ??
+    getPayloadString(notification, 'follower_display_name') ??
+    '새 다이닝 친구'
+  );
+}
+
+function isFollowerNotification(notification: AppNotification) {
+  return (
+    notification.type === 'follower_added' ||
+    (notification.title === '새 팔로워' && getPayloadString(notification, 'follower_nickname') !== null)
+  );
 }
 
 export default function NotificationPanel({
@@ -146,44 +171,63 @@ export default function NotificationPanel({
                 </div>
               ) : notifications.map((notification) => {
                 const { icon: Icon, iconBg, iconColor } = getNotificationPresentation(notification);
+                const isFollower = isFollowerNotification(notification);
+                const followerNickname = getFollowerNotificationNickname(notification);
+                const followerAvatarSrc = resolvePublicMediaPath(
+                  getPayloadString(notification, 'follower_avatar_path'),
+                );
+
                 return (
-                  <button
+                  <CompactCard
                     key={notification.id}
-                    type="button"
-                    onClick={() => onMarkAsRead(notification.id)}
-                    className={`flex items-start gap-3 rounded-[var(--tb-radius-20)] px-3 py-3 text-left transition-colors ${notification.read
-                      ? 'opacity-60'
-                      : 'bg-[var(--tb-color-surface-card)]'
-                      }`}
-                  >
-                    <div
-                      className="flex shrink-0 items-center justify-center rounded-[var(--tb-radius-8)]"
-                      style={{
-                        backgroundColor: iconBg,
-                        color: iconColor,
-                        width: NOTIFICATION_ITEM_ICON_CONTAINER_SIZE,
-                        height: NOTIFICATION_ITEM_ICON_CONTAINER_SIZE,
-                      }}
-                    >
-                      <Icon size={NOTIFICATION_ITEM_ICON_SIZE} />
-                    </div>
-                    <div className="flex flex-col gap-[2px] flex-1 min-w-0">
-                      <div className="flex items-top justify-between gap-2">
-                        <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)] truncate">
-                          {notification.title}
+                    heading={
+                      isFollower
+                        ? `${followerNickname}님이 회원님을 팔로우하기 시작했습니다.`
+                        : notification.title
+                    }
+                    headingClassName={isFollower ? 'text-[13px] font-semibold' : 'text-[13px] font-semibold'}
+                    media={
+                      isFollower ? (
+                        <TasteProfileAvatar
+                          imageSrc={followerAvatarSrc}
+                          initials={createTasteProfileAvatarInitials(followerNickname)}
+                          size="sm"
+                        />
+                      ) : (
+                        <span
+                          className="flex items-center justify-center rounded-[var(--tb-radius-8)]"
+                          style={{
+                            backgroundColor: iconBg,
+                            color: iconColor,
+                            width: NOTIFICATION_ITEM_ICON_CONTAINER_SIZE,
+                            height: NOTIFICATION_ITEM_ICON_CONTAINER_SIZE,
+                          }}
+                        >
+                          <Icon size={NOTIFICATION_ITEM_ICON_SIZE} />
                         </span>
-                        {!notification.read && (
-                          <div className="size-[6px] shrink-0 rounded-full bg-[var(--tb-taste-sweet-main)]" />
-                        )}
-                      </div>
-                      <span className="text-[12px] leading-relaxed text-[var(--tb-color-text-body)]">
-                        {notification.body}
-                      </span>
-                      <span className="text-[11px] font-medium text-[var(--tb-color-text-faint)] mt-[2px]">
-                        {formatNotificationRelativeTime(notification.createdAt)}
-                      </span>
-                    </div>
-                  </button>
+                      )
+                    }
+                    metadata={
+                      isFollower ? (
+                        formatNotificationRelativeTime(notification.createdAt)
+                      ) : (
+                        <>
+                          <span className="block truncate">{notification.body}</span>
+                          <span className="mt-[3px] block text-[11px] font-medium text-[var(--tb-color-text-faint)]">
+                            {formatNotificationRelativeTime(notification.createdAt)}
+                          </span>
+                        </>
+                      )
+                    }
+                    metadataClassName={isFollower ? 'font-medium text-[var(--tb-color-text-faint)]' : 'whitespace-normal'}
+                    actions={
+                      !notification.read ? (
+                        <span className="block size-[6px] rounded-full bg-[var(--tb-taste-sweet-main)]" />
+                      ) : null
+                    }
+                    onClick={() => onMarkAsRead(notification.id)}
+                    className={`${notification.read ? 'opacity-60' : ''} rounded-[16px] bg-white px-3 py-3 shadow-none`}
+                  />
                 );
               })}
             </div>

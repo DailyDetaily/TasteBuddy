@@ -1,5 +1,12 @@
 import { createClient, type Session } from '@supabase/supabase-js';
 
+import { TASTE_IDS } from '../constants/designTokens';
+import type {
+  TasteMeasurementResults,
+  TasteMeasurementSnapshot,
+  TasteMeasurementSource,
+} from '../constants/tasteMeasurementData';
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabasePublicKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -95,6 +102,18 @@ export function isAnonymousSupabaseSession(session: Session | null) {
 
 export type SupabaseEmailOtpIntent = 'start-with-email' | 'link-current-profile';
 
+export function isMissingSupabaseEmailAccountError(message: string | null | undefined) {
+  const normalizedMessage = message?.toLowerCase() ?? '';
+
+  return (
+    normalizedMessage.includes('signup') ||
+    normalizedMessage.includes('signups') ||
+    normalizedMessage.includes('not allowed') ||
+    normalizedMessage.includes('not found') ||
+    normalizedMessage.includes('no user')
+  );
+}
+
 export async function sendSupabaseMagicLink(email: string) {
   if (!supabase) {
     return {
@@ -127,6 +146,7 @@ export async function sendSupabaseMagicLink(email: string) {
 export async function sendSupabaseEmailOtp(
   email: string,
   intent: SupabaseEmailOtpIntent = 'start-with-email',
+  options: { shouldCreateUser?: boolean } = {},
 ) {
   if (!supabase) {
     return {
@@ -145,6 +165,7 @@ export async function sendSupabaseEmailOtp(
           email,
           options: {
             emailRedirectTo: getAuthRedirectUrl(),
+            shouldCreateUser: options.shouldCreateUser ?? true,
           },
         });
 
@@ -277,6 +298,7 @@ export interface DiningFriendProfile {
   displayName: string | null;
   id: string;
   isFriend: boolean;
+  latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
   nickname: string;
 }
 
@@ -302,6 +324,47 @@ function getSupabaseMetadataAvatarPath(metadata: Record<string, unknown> | null 
   const avatarPath = metadata?.avatar_path ?? metadata?.avatar_url ?? metadata?.picture;
 
   return typeof avatarPath === 'string' && avatarPath.trim() ? avatarPath.trim() : null;
+}
+
+function parseTasteMeasurementSnapshotFromRpcRow(item: Record<string, unknown>) {
+  const rawResults = item.latest_measurement_results;
+
+  if (!rawResults || typeof rawResults !== 'object' || Array.isArray(rawResults)) {
+    return null;
+  }
+
+  const results = TASTE_IDS.reduce((accumulator, tasteId) => {
+    const value = (rawResults as Record<string, unknown>)[tasteId];
+    const numericValue =
+      typeof value === 'number'
+        ? value
+        : typeof value === 'string'
+          ? Number.parseFloat(value)
+          : Number.NaN;
+
+    accumulator[tasteId] = Number.isFinite(numericValue) ? numericValue : null;
+    return accumulator;
+  }, {} as TasteMeasurementResults);
+  const hasAnyTasteValue = TASTE_IDS.some((tasteId) => results[tasteId] !== null);
+
+  if (!hasAnyTasteValue) {
+    return null;
+  }
+
+  const measuredAt =
+    typeof item.latest_measurement_measured_at === 'string'
+      ? item.latest_measurement_measured_at
+      : new Date().toISOString();
+  const source: TasteMeasurementSource =
+    item.latest_measurement_source === 'quick_calibration'
+      ? 'broad-starter'
+      : 'measured';
+
+  return {
+    measuredAt,
+    results,
+    source,
+  } satisfies TasteMeasurementSnapshot;
 }
 
 export async function updateSupabaseProfileIdentity(input: {
@@ -488,6 +551,7 @@ export async function searchSupabaseProfilesByNickname(query: string) {
         displayName: typeof item.display_name === 'string' ? item.display_name : null,
         id: item.id,
         isFriend: Boolean(item.is_friend),
+        latestTasteMeasurementSnapshot: null,
         nickname,
       }];
     }),
@@ -597,6 +661,7 @@ export async function hydrateSupabaseProfileConnections(kind: ProfileConnectionK
         displayName: typeof item.display_name === 'string' ? item.display_name : null,
         id: item.id,
         isFriend: Boolean(item.is_friend),
+        latestTasteMeasurementSnapshot: parseTasteMeasurementSnapshotFromRpcRow(item),
         nickname,
       }];
     }),

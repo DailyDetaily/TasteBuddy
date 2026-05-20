@@ -56,7 +56,7 @@ export function PlaygroundLiveControlsDock({
   }
 
   return (
-    <div className="w-full self-end rounded-[28px] border border-[var(--tb-color-border-default)] bg-white/95 p-4 shadow-[0_24px_80px_rgba(15,15,15,0.18)] backdrop-blur">
+    <div className="box-border w-full min-w-0 max-w-full self-stretch overflow-hidden rounded-[28px] border border-[var(--tb-color-border-default)] bg-white/95 p-4 shadow-[0_24px_80px_rgba(15,15,15,0.18)] backdrop-blur">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">실시간 컨트롤</p>
@@ -84,7 +84,7 @@ export function PlaygroundLiveControlsDock({
       </div>
       <div
         ref={onPortalRootChange}
-        className="mt-4 max-h-[min(72vh,560px)] overflow-y-auto pr-1"
+        className="mt-4 max-h-[min(72vh,560px)] min-w-0 max-w-full overflow-y-auto overflow-x-hidden"
       />
     </div>
   );
@@ -107,11 +107,11 @@ export default function PlaygroundSection({
 
   const liveControlsPortal = shouldRenderLiveControls && liveControlsContext
     ? createPortal(
-        <div className="grid gap-4">
-          {controls ? <div className="grid gap-3">{controls}</div> : null}
+        <div className="grid min-w-0 max-w-full gap-4 overflow-hidden">
+          {controls ? <div className="box-border grid w-full min-w-0 max-w-full gap-3 overflow-hidden">{controls}</div> : null}
           {sources.length ? (
-            <div className="grid gap-3">
-              <div className="flex items-center justify-between gap-2">
+            <div className="box-border grid w-full min-w-0 max-w-full gap-3">
+              <div className="flex min-w-0 items-center justify-between gap-2">
                 <h3 className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
                   코드 출처
                 </h3>
@@ -119,18 +119,18 @@ export default function PlaygroundSection({
                   {sources.length}
                 </span>
               </div>
-              <div className="grid gap-2">
+              <div className="grid min-w-0 max-w-full gap-2">
                 {sources.map((source) => (
                   <div
                     key={`${id}-dock-${source.file}`}
-                    className="rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3"
+                    className="box-border min-w-0 max-w-full rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3"
                   >
                     <SourceFileLink
                       className="font-mono"
                       file={source.file}
                       variant="block"
                     />
-                    <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                    <p className="mt-1 min-w-0 max-w-full whitespace-normal break-words text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                       {source.note}
                     </p>
                   </div>

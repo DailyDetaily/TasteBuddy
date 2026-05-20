@@ -36,6 +36,9 @@ import ChefAvatar from '../components/system/ChefAvatar';
 import CompactCard from '../components/system/CompactCard';
 import OutlineBadge from '../components/system/OutlineBadge';
 import PageSection from '../components/system/PageSection';
+import TasteProfileAvatar, {
+  createTasteProfileAvatarInitials,
+} from '../components/system/TasteProfileAvatar';
 import TastickDeviceCard from '../components/system/TastickDeviceCard';
 import { ICON_TOKENS } from '../constants/designTokens';
 import { type ReservationRecord } from '../constants/reservationCatalog';
@@ -103,13 +106,6 @@ function formatChefName(name: string) {
 
 function formatSocialCount(count: number | null | undefined) {
   return Math.max(0, count ?? 0).toLocaleString('ko-KR');
-}
-
-function getConnectionProfileInitials(friend: DiningFriendProfile) {
-  const source = friend.displayName?.trim() || friend.nickname.trim() || 'TB';
-  const characters = Array.from(source.replace(/^@+/, ''));
-
-  return characters.slice(0, 2).join('').toUpperCase() || 'TB';
 }
 
 function getConnectionProfileAvatarSrc(friend: DiningFriendProfile) {
@@ -412,25 +408,14 @@ export default function ProfilePage({
                   key={friend.id}
                   className="flex items-center gap-3 rounded-[20px] bg-white p-3"
                 >
-                  <div
-                    className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center overflow-hidden rounded-full"
-                    style={avatarImageSrc ? undefined : DEFAULT_AVATAR_STYLE}
-                    role="img"
-                    aria-label={friend.displayName || friend.nickname || 'Taste Buddy Guest'}
-                  >
-                    {avatarImageSrc ? (
-                      <img
-                        alt=""
-                        className="size-full object-cover"
-                        src={avatarImageSrc}
-                      />
-                    ) : (
-                      <span className="text-[13px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.22)]">
-                        {getConnectionProfileInitials(friend)}
-                      </span>
-                    )}
-                    <div className="pointer-events-none absolute inset-0 rounded-full border border-white/60 shadow-[inset_0_0_0_1px_rgba(15,15,15,0.08)]" />
-                  </div>
+                  <TasteProfileAvatar
+                    ariaLabel={friend.displayName || friend.nickname || 'Taste Buddy Guest'}
+                    className="size-[44px]"
+                    imageSrc={avatarImageSrc}
+                    initials={createTasteProfileAvatarInitials(friend.displayName, friend.nickname)}
+                    measurementSnapshot={friend.latestTasteMeasurementSnapshot}
+                    size="sm"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
                       {friend.displayName || 'Taste Buddy Guest'}
@@ -483,26 +468,14 @@ export default function ProfilePage({
               </button>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4 pr-12">
-                  <div className="relative rounded-full p-[2px]">
-                    <div
-                      className="flex size-[68px] items-center justify-center overflow-hidden rounded-full"
-                      style={profileIdentity?.avatarImageDataUrl ? undefined : avatarStyle}
-                    >
-                      {profileIdentity?.avatarImageDataUrl ? (
-                        <img
-                          alt=""
-                          className="size-full object-cover"
-                          referrerPolicy="no-referrer"
-                          src={profileIdentity.avatarImageDataUrl}
-                        />
-                      ) : (
-                        <span className="text-[18px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
-                          {initials}
-                        </span>
-                      )}
-                    </div>
-                    <div className="pointer-events-none absolute inset-0 rounded-full border border-[var(--tb-color-border-avatar-soft)]" />
-                  </div>
+                  <TasteProfileAvatar
+                    ariaLabel={displayName}
+                    className="size-[68px]"
+                    imageSrc={profileIdentity?.avatarImageDataUrl}
+                    initials={initials}
+                    size="md"
+                    style={avatarStyle}
+                  />
                   <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
                     <span className="truncate text-[18px] font-bold text-[var(--tb-color-text-primary)]">{displayName}</span>
                     <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">

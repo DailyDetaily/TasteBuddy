@@ -87,6 +87,9 @@ import StepBadge from "../components/system/StepBadge";
 import StepIndicator from "../components/system/StepIndicator";
 import StatusChip from "../components/system/StatusChip";
 import TasteChip from "../components/system/TasteChip";
+import TasteProfileAvatar, {
+  createTasteProfileAvatarInitials,
+} from "../components/system/TasteProfileAvatar";
 import TastePointArrowBox, {
   TASTE_POINT_ARROW_BOX_DIRECTION_TOKENS,
   TASTE_POINT_ARROW_BOX_SIZE_TOKENS,
@@ -156,6 +159,10 @@ import {
 } from "../components/ui/tooltip";
 import { cn } from "../components/ui/utils";
 import { COLOR_TOKENS, ICON_TOKENS, SHADOW_TOKENS, TASTE_TOKENS, type TasteId } from "../constants/designTokens";
+import {
+  createTasteMeasurementSnapshot,
+  type TasteMeasurementResults,
+} from "../constants/tasteMeasurementData";
 import { getTasteTint } from "../constants/tasteColors";
 import {
   buildDesignSystemCssSnippet,
@@ -227,6 +234,7 @@ const COMPONENT_ARCHITECTURE_GROUPS = [
       "OutlineBadge",
       "StatusChip",
       "TasteChip",
+      "TasteProfileAvatar",
       "TastePointArrowBox",
       "ToastSurface",
     ],
@@ -402,6 +410,14 @@ const CHIP_VARIANTS: ChipVariant[] = ["soft", "outline", "solid", "text"];
 const CHIP_TONES: ChipTone[] = ["neutral", "success", "warning", "accent"];
 const GENERIC_BUTTON_SIZES: GenericButtonSize[] = ["default", "sm", "lg", "icon"];
 const TASTE_OPTIONS = Object.keys(TASTE_TOKENS) as TasteId[];
+const AVATAR_TASTE_DEFAULTS: Record<TasteId, number> = {
+  sweet: 8.5,
+  sour: 7.2,
+  bitter: 4.1,
+  salty: 6.3,
+  umami: 5.4,
+  fat: 3.8,
+};
 const GENERIC_BADGE_VARIANT_LABELS: Record<GenericBadgeVariant, string> = {
   default: "기본",
   secondary: "보조",
@@ -621,14 +637,14 @@ function ControlBlock({
   label: string;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <label className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{label}</label>
+    <div className="flex min-w-0 flex-col gap-2">
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <label className="min-w-0 text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{label}</label>
         {hint ? (
-          <span className="text-[11px] text-[var(--tb-color-text-muted)]">{hint}</span>
+          <span className="shrink-0 text-[11px] text-[var(--tb-color-text-muted)]">{hint}</span>
         ) : null}
       </div>
-      {children}
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }
@@ -652,13 +668,16 @@ function SliderControl({
 }) {
   return (
     <ControlBlock label={label} hint={`${value}${unit}`}>
-      <Slider
-        value={[value]}
-        min={min}
-        max={max}
-        step={step}
-        onValueChange={(values) => onChange(values[0] ?? value)}
-      />
+      <div className="w-full max-w-full min-w-0 overflow-hidden px-2 py-1">
+        <Slider
+          className="min-w-0 max-w-full"
+          value={[value]}
+          min={min}
+          max={max}
+          step={step}
+          onValueChange={(values) => onChange(values[0] ?? value)}
+        />
+      </div>
     </ControlBlock>
   );
 }
@@ -1081,6 +1100,8 @@ export default function DesignSystemPage() {
     getNotificationPanelPreviewNotifications(),
   );
   const [accentTaste, setAccentTaste] = useState<TasteId>(PLAYGROUND_DEFAULTS.accentTaste);
+  const [avatarTasteValues, setAvatarTasteValues] =
+    useState<Record<TasteId, number>>(AVATAR_TASTE_DEFAULTS);
   const [statusKey, setStatusKey] = useState<AppStatus>("preparing");
   const [ctaTone, setCtaTone] = useState<"neutral" | "alert">("alert");
   const [improveAccuracyStage, setImproveAccuracyStage] = useState<
@@ -1124,6 +1145,27 @@ export default function DesignSystemPage() {
   });
 
   const accentPalette = TASTE_TOKENS[accentTaste].palette;
+  const avatarMeasurementSnapshot = useMemo(
+    () =>
+      createTasteMeasurementSnapshot(
+        TASTE_OPTIONS.reduce((results, tasteId) => {
+          results[tasteId] = avatarTasteValues[tasteId];
+          return results;
+        }, {} as TasteMeasurementResults),
+        new Date("2026-05-20T12:00:00+09:00").toISOString(),
+        "measured",
+      ),
+    [avatarTasteValues],
+  );
+  const updateAvatarTasteValue = (tasteId: TasteId, value: number) => {
+    setAvatarTasteValues((currentValues) => ({
+      ...currentValues,
+      [tasteId]: Number(value.toFixed(1)),
+    }));
+  };
+  const resetAvatarTasteValues = () => {
+    setAvatarTasteValues(AVATAR_TASTE_DEFAULTS);
+  };
   const currentRuntimeTokenState = useMemo<DesignTokenRuntimeState>(
     () => ({
       background,
@@ -1727,7 +1769,7 @@ export default function DesignSystemPage() {
     );
 
   const floatingMenuButtonClassName =
-    "inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] shadow-[0_18px_48px_rgba(15,15,15,0.14)] transition-colors hover:bg-[var(--tb-color-surface-muted)]";
+    "inline-flex shrink-0 self-end items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] shadow-[0_18px_48px_rgba(15,15,15,0.14)] transition-colors hover:bg-[var(--tb-color-surface-muted)]";
   const floatingMenuIconStrokeWidth = 1.8;
 
   return (
@@ -3786,6 +3828,39 @@ export default function DesignSystemPage() {
                     }))}
                   />
                 </ControlBlock>
+                <div className="grid min-w-0 gap-3 rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
+                        TasteProfileAvatar
+                      </p>
+                      <p className="mt-1 max-w-full text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                        6가지 미각 값을 조절해 프로필 아바타 그라데이션 반영 비율을 확인합니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={resetAvatarTasteValues}
+                      className="shrink-0 rounded-full border border-[var(--tb-color-border-default)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+                    >
+                      초기화
+                    </button>
+                  </div>
+                  <div className="grid min-w-0 gap-3">
+                    {TASTE_OPTIONS.map((tasteId) => (
+                      <SliderControl
+                        key={`avatar-taste-control-${tasteId}`}
+                        label={TASTE_TOKENS[tasteId].label}
+                        value={avatarTasteValues[tasteId]}
+                        min={0.5}
+                        max={10}
+                        step={0.1}
+                        unit=" mM"
+                        onChange={(value) => updateAvatarTasteValue(tasteId, value)}
+                      />
+                    ))}
+                  </div>
+                </div>
                 <ControlBlock label="Status chip">
                   <SegmentedControl
                     value={statusKey}
@@ -3837,6 +3912,7 @@ export default function DesignSystemPage() {
                     <SectionEyebrow>OutlineBadge</SectionEyebrow>
                     <SectionEyebrow>StatusChip</SectionEyebrow>
                     <SectionEyebrow>TasteChip</SectionEyebrow>
+                    <SectionEyebrow>TasteProfileAvatar</SectionEyebrow>
                     <SectionEyebrow>TasteMeasurementMiniCta</SectionEyebrow>
                     <SectionEyebrow>SectionCard</SectionEyebrow>
                   </div>
@@ -3857,6 +3933,76 @@ export default function DesignSystemPage() {
                       onAction={() => undefined}
                       tone={ctaTone}
                     />
+                    <div
+                      className={cn(previewCardClass, "grid gap-4 p-4")}
+                      data-component-preview="TasteProfileAvatar"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                            TasteProfileAvatar
+                          </p>
+                          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                            미각 측정값 6축을 비율로 섞어 기본 프로필의 멀티컬러 그라데이션을 만듭니다.
+                          </p>
+                        </div>
+                        <SourceFileLink
+                          file="src/components/system/TasteProfileAvatar.tsx"
+                          label="원본"
+                          variant="chip"
+                        />
+                      </div>
+                      <div className="flex flex-wrap items-center gap-5 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-muted)] px-4 py-4">
+                        <TasteProfileAvatar
+                          ariaLabel="TasteProfileAvatar JH preview"
+                          initials={createTasteProfileAvatarInitials("신준호")}
+                          measurementSnapshot={avatarMeasurementSnapshot}
+                          size="xl"
+                        />
+                        <div className="flex flex-wrap items-center gap-3">
+                          {(["sm", "md", "lg"] as const).map((size) => (
+                            <TasteProfileAvatar
+                              key={`taste-profile-avatar-preview-${size}`}
+                              initials={createTasteProfileAvatarInitials("머리어깨무릎발")}
+                              measurementSnapshot={avatarMeasurementSnapshot}
+                              size={size}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        {TASTE_OPTIONS.map((tasteId) => {
+                          const ratioTotal = TASTE_OPTIONS.reduce(
+                            (sum, id) => sum + avatarTasteValues[id],
+                            0,
+                          );
+                          const ratio = Math.round((avatarTasteValues[tasteId] / ratioTotal) * 100);
+
+                          return (
+                            <div
+                              key={`avatar-taste-ratio-${tasteId}`}
+                              className="grid grid-cols-[72px_minmax(0,1fr)_44px] items-center gap-2 text-[11px]"
+                            >
+                              <span className="font-semibold text-[var(--tb-color-text-muted)]">
+                                {TASTE_TOKENS[tasteId].label}
+                              </span>
+                              <span className="h-2 overflow-hidden rounded-full bg-[var(--tb-color-surface-muted)]">
+                                <span
+                                  className="block h-full rounded-full"
+                                  style={{
+                                    width: `${ratio}%`,
+                                    backgroundColor: TASTE_TOKENS[tasteId].palette.main,
+                                  }}
+                                />
+                              </span>
+                              <span className="text-right font-mono text-[var(--tb-color-text-muted)]">
+                                {ratio}%
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                     <SectionCard hoverEffect={false}>
                       <div className="flex w-full items-start justify-between gap-3">
                         <div>
@@ -4123,7 +4269,7 @@ export default function DesignSystemPage() {
 
       <div
         ref={floatingMenuClusterRef}
-        className="fixed bottom-4 right-4 z-[90] flex w-[min(380px,calc(100vw-2rem))] flex-col items-end gap-3 sm:bottom-6 sm:right-6"
+        className="fixed bottom-4 right-4 z-[90] flex w-[min(380px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] flex-col items-stretch gap-3 sm:bottom-6 sm:right-6"
       >
         <PlaygroundLiveControlsDock
           activeSectionLabel={activeLiveControlSection?.label ?? null}
@@ -4161,7 +4307,7 @@ export default function DesignSystemPage() {
         </button>
 
         {sectionJumpMenuOpen ? (
-          <div className="w-[min(220px,calc(100vw-2rem))] rounded-[24px] border border-[var(--tb-color-border-default)] bg-white/95 p-3 shadow-[0_20px_56px_rgba(15,15,15,0.18)] backdrop-blur">
+          <div className="self-end w-[min(220px,calc(100vw-2rem))] rounded-[24px] border border-[var(--tb-color-border-default)] bg-white/95 p-3 shadow-[0_20px_56px_rgba(15,15,15,0.18)] backdrop-blur">
             <p className="px-1 text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
               섹션 바로가기
             </p>

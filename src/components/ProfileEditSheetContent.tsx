@@ -30,6 +30,7 @@ import BirthDatePicker, {
   type BirthDateParts,
 } from './system/BirthDatePicker';
 import SelectionCard from './system/SelectionCard';
+import TasteProfileAvatar from './system/TasteProfileAvatar';
 import type {
   TasteSurveyRespondentContext,
   TasteSurveySexContext,
@@ -1100,26 +1101,12 @@ export default function ProfileEditSheetContent({
         onSubmit={handleSubmit}
       >
         <div className="flex flex-col items-center gap-3 pt-1">
-          <div className="relative size-24 rounded-full">
-            <div
-              className="flex size-24 items-center justify-center overflow-hidden rounded-full"
-              style={draftAvatarImageSrc ? undefined : avatarStyle}
-            >
-              {draftAvatarImageSrc ? (
-                <img
-                  alt=""
-                  className="size-full object-cover"
-                  referrerPolicy="no-referrer"
-                  src={draftAvatarImageSrc}
-                />
-              ) : (
-                <span className="text-[18px] font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.34)]">
-                  {initials}
-                </span>
-              )}
-            </div>
-            <div className="pointer-events-none absolute inset-0 rounded-full border border-white/50 shadow-[inset_0_0_0_1px_rgba(15,15,15,0.08)]" />
-          </div>
+          <TasteProfileAvatar
+            imageSrc={draftAvatarImageSrc}
+            initials={initials}
+            size="lg"
+            style={avatarStyle}
+          />
 
           <div className="flex items-center gap-3">
             <label

@@ -594,6 +594,12 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     status: "currently-used",
   },
   {
+    name: "TasteProfileAvatar",
+    source: "src/components/system/TasteProfileAvatar.tsx",
+    note: "미각 데이터 6축을 그라데이션으로 번역하는 기본 프로필 아바타입니다.",
+    status: "currently-used",
+  },
+  {
     name: "Chip",
     source: "src/components/system/Chip.tsx",
     note: "일반 목적의 neutral / semantic / icon label chip입니다.",
@@ -1044,6 +1050,10 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     {
       file: "src/components/system",
       note: "메인 앱 전용 재사용 컴포넌트입니다.",
+    },
+    {
+      file: "src/components/system/TasteProfileAvatar.tsx",
+      note: "미각 측정값 6축으로 멀티컬러 기본 프로필 아바타를 만드는 공용 컴포넌트입니다.",
     },
     {
       file: "src/components/measurement/TasteMeasurementMiniCta.tsx",

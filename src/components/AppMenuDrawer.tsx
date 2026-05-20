@@ -6,13 +6,15 @@ import {
   Bell as BellIcon,
   CircleHelp as CircleHelpIcon,
   Info as InfoIcon,
+  LogIn as LogInIcon,
   LogOut as LogOutIcon,
   Mail as MailIcon,
   ShieldCheck as ShieldCheckIcon,
   ChevronRight as ChevronRightIcon
 } from 'lucide-react';
-import React from 'react';
+import React, { type CSSProperties } from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
+import TasteProfileAvatar from './system/TasteProfileAvatar';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, fontSize, style, ...props }: any) => (
@@ -24,6 +26,7 @@ const RefreshCw = wrapIcon(RefreshCwIcon);
 const Bell = wrapIcon(BellIcon);
 const HelpCircle = wrapIcon(CircleHelpIcon);
 const Info = wrapIcon(InfoIcon);
+const LogIn = wrapIcon(LogInIcon);
 const LogOut = wrapIcon(LogOutIcon);
 const Mail = wrapIcon(MailIcon);
 const Shield = wrapIcon(ShieldCheckIcon);
@@ -68,8 +71,11 @@ interface AppMenuDrawerProps {
   onImproveAccuracy?: () => void;
   onOpenSupportPanel?: (panel: AppMenuSupportPanel) => void;
   onOpenAuth?: () => void;
+  onOpenLogin?: () => void;
   onRequestLogout?: () => void;
   userEmail?: string | null;
+  userAvatarImageSrc?: string | null;
+  userAvatarStyle?: CSSProperties;
   userInitials?: string;
   userLabel?: string;
   isAnonymousUser?: boolean;
@@ -82,12 +88,19 @@ export default function AppMenuDrawer({
   onImproveAccuracy,
   onOpenSupportPanel,
   onOpenAuth,
+  onOpenLogin,
   onRequestLogout,
   userEmail,
+  userAvatarImageSrc,
+  userAvatarStyle,
   userInitials = 'TB',
   userLabel = 'Taste Buddy',
   isAnonymousUser = true,
 }: AppMenuDrawerProps) {
+  const FooterIcon = isAnonymousUser ? LogIn : LogOut;
+  const footerAction = isAnonymousUser ? 'auth' : 'logout';
+  const footerLabel = isAnonymousUser ? '로그인' : '로그아웃';
+
   const handleAction = (action: string) => {
     switch (action) {
       case 'remeasure':
@@ -111,6 +124,10 @@ export default function AppMenuDrawer({
       case 'auth':
         onClose();
         onOpenAuth?.();
+        break;
+      case 'login':
+        onClose();
+        onOpenLogin?.();
         break;
       default:
         break;
@@ -157,9 +174,12 @@ export default function AppMenuDrawer({
             onClick={() => handleAction('auth')}
             className="mx-5 mb-4 flex items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-card)] p-3 text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
           >
-            <div className="flex items-center justify-center rounded-full size-[40px] bg-[var(--tb-taste-sweet-bg)]">
-              <span className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">{userInitials}</span>
-            </div>
+            <TasteProfileAvatar
+              imageSrc={userAvatarImageSrc}
+              initials={userInitials}
+              size="sm"
+              style={userAvatarStyle}
+            />
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                 {userLabel}
@@ -228,11 +248,11 @@ export default function AppMenuDrawer({
           <div className="px-4 py-4 border-t border-[var(--tb-color-border-default)]">
             <button
               type="button"
-              onClick={() => handleAction('logout')}
+              onClick={() => handleAction(isAnonymousUser ? 'login' : footerAction)}
               className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 w-full text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
             >
-              <LogOut size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
-              <span className="text-[13px] font-medium text-[var(--tb-color-text-hint)]">로그아웃</span>
+              <FooterIcon size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
+              <span className="text-[13px] font-medium text-[var(--tb-color-text-hint)]">{footerLabel}</span>
             </button>
           </div>
         </div>
