@@ -87,6 +87,22 @@ import StepBadge from "../components/system/StepBadge";
 import StepIndicator from "../components/system/StepIndicator";
 import StatusChip from "../components/system/StatusChip";
 import TasteChip from "../components/system/TasteChip";
+import PalateBloomAvatar, {
+  getPalateBloomShapeCounts,
+  PALATE_BLOOM_SHAPE_COUNT_LIMITS,
+  type PalateBloomCoreShape,
+  type PalateBloomPetalShape,
+  type PalateBloomStarShape,
+} from "../components/system/PalateBloomAvatar";
+import PalateSignatureAvatar, {
+  type PalateSignatureAvatarVariant,
+  type TasteProfile as PalateSignatureTasteProfile,
+} from "../components/system/PalateSignatureAvatar";
+import {
+  PROFILE_AVATAR_SIZE_KEYS,
+  PROFILE_AVATAR_SIZE_TOKENS,
+  type ProfileAvatarSize,
+} from "../components/system/profileAvatarSizeTokens";
 import TasteProfileAvatar, {
   createTasteProfileAvatarInitials,
 } from "../components/system/TasteProfileAvatar";
@@ -235,6 +251,8 @@ const COMPONENT_ARCHITECTURE_GROUPS = [
       "StatusChip",
       "TasteChip",
       "TasteProfileAvatar",
+      "PalateSignatureAvatar",
+      "PalateBloomAvatar",
       "TastePointArrowBox",
       "ToastSurface",
     ],
@@ -418,6 +436,36 @@ const AVATAR_TASTE_DEFAULTS: Record<TasteId, number> = {
   umami: 5.4,
   fat: 3.8,
 };
+const BLOOM_SHAPE_COUNT_DEFAULT = 4;
+const BLOOM_PETAL_SHAPE_DEFAULT: PalateBloomPetalShape = "roundPetal";
+const BLOOM_STAR_SHAPE_DEFAULT: PalateBloomStarShape = "thinStar";
+const BLOOM_CORE_SHAPE_DEFAULT: PalateBloomCoreShape = "solidCore";
+const BLOOM_PETAL_SHAPE_OPTIONS = [
+  { value: "roundPetal", label: "roundPetal" },
+  { value: "capsulePetal", label: "capsulePetal" },
+  { value: "softDiamondPetal", label: "softDiamondPetal" },
+  { value: "serratedTipPetal", label: "serratedTipPetal" },
+] satisfies ReadonlyArray<{ value: PalateBloomPetalShape; label: string }>;
+const BLOOM_STAR_SHAPE_OPTIONS = [
+  { value: "thinStar", label: "thinStar" },
+  { value: "roundedSpokeStar", label: "roundedSpokeStar" },
+  { value: "dottedRayStar", label: "dottedRayStar" },
+] satisfies ReadonlyArray<{ value: PalateBloomStarShape; label: string }>;
+const BLOOM_CORE_SHAPE_OPTIONS = [
+  { value: "solidCore", label: "solidCore" },
+  { value: "diamondCore", label: "diamondCore" },
+  { value: "seedCluster", label: "seedCluster" },
+] satisfies ReadonlyArray<{ value: PalateBloomCoreShape; label: string }>;
+const PALATE_SIGNATURE_LIVE_PREVIEWS = [
+  { initials: "S", size: "sm", variant: "soft" },
+  { initials: "M", size: "md", variant: "soft" },
+  { initials: "L", size: "lg", variant: "soft" },
+  { initials: "XL", size: "xl", variant: "soft" },
+] satisfies ReadonlyArray<{
+  initials: string;
+  size: ProfileAvatarSize;
+  variant: PalateSignatureAvatarVariant;
+}>;
 const GENERIC_BADGE_VARIANT_LABELS: Record<GenericBadgeVariant, string> = {
   default: "기본",
   secondary: "보조",
@@ -1102,6 +1150,13 @@ export default function DesignSystemPage() {
   const [accentTaste, setAccentTaste] = useState<TasteId>(PLAYGROUND_DEFAULTS.accentTaste);
   const [avatarTasteValues, setAvatarTasteValues] =
     useState<Record<TasteId, number>>(AVATAR_TASTE_DEFAULTS);
+  const [bloomShapeCount, setBloomShapeCount] = useState(BLOOM_SHAPE_COUNT_DEFAULT);
+  const [bloomPetalShape, setBloomPetalShape] =
+    useState<PalateBloomPetalShape>(BLOOM_PETAL_SHAPE_DEFAULT);
+  const [bloomStarShape, setBloomStarShape] =
+    useState<PalateBloomStarShape>(BLOOM_STAR_SHAPE_DEFAULT);
+  const [bloomCoreShape, setBloomCoreShape] =
+    useState<PalateBloomCoreShape>(BLOOM_CORE_SHAPE_DEFAULT);
   const [statusKey, setStatusKey] = useState<AppStatus>("preparing");
   const [ctaTone, setCtaTone] = useState<"neutral" | "alert">("alert");
   const [improveAccuracyStage, setImproveAccuracyStage] = useState<
@@ -1110,7 +1165,7 @@ export default function DesignSystemPage() {
   const [confirmationPreviewKey, setConfirmationPreviewKey] = useState(0);
   const [appliedRuntimeTokenState, setAppliedRuntimeTokenState] =
     useState<DesignTokenRuntimeState>(initialRuntimeTokenState);
-  const [floatingMenuOpen, setFloatingMenuOpen] = useState(true);
+  const [floatingMenuOpen, setFloatingMenuOpen] = useState(false);
   const [sectionJumpMenuOpen, setSectionJumpMenuOpen] = useState(false);
   const [liveControlsDockOpen, setLiveControlsDockOpen] = useState(true);
   const [activeLiveControlSectionId, setActiveLiveControlSectionId] = useState<SectionId | null>(() => {
@@ -1157,14 +1212,37 @@ export default function DesignSystemPage() {
       ),
     [avatarTasteValues],
   );
+  const livePalateAvatarProfile = useMemo<PalateSignatureTasteProfile>(
+    () =>
+      TASTE_OPTIONS.reduce((profile, tasteId) => {
+        profile[tasteId] = Math.round(avatarTasteValues[tasteId] * 10);
+        return profile;
+      }, {} as PalateSignatureTasteProfile),
+    [avatarTasteValues],
+  );
+  const livePalateTopTasteIds = useMemo(
+    () =>
+      [...TASTE_OPTIONS]
+        .sort((left, right) => livePalateAvatarProfile[right] - livePalateAvatarProfile[left])
+        .slice(0, 2),
+    [livePalateAvatarProfile],
+  );
+  const livePalateBloomShapeCounts = useMemo(
+    () => getPalateBloomShapeCounts(livePalateAvatarProfile, bloomShapeCount),
+    [bloomShapeCount, livePalateAvatarProfile],
+  );
   const updateAvatarTasteValue = (tasteId: TasteId, value: number) => {
     setAvatarTasteValues((currentValues) => ({
       ...currentValues,
       [tasteId]: Number(value.toFixed(1)),
     }));
   };
-  const resetAvatarTasteValues = () => {
+  const resetAvatarPreviewControls = () => {
     setAvatarTasteValues(AVATAR_TASTE_DEFAULTS);
+    setBloomShapeCount(BLOOM_SHAPE_COUNT_DEFAULT);
+    setBloomPetalShape(BLOOM_PETAL_SHAPE_DEFAULT);
+    setBloomStarShape(BLOOM_STAR_SHAPE_DEFAULT);
+    setBloomCoreShape(BLOOM_CORE_SHAPE_DEFAULT);
   };
   const currentRuntimeTokenState = useMemo<DesignTokenRuntimeState>(
     () => ({
@@ -1673,6 +1751,18 @@ export default function DesignSystemPage() {
     "rounded-[var(--tb-radius-14)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)]";
   const previewInsetClass =
     "rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)]";
+  const avatarPreviewGridClass = "grid gap-3 sm:grid-cols-2 lg:grid-cols-4";
+  const avatarPreviewTileClass =
+    "flex min-w-0 flex-col items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-muted)] px-4 py-4 text-center";
+  const avatarPreviewVisualClass = "flex h-[72px] items-center justify-center";
+  const avatarPreviewMetaClass = "grid min-h-[56px] gap-1";
+  const avatarPreviewLabelClass =
+    "text-[13px] font-semibold text-[var(--tb-color-text-primary)]";
+  const avatarPreviewDescriptionClass =
+    "text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]";
+  const avatarPreviewChipRowClass = "flex min-h-[28px] flex-wrap justify-center gap-1.5";
+  const avatarPreviewSupportClass =
+    "rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] px-4 py-3";
   const headerBackgroundStyle = useMemo<CSSProperties>(() => {
     const tasteClouds = [
       { alpha: 0.11, position: "10% 14%", size: "30%", taste: "단맛" },
@@ -3832,15 +3922,15 @@ export default function DesignSystemPage() {
                   <div className="flex min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
-                        TasteProfileAvatar
+                        Profile avatar previews
                       </p>
                       <p className="mt-1 max-w-full text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                        6가지 미각 값을 조절해 프로필 아바타 그라데이션 반영 비율을 확인합니다.
+                        6가지 미각 값을 조절해 TasteProfile, Signature, Bloom 아바타 반영을 함께 확인합니다.
                       </p>
                     </div>
                     <button
                       type="button"
-                      onClick={resetAvatarTasteValues}
+                      onClick={resetAvatarPreviewControls}
                       className="shrink-0 rounded-full border border-[var(--tb-color-border-default)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
                     >
                       초기화
@@ -3859,6 +3949,51 @@ export default function DesignSystemPage() {
                         onChange={(value) => updateAvatarTasteValue(tasteId, value)}
                       />
                     ))}
+                  </div>
+                  <div className="grid min-w-0 gap-3 border-t border-[var(--tb-color-border-default)] pt-3">
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
+                          Bloom shared count
+                        </p>
+                        <p className="mt-1 text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                          하나의 공통 개수로 꽃잎 수와 별 꼭짓점 수를 맞춥니다.
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-white px-2 py-1 font-mono text-[11px] text-[var(--tb-color-text-muted)]">
+                        {bloomShapeCount}개
+                      </span>
+                    </div>
+                    <SliderControl
+                      label="공통 개수"
+                      value={bloomShapeCount}
+                      min={PALATE_BLOOM_SHAPE_COUNT_LIMITS.min}
+                      max={PALATE_BLOOM_SHAPE_COUNT_LIMITS.max}
+                      step={1}
+                      unit="개"
+                      onChange={(value) => setBloomShapeCount(Math.round(value))}
+                    />
+                    <ControlBlock label="꽃잎 형태" hint={bloomPetalShape}>
+                      <SegmentedControl
+                        value={bloomPetalShape}
+                        onChange={setBloomPetalShape}
+                        options={BLOOM_PETAL_SHAPE_OPTIONS}
+                      />
+                    </ControlBlock>
+                    <ControlBlock label="별 형태" hint={bloomStarShape}>
+                      <SegmentedControl
+                        value={bloomStarShape}
+                        onChange={setBloomStarShape}
+                        options={BLOOM_STAR_SHAPE_OPTIONS}
+                      />
+                    </ControlBlock>
+                    <ControlBlock label="코어 형태" hint={bloomCoreShape}>
+                      <SegmentedControl
+                        value={bloomCoreShape}
+                        onChange={setBloomCoreShape}
+                        options={BLOOM_CORE_SHAPE_OPTIONS}
+                      />
+                    </ControlBlock>
                   </div>
                 </div>
                 <ControlBlock label="Status chip">
@@ -3913,6 +4048,8 @@ export default function DesignSystemPage() {
                     <SectionEyebrow>StatusChip</SectionEyebrow>
                     <SectionEyebrow>TasteChip</SectionEyebrow>
                     <SectionEyebrow>TasteProfileAvatar</SectionEyebrow>
+                    <SectionEyebrow>PalateSignatureAvatar</SectionEyebrow>
+                    <SectionEyebrow>PalateBloomAvatar</SectionEyebrow>
                     <SectionEyebrow>TasteMeasurementMiniCta</SectionEyebrow>
                     <SectionEyebrow>SectionCard</SectionEyebrow>
                   </div>
@@ -3952,25 +4089,41 @@ export default function DesignSystemPage() {
                           variant="chip"
                         />
                       </div>
-                      <div className="flex flex-wrap items-center gap-5 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-muted)] px-4 py-4">
-                        <TasteProfileAvatar
-                          ariaLabel="TasteProfileAvatar JH preview"
-                          initials={createTasteProfileAvatarInitials("신준호")}
-                          measurementSnapshot={avatarMeasurementSnapshot}
-                          size="xl"
-                        />
-                        <div className="flex flex-wrap items-center gap-3">
-                          {(["sm", "md", "lg"] as const).map((size) => (
-                            <TasteProfileAvatar
-                              key={`taste-profile-avatar-preview-${size}`}
-                              initials={createTasteProfileAvatarInitials("머리어깨무릎발")}
-                              measurementSnapshot={avatarMeasurementSnapshot}
-                              size={size}
-                            />
-                          ))}
-                        </div>
+                      <div className={avatarPreviewGridClass}>
+                        {PROFILE_AVATAR_SIZE_KEYS.map((size) => (
+                          <div
+                            key={`taste-profile-avatar-size-preview-${size}`}
+                            className={avatarPreviewTileClass}
+                          >
+                            <div className={avatarPreviewVisualClass}>
+                              <TasteProfileAvatar
+                                ariaLabel={`TasteProfileAvatar ${size} preview`}
+                                initials={createTasteProfileAvatarInitials("신준호")}
+                                measurementSnapshot={avatarMeasurementSnapshot}
+                                size={size}
+                              />
+                            </div>
+                            <div className={avatarPreviewMetaClass}>
+                              <p className={avatarPreviewLabelClass}>
+                                {size} · {PROFILE_AVATAR_SIZE_TOKENS[size]}px
+                              </p>
+                              <p className={avatarPreviewDescriptionClass}>
+                                실시간 컨트롤 값으로 그라데이션 반영 비율이 바뀝니다.
+                              </p>
+                            </div>
+                            <div className={avatarPreviewChipRowClass}>
+                              {livePalateTopTasteIds.map((tasteId) => (
+                                <TasteChip
+                                  key={`taste-profile-live-${size}-${tasteId}`}
+                                  taste={TASTE_TOKENS[tasteId].label}
+                                  value={`${avatarTasteValues[tasteId].toFixed(1)} mM`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="grid gap-2">
+                      <div className={cn(avatarPreviewSupportClass, "grid gap-2")}>
                         {TASTE_OPTIONS.map((tasteId) => {
                           const ratioTotal = TASTE_OPTIONS.reduce(
                             (sum, id) => sum + avatarTasteValues[id],
@@ -4001,6 +4154,171 @@ export default function DesignSystemPage() {
                             </div>
                           );
                         })}
+                      </div>
+                    </div>
+                    <div
+                      className={cn(previewCardClass, "grid gap-4 p-4")}
+                      data-component-preview="PalateSignatureAvatar"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                            PalateSignatureAvatar
+                          </p>
+                          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                            여섯 미각 비율을 차트가 아닌 개인 미각 시그니처형 halo avatar로 번역합니다.
+                          </p>
+                        </div>
+                        <SourceFileLink
+                          file="src/components/system/PalateSignatureAvatar.tsx"
+                          label="원본"
+                          variant="chip"
+                        />
+                      </div>
+                      <div className={avatarPreviewGridClass}>
+                        {PALATE_SIGNATURE_LIVE_PREVIEWS.map(({ initials, size, variant }) => (
+                          <div
+                            key={`palate-signature-live-preview-${size}`}
+                            className={avatarPreviewTileClass}
+                          >
+                            <div className={avatarPreviewVisualClass}>
+                              <PalateSignatureAvatar
+                                ariaLabel={`${size} live palate signature avatar`}
+                                initials={initials}
+                                profile={livePalateAvatarProfile}
+                                size={size}
+                                variant={variant}
+                              />
+                            </div>
+                            <div className={avatarPreviewMetaClass}>
+                              <p className={avatarPreviewLabelClass}>
+                                {size} · {PROFILE_AVATAR_SIZE_TOKENS[size]}px
+                              </p>
+                              <p className={avatarPreviewDescriptionClass}>
+                                실시간 컨트롤 값으로 halo 구조와 중심부가 함께 바뀝니다.
+                              </p>
+                            </div>
+                            <div className={avatarPreviewChipRowClass}>
+                              {livePalateTopTasteIds.map((tasteId) => (
+                                <TasteChip
+                                  key={`palate-signature-live-${size}-${tasteId}`}
+                                  taste={TASTE_TOKENS[tasteId].label}
+                                  value={`${avatarTasteValues[tasteId].toFixed(1)} mM`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className={cn(avatarPreviewSupportClass, "flex flex-wrap items-center gap-3")}>
+                        {PROFILE_AVATAR_SIZE_KEYS.map((size) => (
+                          <PalateSignatureAvatar
+                            key={`palate-signature-token-row-${size}`}
+                            ariaLabel={`${size} initialed palate signature avatar`}
+                            initials={size.toUpperCase()}
+                            profile={livePalateAvatarProfile}
+                            showInitials
+                            size={size}
+                            variant="halo"
+                          />
+                        ))}
+                        <p className="min-w-[160px] flex-1 text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                          세 아바타가 같은 sm 32px, md 44px, lg 68px, xl 96px 토큰을 공유합니다.
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className={cn(previewCardClass, "grid gap-4 p-4")}
+                      data-component-preview="PalateBloomAvatar"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                            PalateBloomAvatar
+                          </p>
+                          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                            미각 우선순위를 꽃잎과 이중 별 레이어로 쌓아 프로필용 Palate Bloom mark로 번역합니다.
+                          </p>
+                        </div>
+                        <SourceFileLink
+                          file="src/components/system/PalateBloomAvatar.tsx"
+                          label="원본"
+                          variant="chip"
+                        />
+                      </div>
+                      <div className={avatarPreviewGridClass}>
+                        {PROFILE_AVATAR_SIZE_KEYS.map((size) => (
+                          <div
+                            key={`palate-bloom-live-preview-${size}`}
+                            className={avatarPreviewTileClass}
+                          >
+                            <div className={avatarPreviewVisualClass}>
+                              <PalateBloomAvatar
+                                coreShape={bloomCoreShape}
+                                petalShape={bloomPetalShape}
+                                profile={livePalateAvatarProfile}
+                                shapeCountOverride={bloomShapeCount}
+                                size={size}
+                                starShape={bloomStarShape}
+                              />
+                            </div>
+                            <div className={avatarPreviewMetaClass}>
+                              <p className={avatarPreviewLabelClass}>
+                                {size} · {PROFILE_AVATAR_SIZE_TOKENS[size]}px
+                              </p>
+                              <p className={avatarPreviewDescriptionClass}>
+                                하나의 seed count로 꽃잎과 이중 별 개수가 함께 바뀝니다.
+                              </p>
+                            </div>
+                            <div className={avatarPreviewChipRowClass}>
+                              {livePalateTopTasteIds.map((tasteId) => (
+                                <TasteChip
+                                  key={`palate-bloom-live-${size}-${tasteId}`}
+                                  taste={TASTE_TOKENS[tasteId].label}
+                                  value={`${avatarTasteValues[tasteId].toFixed(1)} mM`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className={cn(avatarPreviewSupportClass, "grid gap-3")}>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {PROFILE_AVATAR_SIZE_KEYS.map((size) => (
+                            <PalateBloomAvatar
+                              coreShape={bloomCoreShape}
+                              petalShape={bloomPetalShape}
+                              key={`palate-bloom-token-row-${size}`}
+                              profile={livePalateAvatarProfile}
+                              shapeCountOverride={bloomShapeCount}
+                              size={size}
+                              starShape={bloomStarShape}
+                            />
+                          ))}
+                          <p className="min-w-[160px] flex-1 text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                            6개 미각의 상대 점유율과 순위 간 격차를 함께 읽어, 한 값을 바꾸면 전체 Bloom 구조가 같이 재정렬됩니다.
+                          </p>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                          {[
+                            { count: livePalateBloomShapeCounts.largePetal, label: "2순위 꽃잎" },
+                            { count: livePalateBloomShapeCounts.smallPetal, label: "3순위 꽃잎" },
+                            { count: livePalateBloomShapeCounts.largeStar, label: "4순위 별" },
+                            { count: livePalateBloomShapeCounts.smallStar, label: "5순위 별" },
+                          ].map(({ count, label }) => (
+                            <div
+                              key={`palate-bloom-shape-count-${label}`}
+                              className="flex items-center justify-between gap-2 rounded-full bg-[var(--tb-color-surface-muted)] px-3 py-1.5 text-[11px]"
+                            >
+                              <span className="font-semibold text-[var(--tb-color-text-muted)]">
+                                {label}
+                              </span>
+                              <span className="font-mono text-[var(--tb-color-text-primary)]">
+                                {count}개
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     <SectionCard hoverEffect={false}>

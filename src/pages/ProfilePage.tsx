@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Settings as SettingsIcon,
   Bookmark as BookmarkIcon,
@@ -36,9 +36,10 @@ import ChefAvatar from '../components/system/ChefAvatar';
 import CompactCard from '../components/system/CompactCard';
 import OutlineBadge from '../components/system/OutlineBadge';
 import PageSection from '../components/system/PageSection';
-import TasteProfileAvatar, {
-  createTasteProfileAvatarInitials,
-} from '../components/system/TasteProfileAvatar';
+import PalateBloomAvatar, {
+  createPalateBloomProfileFromMeasurementSnapshot,
+  type TasteProfile as PalateBloomTasteProfile,
+} from '../components/system/PalateBloomAvatar';
 import TastickDeviceCard from '../components/system/TastickDeviceCard';
 import { ICON_TOKENS } from '../constants/designTokens';
 import { type ReservationRecord } from '../constants/reservationCatalog';
@@ -54,7 +55,6 @@ import {
   hydrateRecentMeasurementSnapshots,
   hydrateReservationPageData,
 } from '../lib/tasteBuddySupabase';
-import { resolvePublicMediaPath } from '../lib/mediaAssets';
 import {
   loadRestaurantBookmarks,
   RESTAURANT_BOOKMARKS_CHANGED_EVENT,
@@ -73,12 +73,12 @@ interface ProfileStat {
 
 export interface ProfileIdentityData {
   avatarImageDataUrl?: string | null;
-  avatarStyle?: CSSProperties;
   displayName?: string | null;
   followerCount?: number;
   followingCount?: number;
-  initials?: string | null;
   nickname?: string | null;
+  palateBloomProfile?: PalateBloomTasteProfile;
+  palateBloomShapeSeed?: string;
 }
 
 export interface FavoriteChef {
@@ -89,27 +89,17 @@ export interface FavoriteChef {
   taste: string;
 }
 
-const DEFAULT_PROFILE_IDENTITY: Required<Pick<ProfileIdentityData, 'displayName' | 'followerCount' | 'followingCount' | 'initials'>> = {
+const DEFAULT_PROFILE_IDENTITY: Required<Pick<ProfileIdentityData, 'displayName' | 'followerCount' | 'followingCount'>> = {
   displayName: 'Taste Buddy Guest',
   followerCount: 0,
   followingCount: 0,
-  initials: 'TB',
 };
-const DEFAULT_AVATAR_STYLE: CSSProperties = {
-  background:
-    'radial-gradient(circle at 28% 24%, rgba(255, 153, 0, 0.52), transparent 45%), radial-gradient(circle at 72% 76%, rgba(179, 114, 180, 0.38), transparent 44%), var(--tb-color-surface-muted)',
-};
-
 function formatChefName(name: string) {
   return name.endsWith('셰프') ? name : `${name} 셰프`;
 }
 
 function formatSocialCount(count: number | null | undefined) {
   return Math.max(0, count ?? 0).toLocaleString('ko-KR');
-}
-
-function getConnectionProfileAvatarSrc(friend: DiningFriendProfile) {
-  return resolvePublicMediaPath(friend.avatarPath);
 }
 
 function deriveFavoriteChefs(reservations: ReservationRecord[]): FavoriteChef[] {
@@ -242,10 +232,15 @@ export default function ProfilePage({
   const displayName = profileIdentity?.displayName?.trim() || DEFAULT_PROFILE_IDENTITY.displayName;
   const nickname = profileIdentity?.nickname?.trim() ?? '';
   const nicknameLabel = nickname ? `@${nickname}` : '버디네임 미설정';
-  const initials = profileIdentity?.initials?.trim() || DEFAULT_PROFILE_IDENTITY.initials;
   const followerCount = profileIdentity?.followerCount ?? DEFAULT_PROFILE_IDENTITY.followerCount;
   const followingCount = profileIdentity?.followingCount ?? DEFAULT_PROFILE_IDENTITY.followingCount;
-  const avatarStyle = profileIdentity?.avatarStyle ?? DEFAULT_AVATAR_STYLE;
+  const palateBloomShapeSeed = profileIdentity?.palateBloomShapeSeed;
+  const palateBloomProfile =
+    profileIdentity?.palateBloomProfile ??
+    createPalateBloomProfileFromMeasurementSnapshot(
+      measurementSnapshot,
+      nickname || displayName || 'taste-buddy-profile',
+    );
   const [connectionProfiles, setConnectionProfiles] = useState<DiningFriendProfile[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
@@ -400,48 +395,45 @@ export default function ProfilePage({
               </div>
             ) : null}
 
-            {connectionProfiles.map((friend) => {
-              const avatarImageSrc = getConnectionProfileAvatarSrc(friend);
-
-              return (
-                <div
-                  key={friend.id}
-                  className="flex items-center gap-3 rounded-[20px] bg-white p-3"
-                >
-                  <TasteProfileAvatar
-                    ariaLabel={friend.displayName || friend.nickname || 'Taste Buddy Guest'}
-                    className="size-[44px]"
-                    imageSrc={avatarImageSrc}
-                    initials={createTasteProfileAvatarInitials(friend.displayName, friend.nickname)}
-                    measurementSnapshot={friend.latestTasteMeasurementSnapshot}
-                    size="sm"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
-                      {friend.displayName || 'Taste Buddy Guest'}
-                    </p>
-                    <p className="mt-[2px] truncate text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
-                      {friend.nickname ? `@${friend.nickname}` : '버디네임 미설정'}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void handleAddConnectionFriend(friend)}
-                    disabled={friend.isFriend || addingConnectionId === friend.id}
-                    className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-[var(--tb-color-border-default)] px-3 text-[11px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)] disabled:opacity-55"
-                  >
-                    <UserPlus size={ICON_TOKENS.size.sm} />
-                    <span>
-                      {friend.isFriend
-                        ? '팔로잉'
-                        : addingConnectionId === friend.id
-                          ? '추가 중'
-                          : '팔로우'}
-                    </span>
-                  </button>
+            {connectionProfiles.map((friend) => (
+              <div
+                key={friend.id}
+                className="flex items-center gap-3 rounded-[20px] bg-white p-3"
+              >
+                <PalateBloomAvatar
+                  ariaLabel={friend.displayName || friend.nickname || 'Taste Buddy Guest'}
+                  profile={createPalateBloomProfileFromMeasurementSnapshot(
+                    friend.latestTasteMeasurementSnapshot,
+                    friend.id,
+                  )}
+                  shapeSeed={`${friend.id}|${friend.latestTasteMeasurementSnapshot?.measuredAt ?? 'no-measurement'}`}
+                  size="md"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                    {friend.displayName || 'Taste Buddy Guest'}
+                  </p>
+                  <p className="mt-[2px] truncate text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
+                    {friend.nickname ? `@${friend.nickname}` : '버디네임 미설정'}
+                  </p>
                 </div>
-              );
-            })}
+                <button
+                  type="button"
+                  onClick={() => void handleAddConnectionFriend(friend)}
+                  disabled={friend.isFriend || addingConnectionId === friend.id}
+                  className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-[var(--tb-color-border-default)] px-3 text-[11px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)] disabled:opacity-55"
+                >
+                  <UserPlus size={ICON_TOKENS.size.sm} />
+                  <span>
+                    {friend.isFriend
+                      ? '팔로잉'
+                      : addingConnectionId === friend.id
+                        ? '추가 중'
+                        : '팔로우'}
+                  </span>
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -468,13 +460,12 @@ export default function ProfilePage({
               </button>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4 pr-12">
-                  <TasteProfileAvatar
+                  <PalateBloomAvatar
                     ariaLabel={displayName}
-                    className="size-[68px]"
                     imageSrc={profileIdentity?.avatarImageDataUrl}
-                    initials={initials}
-                    size="md"
-                    style={avatarStyle}
+                    profile={palateBloomProfile}
+                    shapeSeed={palateBloomShapeSeed}
+                    size="lg"
                   />
                   <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
                     <span className="truncate text-[18px] font-bold text-[var(--tb-color-text-primary)]">{displayName}</span>

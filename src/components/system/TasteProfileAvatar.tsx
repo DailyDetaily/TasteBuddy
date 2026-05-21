@@ -6,8 +6,12 @@ import {
   type TasteMeasurementSnapshot,
 } from '../../constants/tasteMeasurementData';
 import { cn } from '../ui/utils';
+import {
+  PROFILE_AVATAR_SIZE_TOKENS,
+  type ProfileAvatarSize,
+} from './profileAvatarSizeTokens';
 
-type TasteProfileAvatarSize = 'sm' | 'md' | 'lg' | 'xl';
+export type TasteProfileAvatarSize = ProfileAvatarSize;
 
 interface TasteProfileAvatarProps {
   ariaLabel?: string;
@@ -19,18 +23,11 @@ interface TasteProfileAvatarProps {
   style?: CSSProperties;
 }
 
-const SIZE_CLASS_BY_KEY: Record<TasteProfileAvatarSize, string> = {
-  sm: 'size-10',
-  md: 'size-16',
-  lg: 'size-24',
-  xl: 'size-28',
-};
-
 const INITIAL_CLASS_BY_KEY: Record<TasteProfileAvatarSize, string> = {
-  sm: 'text-[12px]',
-  md: 'text-[18px]',
+  sm: 'text-[11px]',
+  md: 'text-[13px]',
   lg: 'text-[18px]',
-  xl: 'text-[20px]',
+  xl: 'text-[24px]',
 };
 
 const HANGUL_INITIAL_ROMAN = [
@@ -183,12 +180,17 @@ export default function TasteProfileAvatar({
   const avatarStyle = imageSrc
     ? undefined
     : (style ?? createTasteProfileAvatarStyle(measurementSnapshot ?? null));
+  const avatarSize = PROFILE_AVATAR_SIZE_TOKENS[size];
 
   return (
     <span
       aria-label={ariaLabel}
-      className={cn('relative block shrink-0 rounded-full', SIZE_CLASS_BY_KEY[size], className)}
+      className={cn('relative block shrink-0 rounded-full', className)}
       role={ariaLabel ? 'img' : undefined}
+      style={{
+        height: avatarSize,
+        width: avatarSize,
+      }}
     >
       <span
         className="flex size-full items-center justify-center overflow-hidden rounded-full"

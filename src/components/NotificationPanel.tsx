@@ -14,11 +14,10 @@ import {
   type AppNotification,
 } from '../lib/notificationsSupabase';
 import { ICON_TOKENS } from '../constants/designTokens';
-import { resolvePublicMediaPath } from '../lib/mediaAssets';
 import CompactCard from './system/CompactCard';
-import TasteProfileAvatar, {
-  createTasteProfileAvatarInitials,
-} from './system/TasteProfileAvatar';
+import PalateBloomAvatar, {
+  createPalateBloomFallbackProfile,
+} from './system/PalateBloomAvatar';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, fontSize, style, ...props }: any) => (
@@ -173,9 +172,6 @@ export default function NotificationPanel({
                 const { icon: Icon, iconBg, iconColor } = getNotificationPresentation(notification);
                 const isFollower = isFollowerNotification(notification);
                 const followerNickname = getFollowerNotificationNickname(notification);
-                const followerAvatarSrc = resolvePublicMediaPath(
-                  getPayloadString(notification, 'follower_avatar_path'),
-                );
 
                 return (
                   <CompactCard
@@ -188,9 +184,10 @@ export default function NotificationPanel({
                     headingClassName={isFollower ? 'text-[13px] font-semibold' : 'text-[13px] font-semibold'}
                     media={
                       isFollower ? (
-                        <TasteProfileAvatar
-                          imageSrc={followerAvatarSrc}
-                          initials={createTasteProfileAvatarInitials(followerNickname)}
+                        <PalateBloomAvatar
+                          ariaLabel={followerNickname}
+                          profile={createPalateBloomFallbackProfile(followerNickname)}
+                          shapeSeed={followerNickname}
                           size="sm"
                         />
                       ) : (

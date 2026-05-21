@@ -41,8 +41,10 @@ import BottomSheetShell, {
 import ActionOverlayCard from './components/system/ActionOverlayCard';
 import {
   createTasteProfileAvatarInitials,
-  createTasteProfileAvatarStyle,
 } from './components/system/TasteProfileAvatar';
+import {
+  createPalateBloomProfileFromMeasurementSnapshot,
+} from './components/system/PalateBloomAvatar';
 import ProfileIdentitySheetContent from './components/ProfileIdentitySheetContent';
 import ProfileEditSheetContent from './components/ProfileEditSheetContent';
 import ProfileSetupSheetContent from './components/ProfileSetupSheetContent';
@@ -60,6 +62,7 @@ import {
 import {
   DEFAULT_TASTE_MEASUREMENT_RESULTS,
   createTasteMeasurementSnapshot,
+  isBroadStarterMeasurementSnapshot,
   type TasteMeasurementSnapshot,
 } from './constants/tasteMeasurementData';
 import {
@@ -204,6 +207,7 @@ interface PersistedUserState {
   latestRestaurantReadyGuidance: RestaurantReadyGuidance | null;
   latestTasteSurveyRespondentContext: TasteSurveyRespondentContext;
   latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
+  palateBloomAvatarSnapshot: TasteMeasurementSnapshot | null;
   profileAvatarDataUrl: string | null;
   profileAvatarPath: string | null;
   profileBirthDate: string | null;
@@ -485,6 +489,7 @@ function createEmptyPersistedUserState(): PersistedUserState {
     latestRestaurantReadyGuidance: null,
     latestTasteSurveyRespondentContext: {},
     latestTasteMeasurementSnapshot: null,
+    palateBloomAvatarSnapshot: null,
     profileAvatarDataUrl: null,
     profileAvatarPath: null,
     profileBirthDate: null,
@@ -572,6 +577,11 @@ function loadPersistedUserState(): PersistedUserState {
     )
       ? parsedValue.latestTasteMeasurementSnapshot
       : null;
+    const palateBloomAvatarSnapshot = isTasteMeasurementSnapshot(
+      parsedValue.palateBloomAvatarSnapshot,
+    )
+      ? parsedValue.palateBloomAvatarSnapshot
+      : latestTasteMeasurementSnapshot;
     const latestPreferenceIntakeProfile = isPreferenceIntakeProfile(
       parsedValue.latestPreferenceIntakeProfile,
     )
@@ -611,6 +621,7 @@ function loadPersistedUserState(): PersistedUserState {
       latestRestaurantReadyGuidance,
       latestTasteSurveyRespondentContext,
       latestTasteMeasurementSnapshot,
+      palateBloomAvatarSnapshot,
       profileAvatarDataUrl,
       profileAvatarPath,
       profileBirthDate,
@@ -662,6 +673,9 @@ function MainApp() {
   const [latestTasteMeasurementSnapshot, setLatestTasteMeasurementSnapshot] = useState<
     TasteMeasurementSnapshot | null
   >(persistedUserState.latestTasteMeasurementSnapshot);
+  const [palateBloomAvatarSnapshot, setPalateBloomAvatarSnapshot] = useState<
+    TasteMeasurementSnapshot | null
+  >(persistedUserState.palateBloomAvatarSnapshot);
   const [latestRestaurantReadyGuidance, setLatestRestaurantReadyGuidance] =
     useState<RestaurantReadyGuidance | null>(persistedUserState.latestRestaurantReadyGuidance);
   const [latestPreferenceIntakeProfile, setLatestPreferenceIntakeProfile] =
@@ -803,6 +817,7 @@ function MainApp() {
             tasteSurveyRespondentContext,
           ),
           latestTasteMeasurementSnapshot,
+          palateBloomAvatarSnapshot,
           profileAvatarDataUrl: null,
           profileAvatarPath,
           profileBirthDate,
@@ -819,6 +834,7 @@ function MainApp() {
     latestPreferenceIntakeProfile,
     latestRestaurantReadyGuidance,
     latestTasteMeasurementSnapshot,
+    palateBloomAvatarSnapshot,
     profileAvatarPath,
     profileBirthDate,
     surveyResponses,
@@ -854,6 +870,7 @@ function MainApp() {
 
       if (remoteSnapshot) {
         setLatestTasteMeasurementSnapshot(remoteSnapshot);
+        setPalateBloomAvatarSnapshot((currentSnapshot) => currentSnapshot ?? remoteSnapshot);
         setHasCompletedInitialMeasurement(true);
         setLatestRestaurantReadyGuidance((current) =>
           current
@@ -936,13 +953,47 @@ function MainApp() {
   const shouldShowAuthEntry = isSupabaseConfigured && isAnonymousUser;
   const userInitials = getUserInitials(currentUserDisplayName ?? currentUserNickname, currentUserEmail);
   const userLabel = currentUserProfileLabel || (currentUserEmail ? '프로필 연결됨' : 'Taste Buddy Guest');
-  const userAvatarStyle = useMemo(
-    () => createTasteProfileAvatarStyle(latestTasteMeasurementSnapshot),
-    [latestTasteMeasurementSnapshot],
+  const userPalateBloomIdentitySeed = useMemo(
+    () =>
+      supabaseSession?.user.id ??
+      currentUserEmail ??
+      currentUserProfileLabel ??
+      'taste-buddy-guest',
+    [currentUserEmail, currentUserProfileLabel, supabaseSession?.user.id],
+  );
+  const hasCommittedPalateBloomMeasurement = Boolean(
+    palateBloomAvatarSnapshot &&
+      !isBroadStarterMeasurementSnapshot(palateBloomAvatarSnapshot),
+  );
+  const userPalateBloomShapeSeed = useMemo(() => {
+    const measurementSeed = hasCommittedPalateBloomMeasurement
+      ? palateBloomAvatarSnapshot?.measuredAt
+      : 'no-measured-taste';
+
+    return `${userPalateBloomIdentitySeed}|${measurementSeed}`;
+  }, [
+    hasCommittedPalateBloomMeasurement,
+    palateBloomAvatarSnapshot?.measuredAt,
+    userPalateBloomIdentitySeed,
+  ]);
+  const userPalateBloomProfile = useMemo(
+    () =>
+      createPalateBloomProfileFromMeasurementSnapshot(
+        palateBloomAvatarSnapshot,
+        userPalateBloomIdentitySeed,
+      ),
+    [palateBloomAvatarSnapshot, userPalateBloomIdentitySeed],
   );
   const profileAvatarImageSrc = useMemo(
     () => resolvePublicMediaPath(profileAvatarPath) ?? profileAvatarDataUrl,
     [profileAvatarDataUrl, profileAvatarPath],
+  );
+  const canApplyCurrentTasteToPalateBloomAvatar = Boolean(
+    latestTasteMeasurementSnapshot &&
+    (
+      latestTasteMeasurementSnapshot.measuredAt !== palateBloomAvatarSnapshot?.measuredAt ||
+      profileAvatarImageSrc
+    ),
   );
 
   useEffect(() => {
@@ -1395,6 +1446,17 @@ function MainApp() {
     setIsProfileIdentitySheetOpen(true);
   };
 
+  const handleApplyCurrentTasteToPalateBloomAvatar = () => {
+    if (!latestTasteMeasurementSnapshot) {
+      return;
+    }
+
+    trackEvent('profile_bloom_avatar_apply_current_taste', {
+      measured_at: latestTasteMeasurementSnapshot.measuredAt,
+    });
+    setPalateBloomAvatarSnapshot(latestTasteMeasurementSnapshot);
+  };
+
   const handleSubmitProfileEdit = async (input: {
     avatarFile: File | null;
     birthDate: string | null;
@@ -1575,6 +1637,7 @@ function MainApp() {
     );
 
     setLatestTasteMeasurementSnapshot(starterSnapshot);
+    setPalateBloomAvatarSnapshot((currentSnapshot) => currentSnapshot ?? starterSnapshot);
     setLatestRestaurantReadyGuidance(createFallbackRestaurantReadyGuidance(starterSnapshot));
     setHasCompletedInitialMeasurement(true);
   };
@@ -2100,6 +2163,7 @@ function MainApp() {
     });
 
     setLatestTasteMeasurementSnapshot(compatibleResult.snapshot);
+    setPalateBloomAvatarSnapshot((currentSnapshot) => currentSnapshot ?? compatibleResult.snapshot);
     setLatestRestaurantReadyGuidance(compatibleResult.starterGuidance);
     setHasCompletedInitialMeasurement(true);
     handlePersistedMeasurement(compatibleResult.snapshot, 'quick_calibration', {
@@ -2507,6 +2571,7 @@ function MainApp() {
           <TasteMeasurementScreen
             onComplete={(snapshot) => {
               setLatestTasteMeasurementSnapshot(snapshot);
+              setPalateBloomAvatarSnapshot((currentSnapshot) => currentSnapshot ?? snapshot);
               setLatestRestaurantReadyGuidance((current) =>
                 current
                   ? mergeRestaurantReadyGuidanceWithSnapshot(current, snapshot, 'Building')
@@ -2554,9 +2619,9 @@ function MainApp() {
                     hasUnreadNotifications={overlayProps.hasUnreadNotifications}
                     onOpenProfile={handleOpenProfileIdentitySheet}
                     showSearchAction={activeTab !== 'home'}
-                    userInitials={userInitials}
                     userAvatarImageSrc={profileAvatarImageSrc}
-                    userAvatarStyle={userAvatarStyle}
+                    userPalateBloomProfile={userPalateBloomProfile}
+                    userPalateBloomShapeSeed={userPalateBloomShapeSeed}
                     rightActions={
                       profileSavedListTopBarTitle ? (
                         <div
@@ -2663,8 +2728,9 @@ function MainApp() {
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     starterGuidance={latestRestaurantReadyGuidance}
                     userAvatarImageSrc={profileAvatarImageSrc}
-                    userAvatarStyle={userAvatarStyle}
                     userInitials={userInitials}
+                    userPalateBloomProfile={userPalateBloomProfile}
+                    userPalateBloomShapeSeed={userPalateBloomShapeSeed}
                     userNickname={currentUserNickname ?? currentUserDisplayName}
                     onFeedbackMapViewChange={setIsReservationFeedbackMapView}
                     onRootViewChange={setIsReservationRootView}
@@ -2698,12 +2764,12 @@ function MainApp() {
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     profileIdentity={{
                       avatarImageDataUrl: profileAvatarImageSrc,
-                      avatarStyle: userAvatarStyle,
                       displayName: currentUserDisplayName ?? currentUserNickname,
                       followerCount: profileFollowerCount,
                       followingCount: profileFollowingCount,
-                      initials: userInitials,
                       nickname: currentUserNickname ?? currentUserDisplayName,
+                      palateBloomProfile: userPalateBloomProfile,
+                      palateBloomShapeSeed: userPalateBloomShapeSeed,
                     }}
                     starterGuidance={latestRestaurantReadyGuidance}
                     onAddFriend={handleAddDiningFriend}
@@ -2760,8 +2826,8 @@ function MainApp() {
           isAnonymousUser={isAnonymousUser}
           userEmail={currentUserEmail}
           userAvatarImageSrc={profileAvatarImageSrc}
-          userAvatarStyle={userAvatarStyle}
-          userInitials={userInitials}
+          userPalateBloomProfile={userPalateBloomProfile}
+          userPalateBloomShapeSeed={userPalateBloomShapeSeed}
           userLabel={userLabel}
         />
 
@@ -2796,16 +2862,16 @@ function MainApp() {
           headerEnd={<BottomSheetCloseButton />}
         >
           <ProfileIdentitySheetContent
-            avatarImageDataUrl={profileAvatarImageSrc}
-            avatarStyle={userAvatarStyle}
             birthDate={profileBirthDate}
             displayName={currentUserDisplayName}
             email={currentUserEmail}
-            initials={userInitials}
             isAnonymous={isAnonymousUser}
             nickname={currentUserNickname}
             preferenceProfile={latestPreferenceIntakeProfile}
             respondentContext={tasteSurveyRespondentContext}
+            userAvatarImageSrc={profileAvatarImageSrc}
+            userPalateBloomProfile={userPalateBloomProfile}
+            userPalateBloomShapeSeed={userPalateBloomShapeSeed}
             userTasteAccentStyle={userTasteAccentStyle}
             friendCount={profileFollowingCount}
             onAddFriend={handleAddDiningFriend}
@@ -2926,17 +2992,19 @@ function MainApp() {
         >
           <ProfileEditSheetContent
             avatarImageDataUrl={profileAvatarImageSrc}
-            avatarStyle={userAvatarStyle}
             birthDate={profileBirthDate}
+            canApplyCurrentTasteAvatar={canApplyCurrentTasteToPalateBloomAvatar}
             displayName={currentUserDisplayName}
             formId="profile-edit-sheet-form"
-            initials={userInitials}
             isSubmitting={profileEditStatus === 'submitting'}
             nickname={currentUserNickname}
             preferenceProfile={latestPreferenceIntakeProfile}
             respondentContext={tasteSurveyRespondentContext}
             statusMessage={profileEditMessage}
+            userPalateBloomProfile={userPalateBloomProfile}
+            userPalateBloomShapeSeed={userPalateBloomShapeSeed}
             userTasteAccentStyle={userTasteAccentStyle}
+            onApplyCurrentTasteAvatar={handleApplyCurrentTasteToPalateBloomAvatar}
             onAvatarPreparationChange={setIsProfileAvatarPreparing}
             onAvatarEditorOpenChange={setIsProfileAvatarEditorOpen}
             onSubmit={handleSubmitProfileEdit}

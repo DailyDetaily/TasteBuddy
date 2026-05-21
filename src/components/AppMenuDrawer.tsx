@@ -12,9 +12,12 @@ import {
   ShieldCheck as ShieldCheckIcon,
   ChevronRight as ChevronRightIcon
 } from 'lucide-react';
-import React, { type CSSProperties } from 'react';
+import React from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
-import TasteProfileAvatar from './system/TasteProfileAvatar';
+import PalateBloomAvatar, {
+  DEFAULT_PALATE_BLOOM_PROFILE,
+  type TasteProfile as PalateBloomTasteProfile,
+} from './system/PalateBloomAvatar';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, fontSize, style, ...props }: any) => (
@@ -75,8 +78,8 @@ interface AppMenuDrawerProps {
   onRequestLogout?: () => void;
   userEmail?: string | null;
   userAvatarImageSrc?: string | null;
-  userAvatarStyle?: CSSProperties;
-  userInitials?: string;
+  userPalateBloomProfile?: PalateBloomTasteProfile;
+  userPalateBloomShapeSeed?: string;
   userLabel?: string;
   isAnonymousUser?: boolean;
 }
@@ -92,8 +95,8 @@ export default function AppMenuDrawer({
   onRequestLogout,
   userEmail,
   userAvatarImageSrc,
-  userAvatarStyle,
-  userInitials = 'TB',
+  userPalateBloomProfile,
+  userPalateBloomShapeSeed,
   userLabel = 'Taste Buddy',
   isAnonymousUser = true,
 }: AppMenuDrawerProps) {
@@ -174,11 +177,12 @@ export default function AppMenuDrawer({
             onClick={() => handleAction('auth')}
             className="mx-5 mb-4 flex items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-card)] p-3 text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
           >
-            <TasteProfileAvatar
+            <PalateBloomAvatar
+              ariaLabel={userLabel}
               imageSrc={userAvatarImageSrc}
-              initials={userInitials}
+              profile={userPalateBloomProfile ?? DEFAULT_PALATE_BLOOM_PROFILE}
+              shapeSeed={userPalateBloomShapeSeed}
               size="sm"
-              style={userAvatarStyle}
             />
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">

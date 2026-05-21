@@ -3,7 +3,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type CSSProperties,
   type KeyboardEvent,
 } from 'react';
 import {
@@ -39,6 +38,10 @@ import HospitalityEmptyState from '../components/system/HospitalityEmptyState';
 import StatusChip from '../components/system/StatusChip';
 import TasteChip from '../components/system/TasteChip';
 import EmptyState from '../components/system/EmptyState';
+import PalateBloomAvatar, {
+  DEFAULT_PALATE_BLOOM_PROFILE,
+  type TasteProfile as PalateBloomTasteProfile,
+} from '../components/system/PalateBloomAvatar';
 import {
   createDiningFeedbackDraft,
   getDiningFeedbackScenario,
@@ -374,16 +377,16 @@ function FeedbackAuthorLine({
 
 function DishFeedbackCard({
   avatarImageSrc,
-  avatarStyle,
-  initials,
+  avatarProfile,
+  avatarShapeSeed,
   item,
   nickname,
   onOpenRestaurantDetail,
   onSelect,
 }: {
   avatarImageSrc?: string | null;
-  avatarStyle?: CSSProperties;
-  initials: string;
+  avatarProfile?: PalateBloomTasteProfile;
+  avatarShapeSeed?: string;
   item: DishFeedbackItem;
   nickname: string;
   onOpenRestaurantDetail?: () => void;
@@ -410,23 +413,13 @@ function DishFeedbackCard({
     >
       <SectionCard hoverEffect className="gap-[12px]">
         <div className="flex w-full items-start gap-3">
-          <div
-            className="flex size-[40px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-[color:rgba(255,153,0,0.2)]"
-            style={avatarImageSrc ? undefined : avatarStyle}
-          >
-            {avatarImageSrc ? (
-              <img
-                alt=""
-                className="size-full object-cover"
-                referrerPolicy="no-referrer"
-                src={avatarImageSrc}
-              />
-            ) : (
-              <span className="text-[13px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]">
-                {initials}
-              </span>
-            )}
-          </div>
+          <PalateBloomAvatar
+            ariaLabel={`${nickname} 프로필 아바타`}
+            imageSrc={avatarImageSrc}
+            profile={avatarProfile ?? DEFAULT_PALATE_BLOOM_PROFILE}
+            shapeSeed={avatarShapeSeed}
+            size="md"
+          />
           <div className="min-w-0 flex-1">
             <FeedbackAuthorLine
               nickname={nickname}
@@ -652,8 +645,9 @@ interface ReservationPageProps {
   measurementSnapshot: TasteMeasurementSnapshot;
   starterGuidance?: RestaurantReadyGuidance | null;
   userAvatarImageSrc?: string | null;
-  userAvatarStyle?: CSSProperties;
   userInitials?: string;
+  userPalateBloomProfile?: PalateBloomTasteProfile;
+  userPalateBloomShapeSeed?: string;
   userNickname?: string | null;
   onFeedbackMapViewChange?: (isMapView: boolean) => void;
   onRootViewChange?: (isRootView: boolean) => void;
@@ -670,8 +664,9 @@ export default function ReservationPage({
   measurementSnapshot,
   starterGuidance = null,
   userAvatarImageSrc,
-  userAvatarStyle,
   userInitials = 'JH',
+  userPalateBloomProfile,
+  userPalateBloomShapeSeed,
   userNickname = null,
   onFeedbackMapViewChange,
   onRootViewChange,
@@ -1000,8 +995,8 @@ export default function ReservationPage({
                   <DishFeedbackCard
                     key={`${item.scenario.reservationId}-${item.dish.id}`}
                     avatarImageSrc={userAvatarImageSrc}
-                    avatarStyle={userAvatarStyle}
-                    initials={userInitials}
+                    avatarProfile={userPalateBloomProfile}
+                    avatarShapeSeed={userPalateBloomShapeSeed}
                     item={item}
                     nickname={feedbackAuthorName}
                     onOpenRestaurantDetail={

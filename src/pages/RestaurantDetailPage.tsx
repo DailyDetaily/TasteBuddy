@@ -588,36 +588,7 @@ const DEFAULT_RESTAURANT_DETAIL: RestaurantDetailViewModel = {
     { id: 'course-dining', label: '코스 다이닝', tone: 'neutral' },
     { id: 'restrained-acidity', label: '절제된 산미', tasteAxis: 'sour', tone: 'taste' },
   ],
-  memorableDishes: [
-    {
-      id: 'mushroom-broth',
-      title: '버섯 브로스',
-      imageUrl: null,
-      tags: ['맑은 감칠맛', '긴 여운', '가벼운 마무리'],
-      summary: '맑고 깊은 버섯의 풍미가 입안을 편안하게 열어줘요.',
-    },
-    {
-      id: 'hanwoo-main',
-      title: '한우 메인',
-      imageUrl: null,
-      tags: ['부드러운 지방감', '밀도감', '긴 여운'],
-      summary: '부드럽고 농도 있는 한우의 풍미가 오래 남아요.',
-    },
-    {
-      id: 'seasonal-fish-course',
-      title: '제철 생선 코스',
-      imageUrl: null,
-      tags: ['절제된 산미', '맑은 감칠맛', '가벼운 여운'],
-      summary: '제철 생선의 산뜻한 결이 코스 중반의 균형을 차분하게 잡아줘요.',
-    },
-    {
-      id: 'clear-broth-finish',
-      title: '맑은 국물 마무리',
-      imageUrl: null,
-      tags: ['편안한 마무리', '맑은 감칠맛', '긴 피니시'],
-      summary: '식사 후반의 인상을 무겁지 않게 정리하며 여운을 길게 남겨요.',
-    },
-  ],
+  memorableDishes: [],
   info: BENU_INFO,
 };
 
@@ -807,10 +778,11 @@ export function createRestaurantDetailFromChefMatch(
   const representativeDish =
     chef.representativeDishTitle && chef.representativeDishTitle !== '메뉴 미정'
       ? chef.representativeDishTitle
-      : '시그니처 코스';
+      : null;
   const memorableDishes = isEatanicGardenRestaurant(chef.restaurant)
     ? EATANIC_GARDEN_COURSE_DISHES
-    : [
+    : representativeDish
+      ? [
         {
           id: 'representative-dish',
           title: representativeDish,
@@ -818,8 +790,8 @@ export function createRestaurantDetailFromChefMatch(
           tags: ['맑은 감칠맛', '긴 여운', '가벼운 마무리'],
           summary: '현재 미각 기준에서 코스의 첫 인상을 차분하게 열어줄 가능성이 높아요.',
         },
-        ...DEFAULT_RESTAURANT_DETAIL.memorableDishes.slice(1),
-      ];
+      ]
+      : [];
   const info = getRestaurantInfo(chef.restaurant);
   const contextProfile = getRestaurantContextProfile(chef.restaurant, chef.sourceTasteId ?? chef.tasteId);
 
@@ -845,9 +817,11 @@ export function createRestaurantDetailFromChefMatch(
           : '더 확인 필요',
     fitSummary:
       chef.matchReason ??
-      `${representativeDish}의 중심 풍미가 현재 프로필에서 또렷하게 반응하는 축과 자연스럽게 이어질 가능성이 있어요.`,
+      `${representativeDish ?? chef.restaurant}의 중심 풍미가 현재 프로필에서 또렷하게 반응하는 축과 자연스럽게 이어질 가능성이 있어요.`,
     mainRisk: '대표 메뉴 외 코스 전체의 산미, 지방감, 피니시 흐름은 방문 전 한 번 더 확인하면 좋아요.',
-    decisionReason: `${representativeDish}를 기준으로 보면 이곳은 메뉴 단위의 매칭 근거가 있어 예약 후보로 비교하기 좋은 편이에요.`,
+    decisionReason: representativeDish
+      ? `${representativeDish}를 기준으로 보면 이곳은 메뉴 단위의 매칭 근거가 있어 예약 후보로 비교하기 좋은 편이에요.`
+      : '아직 대표 메뉴 단서가 충분하지 않아 레스토랑의 감각 방향과 셰프 정보를 먼저 비교하는 단계예요.',
     summaryLine:
       chef.matchReason ??
       `${chef.restaurant}은 현재 프로필에서 또렷한 감각 축이 코스의 중심 풍미와 자연스럽게 이어질 가능성이 높아요.`,
@@ -904,26 +878,7 @@ export function createRestaurantDetailFromSearchResult(
         { id: 'analysis-pending', label: 'TB 분석 준비 중', tone: 'neutral' },
         { id: 'taste-vector-pending', label: '미각 벡터 미연결', tone: 'neutral' },
       ],
-      memorableDishes: [
-        {
-          id: `${result.id}-analysis-pending`,
-          title: 'Taste Buddy 분석 준비 중',
-          imageUrl: null,
-          tags: ['메뉴 수집 전', '미각 벡터 미연결'],
-          summary:
-            '이 식당의 코스와 메뉴 데이터가 준비되면 감각 흐름, 셰프 의도, 개인화 매칭을 같은 상세 페이지에서 볼 수 있어요.',
-        },
-        {
-          id: `${result.id}-place-confirmed`,
-          title: '장소 정보 확인됨',
-          imageUrl: null,
-          tags: ['카카오 장소', '주소 확인'],
-          summary:
-            address !== DEFAULT_RESTAURANT_DETAIL.info.address
-              ? `${address} 기준으로 위치 정보를 확인했어요.`
-              : '카카오 장소 정보를 기준으로 식당 존재 여부를 먼저 확인했어요.',
-        },
-      ],
+      memorableDishes: [],
       info,
     };
   }
@@ -932,16 +887,17 @@ export function createRestaurantDetailFromSearchResult(
   const chefName = result.chef.replace(/\s*셰프$/, '');
   const memorableDishes = isEatanicGardenRestaurant(result.restaurant)
     ? EATANIC_GARDEN_COURSE_DISHES
-    : [
+    : primaryDishTitle
+      ? [
         {
           id: `${result.id}-primary`,
-          title: primaryDishTitle || '시그니처 메뉴',
+          title: primaryDishTitle,
           imageUrl: null,
           tags: result.signatureItems.length > 0 ? result.signatureItems : ['맑은 감칠맛', '긴 여운'],
           summary: result.matchMeta || '현재 프로필과 연결되는 감각 포인트를 메뉴 단위로 다시 읽어볼 수 있어요.',
         },
-        ...DEFAULT_RESTAURANT_DETAIL.memorableDishes.slice(1),
-      ];
+      ]
+      : [];
   const info = getRestaurantInfo(result.restaurant);
   const contextProfile = getRestaurantContextProfile(result.restaurant);
 
@@ -989,7 +945,6 @@ export function createRestaurantDetailFromMenuRecommendation(
           tags: [menu.tasteLabel, menu.courseLabel, ...menu.ingredients].slice(0, 3),
           summary: menu.reason,
         },
-        ...DEFAULT_RESTAURANT_DETAIL.memorableDishes,
       ];
   const info = getRestaurantInfo(menu.restaurant);
   const contextProfile = getRestaurantContextProfile(
@@ -1037,7 +992,7 @@ export function createRestaurantDetailFromFavoriteChef({
   const chefName = name.replace(/\s*셰프$/, '');
   const memorableDishes = isEatanicGardenRestaurant(restaurant)
     ? EATANIC_GARDEN_COURSE_DISHES
-    : DEFAULT_RESTAURANT_DETAIL.memorableDishes;
+    : [];
   const info = getRestaurantInfo(restaurant);
   const contextProfile = getRestaurantContextProfile(
     restaurant,
@@ -1081,7 +1036,6 @@ export function createRestaurantDetailFromReservation(
           tags: reservation.adjustments.map((adjustment) => adjustment.taste),
           summary: reservation.diningPromise,
         },
-        ...DEFAULT_RESTAURANT_DETAIL.memorableDishes,
       ];
   const info = getRestaurantInfo(reservation.restaurant);
   const contextProfile = getRestaurantContextProfile(
@@ -1351,23 +1305,28 @@ export default function RestaurantDetailPage({
             quickInfo={detail.info}
             restaurant={detail}
             onBookmarkClick={() => setIsBookmarkSheetOpen(true)}
-            onVisitedClick={() =>
-              navigateToRestaurantLocation({
-                selectedMenuDetail: null,
-                selectedView: 'feedback',
-              })
+            onVisitedClick={
+              detail.memorableDishes.length > 0
+                ? () =>
+                  navigateToRestaurantLocation({
+                    selectedMenuDetail: null,
+                    selectedView: 'feedback',
+                  })
+                : undefined
             }
           />
 
-          <RestaurantMemorableDishCard
-            dishes={detail.memorableDishes}
-            onSelectDish={(dish, index) => {
-              navigateToRestaurantLocation({
-                selectedMenuDetail: buildMenuDetailViewModel(detail, dish, index),
-                selectedView: 'menuDetail',
-              });
-            }}
-          />
+          {detail.memorableDishes.length > 0 ? (
+            <RestaurantMemorableDishCard
+              dishes={detail.memorableDishes}
+              onSelectDish={(dish, index) => {
+                navigateToRestaurantLocation({
+                  selectedMenuDetail: buildMenuDetailViewModel(detail, dish, index),
+                  selectedView: 'menuDetail',
+                });
+              }}
+            />
+          ) : null}
 
           <PageSection title="위치 및 정보" titleAs="h2" titleSize="md">
             <div className="flex flex-col items-center gap-2">

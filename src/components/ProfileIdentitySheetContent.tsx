@@ -4,19 +4,23 @@ import { useState, type CSSProperties, type FormEvent } from 'react';
 import { PREFERENCE_INTAKE_QUESTIONS, type PreferenceIntakeProfile } from '../constants/preferenceIntakeData';
 import type { DiningFriendProfile } from '../lib/supabase';
 import type { TasteSurveyRespondentContext } from '../types/tasteSurvey';
-import TasteProfileAvatar from './system/TasteProfileAvatar';
+import PalateBloomAvatar, {
+  DEFAULT_PALATE_BLOOM_PROFILE,
+  createPalateBloomProfileFromMeasurementSnapshot,
+  type TasteProfile as PalateBloomTasteProfile,
+} from './system/PalateBloomAvatar';
 
 interface ProfileIdentitySheetContentProps {
-  avatarImageDataUrl: string | null;
-  avatarStyle: CSSProperties;
   birthDate: string | null;
   displayName: string | null;
   email: string | null;
-  initials: string;
   isAnonymous: boolean;
   nickname: string | null;
   preferenceProfile: PreferenceIntakeProfile | null;
   respondentContext: TasteSurveyRespondentContext;
+  userAvatarImageSrc?: string | null;
+  userPalateBloomProfile?: PalateBloomTasteProfile;
+  userPalateBloomShapeSeed?: string;
   userTasteAccentStyle: CSSProperties;
   friendCount: number;
   onAddFriend: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
@@ -141,16 +145,16 @@ function createReferenceSummary(
 }
 
 export default function ProfileIdentitySheetContent({
-  avatarImageDataUrl,
-  avatarStyle,
   birthDate,
   displayName,
   email,
-  initials,
   isAnonymous,
   nickname,
   preferenceProfile,
   respondentContext,
+  userAvatarImageSrc,
+  userPalateBloomProfile,
+  userPalateBloomShapeSeed,
   userTasteAccentStyle,
   friendCount,
   onAddFriend,
@@ -215,11 +219,12 @@ export default function ProfileIdentitySheetContent({
         className="rounded-[var(--tb-radius-20)] bg-[var(--tb-color-bg-focus)] p-3 text-left transition-transform active:scale-[0.99]"
       >
         <div className="flex items-center gap-4">
-          <TasteProfileAvatar
-            imageSrc={avatarImageDataUrl}
-            initials={initials}
-            size="md"
-            style={avatarStyle}
+          <PalateBloomAvatar
+            ariaLabel={nameLabel}
+            imageSrc={userAvatarImageSrc}
+            profile={userPalateBloomProfile ?? DEFAULT_PALATE_BLOOM_PROFILE}
+            shapeSeed={userPalateBloomShapeSeed}
+            size="lg"
           />
 
           <div className="min-w-0 flex-1">
@@ -355,9 +360,15 @@ export default function ProfileIdentitySheetContent({
                 key={friend.id}
                 className="flex items-center gap-3 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] p-3"
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-surface-muted)] text-[12px] font-bold text-[var(--tb-color-text-muted)]">
-                  {(friend.displayName || friend.nickname).slice(0, 2).toUpperCase()}
-                </div>
+                <PalateBloomAvatar
+                  ariaLabel={friend.displayName || friend.nickname || 'Taste Buddy Guest'}
+                  profile={createPalateBloomProfileFromMeasurementSnapshot(
+                    friend.latestTasteMeasurementSnapshot,
+                    friend.id,
+                  )}
+                  shapeSeed={`${friend.id}|${friend.latestTasteMeasurementSnapshot?.measuredAt ?? 'no-measurement'}`}
+                  size="md"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[13px] font-bold text-[var(--tb-color-text-primary)]">
                     {friend.displayName || 'Taste Buddy Guest'}

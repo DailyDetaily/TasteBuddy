@@ -600,6 +600,18 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     status: "currently-used",
   },
   {
+    name: "PalateSignatureAvatar",
+    source: "src/components/system/PalateSignatureAvatar.tsx",
+    note: "0-100 미각 비율을 원형 halo와 soft bloom으로 번역하는 프로필 시그니처 아바타입니다.",
+    status: "defined-only",
+  },
+  {
+    name: "PalateBloomAvatar",
+    source: "src/components/system/PalateBloomAvatar.tsx",
+    note: "6가지 미각 우선순위를 꽃잎과 이중 별 구조로 번역하는 프로필용 Palate Bloom 아바타입니다.",
+    status: "defined-only",
+  },
+  {
     name: "Chip",
     source: "src/components/system/Chip.tsx",
     note: "일반 목적의 neutral / semantic / icon label chip입니다.",
@@ -1054,6 +1066,18 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     {
       file: "src/components/system/TasteProfileAvatar.tsx",
       note: "미각 측정값 6축으로 멀티컬러 기본 프로필 아바타를 만드는 공용 컴포넌트입니다.",
+    },
+    {
+      file: "src/components/system/profileAvatarSizeTokens.ts",
+      note: "프로필형 아바타가 공유하는 sm 32px, md 44px, lg 68px, xl 96px 사이즈 토큰입니다.",
+    },
+    {
+      file: "src/components/system/PalateSignatureAvatar.tsx",
+      note: "0-100 미각 비율을 차트가 아닌 개인 미각 시그니처형 avatar로 표현하는 SVG 컴포넌트입니다.",
+    },
+    {
+      file: "src/components/system/PalateBloomAvatar.tsx",
+      note: "미각 우선순위를 6개 꽃 구조 레이어로 번역하는 SVG 프로필 아바타입니다.",
     },
     {
       file: "src/components/measurement/TasteMeasurementMiniCta.tsx",

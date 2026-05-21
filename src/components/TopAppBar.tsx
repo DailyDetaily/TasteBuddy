@@ -4,9 +4,12 @@ import {
   Menu as MenuIcon,
   Search as SearchIcon
 } from 'lucide-react';
-import React, { type CSSProperties, type ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
-import TasteProfileAvatar from './system/TasteProfileAvatar';
+import PalateBloomAvatar, {
+  DEFAULT_PALATE_BLOOM_PROFILE,
+  type TasteProfile as PalateBloomTasteProfile,
+} from './system/PalateBloomAvatar';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, fontSize, style, ...props }: any) => (
@@ -35,8 +38,8 @@ interface TopAppBarProps {
   rightActions?: ReactNode;
   showSearchAction?: boolean;
   userAvatarImageSrc?: string | null;
-  userAvatarStyle?: CSSProperties;
-  userInitials?: string;
+  userPalateBloomProfile?: PalateBloomTasteProfile;
+  userPalateBloomShapeSeed?: string;
 }
 
 export default function TopAppBar({
@@ -53,8 +56,8 @@ export default function TopAppBar({
   rightActions,
   showSearchAction = false,
   userAvatarImageSrc,
-  userAvatarStyle,
-  userInitials = 'TB',
+  userPalateBloomProfile,
+  userPalateBloomShapeSeed,
 }: TopAppBarProps) {
   const PrimaryActionIcon = showSearchAction ? Search : PlusCircle;
   const primaryActionLabel = showSearchAction ? '통합 검색 열기' : '미각 측정 시작';
@@ -104,12 +107,12 @@ export default function TopAppBar({
               aria-label="프로필 확인 및 편집"
               className="relative shrink-0 rounded-full size-[32px] transition-transform active:scale-[0.98]"
             >
-              <TasteProfileAvatar
-                className="size-[32px]"
+              <PalateBloomAvatar
+                ariaLabel="프로필 확인 및 편집"
                 imageSrc={userAvatarImageSrc}
-                initials={userInitials}
+                profile={userPalateBloomProfile ?? DEFAULT_PALATE_BLOOM_PROFILE}
+                shapeSeed={userPalateBloomShapeSeed}
                 size="sm"
-                style={userAvatarStyle}
               />
             </button>
           )}

@@ -507,6 +507,11 @@ const BUBBLE_GRID_SEARCH_RANGE = 12;
 const BUBBLE_RELAXATION_ITERATIONS = 12;
 const BUBBLE_MAP_ZOOM_MIN = 0.72;
 const BUBBLE_MAP_ZOOM_MAX = 1.42;
+const BUBBLE_MAP_ENTRY_ZOOM = 0.86;
+const BUBBLE_MAP_SELECTED_ZOOM = 1;
+const BUBBLE_MAP_ZOOM_TRANSITION_MS = 460;
+const BUBBLE_MAP_PINCH_SNAP_SUPPRESS_MS = 360;
+const BUBBLE_MAP_NEUTRAL_BUBBLE_SIZE = 56;
 const BUBBLE_INTRO_PRIMARY_DELAY_MS = 440;
 const BUBBLE_INTRO_PRIMARY_STEP_MS = 76;
 const BUBBLE_INTRO_OUTER_DELAY_MS = 900;
@@ -658,6 +663,11 @@ const tasteExperienceBubblePositions = baseTasteExperienceBubblePositions.map((p
     y: targetPosition.y,
   };
 });
+const tasteExperienceNeutralBubblePosition = {
+  size: BUBBLE_MAP_NEUTRAL_BUBBLE_SIZE,
+  x: BUBBLE_MAP_NEUTRAL_POINT.x,
+  y: BUBBLE_MAP_NEUTRAL_POINT.y,
+};
 const tasteExperienceIntroPrimaryIds = tasteExperienceAxes.map((axis) => `${axis.id}-${axis.words[0].key}`);
 const tasteExperienceIntroPrimaryIdSet = new Set(tasteExperienceIntroPrimaryIds);
 const tasteExperienceIntroOuterPositions = tasteExperienceBubblePositions
@@ -698,6 +708,11 @@ const tasteExperienceIntroDelayById = new Map<string, number>([
 function getTasteExperienceIntroDelay(experienceId: string) {
   return tasteExperienceIntroDelayById.get(experienceId) ?? BUBBLE_INTRO_OUTER_DELAY_MS;
 }
+
+type TasteExperienceBubblePosition = (typeof tasteExperienceBubblePositions)[number];
+type TasteExperienceSnapTarget =
+  | { kind: 'bubble'; position: TasteExperienceBubblePosition }
+  | { kind: 'neutral'; position: typeof tasteExperienceNeutralBubblePosition };
 
 function getTasteExperienceBubbleRenderPositions(selectedExperienceIds: readonly string[]) {
   const selectedIdSet = new Set(selectedExperienceIds);
@@ -815,11 +830,14 @@ function TasteExperienceMap({
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const hasExploredMapRef = useRef(false);
   const hasInitializedMapRef = useRef(false);
+  const hasExpandedMapZoomRef = useRef(false);
+  const isPinchingMapRef = useRef(false);
   const isTouchGestureRef = useRef(false);
   const isTouchingMapRef = useRef(false);
   const isSnappingRef = useRef(false);
   const hasReleasedScrollRef = useRef(false);
-  const mapZoomRef = useRef(1);
+  const suppressSnapUntilRef = useRef(0);
+  const mapZoomRef = useRef(BUBBLE_MAP_ENTRY_ZOOM);
   const pinchGestureRef = useRef<{
     anchorX: number;
     anchorY: number;
@@ -829,10 +847,11 @@ function TasteExperienceMap({
     midpointY: number;
   } | null>(null);
   const settleAnimationFrameRef = useRef<number | null>(null);
+  const zoomAnimationFrameRef = useRef<number | null>(null);
   const [draftSelectedExperienceId, setDraftSelectedExperienceId] = useState<string | null>(
     selectedExperienceIds[0] ?? null,
   );
-  const [mapZoom, setMapZoom] = useState(1);
+  const [mapZoom, setMapZoom] = useState(BUBBLE_MAP_ENTRY_ZOOM);
   const [isFeedbackCardVisible, setIsFeedbackCardVisible] = useState(true);
   const selectedExperienceIdRef = useRef<string | null | undefined>(draftSelectedExperienceId);
   const resolvedSelectedExperience = findTasteExperience(draftSelectedExperienceId);
@@ -861,7 +880,7 @@ function TasteExperienceMap({
     mapZoomRef.current = mapZoom;
   }, [mapZoom]);
 
-  const getClosestBubble = () => {
+  const getClosestSnapTarget = () => {
     const viewport = viewportRef.current;
 
     if (!viewport) {
@@ -871,28 +890,42 @@ function TasteExperienceMap({
     const zoom = mapZoomRef.current;
     const centerX = viewport.scrollLeft + viewport.clientWidth / 2;
     const centerY = viewport.scrollTop + viewport.clientHeight / 2;
-    return tasteExperienceBubblePositions.reduce((currentClosest, bubble) => {
-      const currentX = currentClosest.x * zoom + viewport.clientWidth / 2;
-      const currentY = currentClosest.y * zoom + viewport.clientHeight / 2;
-      const nextX = bubble.x * zoom + viewport.clientWidth / 2;
-      const nextY = bubble.y * zoom + viewport.clientHeight / 2;
+    const candidates: TasteExperienceSnapTarget[] = [
+      { kind: 'neutral', position: tasteExperienceNeutralBubblePosition },
+      ...tasteExperienceBubblePositions.map((position) => ({ kind: 'bubble' as const, position })),
+    ];
+
+    return candidates.reduce((currentClosest, candidate) => {
+      const currentX = currentClosest.position.x * zoom + viewport.clientWidth / 2;
+      const currentY = currentClosest.position.y * zoom + viewport.clientHeight / 2;
+      const nextX = candidate.position.x * zoom + viewport.clientWidth / 2;
+      const nextY = candidate.position.y * zoom + viewport.clientHeight / 2;
       const currentDistance = Math.hypot(currentX - centerX, currentY - centerY);
       const nextDistance = Math.hypot(nextX - centerX, nextY - centerY);
 
-      return nextDistance < currentDistance ? bubble : currentClosest;
+      return nextDistance < currentDistance ? candidate : currentClosest;
     });
   };
 
   const selectClosestBubble = () => {
-    const closest = getClosestBubble();
+    const closest = getClosestSnapTarget();
 
     if (!closest) {
       return null;
     }
 
-    if (closest.experience.id !== selectedExperienceIdRef.current) {
-      selectedExperienceIdRef.current = closest.experience.id;
-      setDraftSelectedExperienceId(closest.experience.id);
+    if (closest.kind === 'neutral') {
+      if (selectedExperienceIdRef.current !== null) {
+        selectedExperienceIdRef.current = null;
+        setDraftSelectedExperienceId(null);
+      }
+
+      return closest;
+    }
+
+    if (closest.position.experience.id !== selectedExperienceIdRef.current) {
+      selectedExperienceIdRef.current = closest.position.experience.id;
+      setDraftSelectedExperienceId(closest.position.experience.id);
     }
 
     return closest;
@@ -905,7 +938,87 @@ function TasteExperienceMap({
     }
   };
 
-  useEffect(() => () => clearSettledSnap(), []);
+  const clearMapZoomAnimation = () => {
+    if (zoomAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(zoomAnimationFrameRef.current);
+      zoomAnimationFrameRef.current = null;
+    }
+  };
+
+  const suppressSnapAfterPinch = () => {
+    suppressSnapUntilRef.current = window.performance.now() + BUBBLE_MAP_PINCH_SNAP_SUPPRESS_MS;
+  };
+
+  const isSnapSuppressed = () => window.performance.now() < suppressSnapUntilRef.current;
+
+  useEffect(() => () => {
+    clearSettledSnap();
+    clearMapZoomAnimation();
+  }, []);
+
+  const animateMapZoomTo = (nextZoom: number, anchorPoint?: { x: number; y: number }) => {
+    const viewport = viewportRef.current;
+    const currentZoom = mapZoomRef.current;
+    const anchorX = anchorPoint?.x ?? (viewport ? viewport.scrollLeft / currentZoom : BUBBLE_MAP_NEUTRAL_POINT.x);
+    const anchorY = anchorPoint?.y ?? (viewport ? viewport.scrollTop / currentZoom : BUBBLE_MAP_NEUTRAL_POINT.y);
+
+    clearMapZoomAnimation();
+
+    if (!viewport) {
+      mapZoomRef.current = nextZoom;
+      setMapZoom(nextZoom);
+      return;
+    }
+
+    const startTime = window.performance.now();
+    const startZoom = currentZoom;
+    const startLeft = viewport.scrollLeft;
+    const startTop = viewport.scrollTop;
+    const targetLeft = anchorX * nextZoom;
+    const targetTop = anchorY * nextZoom;
+
+    const animateFrame = (now: number) => {
+      const progress = clampNumber((now - startTime) / BUBBLE_MAP_ZOOM_TRANSITION_MS, 0, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      const nextFrameZoom = startZoom + (nextZoom - startZoom) * easedProgress;
+
+      mapZoomRef.current = nextFrameZoom;
+      setMapZoom(nextFrameZoom);
+      viewport.scrollLeft = startLeft + (targetLeft - startLeft) * easedProgress;
+      viewport.scrollTop = startTop + (targetTop - startTop) * easedProgress;
+
+      if (progress < 1) {
+        zoomAnimationFrameRef.current = window.requestAnimationFrame(animateFrame);
+        return;
+      }
+
+      zoomAnimationFrameRef.current = null;
+      mapZoomRef.current = nextZoom;
+      setMapZoom(nextZoom);
+      viewport.scrollLeft = targetLeft;
+      viewport.scrollTop = targetTop;
+    };
+
+    zoomAnimationFrameRef.current = window.requestAnimationFrame(animateFrame);
+  };
+
+  const expandMapToSelectedZoom = (anchorPoint?: { x: number; y: number }) => {
+    if (hasExpandedMapZoomRef.current) {
+      return;
+    }
+
+    hasExpandedMapZoomRef.current = true;
+    animateMapZoomTo(BUBBLE_MAP_SELECTED_ZOOM, anchorPoint);
+  };
+
+  const shrinkMapToEntryZoom = (anchorPoint?: { x: number; y: number }) => {
+    if (!hasExpandedMapZoomRef.current) {
+      return;
+    }
+
+    hasExpandedMapZoomRef.current = false;
+    animateMapZoomTo(BUBBLE_MAP_ENTRY_ZOOM, anchorPoint);
+  };
 
   const snapClosestBubbleToCenter = () => {
     const viewport = viewportRef.current;
@@ -917,15 +1030,15 @@ function TasteExperienceMap({
 
     setIsFeedbackCardVisible(false);
     isSnappingRef.current = true;
-    viewport.scrollTo({
-      behavior: 'smooth',
-      left: closest.x * mapZoomRef.current,
-      top: closest.y * mapZoomRef.current,
-    });
+    if (closest.kind === 'neutral') {
+      shrinkMapToEntryZoom(closest.position);
+    } else {
+      expandMapToSelectedZoom(closest.position);
+    }
 
     window.setTimeout(() => {
       isSnappingRef.current = false;
-      setIsFeedbackCardVisible(true);
+      setIsFeedbackCardVisible(closest.kind === 'bubble');
     }, 420);
   };
 
@@ -934,7 +1047,13 @@ function TasteExperienceMap({
 
     const viewport = viewportRef.current;
 
-    if (!viewport || isTouchingMapRef.current || isSnappingRef.current) {
+    if (
+      !viewport ||
+      isPinchingMapRef.current ||
+      isSnapSuppressed() ||
+      isTouchingMapRef.current ||
+      isSnappingRef.current
+    ) {
       return;
     }
 
@@ -945,7 +1064,13 @@ function TasteExperienceMap({
     const waitForScrollToSettle = () => {
       const currentViewport = viewportRef.current;
 
-      if (!currentViewport || isTouchingMapRef.current || isSnappingRef.current) {
+      if (
+        !currentViewport ||
+        isPinchingMapRef.current ||
+        isSnapSuppressed() ||
+        isTouchingMapRef.current ||
+        isSnappingRef.current
+      ) {
         settleAnimationFrameRef.current = null;
         return;
       }
@@ -1022,6 +1147,7 @@ function TasteExperienceMap({
     selectedExperienceIdRef.current = focusExperienceId;
     setDraftSelectedExperienceId(focusExperienceId);
     setIsFeedbackCardVisible(false);
+    expandMapToSelectedZoom(focusedBubble);
     isSnappingRef.current = true;
     viewport.scrollTo({
       behavior: 'smooth',
@@ -1041,6 +1167,13 @@ function TasteExperienceMap({
     }
 
     hasExploredMapRef.current = true;
+    if (isPinchingMapRef.current || isSnapSuppressed()) {
+      return;
+    }
+
+    if (!isSnappingRef.current) {
+      expandMapToSelectedZoom();
+    }
     if (!isSnappingRef.current) {
       setIsFeedbackCardVisible(false);
     }
@@ -1088,6 +1221,10 @@ function TasteExperienceMap({
     const midpointY = midpoint.y - viewportRect.top;
     const initialZoom = mapZoomRef.current;
 
+    isPinchingMapRef.current = true;
+    suppressSnapAfterPinch();
+    clearSettledSnap();
+    clearMapZoomAnimation();
     pinchGestureRef.current = {
       anchorX: (viewport.scrollLeft + midpointX - viewport.clientWidth / 2) / initialZoom,
       anchorY: (viewport.scrollTop + midpointY - viewport.clientHeight / 2) / initialZoom,
@@ -1107,7 +1244,10 @@ function TasteExperienceMap({
 
     if ('touches' in event && event.touches.length >= 2) {
       beginPinchGesture(event);
+      return;
     }
+
+    expandMapToSelectedZoom();
   };
 
   const handleMapTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
@@ -1125,18 +1265,27 @@ function TasteExperienceMap({
       BUBBLE_MAP_ZOOM_MAX,
     );
 
+    clearMapZoomAnimation();
     mapZoomRef.current = nextZoom;
     setMapZoom(nextZoom);
     window.requestAnimationFrame(() => {
       viewport.scrollLeft = viewport.clientWidth / 2 + pinchGesture.anchorX * nextZoom - pinchGesture.midpointX;
       viewport.scrollTop = viewport.clientHeight / 2 + pinchGesture.anchorY * nextZoom - pinchGesture.midpointY;
-      selectClosestBubble();
     });
   };
 
   const handleMapTouchEnd = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if ('touches' in event && event.touches.length >= 2) {
       beginPinchGesture(event);
+      return;
+    }
+
+    if (isPinchingMapRef.current) {
+      pinchGestureRef.current = null;
+      isPinchingMapRef.current = false;
+      suppressSnapAfterPinch();
+      isTouchingMapRef.current = 'touches' in event && event.touches.length > 0;
+      hasReleasedScrollRef.current = false;
       return;
     }
 
@@ -1147,7 +1296,13 @@ function TasteExperienceMap({
   };
 
   const handleMapPointerCancel = () => {
+    const wasPinching = isPinchingMapRef.current;
+
     pinchGestureRef.current = null;
+    isPinchingMapRef.current = false;
+    if (wasPinching) {
+      suppressSnapAfterPinch();
+    }
     isTouchingMapRef.current = false;
 
     if (hasReleasedScrollRef.current) {
@@ -1181,6 +1336,7 @@ function TasteExperienceMap({
     selectedExperienceIdRef.current = bubblePosition.experience.id;
     setDraftSelectedExperienceId(bubblePosition.experience.id);
     setIsFeedbackCardVisible(false);
+    expandMapToSelectedZoom(bubblePosition);
     isSnappingRef.current = true;
     viewport.scrollTo({
       behavior: 'smooth',
@@ -1283,6 +1439,16 @@ function TasteExperienceMap({
               width: BUBBLE_MAP_SIZE,
             }}
           >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0"
+              style={{
+                height: tasteExperienceNeutralBubblePosition.size,
+                left: tasteExperienceNeutralBubblePosition.x,
+                top: tasteExperienceNeutralBubblePosition.y,
+                width: tasteExperienceNeutralBubblePosition.size,
+              }}
+            />
             {renderedBubblePositions.map(({ experience, size, x, y }) => {
               const isSelected = enlargedExperienceIds.includes(experience.id);
               const priorityIndex = selectedExperienceIds.indexOf(experience.id);
@@ -1297,6 +1463,7 @@ function TasteExperienceMap({
                   aria-label={experience.label}
                   onClick={(event) => {
                     event.stopPropagation();
+                    expandMapToSelectedZoom({ x, y });
                     selectedExperienceIdRef.current = experience.id;
                     setDraftSelectedExperienceId(experience.id);
                     onToggleSelection?.(experience);

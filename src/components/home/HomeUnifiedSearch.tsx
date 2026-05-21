@@ -16,6 +16,9 @@ import ChefAvatar from '../system/ChefAvatar';
 import Chip from '../system/Chip';
 import CompactCard from '../system/CompactCard';
 import EmptyState from '../system/EmptyState';
+import PalateBloomAvatar, {
+  createPalateBloomProfileFromMeasurementSnapshot,
+} from '../system/PalateBloomAvatar';
 import SearchOverlayShell from '../search/SearchOverlayShell';
 import { cn } from '../ui/utils';
 import { type ReservationRecord } from '../../constants/reservationCatalog';
@@ -780,12 +783,14 @@ function FriendSearchSection({
               <div className={SEARCH_RESULT_CARD_BODY_CLASS_NAME}>
                 <div className="flex w-full items-center justify-between gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <ChefAvatar
-                      alt={friend.displayName || friend.nickname}
-                      className="h-[40px] w-[40px] shrink-0 rounded-[var(--tb-radius-10)] object-cover"
-                      iconSize={ICON_TOKENS.size.lg}
-                      imageSrc={friend.avatarPath}
-                      variant="neutral"
+                    <PalateBloomAvatar
+                      ariaLabel={friend.displayName || friend.nickname || 'Taste Buddy Guest'}
+                      profile={createPalateBloomProfileFromMeasurementSnapshot(
+                        friend.latestTasteMeasurementSnapshot,
+                        friend.id,
+                      )}
+                      shapeSeed={`${friend.id}|${friend.latestTasteMeasurementSnapshot?.measuredAt ?? 'no-measurement'}`}
+                      size="md"
                     />
                     <div className="min-w-0 flex-1">
                       <span className="block truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">

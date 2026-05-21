@@ -29,8 +29,11 @@ import BirthDatePicker, {
   parseBirthDate,
   type BirthDateParts,
 } from './system/BirthDatePicker';
+import PalateBloomAvatar, {
+  DEFAULT_PALATE_BLOOM_PROFILE,
+  type TasteProfile as PalateBloomTasteProfile,
+} from './system/PalateBloomAvatar';
 import SelectionCard from './system/SelectionCard';
-import TasteProfileAvatar from './system/TasteProfileAvatar';
 import type {
   TasteSurveyRespondentContext,
   TasteSurveySexContext,
@@ -39,17 +42,19 @@ import type {
 
 interface ProfileEditSheetContentProps {
   avatarImageDataUrl: string | null;
-  avatarStyle: CSSProperties;
   birthDate: string | null;
+  canApplyCurrentTasteAvatar?: boolean;
   displayName: string | null;
   formId: string;
-  initials: string;
   isSubmitting?: boolean;
   nickname: string | null;
   preferenceProfile: PreferenceIntakeProfile | null;
   respondentContext: TasteSurveyRespondentContext;
   statusMessage?: string | null;
+  userPalateBloomProfile?: PalateBloomTasteProfile;
+  userPalateBloomShapeSeed?: string;
   userTasteAccentStyle: CSSProperties;
+  onApplyCurrentTasteAvatar?: () => void;
   onAvatarPreparationChange?: (isPreparing: boolean) => void;
   onAvatarEditorOpenChange?: (isOpen: boolean) => void;
   onSubmit: (input: {
@@ -340,17 +345,19 @@ function getDietarySummary(profile: PreferenceIntakeProfile) {
 
 export default function ProfileEditSheetContent({
   avatarImageDataUrl,
-  avatarStyle,
   birthDate,
+  canApplyCurrentTasteAvatar = false,
   displayName,
   formId,
-  initials,
   isSubmitting = false,
   nickname,
   preferenceProfile,
   respondentContext,
   statusMessage,
+  userPalateBloomProfile,
+  userPalateBloomShapeSeed,
   userTasteAccentStyle,
+  onApplyCurrentTasteAvatar,
   onAvatarPreparationChange,
   onAvatarEditorOpenChange,
   onSubmit,
@@ -1101,11 +1108,12 @@ export default function ProfileEditSheetContent({
         onSubmit={handleSubmit}
       >
         <div className="flex flex-col items-center gap-3 pt-1">
-          <TasteProfileAvatar
+          <PalateBloomAvatar
+            ariaLabel={draftDisplayName.trim() || '프로필 아바타'}
             imageSrc={draftAvatarImageSrc}
-            initials={initials}
-            size="lg"
-            style={avatarStyle}
+            profile={userPalateBloomProfile ?? DEFAULT_PALATE_BLOOM_PROFILE}
+            shapeSeed={userPalateBloomShapeSeed}
+            size="xl"
           />
 
           <div className="flex items-center gap-3">
@@ -1154,6 +1162,38 @@ export default function ProfileEditSheetContent({
               </button>
             ) : null}
           </div>
+          <button
+            type="button"
+            className="text-[12px] font-semibold text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-primary)] disabled:cursor-not-allowed disabled:text-[var(--tb-color-text-muted)]"
+            disabled={
+              !canApplyCurrentTasteAvatar ||
+              isPreparingAvatar ||
+              isSubmitting ||
+              !onApplyCurrentTasteAvatar
+            }
+            onClick={() => {
+              setAvatarCropState((currentCropState) => {
+                if (currentCropState) {
+                  URL.revokeObjectURL(currentCropState.sourceUrl);
+                }
+
+                return null;
+              });
+              setDraftAvatarPreviewUrl((currentUrl) => {
+                if (currentUrl?.startsWith('blob:')) {
+                  URL.revokeObjectURL(currentUrl);
+                }
+
+                return null;
+              });
+              setDraftAvatarFile(null);
+              setShouldRemoveAvatar(true);
+              onApplyCurrentTasteAvatar?.();
+              setAvatarMessage('저장을 누르면 현재 미각 기준 아바타로 변경됩니다.');
+            }}
+          >
+            현재 미각 기준으로 아바타 변경
+          </button>
           {avatarMessage || statusMessage ? (
             <p
               className="text-center text-[12px] leading-relaxed"
