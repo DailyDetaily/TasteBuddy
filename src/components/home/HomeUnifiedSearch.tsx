@@ -114,6 +114,7 @@ type SearchGroups = {
 
 interface HomeUnifiedSearchProps {
   catalog: RestaurantContentCatalog;
+  closeTrigger?: number;
   onAddFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
   onOpenRestaurantDetail?: (result: HomeSearchResult) => void;
   onSearchFriends?: (query: string) => Promise<{
@@ -830,6 +831,7 @@ function FriendSearchSection({
 
 export default function HomeUnifiedSearch({
   catalog,
+  closeTrigger,
   onAddFriend,
   onOpenRestaurantDetail,
   onSearchFriends,
@@ -838,6 +840,7 @@ export default function HomeUnifiedSearch({
   showTrigger = true,
 }: HomeUnifiedSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastCloseTriggerRef = useRef(closeTrigger);
   const lastOpenTriggerRef = useRef(openTrigger);
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -1059,6 +1062,15 @@ export default function HomeUnifiedSearch({
     lastOpenTriggerRef.current = openTrigger;
     handleOpen();
   }, [openTrigger]);
+
+  useEffect(() => {
+    if (closeTrigger === undefined || closeTrigger === lastCloseTriggerRef.current) {
+      return;
+    }
+
+    lastCloseTriggerRef.current = closeTrigger;
+    handleClose();
+  }, [closeTrigger]);
 
   useEffect(() => {
     if (!isOpen) {

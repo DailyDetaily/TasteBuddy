@@ -70,7 +70,7 @@ export default function TopAppBar({
         appearance === 'transparent'
           ? 'w-full shrink-0 border-b border-transparent bg-transparent'
           : appearance === 'solid'
-            ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]'
+            ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-surface-base)]'
             : 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70'
       }
       style={{ paddingTop: 'var(--tb-safe-area-top)' }}
@@ -120,7 +120,7 @@ export default function TopAppBar({
 
         {/* Center Title */}
         {title && (
-          <span className="font-bold text-[15px] text-[var(--tb-color-text-primary)] absolute left-1/2 -translate-x-1/2">
+          <span className="absolute left-1/2 max-w-[calc(100%-128px)] -translate-x-1/2 truncate text-center text-[15px] font-bold text-[var(--tb-color-text-primary)]">
             {title}
           </span>
         )}

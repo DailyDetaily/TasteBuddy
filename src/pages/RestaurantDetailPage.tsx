@@ -7,10 +7,7 @@ import {
 
 import TopAppBar from '../components/TopAppBar';
 import PageSection from '../components/system/PageSection';
-import {
-  DiningAiAnalysisScreen,
-  DiningFeedbackScreen,
-} from '../components/reservation/DiningFeedbackFlow';
+import { DiningFeedbackScreen } from '../components/reservation/DiningFeedbackFlow';
 import RestaurantBookmarkSheet, {
   RESTAURANT_BOOKMARKS_CHANGED_EVENT,
   isRestaurantBookmarked,
@@ -35,17 +32,14 @@ import {
   type DiningFeedbackDraft,
   type DiningFeedbackScenario,
 } from '../constants/diningFeedbackData';
-import {
-  createInitialTasteMeasurementSnapshot,
-  type TasteMeasurementSnapshot,
-} from '../constants/tasteMeasurementData';
+import { type TasteMeasurementSnapshot } from '../constants/tasteMeasurementData';
 import type { HomeChefMatchCardData } from '../components/home/HomeCards';
 import type { HomeSearchResult } from '../components/home/HomeUnifiedSearch';
 import type { RealMenuRecommendationCardData } from '../components/analysis/RealMenuRecommendationCard';
 import type { ReservationRecord } from '../constants/reservationCatalog';
 import { hydrateRestaurantPlaceInfo } from '../lib/tasteBuddySupabase';
 
-type RestaurantDetailView = 'detail' | 'feedback' | 'analysis' | 'menuDetail';
+type RestaurantDetailView = 'detail' | 'feedback' | 'menuDetail';
 
 interface RestaurantNavigationLocation {
   selectedMenuDetail: RestaurantMenuDetailViewModel | null;
@@ -1075,13 +1069,21 @@ interface RestaurantDetailPageProps {
   measurementSnapshot?: TasteMeasurementSnapshot | null;
   onBack: () => void;
   onFeedbackMapViewChange?: (isMapView: boolean) => void;
+  onFeedbackSubmitComplete?: (submission: RestaurantFeedbackSubmission) => void;
   restaurant?: RestaurantDetailViewModel | null;
+}
+
+export interface RestaurantFeedbackSubmission {
+  draft: DiningFeedbackDraft;
+  restaurant: RestaurantDetailViewModel;
+  scenario: DiningFeedbackScenario;
 }
 
 export default function RestaurantDetailPage({
   measurementSnapshot,
   onBack,
   onFeedbackMapViewChange,
+  onFeedbackSubmitComplete,
   restaurant = DEFAULT_RESTAURANT_DETAIL,
 }: RestaurantDetailPageProps) {
   const sourceDetail = restaurant ?? DEFAULT_RESTAURANT_DETAIL;
@@ -1224,32 +1226,24 @@ export default function RestaurantDetailPage({
         onBack={goBackToPreviousRestaurantLocation}
         onChange={setFeedbackDraft}
         onMapViewChange={onFeedbackMapViewChange}
-        onSubmit={() =>
-          navigateToRestaurantLocation({
-            selectedMenuDetail: null,
-            selectedView: 'analysis',
-          })
-        }
-        scenario={feedbackScenario}
-      />
-    );
-  }
+        onSubmit={() => {
+          if (onFeedbackSubmitComplete) {
+            onFeedbackSubmitComplete({
+              draft: feedbackDraft,
+              restaurant: detail,
+              scenario: feedbackScenario,
+            });
+            return;
+          }
 
-  if (selectedView === 'analysis') {
-    return (
-      <DiningAiAnalysisScreen
-        draft={feedbackDraft}
-        measurementSnapshot={measurementSnapshot ?? createInitialTasteMeasurementSnapshot()}
-        onBack={goBackToPreviousRestaurantLocation}
-        onClose={() =>
           navigateToRestaurantLocation(
             {
               selectedMenuDetail: null,
               selectedView: 'detail',
             },
             { replace: true },
-          )
-        }
+          );
+        }}
         scenario={feedbackScenario}
       />
     );

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taste Buddy Browser Comment Fix"
+  short_description: "Fix Taste Buddy UI from browser comments"
+  default_prompt: "Use $taste-buddy-browser-comment-fix to resolve this Taste Buddy browser comment with a minimal token-aligned UI patch."

@@ -390,13 +390,11 @@ export function ReservationPendingActionCard({
 
 interface ReservationCompletedFeedbackCardProps {
   feedbackSubmitted: boolean;
-  onOpenAnalysis: () => void;
   onOpenFeedback: () => void;
 }
 
 export function ReservationCompletedFeedbackCard({
   feedbackSubmitted,
-  onOpenAnalysis,
   onOpenFeedback,
 }: ReservationCompletedFeedbackCardProps) {
   return (
@@ -411,18 +409,9 @@ export function ReservationCompletedFeedbackCard({
         </div>
       </div>
       <div className="flex w-full flex-col gap-2">
-        <PrimaryButton onClick={feedbackSubmitted ? onOpenAnalysis : onOpenFeedback}>
-          {feedbackSubmitted ? '프로필 정교화 보기' : '다음 다이닝을 위한 피드백 남기기'}
+        <PrimaryButton onClick={onOpenFeedback}>
+          {feedbackSubmitted ? '피드백 수정하기' : '다음 다이닝을 위한 피드백 남기기'}
         </PrimaryButton>
-        {feedbackSubmitted ? (
-          <button
-            type="button"
-            onClick={onOpenFeedback}
-            className="self-center text-[12px] font-semibold text-[var(--tb-color-text-muted)]"
-          >
-            피드백 수정하기
-          </button>
-        ) : null}
       </div>
     </SectionCard>
   );

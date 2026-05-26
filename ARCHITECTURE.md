@@ -27,7 +27,7 @@ Common examples:
 
 - [`HomePage.tsx`](./src/pages/HomePage.tsx)
 - [`AnalysisPage.tsx`](./src/pages/AnalysisPage.tsx)
-- [`ReservationPage.tsx`](./src/pages/ReservationPage.tsx)
+- [`DiningPage.tsx`](./src/pages/DiningPage.tsx)
 - [`ProfilePage.tsx`](./src/pages/ProfilePage.tsx)
 - [`DesignSystemPage.tsx`](./src/pages/DesignSystemPage.tsx)
 

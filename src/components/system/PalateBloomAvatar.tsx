@@ -785,7 +785,7 @@ export default function PalateBloomAvatar({
   const mainPetalLayerOuterRadius = largePetalDistance + largePetalRadius;
   const subPetalLayerOuterRadius = smallPetalDistance + smallPetalRadius;
   const largeStarOuterRadius =
-    mainPetalLayerOuterRadius * mapRange(largeStarLayer.visualWeight, 0, 1, 0.72, 0.84);
+    mainPetalLayerOuterRadius * mapRange(largeStarLayer.visualWeight, 0, 1, 0.66, 0.78);
   const largeStarInnerRadius = Math.min(
     largeStarOuterRadius * mapRange(largeStarLayer.visualWeight, 0, 1, 0.06, 0.11),
     smallPetalRadius * 0.6,

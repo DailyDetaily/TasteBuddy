@@ -2,14 +2,12 @@ import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type
 import {
   ArrowRight as ArrowRightIcon,
   Camera as CameraIcon,
-  CircleCheck as CircleCheckIcon,
-  ChefHat as ChefHatIcon,
   Image as ImageIcon,
   SwitchCamera as SwitchCameraIcon,
-  MessageSquareText as MessageSquareTextIcon,
   PenLine as PenLineIcon,
   Plus as PlusIcon,
   Search as SearchIcon,
+  Share as ShareIcon,
   Sparkles as SparklesIcon,
   X as XIcon,
   Zap as ZapIcon,
@@ -17,14 +15,12 @@ import {
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
 const ArrowRight = wrapIcon(ArrowRightIcon);
 const Camera = wrapIcon(CameraIcon);
-const CheckCircle2 = wrapIcon(CircleCheckIcon);
-const ChefHat = wrapIcon(ChefHatIcon);
 const Image = wrapIcon(ImageIcon);
 const SwitchCamera = wrapIcon(SwitchCameraIcon);
-const MessageSquareText = wrapIcon(MessageSquareTextIcon);
 const PenLine = wrapIcon(PenLineIcon);
 const Plus = wrapIcon(PlusIcon);
 const Search = wrapIcon(SearchIcon);
+const Share = wrapIcon(ShareIcon);
 const Sparkles = wrapIcon(SparklesIcon);
 const X = wrapIcon(XIcon);
 const Zap = wrapIcon(ZapIcon);
@@ -33,9 +29,9 @@ import SectionCard from '../SectionCard';
 import TopAppBar from '../TopAppBar';
 import OutlineBadge from '../system/OutlineBadge';
 import FlowBottomCta from '../system/FlowBottomCta';
+import ImageBox from '../system/ImageBox';
 import PageSection from '../system/PageSection';
 import SelectionCard from '../system/SelectionCard';
-import TokenBox from '../system/TokenBox';
 import TasteChip from '../system/TasteChip';
 import TasteWordSearch from '../search/TasteWordSearch';
 import {
@@ -45,8 +41,6 @@ import {
   type DiningFeedbackScenario,
 } from '../../constants/diningFeedbackData';
 import {
-  getStrongestTasteMeasurement,
-  getWeakestTasteMeasurement,
   type TasteMeasurementSnapshot,
 } from '../../constants/tasteMeasurementData';
 import { ICON_TOKENS } from '../../constants/designTokens';
@@ -59,10 +53,19 @@ const returnIntentOptions = [
 ] as const;
 
 export type TasteAxisId = 'sweet' | 'sour' | 'salty' | 'bitter' | 'umami' | 'fat';
+const TASTE_AXIS_LABEL_BY_ID: Record<TasteAxisId, string> = {
+  bitter: '쓴맛',
+  fat: '지방맛',
+  salty: '짠맛',
+  sour: '신맛',
+  sweet: '단맛',
+  umami: '감칠맛',
+};
 type DiningFeedbackStep =
   | 'menu-select'
   | 'taste-checkin'
   | 'detail-tags'
+  | 'result-card'
   | 'taste-reflection'
   | 'camera-capture';
 type DiningDetailTagCategoryId = 'balance' | 'flow' | 'texture' | 'aroma' | 'composition';
@@ -76,7 +79,7 @@ interface DiningDetailTagCategory {
   }[];
 }
 
-const diningDetailTagCategories: readonly DiningDetailTagCategory[] = [
+export const diningDetailTagCategories: readonly DiningDetailTagCategory[] = [
   {
     id: 'balance',
     label: '맛의 강도와 균형',
@@ -168,6 +171,52 @@ const diningDetailTagCategories: readonly DiningDetailTagCategory[] = [
     ],
   },
 ];
+
+export interface DiningDetailTagMetadata {
+  categoryId: DiningDetailTagCategoryId;
+  categoryLabel: string;
+  id: string;
+  label: string;
+}
+
+export function getDiningDetailTagMetadata(tagId: string | null | undefined) {
+  if (!tagId) {
+    return null;
+  }
+
+  const customTagMatch = tagId.match(/^custom:([^:]+):(.+)$/);
+
+  if (customTagMatch) {
+    const [, categoryId, label] = customTagMatch;
+    const category = diningDetailTagCategories.find((detailCategory) => detailCategory.id === categoryId);
+
+    if (!category || !label.trim()) {
+      return null;
+    }
+
+    return {
+      categoryId: category.id,
+      categoryLabel: category.label,
+      id: tagId,
+      label: label.trim(),
+    } satisfies DiningDetailTagMetadata;
+  }
+
+  for (const category of diningDetailTagCategories) {
+    const tag = category.tags.find((detailTag) => detailTag.id === tagId);
+
+    if (tag) {
+      return {
+        categoryId: category.id,
+        categoryLabel: category.label,
+        id: tag.id,
+        label: tag.label,
+      } satisfies DiningDetailTagMetadata;
+    }
+  }
+
+  return null;
+}
 
 export interface TasteExperienceWord {
   angleOffset: number;
@@ -406,15 +455,7 @@ function getSelectedTasteExperiences(
 }
 
 function findClosestDishChoice(dish: DiningDishMetadata, experience: TasteExperienceWord) {
-  const axisLabelById: Record<TasteAxisId, string> = {
-    bitter: '쓴맛',
-    fat: '지방맛',
-    salty: '짠맛',
-    sour: '신맛',
-    sweet: '단맛',
-    umami: '감칠맛',
-  };
-  const targetTaste = axisLabelById[experience.axis];
+  const targetTaste = TASTE_AXIS_LABEL_BY_ID[experience.axis];
   const matchingChoices = dish.feedbackChoices.filter((choice) =>
     choice.affectedTastes.includes(targetTaste),
   );
@@ -824,7 +865,7 @@ function TasteExperienceMap({
 }: {
   focusExperienceId?: string | null;
   onConfirm: (experience: TasteExperienceWord) => void;
-  onToggleSelection?: (experience: TasteExperienceWord) => void;
+  onToggleSelection?: (experience: TasteExperienceWord) => readonly string[] | void;
   selectedExperienceIds: readonly string[];
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -1020,6 +1061,13 @@ function TasteExperienceMap({
     animateMapZoomTo(BUBBLE_MAP_ENTRY_ZOOM, anchorPoint);
   };
 
+  const snapMapToTarget = (target: TasteExperienceSnapTarget) => {
+    const nextZoom = target.kind === 'neutral' ? BUBBLE_MAP_ENTRY_ZOOM : BUBBLE_MAP_SELECTED_ZOOM;
+
+    hasExpandedMapZoomRef.current = target.kind === 'bubble';
+    animateMapZoomTo(nextZoom, target.position);
+  };
+
   const snapClosestBubbleToCenter = () => {
     const viewport = viewportRef.current;
     const closest = selectClosestBubble();
@@ -1030,16 +1078,12 @@ function TasteExperienceMap({
 
     setIsFeedbackCardVisible(false);
     isSnappingRef.current = true;
-    if (closest.kind === 'neutral') {
-      shrinkMapToEntryZoom(closest.position);
-    } else {
-      expandMapToSelectedZoom(closest.position);
-    }
+    snapMapToTarget(closest);
 
     window.setTimeout(() => {
       isSnappingRef.current = false;
       setIsFeedbackCardVisible(closest.kind === 'bubble');
-    }, 420);
+    }, BUBBLE_MAP_ZOOM_TRANSITION_MS + 40);
   };
 
   const scheduleSettledSnap = () => {
@@ -1172,9 +1216,6 @@ function TasteExperienceMap({
     }
 
     if (!isSnappingRef.current) {
-      expandMapToSelectedZoom();
-    }
-    if (!isSnappingRef.current) {
       setIsFeedbackCardVisible(false);
     }
     window.requestAnimationFrame(selectClosestBubble);
@@ -1246,8 +1287,6 @@ function TasteExperienceMap({
       beginPinchGesture(event);
       return;
     }
-
-    expandMapToSelectedZoom();
   };
 
   const handleMapTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
@@ -1350,7 +1389,10 @@ function TasteExperienceMap({
     }, 420);
   };
 
-  const focusNextUnselectedBubbleTowardCenter = (currentExperienceId: string) => {
+  const focusNextUnselectedBubbleTowardCenter = (
+    currentExperienceId: string,
+    selectedIds: readonly string[] = selectedExperienceIds,
+  ) => {
     const currentPosition = renderedBubblePositions.find(
       (position) => position.experience.id === currentExperienceId,
     );
@@ -1368,8 +1410,9 @@ function TasteExperienceMap({
     const centerDistance = Math.max(1, Math.hypot(centerDeltaX, centerDeltaY));
     const targetX = currentPosition.x + (centerDeltaX / centerDistance) * BUBBLE_GRID_SPACING;
     const targetY = currentPosition.y + (centerDeltaY / centerDistance) * BUBBLE_GRID_SPACING;
+    const selectedIdSet = new Set(selectedIds);
     const nextBubblePosition = renderedBubblePositions
-      .filter((position) => !selectedExperienceIdSet.has(position.experience.id))
+      .filter((position) => !selectedIdSet.has(position.experience.id))
       .reduce<(typeof renderedBubblePositions)[number] | null>((bestPosition, position) => {
         const distanceFromTarget = Math.hypot(position.x - targetX, position.y - targetY);
         const distanceFromCurrent = Math.hypot(position.x - currentPosition.x, position.y - currentPosition.y);
@@ -1466,7 +1509,17 @@ function TasteExperienceMap({
                     expandMapToSelectedZoom({ x, y });
                     selectedExperienceIdRef.current = experience.id;
                     setDraftSelectedExperienceId(experience.id);
-                    onToggleSelection?.(experience);
+                    const nextSelectedExperienceIds = onToggleSelection?.(experience);
+
+                    if (
+                      Array.isArray(nextSelectedExperienceIds) &&
+                      nextSelectedExperienceIds.includes(experience.id) &&
+                      nextSelectedExperienceIds.length < 3
+                    ) {
+                      window.setTimeout(() => {
+                        focusNextUnselectedBubbleTowardCenter(experience.id, nextSelectedExperienceIds);
+                      }, 120);
+                    }
                   }}
                   className={cn(
                     'pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer select-none transition-all duration-300 ease-out',
@@ -1771,85 +1824,112 @@ function DiningDetailTagSection({
   );
 }
 
+function DiningResultReactionBubble({ experience }: { experience: TasteExperienceWord }) {
+  const axisLabel = TASTE_AXIS_LABEL_BY_ID[experience.axis];
+
+  return (
+      <TasteChip
+        className="max-w-full px-3 py-1.5 text-[10px] font-semibold leading-none"
+        colorTaste={axisLabel}
+        taste={experience.label}
+        title={axisLabel}
+      />
+  );
+}
+
+function DiningDishResultCard({
+  activeChoice,
+  dish,
+  experiences,
+  photoPreviewUrl,
+  scenario,
+  selectedDetailTagIds,
+}: {
+  activeChoice: DiningFeedbackChoice;
+  dish: DiningDishMetadata;
+  experiences: readonly TasteExperienceWord[];
+  photoPreviewUrl?: string | null;
+  scenario: DiningFeedbackScenario;
+  selectedDetailTagIds: readonly string[];
+}) {
+  const detailTags = selectedDetailTagIds
+    .map((tagId) => getDiningDetailTagMetadata(tagId))
+    .filter((tag): tag is DiningDetailTagMetadata => Boolean(tag));
+  const mainExperience = experiences[0] ?? null;
+  const synthesisSummary =
+    mainExperience
+      ? `${mainExperience.label} 인상을 중심으로 보면, ${activeChoice.reason} 이 기록은 다음 다이닝에서 ${dish.title}처럼 기억에 남는 코스를 더 섬세하게 맞추는 단서가 됩니다.`
+      : `${activeChoice.reason} 이 기록은 다음 다이닝에서 ${dish.title}의 인상을 다시 읽는 기준이 됩니다.`;
+
+  return (
+    <SectionCard hoverEffect={false} className="w-full gap-[12px] border-0 bg-[var(--tb-color-surface-base)] shadow-[0_24px_70px_rgba(15,15,15,0.16)]">
+      <div className="flex w-full flex-col gap-3">
+        <ImageBox
+          alt={`${dish.title} 메뉴 사진`}
+          className="aspect-square w-full rounded-[var(--tb-radius-12)]"
+          fallbackIconSize={ICON_TOKENS.size.xl}
+          imageSrc={photoPreviewUrl}
+          kind="menu"
+        />
+        <div className="min-w-0">
+          <h2 className="text-[14px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
+            {dish.title}
+          </h2>
+          <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
+            {dish.courseLabel} · {scenario.restaurant}
+          </p>
+        </div>
+      </div>
+
+      {experiences.length > 0 || detailTags.length > 0 ? (
+        <div className="flex w-full flex-col gap-[6px]">
+          {experiences.length > 0 ? (
+            <div className="flex w-full flex-wrap items-start gap-[6px]">
+              {experiences.slice(0, 3).map((experience) => (
+                <DiningResultReactionBubble
+                  experience={experience}
+                  key={`${dish.id}-${experience.id}`}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {detailTags.length > 0 ? (
+            <div className="flex w-full flex-wrap items-start gap-[6px]">
+              {detailTags.map((tag) => (
+                <TasteChip
+                  key={`${dish.id}-${tag.id}`}
+                  taste={tag.label}
+                  tone="neutral"
+                  title={tag.categoryLabel}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+        <div className="flex items-center gap-2">
+          <Sparkles size={ICON_TOKENS.size.sm} strokeWidth={1.8} />
+          <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
+            피드백 종합 해석
+          </span>
+        </div>
+        <p className="mt-2 text-[12px] font-normal leading-relaxed text-[var(--tb-color-text-subtle)]">
+          {synthesisSummary}
+        </p>
+      </div>
+    </SectionCard>
+  );
+}
+
 function softenRecommendationCopy(recommendation: string) {
   return recommendation
     .replace(/해보세요\./g, '하는 방향이 더 잘 맞을 수 있어요.')
     .replace(/좋습니다\./g, '좋을 수 있어요.')
     .replace(/편이 좋습니다\./g, '편이 더 잘 맞을 수 있어요.')
     .replace(/편이 좋습니다/g, '편이 더 잘 맞을 수 있어요');
-}
-
-function getTasteCounts(choices: DiningFeedbackChoice[]) {
-  const counts = new Map<string, number>();
-
-  for (const choice of choices) {
-    for (const taste of choice.affectedTastes) {
-      counts.set(taste, (counts.get(taste) ?? 0) + 1);
-    }
-  }
-
-  return [...counts.entries()]
-    .sort((left, right) => right[1] - left[1])
-    .map(([taste]) => taste);
-}
-
-function buildAnalysisSummary(
-  scenario: DiningFeedbackScenario,
-  draft: DiningFeedbackDraft,
-  measurementSnapshot: TasteMeasurementSnapshot,
-) {
-  const strongestTaste = getStrongestTasteMeasurement(measurementSnapshot);
-  const weakestTaste = getWeakestTasteMeasurement(measurementSnapshot);
-  const selectedChoices = scenario.dishes.map((dish) => getSelectedChoice(dish, draft));
-  const topAffectedTastes = getTasteCounts(selectedChoices).slice(0, 3);
-  const mostFrictionDish = scenario.dishes
-    .map((dish) => ({
-      dish,
-      response: draft.dishResponses[dish.id],
-    }))
-    .sort((left, right) => left.response.rating - right.response.rating)[0];
-  const mostFrictionChoice = getSelectedChoice(mostFrictionDish.dish, draft);
-  const bestAlignedDish = scenario.dishes
-    .map((dish) => ({
-      dish,
-      response: draft.dishResponses[dish.id],
-    }))
-    .sort((left, right) => right.response.rating - left.response.rating)[0];
-  const bestAlignedChoice = getSelectedChoice(bestAlignedDish.dish, draft);
-
-  return {
-    profileStage: 'Building Profile',
-    strongestTaste,
-    weakestTaste,
-    mostFrictionChoice,
-    mostFrictionDish: mostFrictionDish.dish,
-    bestAlignedChoice,
-    bestAlignedDish: bestAlignedDish.dish,
-    topAffectedTastes,
-    summaryTitle: '이번 피드백으로 현재 프로필이 한 단계 더 정교해졌어요',
-    summary: `${bestAlignedDish.dish.title}에서 잘 맞은 인상과 ${mostFrictionDish.dish.title}에서 남은 마찰이 함께 반영되면서, 다음 예약은 더 자연스럽게 맞출 수 있는 방향으로 정리됐어요.`,
-    changes: [
-      {
-        title: '더 선명해진 이해',
-        body: `${bestAlignedDish.dish.title}에서는 ${bestAlignedChoice.label} 방향이 잘 맞았고, ${strongestTaste.label}은 현재 더 또렷하게 반응하는 포인트로 정리됐어요.`,
-      },
-      {
-        title: '이번에 다듬어진 지점',
-        body: `${mostFrictionDish.dish.title}에서는 ${mostFrictionChoice.label} 인상이 남았어요. 다음에는 ${weakestTaste.label}의 연결감과 피니시 정리를 더 섬세하게 맞출 수 있어요.`,
-      },
-      {
-        title: '다음 다이닝 반영',
-        body: softenRecommendationCopy(mostFrictionChoice.recommendation),
-      },
-    ],
-    chefReadySummary: `${strongestTaste.label}처럼 강하게 느껴진 포인트는 겹치지 않게 정리하고, ${weakestTaste.label}처럼 짧게 남은 포인트는 더 자연스럽게 이어지는 방향이 현재 가장 잘 맞는 흐름으로 읽혀요.`,
-    learningLoop: '이 피드백은 다음 예약, 셰프용 캘리브레이션, 이후 프로필 업데이트에 함께 반영됩니다.',
-    progressSteps: [
-      { label: 'Starter Profile', caption: '첫 해석' },
-      { label: 'Building Profile', caption: '현재 단계' },
-      { label: 'Refined Profile', caption: '반복될수록' },
-    ] as const,
-  };
 }
 
 interface DiningFeedbackScreenProps {
@@ -1880,6 +1960,7 @@ export function DiningFeedbackScreen({
   const [cameraErrorMessage, setCameraErrorMessage] = useState<string | null>(null);
   const [cameraFacingMode, setCameraFacingMode] = useState<'environment' | 'user'>('environment');
   const [isCameraFlashOn, setIsCameraFlashOn] = useState(false);
+  const [isResultChromeVisible, setIsResultChromeVisible] = useState(false);
   const reflectionPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const reflectionGalleryInputRef = useRef<HTMLInputElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -2162,10 +2243,36 @@ export function DiningFeedbackScreen({
   };
 
   const completeDetailTags = () => {
-    setSelectedDishIndex(null);
     setActiveCustomDetailCategoryId(null);
     setCustomDetailInputValue('');
+    setIsResultChromeVisible(false);
+    setFeedbackStep('result-card');
+  };
+
+  const handleResultAdditionalRecord = () => {
+    setSelectedDishIndex(null);
+    setSearchedExperienceId(null);
+    setIsResultChromeVisible(false);
     setFeedbackStep('menu-select');
+  };
+
+  const handleResultBack = () => {
+    setIsResultChromeVisible(false);
+    setFeedbackStep('detail-tags');
+  };
+
+  const handleResultShare = async () => {
+    const shareText = `${scenario.restaurant} ${activeDish.title}의 미각 기록`;
+
+    if (navigator.share) {
+      await navigator.share({
+        text: shareText,
+        title: 'Taste Buddy 다이닝 기록',
+      }).catch(() => undefined);
+      return;
+    }
+
+    await navigator.clipboard?.writeText(shareText).catch(() => undefined);
   };
 
   const moveToTasteCheckin = () => {
@@ -2192,6 +2299,12 @@ export function DiningFeedbackScreen({
 
     if (feedbackStep === 'detail-tags') {
       setFeedbackStep('taste-checkin');
+      return;
+    }
+
+    if (feedbackStep === 'result-card') {
+      setSelectedDishIndex(null);
+      setFeedbackStep('menu-select');
       return;
     }
 
@@ -2260,6 +2373,79 @@ export function DiningFeedbackScreen({
             setIsTasteSearchOpen(false);
           }}
           words={tasteExperienceWords}
+        />
+      </div>
+    );
+  }
+
+  if (feedbackStep === 'result-card') {
+    const resultAxis = activeExperience?.axis ?? 'umami';
+    const resultSecondaryAxis = activeExperiences[1]?.axis ?? resultAxis;
+    const resultTertiaryAxis = activeExperiences[2]?.axis ?? resultSecondaryAxis;
+    const resultBackgroundStyle = {
+      '--tb-dining-result-mesh-main': `color-mix(in srgb, var(--tb-taste-${resultAxis}-main) 70%, white)`,
+      '--tb-dining-result-mesh-secondary': `color-mix(in srgb, var(--tb-taste-${resultSecondaryAxis}-main) 70%, white)`,
+      '--tb-dining-result-mesh-tertiary': `color-mix(in srgb, var(--tb-taste-${resultTertiaryAxis}-main) 70%, white)`,
+      backgroundColor: `var(--tb-taste-${resultAxis}-tint-surface)`,
+    } as CSSProperties;
+
+    return (
+      <div
+        className="relative isolate flex h-full w-full items-center justify-center overflow-y-auto px-5 py-10 no-scrollbar animate-slideIn"
+        onClick={() => setIsResultChromeVisible(true)}
+        onTouchStart={() => setIsResultChromeVisible(true)}
+        style={resultBackgroundStyle}
+      >
+        <div className="pointer-events-none absolute inset-[-18%] dining-result-mesh" aria-hidden="true" />
+        <div
+          className={cn(
+            'pointer-events-auto absolute inset-x-0 top-0 z-30 transition-all duration-300 ease-out',
+            isResultChromeVisible ? 'translate-y-0 opacity-100' : '-translate-y-3 opacity-0',
+          )}
+          onClick={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+        >
+          <TopAppBar
+            appearance="transparent"
+            showBack
+            onBack={handleResultBack}
+            rightActions={
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void handleResultShare();
+                }}
+                className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+                aria-label="결과 카드 공유"
+                title="공유"
+              >
+                <Share size={ICON_TOKENS.size.lg} strokeWidth={1.8} />
+              </button>
+            }
+          />
+        </div>
+        <div className="dining-result-card-bloom relative z-10 w-full max-w-[420px]">
+          <DiningDishResultCard
+            activeChoice={activeChoice}
+            dish={activeDish}
+            experiences={activeExperiences}
+            photoPreviewUrl={reflectionPhotoPreviewUrl}
+            scenario={scenario}
+            selectedDetailTagIds={selectedDetailTagIds}
+          />
+        </div>
+        <FlowBottomCta
+          actionLabel="저장"
+          className={cn(
+            'transition-all duration-300 ease-out',
+            isResultChromeVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0 pointer-events-none',
+          )}
+          fadeClassName="!bg-none"
+          onAction={onSubmit}
+          secondaryButtonClassName="border border-white/80 bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] shadow-none"
+          secondaryButtonLabel="추가 기록"
+          onSecondaryButtonAction={handleResultAdditionalRecord}
         />
       </div>
     );
@@ -2714,162 +2900,17 @@ export function DiningFeedbackScreen({
                 ? completeDetailTags
                 : onSubmit
           }
+          fadeClassName={
+            feedbackStep === 'detail-tags'
+              ? 'min-h-[calc(112px+var(--tb-safe-area-bottom))]'
+              : undefined
+          }
           secondaryButtonLabel={feedbackStep === 'taste-reflection' ? '취소하기' : undefined}
           onSecondaryButtonAction={
             feedbackStep === 'taste-reflection' ? () => setFeedbackStep('detail-tags') : undefined
           }
         />
       ) : null}
-    </div>
-  );
-}
-
-interface DiningAiAnalysisScreenProps {
-  draft: DiningFeedbackDraft;
-  measurementSnapshot: TasteMeasurementSnapshot;
-  onBack: () => void;
-  onClose: () => void;
-  scenario: DiningFeedbackScenario;
-}
-
-export function DiningAiAnalysisScreen({
-  draft,
-  measurementSnapshot,
-  onBack,
-  onClose,
-  scenario,
-}: DiningAiAnalysisScreenProps) {
-  const summary = buildAnalysisSummary(scenario, draft, measurementSnapshot);
-
-  return (
-    <div className="relative flex h-full w-full flex-col bg-[var(--tb-color-bg-page)] animate-slideIn">
-      <TopAppBar title="프로필 정교화" showBack onBack={onBack} />
-      <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="tb-section-stack px-5 pt-6 pb-[168px]">
-          <SectionCard
-            hoverEffect={false}
-            className="bg-[var(--tb-color-surface-muted)]"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex flex-col gap-2">
-                <OutlineBadge>{summary.profileStage}</OutlineBadge>
-                <div>
-                  <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
-                    프로필이 업데이트됐습니다
-                  </h1>
-                  <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                    다음 예약 추천에 반영할 수 있는 최신 프로필이 준비됐어요.
-                  </p>
-                </div>
-              </div>
-              <TokenBox backgroundToken="surface-base" textToken="text-primary">
-                <CheckCircle2 size={ICON_TOKENS.size.lg} />
-              </TokenBox>
-            </div>
-
-            <div className="w-full rounded-[var(--tb-radius-20)] bg-[var(--tb-color-surface-base)] px-4 py-4">
-              <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">{summary.summaryTitle}</p>
-              <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-primary)]">{summary.summary}</p>
-            </div>
-          </SectionCard>
-
-          <PageSection title="프로필 변화 요약" titleSize="md">
-            <div className="grid grid-cols-1 gap-3">
-              {summary.changes.map((note, index) => {
-                const Icon = index === 0 ? Sparkles : index === 1 ? ChefHat : MessageSquareText;
-                const iconTokens =
-                  index === 0
-                    ? { backgroundToken: 'taste-sweet-bg', textToken: 'taste-sweet-main' }
-                    : index === 1
-                      ? { backgroundToken: 'taste-salty-bg', textToken: 'taste-salty-main' }
-                      : { backgroundToken: 'taste-umami-bg', textToken: 'taste-umami-main' };
-
-                return (
-                  <SectionCard key={note.title} hoverEffect={false}>
-                    <div className="flex items-start gap-3">
-                      <TokenBox
-                        backgroundToken={iconTokens.backgroundToken}
-                        textToken={iconTokens.textToken}
-                      >
-                        <Icon size={ICON_TOKENS.size.md} />
-                      </TokenBox>
-                      <div className="flex flex-col gap-1">
-                        <p className={feedbackHintClass}>{note.title}</p>
-                        <p className="text-[13px] font-normal leading-relaxed text-[var(--tb-color-text-tertiary)]">
-                          {note.body}
-                        </p>
-                      </div>
-                    </div>
-                  </SectionCard>
-                );
-              })}
-            </div>
-          </PageSection>
-
-          <SectionCard hoverEffect={false}>
-            <div className="flex flex-col gap-4">
-              <div>
-                <p className={feedbackHintClass}>Confidence</p>
-                <h2 className="mt-2 text-[18px] font-bold text-[var(--tb-color-text-primary)]">
-                  반복될수록 더 선명해지는 Building Profile 단계예요
-                </h2>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {summary.progressSteps.map((step, index) => {
-                  const isCurrent = index === 1;
-
-                  return (
-                    <div
-                      key={step.label}
-                      className={cn(
-                        'rounded-[16px] border px-3 py-3',
-                        isCurrent
-                          ? 'border-[var(--tb-color-text-secondary)] bg-[var(--tb-color-surface-muted)]'
-                          : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)]',
-                      )}
-                    >
-                      <p className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
-                        {step.label}
-                      </p>
-                      <p className="mt-1 text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                        {step.caption}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                {summary.learningLoop}
-              </p>
-            </div>
-          </SectionCard>
-
-          <SectionCard hoverEffect={false} className="bg-[var(--tb-color-surface-muted)]">
-            <div className="flex items-start gap-3">
-              <TokenBox backgroundToken="surface-base" textToken="text-primary">
-                <ChefHat size={ICON_TOKENS.size.md} />
-              </TokenBox>
-              <div className="flex flex-col gap-1">
-                <p className={feedbackHintClass}>셰프용 현재 요약</p>
-                <p className="text-[13px] font-normal leading-relaxed text-[var(--tb-color-text-tertiary)]">
-                  {summary.chefReadySummary}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {summary.topAffectedTastes.map((taste) => (
-                    <TasteChip key={taste} taste={taste} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </SectionCard>
-        </div>
-      </div>
-
-      <FlowBottomCta
-        actionLabel="예약 상세로 돌아가기"
-        helperText="다음 예약과 프로필 업데이트에 자동 반영됩니다."
-        onAction={onClose}
-      />
     </div>
   );
 }

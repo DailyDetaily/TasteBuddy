@@ -469,7 +469,7 @@ export const TYPOGRAPHY_SPECS: TypographySpec[] = [
   {
     name: "본문",
     sample: "현재 프로필을 빠르게 정리해 첫 예약부터 활용할 수 있도록 돕습니다.",
-    source: "src/styles/design-system.css / src/pages/ReservationPage.tsx",
+    source: "src/styles/design-system.css / src/pages/DiningPage.tsx",
     usage: "카드 본문과 설명 문구",
     cssVars: ["--tb-font-size-14", "--tb-font-weight-regular", "--tb-line-height-relaxed"],
     value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[14], fontWeight: 400, lineHeight: 1.5 },
@@ -542,7 +542,13 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
   {
     name: "SectionCard",
     source: "src/components/SectionCard.tsx",
-    note: "카드, 통계 타일, 리스트 섹션의 기본 shell입니다.",
+    note: "카드와 리스트 섹션의 기본 shell입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "SummaryMetricCard",
+    source: "src/components/system/SummaryMetricCard.tsx",
+    note: "아이콘, 라벨, 값을 묶는 2열 요약 지표 타일입니다.",
     status: "currently-used",
   },
   {
@@ -609,6 +615,12 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     name: "PalateBloomAvatar",
     source: "src/components/system/PalateBloomAvatar.tsx",
     note: "6가지 미각 우선순위를 꽃잎과 이중 별 구조로 번역하는 프로필용 Palate Bloom 아바타입니다.",
+    status: "defined-only",
+  },
+  {
+    name: "PalateOrbAvatar",
+    source: "src/components/system/PalateOrbAvatar.tsx",
+    note: "1~3순위 미각은 앞면, 4~6순위 미각은 뒷면 조각으로 번역하는 원형 palate orb 아바타입니다.",
     status: "defined-only",
   },
   {
@@ -752,7 +764,7 @@ export const INCONSISTENCIES: InventoryEntry[] = [
   },
   {
     name: "기능 페이지에 하드코딩 유틸리티 값이 남아 있음",
-    source: "src/pages/ReservationPage.tsx / src/pages/ProfilePage.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
+    source: "src/pages/DiningPage.tsx / src/pages/ProfilePage.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
     note: "여러 padding, radius, text size가 시각적으로는 토큰과 맞지만, 토큰 참조 대신 raw arbitrary value로 반복됩니다.",
   },
   {
@@ -767,7 +779,7 @@ export const INCONSISTENCIES: InventoryEntry[] = [
   },
   {
     name: "앱 토큰 레이어의 상태 색상이 아직 불완전",
-    source: "src/styles/design-system.css / src/pages/ReservationPage.tsx",
+    source: "src/styles/design-system.css / src/pages/DiningPage.tsx",
     note: "success와 warning은 이제 first-class tb-* 토큰이지만, error는 아직 앱 토큰 레이어가 아니라 generic destructive token에 의존합니다.",
   },
 ];
@@ -775,12 +787,12 @@ export const INCONSISTENCIES: InventoryEntry[] = [
 export const TODO_ITEMS: InventoryEntry[] = [
   {
     name: "공용 폼 필드 추출",
-    source: "src/components/reservation/DiningFeedbackFlow.tsx / src/pages/ReservationPage.tsx",
+    source: "src/components/reservation/DiningFeedbackFlow.tsx / src/pages/DiningPage.tsx",
     note: "검색 행, textarea shell, choice selector가 재사용 가능한 field component로 추출될 수 있을 만큼 시각 규칙을 반복합니다.",
   },
   {
     name: "리스트 아이템 프리미티브 추출",
-    source: "src/pages/ProfilePage.tsx / src/pages/ReservationPage.tsx",
+    source: "src/pages/ProfilePage.tsx / src/pages/DiningPage.tsx",
     note: "예약 행, 셰프 행, 설정 행이 비슷한 list-cell 패턴을 공유하지만 아직 inline으로 작성되어 있습니다.",
   },
   {
@@ -960,7 +972,7 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "기기 상태 카드, 활동 통계 타일, 셰프 카드, 설정 카드 패턴입니다.",
     },
     {
-      file: "src/pages/ReservationPage.tsx",
+      file: "src/pages/DiningPage.tsx",
       note: "예약 요약 카드와 예약 상세 보정 카드 패턴입니다.",
     },
     {
@@ -1021,7 +1033,7 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     },
     {
       file: "src/components/system/EmptyState.tsx",
-      note: "ReservationPage에서 실제로 사용하는 empty state 피드백 컴포넌트입니다.",
+      note: "DiningPage에서 실제로 사용하는 empty state 피드백 컴포넌트입니다.",
     },
     {
       file: "src/components/system/ToastSurface.tsx",
@@ -1080,6 +1092,10 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "미각 우선순위를 6개 꽃 구조 레이어로 번역하는 SVG 프로필 아바타입니다.",
     },
     {
+      file: "src/components/system/PalateOrbAvatar.tsx",
+      note: "앞면/뒷면 조각의 깊이감으로 미각 우선순위를 표현하는 SVG 프로필 아바타입니다.",
+    },
+    {
       file: "src/components/measurement/TasteMeasurementMiniCta.tsx",
       note: "Taste Buddy 전용 CTA 카드입니다.",
     },
@@ -1089,7 +1105,7 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     },
     {
       file: "src/pages/ImproveAccuracyScreen.tsx",
-      note: "프로필 정교화 단계와 benefits를 묶은 신규 app-specific screen입니다.",
+      note: "선택형 정밀도 개선 안내와 benefits를 묶은 app-specific screen입니다.",
     },
     {
       file: "src/pages/ReservationConfirmationScreen.tsx",

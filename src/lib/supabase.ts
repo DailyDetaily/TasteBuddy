@@ -293,9 +293,29 @@ export async function deleteCurrentSupabaseAccount() {
   };
 }
 
+export interface DiningFriendActivitySummary {
+  averageRating: number | null;
+  feedbackCount: number;
+  measurementCount: number;
+  reservationCount: number;
+  savedRestaurantCount: number;
+}
+
+export interface DiningFriendFavoriteChef {
+  image: string | null;
+  matchRate: number;
+  name: string;
+  restaurant: string;
+  taste: string;
+}
+
 export interface DiningFriendProfile {
+  activitySummary?: DiningFriendActivitySummary;
   avatarPath: string | null;
   displayName: string | null;
+  favoriteChefs?: DiningFriendFavoriteChef[];
+  followerCount?: number | null;
+  followingCount?: number | null;
   id: string;
   isFriend: boolean;
   latestTasteMeasurementSnapshot: TasteMeasurementSnapshot | null;
@@ -365,6 +385,91 @@ function parseTasteMeasurementSnapshotFromRpcRow(item: Record<string, unknown>) 
     results,
     source,
   } satisfies TasteMeasurementSnapshot;
+}
+
+function parseOptionalNumber(value: unknown) {
+  const numericValue =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string'
+        ? Number.parseFloat(value)
+        : Number.NaN;
+
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
+function parseCount(value: unknown) {
+  return Math.max(0, Math.round(parseOptionalNumber(value) ?? 0));
+}
+
+function parseFavoriteChefs(value: unknown): DiningFriendFavoriteChef[] {
+  let rawValue = value;
+
+  if (typeof rawValue === 'string') {
+    try {
+      rawValue = JSON.parse(rawValue);
+    } catch {
+      rawValue = [];
+    }
+  }
+
+  if (!Array.isArray(rawValue)) {
+    return [];
+  }
+
+  return rawValue.flatMap((item): DiningFriendFavoriteChef[] => {
+    if (!item || typeof item !== 'object') {
+      return [];
+    }
+
+    const favoriteChef = item as Record<string, unknown>;
+    const name = typeof favoriteChef.name === 'string' ? favoriteChef.name.trim() : '';
+    const restaurant =
+      typeof favoriteChef.restaurant === 'string' ? favoriteChef.restaurant.trim() : '';
+
+    if (!name || !restaurant) {
+      return [];
+    }
+
+    return [{
+      image: typeof favoriteChef.image === 'string' && favoriteChef.image.trim()
+        ? favoriteChef.image.trim()
+        : null,
+      matchRate: Math.min(100, Math.max(0, Math.round(parseOptionalNumber(favoriteChef.matchRate) ?? 70))),
+      name,
+      restaurant,
+      taste: typeof favoriteChef.taste === 'string' && favoriteChef.taste.trim()
+        ? favoriteChef.taste.trim()
+        : '감칠맛',
+    }];
+  });
+}
+
+function parseDiningFriendProfile(item: Record<string, unknown>, options: { requireNickname?: boolean } = {}) {
+  const nickname = typeof item.nickname === 'string' ? item.nickname : '';
+
+  if ((options.requireNickname && !nickname) || typeof item.id !== 'string') {
+    return null;
+  }
+
+  return {
+    activitySummary: {
+      averageRating: parseOptionalNumber(item.average_rating),
+      feedbackCount: parseCount(item.feedback_count),
+      measurementCount: parseCount(item.measurement_count),
+      reservationCount: parseCount(item.reservation_count),
+      savedRestaurantCount: parseCount(item.saved_restaurant_count),
+    },
+    avatarPath: typeof item.avatar_path === 'string' ? item.avatar_path : null,
+    displayName: typeof item.display_name === 'string' ? item.display_name : null,
+    favoriteChefs: parseFavoriteChefs(item.favorite_chefs),
+    followerCount: parseOptionalNumber(item.follower_count),
+    followingCount: parseOptionalNumber(item.following_count),
+    id: item.id,
+    isFriend: Boolean(item.is_friend),
+    latestTasteMeasurementSnapshot: parseTasteMeasurementSnapshotFromRpcRow(item),
+    nickname,
+  } satisfies DiningFriendProfile;
 }
 
 export async function updateSupabaseProfileIdentity(input: {
@@ -540,20 +645,8 @@ export async function searchSupabaseProfilesByNickname(query: string) {
   return {
     ok: true,
     friends: (Array.isArray(data) ? data : []).flatMap((item): DiningFriendProfile[] => {
-      const nickname = typeof item.nickname === 'string' ? item.nickname : '';
-
-      if (!nickname || typeof item.id !== 'string') {
-        return [];
-      }
-
-      return [{
-        avatarPath: typeof item.avatar_path === 'string' ? item.avatar_path : null,
-        displayName: typeof item.display_name === 'string' ? item.display_name : null,
-        id: item.id,
-        isFriend: Boolean(item.is_friend),
-        latestTasteMeasurementSnapshot: null,
-        nickname,
-      }];
+      const friend = parseDiningFriendProfile(item, { requireNickname: true });
+      return friend ? [friend] : [];
     }),
     message: '닉네임 검색을 완료했습니다.',
   };
@@ -588,6 +681,43 @@ export async function addSupabaseFriendByNickname(nickname: string) {
     message: typeof result?.message === 'string'
       ? result.message
       : '친구 추가 결과를 확인하지 못했습니다.',
+  };
+}
+
+export async function removeSupabaseFriendById(friendId: string) {
+  if (!supabase) {
+    return {
+      ok: false,
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const userId = await getSupabaseUserId();
+
+  if (!userId) {
+    return {
+      ok: false,
+      message: '로그인 세션을 찾을 수 없습니다.',
+    };
+  }
+
+  const { error } = await supabase
+    .from('profile_friendships')
+    .delete()
+    .eq('requester_id', userId)
+    .eq('addressee_id', friendId);
+
+  if (error) {
+    console.warn('Failed to remove Supabase friend.', error);
+    return {
+      ok: false,
+      message: error.message,
+    };
+  }
+
+  return {
+    ok: true,
+    message: '팔로잉을 취소했습니다.',
   };
 }
 
@@ -650,20 +780,8 @@ export async function hydrateSupabaseProfileConnections(kind: ProfileConnectionK
   return {
     ok: true,
     friends: (Array.isArray(data) ? data : []).flatMap((item): DiningFriendProfile[] => {
-      const nickname = typeof item.nickname === 'string' ? item.nickname : '';
-
-      if (typeof item.id !== 'string') {
-        return [];
-      }
-
-      return [{
-        avatarPath: typeof item.avatar_path === 'string' ? item.avatar_path : null,
-        displayName: typeof item.display_name === 'string' ? item.display_name : null,
-        id: item.id,
-        isFriend: Boolean(item.is_friend),
-        latestTasteMeasurementSnapshot: parseTasteMeasurementSnapshotFromRpcRow(item),
-        nickname,
-      }];
+      const friend = parseDiningFriendProfile(item);
+      return friend ? [friend] : [];
     }),
     message: '프로필 연결 목록을 불러왔습니다.',
   };

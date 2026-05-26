@@ -57,16 +57,16 @@ export default function TCSHintCard({
           {icon ?? <SparklesIcon size={sizeStyle.iconSize} />}
         </TokenBox>
         {title ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
               {title}
             </p>
-            <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+            <p className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-subtle)]">
               {description}
             </p>
           </div>
         ) : (
-          <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+          <p className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-subtle)]">
             {description}
           </p>
         )}

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import ComponentFilePreview from '../components/design-system/filePreviewRegistry';
-import { DiningAiAnalysisScreen, DiningFeedbackScreen } from '../components/reservation/DiningFeedbackFlow';
+import { DiningFeedbackScreen } from '../components/reservation/DiningFeedbackFlow';
 import {
   createDiningFeedbackDraft,
   getDiningFeedbackScenario,
@@ -14,7 +14,7 @@ import ImproveAccuracyScreen from './ImproveAccuracyScreen';
 import OnboardingScreen from './OnboardingScreen';
 import ProfilePage from './ProfilePage';
 import ReservationConfirmationScreen from './ReservationConfirmationScreen';
-import ReservationPage from './ReservationPage';
+import DiningPage from './DiningPage';
 import TasteMeasurementScreen from './TasteMeasurementScreen';
 import TastickConnectScreen from './TastickConnectScreen';
 
@@ -246,7 +246,7 @@ export default function DesignSystemPreviewPage() {
               { id: '3', text: '예약이 없을 때도 다음 가치와 학습 루프가 보이도록 hospitality형 empty state 컴포넌트를 추가했습니다.' },
             ]}
           >
-            <ReservationPage
+            <DiningPage
               disableHydration
               initialReservations={RESERVATION_CATALOG}
               measurementSnapshot={measurementSnapshot}
@@ -341,30 +341,6 @@ export default function DesignSystemPreviewPage() {
           </ShowcaseSection>
           )}
 
-          {(!focusSection || focusSection === 'ai-feedback-analysis') && (
-            <ShowcaseSection
-            title="AI Feedback Analysis"
-            description="강조 카드와 taste-color insight 블록이 neutral base 위에서 taste accent만 쓰도록 정리됐습니다."
-            overlayNotes={[
-              { id: '1', left: '50%', top: '14%' },
-              { id: '2', left: '18%', top: '34%' },
-              { id: '3', left: '50%', top: '64%' },
-            ]}
-            notes={[
-              { id: '1', text: '메인 dark card의 badge, 요약 panel radius, 텍스트 계층을 시스템 기준으로 통일했습니다.' },
-              { id: '2', text: 'sweet/salty/umami insight 아이콘 박스를 taste token 기반으로 맞췄습니다.' },
-              { id: '3', text: '상세 해석 카드의 muted strip, white strip, 보조 텍스트 톤을 공통 규칙으로 정리했습니다.' },
-            ]}
-          >
-            <DiningAiAnalysisScreen
-              draft={draft}
-              measurementSnapshot={measurementSnapshot}
-              onBack={() => undefined}
-              onClose={() => undefined}
-              scenario={diningScenario}
-            />
-          </ShowcaseSection>
-          )}
         </div>
       </div>
     </div>

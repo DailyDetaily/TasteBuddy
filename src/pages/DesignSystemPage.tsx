@@ -98,6 +98,7 @@ import PalateSignatureAvatar, {
   type PalateSignatureAvatarVariant,
   type TasteProfile as PalateSignatureTasteProfile,
 } from "../components/system/PalateSignatureAvatar";
+import PalateOrbAvatar from "../components/system/PalateOrbAvatar";
 import {
   PROFILE_AVATAR_SIZE_KEYS,
   PROFILE_AVATAR_SIZE_TOKENS,
@@ -253,6 +254,7 @@ const COMPONENT_ARCHITECTURE_GROUPS = [
       "TasteProfileAvatar",
       "PalateSignatureAvatar",
       "PalateBloomAvatar",
+      "PalateOrbAvatar",
       "TastePointArrowBox",
       "ToastSurface",
     ],
@@ -3692,7 +3694,7 @@ export default function DesignSystemPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">Empty state</p>
-                      <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">`EmptyState`가 이제 ReservationPage의 실제 empty 예약 상태에 연결되어 있습니다.</p>
+                      <p className="mt-1 text-[12px] text-[var(--tb-color-text-subtle)]">`EmptyState`가 이제 DiningPage의 실제 empty 예약 상태에 연결되어 있습니다.</p>
                     </div>
                     <StatusTag tone="used">Currently used</StatusTag>
                   </div>
@@ -4050,6 +4052,7 @@ export default function DesignSystemPage() {
                     <SectionEyebrow>TasteProfileAvatar</SectionEyebrow>
                     <SectionEyebrow>PalateSignatureAvatar</SectionEyebrow>
                     <SectionEyebrow>PalateBloomAvatar</SectionEyebrow>
+                    <SectionEyebrow>PalateOrbAvatar</SectionEyebrow>
                     <SectionEyebrow>TasteMeasurementMiniCta</SectionEyebrow>
                     <SectionEyebrow>SectionCard</SectionEyebrow>
                   </div>
@@ -4319,6 +4322,72 @@ export default function DesignSystemPage() {
                             </div>
                           ))}
                         </div>
+                      </div>
+                    </div>
+                    <div
+                      className={cn(previewCardClass, "grid gap-4 p-4")}
+                      data-component-preview="PalateOrbAvatar"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                            PalateOrbAvatar
+                          </p>
+                          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                            1~3순위 미각은 앞면 조각으로, 4~6순위 미각은 어둡고 흐린 뒷면 조각으로 감싸 원형 palate orb를 만듭니다.
+                          </p>
+                        </div>
+                        <SourceFileLink
+                          file="src/components/system/PalateOrbAvatar.tsx"
+                          label="원본"
+                          variant="chip"
+                        />
+                      </div>
+                      <div className={avatarPreviewGridClass}>
+                        {PROFILE_AVATAR_SIZE_KEYS.map((size) => (
+                          <div
+                            key={`palate-orb-live-preview-${size}`}
+                            className={avatarPreviewTileClass}
+                          >
+                            <div className={avatarPreviewVisualClass}>
+                              <PalateOrbAvatar
+                                profile={livePalateAvatarProfile}
+                                shapeSeed="design-system-orb-preview"
+                                size={size}
+                              />
+                            </div>
+                            <div className={avatarPreviewMetaClass}>
+                              <p className={avatarPreviewLabelClass}>
+                                {size} · {PROFILE_AVATAR_SIZE_TOKENS[size]}px
+                              </p>
+                              <p className={avatarPreviewDescriptionClass}>
+                                앞면 3개 조각과 뒷면 3개 조각의 깊이감으로 미각 우선순위를 보여줍니다.
+                              </p>
+                            </div>
+                            <div className={avatarPreviewChipRowClass}>
+                              {livePalateTopTasteIds.map((tasteId) => (
+                                <TasteChip
+                                  key={`palate-orb-live-${size}-${tasteId}`}
+                                  taste={TASTE_TOKENS[tasteId].label}
+                                  value={`${avatarTasteValues[tasteId].toFixed(1)} mM`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className={cn(avatarPreviewSupportClass, "flex flex-wrap items-center gap-3")}>
+                        {PROFILE_AVATAR_SIZE_KEYS.map((size) => (
+                          <PalateOrbAvatar
+                            key={`palate-orb-token-row-${size}`}
+                            profile={livePalateAvatarProfile}
+                            shapeSeed={`design-system-orb-token-${size}`}
+                            size={size}
+                          />
+                        ))}
+                        <p className="min-w-[160px] flex-1 text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                          4~6순위 조각은 가장자리로 밀리고 clipPath에 잘려, 뒤쪽 표면을 감싸는 보조 레이어처럼 보입니다.
+                        </p>
                       </div>
                     </div>
                     <SectionCard hoverEffect={false}>

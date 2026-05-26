@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { type CSSProperties } from 'react';
 import { ICON_TOKENS } from '../../constants/designTokens';
+import PrimaryButton from './PrimaryButton';
+
+type EmptyStateActionTone = 'default' | 'user-accent';
 
 interface EmptyStateProps {
   /** Main title shown in empty state */
@@ -10,6 +13,8 @@ interface EmptyStateProps {
   actionLabel?: string;
   /** Callback when the CTA button is pressed */
   onAction?: () => void;
+  /** Visual tone for the optional CTA button */
+  actionTone?: EmptyStateActionTone;
   /** Optional icon element to display above the title */
   icon?: React.ReactNode;
 }
@@ -19,8 +24,18 @@ export default function EmptyState({
   description,
   actionLabel,
   onAction,
+  actionTone = 'default',
   icon,
 }: EmptyStateProps) {
+  const actionStyle: CSSProperties | undefined =
+    actionTone === 'user-accent'
+      ? {
+          background: 'var(--tb-user-accent-tint-surface, var(--tb-taste-sweet-bg))',
+          border: 'none',
+          color: 'var(--tb-user-accent-dark, var(--tb-taste-sweet-dark))',
+        }
+      : undefined;
+
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-12 px-6 text-center animate-fadeIn">
       {icon && (
@@ -39,13 +54,15 @@ export default function EmptyState({
         <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-muted)]">{description}</p>
       </div>
       {actionLabel && onAction && (
-        <button
-          type="button"
+        <PrimaryButton
+          className="mt-2 !self-center"
+          fullWidth={false}
           onClick={onAction}
-          className="mt-2 rounded-[10px] bg-[var(--tb-color-text-primary)] px-5 py-[10px] text-[13px] font-semibold text-white transition-all hover:bg-black active:scale-[0.98]"
+          size="compact"
+          style={actionStyle}
         >
           {actionLabel}
-        </button>
+        </PrimaryButton>
       )}
     </div>
   );

@@ -29,6 +29,7 @@ import OutlineBadge from "../system/OutlineBadge";
 import TCSHintCard from "../system/TCSHintCard";
 import SectionTitle from "../system/SectionTitle";
 import StatusChip from "../system/StatusChip";
+import SummaryMetricCard from "../system/SummaryMetricCard";
 import TasteChip from "../system/TasteChip";
 import CardScrollList from "../system/CardScrollList";
 import { TasteTintCardPreviewCard, TasteTintCardPreviewChips } from "./TasteTintCardInteractivePreview";
@@ -319,7 +320,7 @@ export default function CardGallery({
           title="예약 요약 카드"
           description="예약 리스트의 핵심 카드 패턴입니다."
           componentNames={["SectionCard", "StatusChip", "TasteChip"]}
-          source="src/pages/ReservationPage.tsx / ReservationCard"
+          source="src/pages/DiningPage.tsx / ReservationCard"
         >
           <SectionCard hoverEffect={false}>
             <div className="flex w-full items-center justify-between">
@@ -389,7 +390,7 @@ export default function CardGallery({
           title="예약 반영 요약 카드"
           description="예약 상세에서 현재 프로필이 어떻게 반영됐는지 설명하는 카드입니다."
           componentNames={["SectionCard", "OutlineBadge", "SectionTitle"]}
-          source="src/pages/ReservationPage.tsx"
+          source="src/pages/DiningPage.tsx"
         >
           <SectionCard hoverEffect={false}>
             <div className="flex w-full items-start justify-between gap-3">
@@ -460,30 +461,20 @@ export default function CardGallery({
         <SampleBlock
           title="활동 통계 타일"
           description="프로필 요약 숫자를 2열 타일 카드로 보여주는 패턴입니다."
-          componentNames={["SectionCard"]}
-          source="src/pages/ProfilePage.tsx"
+          componentNames={["SummaryMetricCard", "SectionCard"]}
+          source="src/components/system/SummaryMetricCard.tsx"
         >
           <div className="grid grid-cols-2 gap-3">
-            {activityStats.map((stat) => {
-              const Icon = stat.icon;
-
-              return (
-                <SectionCard key={stat.label} hoverEffect={false}>
-                  <div className="flex w-full items-center gap-2">
-                    <div
-                      className="flex h-[40px] w-[40px] items-center justify-center rounded-[var(--tb-radius-10)]"
-                      style={{ backgroundColor: `${stat.color}20` }}
-                    >
-                      <Icon size={ICON_TOKENS.size.md} strokeWidth={1.5} style={{ color: stat.color }} />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] text-[var(--tb-color-text-muted)]">{stat.label}</span>
-                      <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{stat.value}</span>
-                    </div>
-                  </div>
-                </SectionCard>
-              );
-            })}
+            {activityStats.map((stat) => (
+              <SummaryMetricCard
+                key={stat.label}
+                color={stat.color}
+                hoverEffect={false}
+                icon={stat.icon}
+                label={stat.label}
+                value={stat.value}
+              />
+            ))}
           </div>
         </SampleBlock>
 

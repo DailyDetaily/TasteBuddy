@@ -78,15 +78,15 @@ export default function SelectionCard({
 
       <span
         className={cn(
-          'flex min-w-0 flex-1 flex-col gap-1',
+          'flex min-w-0 flex-1 flex-col',
           singleLine && 'justify-center',
         )}
       >
-        <span className="text-[14px] font-semibold leading-snug text-[var(--tb-color-text-primary)]">
+        <span className="text-[14px] font-semibold leading-normal text-[var(--tb-color-text-primary)]">
           {title}
         </span>
         {description ? (
-          <span className="text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
+          <span className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-muted)]">
             {description}
           </span>
         ) : null}

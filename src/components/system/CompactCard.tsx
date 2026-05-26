@@ -44,7 +44,7 @@ export default function CompactCard({
       <span className={cn('min-w-0 flex-1', contentClassName)}>
         <span
           className={cn(
-            'block truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]',
+            'block truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]',
             headingClassName,
           )}
         >
@@ -53,7 +53,7 @@ export default function CompactCard({
         {metadata ? (
           <span
             className={cn(
-              'mt-[3px] block truncate text-[11px] font-semibold text-[var(--tb-color-text-muted)]',
+              'block truncate text-[12px] font-normal text-[var(--tb-color-text-muted)]',
               metadataClassName,
             )}
           >

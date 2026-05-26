@@ -541,7 +541,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
     selector: "src/components/system/EmptyState.tsx root div",
     sources: [
       { file: "src/components/system/EmptyState.tsx", note: "아이콘, 타이틀, 설명, 선택 CTA가 모두 정의됩니다." },
-      { file: "src/pages/ReservationPage.tsx", note: "예약이 없을 때 실제 사용 예시입니다." },
+      { file: "src/pages/DiningPage.tsx", note: "예약이 없을 때 실제 사용 예시입니다." },
     ],
     values: [
       { label: "layout", value: "flex column / centered / text-center" },

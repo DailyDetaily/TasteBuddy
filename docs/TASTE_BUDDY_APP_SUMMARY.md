@@ -59,7 +59,7 @@ flowchart LR
 | --- | --- | --- |
 | Quick Taste Calibration | `QuickTasteCalibrationScreen` | 6개 맛 축 질문, slider response |
 | Taste Profile Creation | calibration result, profile card, analysis | `TasteMeasurementSnapshot`, `RestaurantReadyGuidance` |
-| Reservation Personalization | `ReservationPage`, `ReservationCard`, `ReservationDetailSections` | 예약, 매칭률, chef guidance, timeline |
+| Reservation Personalization | `DiningPage`, `ReservationCard`, `ReservationDetailSections` | 예약, 매칭률, chef guidance, timeline |
 | Chef Calibration Guidance | reservation detail의 TCS/chef calibration section | taste axis, adjustment, recommendation logic |
 | Dining Experience | 예약 상태/timeline으로 표현 | reservation status |
 | Post-Dining Feedback | `DiningFeedbackFlow` | dish response, selected tags, overall rating |
@@ -146,7 +146,7 @@ flowchart TD
 | --- | --- | --- |
 | Home | [`src/pages/HomePage.tsx`](../src/pages/HomePage.tsx) | 검색, 추천 셰프/식당, 현재 예약 요약 |
 | Analysis | [`src/pages/AnalysisPage.tsx`](../src/pages/AnalysisPage.tsx) | 미각 프로필, 변화 추세, 해석 카드, 메뉴 추천 |
-| Reservation | [`src/pages/ReservationPage.tsx`](../src/pages/ReservationPage.tsx) | 예약 목록, 개인화 설명, 셰프 보정, 식후 피드백 |
+| Reservation | [`src/pages/DiningPage.tsx`](../src/pages/DiningPage.tsx) | 예약 목록, 개인화 설명, 셰프 보정, 식후 피드백 |
 | Profile | [`src/pages/ProfilePage.tsx`](../src/pages/ProfilePage.tsx) | 미각 프로필, 통계, 선호 셰프, 설정/지원 진입 |
 
 전역 overlay:
@@ -225,7 +225,7 @@ flowchart TD
 
 ### 7.7 Reservation
 
-파일: [`src/pages/ReservationPage.tsx`](../src/pages/ReservationPage.tsx), [`src/components/reservation/ReservationDetailSections.tsx`](../src/components/reservation/ReservationDetailSections.tsx)
+파일: [`src/pages/DiningPage.tsx`](../src/pages/DiningPage.tsx), [`src/components/reservation/ReservationDetailSections.tsx`](../src/components/reservation/ReservationDetailSections.tsx)
 
 역할:
 
@@ -437,7 +437,7 @@ Taste Buddy의 현재 기본 taste axis는 6개다.
 
 ### 10.4 Reservation personalization
 
-파일: [`src/pages/ReservationPage.tsx`](../src/pages/ReservationPage.tsx)
+파일: [`src/pages/DiningPage.tsx`](../src/pages/DiningPage.tsx)
 
 핵심 함수:
 

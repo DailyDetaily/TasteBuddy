@@ -7,6 +7,7 @@ import type {
 import {
   createDiningFeedbackDraft,
   getDiningFeedbackScenario,
+  hasDiningDishFeedbackResponse,
 } from '../constants/diningFeedbackData';
 import {
   TASTE_IDS,
@@ -2329,7 +2330,7 @@ export async function submitDiningFeedbackToSupabase(input: {
     const response = input.draft.dishResponses[dish.id];
     const reservationDishId = reservationDishIds.get(dish.id);
 
-    if (!response || !reservationDishId) {
+    if (!response || !reservationDishId || !hasDiningDishFeedbackResponse(response)) {
       continue;
     }
 

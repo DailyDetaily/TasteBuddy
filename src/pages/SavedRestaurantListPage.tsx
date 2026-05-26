@@ -16,7 +16,6 @@ import {
   type RestaurantBookmarkRecord,
 } from '../components/restaurant/RestaurantBookmarkSheet';
 import { ICON_TOKENS } from '../constants/designTokens';
-import type { ReservationRecord } from '../constants/reservationCatalog';
 import { resolvePublicMediaPath } from '../lib/mediaAssets';
 import {
   hydrateReservationPageData,
@@ -26,8 +25,6 @@ import { createRestaurantDetailFromFavoriteChef } from './RestaurantDetailPage';
 
 interface SavedRestaurantListPageProps {
   catalog: RestaurantContentCatalog;
-  fallbackRestaurants?: ReservationRecord[];
-  onOpenFallbackRestaurant?: (reservation: ReservationRecord) => void;
   onOpenRestaurant: (bookmark: RestaurantBookmarkRecord) => void;
 }
 
@@ -127,8 +124,6 @@ function getBookmarkCategoryIds(
 
 export default function SavedRestaurantListPage({
   catalog,
-  fallbackRestaurants = [],
-  onOpenFallbackRestaurant,
   onOpenRestaurant,
 }: SavedRestaurantListPageProps) {
   const [lists, setLists] = useState<BookmarkList[]>(() => loadBookmarkLists());
@@ -481,47 +476,6 @@ export default function SavedRestaurantListPage({
                 관심 있는 식당을 리스트로 묶어두면 다음 예약 전에 코스 흐름과 내 프로필 기준을 다시 비교할 수 있어요.
               </p>
             </div>
-
-            {fallbackRestaurants.length > 0 ? (
-              <>
-                <p className="px-1 pt-1 text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                  먼저 비교해볼 만한 식당
-                </p>
-                {fallbackRestaurants.slice(0, 4).map((reservation) => (
-                  <button
-                    key={reservation.id}
-                    type="button"
-                    onClick={() => onOpenFallbackRestaurant?.(reservation)}
-                    className="flex w-full items-center gap-3 rounded-[20px] bg-white p-3 text-left transition-transform active:scale-[0.99]"
-                  >
-                    <ChefAvatar
-                      alt={reservation.chef}
-                      className="h-[44px] w-[44px] rounded-[10px]"
-                      iconSize={ICON_TOKENS.size.lg}
-                      imageSrc={reservation.chefImage}
-                      taste={reservation.adjustments[0]?.taste ?? '감칠맛'}
-                      variant="neutral"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
-                        {reservation.restaurant}
-                      </p>
-                      <p className="mt-[3px] truncate text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
-                        {reservation.chef} · {reservation.matchRate}%
-                      </p>
-                      <p className="mt-1 truncate text-[11px] text-[var(--tb-color-text-subtle)]">
-                        저장 전에 내 프로필 기준으로 다시 살펴보기
-                      </p>
-                    </div>
-                    <ChevronRight
-                      aria-hidden="true"
-                      className="shrink-0 text-[var(--tb-color-icon-muted)]"
-                      size={ICON_TOKENS.size.md}
-                    />
-                  </button>
-                ))}
-              </>
-            ) : null}
           </div>
         )}
       </div>

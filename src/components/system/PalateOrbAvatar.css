@@ -1,0 +1,15 @@
+.tb-palate-orb-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  vertical-align: middle;
+}
+
+.tb-palate-orb-avatar__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}

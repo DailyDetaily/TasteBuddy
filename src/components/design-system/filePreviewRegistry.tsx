@@ -87,7 +87,7 @@ import ImproveAccuracyScreen from '../../pages/ImproveAccuracyScreen';
 import OnboardingScreen from '../../pages/OnboardingScreen';
 import ProfilePage from '../../pages/ProfilePage';
 import ReservationConfirmationScreen from '../../pages/ReservationConfirmationScreen';
-import ReservationPage from '../../pages/ReservationPage';
+import DiningPage from '../../pages/DiningPage';
 import TasteSurveyIntroScreen from '../../pages/TasteSurveyIntroScreen';
 import TasteMeasurementScreen from '../../pages/TasteMeasurementScreen';
 import { cn } from '../ui/utils';
@@ -1017,8 +1017,8 @@ function EmptyStateFilePreview() {
     <div className="bg-[var(--tb-color-surface-muted)] p-6">
       <div className="mx-auto max-w-[520px]">
         <EmptyState
-          description="현재 프로필과 연결된 다이닝 예약을 정리하고 있어요."
-          title="예약을 불러오는 중이에요"
+          description="새로운 다이닝 기록이 쌓이면 이곳에서 조용히 정리해 보여줍니다."
+          title="아직 표시할 다이닝 기록이 없어요"
         />
       </div>
     </div>
@@ -1126,11 +1126,11 @@ function TasteMeasurementScreenFilePreview() {
   );
 }
 
-function ReservationPageFilePreview() {
+function DiningPageFilePreview() {
   const measurementSnapshot = createInitialTasteMeasurementSnapshot();
 
   return (
-    <ReservationPage
+    <DiningPage
       disableHydration
       initialReservations={RESERVATION_CATALOG}
       measurementSnapshot={measurementSnapshot}
@@ -1477,11 +1477,11 @@ const FILE_PREVIEW_DEFINITIONS: Record<string, FilePreviewDefinition> = {
     title: 'TasteMeasurementScreen.tsx',
     render: () => <TasteMeasurementScreenFilePreview />,
   },
-  'src/pages/ReservationPage.tsx': {
-    description: 'The reservation screen with personalized dining interpretation and reservation list.',
+  'src/pages/DiningPage.tsx': {
+    description: 'The dining screen with dish feedback cards, personalized dining interpretation, and reservation flows.',
     kind: 'mobile-screen',
-    title: 'ReservationPage.tsx',
-    render: () => <ReservationPageFilePreview />,
+    title: 'DiningPage.tsx',
+    render: () => <DiningPageFilePreview />,
   },
   'src/pages/ProfilePage.tsx': {
     description: 'The profile screen showing evolving confidence, activity summary, and taste profile.',

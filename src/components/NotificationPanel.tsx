@@ -4,6 +4,8 @@ import {
 import {
   CalendarCheck as CalendarCheckIcon,
   Bell as BellIcon,
+  Heart as HeartIcon,
+  MessageCircle as MessageCircleIcon,
   Utensils as UtensilsIcon,
   CircleCheck as CircleCheckIcon,
   UserPlus as UserPlusIcon
@@ -13,6 +15,7 @@ import {
   formatNotificationRelativeTime,
   type AppNotification,
 } from '../lib/notificationsSupabase';
+import { resolvePublicMediaPath } from '../lib/mediaAssets';
 import { ICON_TOKENS } from '../constants/designTokens';
 import CompactCard from './system/CompactCard';
 import PalateBloomAvatar, {
@@ -30,6 +33,8 @@ const Bell = wrapIcon(BellIcon);
 const Utensils = wrapIcon(UtensilsIcon);
 const CheckCircle = wrapIcon(CircleCheckIcon);
 const UserPlus = wrapIcon(UserPlusIcon);
+const Heart = wrapIcon(HeartIcon);
+const MessageCircle = wrapIcon(MessageCircleIcon);
 const PANEL_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
 const PANEL_ACTION_BUTTON_SIZE = ICON_TOKENS.container.md;
 const NOTIFICATION_ITEM_ICON_SIZE = ICON_TOKENS.size.md;
@@ -68,6 +73,18 @@ function getNotificationPresentation(notification: AppNotification) {
         icon: UserPlus,
         iconBg: 'var(--tb-taste-umami-bg)',
         iconColor: 'var(--tb-taste-umami-main)',
+      };
+    case 'dish_like':
+      return {
+        icon: Heart,
+        iconBg: 'var(--tb-user-accent-tint-surface)',
+        iconColor: 'var(--tb-user-accent-main)',
+      };
+    case 'dish_comment':
+      return {
+        icon: MessageCircle,
+        iconBg: 'var(--tb-user-accent-tint-surface)',
+        iconColor: 'var(--tb-user-accent-main)',
       };
     case 'measurement_reminder':
     case 'system':
@@ -172,6 +189,9 @@ export default function NotificationPanel({
                 const { icon: Icon, iconBg, iconColor } = getNotificationPresentation(notification);
                 const isFollower = isFollowerNotification(notification);
                 const followerNickname = getFollowerNotificationNickname(notification);
+                const followerAvatarSrc = resolvePublicMediaPath(
+                  getPayloadString(notification, 'follower_avatar_path'),
+                );
 
                 return (
                   <CompactCard
@@ -186,9 +206,10 @@ export default function NotificationPanel({
                       isFollower ? (
                         <PalateBloomAvatar
                           ariaLabel={followerNickname}
+                          imageSrc={followerAvatarSrc}
                           profile={createPalateBloomFallbackProfile(followerNickname)}
                           shapeSeed={followerNickname}
-                          size="sm"
+                          size="md"
                         />
                       ) : (
                         <span

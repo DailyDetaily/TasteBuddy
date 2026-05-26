@@ -690,7 +690,7 @@ Scale:
 
 ### 2. 기능 페이지에 raw utility 값이 남아 있음
 
-- 위치: `src/pages/ReservationPage.tsx`, `src/pages/ProfilePage.tsx`, `src/components/reservation/DiningFeedbackFlow.tsx`
+- 위치: `src/pages/DiningPage.tsx`, `src/pages/ProfilePage.tsx`, `src/components/reservation/DiningFeedbackFlow.tsx`
 - 설명: 시각적으로는 토큰과 맞지만, raw arbitrary value가 반복된다.
 - 규칙: 같은 값이 두 번 이상 반복되면 토큰 또는 공용 컴포넌트로 승격한다.
 
@@ -708,7 +708,7 @@ Scale:
 
 ### 5. 상태 색상 체계가 아직 완전하지 않음
 
-- 위치: `src/styles/design-system.css`, `src/pages/ReservationPage.tsx`
+- 위치: `src/styles/design-system.css`, `src/pages/DiningPage.tsx`
 - 설명: success / warning은 `tb-*` 에 들어왔지만, error는 아직 generic destructive token에 기대는 부분이 있다.
 - 규칙: 새 에러 UI를 만들 때는 error를 `tb-*` 레이어에 정식 편입하는 쪽을 우선 검토한다.
 
@@ -721,12 +721,12 @@ Scale:
 ### 1. 공용 폼 필드 추출
 
 - 대상: 검색 행, textarea shell, choice selector
-- 관련 파일: `src/components/reservation/DiningFeedbackFlow.tsx`, `src/pages/ReservationPage.tsx`
+- 관련 파일: `src/components/reservation/DiningFeedbackFlow.tsx`, `src/pages/DiningPage.tsx`
 
 ### 2. 리스트 아이템 프리미티브 추출
 
 - 대상: 예약 행, 셰프 행, 설정 행
-- 관련 파일: `src/pages/ProfilePage.tsx`, `src/pages/ReservationPage.tsx`
+- 관련 파일: `src/pages/ProfilePage.tsx`, `src/pages/DiningPage.tsx`
 
 ### 3. 오버레이 전략 통합
 

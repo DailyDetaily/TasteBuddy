@@ -41,11 +41,11 @@ export default function TasteMeasurementMiniCta({
       <div className={isRightAction ? 'flex items-end justify-between gap-3' : undefined}>
         <div className="min-w-0 flex-1">
           <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
-          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+          <p className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-subtle)]">
             {description}
           </p>
           {meta ? (
-            <p className="mt-1 text-[11px] font-medium text-[var(--tb-color-text-faint)]">{meta}</p>
+            <p className="mt-2 text-[11px] font-medium text-[var(--tb-color-text-faint)]">{meta}</p>
           ) : null}
         </div>
 

@@ -31,7 +31,6 @@ const Star = wrapIcon(StarIcon);
 const UserPlus = wrapIcon(UserPlusIcon);
 const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 
-import SectionCard from '../components/SectionCard';
 import ChefAvatar from '../components/system/ChefAvatar';
 import CompactCard from '../components/system/CompactCard';
 import OutlineBadge from '../components/system/OutlineBadge';
@@ -40,7 +39,9 @@ import PalateBloomAvatar, {
   createPalateBloomProfileFromMeasurementSnapshot,
   type TasteProfile as PalateBloomTasteProfile,
 } from '../components/system/PalateBloomAvatar';
+import SummaryMetricCard from '../components/system/SummaryMetricCard';
 import TastickDeviceCard from '../components/system/TastickDeviceCard';
+import DiningFriendProfileCard from '../components/profile/DiningFriendProfileCard';
 import { ICON_TOKENS } from '../constants/designTokens';
 import { type ReservationRecord } from '../constants/reservationCatalog';
 import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
@@ -59,6 +60,7 @@ import {
   loadRestaurantBookmarks,
   RESTAURANT_BOOKMARKS_CHANGED_EVENT,
 } from '../components/restaurant/RestaurantBookmarkSheet';
+import { resolvePublicMediaPath } from '../lib/mediaAssets';
 import type {
   DiningFriendProfile,
   ProfileConnectionKind,
@@ -131,10 +133,33 @@ function deriveProfileStats(
   savedListCount: number,
   averageRating: number | null,
 ): ProfileStat[] {
+  return deriveProfileStatsFromCounts({
+    averageRating,
+    feedbackCount,
+    measurementCount: measurementSnapshots.length,
+    savedListCount,
+  });
+}
+
+function deriveProfileStatsFromCounts({
+  averageRating,
+  feedbackCount,
+  listLabel = '테이스트 리스트',
+  listValue,
+  measurementCount,
+  savedListCount,
+}: {
+  averageRating: number | null;
+  feedbackCount: number;
+  listLabel?: string;
+  listValue?: string;
+  measurementCount: number;
+  savedListCount: number;
+}): ProfileStat[] {
   return [
     {
       label: 'TCS 보정',
-      value: `${measurementSnapshots.length}회`,
+      value: `${measurementCount}회`,
       icon: Award,
       color: '#FF9900',
     },
@@ -145,8 +170,8 @@ function deriveProfileStats(
       color: '#B372B4',
     },
     {
-      label: '테이스트 리스트',
-      value: `${savedListCount}개`,
+      label: listLabel,
+      value: listValue ?? `${savedListCount}개`,
       icon: Bookmark,
       color: '#7299FF',
     },
@@ -202,8 +227,11 @@ interface ProfilePageProps {
   onOpenProfileSettings?: () => void;
   onOpenSavedList?: () => void;
   onAddFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
+  onRemoveFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
   activeConnectionView?: ProfileConnectionKind | null;
+  selectedConnectionProfile?: DiningFriendProfile | null;
   onConnectionViewChange?: (kind: ProfileConnectionKind | null) => void;
+  onSelectedConnectionProfileChange?: (friend: DiningFriendProfile | null) => void;
   onLoadConnections?: (kind: ProfileConnectionKind) => Promise<{
     ok: boolean;
     friends: DiningFriendProfile[];
@@ -221,8 +249,11 @@ export default function ProfilePage({
   onOpenProfileSettings,
   onOpenSavedList,
   onAddFriend,
+  onRemoveFriend,
   activeConnectionView = null,
+  selectedConnectionProfile = null,
   onConnectionViewChange,
+  onSelectedConnectionProfileChange,
   onLoadConnections,
   hasUnreadNotifications,
 }: ProfilePageProps) {
@@ -244,7 +275,7 @@ export default function ProfilePage({
   const [connectionProfiles, setConnectionProfiles] = useState<DiningFriendProfile[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
-  const [addingConnectionId, setAddingConnectionId] = useState<string | null>(null);
+  const [updatingConnectionId, setUpdatingConnectionId] = useState<string | null>(null);
   const [favoriteChefs, setFavoriteChefs] = useState<FavoriteChef[]>([]);
   const [stats, setStats] = useState<ProfileStat[]>(() =>
     deriveProfileStats([measurementSnapshot], 0, loadRestaurantBookmarks().length, null),
@@ -341,27 +372,40 @@ export default function ProfilePage({
 
   const openConnectionView = (kind: ProfileConnectionKind) => {
     onConnectionViewChange?.(kind);
+    onSelectedConnectionProfileChange?.(null);
     setConnectionProfiles([]);
     setConnectionStatus('idle');
     setConnectionMessage(null);
   };
 
-  const handleAddConnectionFriend = async (friend: DiningFriendProfile) => {
-    if (!onAddFriend) {
+  const handleToggleConnectionFriend = async (friend: DiningFriendProfile) => {
+    const handler = friend.isFriend ? onRemoveFriend : onAddFriend;
+
+    if (!handler) {
       return;
     }
 
-    setAddingConnectionId(friend.id);
-    const result = await onAddFriend(friend);
-    setAddingConnectionId(null);
+    setUpdatingConnectionId(friend.id);
+    const result = await handler(friend);
+    setUpdatingConnectionId((currentId) => (currentId === friend.id ? null : currentId));
     setConnectionMessage(result.message);
 
     if (result.ok) {
+      const nextFriend = { ...friend, isFriend: !friend.isFriend };
+
       setConnectionProfiles((currentProfiles) =>
-        currentProfiles.map((item) =>
-          item.id === friend.id ? { ...item, isFriend: true } : item,
-        ),
+        friend.isFriend && activeConnectionView === 'following'
+          ? currentProfiles.filter((item) => item.id !== friend.id)
+          : currentProfiles.map((item) =>
+            item.id === friend.id ? nextFriend : item,
+          ),
       );
+
+      if (selectedConnectionProfile?.id === friend.id) {
+        onSelectedConnectionProfileChange?.(
+          friend.isFriend && activeConnectionView === 'following' ? null : nextFriend,
+        );
+      }
     }
   };
 
@@ -371,6 +415,169 @@ export default function ProfilePage({
       activeConnectionView === 'followers'
         ? '아직 나를 팔로우한 다이닝 친구가 없습니다.'
         : '아직 내가 팔로우한 다이닝 친구가 없습니다.';
+
+    if (selectedConnectionProfile) {
+      const selectedProfileName =
+        selectedConnectionProfile.displayName || selectedConnectionProfile.nickname || 'Taste Buddy Guest';
+      const selectedProfileNickname = selectedConnectionProfile.nickname
+        ? `@${selectedConnectionProfile.nickname}`
+        : '버디네임 미설정';
+      const selectedProfileSnapshot = selectedConnectionProfile.latestTasteMeasurementSnapshot;
+      const selectedProfileAvatarSrc = resolvePublicMediaPath(selectedConnectionProfile.avatarPath);
+      const selectedProfileBloom = createPalateBloomProfileFromMeasurementSnapshot(
+        selectedProfileSnapshot,
+        selectedConnectionProfile.id,
+      );
+      const selectedProfileActionDisabled =
+        updatingConnectionId === selectedConnectionProfile.id ||
+        (selectedConnectionProfile.isFriend ? !onRemoveFriend : !onAddFriend);
+      const selectedProfileActionLabel = selectedConnectionProfile.isFriend
+        ? updatingConnectionId === selectedConnectionProfile.id
+          ? '취소 중'
+          : '팔로잉'
+        : updatingConnectionId === selectedConnectionProfile.id
+          ? '추가 중'
+          : '팔로우';
+      const selectedProfileStats = deriveProfileStatsFromCounts({
+        averageRating: selectedConnectionProfile.activitySummary?.averageRating ?? null,
+        feedbackCount: selectedConnectionProfile.activitySummary?.feedbackCount ?? 0,
+        listLabel: '다이닝 기록',
+        listValue: `${selectedConnectionProfile.activitySummary?.reservationCount ?? 0}회`,
+        measurementCount:
+          selectedConnectionProfile.activitySummary?.measurementCount ??
+          (selectedProfileSnapshot ? 1 : 0),
+        savedListCount: selectedConnectionProfile.activitySummary?.savedRestaurantCount ?? 0,
+      });
+      const selectedFavoriteChefs = selectedConnectionProfile.favoriteChefs ?? [];
+
+      return (
+        <div className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
+              <div className="tb-card-stack">
+                <div className="rounded-[20px] bg-white p-3">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <PalateBloomAvatar
+                        ariaLabel={selectedProfileName}
+                        imageSrc={selectedProfileAvatarSrc}
+                        profile={selectedProfileBloom}
+                        shapeSeed={`${selectedConnectionProfile.id}|${selectedProfileSnapshot?.measuredAt ?? 'no-measurement'}`}
+                        size="lg"
+                      />
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-[16px] font-bold text-[var(--tb-color-text-primary)]">
+                          {selectedProfileName}
+                        </span>
+                        <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          {selectedProfileNickname}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex min-w-[64px] flex-col rounded-[8px] text-left">
+                        <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                          {formatSocialCount(selectedConnectionProfile.followerCount)}
+                        </span>
+                        <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로워</span>
+                      </div>
+                      <div className="flex min-w-[64px] flex-col rounded-[8px] text-left">
+                        <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                          {formatSocialCount(selectedConnectionProfile.followingCount)}
+                        </span>
+                        <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로잉</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void handleToggleConnectionFriend(selectedConnectionProfile)}
+                        disabled={selectedProfileActionDisabled}
+                        className={
+                          selectedConnectionProfile.isFriend
+                            ? 'ml-auto flex h-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[12px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)] disabled:opacity-55'
+                            : 'ml-auto flex h-9 items-center justify-center rounded-full px-3 text-[12px] font-semibold transition-[filter,opacity] hover:brightness-[0.98] disabled:opacity-55'
+                        }
+                        style={
+                          selectedConnectionProfile.isFriend
+                            ? undefined
+                            : {
+                              background: 'var(--tb-user-accent-tint-surface, var(--tb-taste-sweet-bg))',
+                              color: 'var(--tb-user-accent-dark, var(--tb-taste-sweet-dark))',
+                            }
+                        }
+                      >
+                        {selectedProfileActionLabel}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <PageSection title="활동 요약" titleSize="md">
+                <div className="grid grid-cols-2 gap-3">
+                  {selectedProfileStats.map((stat) => (
+                    <SummaryMetricCard
+                      key={stat.label}
+                      color={stat.color}
+                      icon={stat.icon}
+                      label={stat.label}
+                      value={stat.value}
+                    />
+                  ))}
+                </div>
+              </PageSection>
+
+              <PageSection title="즐겨찾기 셰프" titleSize="md">
+                <div className="flex flex-col gap-3">
+                  {selectedFavoriteChefs.length === 0 ? (
+                    <div className="rounded-[20px] bg-white px-4 py-5 text-[13px] leading-relaxed text-[var(--tb-color-text-muted)]">
+                      아직 공개된 즐겨찾기 셰프 흐름이 없습니다.
+                    </div>
+                  ) : null}
+                  {selectedFavoriteChefs.map((chef, index) => (
+                    <CompactCard
+                      key={index}
+                      onClick={() => {
+                        if (onOpenRestaurantDetail) {
+                          onOpenRestaurantDetail(chef);
+                          return;
+                        }
+
+                        onNavigateToReservation?.(chef.name);
+                      }}
+                      media={
+                        <ChefAvatar
+                          alt={chef.name}
+                          className="h-[40px] w-[40px] rounded-[10px]"
+                          iconSize={ICON_TOKENS.size.lg}
+                          imageSrc={resolvePublicMediaPath(chef.image) ?? chef.image}
+                          taste={chef.taste}
+                          variant="neutral"
+                        />
+                      }
+                      heading={formatChefName(chef.name)}
+                      metadata={chef.restaurant}
+                      headingClassName="font-semibold"
+                      metadataClassName="font-normal"
+                      actions={
+                        <span className="flex items-center gap-3">
+                          <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{chef.matchRate}%</span>
+                          <ChevronRight
+                            size={CARD_TRAILING_ICON_SIZE}
+                            className="text-[var(--tb-color-icon-muted)]"
+                          />
+                        </span>
+                      }
+                    />
+                  ))}
+                </div>
+              </PageSection>
+
+              <div className="h-6" />
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
@@ -396,43 +603,24 @@ export default function ProfilePage({
             ) : null}
 
             {connectionProfiles.map((friend) => (
-              <div
+              <DiningFriendProfileCard
                 key={friend.id}
-                className="flex items-center gap-3 rounded-[20px] bg-white p-3"
-              >
-                <PalateBloomAvatar
-                  ariaLabel={friend.displayName || friend.nickname || 'Taste Buddy Guest'}
-                  profile={createPalateBloomProfileFromMeasurementSnapshot(
-                    friend.latestTasteMeasurementSnapshot,
-                    friend.id,
-                  )}
-                  shapeSeed={`${friend.id}|${friend.latestTasteMeasurementSnapshot?.measuredAt ?? 'no-measurement'}`}
-                  size="md"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
-                    {friend.displayName || 'Taste Buddy Guest'}
-                  </p>
-                  <p className="mt-[2px] truncate text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
-                    {friend.nickname ? `@${friend.nickname}` : '버디네임 미설정'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void handleAddConnectionFriend(friend)}
-                  disabled={friend.isFriend || addingConnectionId === friend.id}
-                  className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-[var(--tb-color-border-default)] px-3 text-[11px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)] disabled:opacity-55"
-                >
-                  <UserPlus size={ICON_TOKENS.size.sm} />
-                  <span>
-                    {friend.isFriend
-                      ? '팔로잉'
-                      : addingConnectionId === friend.id
-                        ? '추가 중'
-                        : '팔로우'}
-                  </span>
-                </button>
-              </div>
+                actionAriaLabel={friend.isFriend ? '팔로잉 취소' : '팔로우'}
+                actionDisabled={updatingConnectionId === friend.id || (friend.isFriend ? !onRemoveFriend : !onAddFriend)}
+                actionLabel={
+                  friend.isFriend
+                    ? updatingConnectionId === friend.id
+                      ? '취소 중'
+                      : '팔로잉'
+                    : updatingConnectionId === friend.id
+                      ? '추가 중'
+                      : '팔로우'
+                }
+                actionVariant={friend.isFriend ? 'neutral' : 'accent'}
+                friend={friend}
+                onAction={(selectedFriend) => void handleToggleConnectionFriend(selectedFriend)}
+                onOpenProfile={(selectedFriend) => onSelectedConnectionProfileChange?.(selectedFriend)}
+              />
             ))}
           </div>
         </div>
@@ -467,8 +655,8 @@ export default function ProfilePage({
                     shapeSeed={palateBloomShapeSeed}
                     size="lg"
                   />
-                  <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-                    <span className="truncate text-[18px] font-bold text-[var(--tb-color-text-primary)]">{displayName}</span>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-[16px] font-bold text-[var(--tb-color-text-primary)]">{displayName}</span>
                     <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
                       {nicknameLabel}
                     </span>
@@ -483,7 +671,7 @@ export default function ProfilePage({
                     <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                       {formatSocialCount(followerCount)}
                     </span>
-                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">팔로워</span>
+                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로워</span>
                   </button>
                   <button
                     type="button"
@@ -493,7 +681,7 @@ export default function ProfilePage({
                     <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                       {formatSocialCount(followingCount)}
                     </span>
-                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">팔로잉</span>
+                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로잉</span>
                   </button>
                   <button
                     type="button"
@@ -511,28 +699,16 @@ export default function ProfilePage({
 
           <PageSection title="활동 요약" titleSize="md">
             <div className="grid grid-cols-2 gap-3">
-              {stats.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <SectionCard
-                    key={index}
-                    onClick={stat.label === '테이스트 리스트' ? onOpenSavedList : undefined}
-                  >
-                    <div className="flex items-center gap-2 w-full">
-                      <div
-                        className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[10px]"
-                        style={{ backgroundColor: `${stat.color}20` }}
-                      >
-                        <Icon size={ICON_TOKENS.size.md} strokeWidth={1.5} style={{ color: stat.color }} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[11px] text-[var(--tb-color-text-muted)]">{stat.label}</span>
-                        <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{stat.value}</span>
-                      </div>
-                    </div>
-                  </SectionCard>
-                );
-              })}
+              {stats.map((stat) => (
+                <SummaryMetricCard
+                  key={stat.label}
+                  color={stat.color}
+                  icon={stat.icon}
+                  label={stat.label}
+                  onClick={stat.label === '테이스트 리스트' ? onOpenSavedList : undefined}
+                  value={stat.value}
+                />
+              ))}
             </div>
           </PageSection>
 
@@ -554,7 +730,7 @@ export default function ProfilePage({
                       alt={chef.name}
                       className="h-[40px] w-[40px] rounded-[10px]"
                       iconSize={ICON_TOKENS.size.lg}
-                      imageSrc={chef.image}
+                      imageSrc={resolvePublicMediaPath(chef.image) ?? chef.image}
                       taste={chef.taste}
                       variant="neutral"
                     />

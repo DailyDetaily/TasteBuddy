@@ -68,17 +68,17 @@ export default function InterpretationCard({
             className="my-[5px] w-[8px] shrink-0 self-stretch rounded-full"
             style={indicatorBackground ? { background: indicatorBackground } : { backgroundColor: accentColor }}
           />
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div className="flex min-w-0 flex-1 flex-col">
             <p
               className={cn(
                 supportingText ? 'line-clamp-1' : 'line-clamp-2',
-                'text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]',
+                'text-[14px] font-semibold leading-normal text-[var(--tb-color-text-primary)]',
               )}
             >
               {description}
             </p>
             {supportingText ? (
-              <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
+              <p className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-muted)]">
                 {supportingText}
               </p>
             ) : null}

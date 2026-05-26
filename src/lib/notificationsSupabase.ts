@@ -6,6 +6,8 @@ export type AppNotificationType =
   | 'measurement_reminder'
   | 'feedback_request'
   | 'follower_added'
+  | 'dish_like'
+  | 'dish_comment'
   | 'system';
 
 export interface AppNotification {

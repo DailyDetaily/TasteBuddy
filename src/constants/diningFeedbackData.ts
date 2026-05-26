@@ -47,6 +47,34 @@ export interface DiningFeedbackDraft {
   returnIntent: 'yes' | 'maybe' | 'no';
 }
 
+export function hasDiningDishFeedbackResponse(
+  response: DiningDishFeedbackDraft | null | undefined,
+) {
+  if (!response) {
+    return false;
+  }
+
+  const hasSelectedExperience =
+    Boolean(response.selectedExperienceId) ||
+    (response.selectedExperienceIds?.some(Boolean) ?? false);
+  const hasSelectedDetailTag = response.selectedDetailTagIds?.some(Boolean) ?? false;
+  const hasCustomDetailTag = Object.values(response.customDetailTags ?? {}).some((labels) =>
+    labels.some((label) => label.trim().length > 0),
+  );
+  const hasReflection =
+    Boolean(response.reflectionNote?.trim()) ||
+    Boolean(response.reflectionPhotoName) ||
+    Boolean(response.reflectionPhotoPreviewUrl);
+
+  return Boolean(
+    response.selectedChoiceId ||
+      hasSelectedExperience ||
+      hasSelectedDetailTag ||
+      hasCustomDetailTag ||
+      hasReflection,
+  );
+}
+
 export const DINING_FEEDBACK_SCENARIOS: Record<number, DiningFeedbackScenario> = {
   3: {
     completedAt: '2026-03-11T20:40:00+09:00',
@@ -239,7 +267,7 @@ export function createDiningFeedbackDraft(
     (responses, dish) => {
       responses[dish.id] = {
         rating: 3,
-        selectedChoiceId: dish.feedbackChoices[0]?.id ?? null,
+        selectedChoiceId: null,
         reflectionNote: '',
         reflectionPhotoName: null,
         reflectionPhotoPreviewUrl: null,
@@ -253,45 +281,9 @@ export function createDiningFeedbackDraft(
     {},
   );
 
-  if (scenario.reservationId !== 3) {
-    return {
-      dishResponses: defaultDishResponses,
-      overallComment: '',
-      overallRating: 3,
-      returnIntent: 'maybe',
-    };
-  }
-
   return {
-    dishResponses: {
-      ...defaultDishResponses,
-      'amuse-oyster-tart': {
-        rating: 4,
-        selectedChoiceId: 'starter-balanced',
-        selectedExperienceId: 'sour-2',
-        selectedExperienceIds: ['sour-2'],
-      },
-      'dessert-black-sesame': {
-        rating: 2,
-        selectedChoiceId: 'sweet-front',
-        selectedExperienceId: 'sweet-3',
-        selectedExperienceIds: ['sweet-3'],
-      },
-      'fish-kinmedai': {
-        rating: 3,
-        selectedChoiceId: 'butter-too-long',
-        selectedExperienceId: 'fat-3',
-        selectedExperienceIds: ['fat-3'],
-      },
-      'main-hanwoo': {
-        rating: 3,
-        selectedChoiceId: 'umami-flat',
-        selectedExperienceId: 'umami-1',
-        selectedExperienceIds: ['umami-1'],
-      },
-    },
-    overallComment:
-      '전반적인 코스의 흐름은 좋았지만 메인 이후에는 무게감이 쌓였고, 디저트는 단맛이 먼저 크게 느껴졌어요.',
+    dishResponses: defaultDishResponses,
+    overallComment: '',
     overallRating: 3,
     returnIntent: 'maybe',
   };
