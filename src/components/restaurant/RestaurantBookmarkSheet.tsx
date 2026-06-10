@@ -30,6 +30,7 @@ import ToastSurface from '../system/ToastSurface';
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
 import { ICON_TOKENS, TASTE_TOKENS } from '../../constants/designTokens';
+import { persistRestaurantBookmarkStateForEmail } from '../../lib/restaurantBookmarksSupabase';
 import type { RestaurantDetailViewModel } from '../../pages/RestaurantDetailPage';
 
 export interface BookmarkList {
@@ -68,6 +69,8 @@ const LIST_STORAGE_KEY = 'tastebuddy-restaurant-bookmark-lists-v1';
 const BOOKMARK_STORAGE_KEY = 'tastebuddy-restaurant-bookmarks-v1';
 export const DEFAULT_BOOKMARK_LIST_ID = 'default-saved';
 export const RESTAURANT_BOOKMARKS_CHANGED_EVENT = 'tastebuddy-restaurant-bookmarks-changed';
+let activeBookmarkOwnerEmail: string | null = null;
+let activeBookmarkPersistTimeoutId: number | null = null;
 
 const LIST_SUGGESTIONS = [
   {
@@ -227,8 +230,7 @@ export function saveBookmarkLists(lists: BookmarkList[]) {
     return;
   }
 
-  window.localStorage.setItem(LIST_STORAGE_KEY, JSON.stringify(lists));
-  window.dispatchEvent(new Event(RESTAURANT_BOOKMARKS_CHANGED_EVENT));
+  replaceRestaurantBookmarkState(lists, loadRestaurantBookmarks());
 }
 
 export function getPublicBookmarkLists(lists: BookmarkList[] = loadBookmarkLists()) {
@@ -277,6 +279,59 @@ export function loadRestaurantBookmarks() {
   }
 }
 
+function persistActiveBookmarkState(lists: BookmarkList[], bookmarks: RestaurantBookmarkRecord[]) {
+  if (!activeBookmarkOwnerEmail) {
+    return;
+  }
+
+  const ownerEmail = activeBookmarkOwnerEmail;
+  const state = {
+    bookmarks,
+    lists,
+  };
+
+  if (typeof window === 'undefined') {
+    void persistRestaurantBookmarkStateForEmail(ownerEmail, state);
+    return;
+  }
+
+  if (activeBookmarkPersistTimeoutId !== null) {
+    window.clearTimeout(activeBookmarkPersistTimeoutId);
+  }
+
+  activeBookmarkPersistTimeoutId = window.setTimeout(() => {
+    activeBookmarkPersistTimeoutId = null;
+    void persistRestaurantBookmarkStateForEmail(ownerEmail, state);
+  }, 180);
+}
+
+export function setRestaurantBookmarkOwnerEmail(email: string | null) {
+  if (typeof window !== 'undefined' && activeBookmarkPersistTimeoutId !== null) {
+    window.clearTimeout(activeBookmarkPersistTimeoutId);
+    activeBookmarkPersistTimeoutId = null;
+  }
+
+  activeBookmarkOwnerEmail = email?.trim().toLowerCase() || null;
+}
+
+export function replaceRestaurantBookmarkState(
+  lists: BookmarkList[],
+  bookmarks: RestaurantBookmarkRecord[],
+  options: { syncRemote?: boolean } = {},
+) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(LIST_STORAGE_KEY, JSON.stringify(lists));
+  window.localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(bookmarks));
+  window.dispatchEvent(new Event(RESTAURANT_BOOKMARKS_CHANGED_EVENT));
+
+  if (options.syncRemote !== false) {
+    persistActiveBookmarkState(lists, bookmarks);
+  }
+}
+
 export function isRestaurantBookmarked(restaurantName: string) {
   const targetKey = getRestaurantBookmarkKey(restaurantName);
 
@@ -321,8 +376,7 @@ export function saveRestaurantBookmarkRecord(
     ),
   ];
 
-  window.localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(nextBookmarks));
-  window.dispatchEvent(new Event(RESTAURANT_BOOKMARKS_CHANGED_EVENT));
+  replaceRestaurantBookmarkState(loadBookmarkLists(), nextBookmarks);
 }
 
 function saveRestaurantBookmark(
@@ -353,8 +407,7 @@ export function removeRestaurantBookmark(restaurantName: string) {
     (bookmark) => getRestaurantBookmarkKey(bookmark.restaurantName) !== restaurantKey,
   );
 
-  window.localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(nextBookmarks));
-  window.dispatchEvent(new Event(RESTAURANT_BOOKMARKS_CHANGED_EVENT));
+  replaceRestaurantBookmarkState(loadBookmarkLists(), nextBookmarks);
 }
 
 export default function RestaurantBookmarkSheet({

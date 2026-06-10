@@ -4226,7 +4226,7 @@ export default function DesignSystemPage() {
                           />
                         ))}
                         <p className="min-w-[160px] flex-1 text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                          세 아바타가 같은 sm 32px, md 44px, lg 68px, xl 96px 토큰을 공유합니다.
+                          세 아바타가 같은 sm 32px, md 42px, lg 68px, xl 96px 토큰을 공유합니다.
                         </p>
                       </div>
                     </div>

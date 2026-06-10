@@ -619,7 +619,7 @@ Scale:
 
 | Component | 현재 규칙 |
 | --- | --- |
-| `TopAppBar` | `bg-page` 85% + blur `12px`, padding `20px 12px`, 높이 `56px`, avatar `32px`, icon `24px`, unread dot `6px` |
+| `TopAppBar` | 기본은 `bg-page` 85% + blur `12px`, solid 상태는 콘텐츠 배경(`bg-page`/`bg-focus`)과 일치, padding `20px 12px`, 높이 `56px`, avatar `32px`, icon `24px`, unread dot `6px` |
 | `BottomTabBar` | min-height `60px`, `bg-page` 85% + blur `12px`, border-top default, tab padding `6px 16px`, label `10px`, active scale `1.1`, iOS home indicator는 시스템 기본 표시만 사용 |
 | `NotificationPanel` | top `56px`, horizontal margin `20px`, max-height `70vh`, radius `20px`, white 85% + blur, shadow `drawer`, unread row는 muted surface |
 | `AppMenuDrawer` | width `300px`, max-width `85vw`, white 85% + blur, backdrop `black/30 + blur(2px)`, transition `300ms entrance easing`, row radius `12px` |

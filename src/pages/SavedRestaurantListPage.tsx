@@ -410,12 +410,16 @@ export default function SavedRestaurantListPage({
             </button>
 
             <div className="flex items-center gap-3 rounded-[20px] bg-white p-3">
-              <ListThumbnail list={selectedList} />
+              <ListThumbnail
+                className="size-10"
+                iconSize={ICON_TOKENS.size.md}
+                list={selectedList}
+              />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[15px] font-bold text-[var(--tb-color-text-primary)]">
+                <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
                   {selectedList.name}
                 </p>
-                <p className="mt-[3px] truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                <p className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
                   {getBookmarkListVisibilityLabel(selectedList)} · {selectedListBookmarks.length}
                 </p>
               </div>
@@ -440,27 +444,28 @@ export default function SavedRestaurantListPage({
         ) : listCards.length > 0 ? (
           <div className="flex flex-col gap-3">
             {listCards.map(({ count, list }) => (
-              <button
+              <CompactCard
                 key={list.id}
-                type="button"
                 onClick={() => setSelectedListId(list.id)}
-                className="flex w-full items-center gap-3 rounded-[20px] bg-white p-3 text-left transition-transform active:scale-[0.99]"
-              >
-                <ListThumbnail list={list} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
-                    {list.name}
-                  </p>
-                  <p className="mt-[3px] truncate text-[11px] font-semibold text-[var(--tb-color-text-muted)]">
-                    {getBookmarkListVisibilityLabel(list)} · {count}
-                  </p>
-                </div>
-                <ChevronRight
-                  aria-hidden="true"
-                  className="shrink-0 text-[var(--tb-color-icon-muted)]"
-                  size={ICON_TOKENS.size.md}
-                />
-              </button>
+                media={
+                  <ListThumbnail
+                    className="size-10"
+                    iconSize={ICON_TOKENS.size.md}
+                    list={list}
+                  />
+                }
+                heading={list.name}
+                headingClassName="font-bold"
+                metadata={`${getBookmarkListVisibilityLabel(list)} · ${count}`}
+                metadataClassName="text-[11px] font-semibold"
+                actions={
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="shrink-0 text-[var(--tb-color-icon-muted)]"
+                    size={ICON_TOKENS.size.md}
+                  />
+                }
+              />
             ))}
           </div>
         ) : (

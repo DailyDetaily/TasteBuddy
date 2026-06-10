@@ -3,17 +3,18 @@ import type { MouseEventHandler } from 'react';
 import type { DiningFriendProfile } from '../../lib/supabase';
 import { resolvePublicMediaPath } from '../../lib/mediaAssets';
 import { cn } from '../ui/utils';
+import DiningFriendActionButton, {
+  type DiningFriendActionButtonVariant,
+} from './DiningFriendActionButton';
 import PalateBloomAvatar, {
   createPalateBloomProfileFromMeasurementSnapshot,
 } from '../system/PalateBloomAvatar';
-
-type DiningFriendProfileCardActionVariant = 'accent' | 'neutral';
 
 interface DiningFriendProfileCardProps {
   actionAriaLabel: string;
   actionDisabled?: boolean;
   actionLabel: string;
-  actionVariant?: DiningFriendProfileCardActionVariant;
+  actionVariant?: DiningFriendActionButtonVariant;
   friend: DiningFriendProfile;
   onAction: (friend: DiningFriendProfile) => void;
   onOpenProfile?: (friend: DiningFriendProfile) => void;
@@ -39,7 +40,7 @@ export default function DiningFriendProfileCard({
   return (
     <div
       className={cn(
-        'relative flex items-center gap-3 rounded-[20px] bg-white p-3',
+        'relative flex h-16 items-center gap-3 rounded-[20px] bg-white p-3',
         onOpenProfile ? 'cursor-pointer' : undefined,
       )}
     >
@@ -56,16 +57,18 @@ export default function DiningFriendProfileCard({
         aria-hidden={onOpenProfile ? true : undefined}
         className="pointer-events-none relative z-10 flex min-w-0 flex-1 items-center gap-3"
       >
-        <PalateBloomAvatar
-          ariaLabel={displayName}
-          imageSrc={avatarImageSrc}
-          profile={createPalateBloomProfileFromMeasurementSnapshot(
-            friend.latestTasteMeasurementSnapshot,
-            friend.id,
-          )}
-          shapeSeed={`${friend.id}|${friend.latestTasteMeasurementSnapshot?.measuredAt ?? 'no-measurement'}`}
-          size="md"
-        />
+        <span className="flex size-10 shrink-0 items-center justify-center overflow-visible">
+          <PalateBloomAvatar
+            ariaLabel={displayName}
+            imageSrc={avatarImageSrc}
+            profile={createPalateBloomProfileFromMeasurementSnapshot(
+              friend.latestTasteMeasurementSnapshot,
+              friend.id,
+            )}
+            shapeSeed={`${friend.id}|${friend.latestTasteMeasurementSnapshot?.measuredAt ?? 'no-measurement'}`}
+            size="md"
+          />
+        </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
             {displayName}
@@ -75,28 +78,14 @@ export default function DiningFriendProfileCard({
           </span>
         </span>
       </div>
-      <button
-        type="button"
-        onClick={handleActionClick}
+      <DiningFriendActionButton
+        ariaLabel={actionAriaLabel}
+        className="relative z-20"
         disabled={actionDisabled}
-        aria-label={actionAriaLabel}
-        className={cn(
-          'relative z-20 flex h-9 shrink-0 items-center justify-center rounded-full px-3 text-[11px] font-semibold disabled:opacity-55',
-          actionVariant === 'neutral'
-            ? 'border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]'
-            : 'transition-[filter,opacity] hover:brightness-[0.98]',
-        )}
-        style={
-          actionVariant === 'accent'
-            ? {
-              background: 'var(--tb-user-accent-tint-surface, var(--tb-taste-sweet-bg))',
-              color: 'var(--tb-user-accent-dark, var(--tb-taste-sweet-dark))',
-            }
-            : undefined
-        }
-      >
-        {actionLabel}
-      </button>
+        label={actionLabel}
+        onClick={handleActionClick}
+        variant={actionVariant}
+      />
     </div>
   );
 }

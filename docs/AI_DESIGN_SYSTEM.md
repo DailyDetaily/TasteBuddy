@@ -193,8 +193,8 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 
 소스: [`../src/components/TopAppBar.tsx`](../src/components/TopAppBar.tsx), [`../src/components/NotificationPanel.tsx`](../src/components/NotificationPanel.tsx)
 
-- base surface: white with transparency
-- blur is allowed
+- default surface: `bg-page` with soft transparency and blur
+- solid surface: match the owning content background (`bg-page` or `bg-focus`)
 - keep structure simple; do not turn overlays into dashboards
 
 ## Hard Rules

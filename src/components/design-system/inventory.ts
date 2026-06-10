@@ -1081,7 +1081,7 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     },
     {
       file: "src/components/system/profileAvatarSizeTokens.ts",
-      note: "프로필형 아바타가 공유하는 sm 32px, md 44px, lg 68px, xl 96px 사이즈 토큰입니다.",
+      note: "프로필형 아바타가 공유하는 sm 32px, md 42px, lg 68px, xl 96px 사이즈 토큰입니다.",
     },
     {
       file: "src/components/system/PalateSignatureAvatar.tsx",

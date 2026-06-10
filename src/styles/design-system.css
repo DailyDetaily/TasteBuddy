@@ -330,6 +330,26 @@
     transform: scale(0.99) translateY(-4px);
   }
 
+  .tb-skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+    background: var(--tb-color-surface-disabled);
+  }
+
+  .tb-skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.54) 50%,
+      transparent 100%
+    );
+    animation: tb-skeleton-shimmer 1800ms ease-in-out infinite;
+  }
+
   .tb-primary-button {
     display: inline-flex;
     width: 100%;
@@ -547,5 +567,17 @@
       var(--tb-taste-axis-tab-bg) 82%,
       var(--tb-taste-axis-tab-border)
     );
+  }
+}
+
+@keyframes tb-skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-skeleton-shimmer::after {
+    animation: none;
   }
 }

@@ -2,10 +2,11 @@
 
 Taste Buddy is a premium dining personalization app.
 
-This repo contains two big things in one place:
+This repo contains three big things in one place:
 
 1. the React app that powers the guest-facing experience
-2. the content and data pipeline used to prepare restaurant/menu data for Supabase
+2. the native SwiftUI app in [`ios/`](./ios/)
+3. the content and data pipeline used to prepare restaurant/menu data for Supabase
 
 If you are opening the project for the first time, start here instead of jumping straight into random folders.
 
@@ -70,11 +71,30 @@ npm run dev:design-system-updates
 npm run build
 ```
 
+Open the native project and start the web dev server together:
+
+```bash
+npm run dev:all
+```
+
+### Run the native iOS app
+
+The generated Xcode project is committed at [`ios/TasteBuddy.xcodeproj`](./ios/TasteBuddy.xcodeproj).
+
+```bash
+npm run ios:open
+```
+
+Select the `TasteBuddy` scheme and an iPhone simulator. The native app currently covers onboarding, Quick Taste Calibration, profile interpretation, exploration, dining feedback, and profile management. Reservation and Tastick connectivity are intentionally outside the first native scope.
+
+See [`ios/README.md`](./ios/README.md) for project generation and native architecture notes.
+
 ## Project Map
 
 | Path | What it is | When to go there |
 | --- | --- | --- |
 | [`src/`](./src/) | Main application source | Building product UI or behavior |
+| [`ios/`](./ios/) | Native SwiftUI application | Building or previewing the native guest experience |
 | [`src/pages/`](./src/pages/) | Route-level screens and preview routes | Editing a page or flow |
 | [`src/components/system/`](./src/components/system/) | App-specific reusable building blocks | Adding product-facing shared UI |
 | [`src/components/ui/`](./src/components/ui/) | Generic Radix/shadcn-style primitives | Working on low-level primitives |

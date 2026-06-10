@@ -21,6 +21,7 @@ export interface RestaurantHeroViewModel {
   category: string;
   chef: {
     avatarUrl?: string | null;
+    displayLabel?: string;
     name: string;
   };
   heroImageUrl?: string | null;
@@ -134,6 +135,11 @@ export default function RestaurantHeroCard({
   const tasteTags = restaurant.tags.filter((tag) => tag.tone === 'taste' && tag.tasteAxis);
   const contextTags = restaurant.tags.filter((tag) => tag.tone !== 'taste' || !tag.tasteAxis);
   const hasVerifiedMedia = restaurant.mediaStatus !== 'placeholder';
+  const chefLine =
+    restaurant.chef.displayLabel ??
+    (restaurant.chef.name === 'Taste Buddy 분석 준비 중' && quickInfo?.address
+      ? quickInfo.address
+      : `${restaurant.chef.name} 셰프`);
   const hoursDisplay = getHoursDisplay(quickInfo?.hours);
   const quickHoursValue = hoursDisplay?.today ?? quickInfo?.hours;
   const quickInfoItems = [
@@ -190,7 +196,7 @@ export default function RestaurantHeroCard({
                   {restaurant.name}
                 </SectionTitle>
                 <p className="min-w-0 truncate text-[13px] font-medium text-[var(--tb-color-text-subtle)]">
-                  {restaurant.chef.name} 셰프
+                  {chefLine}
                 </p>
               </div>
             </div>

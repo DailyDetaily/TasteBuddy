@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, Menu as MenuIcon, UserPlus, X } from 'lucide-react';
 
 import Home from './pages/HomePage';
@@ -6,12 +6,14 @@ import AnalysisPage from './pages/AnalysisPage';
 import DesignSystemPage from './pages/DesignSystemPage';
 import DesignSystemPreviewPage from './pages/DesignSystemPreviewPage';
 import FigmaWorksPreviewPage from './pages/FigmaWorksPreviewPage';
+import TbaAdminPage from './pages/TbaAdminPage';
 import RestaurantDetailPage, {
   createRestaurantDetailFromChefMatch,
   createRestaurantDetailFromFavoriteChef,
   createRestaurantDetailFromMenuRecommendation,
   createRestaurantDetailFromReservation,
   createRestaurantDetailFromSearchResult,
+  type RestaurantDetailInitialView,
   type RestaurantDetailViewModel,
   type RestaurantFeedbackSubmission,
 } from './pages/RestaurantDetailPage';
@@ -90,10 +92,19 @@ import {
   hydrateRestaurantContentCatalog,
   persistTasteMeasurementSnapshot,
   submitDiningFeedbackToSupabase,
+  type ReservationPersistenceInput,
   type RestaurantContentCatalog,
 } from './lib/tasteBuddySupabase';
 import HomeUnifiedSearch from './components/home/HomeUnifiedSearch';
-import type { RestaurantBookmarkRecord } from './components/restaurant/RestaurantBookmarkSheet';
+import {
+  getRestaurantBookmarkKey,
+  loadBookmarkLists,
+  loadRestaurantBookmarks,
+  replaceRestaurantBookmarkState,
+  setRestaurantBookmarkOwnerEmail,
+  type BookmarkList,
+  type RestaurantBookmarkRecord,
+} from './components/restaurant/RestaurantBookmarkSheet';
 import {
   RESERVATION_CATALOG,
   type ReservationRecord,
@@ -111,7 +122,7 @@ import {
   linkAnonymousSupabaseUserEmail,
   addSupabaseFriendByNickname,
   removeSupabaseFriendById,
-  searchSupabaseProfilesByNickname,
+  searchSupabaseProfilesByIdentity,
   sendSupabaseEmailOtp,
   sendSupabaseMagicLink,
   signOutSupabaseSession,
@@ -137,6 +148,11 @@ import {
   hasTasteSurveyRespondentContext,
   sanitizeTasteSurveyRespondentContext,
 } from './lib/tasteSurveyPersistence';
+import {
+  hydrateRestaurantBookmarkStateForEmail,
+  persistRestaurantBookmarkStateForEmail,
+  type RestaurantBookmarkState,
+} from './lib/restaurantBookmarksSupabase';
 import {
   deleteLocalProfileAvatar,
   loadLocalProfileAvatarObjectUrl,
@@ -175,6 +191,7 @@ interface MainNavigationLocation {
   profileConnectionView: ProfileConnectionKind | null;
   selectedConnectionProfile: DiningFriendProfile | null;
   selectedRestaurantDetail: RestaurantDetailViewModel | null;
+  selectedRestaurantDetailInitialView: RestaurantDetailInitialView;
 }
 const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const MAIN_APP_BOTTOM_OFFSET =
@@ -310,6 +327,52 @@ function loadPersistedDiningFeedbackSubmissions(): DiningPageExternalFeedbackSub
     console.warn('Failed to load dining feedback submissions.', error);
     return [];
   }
+}
+
+function getSafeDiningFeedbackSubmittedDate(submittedAt: string) {
+  const submittedDate = new Date(submittedAt);
+
+  return Number.isNaN(submittedDate.getTime()) ? new Date() : submittedDate;
+}
+
+function formatDiningFeedbackSubmittedDate(date: Date) {
+  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function formatDiningFeedbackSubmittedTime(date: Date) {
+  const submittedHours = date.getHours();
+  const submittedMinutes = date.getMinutes();
+
+  return `${submittedHours >= 12 ? '오후' : '오전'} ${submittedHours % 12 || 12}:${String(submittedMinutes).padStart(2, '0')}`;
+}
+
+function createRestaurantFeedbackReservationPersistenceInput(
+  submission: DiningPageExternalFeedbackSubmission,
+): ReservationPersistenceInput {
+  const submittedDate = getSafeDiningFeedbackSubmittedDate(submission.submittedAt);
+
+  return {
+    id: submission.submissionId,
+    restaurant: submission.restaurant.name,
+    chef: submission.restaurant.chef.name.replace(/\s*셰프$/, ''),
+    date: formatDiningFeedbackSubmittedDate(submittedDate),
+    time: formatDiningFeedbackSubmittedTime(submittedDate),
+    guests: 1,
+    course: submission.scenario.courseName || submission.restaurant.category,
+    externalRef: `restaurant-feedback-${submission.restaurant.id}-${submission.submissionId}`,
+    remoteId: null,
+    status: 'completed',
+  };
+}
+
+function createPersistableRestaurantFeedbackScenario(
+  submission: DiningPageExternalFeedbackSubmission,
+) {
+  return {
+    ...submission.scenario,
+    completedAt: submission.submittedAt,
+    reservationId: submission.submissionId,
+  };
 }
 
 interface PersistedUserState {
@@ -759,6 +822,62 @@ function loadPersistedUserState(): PersistedUserState {
   }
 }
 
+function mergeBookmarkLists(localLists: BookmarkList[], remoteLists: BookmarkList[]) {
+  const mergedById = new Map<string, BookmarkList>();
+
+  remoteLists.forEach((list) => {
+    mergedById.set(list.id, list);
+  });
+  localLists.forEach((list) => {
+    mergedById.set(list.id, list);
+  });
+
+  return [
+    ...localLists.map((list) => mergedById.get(list.id)).filter((list): list is BookmarkList => Boolean(list)),
+    ...remoteLists
+      .filter((list) => !localLists.some((localList) => localList.id === list.id))
+      .map((list) => mergedById.get(list.id))
+      .filter((list): list is BookmarkList => Boolean(list)),
+  ];
+}
+
+function getBookmarkSavedTime(bookmark: RestaurantBookmarkRecord) {
+  const savedTime = new Date(bookmark.savedAt).getTime();
+
+  return Number.isFinite(savedTime) ? savedTime : 0;
+}
+
+function mergeRestaurantBookmarks(
+  localBookmarks: RestaurantBookmarkRecord[],
+  remoteBookmarks: RestaurantBookmarkRecord[],
+) {
+  const mergedByKey = new Map<string, RestaurantBookmarkRecord>();
+
+  remoteBookmarks.forEach((bookmark) => {
+    mergedByKey.set(getRestaurantBookmarkKey(bookmark.restaurantName), bookmark);
+  });
+  localBookmarks.forEach((bookmark) => {
+    const bookmarkKey = getRestaurantBookmarkKey(bookmark.restaurantName);
+    const currentBookmark = mergedByKey.get(bookmarkKey);
+
+    if (!currentBookmark || getBookmarkSavedTime(bookmark) >= getBookmarkSavedTime(currentBookmark)) {
+      mergedByKey.set(bookmarkKey, bookmark);
+    }
+  });
+
+  return Array.from(mergedByKey.values()).sort(
+    (leftBookmark, rightBookmark) =>
+      getBookmarkSavedTime(rightBookmark) - getBookmarkSavedTime(leftBookmark),
+  );
+}
+
+function mergeRestaurantBookmarkState(remoteState: RestaurantBookmarkState) {
+  return {
+    lists: mergeBookmarkLists(loadBookmarkLists(), remoteState.lists),
+    bookmarks: mergeRestaurantBookmarks(loadRestaurantBookmarks(), remoteState.bookmarks),
+  };
+}
+
 function MainApp() {
   const [shouldStartFromOnboarding] = useState(consumeOnboardingResetParam);
   const [persistedUserState] = useState<PersistedUserState>(() =>
@@ -881,10 +1000,13 @@ function MainApp() {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isDeleteAccountConfirmOpen, setIsDeleteAccountConfirmOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isHomeRootView, setIsHomeRootView] = useState(true);
   const [isReservationRootView, setIsReservationRootView] = useState(true);
   const [isReservationFeedbackMapView, setIsReservationFeedbackMapView] = useState(false);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] =
     useState<RestaurantDetailViewModel | null>(null);
+  const [selectedRestaurantDetailInitialView, setSelectedRestaurantDetailInitialView] =
+    useState<RestaurantDetailInitialView>('detail');
   const mainNavigationStackRef = useRef<MainNavigationLocation[]>([]);
   const [isRestaurantDetailFeedbackMapView, setIsRestaurantDetailFeedbackMapView] = useState(false);
   const [globalSearchCloseTrigger, setGlobalSearchCloseTrigger] = useState(0);
@@ -899,6 +1021,7 @@ function MainApp() {
   const [externalDiningFeedbackSubmissions, setExternalDiningFeedbackSubmissions] = useState<
     DiningPageExternalFeedbackSubmission[]
   >(() => loadPersistedDiningFeedbackSubmissions());
+  const syncedExternalDiningFeedbackSubmissionIdsRef = useRef<Set<number>>(new Set());
   const shouldLayerAuthEntrySheet = isAuthEntrySheetOpen && authEntryStep === 'code';
   const isLayeredMeasurementSheetOpen =
     shouldLayerAuthEntrySheet ||
@@ -1080,7 +1203,11 @@ function MainApp() {
     : true;
   const shouldShowAuthEntry = isSupabaseConfigured && isAnonymousUser;
   const userInitials = getUserInitials(currentUserDisplayName ?? currentUserNickname, currentUserEmail);
-  const userLabel = currentUserProfileLabel || (currentUserEmail ? '프로필 연결됨' : 'Taste Buddy Guest');
+  const userLabel = currentUserProfileLabel || (currentUserEmail ? '프로필 연결됨' : '게스트');
+  const userDisplayLabel =
+    currentUserDisplayName ?? currentUserNickname ?? (isAnonymousUser ? '게스트' : null);
+  const userNicknameLabel =
+    currentUserNickname ?? currentUserDisplayName ?? (isAnonymousUser ? '게스트' : null);
   const userPalateBloomIdentitySeed = useMemo(
     () =>
       supabaseSession?.user.id ??
@@ -1089,6 +1216,108 @@ function MainApp() {
       'taste-buddy-guest',
     [currentUserEmail, currentUserProfileLabel, supabaseSession?.user.id],
   );
+
+  useEffect(() => {
+    if (
+      !isSupabaseConfigured ||
+      isAnonymousUser ||
+      !supabaseSession?.user.id ||
+      externalDiningFeedbackSubmissions.length === 0
+    ) {
+      return;
+    }
+
+    const submissionsToSync = externalDiningFeedbackSubmissions.filter(
+      (submission) => !syncedExternalDiningFeedbackSubmissionIdsRef.current.has(submission.submissionId),
+    );
+
+    if (submissionsToSync.length === 0) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    submissionsToSync.forEach((submission) => {
+      syncedExternalDiningFeedbackSubmissionIdsRef.current.add(submission.submissionId);
+    });
+
+    void (async () => {
+      const syncResults = await Promise.allSettled(
+        submissionsToSync.map((submission) =>
+          submitDiningFeedbackToSupabase({
+            draft: submission.draft,
+            reservation: createRestaurantFeedbackReservationPersistenceInput(submission),
+            scenario: createPersistableRestaurantFeedbackScenario(submission),
+          }),
+        ),
+      );
+
+      if (isCancelled) {
+        return;
+      }
+
+      syncResults.forEach((syncResult, index) => {
+        const submission = submissionsToSync[index];
+
+        if (syncResult.status === 'fulfilled') {
+          trackEvent('restaurant_feedback_background_sync_success', {
+            restaurant_name: submission.restaurant.name,
+            submission_id: submission.submissionId,
+          });
+          return;
+        }
+
+        syncedExternalDiningFeedbackSubmissionIdsRef.current.delete(submission.submissionId);
+        console.warn('Failed to sync persisted restaurant feedback submission.', syncResult.reason);
+        trackEvent('restaurant_feedback_background_sync_error', {
+          restaurant_name: submission.restaurant.name,
+          submission_id: submission.submissionId,
+        });
+      });
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [externalDiningFeedbackSubmissions, isAnonymousUser, supabaseSession?.user.id]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    setRestaurantBookmarkOwnerEmail(null);
+
+    if (!currentUserEmail) {
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    void (async () => {
+      const remoteState = await hydrateRestaurantBookmarkStateForEmail(currentUserEmail);
+
+      if (isCancelled) {
+        return;
+      }
+
+      if (!remoteState) {
+        setRestaurantBookmarkOwnerEmail(currentUserEmail);
+        return;
+      }
+
+      const mergedState = mergeRestaurantBookmarkState(remoteState);
+
+      replaceRestaurantBookmarkState(mergedState.lists, mergedState.bookmarks, {
+        syncRemote: false,
+      });
+      setRestaurantBookmarkOwnerEmail(currentUserEmail);
+      void persistRestaurantBookmarkStateForEmail(currentUserEmail, mergedState);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [currentUserEmail]);
+
   const hasCommittedPalateBloomMeasurement = Boolean(
     palateBloomAvatarSnapshot &&
       !isBroadStarterMeasurementSnapshot(palateBloomAvatarSnapshot),
@@ -1441,6 +1670,7 @@ function MainApp() {
     profileConnectionView,
     selectedConnectionProfile,
     selectedRestaurantDetail,
+    selectedRestaurantDetailInitialView,
   });
 
   const isSameMainNavigationLocation = (
@@ -1451,7 +1681,8 @@ function MainApp() {
     left.isSavedRestaurantListOpen === right.isSavedRestaurantListOpen &&
     left.profileConnectionView === right.profileConnectionView &&
     left.selectedConnectionProfile?.id === right.selectedConnectionProfile?.id &&
-    left.selectedRestaurantDetail?.id === right.selectedRestaurantDetail?.id;
+    left.selectedRestaurantDetail?.id === right.selectedRestaurantDetail?.id &&
+    left.selectedRestaurantDetailInitialView === right.selectedRestaurantDetailInitialView;
 
   const pushCurrentMainNavigationLocation = () => {
     const currentLocation = getCurrentMainNavigationLocation();
@@ -1477,6 +1708,7 @@ function MainApp() {
     setProfileConnectionView(location.profileConnectionView);
     setSelectedConnectionProfile(location.selectedConnectionProfile);
     setSelectedRestaurantDetail(location.selectedRestaurantDetail);
+    setSelectedRestaurantDetailInitialView(location.selectedRestaurantDetailInitialView);
     setActiveTab(location.activeTab);
   };
 
@@ -1494,6 +1726,7 @@ function MainApp() {
       profileConnectionView: null,
       selectedConnectionProfile: null,
       selectedRestaurantDetail: null,
+      selectedRestaurantDetailInitialView: 'detail',
     });
   };
 
@@ -1509,18 +1742,28 @@ function MainApp() {
     });
     pushCurrentMainNavigationLocation();
     setIsSavedRestaurantListOpen(false);
+    setIsHomeRootView(true);
     setSelectedRestaurantDetail(null);
+    setSelectedRestaurantDetailInitialView('detail');
     setActiveTab(tab);
   };
 
-  const openRestaurantDetail = (restaurant: RestaurantDetailViewModel) => {
+  const openRestaurantDetail = (
+    restaurant: RestaurantDetailViewModel,
+    options: { initialView?: RestaurantDetailInitialView } = {},
+  ) => {
+    const initialView = options.initialView ?? 'detail';
+
     trackEvent('restaurant_detail_open', {
       active_tab: activeTab,
+      initial_view: initialView,
       restaurant_id: restaurant.id,
       restaurant_name: restaurant.name,
       chef_name: restaurant.chefName,
     });
     pushCurrentMainNavigationLocation();
+    setIsHomeRootView(true);
+    setSelectedRestaurantDetailInitialView(initialView);
     setSelectedRestaurantDetail(restaurant);
   };
 
@@ -1556,6 +1799,7 @@ function MainApp() {
     }));
     setProfileConnectionView(null);
     setIsSavedRestaurantListOpen(false);
+    setIsHomeRootView(true);
     setIsReservationFeedbackMapView(false);
     setIsRestaurantDetailFeedbackMapView(false);
     setSelectedRestaurantDetail(null);
@@ -1725,7 +1969,7 @@ function MainApp() {
       has_query: Boolean(query.trim()),
     });
 
-    return searchSupabaseProfilesByNickname(query);
+    return searchSupabaseProfilesByIdentity(query);
   };
 
   const handleAddDiningFriend = async (friend: DiningFriendProfile) => {
@@ -1829,6 +2073,22 @@ function MainApp() {
     setActiveTab('profile');
   };
 
+  const handleOpenTasteBuddyProfile = (profile: DiningFriendProfile) => {
+    trackEvent('taste_match_profile_open', {
+      profile_id: profile.id,
+      profile_name: profile.displayName ?? profile.nickname,
+    });
+
+    pushCurrentMainNavigationLocation();
+    setIsSavedRestaurantListOpen(false);
+    setSelectedRestaurantDetail(null);
+    setIsReservationFeedbackMapView(false);
+    setIsRestaurantDetailFeedbackMapView(false);
+    setProfileConnectionView('followers');
+    setSelectedConnectionProfile(profile);
+    setActiveTab('profile');
+  };
+
   const handleSelectedConnectionProfileChange = (profile: DiningFriendProfile | null) => {
     if (profile) {
       trackEvent('profile_connection_profile_open', {
@@ -1875,7 +2135,48 @@ function MainApp() {
     setHasCompletedInitialMeasurement(true);
   };
 
-  useEffect(() => {
+  const enterGuestHome = () => {
+    if (!hasMeasurementData) {
+      applyStarterHomeState();
+    }
+
+    setSelectedRestaurantDetail(null);
+    setSelectedRestaurantDetailInitialView('detail');
+    setIsSavedRestaurantListOpen(false);
+    setProfileConnectionView(null);
+    setSelectedConnectionProfile(null);
+    setIsReservationFeedbackMapView(false);
+    setIsRestaurantDetailFeedbackMapView(false);
+    setIsTasteSurveyIntroSheetOpen(false);
+    setIsPreferenceIntakeSheetOpen(false);
+    setIsTasteSurveySheetOpen(false);
+    setIsAuthEntryCancelConfirmOpen(false);
+    setIsProfileSetupSheetOpen(false);
+    setProfileSetupStatus('idle');
+    setProfileSetupMessage(null);
+    setActiveTab('home');
+    setAppState('main');
+  };
+
+  const openTasteSurveyIntroOnHome = (returnTarget: 'auth' | 'profile') => {
+    if (!hasMeasurementData) {
+      applyStarterHomeState();
+    }
+
+    setSelectedRestaurantDetail(null);
+    setSelectedRestaurantDetailInitialView('detail');
+    setIsSavedRestaurantListOpen(false);
+    setProfileConnectionView(null);
+    setSelectedConnectionProfile(null);
+    setIsReservationFeedbackMapView(false);
+    setIsRestaurantDetailFeedbackMapView(false);
+    setActiveTab('home');
+    setAppState('main');
+    setTasteSurveyIntroReturnTarget(returnTarget);
+    setIsTasteSurveyIntroSheetOpen(true);
+  };
+
+  useLayoutEffect(() => {
     if (appState === 'main' && !hasMeasurementData) {
       applyStarterHomeState();
     }
@@ -1905,8 +2206,7 @@ function MainApp() {
     setAuthEntryPendingEmail(null);
     setAuthEntryIntent('start-with-email');
     setIsAuthEntrySheetOpen(false);
-    setTasteSurveyIntroReturnTarget('auth');
-    setIsTasteSurveyIntroSheetOpen(true);
+    enterGuestHome();
   };
 
   const continueAfterVerifiedEmailLogin = async (session: Session | null) => {
@@ -1957,8 +2257,7 @@ function MainApp() {
       return;
     }
 
-    setTasteSurveyIntroReturnTarget('auth');
-    setIsTasteSurveyIntroSheetOpen(true);
+    openTasteSurveyIntroOnHome('auth');
   };
 
   const handleSubmitAuthEntryEmail = async (email: string) => {
@@ -2094,6 +2393,17 @@ function MainApp() {
 
     trackEvent('auth_entry_dev_bypass', { intent: authEntryIntent, step: authEntryStep });
 
+    if (authEntryIntent === 'start-with-email') {
+      setIsAuthEntrySheetOpen(false);
+      setAuthEntryStep('email');
+      setAuthEntryPendingEmail(null);
+      setAuthEntryIntent('start-with-email');
+      setAuthEntryStatus('idle');
+      setAuthEntryMessage(null);
+      enterGuestHome();
+      return;
+    }
+
     if (authEntryStep === 'email') {
       setAuthEntryPendingEmail('dev@tastebuddy.local');
       setAuthEntryStep('code');
@@ -2167,8 +2477,7 @@ function MainApp() {
     setIsProfileSetupSheetOpen(false);
     setProfileSetupStatus('idle');
     setProfileSetupMessage(null);
-    setTasteSurveyIntroReturnTarget('profile');
-    setIsTasteSurveyIntroSheetOpen(true);
+    openTasteSurveyIntroOnHome('profile');
   };
 
   const handleStartTasteSurveyFromIntro = () => {
@@ -2569,10 +2878,6 @@ function MainApp() {
   }: RestaurantFeedbackSubmission) => {
     const submittedAt = new Date().toISOString();
     const submissionId = Date.now();
-    const submittedDate = new Date(submittedAt);
-    const submittedHours = submittedDate.getHours();
-    const submittedMinutes = submittedDate.getMinutes();
-    const submittedTimeLabel = `${submittedHours >= 12 ? '오후' : '오전'} ${submittedHours % 12 || 12}:${String(submittedMinutes).padStart(2, '0')}`;
     const submittedScenario = {
       ...scenario,
       completedAt: submittedAt,
@@ -2597,19 +2902,8 @@ function MainApp() {
     ].slice(0, 50));
     void submitDiningFeedbackToSupabase({
       draft,
-      reservation: {
-        id: submissionId,
-        restaurant: restaurant.name,
-        chef: restaurant.chef.name.replace(/\s*셰프$/, ''),
-        date: `${submittedDate.getFullYear()}.${String(submittedDate.getMonth() + 1).padStart(2, '0')}.${String(submittedDate.getDate()).padStart(2, '0')}`,
-        time: submittedTimeLabel,
-        guests: 1,
-        course: scenario.courseName || restaurant.category,
-        externalRef: `restaurant-feedback-${restaurant.id}-${submissionId}`,
-        remoteId: null,
-        status: 'completed',
-      },
-      scenario: submittedScenario,
+      reservation: createRestaurantFeedbackReservationPersistenceInput(submission),
+      scenario: createPersistableRestaurantFeedbackScenario(submission),
     }).catch((error) => {
       console.warn('Failed to persist restaurant feedback submission.', error);
       trackEvent('restaurant_feedback_persist_error', {
@@ -2651,7 +2945,12 @@ function MainApp() {
     isRestaurantDetailFeedbackMapView;
   const shouldShowMainShell =
     appState === 'main' &&
-    (selectedRestaurantDetail !== null || activeTab !== 'reservation' || isReservationRootView);
+    (selectedRestaurantDetail !== null ||
+      (activeTab === 'reservation'
+        ? isReservationRootView
+        : activeTab === 'home'
+          ? isHomeRootView
+          : true));
   const shouldShowMainTopShell = shouldShowMainShell && selectedRestaurantDetail === null;
   const shouldShowMainBottomShell =
     shouldShowMainShell &&
@@ -2901,6 +3200,7 @@ function MainApp() {
                 <div className="pointer-events-auto w-full max-w-[1440px]">
                   <TopAppBar
                     appearance={mainTopBarTitle ? 'solid' : 'default'}
+                    solidBackground="page"
                     showBack={Boolean(mainTopBarTitle)}
                     title={mainTopBarTitle ?? undefined}
                     onBack={() => {
@@ -2982,6 +3282,7 @@ function MainApp() {
         >
           {selectedRestaurantDetail ? (
             <RestaurantDetailPage
+              initialView={selectedRestaurantDetailInitialView}
               measurementSnapshot={latestTasteMeasurementSnapshot}
               restaurant={selectedRestaurantDetail}
               onBack={() => goBackToPreviousMainLocation()}
@@ -2993,6 +3294,7 @@ function MainApp() {
               <div className={activeTab === 'home' ? 'h-full w-full' : 'hidden'}>
                 <Home
                   key={`home-${tabResetKeys.home}`}
+                  disableHydration={activeTab !== 'home'}
                   hasMeasurementData={hasMeasurementData}
                   measurementSnapshot={latestTasteMeasurementSnapshot}
                   starterGuidance={latestRestaurantReadyGuidance}
@@ -3004,8 +3306,20 @@ function MainApp() {
                   onOpenRestaurantDetailFromSearch={(result) =>
                     openRestaurantDetail(createRestaurantDetailFromSearchResult(result))
                   }
+                  onStartDiningFeedbackFromSearch={(result) =>
+                    openRestaurantDetail(createRestaurantDetailFromSearchResult(result), {
+                      initialView: 'feedback',
+                    })
+                  }
+                  onOpenTasteBuddyProfile={handleOpenTasteBuddyProfile}
                   onAddFriend={handleAddDiningFriend}
+                  onRemoveFriend={handleRemoveDiningFriend}
                   onSearchFriends={handleSearchDiningFriends}
+                  onRootViewChange={setIsHomeRootView}
+                  userAvatarImageSrc={profileAvatarImageSrc}
+                  userNickname={userNicknameLabel}
+                  userPalateBloomProfile={userPalateBloomProfile}
+                  userPalateBloomShapeSeed={userPalateBloomShapeSeed}
                   {...overlayProps}
                 />
               </div>
@@ -3039,13 +3353,14 @@ function MainApp() {
                 {latestTasteMeasurementSnapshot ? (
                   <DiningPage
                     key={`reservation-${tabResetKeys.reservation}`}
+                    disableHydration={activeTab !== 'reservation'}
                     externalFeedbackSubmissions={externalDiningFeedbackSubmissions}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     userAvatarImageSrc={profileAvatarImageSrc}
                     userInitials={userInitials}
                     userPalateBloomProfile={userPalateBloomProfile}
                     userPalateBloomShapeSeed={userPalateBloomShapeSeed}
-                    userNickname={currentUserNickname ?? currentUserDisplayName}
+                    userNickname={userNicknameLabel}
                     onFeedbackMapViewChange={setIsReservationFeedbackMapView}
                     onRootViewChange={setIsReservationRootView}
                     onOpenRestaurantDetail={(reservation) =>
@@ -3077,7 +3392,7 @@ function MainApp() {
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     profileIdentity={{
                       avatarImageDataUrl: profileAvatarImageSrc,
-                      displayName: currentUserDisplayName ?? currentUserNickname,
+                      displayName: userDisplayLabel,
                       followerCount: profileFollowerCount,
                       followingCount: profileFollowingCount,
                       nickname: currentUserNickname ?? currentUserDisplayName,
@@ -3114,8 +3429,15 @@ function MainApp() {
             catalog={globalSearchCatalog}
             closeTrigger={globalSearchCloseTrigger}
             onAddFriend={handleAddDiningFriend}
+            onRemoveFriend={handleRemoveDiningFriend}
+            onOpenTasteBuddyProfile={handleOpenTasteBuddyProfile}
             onOpenRestaurantDetail={(result) =>
               openRestaurantDetail(createRestaurantDetailFromSearchResult(result))
+            }
+            onStartDiningFeedback={(result) =>
+              openRestaurantDetail(createRestaurantDetailFromSearchResult(result), {
+                initialView: 'feedback',
+              })
             }
             onSearchFriends={handleSearchDiningFriends}
             openTrigger={globalSearchTrigger}
@@ -3180,7 +3502,7 @@ function MainApp() {
         >
           <ProfileIdentitySheetContent
             birthDate={profileBirthDate}
-            displayName={currentUserDisplayName}
+            displayName={userDisplayLabel}
             email={currentUserEmail}
             isAnonymous={isAnonymousUser}
             nickname={currentUserNickname}
@@ -3190,11 +3512,8 @@ function MainApp() {
             userPalateBloomProfile={userPalateBloomProfile}
             userPalateBloomShapeSeed={userPalateBloomShapeSeed}
             userTasteAccentStyle={userTasteAccentStyle}
-            friendCount={profileFollowingCount}
-            onAddFriend={handleAddDiningFriend}
             onEditProfile={handleOpenProfileEditSheet}
             onLinkCurrentProfile={handleLinkCurrentProfileEmail}
-            onSearchFriends={handleSearchDiningFriends}
           />
         </BottomSheetShell>
 
@@ -3412,35 +3731,20 @@ function MainApp() {
           }
           floatingLayer={
             isAuthEntryCancelConfirmOpen ? (
-              <div
-                className="flex h-full w-full items-center justify-center bg-black/45 px-5"
-                onClick={() => setIsAuthEntryCancelConfirmOpen(false)}
-              >
-                <div
-                  className="w-full max-w-[320px] rounded-[20px] bg-[var(--tb-color-bg-focus)] p-4 shadow-[var(--tb-shadow-drawer)]"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <h3 className="mb-4 text-center text-[16px] font-bold text-[var(--tb-color-text-primary)]">
-                    취소하시겠습니까?
-                  </h3>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      type="button"
-                      onClick={handleConfirmCloseAuthEntry}
-                      className="h-11 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-border-subtle)]"
-                    >
-                      예, 종료하겠습니다
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsAuthEntryCancelConfirmOpen(false)}
-                      className="h-11 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-border-subtle)]"
-                    >
-                      아니요, 계속 진행하겠습니다.
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ActionOverlayCard
+                title="취소하시겠습니까?"
+                onBackdropClick={() => setIsAuthEntryCancelConfirmOpen(false)}
+                actions={[
+                  {
+                    label: '예, 종료하겠습니다',
+                    onClick: handleConfirmCloseAuthEntry,
+                  },
+                  {
+                    label: '아니요, 계속 진행하겠습니다.',
+                    onClick: () => setIsAuthEntryCancelConfirmOpen(false),
+                  },
+                ]}
+              />
             ) : null
           }
         >
@@ -3820,6 +4124,7 @@ type InternalRoute =
   | 'design-system'
   | 'design-system-updates'
   | 'figma-works'
+  | 'tba-admin'
   | 'tastick-connect';
 
 function getInternalRoute(): InternalRoute {
@@ -3841,6 +4146,10 @@ function getInternalRoute(): InternalRoute {
 
   if (previewMode === 'figma-works' || normalizedPath === '/figma-works') {
     return 'figma-works';
+  }
+
+  if (previewMode === 'tba-admin' || normalizedPath === '/tba-admin') {
+    return 'tba-admin';
   }
 
   if (previewMode === 'tastick-connect' || normalizedPath === '/tastick-connect') {
@@ -3881,6 +4190,10 @@ export default function App() {
 
   if (internalRoute === 'figma-works') {
     return <FigmaWorksPreviewPage />;
+  }
+
+  if (internalRoute === 'tba-admin') {
+    return <TbaAdminPage />;
   }
 
   if (internalRoute === 'tastick-connect') {

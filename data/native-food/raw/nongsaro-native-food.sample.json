@@ -1,0 +1,204 @@
+{
+  "version": "0.1",
+  "source": "nongsaro-native-food-api",
+  "serviceName": "nvpcFdCkry",
+  "operations": [
+    "fdNmLst",
+    "fdNmDtl"
+  ],
+  "fetchedAt": "2026-06-04T04:02:01.034Z",
+  "request": {
+    "query": "",
+    "all": false,
+    "limit": 3,
+    "page": 1,
+    "rows": 3,
+    "detail": true
+  },
+  "totalCount": 3248,
+  "count": 3,
+  "errors": [],
+  "items": [
+    {
+      "sourceId": "91511",
+      "listFields": {
+        "adstrdCodeNo": "4800000000",
+        "atptCodeNm": "경상남도",
+        "ckryCode": "115015",
+        "ckryCodeFullname": "가열하여 익히는 음식 > 굽는 음식 > 굽는 음식",
+        "clIpcCode": "248018, 248011",
+        "clIpcCodeNm": "A23L, A22C",
+        "cntntsNo": "91511",
+        "foodTyCode": "112171",
+        "foodTyCodeFullname": "부식류 > 구이류 > 구이류 > 육류",
+        "oldLtrtreEsntlCode": "",
+        "oldLtrtreNm": "",
+        "rtnFileCours": "",
+        "rtnImageDc": "",
+        "rtnImgSeCode": "",
+        "rtnStreFileNm": "",
+        "rtnThumbFileNm": "",
+        "trditfdNm": "가례불고기"
+      },
+      "detailFields": {
+        "asstnMatrlInfo": "<양념장> 간장 4큰술, 설탕 2큰술, 다진 마늘 1/2큰술, 다진 파 1큰술, 고춧가루 1큰술, 깨소금 1큰술, 참기름 1작은술, 후춧가루 약간",
+        "ckngDmprDtl": "",
+        "ckryCodeFullname": "가열하여 익히는 음식 > 굽는 음식 > 굽는 음식",
+        "fdmtInfo": "돼지고기(목살) 600g, 양파 160g(1개), 풋고추 45g(3개), 굵은 소금 약간",
+        "foodTyCodeFullname": "부식류 > 구이류 > 구이류 > 육류",
+        "infoOfferInfo": "",
+        "originDtl": "의령군농업기술센터, 의령의 맛, 2002",
+        "referMatterDtl": "돼지고기는 쉽게 상하므로 가례마을에서는 숯불에 살짝 익혀서 저장하였다가 먹을 때 양념하여 다시 구워 먹었던 것에서 유래되었다.",
+        "rtnFileCours": "",
+        "rtnImageDc": "",
+        "rtnImgSeCode": "",
+        "rtnStreFileNm": "",
+        "rtnThumbFileNm": "",
+        "stdCkryDtl": "1. 돼지고기는 5×5×0.3cm 크기로 썬 후 굵은 소금을 조금씩 뿌려 가며 숯불에서 살짝 익혀 기름을 뺀다. 2. 양파는 굵게 채 썰고(5×0.3×0.3cm), 풋고추는 0.3cm 두께로 어슷썰기 한다. 3. 준비된 돼지고기, 양파, 풋고추에 양념장을 넣어 재운다. 4. 3을 숯불에서 타지 않도록 한번 더 굽는다.",
+        "trditfdNm": "가례불고기"
+      },
+      "normalizedPreview": {
+        "sourceId": "91511",
+        "koDishName": "가례불고기",
+        "foodTypePath": [
+          "부식류",
+          "구이류",
+          "구이류",
+          "육류"
+        ],
+        "cookingMethodPath": [
+          "가열하여 익히는 음식",
+          "굽는 음식",
+          "굽는 음식"
+        ],
+        "mainIngredientsText": "돼지고기(목살) 600g, 양파 160g(1개), 풋고추 45g(3개), 굵은 소금 약간",
+        "subIngredientsText": "<양념장> 간장 4큰술, 설탕 2큰술, 다진 마늘 1/2큰술, 다진 파 1큰술, 고춧가루 1큰술, 깨소금 1큰술, 참기름 1작은술, 후춧가루 약간",
+        "recipeText": "1. 돼지고기는 5×5×0.3cm 크기로 썬 후 굵은 소금을 조금씩 뿌려 가며 숯불에서 살짝 익혀 기름을 뺀다. 2. 양파는 굵게 채 썰고(5×0.3×0.3cm), 풋고추는 0.3cm 두께로 어슷썰기 한다. 3. 준비된 돼지고기, 양파, 풋고추에 양념장을 넣어 재운다. 4. 3을 숯불에서 타지 않도록 한번 더 굽는다.",
+        "originText": "의령군농업기술센터, 의령의 맛, 2002",
+        "imageUrls": []
+      }
+    },
+    {
+      "sourceId": "91391",
+      "listFields": {
+        "adstrdCodeNo": "4800000000",
+        "atptCodeNm": "경상남도",
+        "ckryCode": "115019",
+        "ckryCodeFullname": "가열하지 않는 음식 > 소금이나 장류에 절이는 음식 > 소금이나 장류에 절이는 음식",
+        "clIpcCode": "248019",
+        "clIpcCodeNm": "A23P",
+        "cntntsNo": "91391",
+        "foodTyCode": "112046",
+        "foodTyCodeFullname": "부식류 > 국 및 탕류 > 맑은국",
+        "oldLtrtreEsntlCode": "",
+        "oldLtrtreNm": "",
+        "rtnFileCours": "cms_contents/789",
+        "rtnImageDc": "가루장국(가리장국)",
+        "rtnImgSeCode": "209006",
+        "rtnStreFileNm": "91391_MF_BIMG_01.jpg",
+        "rtnThumbFileNm": "91391_MF_BIMG_01_TMB.jpg",
+        "trditfdNm": "가루장국(가리장국)"
+      },
+      "detailFields": {
+        "asstnMatrlInfo": "",
+        "ckngDmprDtl": "",
+        "ckryCodeFullname": "가열하지 않는 음식 > 소금이나 장류에 절이는 음식 > 소금이나 장류에 절이는 음식",
+        "fdmtInfo": "해물(새우, 다슬기) 200g, 밀가루 110g(1컵), 방아잎 50g, 풋고추 30g(2개), 물 800mL(4컵), 들깻가루 1큰술, 국간장 1큰술, 다진 마늘 1큰술",
+        "foodTyCodeFullname": "부식류 > 국 및 탕류 > 맑은국",
+        "infoOfferInfo": "",
+        "originDtl": "남해군농업기술센터, 보물섬 남해 향토 먹거리 맛과 멋, 2005",
+        "referMatterDtl": "·남해의 토속음식으로 모내기 전후 우렁이가 잡힐 때나 보통 제사 때 각종 나물에 이용하기도 한다. 우렁이 대신에 다슬기나 참게 등을 이용하기도 한다. ·밀가루 대신 찹쌀가루, 맵쌀가루를 이용하기도 하고, 고추장으로 간을 하기도 한다.",
+        "rtnFileCours": "cms_contents/789",
+        "rtnImageDc": "가루장국(가리장국)",
+        "rtnImgSeCode": "209006",
+        "rtnStreFileNm": "91391_MF_BIMG_01.jpg",
+        "rtnThumbFileNm": "91391_MF_BIMG_01_TMB.jpg",
+        "stdCkryDtl": "1. 새우와 다슬기는 삶아 껍질을 벗겨 살만 발라 내고, 육수도 따로 둔다. 2. 방아잎은 씻어 뜯어 놓고, 풋고추는 송송 썬다(0.3cm). 3. 육수에 밀가루를 풀고 손질한 새우와 다슬기를 넣어 저어 가면서 끓인 다음 걸쭉해지면 방아잎을 넣는다. 4. 국간장으로 간을 맞추고 들깻가루와 다진 마늘을 넣는다.",
+        "trditfdNm": "가루장국(가리장국)"
+      },
+      "normalizedPreview": {
+        "sourceId": "91391",
+        "koDishName": "가루장국(가리장국)",
+        "foodTypePath": [
+          "부식류",
+          "국 및 탕류",
+          "맑은국"
+        ],
+        "cookingMethodPath": [
+          "가열하지 않는 음식",
+          "소금이나 장류에 절이는 음식",
+          "소금이나 장류에 절이는 음식"
+        ],
+        "mainIngredientsText": "해물(새우, 다슬기) 200g, 밀가루 110g(1컵), 방아잎 50g, 풋고추 30g(2개), 물 800mL(4컵), 들깻가루 1큰술, 국간장 1큰술, 다진 마늘 1큰술",
+        "subIngredientsText": "",
+        "recipeText": "1. 새우와 다슬기는 삶아 껍질을 벗겨 살만 발라 내고, 육수도 따로 둔다. 2. 방아잎은 씻어 뜯어 놓고, 풋고추는 송송 썬다(0.3cm). 3. 육수에 밀가루를 풀고 손질한 새우와 다슬기를 넣어 저어 가면서 끓인 다음 걸쭉해지면 방아잎을 넣는다. 4. 국간장으로 간을 맞추고 들깻가루와 다진 마늘을 넣는다.",
+        "originText": "남해군농업기술센터, 보물섬 남해 향토 먹거리 맛과 멋, 2005",
+        "imageUrls": [
+          {
+            "typeCode": "209006",
+            "url": "http://www.nongsaro.go.kr/cms_contents/789/91391_MF_BIMG_01.jpg"
+          }
+        ]
+      }
+    },
+    {
+      "sourceId": "90400",
+      "listFields": {
+        "adstrdCodeNo": "4100000000",
+        "atptCodeNm": "경기도",
+        "ckryCode": "115011",
+        "ckryCodeFullname": "가열하여 익히는 음식 > 물을 이용한 음식 > 끓이는 음식",
+        "clIpcCode": "248019",
+        "clIpcCodeNm": "A23P",
+        "cntntsNo": "90400",
+        "foodTyCode": "112148",
+        "foodTyCodeFullname": "부식류 > 국 및 탕류 > 곰국 및 탕 > 육류",
+        "oldLtrtreEsntlCode": "OB00000009, OB00000010",
+        "oldLtrtreNm": "조선요리제법, 조선무쌍신식요리제법",
+        "rtnFileCours": "",
+        "rtnImageDc": "",
+        "rtnImgSeCode": "",
+        "rtnStreFileNm": "",
+        "rtnThumbFileNm": "",
+        "trditfdNm": "가리탕(갈비탕)"
+      },
+      "detailFields": {
+        "asstnMatrlInfo": "<양념> 국간장 3큰술, 다진 파 2작은술, 다진 마늘 2작은술, 참기름 1작은술, 후춧가루 1/4작은술, 깨소금 1작은술",
+        "ckngDmprDtl": "",
+        "ckryCodeFullname": "가열하여 익히는 음식 > 물을 이용한 음식 > 끓이는 음식",
+        "fdmtInfo": "갈비 2kg, 무 300g(1/3개), 물 5L(25컵), 대파 20g(½뿌리), 달걀 50g(1개)",
+        "foodTyCodeFullname": "부식류 > 국 및 탕류 > 곰국 및 탕 > 육류",
+        "infoOfferInfo": "",
+        "originDtl": "문화공보부 문화재관리국, 한국민속종합조사보고서(향토음식편), 1984",
+        "referMatterDtl": "",
+        "rtnFileCours": "",
+        "rtnImageDc": "",
+        "rtnImgSeCode": "",
+        "rtnStreFileNm": "",
+        "rtnThumbFileNm": "",
+        "stdCkryDtl": "1. 갈비를 5-6cm길이로 잘라 손질하여 핏물을 빼고, 무는 통으로 3cm두께로 잘라서 물을 부어 5-6시간 푹 곤다. 2. 무는 처음부터 넣어서 중간에 건져 낸다. 3. 갈비의 살이 무르게 익으면 건져 내어 국간장, 다진 파, 다진 마늘, 참기름, 후춧가루, 깨소금을 잘 섞어서 양념하고 국물은 식혀서 굳은 기름은 제거한다. 4. 무는 건져 2.5×3×0.5cm의 직사각형 모양으로 썰고, 대파는 굵게 썰어 갈비와 함께 섞은 후 국물에 다시 넣어서 끓인다. 5. 달걀은 황백으로 나누어 각각 지단을 부쳐 채를 썬다 (5×0.2×0.2cm). 6. 간을 맞춰서 그릇에 담고 황백지단을 올린다.",
+        "trditfdNm": "가리탕(갈비탕)"
+      },
+      "normalizedPreview": {
+        "sourceId": "90400",
+        "koDishName": "가리탕(갈비탕)",
+        "foodTypePath": [
+          "부식류",
+          "국 및 탕류",
+          "곰국 및 탕",
+          "육류"
+        ],
+        "cookingMethodPath": [
+          "가열하여 익히는 음식",
+          "물을 이용한 음식",
+          "끓이는 음식"
+        ],
+        "mainIngredientsText": "갈비 2kg, 무 300g(1/3개), 물 5L(25컵), 대파 20g(½뿌리), 달걀 50g(1개)",
+        "subIngredientsText": "<양념> 국간장 3큰술, 다진 파 2작은술, 다진 마늘 2작은술, 참기름 1작은술, 후춧가루 1/4작은술, 깨소금 1작은술",
+        "recipeText": "1. 갈비를 5-6cm길이로 잘라 손질하여 핏물을 빼고, 무는 통으로 3cm두께로 잘라서 물을 부어 5-6시간 푹 곤다. 2. 무는 처음부터 넣어서 중간에 건져 낸다. 3. 갈비의 살이 무르게 익으면 건져 내어 국간장, 다진 파, 다진 마늘, 참기름, 후춧가루, 깨소금을 잘 섞어서 양념하고 국물은 식혀서 굳은 기름은 제거한다. 4. 무는 건져 2.5×3×0.5cm의 직사각형 모양으로 썰고, 대파는 굵게 썰어 갈비와 함께 섞은 후 국물에 다시 넣어서 끓인다. 5. 달걀은 황백으로 나누어 각각 지단을 부쳐 채를 썬다 (5×0.2×0.2cm). 6. 간을 맞춰서 그릇에 담고 황백지단을 올린다.",
+        "originText": "문화공보부 문화재관리국, 한국민속종합조사보고서(향토음식편), 1984",
+        "imageUrls": []
+      }
+    }
+  ]
+}

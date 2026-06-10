@@ -65,6 +65,11 @@ R2 운영 기준은 [cloudflare-r2-media-storage.md](/Users/sinjunho/Desktop/Tas
 - [20260326_taste_buddy_mvp.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260326_taste_buddy_mvp.sql#L1)
 - [20260430_place_index.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260430_place_index.sql#L1)
 - [20260513_media_assets_r2.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260513_media_assets_r2.sql#L1)
+- [20260527_taste_agent_social_seed.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260527_taste_agent_social_seed.sql#L1)
+- [20260527_taste_agent_social_dev_enrichment.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260527_taste_agent_social_dev_enrichment.sql#L1)
+- [20260528_feedback_item_dish_card_details.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260528_feedback_item_dish_card_details.sql#L1)
+- [20260528_profile_identity_search.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260528_profile_identity_search.sql#L1)
+- [20260528_restaurant_bookmarks_by_email.sql](/Users/sinjunho/Desktop/Taste%20Buddy%20app/supabase/migrations/20260528_restaurant_bookmarks_by_email.sql#L1)
 
 이 파일이 만들어주는 것:
 - `restaurants`
@@ -76,6 +81,10 @@ R2 운영 기준은 [cloudflare-r2-media-storage.md](/Users/sinjunho/Desktop/Tas
 - 앱에서 쓰는 예약/측정/피드백 관련 테이블들
 - `restaurant_place_index`, `restaurant_operating_hours`
 - R2 object metadata용 `media_assets`
+- feedback item의 dish kind/detail tag/회고 사진 metadata columns
+- TasteBuddyAgent social graph용 `taste_social_profiles`, `taste_dining_reviews`
+- profile identity search RPC `search_profiles_by_identity`
+- 이메일 기반 saved restaurant sync용 `restaurant_bookmark_lists`, `restaurant_bookmarks`
 
 ## 4. Anonymous auth 사용 여부
 

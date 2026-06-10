@@ -440,7 +440,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
       { file: "src/components/TopAppBar.tsx", note: "전체 레이아웃과 아이콘 버튼, 아바타가 모두 여기 있습니다." },
     ],
     values: [
-      { label: "shell background", value: "var(--tb-color-bg-page) / 85%", note: "`bg-[var(--tb-color-bg-page)]/85`" },
+      { label: "shell background", value: "default: var(--tb-color-bg-page) / 85%; solid: content background", note: "`bg-[var(--tb-color-bg-page)]/85`, solid `bg-page` or `bg-focus`" },
       { label: "backdrop blur", value: "12px", note: "`backdrop-blur-md`" },
       { label: "shell border", value: "1px solid transparent", note: "스크롤 콘텐츠 위에 얇은 분리선 역할" },
       { label: "horizontal padding", value: "20px", note: "`px-[20px]`" },

@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta content="no-cache" http-equiv="pragma">
+<title>향토음식 Open API Ajax 샘플 페이지</title>
+
+<!-- 공통 CSS, JS 선언 -->
+<link href="http://api.nongsaro.go.kr/css/api.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="http://api.nongsaro.go.kr/js/framework.js"></script>
+<script type="text/javascript" src="http://api.nongsaro.go.kr/js/openapi_nongsaro.js"></script>
+
+<script type="text/javascript">
+
+	// 향토음식 관련 팝업 페이지
+	// 파라메터 값 호출
+	function nongsaroOpenApiPopRequest(valuename)    //javascript로 구현한 Request
+	{
+	    var rtnval = "";
+	    var nowAddress = unescape(location.href);
+	    var parameters = (nowAddress.slice(nowAddress.indexOf("?")+1,nowAddress.length)).split("&");
+
+	    for(var i = 0 ; i < parameters.length ; i++){
+	    	console.log(parameters[i]);
+	        var varName = parameters[i].split("=")[0];
+	        if(varName.toUpperCase() == valuename.toUpperCase())
+	        {
+	            rtnval = parameters[i].split("=")[1];
+	            break;
+	        }
+	    }
+	    return rtnval;
+	}
+	nongsaroOpenApiRequest.apiKey = "발급받은인증키를삽입하세요"; //Api Key  - 발급받은 인증키로변경
+	nongsaroOpenApiRequest.serviceName = "nvpcFdCkry";//서비스명
+	nongsaroOpenApiRequest.operationName = nongsaroOpenApiPopRequest("operationName");//오퍼레이션명 - nongsaroApiLoadingArea 영역에 로딩할 오퍼레이션
+	nongsaroOpenApiRequest.code = nongsaroOpenApiPopRequest("dNo");
+	nongsaroOpenApiRequest.nm = nongsaroOpenApiPopRequest("nm");
+
+
+	nongsaroOpenApiRequest.htmlArea="nongsaroApiLoadingArea";//첫번째로 HTML을 로딩할영역
+	nongsaroOpenApiRequest.callback = "http://api.nongsaro.go.kr/sample/ajax/ajax_local_callback.jsp";//크로스 도메인 처리를 위한 콜백페이지 - 샘플소스에 있는 콜백페이지를 서버에 올리고 올린 경로로 수정
+</script>
+</head>
+
+<body>
+<div id="nongsaroApiLoadingArea"></div><!-- 팝업 내용 HTML 로딩 영역 -->
+</body>
+</html>

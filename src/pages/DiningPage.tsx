@@ -1,41 +1,30 @@
 import {
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type FormEvent,
-  type KeyboardEvent,
-  type MouseEvent,
   type CSSProperties,
 } from 'react';
-import {
-  ChevronRight as ChevronRightIcon,
-  Heart as HeartIcon,
-  MessageCircle as MessageCircleIcon,
-  Send as SendIcon,
-} from 'lucide-react';
 
 import TopAppBar from '../components/TopAppBar';
-import SectionCard from '../components/SectionCard';
+import DishFeedbackCard, {
+  DishFeedbackCardSkeleton,
+  type DishFeedbackCardViewModel,
+} from '../components/dining/DishFeedbackCard';
 import {
   DiningFeedbackScreen,
-  diningDetailTagCategories,
   findTasteExperience,
-  getDiningDetailTagMetadata,
-  type DiningDetailTagMetadata,
   type TasteAxisId,
   type TasteExperienceWord,
 } from '../components/reservation/DiningFeedbackFlow';
-import ImageBox from '../components/system/ImageBox';
 import PageSection from '../components/system/PageSection';
 import HospitalityEmptyState from '../components/system/HospitalityEmptyState';
-import TasteChip from '../components/system/TasteChip';
-import EmptyState from '../components/system/EmptyState';
 import PalateBloomAvatar, {
   DEFAULT_PALATE_BLOOM_PROFILE,
   type TasteProfile as PalateBloomTasteProfile,
 } from '../components/system/PalateBloomAvatar';
 import {
+  createDiningDishFeedbackDraft,
   createDiningFeedbackDraft,
   getDiningFeedbackScenario,
   hasDiningDishFeedbackResponse,
@@ -44,6 +33,15 @@ import {
   type DiningFeedbackDraft,
   type DiningFeedbackScenario,
 } from '../constants/diningFeedbackData';
+import {
+  diningDetailTagCategories,
+  getDiningDetailTagMetadata,
+  type DiningDetailTagMetadata,
+} from '../constants/diningDetailTags';
+import {
+  inferDishKindIds,
+  resolveDishKindLabels,
+} from '../constants/dishKindTags';
 import {
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
@@ -57,11 +55,18 @@ import {
 import { ICON_TOKENS } from '../constants/designTokens';
 import { TASTE_TYPES } from '../constants/tasteColors';
 import {
+  clearDiningFeedbackItemInSupabase,
   hydrateReservationPageData,
   submitDiningFeedbackToSupabase,
 } from '../lib/tasteBuddySupabase';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { trackEvent, trackPageView } from '../lib/analytics';
+import { resolvePublicMediaPath } from '../lib/mediaAssets';
+import { TBA, type TasteBuddyAgentDiningNote } from '../lib/tasteBuddyAgent';
+import type {
+  TasteBuddyAgentDiningAnalysisSnapshot,
+  TasteProfileSnapshot,
+} from '../types/tasteBuddyAgent';
 
 type ReservationView = 'detail' | 'feedback';
 
@@ -92,6 +97,8 @@ interface DishFeedbackItem {
   categoryTags: DishFeedbackCategoryTag[];
   courseLabel: string;
   dish: DiningDishMetadata;
+  dishKindLabels: string[];
+  dishKindTags: string[];
   diningDateLabel: string;
   feedbackRelativeLabel: string;
   feedbackTimestamp: number;
@@ -101,11 +108,20 @@ interface DishFeedbackItem {
   reflectionPhotoName: string | null;
   reflectionPhotoPreviewUrl: string | null;
   scenario: DiningFeedbackScenario;
+  synthesisDetailTags: TasteBuddyAgentDiningNote['detailTags'];
   synthesisSummary: string;
+  synthesisTasteBubbles: TasteBuddyAgentDiningNote['tasteBubbles'];
   tasteTags: DishTasteTag[];
+  tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot;
 }
 
 type DishFeedbackCommentsByKey = Record<string, string[]>;
+
+const DISH_FEEDBACK_SKELETON_CARD_SLOT_HEIGHT = 500;
+const DISH_FEEDBACK_SKELETON_VIEWPORT_OFFSET = 120;
+const DISH_FEEDBACK_SKELETON_MIN_COUNT = 2;
+const DISH_FEEDBACK_SKELETON_MAX_COUNT = 6;
+const DINING_RESERVATION_HYDRATION_SKELETON_MS = 120;
 
 type DishFeedbackEngagementNotificationEvent = {
   comment?: string;
@@ -262,6 +278,23 @@ function buildDishFeedbackCategoryTags(response: DiningDishFeedbackDraft | undef
     .filter((tag): tag is DiningDetailTagMetadata => Boolean(tag));
 }
 
+function getReadableDiningDetailTag(tag: TasteBuddyAgentDiningNote['detailTags'][number]) {
+  const metadata = getDiningDetailTagMetadata(tag.id) ?? getDiningDetailTagMetadata(tag.label);
+
+  return {
+    ...tag,
+    label: metadata?.label ?? tag.label,
+    title: tag.title ?? metadata?.categoryLabel,
+  };
+}
+
+function getReadableDiningNote(note: TasteBuddyAgentDiningNote): TasteBuddyAgentDiningNote {
+  return {
+    ...note,
+    detailTags: note.detailTags.map(getReadableDiningDetailTag),
+  };
+}
+
 function formatFeedbackDate(completedAt: string) {
   const date = new Date(completedAt);
 
@@ -317,34 +350,51 @@ function formatFeedbackRelativeTime(completedAt: string) {
   return `${Math.floor(elapsedDays / 365)}년 전`;
 }
 
-function buildDishFeedbackSynthesis({
+function getFeedbackDisplayTimestamp(value: string | null | undefined) {
+  const timestamp = new Date(value ?? '').getTime();
+
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function buildDishFeedbackDiningAnalysisSnapshot({
+  detailTags,
   dish,
+  dishKindTags,
+  reviewerProfile,
   selectedFeedbackReason,
   tasteTags,
 }: {
+  detailTags: string[];
   dish: DiningDishMetadata;
+  dishKindTags: string[];
+  reviewerProfile: TasteProfileSnapshot;
   selectedFeedbackReason: string | null;
   tasteTags: DishTasteTag[];
-}) {
-  const tasteTagSummary =
-    tasteTags.length > 0
-      ? `${tasteTags.slice(0, 2).map((tag) => tag.label).join(', ')} 반응과 함께`
-      : '남긴 인상과 함께';
-  const interpretation =
-    selectedFeedbackReason ??
-    `${dish.title}에서 남긴 인상이 다음 다이닝 기준에 반영됩니다.`;
-
-  return `${tasteTagSummary} 보면, ${interpretation} 이 흐름은 다음 다이닝에서 중심 풍미와 끝맛을 조율하는 참고 기준이 됩니다.`;
+}): TasteBuddyAgentDiningAnalysisSnapshot {
+  return TBA.buildDiningAnalysisSnapshot({
+    detailTags,
+    dishKindTags,
+    id: `local-note-${dish.id}`,
+    ingredients: dish.ingredients,
+    restaurantName: '',
+    reviewSnippet: selectedFeedbackReason ?? undefined,
+    reviewerProfile,
+    subject: dish.title,
+    tasteTags: tasteTags.map((tag) => tag.colorTaste ?? tag.label),
+    techniques: dish.techniques,
+  });
 }
 
 function buildDishFeedbackItems({
   feedbackByReservationId,
   feedbackScenariosByReservationId,
   reservations,
+  reviewerProfile,
 }: {
   feedbackByReservationId: Record<number, DiningFeedbackDraft>;
   feedbackScenariosByReservationId: Record<number, DiningFeedbackScenario>;
   reservations: Reservation[];
+  reviewerProfile: TasteProfileSnapshot;
 }) {
   return reservations.flatMap<DishFeedbackItem>((reservation) => {
     const scenario = feedbackScenariosByReservationId[reservation.id] ?? FALLBACK_FEEDBACK_SCENARIOS[reservation.id];
@@ -359,16 +409,18 @@ function buildDishFeedbackItems({
       return [];
     }
 
-    const feedbackTimestamp = new Date(scenario.completedAt).getTime();
-    const safeFeedbackTimestamp = Number.isNaN(feedbackTimestamp) ? 0 : feedbackTimestamp;
+    const scenarioDishes = [...scenario.dishes, ...(draft.customDishes ?? [])];
 
-    return scenario.dishes
+    return scenarioDishes
       .map<DishFeedbackItem | null>((dish) => {
         const response = draft.dishResponses[dish.id];
 
         if (!hasDiningDishFeedbackResponse(response)) {
           return null;
         }
+
+        const feedbackDisplayAt = response.feedbackUpdatedAt ?? scenario.completedAt;
+        const safeFeedbackTimestamp = getFeedbackDisplayTimestamp(feedbackDisplayAt);
 
         const selectedExperienceIds = [
           ...(response?.selectedExperienceIds ?? []),
@@ -389,463 +441,236 @@ function buildDishFeedbackItems({
         });
         const categoryTags = buildDishFeedbackCategoryTags(response);
         const reactionBubbles = buildDishReactionBubbles(selectedExperiences);
+        const selectedDishKindIds = response?.selectedDishKindIds?.length
+          ? response.selectedDishKindIds
+          : inferDishKindIds(dish);
+        const dishKindLabels = resolveDishKindLabels(
+          selectedDishKindIds,
+          response?.customDishKindLabels ?? [],
+        );
 
         const selectedFeedbackReason =
           selectedChoice?.reason ??
           selectedExperience?.description ??
           null;
+        const tbaAnalysisSnapshot =
+          response?.tbaAnalysisSnapshot ??
+          buildDishFeedbackDiningAnalysisSnapshot({
+            detailTags: categoryTags.map((tag) => tag.label),
+            dish,
+            dishKindTags: selectedDishKindIds,
+            reviewerProfile,
+            selectedFeedbackReason,
+            tasteTags,
+          });
+        const diningNote = getReadableDiningNote({
+          detailTags: tbaAnalysisSnapshot.detailTags,
+          summary: tbaAnalysisSnapshot.summary,
+          tasteBubbles: tbaAnalysisSnapshot.tasteBubbles,
+        } satisfies TasteBuddyAgentDiningNote);
 
         return {
           categoryTags,
           courseLabel: dish.courseLabel,
           dish,
-          diningDateLabel: formatFeedbackDate(scenario.completedAt),
-          feedbackRelativeLabel: formatFeedbackRelativeTime(scenario.completedAt),
+          dishKindLabels,
+          dishKindTags: selectedDishKindIds,
+          diningDateLabel: formatFeedbackDate(feedbackDisplayAt),
+          feedbackRelativeLabel: formatFeedbackRelativeTime(feedbackDisplayAt),
           feedbackTimestamp: safeFeedbackTimestamp,
           reactionBubbles,
           reservation,
           reflectionNote: response?.reflectionNote?.trim() || null,
           reflectionPhotoName: response?.reflectionPhotoName ?? null,
-          reflectionPhotoPreviewUrl: response?.reflectionPhotoPreviewUrl ?? null,
+          reflectionPhotoPreviewUrl: resolvePublicMediaPath(response?.reflectionPhotoPreviewUrl) ?? null,
           scenario,
-          synthesisSummary: buildDishFeedbackSynthesis({
-            dish,
-            selectedFeedbackReason,
-            tasteTags,
-          }),
+          synthesisDetailTags: diningNote.detailTags,
+          synthesisSummary: diningNote.summary,
+          synthesisTasteBubbles: diningNote.tasteBubbles,
           tasteTags,
+          tbaAnalysisSnapshot,
         };
       })
       .filter((item): item is DishFeedbackItem => Boolean(item));
   }).sort((left, right) => right.feedbackTimestamp - left.feedbackTimestamp);
 }
 
-function FeedbackAuthorLine({
-  nickname,
-  onOpenAuthorProfile,
-  onOpenRestaurantDetail,
-  restaurant,
-}: {
-  nickname: string;
-  onOpenAuthorProfile?: () => void;
-  onOpenRestaurantDetail?: () => void;
-  restaurant: string;
-}) {
-  const lineRef = useRef<HTMLParagraphElement | null>(null);
-  const measureRef = useRef<HTMLSpanElement | null>(null);
-  const restRef = useRef<HTMLSpanElement | null>(null);
-  const [visibleNickname, setVisibleNickname] = useState(nickname);
+function clearDishFeedbackItemFromDraft(
+  draft: DiningFeedbackDraft,
+  item: DishFeedbackItem,
+): DiningFeedbackDraft {
+  const customDishes = draft.customDishes ?? [];
+  const isCustomDish = customDishes.some((dish) => dish.id === item.dish.id);
 
-  useLayoutEffect(() => {
-    const lineElement = lineRef.current;
-    const measureElement = measureRef.current;
-    const restElement = restRef.current;
+  if (isCustomDish) {
+    const { [item.dish.id]: _removedResponse, ...nextDishResponses } = draft.dishResponses;
 
-    if (!lineElement || !measureElement || !restElement) {
-      return;
-    }
-
-    const getTextWidth = (text: string) => {
-      measureElement.textContent = text;
-      return measureElement.scrollWidth;
+    return {
+      ...draft,
+      customDishes: customDishes.filter((dish) => dish.id !== item.dish.id),
+      dishResponses: nextDishResponses,
     };
-    const nicknameCharacters = Array.from(nickname);
+  }
 
-    const updateVisibleNickname = () => {
-      const availableWidth = lineElement.clientWidth - restElement.scrollWidth;
+  return {
+    ...draft,
+    dishResponses: {
+      ...draft.dishResponses,
+      [item.dish.id]: createDiningDishFeedbackDraft(item.dish),
+    },
+  };
+}
 
-      if (nicknameCharacters.length <= 2 || getTextWidth(nickname) <= availableWidth) {
-        setVisibleNickname(nickname);
-        return;
-      }
-
-      let low = 2;
-      let high = nicknameCharacters.length - 1;
-      let bestFit = nicknameCharacters.slice(0, 2).join('');
-
-      while (low <= high) {
-        const middle = Math.floor((low + high) / 2);
-        const candidate = `${nicknameCharacters.slice(0, middle).join('')}..`;
-
-        if (getTextWidth(candidate) <= availableWidth) {
-          bestFit = nicknameCharacters.slice(0, middle).join('');
-          low = middle + 1;
-        } else {
-          high = middle - 1;
-        }
-      }
-
-      setVisibleNickname(`${bestFit}..`);
-    };
-
-    updateVisibleNickname();
-
-    const resizeObserver = new ResizeObserver(updateVisibleNickname);
-    resizeObserver.observe(lineElement);
-    resizeObserver.observe(restElement);
-    window.addEventListener('resize', updateVisibleNickname);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', updateVisibleNickname);
-    };
-  }, [nickname, restaurant]);
-
-  return (
-    <p
-      ref={lineRef}
-      className="relative flex min-w-0 max-w-full items-baseline overflow-hidden whitespace-nowrap text-[14px] font-normal leading-snug text-[var(--tb-color-text-primary)]"
-    >
-      <span
-        className="pointer-events-none invisible absolute left-0 top-0 whitespace-nowrap font-semibold"
-        ref={measureRef}
-      />
-      {onOpenAuthorProfile ? (
-        <button
-          type="button"
-          className="shrink-0 whitespace-nowrap font-semibold underline-offset-2 transition-colors hover:text-[var(--tb-color-text-primary)] hover:underline focus-visible:rounded-[var(--tb-radius-6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-strong)]"
-          onClick={(event) => {
-            event.stopPropagation();
-            onOpenAuthorProfile();
-          }}
-        >
-          {visibleNickname}
-        </button>
-      ) : (
-        <span className="shrink-0 whitespace-nowrap font-semibold">
-          {visibleNickname}
-        </span>
-      )}
-      <span
-        ref={restRef}
-        className="shrink-0 whitespace-nowrap"
-      >
-        님이&nbsp;
-        {onOpenRestaurantDetail ? (
-          <button
-            type="button"
-            className="font-semibold underline-offset-2 transition-colors hover:text-[var(--tb-color-text-primary)] hover:underline focus-visible:rounded-[var(--tb-radius-6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-strong)]"
-            onClick={(event) => {
-              event.stopPropagation();
-              onOpenRestaurantDetail();
-            }}
-          >
-            {restaurant}
-          </button>
-        ) : (
-          <span className="font-semibold">{restaurant}</span>
-        )}
-        의 후기를 남기셨습니다.
-      </span>
-    </p>
+function stampDiningFeedbackDraftUpdatedAt(
+  draft: DiningFeedbackDraft,
+  updatedAt = new Date().toISOString(),
+): DiningFeedbackDraft {
+  const nextDishResponses = Object.entries(draft.dishResponses).reduce<DiningFeedbackDraft['dishResponses']>(
+    (responses, [dishId, response]) => {
+      responses[dishId] = hasDiningDishFeedbackResponse(response)
+        ? {
+            ...response,
+            feedbackUpdatedAt: updatedAt,
+          }
+        : response;
+      return responses;
+    },
+    {},
   );
+
+  return {
+    ...draft,
+    dishResponses: nextDishResponses,
+  };
 }
 
 function getDishFeedbackGalleryDishes(item: DishFeedbackItem) {
   return [
     item.dish,
-    ...item.scenario.dishes.filter((dish) => dish.id !== item.dish.id),
+    ...[...item.scenario.dishes, ...(item.scenario.dishes.some((dish) => dish.id === item.dish.id) ? [] : [item.dish])]
+      .filter((dish) => dish.id !== item.dish.id),
   ];
 }
 
-function DishFeedbackImageRail({
-  item,
-  unframed = false,
-}: {
-  item: DishFeedbackItem;
-  unframed?: boolean;
-}) {
-  const galleryDishes = getDishFeedbackGalleryDishes(item);
-  const railBleedOffset = unframed ? '-20px' : 'calc(var(--tb-space-12) * -1)';
-  const railRef = useRef<HTMLDivElement | null>(null);
-  const railInset = unframed ? '20px' : 'var(--tb-space-12)';
-  const railWidth = unframed ? '100dvw' : 'calc(100% + (var(--tb-space-12) * 2))';
-  const tileMaxSize = '220px';
-  const visibleTileCount = 2.25;
-  const tileSize = unframed
-    ? `min(calc((100dvw - 40px - 16px) / ${visibleTileCount}), ${tileMaxSize})`
-    : `min(calc((100% - 16px) / ${visibleTileCount}), ${tileMaxSize})`;
+function getDishFeedbackSkeletonCardCount(viewportHeight: number) {
+  const availableHeight = Math.max(
+    DISH_FEEDBACK_SKELETON_CARD_SLOT_HEIGHT,
+    viewportHeight - DISH_FEEDBACK_SKELETON_VIEWPORT_OFFSET,
+  );
+
+  return Math.min(
+    DISH_FEEDBACK_SKELETON_MAX_COUNT,
+    Math.max(
+      DISH_FEEDBACK_SKELETON_MIN_COUNT,
+      Math.ceil(availableHeight / DISH_FEEDBACK_SKELETON_CARD_SLOT_HEIGHT),
+    ),
+  );
+}
+
+function useDishFeedbackSkeletonCardCount() {
+  const [skeletonCardCount, setSkeletonCardCount] = useState(() =>
+    getDishFeedbackSkeletonCardCount(
+      typeof window === 'undefined' ? 0 : window.innerHeight,
+    ),
+  );
 
   useEffect(() => {
-    const railElement = railRef.current;
+    const updateSkeletonCardCount = () => {
+      setSkeletonCardCount(getDishFeedbackSkeletonCardCount(window.innerHeight));
+    };
 
-    if (railElement) {
-      railElement.scrollLeft = 0;
-    }
-  }, [item.dish.id, unframed]);
+    updateSkeletonCardCount();
+    window.addEventListener('resize', updateSkeletonCardCount);
+    window.visualViewport?.addEventListener('resize', updateSkeletonCardCount);
+
+    return () => {
+      window.removeEventListener('resize', updateSkeletonCardCount);
+      window.visualViewport?.removeEventListener('resize', updateSkeletonCardCount);
+    };
+  }, []);
+
+  return skeletonCardCount;
+}
+
+function DishFeedbackListSkeleton() {
+  const skeletonCardCount = useDishFeedbackSkeletonCardCount();
 
   return (
-    <div
-      className="overflow-x-auto pb-1 no-scrollbar"
-      ref={railRef}
-      style={{
-        marginInlineStart: railBleedOffset,
-        width: railWidth,
-      }}
-    >
-      <div
-        className="flex w-full gap-2"
-        style={{ paddingInline: railInset }}
-      >
-        {galleryDishes.map((dish, index) => (
-          <ImageBox
-            alt={index === 0 ? `${item.dish.title} 메뉴 사진` : `${dish.title} 메뉴 사진`}
-            className="aspect-square rounded-[var(--tb-radius-12)]"
-            fallbackIconSize={ICON_TOKENS.size.xl}
-            key={`${item.dish.id}-${dish.id}-${index}`}
-            kind="menu"
-            style={{
-              flex: `0 0 ${tileSize}`,
-              width: tileSize,
-            }}
-          />
-        ))}
-      </div>
-    </div>
+    <>
+      {Array.from({ length: skeletonCardCount }, (_, index) => (
+        <DishFeedbackCardSkeleton key={`dish-feedback-skeleton-${index}`} />
+      ))}
+    </>
   );
 }
 
-function DishReactionBubbleChip({ bubble }: { bubble: DishReactionBubble }) {
-  const axisLabel = TASTE_AXIS_LABEL_BY_ID[bubble.axis];
-
-  return (
-    <TasteChip
-      className="max-w-full px-3 py-1.5 text-[10px] font-semibold leading-none"
-      colorTaste={axisLabel}
-      taste={bubble.label}
-      title={axisLabel}
-    />
-  );
-}
-
-function DishFeedbackCard({
+function createDishFeedbackCardViewModel({
   avatarImageSrc,
   avatarProfile,
   avatarShapeSeed,
-  commentCount = 0,
-  defaultSynthesisExpanded = false,
-  interactive = true,
   item,
   nickname,
-  onLike,
-  onOpenAuthorProfile,
-  onOpenComments,
-  onOpenRestaurantDetail,
-  onSelect,
-  unframed = false,
 }: {
   avatarImageSrc?: string | null;
   avatarProfile?: PalateBloomTasteProfile;
   avatarShapeSeed?: string;
-  commentCount?: number;
-  defaultSynthesisExpanded?: boolean;
-  interactive?: boolean;
   item: DishFeedbackItem;
   nickname: string;
-  onLike?: () => void;
-  onOpenAuthorProfile?: () => void;
-  onOpenComments: () => void;
-  onOpenRestaurantDetail?: () => void;
-  onSelect?: () => void;
-  unframed?: boolean;
-}) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [isSynthesisExpanded, setIsSynthesisExpanded] = useState(defaultSynthesisExpanded);
-  const isCardInteractive = interactive && Boolean(onSelect);
-  const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (!isCardInteractive || event.defaultPrevented || event.target !== event.currentTarget) {
-      return;
-    }
+}): DishFeedbackCardViewModel {
+  const fallbackTasteTags = item.tasteTags.map((tag, index) => ({
+    colorTaste: tag.colorTaste,
+    id: `${item.dish.id}-taste-${tag.label}-${index}`,
+    label: tag.label,
+    title: tag.colorTaste,
+  }));
+  const reactionTasteBubbles = item.reactionBubbles.map((bubble) => {
+    const axisLabel = TASTE_AXIS_LABEL_BY_ID[bubble.axis];
 
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onSelect?.();
-    }
+    return {
+      colorTaste: axisLabel,
+      id: `${item.dish.id}-${bubble.id}`,
+      label: bubble.label,
+      title: axisLabel,
+    };
+  });
+  const tbaTasteBubbles = item.synthesisTasteBubbles.map((bubble, index) => ({
+    colorTaste: bubble.colorTaste,
+    id: bubble.id || `${item.dish.id}-tba-taste-${index}`,
+    label: bubble.label,
+    title: bubble.title ?? bubble.colorTaste,
+  }));
+  const tbaDetailTags = item.synthesisDetailTags.map((tag, index) => ({
+    id: tag.id || `${item.dish.id}-tba-detail-${index}`,
+    label: tag.label,
+    title: tag.title,
+  }));
+  const fallbackDetailTags = item.categoryTags.map((tag) => ({
+    id: tag.id,
+    label: tag.label,
+    title: tag.categoryLabel,
+  }));
+
+  return {
+    absoluteDateLabel: item.diningDateLabel,
+    author: {
+      avatarImageSrc,
+      avatarProfile,
+      displayName: nickname,
+      shapeSeed: avatarShapeSeed,
+    },
+    detailTags: tbaDetailTags.length > 0 ? tbaDetailTags : fallbackDetailTags,
+    id: getDishFeedbackItemKey(item),
+    images: getDishFeedbackGalleryDishes(item).map((dish, index) => ({
+      alt: index === 0 ? `${item.dish.title} 메뉴 사진` : `${dish.title} 메뉴 사진`,
+      imageSrc: index === 0 ? item.reflectionPhotoPreviewUrl : null,
+    })),
+    restaurantName: item.reservation.restaurant,
+    relativeDateLabel: item.feedbackRelativeLabel,
+    subject: item.dish.title,
+    synthesisSummary: item.synthesisSummary,
+    tbaAnalysisSnapshot: item.tbaAnalysisSnapshot,
+    tasteBubbles: tbaTasteBubbles.length > 0 ? tbaTasteBubbles : reactionTasteBubbles.length > 0 ? reactionTasteBubbles : fallbackTasteTags,
   };
-  const handleLikeClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    const nextIsLiked = !isLiked;
-    setIsLiked(nextIsLiked);
-
-    if (nextIsLiked) {
-      onLike?.();
-    }
-  };
-  const handleCommentClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    onOpenComments();
-  };
-  const handleSynthesisToggle = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setIsSynthesisExpanded((current) => !current);
-  };
-
-  const cardContent = (
-    <>
-        <div className="flex w-full items-center gap-2">
-          <PalateBloomAvatar
-            ariaLabel={`${nickname} 프로필 아바타`}
-            imageSrc={avatarImageSrc}
-            profile={avatarProfile ?? DEFAULT_PALATE_BLOOM_PROFILE}
-            shapeSeed={avatarShapeSeed}
-            size="sm"
-          />
-          <div className="min-w-0 flex-1">
-            <FeedbackAuthorLine
-              nickname={nickname}
-              onOpenAuthorProfile={onOpenAuthorProfile}
-              onOpenRestaurantDetail={onOpenRestaurantDetail}
-              restaurant={item.reservation.restaurant}
-            />
-            <p className="max-w-full truncate text-[12px] text-[var(--tb-color-text-muted)]">
-              {getRestaurantLocationLabel(item.reservation.restaurant)}
-              <span aria-hidden="true"> · </span>
-              {item.feedbackRelativeLabel}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex w-full flex-col gap-3">
-          <DishFeedbackImageRail item={item} unframed={unframed} />
-          <div className="min-w-0">
-            <h2 className="text-[14px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
-              {item.dish.title}
-            </h2>
-            <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
-              {item.courseLabel} · 테이스팅 코스
-            </p>
-          </div>
-        </div>
-
-        {item.reactionBubbles.length > 0 ? (
-          <div className="flex w-full flex-wrap items-start gap-[6px]">
-            {item.reactionBubbles.map((bubble) => (
-              <DishReactionBubbleChip
-                bubble={bubble}
-                key={`${item.dish.id}-${bubble.id}`}
-              />
-            ))}
-          </div>
-        ) : null}
-
-        {item.categoryTags.length > 0 ? (
-          <div className="flex w-full flex-wrap items-start gap-[6px]">
-            {item.categoryTags.map((tag) => (
-              <TasteChip
-                key={`${item.dish.id}-${tag.id}`}
-                taste={tag.label}
-                tone="neutral"
-                title={tag.categoryLabel}
-              />
-            ))}
-          </div>
-        ) : item.tasteTags.length > 0 ? (
-          <div className="flex w-full flex-wrap items-start gap-[6px]">
-            {item.tasteTags.map((tag) => (
-              <TasteChip
-                colorTaste={tag.colorTaste}
-                key={`${item.dish.id}-${tag.label}`}
-                taste={tag.label}
-                tone={tag.colorTaste ? 'taste' : 'neutral'}
-              />
-            ))}
-          </div>
-        ) : null}
-
-        <div className="w-full">
-          <button
-            type="button"
-            aria-expanded={isSynthesisExpanded}
-            className="flex w-full items-center justify-between rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-3 text-left transition-colors hover:bg-[var(--tb-color-surface-card-hover)]"
-            onClick={handleSynthesisToggle}
-          >
-            <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
-              피드백 종합 해석
-            </span>
-            <ChevronRightIcon
-              aria-hidden="true"
-              className={`shrink-0 text-[var(--tb-color-icon-muted)] transition-transform ${isSynthesisExpanded ? 'rotate-90' : ''}`}
-              size={ICON_TOKENS.size.md}
-              strokeWidth={1.8}
-            />
-          </button>
-          {isSynthesisExpanded ? (
-            <p className="mt-2 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-3 text-[12px] font-normal leading-relaxed text-[var(--tb-color-text-subtle)]">
-              {item.synthesisSummary}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="flex w-full items-center gap-2 border-t border-[rgba(15,15,15,0.08)] pt-[12px]">
-          <button
-            type="button"
-            aria-label={isLiked ? '좋아요 취소' : '좋아요'}
-            aria-pressed={isLiked}
-            className={`flex size-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-muted)] ${
-              isLiked
-                ? 'text-[var(--tb-user-accent-main)]'
-                : 'text-[var(--tb-color-text-muted)]'
-            }`}
-            onClick={handleLikeClick}
-          >
-            <HeartIcon
-              fill={isLiked ? 'currentColor' : 'none'}
-              size={ICON_TOKENS.size.md}
-              strokeWidth={1.8}
-            />
-          </button>
-          <button
-            type="button"
-            aria-label="댓글"
-            className={`flex size-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-muted)] ${
-              commentCount > 0
-                ? 'text-[var(--tb-color-text-primary)]'
-                : 'text-[var(--tb-color-text-muted)]'
-            }`}
-            onClick={handleCommentClick}
-          >
-            <MessageCircleIcon size={ICON_TOKENS.size.md} strokeWidth={1.8} />
-          </button>
-          <button
-            type="button"
-            aria-label="공유"
-            className="flex size-8 items-center justify-center rounded-full text-[var(--tb-color-text-muted)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <SendIcon size={ICON_TOKENS.size.md} strokeWidth={1.8} />
-          </button>
-          <span className="ml-auto shrink-0 whitespace-nowrap text-right text-[11px] font-normal text-[var(--tb-color-text-muted)]">
-            {item.diningDateLabel}
-          </span>
-        </div>
-    </>
-  );
-
-  const content = unframed ? (
-    <div className="flex w-full flex-col items-start gap-[12px]">
-      {cardContent}
-    </div>
-  ) : (
-    <SectionCard hoverEffect={isCardInteractive} className="gap-[12px]">
-      {cardContent}
-      </SectionCard>
-  );
-
-  if (!isCardInteractive) {
-    return <div className="block w-full text-left">{content}</div>;
-  }
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      className="block w-full text-left"
-      onClick={onSelect}
-      onKeyDown={handleCardKeyDown}
-    >
-      {content}
-    </div>
-  );
 }
 
 function DishFeedbackDetailScreen({
@@ -884,6 +709,7 @@ function DishFeedbackDetailScreen({
     <div className="flex h-full w-full flex-col bg-[var(--tb-color-bg-focus)] animate-slideIn">
       <TopAppBar
         appearance="solid"
+        solidBackground="focus"
         title={item.dish.title}
         showBack
         onBack={onBack}
@@ -1053,17 +879,19 @@ function DishFeedbackCommentFocusScreen({
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="flex flex-col gap-5 px-5 pb-6">
           <DishFeedbackCard
-            avatarImageSrc={avatarImageSrc}
-            avatarProfile={avatarProfile}
-            avatarShapeSeed={avatarShapeSeed}
+            card={createDishFeedbackCardViewModel({
+              avatarImageSrc,
+              avatarProfile,
+              avatarShapeSeed,
+              item,
+              nickname,
+            })}
             commentCount={comments.length}
             interactive={false}
-            item={item}
-            nickname={nickname}
             onLike={onLike}
             onOpenAuthorProfile={onOpenAuthorProfile}
             onOpenComments={() => commentInputRef.current?.focus()}
-            onOpenRestaurantDetail={onOpenRestaurantDetail}
+            onOpenSubject={onOpenRestaurantDetail}
             unframed
           />
 
@@ -1175,7 +1003,6 @@ export default function DiningPage({
   onOpenAuthorProfile,
   onOpenRestaurantDetail,
   onStartMeasurement,
-  onOpenSearch,
   onOpenNotifications,
   onOpenMenu,
   hasUnreadNotifications,
@@ -1198,11 +1025,18 @@ export default function DiningPage({
   const [submittedFeedbackReservationIds, setSubmittedFeedbackReservationIds] = useState<Set<number>>(
     () => new Set(),
   );
+  const [savingFeedbackReservationId, setSavingFeedbackReservationId] = useState<number | null>(null);
+  const [feedbackPersistenceError, setFeedbackPersistenceError] = useState<{
+    message: string;
+    reservationId: number;
+  } | null>(null);
   const [selectedDishFeedbackKey, setSelectedDishFeedbackKey] = useState<string | null>(null);
   const [focusedDishFeedbackKey, setFocusedDishFeedbackKey] = useState<string | null>(null);
   const [commentsByDishFeedbackKey, setCommentsByDishFeedbackKey] =
     useState<DishFeedbackCommentsByKey>({});
   const consumedExternalFeedbackSubmissionIdsRef = useRef<Set<number>>(new Set());
+  const feedbackSubmitInFlightRef = useRef(false);
+  const hasCompletedInitialReservationHydrationRef = useRef(false);
 
   useEffect(() => {
     const newSubmissions = externalFeedbackSubmissions.filter(
@@ -1280,9 +1114,17 @@ export default function DiningPage({
       submittedFeedbackReservationIds.has(Number(reservationId)),
     ),
   ) as Record<number, DiningFeedbackDraft>;
+  const localTasteProfile = TBA.buildTasteIdentity({
+    feedbackCount: Object.keys(submittedFeedbackByReservationId).length,
+    measurementSnapshot,
+    reviewCount: Object.values(submittedFeedbackByReservationId)
+      .flatMap((feedbackDraft) => Object.values(feedbackDraft.dishResponses))
+      .filter(hasDiningDishFeedbackResponse).length,
+  });
   const dishFeedbackItems = buildDishFeedbackItems({
     feedbackByReservationId: submittedFeedbackByReservationId,
     feedbackScenariosByReservationId,
+    reviewerProfile: localTasteProfile,
     reservations: visibleReservations,
   });
   const selectedDishFeedbackItem =
@@ -1386,6 +1228,94 @@ export default function DiningPage({
     notifyDishFeedbackEngagement('comment', item, comment);
   };
 
+  const openDishFeedbackEditor = (item: DishFeedbackItem) => {
+    trackEvent('dish_feedback_edit_open', {
+      dish_id: item.dish.id,
+      reservation_id: item.scenario.reservationId,
+      restaurant_name: item.reservation.restaurant,
+    });
+
+    setSelectedDishFeedbackKey(null);
+    setFocusedDishFeedbackKey(null);
+    navigateToReservationLocation({
+      selectedId: item.reservation.id,
+      selectedView: 'feedback',
+    });
+  };
+
+  const shareDishFeedbackItem = async (item: DishFeedbackItem) => {
+    const shareText = `${item.reservation.restaurant} ${item.dish.title}의 미각 기록`;
+
+    trackEvent('dish_feedback_share_click', {
+      dish_id: item.dish.id,
+      reservation_id: item.scenario.reservationId,
+      restaurant_name: item.reservation.restaurant,
+    });
+
+    if (navigator.share) {
+      await navigator.share({ text: shareText }).catch(() => undefined);
+      return;
+    }
+
+    await navigator.clipboard?.writeText(shareText).catch(() => undefined);
+  };
+
+  const deleteDishFeedbackItem = async (item: DishFeedbackItem) => {
+    const draftBeforeDelete =
+      feedbackByReservationId[item.reservation.id] ?? createDiningFeedbackDraft(item.scenario);
+
+    trackEvent('dish_feedback_delete_click', {
+      dish_id: item.dish.id,
+      reservation_id: item.scenario.reservationId,
+      restaurant_name: item.reservation.restaurant,
+    });
+
+    setFeedbackPersistenceError(null);
+
+    try {
+      const persistenceResult = await clearDiningFeedbackItemInSupabase({
+        dish: item.dish,
+        draft: draftBeforeDelete,
+        reservation: {
+          id: item.reservation.id,
+          restaurant: item.reservation.restaurant,
+          chef: item.reservation.chef,
+          date: item.reservation.date,
+          time: item.reservation.time,
+          guests: item.reservation.guests,
+          course: item.reservation.course,
+          externalRef: item.reservation.externalRef,
+          remoteId: item.reservation.remoteId,
+          status: item.reservation.status,
+        },
+        scenario: item.scenario,
+      });
+
+      if (!persistenceResult.persisted) {
+        throw new Error('Dining feedback item was not cleared in Supabase.');
+      }
+
+      setFeedbackByReservationId((current) => {
+        const currentDraft = current[item.reservation.id] ?? draftBeforeDelete;
+
+        return {
+          ...current,
+          [item.reservation.id]: clearDishFeedbackItemFromDraft(currentDraft, item),
+        };
+      });
+    } catch (error) {
+      trackEvent('dish_feedback_delete_error', {
+        dish_id: item.dish.id,
+        reservation_id: item.scenario.reservationId,
+      });
+      console.warn('Failed to clear dining feedback item from Supabase.', error);
+      setFeedbackPersistenceError({
+        reservationId: item.reservation.id,
+        message: '디시 기록을 삭제하지 못했어요. 연결과 로그인 상태를 확인한 뒤 다시 시도해주세요.',
+      });
+    }
+  };
+
   useEffect(() => {
     if (selectedReservation) {
       trackPageView(
@@ -1462,52 +1392,92 @@ export default function DiningPage({
 
   useEffect(() => {
     if (disableHydration) {
+      setIsHydratingReservations(false);
       return;
     }
 
     let isCancelled = false;
+    const shouldShowBriefSkeleton =
+      isSupabaseConfigured &&
+      !initialReservations &&
+      !hasCompletedInitialReservationHydrationRef.current;
+    const fallbackReservationsTimer = shouldShowBriefSkeleton
+      ? window.setTimeout(() => {
+          if (isCancelled) {
+            return;
+          }
+
+          hasCompletedInitialReservationHydrationRef.current = true;
+          setReservations((current) => (current.length > 0 ? current : RESERVATION_CATALOG));
+          setIsHydratingReservations(false);
+        }, DINING_RESERVATION_HYDRATION_SKELETON_MS)
+      : null;
+
+    if (shouldShowBriefSkeleton) {
+      setIsHydratingReservations(true);
+    }
 
     void (async () => {
-      const hydratedData = await hydrateReservationPageData();
+      let didHydrateReservations = false;
 
-      if (isCancelled) {
-        return;
-      }
+      try {
+        const hydratedData = await hydrateReservationPageData();
 
-      setReservations((current) => {
-        const hydratedReservationIds = new Set(
-          hydratedData.reservations.map((reservation) => reservation.id),
-        );
-        const localReservations = current.filter(
-          (reservation) => !hydratedReservationIds.has(reservation.id),
-        );
+        if (isCancelled) {
+          return;
+        }
 
-        return [...localReservations, ...hydratedData.reservations];
-      });
-      setFeedbackByReservationId((current) => ({
-        ...hydratedData.feedbackByReservationId,
-        ...current,
-      }));
-      setSubmittedFeedbackReservationIds((current) => {
-        const nextReservationIds = new Set(current);
+        if (fallbackReservationsTimer) {
+          window.clearTimeout(fallbackReservationsTimer);
+        }
 
-        Object.keys(hydratedData.feedbackByReservationId).forEach((reservationId) => {
-          nextReservationIds.add(Number(reservationId));
+        setReservations((current) => {
+          const hydratedReservationIds = new Set(
+            hydratedData.reservations.map((reservation) => reservation.id),
+          );
+          const localReservations = current.filter(
+            (reservation) => !hydratedReservationIds.has(reservation.id),
+          );
+
+          return [...localReservations, ...hydratedData.reservations];
         });
+        setFeedbackByReservationId((current) => ({
+          ...hydratedData.feedbackByReservationId,
+          ...current,
+        }));
+        setSubmittedFeedbackReservationIds((current) => {
+          const nextReservationIds = new Set(current);
 
-        return nextReservationIds;
-      });
-      setFeedbackScenariosByReservationId((current) => ({
-        ...hydratedData.feedbackScenariosByReservationId,
-        ...current,
-      }));
-      setIsHydratingReservations(false);
+          Object.keys(hydratedData.feedbackByReservationId).forEach((reservationId) => {
+            nextReservationIds.add(Number(reservationId));
+          });
+
+          return nextReservationIds;
+        });
+        setFeedbackScenariosByReservationId((current) => ({
+          ...hydratedData.feedbackScenariosByReservationId,
+          ...current,
+        }));
+        hasCompletedInitialReservationHydrationRef.current = true;
+        didHydrateReservations = true;
+      } catch {
+        if (!isCancelled && !shouldShowBriefSkeleton) {
+          setReservations((current) => (current.length > 0 ? current : RESERVATION_CATALOG));
+        }
+      } finally {
+        if (!isCancelled && (didHydrateReservations || !shouldShowBriefSkeleton)) {
+          setIsHydratingReservations(false);
+        }
+      }
     })();
 
     return () => {
       isCancelled = true;
+      if (fallbackReservationsTimer) {
+        window.clearTimeout(fallbackReservationsTimer);
+      }
     };
-  }, [disableHydration]);
+  }, [disableHydration, initialReservations]);
 
   if (selectedReservation && selectedView === 'feedback' && selectedScenario) {
     return (
@@ -1538,8 +1508,24 @@ export default function DiningPage({
           }
         }
         onMapViewChange={onFeedbackMapViewChange}
-        onSubmit={async () => {
-          const nextDraft = activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario);
+        isSubmitting={savingFeedbackReservationId === selectedReservation.id}
+        submitErrorMessage={
+          feedbackPersistenceError?.reservationId === selectedReservation.id
+            ? feedbackPersistenceError.message
+            : null
+        }
+        onSubmit={async (submittedDraft) => {
+          if (feedbackSubmitInFlightRef.current) {
+            return;
+          }
+
+          feedbackSubmitInFlightRef.current = true;
+          setSavingFeedbackReservationId(selectedReservation.id);
+          setFeedbackPersistenceError(null);
+
+          const nextDraft = stampDiningFeedbackDraftUpdatedAt(
+            submittedDraft ?? activeFeedbackDraft ?? createDiningFeedbackDraft(selectedScenario),
+          );
           const completedDishCount = Object.values(nextDraft.dishResponses).filter(
             hasDiningDishFeedbackResponse,
           ).length;
@@ -1558,21 +1544,9 @@ export default function DiningPage({
             ...current,
             [selectedReservation.id]: nextDraft,
           }));
-          setSubmittedFeedbackReservationIds((current) => {
-            const nextReservationIds = new Set(current);
-            nextReservationIds.add(selectedReservation.id);
-            return nextReservationIds;
-          });
 
-          navigateToReservationLocation(
-            {
-              selectedId: null,
-              selectedView: 'detail',
-            },
-            { replace: true },
-          );
-
-          void submitDiningFeedbackToSupabase({
+          try {
+            const persistenceResult = await submitDiningFeedbackToSupabase({
               draft: nextDraft,
               reservation: {
                 id: selectedReservation.id,
@@ -1587,18 +1561,44 @@ export default function DiningPage({
                 status: selectedReservation.status,
               },
               scenario: selectedScenario,
-            })
-            .then(() => {
-              trackEvent('dining_feedback_persist_success', {
-                reservation_id: selectedReservation.id,
-              });
-            })
-            .catch((error) => {
-              trackEvent('dining_feedback_persist_error', {
-                reservation_id: selectedReservation.id,
-              });
-              console.warn('Failed to persist dining feedback to Supabase.', error);
             });
+
+            if (!persistenceResult.persisted) {
+              throw new Error('Dining feedback was not persisted to Supabase.');
+            }
+
+            setSubmittedFeedbackReservationIds((current) => {
+              const nextReservationIds = new Set(current);
+              nextReservationIds.add(selectedReservation.id);
+              return nextReservationIds;
+            });
+
+            navigateToReservationLocation(
+              {
+                selectedId: null,
+                selectedView: 'detail',
+              },
+              { replace: true },
+            );
+
+            trackEvent('dining_feedback_persist_success', {
+              reservation_id: selectedReservation.id,
+            });
+          } catch (error) {
+            trackEvent('dining_feedback_persist_error', {
+              reservation_id: selectedReservation.id,
+            });
+            console.warn('Failed to persist dining feedback to Supabase.', error);
+            setFeedbackPersistenceError({
+              reservationId: selectedReservation.id,
+              message: '피드백을 저장하지 못했어요. 연결과 로그인 상태를 확인한 뒤 다시 시도해주세요.',
+            });
+          } finally {
+            feedbackSubmitInFlightRef.current = false;
+            setSavingFeedbackReservationId((current) =>
+              current === selectedReservation.id ? null : current,
+            );
+          }
         }}
       />
     );
@@ -1647,11 +1647,12 @@ export default function DiningPage({
     (left, right) => right.valueMm - left.valueMm,
   );
   const topTasteLabels = measurementHighlights.slice(0, 2).map((entry) => entry.label);
+  const shouldShowDishFeedbackSkeleton = isHydratingReservations || dishFeedbackItems.length === 0;
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
+        <div className="tb-section-stack px-5 pb-20 pt-5" aria-busy={shouldShowDishFeedbackSkeleton}>
           <div className="tb-card-stack">
             <PageSection
               contentClassName="flex flex-col gap-3"
@@ -1659,23 +1660,32 @@ export default function DiningPage({
               titleAs="h2"
               titleSize="md"
             >
-              {dishFeedbackItems.length > 0 ? (
+              {shouldShowDishFeedbackSkeleton ? (
+                <DishFeedbackListSkeleton />
+              ) : (
                 dishFeedbackItems.map((item) => {
                   const itemKey = getDishFeedbackItemKey(item);
 
                   return (
                     <DishFeedbackCard
                       key={itemKey}
-                      avatarImageSrc={userAvatarImageSrc}
-                      avatarProfile={userPalateBloomProfile}
-                      avatarShapeSeed={userPalateBloomShapeSeed}
+                      actions={{
+                        onDelete: () => deleteDishFeedbackItem(item),
+                        onEdit: () => openDishFeedbackEditor(item),
+                        onShare: () => shareDishFeedbackItem(item),
+                      }}
+                      card={createDishFeedbackCardViewModel({
+                        avatarImageSrc: userAvatarImageSrc,
+                        avatarProfile: userPalateBloomProfile,
+                        avatarShapeSeed: userPalateBloomShapeSeed,
+                        item,
+                        nickname: feedbackAuthorName,
+                      })}
                       commentCount={(commentsByDishFeedbackKey[itemKey] ?? []).length}
-                      item={item}
-                      nickname={feedbackAuthorName}
                       onLike={() => notifyDishFeedbackEngagement('like', item)}
                       onOpenAuthorProfile={onOpenAuthorProfile}
                       onOpenComments={() => openDishFeedbackComments(item)}
-                      onOpenRestaurantDetail={
+                      onOpenSubject={
                         onOpenRestaurantDetail
                           ? () => onOpenRestaurantDetail(item.reservation)
                           : undefined
@@ -1686,14 +1696,6 @@ export default function DiningPage({
                     />
                   );
                 })
-              ) : (
-                <EmptyState
-                  title="아직 기록된 디시 피드백이 없어요"
-                  description="식후 피드백에서 기억나는 메뉴와 미각 단어를 남기면, 이곳에 나만의 디시 로그가 쌓입니다."
-                  actionLabel="레스토랑·메뉴 검색하기"
-                  actionTone="user-accent"
-                  onAction={onOpenSearch}
-                />
               )}
             </PageSection>
 

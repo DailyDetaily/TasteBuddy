@@ -41,6 +41,20 @@ If you are looking for app source code, this is not the right place. Start in `s
 - [`sync-place-index.mjs`](./sync-place-index.mjs)
   Fetches restaurant place candidates from Kakao, Naver, or Google and upserts them into Supabase.
 
+### Native food API smoke test
+
+- [`smoke-nongsaro-native-food.mjs`](./smoke-nongsaro-native-food.mjs)
+  Checks the Nongsaro native food OpenAPI connection using `NONGSARO_API_KEY` from `.env.local`.
+- [`fetch-nongsaro-native-food-dataset.mjs`](./fetch-nongsaro-native-food-dataset.mjs)
+  Fetches Nongsaro native food list/detail records and writes a raw JSON dataset for later TBA normalization.
+
+### TBA food knowledge dataset
+
+- [`build-tba-food-knowledge-dataset.mjs`](./build-tba-food-knowledge-dataset.mjs)
+  Builds normalized FoodOn, Korean standard food, native food, and final TBA food knowledge bridge datasets.
+- [`extract-korean-standard-food-catalog.py`](./extract-korean-standard-food-catalog.py)
+  Extracts only Korean food names, food groups, English names, and scientific names from the Korean food composition XLSX.
+
 ### Normalization and utilities
 
 - [`normalize-supabase-content-korean.mjs`](./normalize-supabase-content-korean.mjs)
@@ -88,6 +102,31 @@ node scripts/import-supabase-seed.mjs supabase/seeds/example.seed.json
 ```bash
 npm run place-index:sync -- --provider kakao --query "정식당" --restaurant-slug jungsik --limit 3
 npm run place-index:sync -- --provider google --query "Jungsik Seoul" --restaurant-slug jungsik --with-hours --limit 1
+```
+
+### Nongsaro native food API smoke test
+
+```bash
+npm run native-food:smoke
+npm run native-food:smoke -- --query 비빔밥 --rows 5 --detail
+```
+
+### Nongsaro native food raw dataset
+
+```bash
+npm run native-food:fetch
+npm run native-food:fetch -- --limit 100 --rows 50
+npm run native-food:fetch -- --all --rows 100
+npm run native-food:fetch -- --query 비빔밥 --limit 20 --out data/native-food/raw/bibimbap.json
+```
+
+### TBA food knowledge dataset
+
+```bash
+npm run food-knowledge:build
+npm run native-food:fetch -- --all --rows 100
+npm run food-knowledge:build -- --native-source data/native-food/raw/nongsaro-native-food-dataset.json
+npm run food-knowledge:runtime
 ```
 
 ### Public source review workflow

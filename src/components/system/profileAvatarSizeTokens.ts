@@ -1,6 +1,6 @@
 export const PROFILE_AVATAR_SIZE_TOKENS = {
   sm: 32,
-  md: 44,
+  md: 42,
   lg: 68,
   xl: 96,
 } as const;

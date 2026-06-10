@@ -40,6 +40,7 @@ import type { ReservationRecord } from '../constants/reservationCatalog';
 import { hydrateRestaurantPlaceInfo } from '../lib/tasteBuddySupabase';
 
 type RestaurantDetailView = 'detail' | 'feedback' | 'menuDetail';
+export type RestaurantDetailInitialView = Extract<RestaurantDetailView, 'detail' | 'feedback'>;
 
 interface RestaurantNavigationLocation {
   selectedMenuDetail: RestaurantMenuDetailViewModel | null;
@@ -51,17 +52,11 @@ export type RestaurantDetailViewModel = {
   category: string;
   chef: {
     avatarUrl?: string | null;
+    displayLabel?: string;
     name: string;
   };
   heroImageUrl?: string | null;
-  info: {
-    address: string;
-    email?: string;
-    hours: string;
-    instagram?: string;
-    phone?: string;
-    website?: string;
-  };
+  info: RestaurantInfoViewModel;
   locationLabel: string;
   mediaStatus?: 'placeholder' | 'verified';
   memorableDishes: {
@@ -223,10 +218,37 @@ function buildRestaurantFeedbackChoices(dishTitle: string, tags: readonly string
   ];
 }
 
+const FALLBACK_FEEDBACK_DISH_TITLES = new Set([
+  '카카오 장소 정보 기반',
+  'Taste Buddy 분석 준비 중',
+  'TB 분석 준비 중',
+  '미각 벡터 미연결',
+]);
+
+function isFallbackRestaurantFeedbackDish(
+  dish: RestaurantDetailViewModel['memorableDishes'][number],
+  restaurant: RestaurantDetailViewModel,
+) {
+  const sourceByRow = (restaurant.info as { sourceByRow?: { address?: string } }).sourceByRow;
+
+  return (
+    FALLBACK_FEEDBACK_DISH_TITLES.has(dish.title.trim()) ||
+    (restaurant.mediaStatus === 'placeholder' &&
+      sourceByRow?.address === 'kakao' &&
+      dish.tags.some((tag) => FALLBACK_FEEDBACK_DISH_TITLES.has(tag.trim())))
+  );
+}
+
 function createRestaurantFeedbackScenario(
   restaurant: RestaurantDetailViewModel,
 ): DiningFeedbackScenario {
-  const dishes = restaurant.memorableDishes.slice(0, 3).map((dish, index) => ({
+  const feedbackDishSources =
+    restaurant.memorableDishes.length > 0
+      ? restaurant.memorableDishes
+        .filter((dish) => !isFallbackRestaurantFeedbackDish(dish, restaurant))
+        .slice(0, 3)
+      : [];
+  const dishes = feedbackDishSources.map((dish, index) => ({
     chefIntent: dish.summary,
     courseLabel: index === 0 ? '가장 기억난 메뉴' : `기억 메뉴 ${index + 1}`,
     feedbackChoices: buildRestaurantFeedbackChoices(dish.title, dish.tags),
@@ -765,6 +787,39 @@ export function getRestaurantInfo(restaurantName: string) {
   return DEFAULT_RESTAURANT_DETAIL.info;
 }
 
+function createMapBackedRestaurantInfo(
+  place: HomeSearchResult['place'],
+  fallbackAddress = DEFAULT_RESTAURANT_DETAIL.info.address,
+): RestaurantInfoViewModel {
+  const address = place?.address ?? fallbackAddress;
+
+  return {
+    address,
+    hours: '',
+    mapUrl: place?.placeUrl ?? undefined,
+    phone: place?.phone ?? undefined,
+    sourceByRow: {
+      address: 'kakao',
+      ...(place?.phone ? { phone: 'kakao' as const } : {}),
+    },
+  };
+}
+
+function sanitizeMapBackedRestaurantInfo(info: RestaurantInfoViewModel): RestaurantInfoViewModel {
+  const sourceByRow = info.sourceByRow ?? {};
+
+  return {
+    address: info.address,
+    hours: sourceByRow.hours ? info.hours : '',
+    mapUrl: info.mapUrl,
+    phone: sourceByRow.phone ? info.phone : undefined,
+    website: sourceByRow.website ? info.website : undefined,
+    instagram: sourceByRow.instagram ? info.instagram : undefined,
+    email: sourceByRow.email ? info.email : undefined,
+    sourceByRow,
+  };
+}
+
 export function createRestaurantDetailFromChefMatch(
   chef: HomeChefMatchCardData,
 ): RestaurantDetailViewModel {
@@ -828,17 +883,8 @@ export function createRestaurantDetailFromSearchResult(
   result: HomeSearchResult,
 ): RestaurantDetailViewModel {
   if (result.source === 'kakao') {
-    const address = result.place?.address ?? DEFAULT_RESTAURANT_DETAIL.info.address;
-    const info: RestaurantInfoViewModel = {
-      address,
-      hours: 'Taste Buddy 분석 준비 중',
-      mapUrl: result.place?.placeUrl ?? undefined,
-      phone: result.place?.phone ?? undefined,
-      sourceByRow: {
-        address: 'kakao',
-        ...(result.place?.phone ? { phone: 'kakao' as const } : {}),
-      },
-    };
+    const info = createMapBackedRestaurantInfo(result.place);
+    const address = info.address;
     const locationLabel = address.split(' ').slice(0, 2).join(' ') || DEFAULT_RESTAURANT_DETAIL.locationLabel;
 
     return {
@@ -852,6 +898,7 @@ export function createRestaurantDetailFromSearchResult(
       chef: {
         name: 'Taste Buddy 분석 준비 중',
         avatarUrl: null,
+        displayLabel: address,
       },
       confidenceLabel: '더 확인 필요',
       fitSummary:
@@ -878,7 +925,15 @@ export function createRestaurantDetailFromSearchResult(
   }
 
   const primaryDishTitle = result.type === 'menu' ? result.label : result.signatureItems[0];
-  const chefName = result.chef.replace(/\s*셰프$/, '');
+  const baseInfo = getRestaurantInfo(result.restaurant);
+  const info: RestaurantInfoViewModel = result.place?.address
+    ? createMapBackedRestaurantInfo(result.place, baseInfo.address)
+    : baseInfo;
+  const contextProfile = getRestaurantContextProfile(result.restaurant);
+  const isTasteMatchSearchResult = result.id.startsWith('taste-match-');
+  const chefName = isTasteMatchSearchResult
+    ? contextProfile.locationLabel
+    : result.chef.replace(/\s*셰프$/, '');
   const memorableDishes = isEatanicGardenRestaurant(result.restaurant)
     ? EATANIC_GARDEN_COURSE_DISHES
     : primaryDishTitle
@@ -892,8 +947,6 @@ export function createRestaurantDetailFromSearchResult(
         },
       ]
       : [];
-  const info = getRestaurantInfo(result.restaurant);
-  const contextProfile = getRestaurantContextProfile(result.restaurant);
 
   return {
     ...DEFAULT_RESTAURANT_DETAIL,
@@ -903,7 +956,8 @@ export function createRestaurantDetailFromSearchResult(
     heroImageUrl: result.image ?? DEFAULT_RESTAURANT_DETAIL.heroImageUrl,
     chef: {
       name: chefName,
-      avatarUrl: result.image ?? getChefImageByName(chefName),
+      avatarUrl: isTasteMatchSearchResult ? null : result.image ?? getChefImageByName(chefName),
+      displayLabel: isTasteMatchSearchResult ? contextProfile.locationLabel : undefined,
     },
     confidenceLabel: result.type === 'restaurant' ? '더 확인 필요' : '근거 보통',
     fitSummary:
@@ -1066,6 +1120,7 @@ export function createRestaurantDetailFromReservation(
 }
 
 interface RestaurantDetailPageProps {
+  initialView?: RestaurantDetailInitialView;
   measurementSnapshot?: TasteMeasurementSnapshot | null;
   onBack: () => void;
   onFeedbackMapViewChange?: (isMapView: boolean) => void;
@@ -1080,6 +1135,7 @@ export interface RestaurantFeedbackSubmission {
 }
 
 export default function RestaurantDetailPage({
+  initialView = 'detail',
   measurementSnapshot,
   onBack,
   onFeedbackMapViewChange,
@@ -1087,9 +1143,12 @@ export default function RestaurantDetailPage({
   restaurant = DEFAULT_RESTAURANT_DETAIL,
 }: RestaurantDetailPageProps) {
   const sourceDetail = restaurant ?? DEFAULT_RESTAURANT_DETAIL;
+  const isMapBackedSourceInfo = sourceDetail.info.sourceByRow?.address === 'kakao';
   const resolvedInfo =
-    sourceDetail.mediaStatus === 'placeholder'
-      ? sourceDetail.info
+    isMapBackedSourceInfo || sourceDetail.mediaStatus === 'placeholder'
+      ? isMapBackedSourceInfo
+        ? sanitizeMapBackedRestaurantInfo(sourceDetail.info)
+        : sourceDetail.info
       : getRestaurantInfo(sourceDetail.name);
   const [placeInfo, setPlaceInfo] = useState<Partial<RestaurantInfoViewModel> | null>(null);
   const detail = useMemo(
@@ -1103,7 +1162,7 @@ export default function RestaurantDetailPage({
     [placeInfo, resolvedInfo, sourceDetail],
   );
   const feedbackScenario = useMemo(() => createRestaurantFeedbackScenario(detail), [detail]);
-  const [selectedView, setSelectedView] = useState<RestaurantDetailView>('detail');
+  const [selectedView, setSelectedView] = useState<RestaurantDetailView>(initialView);
   const [selectedMenuDetail, setSelectedMenuDetail] =
     useState<RestaurantMenuDetailViewModel | null>(null);
   const navigationStackRef = useRef<RestaurantNavigationLocation[]>([]);
@@ -1114,6 +1173,9 @@ export default function RestaurantDetailPage({
   const [isInfoSuggestionSheetOpen, setIsInfoSuggestionSheetOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(() => isRestaurantBookmarked(detail.name));
   const feedbackResetRestaurantIdRef = useRef(detail.id);
+  const initialViewSyncRef = useRef(`${detail.id}:${initialView}`);
+  const isKakaoPlaceOnlyDetail =
+    sourceDetail.mediaStatus === 'placeholder' && sourceDetail.info.sourceByRow?.address === 'kakao';
 
   const iconButtonClassName =
     'flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]';
@@ -1165,7 +1227,11 @@ export default function RestaurantDetailPage({
 
   useEffect(() => {
     let isCancelled = false;
-    setPlaceInfo(sourceDetail.info.sourceByRow?.address === 'kakao' ? sourceDetail.info : null);
+    setPlaceInfo(
+      sourceDetail.info.sourceByRow?.address === 'kakao'
+        ? sanitizeMapBackedRestaurantInfo(sourceDetail.info)
+        : null,
+    );
 
     void (async () => {
       const hydratedPlaceInfo = await hydrateRestaurantPlaceInfo(sourceDetail.name);
@@ -1198,16 +1264,22 @@ export default function RestaurantDetailPage({
   }, [detail.name]);
 
   useEffect(() => {
-    if (feedbackResetRestaurantIdRef.current === detail.id) {
+    const nextInitialViewSyncKey = `${detail.id}:${initialView}`;
+
+    if (
+      feedbackResetRestaurantIdRef.current === detail.id &&
+      initialViewSyncRef.current === nextInitialViewSyncKey
+    ) {
       return;
     }
 
     feedbackResetRestaurantIdRef.current = detail.id;
+    initialViewSyncRef.current = nextInitialViewSyncKey;
     setFeedbackDraft(createDiningFeedbackDraft(feedbackScenario));
-    setSelectedView('detail');
+    setSelectedView(initialView);
     setSelectedMenuDetail(null);
     navigationStackRef.current = [];
-  }, [detail.id, feedbackScenario]);
+  }, [detail.id, feedbackScenario, initialView]);
 
   useEffect(() => {
     if (selectedView !== 'feedback') {
@@ -1226,10 +1298,12 @@ export default function RestaurantDetailPage({
         onBack={goBackToPreviousRestaurantLocation}
         onChange={setFeedbackDraft}
         onMapViewChange={onFeedbackMapViewChange}
-        onSubmit={() => {
+        onSubmit={(submittedDraft) => {
+          const nextDraft = submittedDraft ?? feedbackDraft;
+
           if (onFeedbackSubmitComplete) {
             onFeedbackSubmitComplete({
-              draft: feedbackDraft,
+              draft: nextDraft,
               restaurant: detail,
               scenario: feedbackScenario,
             });
@@ -1300,7 +1374,7 @@ export default function RestaurantDetailPage({
             restaurant={detail}
             onBookmarkClick={() => setIsBookmarkSheetOpen(true)}
             onVisitedClick={
-              detail.memorableDishes.length > 0
+              detail.memorableDishes.length > 0 || isKakaoPlaceOnlyDetail
                 ? () =>
                   navigateToRestaurantLocation({
                     selectedMenuDetail: null,

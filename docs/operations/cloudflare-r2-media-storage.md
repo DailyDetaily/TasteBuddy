@@ -7,6 +7,7 @@ Taste Buddy는 Supabase를 관계형 데이터와 권한의 source of truth로 �
 ```text
 taste-buddy-public-media
   user-avatars/{user-id}/{asset-id}.webp
+  feedback-reflections/{user-id}/{yyyy-mm-dd}/{asset-id}.jpg
   chefs/{chef-slug}.png
   restaurants/{restaurant-slug}/hero.webp
   menus/{restaurant-slug}/{source-slug}.webp
@@ -34,6 +35,8 @@ DB에는 전체 URL이 아니라 `chefs/jungsik.png` 같은 object key를 저장
 
 사용자 프로필 사진은 앱에서 512px WebP로 정리한 뒤 Supabase Edge Function `upload-profile-avatar`를 통해 `taste-buddy-public-media/user-avatars/{user-id}/{asset-id}.webp`에 저장한다. `profiles.avatar_path`에는 전체 URL이 아니라 R2 object key만 저장한다.
 
+식후 피드백 사진은 앱에서 최대 1600px JPEG로 정리한 뒤 Supabase Edge Function `upload-feedback-reflection-photo`를 통해 `taste-buddy-public-media/feedback-reflections/{user-id}/{yyyy-mm-dd}/{reservationId-dishId-asset-id}.jpg`에 저장한다. 함수는 인증된 요청만 받고, 6MB 이하의 WebP/PNG/JPEG만 허용한다. `feedback_items.reflection_photo_preview_url`에는 기존 data URL 대신 R2 object key를 저장하고, 앱은 `resolvePublicMediaPath`로 public media URL을 만들어 표시한다.
+
 Edge Function에 필요한 secrets:
 
 ```bash
@@ -48,6 +51,7 @@ supabase secrets set \
 
 ```bash
 supabase functions deploy upload-profile-avatar
+supabase functions deploy upload-feedback-reflection-photo
 ```
 
 ## Supabase 메타데이터

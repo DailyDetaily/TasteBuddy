@@ -20,6 +20,15 @@ npm run dev:design-system-updates
 npm run build
 ```
 
+Native iOS:
+
+```bash
+npm run ios:open
+npm run dev:all
+```
+
+When `ios/project.yml` changes, regenerate the project with `npm run ios:generate`.
+
 ## Before You Change UI
 
 Read these first:
@@ -35,6 +44,8 @@ Read these first:
 | If you are adding... | Put it here | Why |
 | --- | --- | --- |
 | A full screen or route | [`src/pages/`](./src/pages/) | Route-level behavior belongs with other pages |
+| A native SwiftUI feature | [`ios/TasteBuddy/Features/`](./ios/TasteBuddy/Features/) | Keeps the iOS presentation layer independent from the React app |
+| A reusable native product component | [`ios/TasteBuddy/Components/`](./ios/TasteBuddy/Components/) | Mirrors the Taste Buddy product language for SwiftUI |
 | A reusable Taste Buddy product component | [`src/components/system/`](./src/components/system/) | This is the app-specific shared UI layer |
 | A feature-specific component | A relevant feature folder under [`src/components/`](./src/components/) | Keeps page-specific logic near the feature |
 | A low-level generic primitive | [`src/components/ui/`](./src/components/ui/) | This is the generic primitive layer |
@@ -61,6 +72,8 @@ If you update design tokens:
 - update [`src/constants/designTokens.ts`](./src/constants/designTokens.ts)
 - update [`DESIGN.md`](./DESIGN.md) if the visible system changed
 - update [`docs/AI_DESIGN_SYSTEM.md`](./docs/AI_DESIGN_SYSTEM.md) and [`docs/design-system.snapshot.json`](./docs/design-system.snapshot.json) when AI-facing interpretation or token naming changed
+
+If the same visible rule is implemented in the native app, also update the Swift mirror in [`ios/TasteBuddy/DesignSystem/TBTheme.swift`](./ios/TasteBuddy/DesignSystem/TBTheme.swift).
 
 ### Do not hide important docs
 

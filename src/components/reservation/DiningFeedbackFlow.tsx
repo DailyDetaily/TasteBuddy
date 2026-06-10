@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import {
   ArrowRight as ArrowRightIcon,
   Camera as CameraIcon,
@@ -39,18 +39,53 @@ import {
   type DiningFeedbackChoice,
   type DiningFeedbackDraft,
   type DiningFeedbackScenario,
+  createCustomDiningDishMetadata,
+  createDiningDishFeedbackDraft,
 } from '../../constants/diningFeedbackData';
+import {
+  diningDetailTagCategories,
+  getDiningDetailTagMetadata,
+  type DiningDetailTagCategory,
+  type DiningDetailTagMetadata,
+} from '../../constants/diningDetailTags';
+import {
+  CUSTOM_DISH_KIND_PREFIX,
+  DISH_KIND_OPTIONS,
+  getCustomDishKindId,
+  getDishKindLabel,
+  inferDishKindIds,
+} from '../../constants/dishKindTags';
 import {
   type TasteMeasurementSnapshot,
 } from '../../constants/tasteMeasurementData';
 import { ICON_TOKENS } from '../../constants/designTokens';
+import { resolvePublicMediaPath } from '../../lib/mediaAssets';
 import { cn } from '../ui/utils';
+
+export {
+  diningDetailTagCategories,
+  getDiningDetailTagMetadata,
+  type DiningDetailTagCategory,
+  type DiningDetailTagMetadata,
+} from '../../constants/diningDetailTags';
 
 const returnIntentOptions = [
   { id: 'yes', label: '이 방향으로 다시 경험하고 싶어요' },
   { id: 'maybe', label: '조금 더 맞추면 다시 좋아질 것 같아요' },
   { id: 'no', label: '다른 방향이 더 잘 맞을 것 같아요' },
 ] as const;
+
+const EMPTY_ACTIVE_DISH: DiningDishMetadata = {
+  chefIntent: '직접 입력 메뉴를 추가하면 미각 기록을 이어갈 수 있어요.',
+  courseLabel: '직접 입력',
+  feedbackChoices: [],
+  flavorNotes: [],
+  id: 'empty-active-dish',
+  ingredients: [],
+  subtitle: '직접 입력한 메뉴',
+  techniques: [],
+  title: '직접 입력',
+};
 
 export type TasteAxisId = 'sweet' | 'sour' | 'salty' | 'bitter' | 'umami' | 'fat';
 const TASTE_AXIS_LABEL_BY_ID: Record<TasteAxisId, string> = {
@@ -68,155 +103,28 @@ type DiningFeedbackStep =
   | 'result-card'
   | 'taste-reflection'
   | 'camera-capture';
-type DiningDetailTagCategoryId = 'balance' | 'flow' | 'texture' | 'aroma' | 'composition';
 
-interface DiningDetailTagCategory {
-  id: DiningDetailTagCategoryId;
-  label: string;
-  tags: readonly {
-    id: string;
-    label: string;
-  }[];
-}
+const RECOMMENDED_DETAIL_TAG_IDS_BY_TASTE_AXIS: Record<TasteAxisId, readonly string[]> = {
+  bitter: ['aroma-roasted', 'aroma-smoky', 'composition-fire-clear', 'flow-long-lasting'],
+  fat: ['texture-coating', 'texture-silky', 'composition-fat-supports', 'balance-finish-heavy'],
+  salty: ['balance-clear-seasoning', 'balance-center-clear', 'composition-sauce-leads'],
+  sour: ['balance-acid-cleans', 'flow-clean-finish', 'flow-opens-next', 'composition-acid-structure'],
+  sweet: ['balance-sweet-support', 'aroma-fruity', 'flow-finish-quiet', 'balance-aftertaste-light'],
+  umami: ['balance-umami-depth', 'flow-deepens-late', 'aroma-broth', 'composition-connected'],
+};
 
-export const diningDetailTagCategories: readonly DiningDetailTagCategory[] = [
-  {
-    id: 'balance',
-    label: '맛의 강도와 균형',
-    tags: [
-      { id: 'balance-clear-seasoning', label: '간이 선명함' },
-      { id: 'balance-well-balanced', label: '균형이 좋음' },
-      { id: 'balance-one-note-forward', label: '한 맛이 앞섬' },
-      { id: 'balance-sweet-support', label: '단맛이 받쳐줌' },
-      { id: 'balance-acid-cleans', label: '산미가 정리함' },
-      { id: 'balance-umami-depth', label: '감칠맛이 깊음' },
-      { id: 'balance-finish-heavy', label: '마무리가 무거움' },
-      { id: 'balance-intensity-high', label: '강도가 높음' },
-      { id: 'balance-center-clear', label: '중심이 또렷함' },
-      { id: 'balance-aftertaste-light', label: '끝맛이 가벼움' },
-      { id: 'balance-flavors-layered', label: '맛이 겹쳐짐' },
-      { id: 'balance-edge-soft', label: '모서리가 부드러움' },
-    ],
-  },
-  {
-    id: 'flow',
-    label: '입안의 흐름',
-    tags: [
-      { id: 'flow-first-clear', label: '처음에 선명함' },
-      { id: 'flow-middle-spreads', label: '중반에 퍼짐' },
-      { id: 'flow-deepens-late', label: '뒤로 갈수록 깊어짐' },
-      { id: 'flow-clean-finish', label: '피니시가 깨끗함' },
-      { id: 'flow-long-lasting', label: '오래 남음' },
-      { id: 'flow-quick-fade', label: '빠르게 사라짐' },
-      { id: 'flow-opens-next', label: '다음 맛을 열어줌' },
-      { id: 'flow-finish-piled', label: '끝에 쌓임' },
-      { id: 'flow-front-soft', label: '앞맛이 부드러움' },
-      { id: 'flow-middle-tight', label: '중반이 조여짐' },
-      { id: 'flow-rhythm-smooth', label: '리듬이 매끄러움' },
-      { id: 'flow-finish-quiet', label: '마무리가 조용함' },
-    ],
-  },
-  {
-    id: 'texture',
-    label: '질감과 온도',
-    tags: [
-      { id: 'texture-soft', label: '부드러움' },
-      { id: 'texture-dense', label: '밀도 있음' },
-      { id: 'texture-light', label: '가벼움' },
-      { id: 'texture-coating', label: '코팅감 있음' },
-      { id: 'texture-dry', label: '건조함' },
-      { id: 'texture-temperature-right', label: '온도가 잘 맞음' },
-      { id: 'texture-cool-cleans', label: '차갑게 정리됨' },
-      { id: 'texture-warm-spreads', label: '따뜻하게 퍼짐' },
-      { id: 'texture-silky', label: '실키함' },
-      { id: 'texture-chewy', label: '씹는 힘이 있음' },
-      { id: 'texture-crisp', label: '바삭함' },
-      { id: 'texture-juicy', label: '수분감 있음' },
-    ],
-  },
-  {
-    id: 'aroma',
-    label: '향과 재료 인상',
-    tags: [
-      { id: 'aroma-seafood', label: '해산물 향' },
-      { id: 'aroma-meaty', label: '육향' },
-      { id: 'aroma-herbal', label: '허브 향' },
-      { id: 'aroma-fermented', label: '발효 향' },
-      { id: 'aroma-roasted', label: '구운 향' },
-      { id: 'aroma-smoky', label: '훈연 향' },
-      { id: 'aroma-fruity', label: '과일 향' },
-      { id: 'aroma-ingredient-clear', label: '재료감이 선명함' },
-      { id: 'aroma-nutty', label: '견과 향' },
-      { id: 'aroma-earthy', label: '흙내음' },
-      { id: 'aroma-spice', label: '향신료 향' },
-      { id: 'aroma-broth', label: '육수 향' },
-    ],
-  },
-  {
-    id: 'composition',
-    label: '조리와 구성 단서',
-    tags: [
-      { id: 'composition-cook-point', label: '굽기가 좋음' },
-      { id: 'composition-sauce-leads', label: '소스가 이끎' },
-      { id: 'composition-fat-supports', label: '지방이 받쳐줌' },
-      { id: 'composition-acid-structure', label: '산미가 구조를 만듦' },
-      { id: 'composition-contrast-good', label: '대비가 좋음' },
-      { id: 'composition-connected', label: '재료 간 연결이 좋음' },
-      { id: 'composition-cooking-strong', label: '조리가 강함' },
-      { id: 'composition-course-fit', label: '구성감이 좋음' },
-      { id: 'composition-garnish-works', label: '가니시가 맞음' },
-      { id: 'composition-fire-clear', label: '불맛이 선명함' },
-      { id: 'composition-portion-right', label: '양감이 적절함' },
-      { id: 'composition-transition-good', label: '코스 연결이 좋음' },
-    ],
-  },
-];
-
-export interface DiningDetailTagMetadata {
-  categoryId: DiningDetailTagCategoryId;
-  categoryLabel: string;
-  id: string;
-  label: string;
-}
-
-export function getDiningDetailTagMetadata(tagId: string | null | undefined) {
-  if (!tagId) {
-    return null;
-  }
-
-  const customTagMatch = tagId.match(/^custom:([^:]+):(.+)$/);
-
-  if (customTagMatch) {
-    const [, categoryId, label] = customTagMatch;
-    const category = diningDetailTagCategories.find((detailCategory) => detailCategory.id === categoryId);
-
-    if (!category || !label.trim()) {
-      return null;
-    }
-
-    return {
-      categoryId: category.id,
-      categoryLabel: category.label,
-      id: tagId,
-      label: label.trim(),
-    } satisfies DiningDetailTagMetadata;
-  }
-
-  for (const category of diningDetailTagCategories) {
-    const tag = category.tags.find((detailTag) => detailTag.id === tagId);
-
-    if (tag) {
-      return {
-        categoryId: category.id,
-        categoryLabel: category.label,
-        id: tag.id,
-        label: tag.label,
-      } satisfies DiningDetailTagMetadata;
-    }
-  }
-
-  return null;
-}
+const RECOMMENDED_DETAIL_TAG_IDS_BY_DISH_KIND: Record<string, readonly string[]> = {
+  beverage_pairing: ['aroma-fruity', 'flow-opens-next', 'balance-aftertaste-light'],
+  broth: ['aroma-broth', 'flow-deepens-late', 'flow-clean-finish'],
+  cold: ['texture-cool-cleans', 'flow-first-clear', 'balance-aftertaste-light'],
+  dessert: ['balance-sweet-support', 'aroma-fruity', 'texture-silky'],
+  fermented_jang: ['aroma-fermented', 'balance-umami-depth', 'flow-long-lasting'],
+  grain_noodle: ['texture-chewy', 'texture-temperature-right', 'composition-sauce-leads'],
+  grilled_smoked: ['composition-fire-clear', 'aroma-smoky', 'composition-cook-point'],
+  meat: ['aroma-meaty', 'composition-fat-supports', 'texture-juicy'],
+  seafood: ['aroma-seafood', 'balance-umami-depth', 'flow-clean-finish'],
+  vegetable_herb: ['aroma-herbal', 'aroma-ingredient-clear', 'balance-aftertaste-light'],
+};
 
 export interface TasteExperienceWord {
   angleOffset: number;
@@ -362,7 +270,7 @@ const tasteExperienceWords: TasteExperienceWord[] = tasteExperienceAxes.flatMap(
 const feedbackLabelClass =
   'self-start text-left text-[14px] font-semibold text-[var(--tb-color-text-subtle)]';
 const feedbackSectionLabelClass = 'text-[12px] font-semibold text-[var(--tb-color-text-muted)]';
-const feedbackBodyClass = 'text-[13px] leading-relaxed text-[var(--tb-color-text-subtle)]';
+const feedbackBodyClass = 'leading-relaxed text-[var(--tb-color-text-subtle)]';
 const feedbackHintClass = 'text-[12px] font-semibold text-[var(--tb-color-text-faint)]';
 
 function InfoPill({ children }: { children: ReactNode }) {
@@ -1676,6 +1584,357 @@ function getCustomDetailTagId(categoryId: string, label: string) {
   return `custom:${categoryId}:${label.trim()}`;
 }
 
+function getRecommendedDishKindIds(dish: DiningDishMetadata) {
+  return inferDishKindIds(dish);
+}
+
+function getRecommendedDetailTagIds({
+  dishKindIds,
+  experiences,
+}: {
+  dishKindIds: readonly string[];
+  experiences: readonly TasteExperienceWord[];
+}) {
+  const recommendedIds = [
+    ...experiences.flatMap((experience) =>
+      RECOMMENDED_DETAIL_TAG_IDS_BY_TASTE_AXIS[experience.axis] ?? [],
+    ),
+    ...dishKindIds.flatMap((kindId) => RECOMMENDED_DETAIL_TAG_IDS_BY_DISH_KIND[kindId] ?? []),
+  ];
+  const seenIds = new Set<string>();
+
+  return recommendedIds.filter((tagId) => {
+    if (seenIds.has(tagId)) {
+      return false;
+    }
+
+    seenIds.add(tagId);
+    return true;
+  });
+}
+
+function getSelectedDishKindIds(
+  dish: DiningDishMetadata,
+  response: { selectedDishKindIds?: string[] } | undefined,
+) {
+  const selectedIds = response?.selectedDishKindIds ?? [];
+
+  return selectedIds.length > 0 ? selectedIds : getRecommendedDishKindIds(dish);
+}
+
+function getCustomDishKindLabelsFromIds(kindIds: readonly string[]) {
+  return kindIds
+    .filter((kindId) => kindId.startsWith(CUSTOM_DISH_KIND_PREFIX))
+    .map((kindId) => getDishKindLabel(kindId));
+}
+
+function CustomDishSelectionCard({
+  description,
+  editInputRef,
+  editValue,
+  isEditing,
+  onCancelEdit,
+  onChangeEditValue,
+  onEdit,
+  onRemove,
+  onSaveEdit,
+  onSelect,
+  selected,
+  title,
+  trailing,
+}: {
+  description?: string;
+  editInputRef: RefObject<HTMLInputElement | null>;
+  editValue: string;
+  isEditing: boolean;
+  onCancelEdit: () => void;
+  onChangeEditValue: (value: string) => void;
+  onEdit: () => void;
+  onRemove: () => void;
+  onSaveEdit: () => void;
+  onSelect: () => void;
+  selected: boolean;
+  title: string;
+  trailing?: ReactNode;
+}) {
+  const canSaveEdit = editValue.trim().length > 0;
+
+  return (
+    <div
+      className={cn(
+        'flex w-full items-stretch gap-3 rounded-[var(--tb-radius-20)] border p-4 text-left transition-all',
+        selected
+          ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-surface-base)] shadow-[0_12px_24px_rgba(15,15,15,0.06)]'
+          : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)]',
+      )}
+    >
+      {isEditing ? (
+        <form
+          className="flex min-w-0 flex-1 items-start gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSaveEdit();
+          }}
+        >
+          <span
+            aria-hidden="true"
+            className="mt-[2px] flex size-[18px] shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent text-[var(--tb-color-text-primary)] shadow-[inset_0_0_0_2px_var(--tb-color-text-primary)]"
+          >
+            <span className="size-[8px] rounded-full bg-[var(--tb-color-text-primary)]" />
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col gap-1">
+            <input
+              ref={editInputRef}
+              value={editValue}
+              onChange={(event) => onChangeEditValue(event.target.value)}
+              className="h-[22px] min-w-0 bg-transparent p-0 text-[14px] font-semibold leading-normal text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
+              aria-label={`${title} 메뉴명 수정`}
+              enterKeyHint="done"
+              required
+            />
+            {description ? (
+              <span className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-muted)]">
+                {description}
+              </span>
+            ) : null}
+          </span>
+        </form>
+      ) : (
+        <span className="flex min-w-0 flex-1 items-start gap-3">
+          <button
+            type="button"
+            aria-pressed={selected}
+            aria-label={`${title} 선택`}
+            onClick={onSelect}
+            className={cn(
+              'mt-[2px] flex size-[18px] shrink-0 items-center justify-center rounded-full border transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2',
+              selected
+                ? 'border-transparent bg-transparent text-[var(--tb-color-text-primary)] shadow-[inset_0_0_0_2px_var(--tb-color-text-primary)]'
+                : 'border-[var(--tb-color-border-disabled)] bg-transparent text-transparent',
+            )}
+          >
+            <span
+              className={cn(
+                'size-[8px] rounded-full transition-colors',
+                selected ? 'bg-[var(--tb-color-text-primary)]' : 'bg-transparent',
+              )}
+            />
+          </button>
+
+          <span className="flex min-w-0 flex-1 flex-col">
+            <button
+              type="button"
+              aria-pressed={selected}
+              onClick={onSelect}
+              className="w-fit max-w-full rounded-[6px] text-left outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2"
+            >
+              <span className="block truncate text-[14px] font-semibold leading-normal text-[var(--tb-color-text-primary)]">
+                {title}
+              </span>
+            </button>
+            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              {description ? (
+                <span className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-muted)]">
+                  {description}
+                </span>
+              ) : null}
+            </span>
+          </span>
+        </span>
+      )}
+
+      <span className="flex min-h-[36px] shrink-0 flex-col items-end justify-between">
+        {trailing ? <span className="shrink-0">{trailing}</span> : <span aria-hidden="true" />}
+        <span className="flex items-center gap-2">
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                onClick={onCancelEdit}
+                className="text-[11px] font-semibold text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={onSaveEdit}
+                disabled={!canSaveEdit}
+                className={cn(
+                  'text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2',
+                  canSaveEdit
+                    ? 'text-[var(--tb-color-text-primary)] hover:text-[var(--tb-color-text-secondary)]'
+                    : 'text-[var(--tb-color-text-disabled)]',
+                )}
+              >
+                저장
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                aria-label={`${title} 카드 수정`}
+                onClick={onEdit}
+                className="text-[11px] font-semibold text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2"
+              >
+                수정
+              </button>
+              <button
+                type="button"
+                aria-label={`${title} 카드 제거`}
+                onClick={onRemove}
+                className="text-[11px] font-semibold text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2"
+              >
+                제거
+              </button>
+            </>
+          )}
+        </span>
+      </span>
+    </div>
+  );
+}
+
+function DishKindTagSelector({
+  customLabels,
+  inputValue,
+  isInputOpen,
+  onAddCustomKind,
+  onChangeInputValue,
+  onCloseInput,
+  onOpenInput,
+  onToggleKind,
+  recommendedKindIds,
+  selectedKindIds,
+}: {
+  customLabels: readonly string[];
+  inputValue: string;
+  isInputOpen: boolean;
+  onAddCustomKind: () => void;
+  onChangeInputValue: (value: string) => void;
+  onCloseInput: () => void;
+  onOpenInput: () => void;
+  onToggleKind: (kindId: string) => void;
+  recommendedKindIds: readonly string[];
+  selectedKindIds: readonly string[];
+}) {
+  const customInputRef = useRef<HTMLInputElement | null>(null);
+  const selectedIdSet = new Set(selectedKindIds);
+  const recommendedIdSet = new Set(recommendedKindIds);
+  const orderedOptions = [
+    ...recommendedKindIds
+      .map((kindId) => DISH_KIND_OPTIONS.find((option) => option.id === kindId))
+      .filter((option): option is (typeof DISH_KIND_OPTIONS)[number] => Boolean(option)),
+    ...DISH_KIND_OPTIONS.filter((option) => !recommendedIdSet.has(option.id)),
+  ];
+  const customOptions = customLabels.map((label) => ({
+    id: getCustomDishKindId(label),
+    label,
+  }));
+
+  useEffect(() => {
+    if (isInputOpen) {
+      customInputRef.current?.focus();
+    }
+  }, [isInputOpen]);
+
+  return (
+    <section className="rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-card)] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+            디시 종류
+          </h2>
+          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+            추천 태그를 먼저 골라두었어요. 메뉴와 다르면 직접 바꿔주세요.
+          </p>
+        </div>
+        <span className="shrink-0 text-[11px] font-semibold text-[var(--tb-color-text-faint)]">
+          선택사항
+        </span>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {orderedOptions.map((option) => {
+          const isSelected = selectedIdSet.has(option.id);
+          const isRecommended = recommendedIdSet.has(option.id);
+
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onToggleKind(option.id)}
+              className={cn(
+                'rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors',
+                isSelected
+                  ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
+                  : isRecommended
+                    ? 'border-[var(--tb-user-accent-main)] bg-[color-mix(in_srgb,var(--tb-user-accent-main)_12%,white)] text-[var(--tb-user-accent-main)]'
+                    : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-subtle)]',
+              )}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+        {customOptions.map((option) => {
+          const isSelected = selectedIdSet.has(option.id);
+
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onToggleKind(option.id)}
+              className={cn(
+                'rounded-full border border-dashed px-3 py-2 text-[12px] font-semibold transition-colors',
+                isSelected
+                  ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
+                  : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-subtle)]',
+              )}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+
+        {isInputOpen ? (
+          <form
+            className="inline-flex h-9 min-w-[116px] items-center gap-2 rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3"
+            onSubmit={(event) => {
+              event.preventDefault();
+              onAddCustomKind();
+            }}
+          >
+            <input
+              ref={customInputRef}
+              value={inputValue}
+              onChange={(event) => onChangeInputValue(event.target.value)}
+              onBlur={() => {
+                if (!inputValue.trim()) {
+                  onCloseInput();
+                }
+              }}
+              className="h-full min-w-0 flex-1 bg-transparent text-[12px] font-semibold text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
+              placeholder="직접 입력"
+              enterKeyHint="done"
+              aria-label="디시 종류 직접 입력"
+            />
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenInput}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-dashed border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 text-[12px] font-semibold text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+          >
+            <Plus size={ICON_TOKENS.size.sm} strokeWidth={1.8} />
+            직접 입력
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function DiningDetailTagSection({
   accentAxis,
   category,
@@ -1687,6 +1946,7 @@ function DiningDetailTagSection({
   onChangeInputValue,
   onOpenInput,
   onToggleTag,
+  recommendedTagIds,
   selectedTagIds,
 }: {
   accentAxis: TasteAxisId;
@@ -1699,9 +1959,11 @@ function DiningDetailTagSection({
   onChangeInputValue: (value: string) => void;
   onOpenInput: () => void;
   onToggleTag: (tagId: string) => void;
+  recommendedTagIds?: readonly string[];
   selectedTagIds: readonly string[];
 }) {
   const selectedTagIdSet = new Set(selectedTagIds);
+  const recommendedTagIdSet = new Set(recommendedTagIds ?? []);
   const customInputRef = useRef<HTMLInputElement | null>(null);
   const standardTags = category.tags.map((tag) => ({ ...tag, custom: false }));
   const customTagItems = customTags.map((label) => ({
@@ -1709,11 +1971,21 @@ function DiningDetailTagSection({
     id: getCustomDetailTagId(category.id, label),
     label,
   }));
-  const allTags = [...standardTags, ...customTagItems];
+  const allTags = [...standardTags, ...customTagItems].sort((left, right) => {
+    const leftRecommended = recommendedTagIdSet.has(left.id);
+    const rightRecommended = recommendedTagIdSet.has(right.id);
+
+    if (leftRecommended !== rightRecommended) {
+      return leftRecommended ? -1 : 1;
+    }
+
+    return 0;
+  });
   const tagRowBreakIndex = Math.ceil(allTags.length / 2);
   const tagRows = [allTags.slice(0, tagRowBreakIndex), allTags.slice(tagRowBreakIndex)];
   const renderTagButton = (tag: (typeof allTags)[number]) => {
     const selected = selectedTagIdSet.has(tag.id);
+    const recommended = recommendedTagIdSet.has(tag.id);
 
     return (
       <button
@@ -1724,6 +1996,8 @@ function DiningDetailTagSection({
           'shrink-0 rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors',
           selected
             ? ''
+            : recommended
+              ? 'border-[color-mix(in_srgb,var(--tb-user-accent-main)_46%,white)] bg-[color-mix(in_srgb,var(--tb-user-accent-main)_10%,white)] text-[var(--tb-user-accent-main)]'
             : tag.custom
               ? 'border-dashed border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-subtle)]'
               : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-subtle)]',
@@ -1837,6 +2111,144 @@ function DiningResultReactionBubble({ experience }: { experience: TasteExperienc
   );
 }
 
+const DINING_RESULT_TAG_GAP = 6;
+
+function DiningResultDetailTagMoreChip({ count }: { count: number }) {
+  return (
+    <TasteChip
+      className="shrink-0"
+      taste={`+${count}`}
+      title={`${count}개 태그 더 있음`}
+      tone="neutral"
+    />
+  );
+}
+
+function DiningResultDetailTagRow({
+  detailTags,
+}: {
+  detailTags: readonly DiningDetailTagMetadata[];
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const measureRef = useRef<HTMLDivElement | null>(null);
+  const counterMeasureRef = useRef<HTMLSpanElement | null>(null);
+  const [visibleCount, setVisibleCount] = useState(detailTags.length);
+  const detailTagSignature = detailTags.map((tag) => `${tag.id}:${tag.label}`).join('|');
+
+  useLayoutEffect(() => {
+    const containerElement = containerRef.current;
+    const measureElement = measureRef.current;
+
+    if (!containerElement || !measureElement) {
+      return;
+    }
+
+    let animationFrameId = 0;
+
+    const updateVisibleCount = () => {
+      const availableWidth = containerElement.clientWidth;
+      const tagElements = Array.from(
+        measureElement.querySelectorAll<HTMLElement>('[data-result-detail-tag="true"]'),
+      );
+
+      if (availableWidth <= 0 || tagElements.length === 0) {
+        setVisibleCount(detailTags.length);
+        return;
+      }
+
+      const tagWidths = tagElements.map((tagElement) => tagElement.offsetWidth);
+      const moreChipWidth = counterMeasureRef.current?.offsetWidth ?? 0;
+      let nextVisibleCount = 0;
+
+      for (let count = tagWidths.length; count >= 0; count -= 1) {
+        const hiddenCount = tagWidths.length - count;
+        const visibleElementCount = count + (hiddenCount > 0 ? 1 : 0);
+        const gapWidth = Math.max(0, visibleElementCount - 1) * DINING_RESULT_TAG_GAP;
+        const tagsWidth = tagWidths
+          .slice(0, count)
+          .reduce((totalWidth, tagWidth) => totalWidth + tagWidth, 0);
+        const requiredWidth = tagsWidth + (hiddenCount > 0 ? moreChipWidth : 0) + gapWidth;
+
+        if (requiredWidth <= availableWidth) {
+          nextVisibleCount = count;
+          break;
+        }
+      }
+
+      setVisibleCount((currentVisibleCount) =>
+        currentVisibleCount === nextVisibleCount ? currentVisibleCount : nextVisibleCount,
+      );
+    };
+
+    const requestUpdate = () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(updateVisibleCount);
+    };
+
+    requestUpdate();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', requestUpdate);
+
+      return () => {
+        cancelAnimationFrame(animationFrameId);
+        window.removeEventListener('resize', requestUpdate);
+      };
+    }
+
+    const resizeObserver = new ResizeObserver(requestUpdate);
+    resizeObserver.observe(containerElement);
+    resizeObserver.observe(measureElement);
+    window.addEventListener('resize', requestUpdate);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', requestUpdate);
+    };
+  }, [detailTags.length, detailTagSignature]);
+
+  const resolvedVisibleCount = Math.min(visibleCount, detailTags.length);
+  const hiddenCount = Math.max(0, detailTags.length - resolvedVisibleCount);
+
+  return (
+    <div className="relative w-full" ref={containerRef}>
+      <div className="flex w-full flex-nowrap items-center gap-[6px] overflow-hidden">
+        {detailTags.slice(0, resolvedVisibleCount).map((tag) => (
+          <TasteChip
+            className="shrink-0"
+            key={tag.id}
+            taste={tag.label}
+            tone="neutral"
+            title={tag.categoryLabel}
+          />
+        ))}
+        {hiddenCount > 0 ? <DiningResultDetailTagMoreChip count={hiddenCount} /> : null}
+      </div>
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none invisible absolute left-0 top-0 flex w-max flex-nowrap items-center gap-[6px]"
+        ref={measureRef}
+      >
+        {detailTags.map((tag) => (
+          <TasteChip
+            className="shrink-0"
+            data-result-detail-tag="true"
+            key={tag.id}
+            taste={tag.label}
+            tone="neutral"
+            title={tag.categoryLabel}
+          />
+        ))}
+        <span ref={counterMeasureRef}>
+          <DiningResultDetailTagMoreChip count={detailTags.length} />
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function DiningDishResultCard({
   activeChoice,
   dish,
@@ -1862,8 +2274,8 @@ function DiningDishResultCard({
       : `${activeChoice.reason} 이 기록은 다음 다이닝에서 ${dish.title}의 인상을 다시 읽는 기준이 됩니다.`;
 
   return (
-    <SectionCard hoverEffect={false} className="w-full gap-[12px] border-0 bg-[var(--tb-color-surface-base)] shadow-[0_24px_70px_rgba(15,15,15,0.16)]">
-      <div className="flex w-full flex-col gap-3">
+    <SectionCard hoverEffect={false} className="w-full gap-[10px] border-0 bg-[var(--tb-color-surface-base)] shadow-[0_24px_70px_rgba(15,15,15,0.16)]">
+      <div className="flex w-full flex-col gap-[10px]">
         <ImageBox
           alt={`${dish.title} 메뉴 사진`}
           className="aspect-square w-full rounded-[var(--tb-radius-12)]"
@@ -1895,28 +2307,19 @@ function DiningDishResultCard({
           ) : null}
 
           {detailTags.length > 0 ? (
-            <div className="flex w-full flex-wrap items-start gap-[6px]">
-              {detailTags.map((tag) => (
-                <TasteChip
-                  key={`${dish.id}-${tag.id}`}
-                  taste={tag.label}
-                  tone="neutral"
-                  title={tag.categoryLabel}
-                />
-              ))}
-            </div>
+            <DiningResultDetailTagRow detailTags={detailTags} />
           ) : null}
         </div>
       ) : null}
 
-      <div className="w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-3">
+      <div className="max-h-[122px] w-full overflow-hidden rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-[10px]">
         <div className="flex items-center gap-2">
           <Sparkles size={ICON_TOKENS.size.sm} strokeWidth={1.8} />
           <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
-            피드백 종합 해석
+            미식 노트
           </span>
         </div>
-        <p className="mt-2 text-[12px] font-normal leading-relaxed text-[var(--tb-color-text-subtle)]">
+        <p className="mt-[6px] overflow-hidden text-[12px] font-normal leading-relaxed text-[var(--tb-color-text-subtle)] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4]">
           {synthesisSummary}
         </p>
       </div>
@@ -1934,20 +2337,24 @@ function softenRecommendationCopy(recommendation: string) {
 
 interface DiningFeedbackScreenProps {
   draft: DiningFeedbackDraft;
+  isSubmitting?: boolean;
   onBack: () => void;
   onChange: (nextDraft: DiningFeedbackDraft) => void;
   onMapViewChange?: (isMapView: boolean) => void;
-  onSubmit: () => void;
+  onSubmit: (draft?: DiningFeedbackDraft) => Promise<void> | void;
   scenario: DiningFeedbackScenario;
+  submitErrorMessage?: string | null;
 }
 
 export function DiningFeedbackScreen({
   draft,
+  isSubmitting = false,
   onBack,
   onChange,
   onMapViewChange,
   onSubmit,
   scenario,
+  submitErrorMessage,
 }: DiningFeedbackScreenProps) {
   const [feedbackStep, setFeedbackStep] = useState<DiningFeedbackStep>('menu-select');
   const [selectedDishIndex, setSelectedDishIndex] = useState<number | null>(null);
@@ -1956,6 +2363,12 @@ export function DiningFeedbackScreen({
   const [searchedExperienceId, setSearchedExperienceId] = useState<string | null>(null);
   const [activeCustomDetailCategoryId, setActiveCustomDetailCategoryId] = useState<string | null>(null);
   const [customDetailInputValue, setCustomDetailInputValue] = useState('');
+  const [isCustomDishInputOpen, setIsCustomDishInputOpen] = useState(false);
+  const [customDishInputValue, setCustomDishInputValue] = useState('');
+  const [editingCustomDishId, setEditingCustomDishId] = useState<string | null>(null);
+  const [editingCustomDishInputValue, setEditingCustomDishInputValue] = useState('');
+  const [isDishKindInputOpen, setIsDishKindInputOpen] = useState(false);
+  const [dishKindInputValue, setDishKindInputValue] = useState('');
   const [activeDetailExperienceIndex, setActiveDetailExperienceIndex] = useState(0);
   const [cameraErrorMessage, setCameraErrorMessage] = useState<string | null>(null);
   const [cameraFacingMode, setCameraFacingMode] = useState<'environment' | 'user'>('environment');
@@ -1963,20 +2376,14 @@ export function DiningFeedbackScreen({
   const [isResultChromeVisible, setIsResultChromeVisible] = useState(false);
   const reflectionPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const reflectionGalleryInputRef = useRef<HTMLInputElement | null>(null);
+  const customDishInputRef = useRef<HTMLInputElement | null>(null);
+  const editingCustomDishInputRef = useRef<HTMLInputElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
-  const activeDish = (scenario.dishes[activeDishIndex] ?? scenario.dishes[0]) as DiningDishMetadata;
-  const activeResponse = draft.dishResponses[activeDish.id] ?? {
-    customDetailTags: {},
-    rating: 3,
-    reflectionNote: '',
-    reflectionPhotoName: null,
-    reflectionPhotoPreviewUrl: null,
-    selectedChoiceId: null,
-    selectedDetailTagIds: [],
-    selectedExperienceId: null,
-    selectedExperienceIds: [],
-  };
+  const latestDraftRef = useRef(draft);
+  const feedbackDishes = [...scenario.dishes, ...(draft.customDishes ?? [])];
+  const activeDish = feedbackDishes[activeDishIndex] ?? feedbackDishes[0] ?? EMPTY_ACTIVE_DISH;
+  const activeResponse = draft.dishResponses[activeDish.id] ?? createDiningDishFeedbackDraft(activeDish);
   const activeChoice = getSelectedChoice(activeDish, draft);
   const activeExperienceIds = getSelectedExperienceIds(activeResponse);
   const activeExperiences = getSelectedTasteExperiences(activeResponse);
@@ -1986,13 +2393,40 @@ export function DiningFeedbackScreen({
     activeExperience;
   const selectedDetailTagIds = activeResponse.selectedDetailTagIds ?? [];
   const customDetailTags = activeResponse.customDetailTags ?? {};
+  const activeDishKindIds = getSelectedDishKindIds(activeDish, activeResponse);
+  const recommendedDetailTagIds = getRecommendedDetailTagIds({
+    dishKindIds: activeDishKindIds,
+    experiences: activeExperiences,
+  });
   const reflectionNote = activeResponse.reflectionNote ?? '';
   const reflectionPhotoName = activeResponse.reflectionPhotoName ?? null;
-  const reflectionPhotoPreviewUrl = activeResponse.reflectionPhotoPreviewUrl ?? null;
-  const completedDishCount = scenario.dishes.filter(
+  const reflectionPhotoPreviewUrl =
+    resolvePublicMediaPath(activeResponse.reflectionPhotoPreviewUrl) ?? null;
+  const completedDishCount = feedbackDishes.filter(
     (dish) => getSelectedExperienceIds(draft.dishResponses[dish.id]).length > 0,
   ).length;
-  const selectedDish = selectedDishIndex === null ? null : scenario.dishes[selectedDishIndex] ?? null;
+  const selectedDish = selectedDishIndex === null ? null : feedbackDishes[selectedDishIndex] ?? null;
+  const selectedDishResponse = selectedDish
+    ? draft.dishResponses[selectedDish.id] ?? createDiningDishFeedbackDraft(selectedDish)
+    : null;
+  const selectedDishRecommendedKindIds = selectedDish ? getRecommendedDishKindIds(selectedDish) : [];
+  const selectedDishKindIds = selectedDish && selectedDishResponse
+    ? getSelectedDishKindIds(selectedDish, selectedDishResponse)
+    : [];
+  const selectedDishCustomKindLabels = selectedDishResponse?.customDishKindLabels ?? [];
+  const customDishIdSet = new Set((draft.customDishes ?? []).map((dish) => dish.id));
+  const submitStatusHelperText = isSubmitting
+    ? '피드백을 저장하고 있어요. 잠시만 기다려주세요.'
+    : submitErrorMessage ?? null;
+
+  useEffect(() => {
+    latestDraftRef.current = draft;
+  }, [draft]);
+
+  const commitDraftChange = (nextDraft: DiningFeedbackDraft) => {
+    latestDraftRef.current = nextDraft;
+    onChange(nextDraft);
+  };
 
   useEffect(() => {
     onMapViewChange?.(true);
@@ -2001,6 +2435,18 @@ export function DiningFeedbackScreen({
       onMapViewChange?.(false);
     };
   }, [onMapViewChange]);
+
+  useEffect(() => {
+    if (isCustomDishInputOpen) {
+      customDishInputRef.current?.focus();
+    }
+  }, [isCustomDishInputOpen]);
+
+  useEffect(() => {
+    if (editingCustomDishId) {
+      editingCustomDishInputRef.current?.focus();
+    }
+  }, [editingCustomDishId]);
 
   useEffect(() => {
     if (feedbackStep !== 'camera-capture') {
@@ -2077,7 +2523,7 @@ export function DiningFeedbackScreen({
     const averageRating =
       ratingValues.reduce((sum, rating) => sum + rating, 0) / Math.max(1, ratingValues.length);
 
-    onChange({
+    commitDraftChange({
       ...draft,
       dishResponses: nextDishResponses,
       overallRating: Math.round(averageRating),
@@ -2087,17 +2533,187 @@ export function DiningFeedbackScreen({
     return nextExperienceIds;
   };
 
-  const updateActiveDishResponse = (nextResponse: Partial<typeof activeResponse>) => {
-    onChange({
+  const updateDishResponse = (
+    dish: DiningDishMetadata,
+    nextResponse: Partial<typeof activeResponse>,
+  ) => {
+    const currentResponse = draft.dishResponses[dish.id] ?? createDiningDishFeedbackDraft(dish);
+
+    commitDraftChange({
       ...draft,
       dishResponses: {
         ...draft.dishResponses,
-        [activeDish.id]: {
-          ...activeResponse,
+        [dish.id]: {
+          ...currentResponse,
           ...nextResponse,
         },
       },
     });
+  };
+
+  const updateActiveDishResponse = (nextResponse: Partial<typeof activeResponse>) => {
+    updateDishResponse(activeDish, nextResponse);
+  };
+
+  const addCustomDish = () => {
+    const title = customDishInputValue.trim();
+
+    if (!title) {
+      return;
+    }
+
+    const customDish = createCustomDiningDishMetadata(title);
+    const nextCustomDishes = [...(draft.customDishes ?? []), customDish];
+    const nextIndex = scenario.dishes.length + nextCustomDishes.length - 1;
+
+    commitDraftChange({
+      ...draft,
+      customDishes: nextCustomDishes,
+      dishResponses: {
+        ...draft.dishResponses,
+        [customDish.id]: createDiningDishFeedbackDraft(customDish),
+      },
+    });
+    setSelectedDishIndex(nextIndex);
+    setCustomDishInputValue('');
+    setIsCustomDishInputOpen(false);
+    setEditingCustomDishId(null);
+    setEditingCustomDishInputValue('');
+  };
+
+  const openCustomDishEdit = (dish: DiningDishMetadata) => {
+    setIsCustomDishInputOpen(false);
+    setCustomDishInputValue('');
+    setEditingCustomDishId(dish.id);
+    setEditingCustomDishInputValue(dish.title);
+  };
+
+  const cancelCustomDishEdit = () => {
+    setEditingCustomDishId(null);
+    setEditingCustomDishInputValue('');
+  };
+
+  const saveCustomDishEdit = (dishId: string) => {
+    const nextTitle = editingCustomDishInputValue.trim();
+
+    if (!nextTitle) {
+      return;
+    }
+
+    const currentCustomDishes = draft.customDishes ?? [];
+    let didUpdate = false;
+    const nextCustomDishes = currentCustomDishes.map((dish) => {
+      if (dish.id !== dishId) {
+        return dish;
+      }
+
+      didUpdate = true;
+      return {
+        ...dish,
+        title: nextTitle,
+      };
+    });
+
+    if (!didUpdate) {
+      return;
+    }
+
+    commitDraftChange({
+      ...draft,
+      customDishes: nextCustomDishes,
+    });
+    setEditingCustomDishId(null);
+    setEditingCustomDishInputValue('');
+  };
+
+  const removeCustomDish = (dishId: string) => {
+    const currentCustomDishes = draft.customDishes ?? [];
+    const nextCustomDishes = currentCustomDishes.filter((dish) => dish.id !== dishId);
+
+    if (nextCustomDishes.length === currentCustomDishes.length) {
+      return;
+    }
+
+    const removedDishIndex = feedbackDishes.findIndex((dish) => dish.id === dishId);
+    const { [dishId]: _removedResponse, ...nextDishResponses } = draft.dishResponses;
+
+    commitDraftChange({
+      ...draft,
+      customDishes: nextCustomDishes,
+      dishResponses: nextDishResponses,
+    });
+    setSelectedDishIndex((currentIndex) => {
+      if (currentIndex === null || removedDishIndex === -1 || currentIndex < removedDishIndex) {
+        return currentIndex;
+      }
+
+      return currentIndex === removedDishIndex ? null : currentIndex - 1;
+    });
+    setActiveDishIndex((currentIndex) => {
+      if (removedDishIndex === -1 || currentIndex < removedDishIndex) {
+        return currentIndex;
+      }
+
+      if (currentIndex === removedDishIndex) {
+        return Math.max(0, Math.min(currentIndex, feedbackDishes.length - 2));
+      }
+
+      return currentIndex - 1;
+    });
+    setIsDishKindInputOpen(false);
+    setDishKindInputValue('');
+    if (editingCustomDishId === dishId) {
+      setEditingCustomDishId(null);
+      setEditingCustomDishInputValue('');
+    }
+  };
+
+  const toggleSelectedDishKind = (kindId: string) => {
+    if (!selectedDish) {
+      return;
+    }
+
+    const currentKindIds = getSelectedDishKindIds(selectedDish, selectedDishResponse ?? undefined);
+    const nextKindIds = currentKindIds.includes(kindId)
+      ? currentKindIds.filter((selectedKindId) => selectedKindId !== kindId)
+      : [...currentKindIds, kindId].slice(0, 6);
+
+    updateDishResponse(selectedDish, {
+      selectedDishKindIds: nextKindIds,
+      customDishKindLabels: [
+        ...(selectedDishResponse?.customDishKindLabels ?? []),
+        ...getCustomDishKindLabelsFromIds(nextKindIds).filter(
+          (label) => !(selectedDishResponse?.customDishKindLabels ?? []).includes(label),
+        ),
+      ],
+    });
+  };
+
+  const addSelectedDishCustomKind = () => {
+    if (!selectedDish) {
+      return;
+    }
+
+    const label = dishKindInputValue.trim();
+
+    if (!label) {
+      return;
+    }
+
+    const customKindId = getCustomDishKindId(label);
+    const currentCustomLabels = selectedDishResponse?.customDishKindLabels ?? [];
+    const currentKindIds = getSelectedDishKindIds(selectedDish, selectedDishResponse ?? undefined);
+
+    updateDishResponse(selectedDish, {
+      customDishKindLabels: currentCustomLabels.includes(label)
+        ? currentCustomLabels
+        : [...currentCustomLabels, label],
+      selectedDishKindIds: currentKindIds.includes(customKindId)
+        ? currentKindIds
+        : [...currentKindIds, customKindId].slice(0, 6),
+    });
+    setDishKindInputValue('');
+    setIsDishKindInputOpen(false);
   };
 
   const toggleDetailTag = (tagId: string) => {
@@ -2280,12 +2896,31 @@ export function DiningFeedbackScreen({
       return;
     }
 
+    const dish = feedbackDishes[selectedDishIndex];
+
+    if (!dish) {
+      return;
+    }
+
+    const response = draft.dishResponses[dish.id] ?? createDiningDishFeedbackDraft(dish);
+    const selectedKindIds = getSelectedDishKindIds(dish, response);
+
+    if ((response.selectedDishKindIds ?? []).length === 0 && selectedKindIds.length > 0) {
+      updateDishResponse(dish, { selectedDishKindIds: selectedKindIds });
+    }
+
     setActiveDishIndex(selectedDishIndex);
     setSearchedExperienceId(null);
+    setIsCustomDishInputOpen(false);
+    setIsDishKindInputOpen(false);
     setFeedbackStep('taste-checkin');
   };
 
   const handleTopBack = () => {
+    if (isSubmitting) {
+      return;
+    }
+
     if (feedbackStep === 'taste-checkin') {
       if (isTasteSearchOpen) {
         setIsTasteSearchOpen(false);
@@ -2391,7 +3026,7 @@ export function DiningFeedbackScreen({
 
     return (
       <div
-        className="relative isolate flex h-full w-full items-center justify-center overflow-y-auto px-5 py-10 no-scrollbar animate-slideIn"
+        className="relative isolate flex h-full w-full items-center justify-center overflow-hidden px-5 py-10 animate-slideIn"
         onClick={() => setIsResultChromeVisible(true)}
         onTouchStart={() => setIsResultChromeVisible(true)}
         style={resultBackgroundStyle}
@@ -2425,7 +3060,7 @@ export function DiningFeedbackScreen({
             }
           />
         </div>
-        <div className="dining-result-card-bloom relative z-10 w-full max-w-[420px]">
+        <div className="dining-result-card-bloom relative z-10 w-[min(360px,calc(100vw-100px))] max-w-full">
           <DiningDishResultCard
             activeChoice={activeChoice}
             dish={activeDish}
@@ -2436,13 +3071,18 @@ export function DiningFeedbackScreen({
           />
         </div>
         <FlowBottomCta
-          actionLabel="저장"
+          actionDisabled={isSubmitting}
+          actionLabel={isSubmitting ? '저장 중' : '저장'}
           className={cn(
             'transition-all duration-300 ease-out',
             isResultChromeVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0 pointer-events-none',
           )}
           fadeClassName="!bg-none"
-          onAction={onSubmit}
+          helperText={submitStatusHelperText}
+          onAction={() => {
+            void onSubmit(latestDraftRef.current);
+          }}
+          secondaryButtonDisabled={isSubmitting}
           secondaryButtonClassName="border border-white/80 bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] shadow-none"
           secondaryButtonLabel="추가 기록"
           onSecondaryButtonAction={handleResultAdditionalRecord}
@@ -2465,6 +3105,7 @@ export function DiningFeedbackScreen({
       {feedbackStep !== 'camera-capture' ? (
         <TopAppBar
           appearance={feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' ? 'solid' : undefined}
+          solidBackground={feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' ? 'focus' : 'page'}
           title={feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection' ? activeDish.title : '식후 피드백'}
           showBack
           onBack={handleTopBack}
@@ -2482,7 +3123,12 @@ export function DiningFeedbackScreen({
             feedbackStep !== 'camera-capture' ? (
             <div className="flex flex-col gap-3">
               <div>
-                <h1 className="text-[18px] font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]">
+                <h1
+                  className={cn(
+                    'font-bold leading-tight tracking-tight text-[var(--tb-color-text-primary)]',
+                    feedbackStep === 'menu-select' ? 'text-[16px]' : 'text-[18px]',
+                  )}
+                >
                   {feedbackStep === 'menu-select' ? (
                     '어떤 메뉴를 먼저 기록할까요?'
                   ) : (
@@ -2493,7 +3139,12 @@ export function DiningFeedbackScreen({
                     </>
                   )}
                 </h1>
-                <p className={`mt-1 ${feedbackBodyClass}`}>
+                <p
+                  className={cn(
+                    `mt-1 ${feedbackBodyClass}`,
+                    feedbackStep === 'menu-select' ? 'text-[12px]' : 'text-[13px]',
+                  )}
+                >
                   {feedbackStep === 'menu-select'
                     ? '모든 코스를 한 번에 평가하지 않아도 괜찮아요. 가장 선명하게 기억나는 메뉴부터 선택하면, 그 메뉴의 미각 인상만 차분히 기록할 수 있어요.'
                     : '정답을 맞히는 평가가 아니라, 입안에 남은 인상을 이름 붙이는 체크인이에요. 중앙은 은은한 인상, 바깥으로 갈수록 강하게 남은 인상입니다.'}
@@ -2508,31 +3159,125 @@ export function DiningFeedbackScreen({
           {feedbackStep === 'menu-select' ? (
             <PageSection>
               <div className="flex flex-col gap-3">
-                {scenario.dishes.map((dish, index) => {
+                {feedbackDishes.map((dish, index) => {
                   const isSelected = selectedDishIndex === index;
                   const recordedExperiences = getSelectedTasteExperiences(draft.dishResponses[dish.id]);
                   const recordedExperience = recordedExperiences[0] ?? null;
+                  const isCustomDish = customDishIdSet.has(dish.id);
+                  const selectDish = () => {
+                    setIsCustomDishInputOpen(false);
+                    setCustomDishInputValue('');
+                    setEditingCustomDishId(null);
+                    setEditingCustomDishInputValue('');
+                    setSelectedDishIndex((currentIndex) => (
+                      currentIndex === index ? null : index
+                    ));
+                  };
+                  const trailingContent = recordedExperience ? (
+                    <span className="flex flex-col items-end gap-1">
+                      <span className="rounded-full bg-[var(--tb-color-surface-muted)] px-2 py-1 text-[10px] font-semibold text-[var(--tb-color-text-muted)]">
+                        {recordedExperiences.length > 1
+                          ? `${recordedExperience.label} 외 ${recordedExperiences.length - 1}개 기록됨`
+                          : `${recordedExperience.label} 기록됨`}
+                      </span>
+                    </span>
+                  ) : null;
+
+                  if (isCustomDish) {
+                    return (
+                      <CustomDishSelectionCard
+                        key={dish.id}
+                        description={dish.subtitle}
+                        editInputRef={editingCustomDishInputRef}
+                        editValue={editingCustomDishInputValue}
+                        isEditing={editingCustomDishId === dish.id}
+                        onCancelEdit={cancelCustomDishEdit}
+                        onChangeEditValue={setEditingCustomDishInputValue}
+                        onEdit={() => openCustomDishEdit(dish)}
+                        onRemove={() => removeCustomDish(dish.id)}
+                        onSaveEdit={() => saveCustomDishEdit(dish.id)}
+                        onSelect={selectDish}
+                        selected={isSelected}
+                        title={dish.title}
+                        trailing={trailingContent}
+                      />
+                    );
+                  }
 
                   return (
                     <SelectionCard
                       key={dish.id}
                       description={dish.subtitle}
                       indicator="radio"
-                      onClick={() => setSelectedDishIndex(index)}
+                      onClick={selectDish}
                       selected={isSelected}
                       title={dish.title}
-                      trailing={
-                        recordedExperience ? (
-                          <span className="rounded-full bg-[var(--tb-color-surface-muted)] px-2 py-1 text-[10px] font-semibold text-[var(--tb-color-text-muted)]">
-                            {recordedExperiences.length > 1
-                              ? `${recordedExperience.label} 외 ${recordedExperiences.length - 1}개 기록됨`
-                              : `${recordedExperience.label} 기록됨`}
-                          </span>
-                        ) : null
-                      }
+                      trailing={trailingContent}
                     />
                   );
                 })}
+                <SelectionCard
+                  description="코스 목록에 없는 메뉴도 미각 기록으로 남길 수 있어요."
+                  indicator="radio"
+                  onClick={() => {
+                    setSelectedDishIndex(null);
+                    setEditingCustomDishId(null);
+                    setEditingCustomDishInputValue('');
+                    setIsCustomDishInputOpen((currentValue) => !currentValue);
+                  }}
+                  selected={isCustomDishInputOpen}
+                  title="직접 입력"
+                />
+                {isCustomDishInputOpen ? (
+                  <form
+                    className="rounded-[var(--tb-radius-20)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)] p-4"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      addCustomDish();
+                    }}
+                  >
+                    <label className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]" htmlFor="custom-dish-input">
+                      메뉴 직접 입력
+                    </label>
+                    <div className="mt-3 flex items-center gap-2">
+                      <input
+                        id="custom-dish-input"
+                        ref={customDishInputRef}
+                        value={customDishInputValue}
+                        onChange={(event) => setCustomDishInputValue(event.target.value)}
+                        className="h-11 min-w-0 flex-1 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] px-3 text-[13px] font-semibold text-[var(--tb-color-text-primary)] outline-none placeholder:text-[var(--tb-color-text-disabled)]"
+                        placeholder="예: 오미자와 배 디저트"
+                        enterKeyHint="done"
+                      />
+                      <button
+                        type="submit"
+                        className="h-11 shrink-0 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] px-4 text-[12px] font-semibold text-[var(--tb-color-text-inverse)]"
+                      >
+                        추가
+                      </button>
+                    </div>
+                  </form>
+                ) : null}
+                {selectedDish ? (
+                  <DishKindTagSelector
+                    customLabels={selectedDishCustomKindLabels}
+                    inputValue={dishKindInputValue}
+                    isInputOpen={isDishKindInputOpen}
+                    onAddCustomKind={addSelectedDishCustomKind}
+                    onChangeInputValue={setDishKindInputValue}
+                    onCloseInput={() => {
+                      setIsDishKindInputOpen(false);
+                      setDishKindInputValue('');
+                    }}
+                    onOpenInput={() => {
+                      setIsDishKindInputOpen(true);
+                      setDishKindInputValue('');
+                    }}
+                    onToggleKind={toggleSelectedDishKind}
+                    recommendedKindIds={selectedDishRecommendedKindIds}
+                    selectedKindIds={selectedDishKindIds}
+                  />
+                ) : null}
               </div>
             </PageSection>
           ) : feedbackStep === 'detail-tags' ? (
@@ -2651,6 +3396,7 @@ export function DiningFeedbackScreen({
                       onChangeInputValue={setCustomDetailInputValue}
                       onOpenInput={() => openCustomDetailInput(category.id)}
                       onToggleTag={toggleDetailTag}
+                      recommendedTagIds={recommendedDetailTagIds}
                       selectedTagIds={selectedDetailTagIds}
                     />
                   ))}
@@ -2772,7 +3518,7 @@ export function DiningFeedbackScreen({
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex flex-col gap-2">
                     <span className={feedbackLabelClass}>
-                      {activeDishIndex + 1} / {scenario.dishes.length} · {activeDish.courseLabel}
+                      {activeDishIndex + 1} / {feedbackDishes.length} · {activeDish.courseLabel}
                     </span>
                     <div>
                       <h2 className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">
@@ -2820,9 +3566,9 @@ export function DiningFeedbackScreen({
                   <button
                     type="button"
                     onClick={() =>
-                      setActiveDishIndex((index) => Math.min(scenario.dishes.length - 1, index + 1))
+                      setActiveDishIndex((index) => Math.min(feedbackDishes.length - 1, index + 1))
                     }
-                    disabled={activeDishIndex === scenario.dishes.length - 1}
+                    disabled={activeDishIndex === feedbackDishes.length - 1}
                     className="rounded-full border border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] px-4 py-2 text-[12px] font-semibold text-[var(--tb-color-text-inverse)] disabled:opacity-40"
                   >
                     다음 코스
@@ -2841,7 +3587,7 @@ export function DiningFeedbackScreen({
                   <textarea
                     value={draft.overallComment}
                     onChange={(event) =>
-                      onChange({
+                      commitDraftChange({
                         ...draft,
                         overallComment: event.target.value,
                       })
@@ -2856,7 +3602,7 @@ export function DiningFeedbackScreen({
                   <div className="mt-3">
                     <QuickOptionGroup
                       value={draft.returnIntent}
-                      onChange={(returnIntent) => onChange({ ...draft, returnIntent })}
+                      onChange={(returnIntent) => commitDraftChange({ ...draft, returnIntent })}
                       options={returnIntentOptions.map((option) => ({
                         label: option.label,
                         value: option.id,
@@ -2872,9 +3618,11 @@ export function DiningFeedbackScreen({
 
       {feedbackStep !== 'camera-capture' ? (
         <FlowBottomCta
-          actionDisabled={feedbackStep === 'menu-select' && selectedDishIndex === null}
+          actionDisabled={(feedbackStep === 'menu-select' && selectedDishIndex === null) || isSubmitting}
           actionLabel={
-            feedbackStep === 'menu-select'
+            isSubmitting
+              ? '저장 중'
+              : feedbackStep === 'menu-select'
               ? '선택한 메뉴 기록하기'
               : feedbackStep === 'taste-reflection'
                 ? '계속하기'
@@ -2883,10 +3631,17 @@ export function DiningFeedbackScreen({
                   : '다음 다이닝에 반영하기'
           }
           helperText={
-            feedbackStep === 'menu-select'
+            submitStatusHelperText &&
+              feedbackStep !== 'menu-select' &&
+              feedbackStep !== 'detail-tags' &&
+              feedbackStep !== 'taste-reflection'
+              ? submitStatusHelperText
+              : feedbackStep === 'menu-select'
               ? selectedDish
                 ? `${selectedDish.courseLabel} · ${selectedDish.title}의 미각 인상을 기록합니다.`
-                : '가장 기억에 남는 메뉴 하나를 먼저 선택해주세요.'
+                : feedbackDishes.length === 0
+                  ? '직접 입력으로 기억난 메뉴를 먼저 추가해주세요.'
+                  : '가장 기억에 남는 메뉴 하나를 먼저 선택해주세요.'
               : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
                 ? selectedDetailTagIds.length > 0
                   ? `${selectedDetailTagIds.length}개의 디테일 단서를 함께 저장합니다.`
@@ -2898,7 +3653,9 @@ export function DiningFeedbackScreen({
               ? moveToTasteCheckin
               : feedbackStep === 'detail-tags' || feedbackStep === 'taste-reflection'
                 ? completeDetailTags
-                : onSubmit
+                : () => {
+                  void onSubmit(latestDraftRef.current);
+                }
           }
           fadeClassName={
             feedbackStep === 'detail-tags'
@@ -2906,6 +3663,7 @@ export function DiningFeedbackScreen({
               : undefined
           }
           secondaryButtonLabel={feedbackStep === 'taste-reflection' ? '취소하기' : undefined}
+          secondaryButtonDisabled={isSubmitting}
           onSecondaryButtonAction={
             feedbackStep === 'taste-reflection' ? () => setFeedbackStep('detail-tags') : undefined
           }

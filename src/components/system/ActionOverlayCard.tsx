@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 
 import { cn } from '../ui/utils';
+import PrimaryButton from './PrimaryButton';
 
 export interface ActionOverlayCardAction {
   label: ReactNode;
@@ -67,7 +68,7 @@ export default function ActionOverlayCard({
             </div>
           </div>
         ) : (
-          <div className={cn(layout === 'split' ? "px-5 py-5" : "mb-4")}>
+          <div className={cn(layout === 'split' ? "p-4" : "mb-4")}>
             <h3 className="text-center text-[16px] font-bold leading-relaxed text-[var(--tb-color-text-primary)]">
               {title}
             </h3>
@@ -89,30 +90,43 @@ export default function ActionOverlayCard({
           <div
             className={cn(
               layout === 'split'
-                ? "grid grid-cols-2 border-t border-[var(--tb-color-border-default)]"
+                ? "flex w-full gap-2 px-4 pb-4"
                 : "flex flex-col gap-2",
               hasCustomContent ? "mt-4 w-full" : null,
             )}
           >
             {actions.map((action, index) => (
-              <button
-                key={index}
-                type="button"
-                disabled={action.disabled}
-                onClick={action.onClick}
-                className={cn(
-                  "h-11 px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors disabled:opacity-45",
-                  layout === 'split'
-                    ? "h-12 bg-white"
-                    : "rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] hover:bg-[var(--tb-color-border-subtle)]",
-                  layout === 'split' && index === 0
-                    ? "border-r border-[var(--tb-color-border-default)]"
-                    : null,
-                  action.tone === 'destructive' ? "text-[var(--destructive)]" : null,
-                )}
-              >
-                {action.label}
-              </button>
+              layout === 'split' ? (
+                <PrimaryButton
+                  key={index}
+                  type="button"
+                  disabled={action.disabled}
+                  onClick={action.onClick}
+                  className={cn(
+                    index === 0
+                      ? "border border-[var(--tb-color-border-strong)] bg-transparent text-[var(--tb-color-text-tertiary)] shadow-none"
+                      : null,
+                    action.tone === 'destructive'
+                      ? "bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:bg-[var(--destructive)]"
+                      : null,
+                  )}
+                >
+                  {action.label}
+                </PrimaryButton>
+              ) : (
+                <button
+                  key={index}
+                  type="button"
+                  disabled={action.disabled}
+                  onClick={action.onClick}
+                  className={cn(
+                    "h-11 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-4 text-[13px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-border-subtle)] disabled:opacity-45",
+                    action.tone === 'destructive' ? "text-[var(--destructive)]" : null,
+                  )}
+                >
+                  {action.label}
+                </button>
+              )
             ))}
           </div>
         ) : null}

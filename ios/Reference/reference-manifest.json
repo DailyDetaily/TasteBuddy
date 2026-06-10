@@ -1,0 +1,482 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-06-05T00:00:00+09:00",
+  "baseUrl": "http://127.0.0.1:3001",
+  "viewport": {
+    "width": 393,
+    "height": 852
+  },
+  "scopeExclusions": [
+    "reservation-creation",
+    "reservation-confirmation",
+    "tastick-connection"
+  ],
+  "entries": [
+    { "id": "onboarding-default", "file": "Web/01-onboarding-default-393x852.png", "state": "default" },
+    { "id": "onboarding-learning-loop", "file": "Web/02-onboarding-learning-loop-393x852.png", "state": "detail" },
+    { "id": "intake-safety-default", "file": "Web/03-intake-safety-default-393x852.png", "state": "default" },
+    { "id": "calibration-intro", "file": "Web/04-calibration-intro-393x852.png", "state": "default" },
+    { "id": "calibration-context-birthdate", "file": "Web/05-calibration-context-birthdate-393x852.png", "state": "default" },
+    { "id": "calibration-questions-intro", "file": "Web/06-calibration-questions-intro-393x852.png", "state": "default" },
+    { "id": "calibration-question-default", "file": "Web/07-calibration-question-default-393x852.png", "state": "default" },
+    { "id": "home-populated", "file": "Web/08-home-populated-393x852.png", "state": "populated" },
+    { "id": "analysis-populated", "file": "Web/09-analysis-populated-393x852.png", "state": "populated" },
+    { "id": "dining-loading", "file": "Web/10-dining-loading-393x852.png", "state": "loading" },
+    { "id": "dining-populated", "file": "Web/11-dining-populated-393x852.png", "state": "populated" },
+    { "id": "profile-populated", "file": "Web/12-profile-populated-393x852.png", "state": "populated" },
+    { "id": "saved-list-populated", "file": "Web/13-saved-list-populated-393x852.png", "state": "populated" },
+    { "id": "global-search-default", "file": "Web/14-global-search-default-393x852.png", "state": "default" },
+    { "id": "global-search-results", "file": "Web/15-global-search-results-393x852.png", "state": "populated" },
+    { "id": "restaurant-detail-populated", "file": "Web/16-restaurant-detail-populated-393x852.png", "state": "populated" },
+    { "id": "bookmark-sheet", "file": "Web/17-bookmark-sheet-393x852.png", "state": "detail" },
+    { "id": "dining-feedback-menu-select", "file": "Web/18-dining-feedback-menu-select-393x852.png", "state": "editor" },
+    { "id": "dining-feedback-taste-words", "file": "Web/19-dining-feedback-taste-words-393x852.png", "state": "editor" }
+  ],
+  "nativeBaselines": [
+    {
+      "id": "native-onboarding-prototype",
+      "file": "Native/01-onboarding-prototype-368x800.jpg",
+      "state": "prototype",
+      "simulator": "iPhone 17",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-calibration-intro",
+      "file": "Native/02-calibration-intro-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-calibration-question",
+      "file": "Native/03-calibration-question-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-calibration-result",
+      "file": "Native/04-calibration-result-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-preference-intake",
+      "file": "Native/05-preference-intake-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-design-system-preview",
+      "file": "Native/06-design-system-preview-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-app-shell-home",
+      "file": "Native/07-app-shell-home-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-restaurant-detail-route",
+      "file": "Native/08-restaurant-detail-route-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-splash",
+      "file": "Native/09-splash-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--splash-preview"]
+    },
+    {
+      "id": "native-launch-auto-onboarding",
+      "file": "Native/10-launch-auto-onboarding-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--reset-app-state"]
+    },
+    {
+      "id": "native-global-search-default",
+      "file": "Native/11-global-search-default-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--search-preview"]
+    },
+    {
+      "id": "native-global-search-results",
+      "file": "Native/12-global-search-results-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--search-results-preview"]
+    },
+    {
+      "id": "native-global-search-empty",
+      "file": "Native/13-global-search-empty-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--search-empty-preview"]
+    },
+    {
+      "id": "native-home-recommendation-loading",
+      "file": "Native/14-home-recommendation-loading-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--recommendation-loading-preview"]
+    },
+    {
+      "id": "native-home-recommendation-fallback",
+      "file": "Native/15-home-recommendation-fallback-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--recommendation-fallback-preview"]
+    },
+    {
+      "id": "native-home-comment-focus",
+      "file": "Native/16-home-comment-focus-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--comments-preview"]
+    },
+    {
+      "id": "native-onboarding-parity",
+      "file": "Native/17-onboarding-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--onboarding-preview"]
+    },
+    {
+      "id": "native-preference-intake-parity",
+      "file": "Native/18-preference-intake-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--intake-preview"]
+    },
+    {
+      "id": "native-calibration-question-parity",
+      "file": "Native/19-calibration-question-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--calibration-preview"]
+    },
+    {
+      "id": "native-home-parity",
+      "file": "Native/20-home-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-analysis-parity",
+      "file": "Native/21-analysis-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-dining-parity",
+      "file": "Native/22-dining-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-profile-parity",
+      "file": "Native/23-profile-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5"
+    },
+    {
+      "id": "native-dining-feedback-menu-parity",
+      "file": "Native/24-dining-feedback-menu-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--dining-feedback-preview"]
+    },
+    {
+      "id": "native-dining-feedback-taste-words-parity",
+      "file": "Native/25-dining-feedback-taste-words-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--dining-feedback-preview"]
+    },
+    {
+      "id": "native-restaurant-detail-parity",
+      "file": "Native/26-restaurant-detail-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--restaurant-detail-preview"]
+    },
+    {
+      "id": "native-saved-list-parity",
+      "file": "Native/27-saved-list-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--saved-list-preview"]
+    },
+    {
+      "id": "native-comments-focus-parity",
+      "file": "Native/28-comments-focus-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--comments-preview"]
+    },
+    {
+      "id": "native-connection-list-parity",
+      "file": "Native/29-connection-list-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--connection-list-preview"]
+    },
+    {
+      "id": "native-public-profile-parity",
+      "file": "Native/30-public-profile-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--public-profile-preview"]
+    },
+    {
+      "id": "native-taste-change-parity",
+      "file": "Native/31-taste-change-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--taste-change-preview"]
+    },
+    {
+      "id": "native-bookmark-sheet-parity",
+      "file": "Native/32-bookmark-sheet-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--restaurant-detail-preview"]
+    },
+    {
+      "id": "native-notifications-parity",
+      "file": "Native/33-notifications-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-menu-parity",
+      "file": "Native/34-menu-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-profile-summary-parity",
+      "file": "Native/35-profile-summary-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-quick-refinement-parity",
+      "file": "Native/36-quick-refinement-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-system-components-parity",
+      "file": "Native/37-system-components-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--design-system-preview"]
+    },
+    {
+      "id": "native-analysis-system-components-parity",
+      "file": "Native/38-analysis-system-components-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-app-chrome-home-parity",
+      "file": "Native/39-app-chrome-home-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-app-chrome-detail-parity",
+      "file": "Native/40-app-chrome-detail-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--restaurant-detail-preview"]
+    },
+    {
+      "id": "native-analysis-radar-parity",
+      "file": "Native/41-analysis-radar-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-analysis-signature-parity",
+      "file": "Native/42-analysis-signature-parity-368x800.jpg",
+      "state": "parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-analysis-insight-summary-parity",
+      "file": "Native/43-analysis-insight-summary-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-home-following-dish-no-uploaded-media",
+      "file": "Native/44-home-following-dish-no-uploaded-media-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-comments-focus-comment-store",
+      "file": "Native/45-comments-focus-comment-store-368x800.jpg",
+      "state": "verified",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--comments-preview"]
+    },
+    {
+      "id": "native-home-dish-card-contract",
+      "file": "Native/46-home-dish-card-contract-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-dining-dish-card-contract",
+      "file": "Native/47-dining-dish-card-contract-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--dining-preview"]
+    },
+    {
+      "id": "native-home-dish-detail-tags-contract",
+      "file": "Native/48-home-dish-detail-tags-contract-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-dining-dish-detail-tags-contract",
+      "file": "Native/49-dining-dish-detail-tags-contract-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--dining-preview"]
+    },
+    {
+      "id": "native-home-tba-dish-card",
+      "file": "Native/50-home-native-tba-dish-card-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--shell-preview"]
+    },
+    {
+      "id": "native-dining-tba-dish-card",
+      "file": "Native/51-dining-native-tba-dish-card-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--dining-preview"]
+    },
+    {
+      "id": "native-search-overlay-compact-card-parity",
+      "file": "Native/52-search-overlay-compact-card-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--search-results-preview"]
+    },
+    {
+      "id": "native-system-core-components-parity",
+      "file": "Native/53-system-core-components-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--design-system-preview"]
+    },
+    {
+      "id": "native-design-system-full-inventory-parity",
+      "file": "Native/54-design-system-full-inventory-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--design-system-preview"]
+    },
+    {
+      "id": "native-design-system-file-preview-registry-parity",
+      "file": "Native/55-design-system-file-preview-registry-parity-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--design-system-preview"]
+    },
+    {
+      "id": "native-flow-bottom-selection-sheet-adoption",
+      "file": "Native/56-flow-bottom-selection-sheet-adoption-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": []
+    },
+    {
+      "id": "native-restaurant-bookmark-local-persistence",
+      "file": "Native/57-restaurant-bookmark-local-persistence-368x800.jpg",
+      "state": "source-parity-reviewed",
+      "simulator": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "launchArgs": ["--restaurant-detail-preview"]
+    }
+  ]
+}

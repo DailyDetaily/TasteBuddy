@@ -62,6 +62,10 @@
       },
       "scripts": {
             "dev": "vite",
+            "dev:web": "vite",
+            "dev:all": "open ios/TasteBuddy.xcodeproj && vite",
+            "ios:open": "open ios/TasteBuddy.xcodeproj",
+            "ios:generate": "cd ios && xcodegen generate",
             "dev:keepalive": "node scripts/dev-keepalive.mjs --host 0.0.0.0 --port 3001 --strictPort",
             "dev:app": "node scripts/open-design-system.mjs /",
             "dev:design-system": "node scripts/open-design-system.mjs",
@@ -85,6 +89,10 @@
             "seed:supabase": "node scripts/import-supabase-seed.mjs",
             "seed:mingles:dinner": "node scripts/import-supabase-seed.mjs supabase/seeds/mingles-dinner-2026-01-08.seed.json",
             "place-index:sync": "node scripts/sync-place-index.mjs",
+            "native-food:smoke": "node scripts/smoke-nongsaro-native-food.mjs",
+            "native-food:fetch": "node scripts/fetch-nongsaro-native-food-dataset.mjs",
+            "food-knowledge:build": "node scripts/build-tba-food-knowledge-dataset.mjs",
+            "food-knowledge:runtime": "node scripts/build-tba-food-knowledge-runtime.mjs",
             "test": "node scripts/test-taste-survey-scoring.mjs"
       }
 }

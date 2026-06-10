@@ -1,20 +1,30 @@
 import { mkdir } from 'node:fs/promises';
+import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import * as esbuild from 'esbuild';
 
-const outfile = 'node_modules/.cache/taste-buddy-tests/taste-survey-scoring.test.mjs';
+const testEntryPoints = [
+  'scripts/taste-survey-scoring.test.ts',
+  'scripts/tba-food-knowledge-dataset.test.ts',
+];
 
-await mkdir('node_modules/.cache/taste-buddy-tests', { recursive: true });
+const outdir = 'node_modules/.cache/taste-buddy-tests';
 
-await esbuild.build({
-  bundle: true,
-  entryPoints: ['scripts/taste-survey-scoring.test.ts'],
-  format: 'esm',
-  logLevel: 'silent',
-  outfile,
-  platform: 'node',
-  target: 'node20',
-});
+await mkdir(outdir, { recursive: true });
 
-await import(pathToFileURL(outfile).href);
+for (const entryPoint of testEntryPoints) {
+  const outfile = path.join(outdir, `${path.basename(entryPoint, '.ts')}.mjs`);
+
+  await esbuild.build({
+    bundle: true,
+    entryPoints: [entryPoint],
+    format: 'esm',
+    logLevel: 'silent',
+    outfile,
+    platform: 'node',
+    target: 'node20',
+  });
+
+  await import(pathToFileURL(outfile).href);
+}

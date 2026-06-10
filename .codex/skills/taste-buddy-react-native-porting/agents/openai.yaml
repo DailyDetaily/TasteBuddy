@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taste Buddy Native Porting"
+  short_description: "Port React UI to SwiftUI with source-based parity"
+  default_prompt: "Port this Taste Buddy React UI into native SwiftUI while preserving presentation mode, component structure, and copy."

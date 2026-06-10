@@ -26,6 +26,7 @@ const APP_SHELL_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 
 interface TopAppBarProps {
   appearance?: 'default' | 'solid' | 'transparent';
+  solidBackground?: 'focus' | 'page' | 'surface';
   title?: string;
   showBack?: boolean;
   onBack?: () => void;
@@ -44,6 +45,7 @@ interface TopAppBarProps {
 
 export default function TopAppBar({
   appearance = 'default',
+  solidBackground = 'page',
   title,
   showBack,
   onBack,
@@ -63,16 +65,22 @@ export default function TopAppBar({
   const primaryActionLabel = showSearchAction ? '통합 검색 열기' : '미각 측정 시작';
   const primaryActionTitle = showSearchAction ? '검색' : '미각 측정';
   const handlePrimaryAction = showSearchAction ? onOpenSearch : onStartMeasurement;
+  const solidBackgroundClassName =
+    solidBackground === 'focus'
+      ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-focus)]'
+      : solidBackground === 'surface'
+        ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-surface-base)]'
+        : 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]';
+  const appBarClassName =
+    appearance === 'transparent'
+      ? 'w-full shrink-0 border-b border-transparent bg-transparent'
+      : appearance === 'solid'
+        ? solidBackgroundClassName
+        : 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70';
 
   return (
     <div
-      className={
-        appearance === 'transparent'
-          ? 'w-full shrink-0 border-b border-transparent bg-transparent'
-          : appearance === 'solid'
-            ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-surface-base)]'
-            : 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70'
-      }
+      className={appBarClassName}
       style={{ paddingTop: 'var(--tb-safe-area-top)' }}
     >
       <div className="relative flex h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-[20px]">

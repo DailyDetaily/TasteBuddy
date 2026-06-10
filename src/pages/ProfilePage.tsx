@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import {
   Settings as SettingsIcon,
   Bookmark as BookmarkIcon,
-  ChevronRight as ChevronRightIcon,
   CircleCheck as CircleCheckIcon,
   Trophy as TrophyIcon,
   Star as StarIcon,
@@ -24,31 +23,22 @@ const wrapIcon = (IconComponent: React.ElementType) => {
 
 const Settings = wrapIcon(SettingsIcon);
 const Bookmark = wrapIcon(BookmarkIcon);
-const ChevronRight = wrapIcon(ChevronRightIcon);
 const CircleCheck = wrapIcon(CircleCheckIcon);
 const Award = wrapIcon(TrophyIcon);
 const Star = wrapIcon(StarIcon);
 const UserPlus = wrapIcon(UserPlusIcon);
-const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 
-import ChefAvatar from '../components/system/ChefAvatar';
-import CompactCard from '../components/system/CompactCard';
-import OutlineBadge from '../components/system/OutlineBadge';
 import PageSection from '../components/system/PageSection';
+import DiningFriendActionButton from '../components/profile/DiningFriendActionButton';
 import PalateBloomAvatar, {
   createPalateBloomProfileFromMeasurementSnapshot,
   type TasteProfile as PalateBloomTasteProfile,
 } from '../components/system/PalateBloomAvatar';
 import SummaryMetricCard from '../components/system/SummaryMetricCard';
-import TastickDeviceCard from '../components/system/TastickDeviceCard';
 import DiningFriendProfileCard from '../components/profile/DiningFriendProfileCard';
 import { ICON_TOKENS } from '../constants/designTokens';
-import { type ReservationRecord } from '../constants/reservationCatalog';
 import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
 import {
-  getAverageMeasurementMm,
-  getTasteProfileBadge,
-  isBroadStarterMeasurementSnapshot,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
 import { type RestaurantReadyGuidance } from '../constants/quickTasteCalibrationData';
@@ -96,35 +86,9 @@ const DEFAULT_PROFILE_IDENTITY: Required<Pick<ProfileIdentityData, 'displayName'
   followerCount: 0,
   followingCount: 0,
 };
-function formatChefName(name: string) {
-  return name.endsWith('셰프') ? name : `${name} 셰프`;
-}
 
 function formatSocialCount(count: number | null | undefined) {
   return Math.max(0, count ?? 0).toLocaleString('ko-KR');
-}
-
-function deriveFavoriteChefs(reservations: ReservationRecord[]): FavoriteChef[] {
-  const chefMap = new Map<string, FavoriteChef>();
-
-  for (const reservation of reservations) {
-    const key = `${reservation.chef}:${reservation.restaurant}`;
-    const existing = chefMap.get(key);
-
-    if (!existing || reservation.matchRate > existing.matchRate) {
-      chefMap.set(key, {
-        name: reservation.chef,
-        restaurant: reservation.restaurant,
-        image: reservation.chefImage,
-        matchRate: reservation.matchRate,
-        taste: reservation.adjustments[0]?.taste ?? '감칠맛',
-      });
-    }
-  }
-
-  return Array.from(chefMap.values())
-    .sort((left, right) => right.matchRate - left.matchRate)
-    .slice(0, 3);
 }
 
 function deriveProfileStats(
@@ -158,13 +122,13 @@ function deriveProfileStatsFromCounts({
 }): ProfileStat[] {
   return [
     {
-      label: 'TCS 보정',
+      label: '미각 기록',
       value: `${measurementCount}회`,
       icon: Award,
       color: '#FF9900',
     },
     {
-      label: '피드백',
+      label: '다이닝 리뷰',
       value: `${feedbackCount}건`,
       icon: CircleCheck,
       color: '#B372B4',
@@ -242,10 +206,7 @@ interface ProfilePageProps {
 
 export default function ProfilePage({
   measurementSnapshot,
-  starterGuidance = null,
   profileIdentity,
-  onNavigateToReservation,
-  onOpenRestaurantDetail,
   onOpenProfileSettings,
   onOpenSavedList,
   onAddFriend,
@@ -255,11 +216,7 @@ export default function ProfilePage({
   onConnectionViewChange,
   onSelectedConnectionProfileChange,
   onLoadConnections,
-  hasUnreadNotifications,
 }: ProfilePageProps) {
-  const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
-  const averageMeasurement = getAverageMeasurementMm(measurementSnapshot);
-  const tasteProfileBadge = getTasteProfileBadge(averageMeasurement);
   const displayName = profileIdentity?.displayName?.trim() || DEFAULT_PROFILE_IDENTITY.displayName;
   const nickname = profileIdentity?.nickname?.trim() ?? '';
   const nicknameLabel = nickname ? `@${nickname}` : '버디네임 미설정';
@@ -276,7 +233,6 @@ export default function ProfilePage({
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
   const [updatingConnectionId, setUpdatingConnectionId] = useState<string | null>(null);
-  const [favoriteChefs, setFavoriteChefs] = useState<FavoriteChef[]>([]);
   const [stats, setStats] = useState<ProfileStat[]>(() =>
     deriveProfileStats([measurementSnapshot], 0, loadRestaurantBookmarks().length, null),
   );
@@ -302,7 +258,6 @@ export default function ProfilePage({
       const averageRating = getAverageFeedbackRating(feedbackEntries);
       const savedListCount = loadRestaurantBookmarks().length;
 
-      setFavoriteChefs(deriveFavoriteChefs(hydratedData.reservations));
       setStats(
         deriveProfileStats(
           actualMeasurements,
@@ -428,28 +383,28 @@ export default function ProfilePage({
         selectedProfileSnapshot,
         selectedConnectionProfile.id,
       );
+      const isSeedTasteProfile = selectedConnectionProfile.id.startsWith('taste-dev-');
       const selectedProfileActionDisabled =
+        isSeedTasteProfile ||
         updatingConnectionId === selectedConnectionProfile.id ||
         (selectedConnectionProfile.isFriend ? !onRemoveFriend : !onAddFriend);
       const selectedProfileActionLabel = selectedConnectionProfile.isFriend
         ? updatingConnectionId === selectedConnectionProfile.id
           ? '취소 중'
           : '팔로잉'
+        : isSeedTasteProfile
+          ? '개발 프로필'
         : updatingConnectionId === selectedConnectionProfile.id
           ? '추가 중'
           : '팔로우';
       const selectedProfileStats = deriveProfileStatsFromCounts({
         averageRating: selectedConnectionProfile.activitySummary?.averageRating ?? null,
         feedbackCount: selectedConnectionProfile.activitySummary?.feedbackCount ?? 0,
-        listLabel: '다이닝 기록',
-        listValue: `${selectedConnectionProfile.activitySummary?.reservationCount ?? 0}회`,
         measurementCount:
           selectedConnectionProfile.activitySummary?.measurementCount ??
           (selectedProfileSnapshot ? 1 : 0),
         savedListCount: selectedConnectionProfile.activitySummary?.savedRestaurantCount ?? 0,
       });
-      const selectedFavoriteChefs = selectedConnectionProfile.favoriteChefs ?? [];
-
       return (
         <div className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
           <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -487,26 +442,17 @@ export default function ProfilePage({
                         </span>
                         <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로잉</span>
                       </div>
-                      <button
-                        type="button"
+                      <DiningFriendActionButton
+                        ariaLabel={
+                          selectedConnectionProfile.isFriend ? '팔로잉 취소' : '팔로우'
+                        }
+                        className="ml-auto"
                         onClick={() => void handleToggleConnectionFriend(selectedConnectionProfile)}
                         disabled={selectedProfileActionDisabled}
-                        className={
-                          selectedConnectionProfile.isFriend
-                            ? 'ml-auto flex h-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[12px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)] disabled:opacity-55'
-                            : 'ml-auto flex h-9 items-center justify-center rounded-full px-3 text-[12px] font-semibold transition-[filter,opacity] hover:brightness-[0.98] disabled:opacity-55'
-                        }
-                        style={
-                          selectedConnectionProfile.isFriend
-                            ? undefined
-                            : {
-                              background: 'var(--tb-user-accent-tint-surface, var(--tb-taste-sweet-bg))',
-                              color: 'var(--tb-user-accent-dark, var(--tb-taste-sweet-dark))',
-                            }
-                        }
-                      >
-                        {selectedProfileActionLabel}
-                      </button>
+                        label={selectedProfileActionLabel}
+                        textSize="md"
+                        variant={selectedConnectionProfile.isFriend ? 'neutral' : 'accent'}
+                      />
                     </div>
                   </div>
                 </div>
@@ -521,52 +467,6 @@ export default function ProfilePage({
                       icon={stat.icon}
                       label={stat.label}
                       value={stat.value}
-                    />
-                  ))}
-                </div>
-              </PageSection>
-
-              <PageSection title="즐겨찾기 셰프" titleSize="md">
-                <div className="flex flex-col gap-3">
-                  {selectedFavoriteChefs.length === 0 ? (
-                    <div className="rounded-[20px] bg-white px-4 py-5 text-[13px] leading-relaxed text-[var(--tb-color-text-muted)]">
-                      아직 공개된 즐겨찾기 셰프 흐름이 없습니다.
-                    </div>
-                  ) : null}
-                  {selectedFavoriteChefs.map((chef, index) => (
-                    <CompactCard
-                      key={index}
-                      onClick={() => {
-                        if (onOpenRestaurantDetail) {
-                          onOpenRestaurantDetail(chef);
-                          return;
-                        }
-
-                        onNavigateToReservation?.(chef.name);
-                      }}
-                      media={
-                        <ChefAvatar
-                          alt={chef.name}
-                          className="h-[40px] w-[40px] rounded-[10px]"
-                          iconSize={ICON_TOKENS.size.lg}
-                          imageSrc={resolvePublicMediaPath(chef.image) ?? chef.image}
-                          taste={chef.taste}
-                          variant="neutral"
-                        />
-                      }
-                      heading={formatChefName(chef.name)}
-                      metadata={chef.restaurant}
-                      headingClassName="font-semibold"
-                      metadataClassName="font-normal"
-                      actions={
-                        <span className="flex items-center gap-3">
-                          <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{chef.matchRate}%</span>
-                          <ChevronRight
-                            size={CARD_TRAILING_ICON_SIZE}
-                            className="text-[var(--tb-color-icon-muted)]"
-                          />
-                        </span>
-                      }
                     />
                   ))}
                 </div>
@@ -707,47 +607,6 @@ export default function ProfilePage({
                   label={stat.label}
                   onClick={stat.label === '테이스트 리스트' ? onOpenSavedList : undefined}
                   value={stat.value}
-                />
-              ))}
-            </div>
-          </PageSection>
-
-          <PageSection title="즐겨찾기 셰프" titleSize="md">
-            <div className="flex flex-col gap-3">
-              {favoriteChefs.map((chef, index) => (
-                <CompactCard
-                  key={index}
-                  onClick={() => {
-                    if (onOpenRestaurantDetail) {
-                      onOpenRestaurantDetail(chef);
-                      return;
-                    }
-
-                    onNavigateToReservation?.(chef.name);
-                  }}
-                  media={
-                    <ChefAvatar
-                      alt={chef.name}
-                      className="h-[40px] w-[40px] rounded-[10px]"
-                      iconSize={ICON_TOKENS.size.lg}
-                      imageSrc={resolvePublicMediaPath(chef.image) ?? chef.image}
-                      taste={chef.taste}
-                      variant="neutral"
-                    />
-                  }
-                  heading={formatChefName(chef.name)}
-                  metadata={chef.restaurant}
-                  headingClassName="font-semibold"
-                  metadataClassName="font-normal"
-                  actions={
-                    <span className="flex items-center gap-3">
-                      <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{chef.matchRate}%</span>
-                      <ChevronRight
-                        size={CARD_TRAILING_ICON_SIZE}
-                        className="text-[var(--tb-color-icon-muted)]"
-                      />
-                    </span>
-                  }
                 />
               ))}
             </div>

@@ -13,6 +13,7 @@
 | 구조와 파일 배치 | [`ARCHITECTURE.md`](../ARCHITECTURE.md), [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | Supabase 구조 | [`supabase/README.md`](../supabase/README.md) |
 | 콘텐츠 파이프라인 | [`scripts/README.md`](../scripts/README.md) |
+| TasteBuddyAgent 상세 | [`docs/product/taste-buddy-agent.md`](./product/taste-buddy-agent.md) |
 
 ---
 
@@ -209,11 +210,22 @@ flowchart TD
 
 역할:
 
-- 현재 프로필 기반 요약, 최근 변화, 측정 refresh CTA, 개인화 chef match를 보여준다.
-- Supabase가 있으면 restaurant content catalog와 user learned calibration을 hydrate한다.
-- Supabase가 없으면 local fallback catalog로 앱이 동작한다.
+- 현재 프로필 기반 요약, 최근 변화, 측정 refresh CTA, Taste Match Feed를 보여준다.
+- `TasteBuddyAgent`가 viewer taste identity와 공개 리뷰 그래프를 비교해 유사 미각/대비 미각 기반 추천 이유를 만든다.
+- Supabase가 있으면 restaurant content catalog, user learned calibration, social taste graph를 hydrate한다.
+- Supabase가 없으면 local fallback catalog와 deterministic fallback social graph로 앱이 동작한다.
 
-### 7.6 Analysis
+### 7.6 Saved Restaurants
+
+파일: [`src/pages/SavedRestaurantListPage.tsx`](../src/pages/SavedRestaurantListPage.tsx), [`src/components/restaurant/RestaurantBookmarkSheet.tsx`](../src/components/restaurant/RestaurantBookmarkSheet.tsx)
+
+역할:
+
+- 식당 상세에서 saved restaurant를 리스트에 넣고, 저장 화면에서 리스트/카테고리별로 다시 비교한다.
+- 리스트는 "가보고 싶은 다이닝", "셰프 관심 리스트"처럼 다음 다이닝 판단을 돕는 언어를 쓴다.
+- 로컬 저장을 기본 fallback으로 유지하고, 로그인 이메일이 있으면 Supabase의 `restaurant_bookmark_lists`, `restaurant_bookmarks`와 병합/동기화한다.
+
+### 7.7 Analysis
 
 파일: [`src/pages/AnalysisPage.tsx`](../src/pages/AnalysisPage.tsx)
 
@@ -223,7 +235,7 @@ flowchart TD
 - raw number보다 "무슨 의미인지"와 "다음 예약에 어떻게 쓰이는지"를 앞세운다.
 - `Recharts`와 `HexRadarChart`를 함께 사용한다.
 
-### 7.7 Reservation
+### 7.8 Reservation
 
 파일: [`src/pages/DiningPage.tsx`](../src/pages/DiningPage.tsx), [`src/components/reservation/ReservationDetailSections.tsx`](../src/components/reservation/ReservationDetailSections.tsx)
 
@@ -233,17 +245,18 @@ flowchart TD
 - 상세에서는 personalization hero, chef summary, dining interpretation, timeline, chef calibration guidance를 보여준다.
 - 완료 예약에서는 식후 피드백과 AI analysis flow로 이어진다.
 
-### 7.8 Dining Feedback
+### 7.9 Dining Feedback
 
 파일: [`src/components/reservation/DiningFeedbackFlow.tsx`](../src/components/reservation/DiningFeedbackFlow.tsx), [`src/constants/diningFeedbackData.ts`](../src/constants/diningFeedbackData.ts)
 
 역할:
 
 - 식후 회고를 "다음 식사를 더 잘 맞추는 투자"처럼 만든다.
-- dish별 선택지, 만족도, return intent, overall comment를 받는다.
+- 메뉴 선택/직접 추가, dish kind, dish별 선택지, 디테일 태그, 만족도, return intent, overall comment를 받는다.
+- 회고 노트와 사진은 private learning artifact로 다루며, 사진은 R2 object key를 `feedback_items.reflection_photo_preview_url`에 저장한다.
 - 선택지는 taste/perceptual delta로 파싱되어 learned calibration에 반영된다.
 
-### 7.9 Profile
+### 7.10 Profile
 
 파일: [`src/pages/ProfilePage.tsx`](../src/pages/ProfilePage.tsx)
 
@@ -286,6 +299,7 @@ tastebuddy-user-state-v5
 | [`src/constants/preferenceIntakeData.ts`](../src/constants/preferenceIntakeData.ts) | 사전 조사 질문/선택지/profile builder |
 | [`src/constants/reservationCatalog.ts`](../src/constants/reservationCatalog.ts) | mock/fallback reservation catalog |
 | [`src/constants/diningFeedbackData.ts`](../src/constants/diningFeedbackData.ts) | 식후 feedback scenario, dish metadata, feedback choice |
+| [`src/constants/dishKindTags.ts`](../src/constants/dishKindTags.ts) | dish kind option, custom dish kind, 메뉴 메타데이터 기반 kind inference |
 | [`src/constants/tastePersonalization.ts`](../src/constants/tastePersonalization.ts) | dish signal weight, research rules, feedback tag definitions |
 | [`src/constants/tasteColors.ts`](../src/constants/tasteColors.ts) | taste color helper |
 | [`src/constants/designTokens.ts`](../src/constants/designTokens.ts) | typed design token mirror |
@@ -321,14 +335,19 @@ VITE_SUPABASE_USE_ANONYMOUS_AUTH
 | 레스토랑 | `restaurants`, `chefs` | 식당과 셰프 master data |
 | 콘텐츠 | `source_documents`, `dish_entities`, `dish_observed_facts`, `dish_inference_profiles`, `research_rules` | 메뉴/리뷰/공개 자료에서 만든 dish inference data |
 | 예약 | `reservations`, `reservation_dishes`, `tcs_guidance_packets` | 예약, 코스 dish, chef-facing guidance packet |
-| 피드백 | `feedback_submissions`, `feedback_items`, `feedback_parses` | 식후 피드백과 taste/perceptual parse |
+| 피드백 | `feedback_submissions`, `feedback_items`, `feedback_parses` | 식후 피드백, dish kind/detail tag, 회고 노트/사진, taste/perceptual parse |
 | 학습 | `user_learned_deltas` | 사용자별 learned calibration delta |
 | 알림 | `notifications` | 예약/측정/피드백 notification |
+| 소셜 미각 그래프 | `taste_social_profiles`, `taste_dining_reviews` | 공개 가능한 taste identity와 dining review 기반 Taste Match Feed |
+| 저장한 레스토랑 | `restaurant_bookmark_lists`, `restaurant_bookmarks` | 이메일 기준 bookmark list와 saved restaurant 동기화 |
 
 보안:
 
 - 대부분 user-owned table은 RLS로 `auth.uid()` 기준 own row만 select/insert/update 가능하다.
 - `restaurants`, `chefs`, `dish_entities`, `dish_inference_profiles`, `research_rules` 등 public content table은 [`20260330_public_content_reads.sql`](../supabase/migrations/20260330_public_content_reads.sql)에서 anon/authenticated read policy가 추가되어 있다.
+- `taste_social_profiles`, `taste_dining_reviews`는 공개/팔로워 공개 범위만 읽히도록 RLS를 두고, seed profile은 `is_seed`와 `seed_source`로 구분한다.
+- `restaurant_bookmark_lists`, `restaurant_bookmarks`는 `auth.jwt()->>'email'`의 lowercase 값과 `owner_email`을 맞춰 이메일 로그인 사용자의 리스트를 동기화한다.
+- `search_profiles_by_identity()`는 display name과 nickname을 함께 검색하고, 기존 `search_profiles_by_nickname()`는 compatibility wrapper로 유지한다.
 
 ### 8.5 Supabase read/write 함수
 
@@ -343,6 +362,13 @@ VITE_SUPABASE_USE_ANONYMOUS_AUTH
 | `hydrateRestaurantContentCatalog()` | chef/dish content catalog hydrate |
 | `persistTasteMeasurementSnapshot()` | 측정 session/result 저장 |
 | `submitDiningFeedbackToSupabase()` | feedback submission/item/parse 저장 및 learned deltas 업데이트 |
+
+추가 Supabase adapter:
+
+| 파일 | 역할 |
+| --- | --- |
+| [`src/lib/tasteBuddyAgentSupabase.ts`](../src/lib/tasteBuddyAgentSupabase.ts) | `taste_social_profiles`, `taste_dining_reviews`를 TBA public profile/review graph로 hydrate |
+| [`src/lib/restaurantBookmarksSupabase.ts`](../src/lib/restaurantBookmarksSupabase.ts) | 이메일 기준 bookmark list와 saved restaurant 상태 hydrate/persist |
 
 ---
 
@@ -483,6 +509,23 @@ buildReservationPersonalizationSummary()
 - 피드백은 단순 별점 평균이 아니라 "무엇을 어떻게 다르게 느꼈는지"를 다음 추천과 chef guidance에 반영하는 데이터다.
 - confidence가 낮은 신호는 hypothesis count로 쌓이고, 충분한 support가 생기면 profile refinement에 더 강하게 반영된다.
 
+### 10.7 TasteBuddyAgent social matching
+
+파일: [`src/lib/tasteBuddyAgent.ts`](../src/lib/tasteBuddyAgent.ts), [`src/lib/tasteBuddyAgentSupabase.ts`](../src/lib/tasteBuddyAgentSupabase.ts), [`src/types/tasteBuddyAgent.ts`](../src/types/tasteBuddyAgent.ts)
+
+동작:
+
+1. 6축 측정값, 피드백 수, 리뷰 수를 `TasteProfileSnapshot`으로 해석한다.
+2. 공개 가능한 `PublicTasteProfile`은 raw measurement 대신 taste signature, stage, 공개 통계만 노출한다.
+3. 공개 dining review는 rating, dish kind, taste tag, experience/detail tag, review snippet을 taste evidence로 변환한다.
+4. viewer와 reviewer의 taste/perceptual vector를 비교해 `TasteSimilarityEdge`를 만든다.
+5. 유사도, 리뷰 신뢰도, 최근성, 다양성을 합쳐 `TasteMatchFeedItem`을 생성한다.
+
+핵심 감각:
+
+- social feed는 친구 수 경쟁이 아니라 "내 입맛 기준에서 이 기록을 왜 참고할 수 있는가"를 설명해야 한다.
+- profile 공개는 opt-in이어야 하며, raw taste data보다 해석 가능한 identity와 공개 리뷰만 앞세운다.
+
 ---
 
 ## 11. UX / 디자인 시스템 요약
@@ -544,7 +587,8 @@ Taste Buddy의 시각 방향은 `Quiet Hospitality Intelligence`다.
 | 사전 조사 | 구현됨 | 한 화면 한 질문, `PreferenceIntakeProfile` 생성 |
 | Quick calibration | 구현됨 | digital anchoring으로 starter profile 생성 |
 | Teastick measurement | 프로토타입 | 실제 hardware integration보다 UI/시뮬레이션 중심 |
-| Home personalization | 부분 구현 | Supabase content catalog와 learned calibration이 있으면 chef match 생성 |
+| Home personalization | 구현 방향 전환 | 예약/셰프 준비보다 Taste Match Feed 중심의 social taste discovery로 전환 |
+| TasteBuddyAgent (TBA) Social | MVP 구현 | taste identity, public profile, dining review, similarity edge, match feed deterministic engine |
 | Analysis | 구현됨 | profile, trend, interpretation, menu recommendation surface |
 | Reservation personalization | 구현됨 | 예약 상세, chef calibration guidance, timeline |
 | Post-dining feedback | 구현됨 | feedback 저장, parsed deltas, analysis summary |
@@ -553,7 +597,7 @@ Taste Buddy의 시각 방향은 `Quiet Hospitality Intelligence`다.
 | Restaurant content pipeline | MVP 구현 | fetch/OCR/parse/intake/seed/import workflow |
 | Chef dashboard | 미구현 | 현재는 guest app 안의 chef guidance 표현 중심 |
 | 실제 예약 provider 연동 | 미구현 | external handoff/reference 수준 |
-| Public taste profile / Matches | 기획 방향 | 현재 production flow의 핵심 surface로는 아직 구현 전 |
+| Public taste profile / Matches | MVP 구현 | opt-in 공개 전제의 public taste profile, similar palate, match feed surface 구현 |
 | 자동 chef correction workflow | Phase 2 | 현재는 taste brief/guidance framing 수준 |
 
 ---
@@ -564,8 +608,8 @@ Taste Buddy의 시각 방향은 `Quiet Hospitality Intelligence`다.
 
 - "내 입맛을 판단하는 게 아니라 이해해 간다."
 - "첫 프로필은 빠르게 만들고, 식사와 피드백을 통해 더 정교해진다."
-- "예약 전에는 내 기준에서 무엇이 맞고 어떤 점이 리스크인지 설명한다."
-- "식후 기록은 다음 다이닝을 더 잘 맞추는 투자다."
+- "나와 비슷한 입맛의 사람들이 어떤 경험을 좋게 봤는지 해석해 준다."
+- "식후 기록은 내 taste identity와 다른 사용자의 추천 품질을 함께 높이는 투자다."
 
 셰프/레스토랑에게:
 
@@ -579,11 +623,11 @@ Taste Buddy의 시각 방향은 `Quiet Hospitality Intelligence`다.
 
 | 과제 | 이유 |
 | --- | --- |
-| 예약 전 fit explanation UX 고도화 | high-consideration dining에서 예약 망설임을 줄이는 핵심 |
-| 식후 log를 더 짧고 강하게 만들기 | 반복 기록이 쌓여야 profile refinement가 살아남 |
-| Public taste profile 설계 | Beli식 identity loop를 Taste Buddy답게 가져오는 축 |
-| Similar palate / Matches 설계 | 친구 수보다 "왜 이 사람의 기록을 믿을 수 있는지"가 중요 |
-| Chef-facing brief 검증 | restaurant workflow로 확장하기 전 operational realism 확인 |
+| Taste Match Feed 실제 데이터화 | 현재 fallback public profiles/reviews를 Supabase 공개 리뷰 그래프로 연결해야 함 |
+| Dining Review 작성 경험 재정의 | 피드백을 private learning과 public review로 자연스럽게 분리해야 함 |
+| Public profile opt-in UX | raw data를 숨기면서도 taste identity 공개 범위를 명확히 해야 함 |
+| Similar palate 설명 고도화 | 친구 수보다 "왜 이 사람의 기록을 믿을 수 있는지"가 중요 |
+| Chef-facing brief 재검토 | v1 social taste network에서는 우선순위가 낮아졌으므로 별도 phase로 격리 |
 | 실제 예약 provider handoff 정리 | 앱이 booking app처럼 보이지 않으면서도 행동으로 이어져야 함 |
 | Supabase seed와 UI fallback 간 정합성 점검 | MVP demo와 실제 data hydration 차이를 줄이기 위함 |
 

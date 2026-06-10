@@ -10,6 +10,8 @@ import type {
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabasePublicKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const FEEDBACK_REFLECTION_PHOTO_MAX_DIMENSION = 1600;
+const FEEDBACK_REFLECTION_PHOTO_QUALITY = 0.88;
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublicKey);
 
@@ -328,6 +330,11 @@ function normalizeNicknameForProfile(input: string) {
   return input.trim().replace(/^@+/, '');
 }
 
+function isSearchableProfileIdentityQuery(input: string) {
+  const normalizedInput = normalizeNicknameForProfile(input);
+  return normalizedInput.length >= 2 || /[가-힣]/.test(normalizedInput);
+}
+
 function getProfileIdentityErrorMessage(error: { code?: string; message?: string }) {
   if (error.code === '23505' || error.message?.toLowerCase().includes('profiles_nickname_unique_idx')) {
     return '이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해 주세요.';
@@ -610,7 +617,7 @@ export async function hydrateSupabaseProfileIdentity() {
   };
 }
 
-export async function searchSupabaseProfilesByNickname(query: string) {
+export async function searchSupabaseProfilesByIdentity(query: string) {
   if (!supabase) {
     return {
       ok: false,
@@ -621,24 +628,44 @@ export async function searchSupabaseProfilesByNickname(query: string) {
 
   const normalizedQuery = normalizeNicknameForProfile(query);
 
-  if (normalizedQuery.length < 2) {
+  if (!isSearchableProfileIdentityQuery(query)) {
     return {
       ok: false,
       friends: [],
-      message: '닉네임을 두 글자 이상 입력해 주세요.',
+      message: '이름은 한 글자부터, 버디네임은 두 글자 이상 입력해 주세요.',
     };
   }
 
-  const { data, error } = await supabase.rpc('search_profiles_by_nickname', {
+  const { data, error } = await supabase.rpc('search_profiles_by_identity', {
     search_query: normalizedQuery,
   });
 
   if (error) {
-    console.warn('Failed to search Supabase profiles by nickname.', error);
+    if (isMissingSupabaseRpcError(error)) {
+      const { data: legacyData, error: legacyError } = await supabase.rpc(
+        'search_profiles_by_nickname',
+        { search_query: normalizedQuery },
+      );
+
+      if (!legacyError && Array.isArray(legacyData) && legacyData.length > 0) {
+        return {
+          ok: true,
+          friends: legacyData.flatMap((item): DiningFriendProfile[] => {
+            const friend = parseDiningFriendProfile(item, { requireNickname: true });
+            return friend ? [friend] : [];
+          }),
+          message: '버디 검색을 완료했습니다.',
+        };
+      }
+    }
+
+    console.warn('Failed to search Supabase profiles by identity.', error);
     return {
       ok: false,
       friends: [],
-      message: error.message,
+      message: isMissingSupabaseRpcError(error)
+        ? '버디 이름 검색을 사용하려면 Supabase SQL Editor에서 최신 버디 검색 SQL을 먼저 적용해야 합니다.'
+        : error.message,
     };
   }
 
@@ -648,8 +675,12 @@ export async function searchSupabaseProfilesByNickname(query: string) {
       const friend = parseDiningFriendProfile(item, { requireNickname: true });
       return friend ? [friend] : [];
     }),
-    message: '닉네임 검색을 완료했습니다.',
+    message: '버디 검색을 완료했습니다.',
   };
+}
+
+export async function searchSupabaseProfilesByNickname(query: string) {
+  return searchSupabaseProfilesByIdentity(query);
 }
 
 export async function addSupabaseFriendByNickname(nickname: string) {
@@ -829,6 +860,152 @@ export async function uploadSupabaseProfileAvatar(file: File) {
     ok: true,
     avatarPath,
     message: '프로필 사진이 저장되었습니다.',
+  };
+}
+
+function ensureJpegFileName(fileName?: string | null) {
+  const trimmedName = fileName?.trim();
+  const baseName = trimmedName && trimmedName.length > 0
+    ? trimmedName.replace(/\.[^.]+$/, '')
+    : `taste-reflection-${Date.now()}`;
+
+  return `${baseName}.jpg`;
+}
+
+function loadImageFromDataUrl(dataUrl: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Feedback reflection photo could not be loaded.'));
+    image.src = dataUrl;
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob);
+          return;
+        }
+
+        reject(new Error('Feedback reflection photo could not be prepared.'));
+      },
+      type,
+      quality,
+    );
+  });
+}
+
+async function createFeedbackReflectionPhotoFile(dataUrl: string, fileName?: string | null) {
+  if (!/^data:image\//i.test(dataUrl) || typeof document === 'undefined') {
+    return null;
+  }
+
+  try {
+    const image = await loadImageFromDataUrl(dataUrl);
+    const scale = Math.min(
+      1,
+      FEEDBACK_REFLECTION_PHOTO_MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight),
+    );
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      throw new Error('Feedback reflection photo canvas is unavailable.');
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    context.drawImage(image, 0, 0, width, height);
+
+    const blob = await canvasToBlob(
+      canvas,
+      'image/jpeg',
+      FEEDBACK_REFLECTION_PHOTO_QUALITY,
+    );
+
+    return new File([blob], ensureJpegFileName(fileName), { type: 'image/jpeg' });
+  } catch {
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+
+    return new File(
+      [blob],
+      fileName?.trim() || `taste-reflection-${Date.now()}.jpg`,
+      { type: blob.type || 'image/jpeg' },
+    );
+  }
+}
+
+export async function uploadSupabaseFeedbackReflectionPhoto(input: {
+  dataUrl: string;
+  dishId?: string | null;
+  fileName?: string | null;
+  reservationId?: number | string | null;
+}) {
+  if (!supabase) {
+    return {
+      ok: false,
+      objectKey: null,
+      message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+    };
+  }
+
+  const file = await createFeedbackReflectionPhotoFile(input.dataUrl, input.fileName);
+
+  if (!file) {
+    return {
+      ok: false,
+      objectKey: null,
+      message: '피드백 사진 형식이 올바르지 않습니다.',
+    };
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  if (input.reservationId != null) {
+    formData.append('reservationId', String(input.reservationId));
+  }
+
+  if (input.dishId) {
+    formData.append('dishId', input.dishId);
+  }
+
+  const { data, error } = await supabase.functions.invoke('upload-feedback-reflection-photo', {
+    body: formData,
+  });
+
+  if (error) {
+    console.warn('Failed to upload Supabase feedback reflection photo.', error);
+    return {
+      ok: false,
+      objectKey: null,
+      message: error.message,
+    };
+  }
+
+  const objectKey =
+    data && typeof data === 'object' && 'objectKey' in data && typeof data.objectKey === 'string'
+      ? data.objectKey
+      : null;
+
+  if (!objectKey) {
+    return {
+      ok: false,
+      objectKey: null,
+      message: '피드백 사진 업로드 응답이 올바르지 않습니다.',
+    };
+  }
+
+  return {
+    ok: true,
+    objectKey,
+    message: '피드백 사진이 저장되었습니다.',
   };
 }
 

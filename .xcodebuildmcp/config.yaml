@@ -1,0 +1,12 @@
+schemaVersion: 1
+sessionDefaults:
+  projectPath: /Users/sinjunho/Desktop/Taste Buddy app/ios/TasteBuddy.xcodeproj
+  scheme: TasteBuddy
+  configuration: Debug
+  simulatorName: iPhone 17 Pro
+  simulatorId: F5D54921-8578-4F32-96A0-D0FCBBE69189
+  useLatestOS: true
+  arch: x86_64
+  derivedDataPath: /Users/sinjunho/Desktop/Taste Buddy app/ios/DerivedData
+  bundleId: com.tastebuddy.ios
+  simulatorPlatform: iOS Simulator

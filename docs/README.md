@@ -34,6 +34,8 @@ The important thing to know is that some of the most important docs live at the 
 - App/service summary: [`TASTE_BUDDY_APP_SUMMARY.md`](./TASTE_BUDDY_APP_SUMMARY.md)
 - Product source of truth: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - Design system: [`../DESIGN.md`](../DESIGN.md)
+- TasteBuddyAgent guide: [`product/taste-buddy-agent.md`](./product/taste-buddy-agent.md)
+- TBA knowledge/RAG plan: [`product/tba-knowledge-rag-plan.md`](./product/tba-knowledge-rag-plan.md)
 - Onboarding product note: [`product/onboarding-digital-anchoring.md`](./product/onboarding-digital-anchoring.md)
 - Onboarding intake plan: [`product/onboarding-preference-intake-plan.md`](./product/onboarding-preference-intake-plan.md)
 

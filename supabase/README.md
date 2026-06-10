@@ -27,18 +27,38 @@ External map providers are stored as a place index layer, separate from Taste Bu
 ### Media assets
 
 - [`migrations/20260513_media_assets_r2.sql`](./migrations/20260513_media_assets_r2.sql)
+- [`migrations/20260528_feedback_item_dish_card_details.sql`](./migrations/20260528_feedback_item_dish_card_details.sql)
 
 Public media files live in Cloudflare R2. Supabase stores the metadata and relationships through `media_assets`, while existing fields such as `chefs.avatar_path` can continue to store object keys like `chefs/jungsik.png`. See [`../docs/operations/cloudflare-r2-media-storage.md`](../docs/operations/cloudflare-r2-media-storage.md).
+
+Feedback reflection photos use the same public media origin. `feedback_items` stores the R2 object key plus the dish kind/detail tag metadata needed to rebuild the private feedback card.
+
+### Social taste graph
+
+- [`migrations/20260527_taste_agent_social_seed.sql`](./migrations/20260527_taste_agent_social_seed.sql)
+- [`migrations/20260527_taste_agent_social_dev_enrichment.sql`](./migrations/20260527_taste_agent_social_dev_enrichment.sql)
+
+`taste_social_profiles` and `taste_dining_reviews` back the TasteBuddyAgent social discovery surface. They store public/followers/private visibility, seed metadata, taste measurement summaries, and public dining reviews. RLS lets authenticated users read public records, read followers records only through `profile_friendships`, and write only records tied to their own `profiles.id`.
+
+### Profile search and saved restaurants
+
+- [`migrations/20260528_profile_identity_search.sql`](./migrations/20260528_profile_identity_search.sql)
+- [`migrations/20260528_restaurant_bookmarks_by_email.sql`](./migrations/20260528_restaurant_bookmarks_by_email.sql)
+
+`search_profiles_by_identity()` searches display name and nickname together while keeping `search_profiles_by_nickname()` as a compatibility wrapper. Restaurant bookmarks are stored in `restaurant_bookmark_lists` and `restaurant_bookmarks` by lowercase `owner_email`, so email-authenticated users can sync saved restaurant lists across devices while localStorage remains the fallback.
 
 ### Edge Functions
 
 - [`functions/kakao-place-lookup`](./functions/kakao-place-lookup)
 - [`functions/google-place-enrich`](./functions/google-place-enrich)
 - [`functions/delete-account`](./functions/delete-account)
+- [`functions/upload-feedback-reflection-photo`](./functions/upload-feedback-reflection-photo)
 
 The app uses these functions to fetch live Kakao Local place details and Google Places enrichment without exposing provider API keys in the browser. Keep `KAKAO_REST_API_KEY` and `GOOGLE_MAPS_API_KEY` as Supabase function secrets.
 
 `delete-account` lets a signed-in user delete their own Supabase Auth account from the app. It verifies the caller's JWT and then deletes the Auth user with `SUPABASE_SERVICE_ROLE_KEY`, so keep the service role key only in Supabase function secrets and never expose it to the browser bundle.
+
+`upload-feedback-reflection-photo` accepts an authenticated image upload, validates the file type/size, writes it to Cloudflare R2 under `feedback-reflections/{user-id}/{yyyy-mm-dd}/...`, and returns the object key for storage in `feedback_items.reflection_photo_preview_url`.
 
 ## Typical Workflow
 

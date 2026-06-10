@@ -1,0 +1,80 @@
+name: TasteBuddy
+
+options:
+  bundleIdPrefix: com.tastebuddy
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.0"
+
+settings:
+  base:
+    ALWAYS_SEARCH_USER_PATHS: NO
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.1.0
+    SWIFT_VERSION: "5.10"
+
+targets:
+  TasteBuddy:
+    type: application
+    platform: iOS
+    sources:
+      - path: TasteBuddy
+        excludes:
+          - Resources/Info.plist
+    resources:
+      - path: TasteBuddy/Resources
+        excludes:
+          - Info.plist
+    info:
+      path: TasteBuddy/Resources/Info.plist
+      properties:
+        CFBundleDevelopmentRegion: ko
+        CFBundleDisplayName: Taste Buddy
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UIAppFonts:
+          - Pretendard-Regular.otf
+          - Pretendard-Medium.otf
+          - Pretendard-SemiBold.otf
+          - Pretendard-Bold.otf
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        DEFINES_MODULE: YES
+        ENABLE_TESTABILITY: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.tastebuddy.ios
+        PRODUCT_NAME: TasteBuddy
+        TARGETED_DEVICE_FAMILY: "1"
+
+  TasteBuddyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: TasteBuddyTests
+    dependencies:
+      - target: TasteBuddy
+    settings:
+      base:
+        BUNDLE_LOADER: $(TEST_HOST)
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.tastebuddy.ios.tests
+        PRODUCT_NAME: TasteBuddyTests
+        SWIFT_VERSION: "5.10"
+
+schemes:
+  TasteBuddy:
+    build:
+      targets:
+        TasteBuddy: all
+        TasteBuddyTests:
+          - test
+    test:
+      targets:
+        - TasteBuddyTests
