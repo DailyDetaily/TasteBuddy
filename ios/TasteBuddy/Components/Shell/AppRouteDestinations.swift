@@ -3,17 +3,30 @@ import SwiftUI
 struct AppRouteDestinationView: View {
     let route: AppRoute
     let navigate: (AppRoute) -> Void
+    let onBack: () -> Void
+    var onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
 
     var body: some View {
         switch route {
         case .restaurant(let id):
-            RestaurantDetailView(restaurantID: id)
+            RestaurantDetailRouteView(
+                restaurantID: id,
+                navigate: navigate,
+                onBack: onBack,
+                onOpenBookmarkSheet: onOpenBookmarkSheet
+            )
         case .restaurantMenu(let restaurantID, let menuID):
-            RestaurantDetailView(restaurantID: restaurantID, highlightedDishID: menuID)
+            RestaurantDetailRouteView(
+                restaurantID: restaurantID,
+                highlightedDishID: menuID,
+                navigate: navigate,
+                onBack: onBack,
+                onOpenBookmarkSheet: onOpenBookmarkSheet
+            )
         case .dishFeedback(let id):
-            DishFeedbackFocusView(feedbackID: id)
+            DishFeedbackCommentFocusView(feedbackID: id)
         case .comments(let id):
-            CommentsFocusView(feedbackID: id)
+            DishFeedbackCommentFocusView(feedbackID: id)
         case .tasteChange:
             TasteChangeFocusView()
         case .savedRestaurants:
@@ -175,9 +188,15 @@ private struct RestaurantHeroNativeCard: View {
                     .lineSpacing(4)
 
                 VStack(alignment: .leading, spacing: 7) {
-                    Label(restaurant.locationLabel, systemImage: "mappin.circle")
+                    RestaurantHeroInfoRow(
+                        value: restaurant.locationLabel,
+                        icon: .mapPin
+                    )
                     ForEach(restaurant.infoRows.prefix(2)) { row in
-                        Label(row.value, systemImage: row.symbol)
+                        RestaurantHeroInfoRow(
+                            value: row.value,
+                            icon: LucideIconName(systemName: row.symbol)
+                        )
                     }
                 }
                 .font(TBFont.regular(11))
@@ -202,6 +221,22 @@ private struct RestaurantHeroNativeCard: View {
                     RestaurantMetric(value: restaurant.id == "mingles" ? "4.6 / 5" : "4.5 / 5", label: "전체 평판")
                 }
             }
+        }
+    }
+}
+
+private struct RestaurantHeroInfoRow: View {
+    let value: String
+    let icon: LucideIconName
+
+    var body: some View {
+        HStack(spacing: 6) {
+            LucideIcon(
+                icon,
+                size: TBIcon.Size.small,
+                strokeWidth: TBIcon.Stroke.regular
+            )
+            Text(value)
         }
     }
 }
@@ -262,17 +297,54 @@ private enum BookmarkSheetMode {
 struct RestaurantBookmarkNativeSheet: View {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var keyboard = BottomComposerKeyboardObserver()
     @State private var mode: BookmarkSheetMode = .select
     @State private var customListName = ""
     @State private var selectedListID = RestaurantBookmarkConstants.defaultListID
     @State private var pendingListID: String?
     @State private var toastList: RestaurantBookmarkList?
-    @State private var selectedCoverIconID: BookmarkCoverIconID = .utensils
-    @State private var selectedCoverTasteID: TasteAxis = .sweet
-    @State private var isCoverEditorOpen = false
+    @State private var internalSelectedCoverIconID: BookmarkCoverIconID = .utensils
+    @State private var internalSelectedCoverTasteID: TasteAxis = .sweet
+    @State private var internalIsCoverEditorOpen = false
     @State private var isSecretList = false
 
     let restaurant: RestaurantSummary
+    let onDismissRequest: (() -> Void)?
+    let usesNativeSheetChrome: Bool
+    private let externalSelectedCoverIconID: Binding<BookmarkCoverIconID>?
+    private let externalSelectedCoverTasteID: Binding<TasteAxis>?
+    private let externalIsCoverEditorOpen: Binding<Bool>?
+    private let hostsCoverEditorOverlay: Bool
+
+    init(
+        restaurant: RestaurantSummary,
+        onDismissRequest: (() -> Void)? = nil,
+        usesNativeSheetChrome: Bool = true,
+        selectedCoverIconID: Binding<BookmarkCoverIconID>? = nil,
+        selectedCoverTasteID: Binding<TasteAxis>? = nil,
+        isCoverEditorOpen: Binding<Bool>? = nil,
+        hostsCoverEditorOverlay: Bool = true
+    ) {
+        self.restaurant = restaurant
+        self.onDismissRequest = onDismissRequest
+        self.usesNativeSheetChrome = usesNativeSheetChrome
+        self.externalSelectedCoverIconID = selectedCoverIconID
+        self.externalSelectedCoverTasteID = selectedCoverTasteID
+        self.externalIsCoverEditorOpen = isCoverEditorOpen
+        self.hostsCoverEditorOverlay = hostsCoverEditorOverlay
+    }
+
+    private var selectedCoverIconID: Binding<BookmarkCoverIconID> {
+        externalSelectedCoverIconID ?? $internalSelectedCoverIconID
+    }
+
+    private var selectedCoverTasteID: Binding<TasteAxis> {
+        externalSelectedCoverTasteID ?? $internalSelectedCoverTasteID
+    }
+
+    private var isCoverEditorOpen: Binding<Bool> {
+        externalIsCoverEditorOpen ?? $internalIsCoverEditorOpen
+    }
 
     private var isSaved: Bool {
         appModel.isRestaurantSaved(id: restaurant.id)
@@ -292,15 +364,22 @@ struct RestaurantBookmarkNativeSheet: View {
 
     var body: some View {
         BottomSheetShell(
-            headerStart: AnyView(BottomSheetCloseButton { dismiss() }),
+            headerStart: AnyView(
+                BottomSheetCloseButton(action: closeSheet)
+            ),
             headerCenter: AnyView(
                 Text("북마크")
                     .font(TBFont.bold(15))
                     .foregroundStyle(TBColor.textPrimary)
             ),
             footer: createFooter,
-            floatingLayer: coverEditorLayer,
-            usesNativeSheetChrome: true
+            footerTopPadding: TBSpacing.x12,
+            footerBottomPaddingOverride: keyboard.visibleHeight > 0 ? TBSpacing.x12 : nil,
+            footerBackground: TBColor.surface,
+            footerKeyboardOffset: keyboard.visibleHeight,
+            floatingLayer: hostsCoverEditorOverlay ? coverEditorLayer : nil,
+            stageMode: .fixed,
+            usesNativeSheetChrome: usesNativeSheetChrome
         ) {
             ZStack(alignment: .bottom) {
                 ScrollView {
@@ -336,6 +415,15 @@ struct RestaurantBookmarkNativeSheet: View {
         .presentationBackground(Color.clear)
         .presentationCornerRadius(0)
         .prefersUISheetGrabberVisible(false)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .overlay {
+            if !hostsCoverEditorOverlay && isCoverEditorOpen.wrappedValue {
+                Color.black
+                    .opacity(ActionOverlayCardMetrics.overlayOpacity)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+        }
         .onAppear(perform: prepareSheet)
     }
 
@@ -360,10 +448,10 @@ struct RestaurantBookmarkNativeSheet: View {
             Spacer()
 
             Button("변경") {
-                isCoverEditorOpen = true
+                isCoverEditorOpen.wrappedValue = true
             }
             .font(TBFont.bold(12))
-            .foregroundStyle(selectedCoverTasteID.mainColor)
+            .foregroundStyle(selectedCoverTasteID.wrappedValue.mainColor)
         }
         .padding(.horizontal, TBSpacing.page)
         .padding(.vertical, 12)
@@ -373,7 +461,7 @@ struct RestaurantBookmarkNativeSheet: View {
     private var currentSavedSection: some View {
         Button {
             appModel.removeRestaurantBookmark(restaurantID: restaurant.id)
-            dismiss()
+            closeSheet()
         } label: {
             HStack(spacing: 12) {
                 bookmarkImage
@@ -407,10 +495,6 @@ struct RestaurantBookmarkNativeSheet: View {
 
     private var listSelectionBody: some View {
         VStack(alignment: .leading, spacing: 18) {
-            if appModel.bookmarkSyncStatus.isVisible {
-                bookmarkSyncStatusRow
-            }
-
             HStack {
                 Text("리스트")
                     .font(TBFont.bold(16))
@@ -419,7 +503,7 @@ struct RestaurantBookmarkNativeSheet: View {
                 Button("새 리스트") {
                     mode = .create
                     customListName = ""
-                    isCoverEditorOpen = false
+                    isCoverEditorOpen.wrappedValue = false
                 }
                 .font(TBFont.bold(11))
                 .foregroundStyle(restaurant.axis.mainColor)
@@ -453,10 +537,6 @@ struct RestaurantBookmarkNativeSheet: View {
 
     private var createBody: some View {
         VStack(alignment: .leading, spacing: 20) {
-            if appModel.bookmarkSyncStatus.isVisible {
-                bookmarkSyncStatusRow
-            }
-
             VStack(alignment: .leading, spacing: 8) {
                 Text("리스트 이름")
                     .font(TBFont.semibold(16))
@@ -465,10 +545,10 @@ struct RestaurantBookmarkNativeSheet: View {
                     .font(TBFont.semibold(12))
                     .foregroundStyle(TBColor.textTertiary)
                 TextField("예: 부모님과 가볼 곳", text: $customListName)
-                    .font(TBFont.regular(14))
+                    .font(TBFont.medium(13))
                     .foregroundStyle(TBColor.textPrimary)
-                    .padding(.horizontal, 14)
-                    .frame(height: 48)
+                    .padding(.horizontal, 16)
+                    .frame(height: SearchOverlayShellMetrics.fieldHeight)
                     .background(TBColor.mutedSurface)
                     .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
                     .overlay {
@@ -495,7 +575,7 @@ struct RestaurantBookmarkNativeSheet: View {
                                     .overlay {
                                         if customListName == suggestion.name {
                                             Capsule()
-                                                .stroke(selectedCoverTasteID.mainColor, lineWidth: 1)
+                                                .stroke(selectedCoverTasteID.wrappedValue.mainColor, lineWidth: 1)
                                         }
                                     }
                             }
@@ -512,7 +592,7 @@ struct RestaurantBookmarkNativeSheet: View {
                     .font(TBFont.semibold(16))
                     .foregroundStyle(TBColor.textPrimary)
                 Button {
-                    isCoverEditorOpen = true
+                    isCoverEditorOpen.wrappedValue = true
                 } label: {
                     BookmarkListThumbnail(
                         list: newListPreview,
@@ -539,7 +619,7 @@ struct RestaurantBookmarkNativeSheet: View {
                             .foregroundStyle(TBColor.textMuted)
                     }
                 }
-                .tint(selectedCoverTasteID.mainColor)
+                .tint(selectedCoverTasteID.wrappedValue.mainColor)
             }
         }
         .padding(TBSpacing.page)
@@ -585,106 +665,17 @@ struct RestaurantBookmarkNativeSheet: View {
         )
     }
 
-    private var bookmarkSyncStatusRow: some View {
-        StatusRow(
-            icon: "arrow.triangle.2.circlepath",
-            title: appModel.bookmarkSyncStatus.title,
-            detail: appModel.bookmarkSyncStatus.detail,
-            tone: bookmarkSyncStatusTone
-        )
-    }
-
-    private var bookmarkSyncStatusTone: StatusRow.Tone {
-        switch appModel.bookmarkSyncStatus {
-        case .idle, .pending, .syncing:
-            return .neutral
-        case .synced:
-            return .success
-        case .conflictResolved, .failed:
-            return .warning
-        }
-    }
-
     private var coverEditorLayer: AnyView? {
-        guard isCreating && isCoverEditorOpen else { return nil }
+        guard isCreating && isCoverEditorOpen.wrappedValue else { return nil }
 
         return AnyView(
-            ActionOverlayCard(
-                title: "커버 편집",
-                headerStart: AnyView(
-                    BottomSheetCloseButton(ariaLabel: "커버 편집 닫기") {
-                        isCoverEditorOpen = false
-                    }
-                ),
-                headerEnd: AnyView(
-                    Button("완료") {
-                        isCoverEditorOpen = false
-                    }
-                    .font(TBFont.bold(13))
-                    .foregroundStyle(TBColor.textPrimary)
-                ),
-                onBackdropTap: {
-                    isCoverEditorOpen = false
+            BookmarkCoverEditorOverlay(
+                selectedCoverIconID: selectedCoverIconID,
+                selectedCoverTasteID: selectedCoverTasteID,
+                onDismiss: {
+                    isCoverEditorOpen.wrappedValue = false
                 }
-            ) {
-                VStack(spacing: 18) {
-                    BookmarkListThumbnail(
-                        list: newListPreview,
-                        size: 104,
-                        iconSize: TBIcon.Size.extraLarge
-                    )
-
-                    HStack(spacing: 8) {
-                        ForEach(TasteAxis.allCases) { axis in
-                            Button {
-                                selectedCoverTasteID = axis
-                            } label: {
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(axis.tintColor)
-                                    .frame(width: 32, height: 32)
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                            .stroke(axis.mainColor, lineWidth: selectedCoverTasteID == axis ? 2 : 0)
-                                    }
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("\(axis.rawValue) 배경 선택")
-                        }
-                    }
-
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5),
-                        spacing: 8
-                    ) {
-                        ForEach(BookmarkCoverIconID.allCases) { iconID in
-                            Button {
-                                selectedCoverIconID = iconID
-                            } label: {
-                                LucideIcon(
-                                    iconID.icon,
-                                    size: TBIcon.Size.large,
-                                    strokeWidth: TBIcon.Stroke.regular
-                                )
-                                .frame(maxWidth: .infinity)
-                                .aspectRatio(1, contentMode: .fit)
-                                .foregroundStyle(
-                                    selectedCoverIconID == iconID
-                                        ? selectedCoverTasteID.mainColor
-                                        : TBColor.textSecondary
-                                )
-                                .background(
-                                    selectedCoverIconID == iconID
-                                        ? selectedCoverTasteID.tintColor
-                                        : TBColor.mutedSurface
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("\(iconID.rawValue) 아이콘 선택")
-                        }
-                    }
-                }
-            }
+            )
         )
     }
 
@@ -694,8 +685,8 @@ struct RestaurantBookmarkNativeSheet: View {
             name: customListName.isEmpty ? "새 리스트" : customListName,
             description: "새 테이스트 리스트 커버",
             isPrivate: isSecretList,
-            coverIconID: selectedCoverIconID,
-            coverTasteID: selectedCoverTasteID
+            coverIconID: selectedCoverIconID.wrappedValue,
+            coverTasteID: selectedCoverTasteID.wrappedValue
         )
     }
 
@@ -757,19 +748,19 @@ struct RestaurantBookmarkNativeSheet: View {
         pendingListID = nil
         toastList = nil
         customListName = ""
-        selectedCoverIconID = .utensils
-        selectedCoverTasteID = .sweet
-        isCoverEditorOpen = false
+        selectedCoverIconID.wrappedValue = .utensils
+        selectedCoverTasteID.wrappedValue = .sweet
+        isCoverEditorOpen.wrappedValue = false
         isSecretList = false
     }
 
     private func cancelCreate() {
         customListName = ""
-        isCoverEditorOpen = false
+        isCoverEditorOpen.wrappedValue = false
         isSecretList = false
 
         if appModel.bookmarkLists.isEmpty {
-            dismiss()
+            closeSheet()
         } else {
             mode = .select
         }
@@ -783,8 +774,8 @@ struct RestaurantBookmarkNativeSheet: View {
             name: name,
             description: suggestion?.description ?? "내 기준으로 다시 살펴볼 레스토랑 리스트",
             isPrivate: isSecretList,
-            coverIconID: selectedCoverIconID,
-            coverTasteID: selectedCoverTasteID
+            coverIconID: selectedCoverIconID.wrappedValue,
+            coverTasteID: selectedCoverTasteID.wrappedValue
         )
 
         appModel.saveRestaurantBookmark(restaurant: restaurant, listID: list.id)
@@ -806,8 +797,120 @@ struct RestaurantBookmarkNativeSheet: View {
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            closeSheet()
+        }
+    }
+
+    private func closeSheet() {
+        if let onDismissRequest {
+            onDismissRequest()
+        } else {
             dismiss()
         }
+    }
+}
+
+struct BookmarkCoverEditorOverlay: View {
+    @Binding var selectedCoverIconID: BookmarkCoverIconID
+    @Binding var selectedCoverTasteID: TasteAxis
+    let onDismiss: () -> Void
+    var backdropOpacity = ActionOverlayCardMetrics.overlayOpacity
+
+    var body: some View {
+        ActionOverlayCard(
+            title: "커버 편집",
+            headerStart: AnyView(
+                BottomSheetCloseButton(
+                    ariaLabel: "커버 편집 닫기",
+                    action: onDismiss
+                )
+            ),
+            headerEnd: AnyView(
+                Button("완료", action: onDismiss)
+                    .font(TBFont.bold(13))
+                    .foregroundStyle(TBColor.textPrimary)
+            ),
+            onBackdropTap: onDismiss,
+            backdropOpacity: backdropOpacity
+        ) {
+            VStack(spacing: 20) {
+                BookmarkListThumbnail(
+                    list: previewList,
+                    size: 104,
+                    iconSize: TBIcon.Size.extraLarge
+                )
+
+                HStack(spacing: 8) {
+                    ForEach(TasteAxis.allCases) { axis in
+                        Button {
+                            selectedCoverTasteID = axis
+                        } label: {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(axis.tintColor)
+                                .frame(width: 32, height: 32)
+                                .overlay {
+                                    if selectedCoverTasteID == axis {
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .stroke(TBColor.focus, lineWidth: 4)
+                                            .padding(-3)
+
+                                        RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                            .stroke(axis.mainColor, lineWidth: 2)
+                                            .padding(-4)
+                                    }
+                                }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(axis.rawValue) 배경 선택")
+                    }
+                }
+
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5),
+                    spacing: 8
+                ) {
+                    ForEach(BookmarkCoverIconID.allCases) { iconID in
+                        Button {
+                            selectedCoverIconID = iconID
+                        } label: {
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(
+                                    selectedCoverIconID == iconID
+                                        ? selectedCoverTasteID.tintColor
+                                        : TBColor.mutedSurface
+                                )
+                                .aspectRatio(1, contentMode: .fit)
+                                .overlay {
+                                    LucideIcon(
+                                        iconID.icon,
+                                        size: TBIcon.Size.large,
+                                        strokeWidth: TBIcon.Stroke.regular
+                                    )
+                                    .foregroundStyle(
+                                        selectedCoverIconID == iconID
+                                            ? selectedCoverTasteID.mainColor
+                                            : TBColor.iconPrimary
+                                    )
+                                }
+                                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(iconID.rawValue) 아이콘 선택")
+                    }
+                }
+            }
+        }
+    }
+
+    private var previewList: RestaurantBookmarkList {
+        RestaurantBookmarkList(
+            id: "cover-editor-preview",
+            name: "새 리스트",
+            description: "새 테이스트 리스트 커버",
+            isPrivate: false,
+            coverIconID: selectedCoverIconID,
+            coverTasteID: selectedCoverTasteID
+        )
     }
 }
 
@@ -832,7 +935,7 @@ private struct BookmarkListThumbnail: View {
         .frame(width: size, height: size)
         .foregroundStyle(list.coverTasteID.mainColor)
         .background(list.coverTasteID.tintColor)
-        .clipShape(RoundedRectangle(cornerRadius: size >= 80 ? 18 : 12, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
@@ -1185,8 +1288,8 @@ private struct BuddyProfile: Identifiable {
     static let samples: [BuddyProfile] = [
         BuddyProfile(
             id: "mina",
-            name: "Mina",
-            handle: "@clear_umami",
+            name: "김민아",
+            handle: "@맑은끝민아",
             summary: "맑은 감칠맛과 가벼운 피니시를 자주 기록하는 버디입니다.",
             axis: .umami,
             feedItem: TasteBuddyNativeContent.followingDishFeedbackItems[0],
@@ -1195,13 +1298,27 @@ private struct BuddyProfile: Identifiable {
         ),
         BuddyProfile(
             id: "jae",
-            name: "Jae",
-            handle: "@bright_course",
+            name: "정서윤",
+            handle: "@산미탐험서윤",
             summary: "밝은 산미와 절제된 단맛의 균형을 세밀하게 남깁니다.",
             axis: .sour,
             feedItem: TasteBuddyNativeContent.followingDishFeedbackItems[1],
             followerCount: 11,
             followingCount: 8
+        ),
+        BuddyProfile(
+            id: "hyeon",
+            name: "최도윤",
+            handle: "@불향도윤",
+            summary: "쌉싸름한 여운과 불향의 깊이를 편안하게 기록하는 버디입니다.",
+            axis: .bitter,
+            feedItem: DiningDishFeedbackItem.fromTasteMatchFeedItem(
+                TasteBuddyNativeContent.tasteMatchFeed[2],
+                commentCount: 0,
+                liked: false
+            ),
+            followerCount: 10,
+            followingCount: 7
         )
     ]
 }
@@ -1304,10 +1421,23 @@ private struct DishFeedbackFocusView: View {
     }
 }
 
-private struct CommentsFocusView: View {
+struct DishFeedbackCommentFocusView: View {
     @EnvironmentObject private var appModel: AppModel
-    let feedbackID: String
+    @StateObject private var keyboard = BottomComposerKeyboardObserver()
+    @FocusState private var isComposerFocused: Bool
     @State private var commentDraft = ""
+    private let feedbackID: String
+    private let sourceItem: DiningDishFeedbackItem?
+
+    init(feedbackID: String) {
+        self.feedbackID = feedbackID
+        sourceItem = nil
+    }
+
+    init(item: DiningDishFeedbackItem) {
+        feedbackID = item.id
+        sourceItem = item
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -1318,7 +1448,10 @@ private struct CommentsFocusView: View {
                         absoluteDateLabel: "최근",
                         relativeDateLabel: "최근",
                         showsOptions: false,
-                        framed: false
+                        framed: false,
+                        onCommentsTap: {
+                            isComposerFocused = true
+                        }
                     )
 
                     VStack(alignment: .leading, spacing: 12) {
@@ -1327,7 +1460,7 @@ private struct CommentsFocusView: View {
                             .foregroundStyle(TBColor.textPrimary)
 
                         ForEach(comments) { comment in
-                            CommentPreviewRow(
+                            DishFeedbackCommentRow(
                                 author: comment.authorName,
                                 message: comment.message,
                                 axis: comment.axis
@@ -1345,47 +1478,79 @@ private struct CommentsFocusView: View {
                 .padding(.horizontal, TBSpacing.page)
                 .padding(.bottom, 24)
             }
-
-            HStack(spacing: 12) {
-                PalateBloomAvatar(size: 40, seed: "current-user")
-
-                TextField("댓글을 남겨보세요", text: $commentDraft)
-                    .font(TBFont.medium(13))
-                    .padding(.horizontal, 16)
-                    .frame(height: 44)
-                    .background(TBColor.mutedSurface)
-                    .clipShape(Capsule())
-                    .overlay {
-                        Capsule().stroke(TBColor.border, lineWidth: 1)
-                    }
-
-                Button("등록", action: submitComment)
-                    .font(TBFont.semibold(13))
-                    .foregroundStyle(
-                        commentDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                            ? TBColor.textHint
-                            : TBColor.textBody
-                    )
-                    .disabled(commentDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
-            .padding(.horizontal, TBSpacing.page)
-            .padding(.top, 12)
-            .padding(.bottom, 14)
-            .background(TBColor.focus)
-            .overlay(alignment: .top) {
-                Rectangle()
-                    .fill(TBColor.borderSubtle)
-                    .frame(height: 1)
-            }
         }
-        .background(TBColor.focus)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            commentComposer
+        }
+        .navigationTitle("")
+        .toolbar(.hidden, for: .navigationBar)
+        .background(TBColor.focus.ignoresSafeArea())
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+    }
+
+    private var commentComposer: some View {
+        HStack(spacing: 12) {
+            PalateBloomAvatar(size: 40, seed: "current-user")
+
+            TextField("댓글을 남겨보세요", text: $commentDraft)
+                .font(TBFont.medium(13))
+                .padding(.horizontal, 16)
+                .frame(height: 44)
+                .background(TBColor.mutedSurface)
+                .clipShape(Capsule())
+                .overlay {
+                    Capsule().stroke(TBColor.border, lineWidth: 1)
+                }
+                .focused($isComposerFocused)
+
+            Button("등록", action: submitComment)
+                .font(TBFont.semibold(13))
+                .foregroundStyle(
+                    commentDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        ? TBColor.textHint
+                        : TBColor.textBody
+                )
+                .disabled(commentDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+        .padding(.horizontal, TBSpacing.page)
+        .padding(.top, 12)
+        .padding(.bottom, composerKeyboardBackgroundExtension)
+        .background(TBColor.focus.ignoresSafeArea(edges: .bottom))
+        .offset(y: -composerKeyboardOffset)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(TBColor.borderSubtle)
+                .frame(height: 1)
+        }
+    }
+
+    private var composerKeyboardOffset: CGFloat {
+        guard keyboard.visibleHeight > 0 else { return 0 }
+
+        return max(
+            0,
+            keyboard.visibleHeight - keyWindowSafeAreaBottom
+        )
+    }
+
+    private var composerKeyboardBackgroundExtension: CGFloat {
+        keyboard.visibleHeight > 0 ? TBSpacing.x12 : 0
+    }
+
+    private var keyWindowSafeAreaBottom: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first { $0.isKeyWindow }?
+            .safeAreaInsets.bottom ?? 0
     }
 
     private var item: DiningDishFeedbackItem {
-        let baseItem = (
-            TasteBuddyNativeContent.followingDishFeedbackItems
-                + TasteBuddyNativeContent.fallbackDishFeedbackItems
-        ).first { $0.id == feedbackID }
+        let baseItem = sourceItem
+            ?? (
+                TasteBuddyNativeContent.followingDishFeedbackItems
+                    + TasteBuddyNativeContent.fallbackDishFeedbackItems
+            ).first { $0.id == feedbackID }
             ?? TasteBuddyNativeContent.followingDishFeedbackItems[0]
         return appModel.dishFeedbackItemWithCurrentComments(baseItem)
     }
@@ -1402,7 +1567,7 @@ private struct CommentsFocusView: View {
     }
 }
 
-private struct CommentPreviewRow: View {
+private struct DishFeedbackCommentRow: View {
     let author: String
     let message: String
     let axis: TasteAxis

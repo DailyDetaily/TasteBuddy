@@ -68,6 +68,132 @@ final class TasteContractGoldenTests: XCTestCase {
                 !$0.chefIntent.isEmpty && !$0.feedbackChoices.isEmpty
             }
         )
+        XCTAssertTrue(
+            fixture.sourceFiles.contains("src/components/reservation/DiningFeedbackFlow.tsx")
+        )
+        XCTAssertEqual(fixture.tasteExperienceAxes.count, 6)
+        XCTAssertTrue(fixture.tasteExperienceAxes.allSatisfy { $0.words.count == 12 })
+        XCTAssertEqual(fixture.tasteExperiences.count, 72)
+        XCTAssertEqual(Set(fixture.tasteExperiences.map(\.id)).count, 72)
+        XCTAssertTrue(fixture.detailTagCategories.allSatisfy { $0.tags.count == 12 })
+    }
+
+    func testDiningDetailTagRecommendationsAndCustomMetadataMatchReactRules() {
+        let experiences = [
+            TasteExperienceCatalog.experienceByID["sour-fresh"],
+            TasteExperienceCatalog.experienceByID["umami-clear"],
+        ].compactMap { $0 }
+        let recommendations = DiningDetailTagCatalog.recommendedIDs(
+            experiences: experiences,
+            dishKindIDs: ["seafood"]
+        )
+
+        XCTAssertEqual(
+            Array(recommendations.prefix(4)),
+            [
+                "balance-acid-cleans",
+                "flow-clean-finish",
+                "flow-opens-next",
+                "composition-acid-structure",
+            ]
+        )
+        XCTAssertEqual(recommendations.filter { $0 == "flow-clean-finish" }.count, 1)
+        XCTAssertTrue(recommendations.contains("aroma-seafood"))
+
+        let custom = DiningDetailTagCatalog.metadata(
+            for: "custom:aroma:은은한 생강 향"
+        )
+        XCTAssertEqual(custom?.categoryLabel, "향과 재료 인상")
+        XCTAssertEqual(custom?.label, "은은한 생강 향")
+    }
+
+    func testTasteExperienceMapLayoutAndSelectionMatchReactRules() throws {
+        let fixture: DiningFeedbackFixtureContract = try decodeFixture(
+            named: "dining-feedback-scenario"
+        )
+        let positions = TasteExperienceMapEngine.basePositions(
+            axes: fixture.tasteExperienceAxes
+        )
+
+        XCTAssertEqual(positions.count, 72)
+        XCTAssertEqual(Set(positions.map(\.id)).count, 72)
+        XCTAssertFalse(
+            positions.contains {
+                $0.x == TasteExperienceMapEngine.mapCenter
+                    && $0.y == TasteExperienceMapEngine.mapCenter
+            }
+        )
+
+        let selectedIDs = [
+            "sour-fresh",
+            "salty-balanced",
+            "umami-subtle-depth",
+        ]
+        let rendered = TasteExperienceMapEngine.renderPositions(
+            basePositions: positions,
+            enlargedExperienceIDs: selectedIDs
+        )
+        XCTAssertEqual(rendered.count, positions.count)
+        XCTAssertTrue(
+            rendered
+                .filter { selectedIDs.contains($0.id) }
+                .allSatisfy { $0.size == TasteExperienceMapEngine.selectedBubbleSize }
+        )
+
+        var maximumOverlap: CGFloat = 0
+        for leftIndex in rendered.indices {
+            for rightIndex in rendered.indices where rightIndex > leftIndex {
+                let left = rendered[leftIndex]
+                let right = rendered[rightIndex]
+                let distance = hypot(left.x - right.x, left.y - right.y)
+                let minimumDistance = (left.size + right.size) / 2
+                    + (TasteExperienceMapEngine.gridSpacing - TasteExperienceMapEngine.bubbleSize)
+                maximumOverlap = max(maximumOverlap, minimumDistance - distance)
+            }
+        }
+        XCTAssertLessThanOrEqual(maximumOverlap, 4)
+
+        var selection: [String] = []
+        selection = TasteExperienceMapEngine.toggleSelection("sour-fresh", in: selection)
+        selection = TasteExperienceMapEngine.toggleSelection("salty-balanced", in: selection)
+        selection = TasteExperienceMapEngine.toggleSelection("umami-subtle-depth", in: selection)
+        selection = TasteExperienceMapEngine.toggleSelection("sweet-soft", in: selection)
+        XCTAssertEqual(selection, selectedIDs)
+
+        selection = TasteExperienceMapEngine.toggleSelection("salty-balanced", in: selection)
+        XCTAssertEqual(selection, ["sour-fresh", "umami-subtle-depth"])
+        XCTAssertNotNil(
+            TasteExperienceMapEngine.nextUnselectedExperienceID(
+                from: "sour-fresh",
+                selectedExperienceIDs: selection,
+                positions: rendered
+            )
+        )
+    }
+
+    func testTasteExperienceIntroTimingKeepsPrimaryThenOuterSequence() throws {
+        let fixture: DiningFeedbackFixtureContract = try decodeFixture(
+            named: "dining-feedback-scenario"
+        )
+        let positions = TasteExperienceMapEngine.basePositions(
+            axes: fixture.tasteExperienceAxes
+        )
+        let delays = TasteExperienceMapEngine.introDelays(
+            axes: fixture.tasteExperienceAxes,
+            positions: positions
+        )
+        let primaryIDs = fixture.tasteExperienceAxes.compactMap { axis in
+            axis.words.first.map { "\(axis.id.rawValue)-\($0.key)" }
+        }
+
+        XCTAssertEqual(delays.count, 72)
+        XCTAssertEqual(delays[primaryIDs[0]] ?? -1, 0.44, accuracy: 0.0001)
+        XCTAssertEqual(delays[primaryIDs[1]] ?? -1, 0.516, accuracy: 0.0001)
+        XCTAssertTrue(
+            positions
+                .filter { !primaryIDs.contains($0.id) }
+                .allSatisfy { (delays[$0.id] ?? 0) >= 0.9 }
+        )
     }
 
     func testTbaDiningAnalysisMatchesReactGoldenFixture() throws {

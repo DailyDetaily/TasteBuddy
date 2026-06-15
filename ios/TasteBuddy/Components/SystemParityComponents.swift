@@ -258,6 +258,7 @@ struct TasteChip: View {
     let title: String
     var value: String? = nil
     var tone: TasteChipTone = .taste
+    var colorAxis: TasteAxis? = nil
 
     init(
         axis: TasteAxis,
@@ -273,24 +274,27 @@ struct TasteChip: View {
     init(
         title: String,
         value: String? = nil,
-        tone: TasteChipTone = .neutral
+        tone: TasteChipTone = .neutral,
+        colorAxis: TasteAxis? = nil
     ) {
         self.axis = nil
         self.title = title
         self.value = value
         self.tone = tone
+        self.colorAxis = colorAxis
     }
 
     var body: some View {
         let isNeutral = tone == .neutral
-        let signalColor = isNeutral ? TBColor.textTertiary : (axis?.mainColor ?? TBColor.textTertiary)
+        let resolvedAxis = colorAxis ?? axis
+        let signalColor = isNeutral ? TBColor.textTertiary : (resolvedAxis?.mainColor ?? TBColor.textTertiary)
         let labelColor = isNeutral || value == nil ? signalColor : TBColor.textPrimary
         let background = isNeutral
             ? TBColor.mutedSurface
-            : (axis?.mainColor.opacity(0.05) ?? TBColor.mutedSurface)
+            : (resolvedAxis?.mainColor.opacity(0.05) ?? TBColor.mutedSurface)
         let border = isNeutral
             ? TBColor.borderStrong
-            : (axis?.mainColor.opacity(0.18) ?? TBColor.borderStrong)
+            : (resolvedAxis?.mainColor.opacity(0.18) ?? TBColor.borderStrong)
 
         HStack(spacing: 4) {
             Text(title)
@@ -1420,18 +1424,5 @@ private struct ProfileConfidenceStageBox: View {
                 )
         }
         .opacity(state == .past ? 0.7 : 1)
-    }
-}
-
-private extension TasteAxis {
-    var tintSubTextColor: Color {
-        switch self {
-        case .sweet: Color(hex: 0x896735)
-        case .sour: Color(hex: 0x897C35)
-        case .bitter: Color(hex: 0x70794B)
-        case .salty: Color(hex: 0x5A6789)
-        case .umami: Color(hex: 0x705B70)
-        case .fat: Color(hex: 0x66625D)
-        }
     }
 }

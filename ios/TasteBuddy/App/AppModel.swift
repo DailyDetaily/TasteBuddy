@@ -6,29 +6,62 @@ enum RestaurantBookmarkConstants {
 }
 
 enum BookmarkCoverIconID: String, CaseIterable, Codable, Identifiable {
-    case utensils
-    case chefHat
+    case beef
+    case cakeSlice = "cake-slice"
     case coffee
+    case cookingPot = "cooking-pot"
+    case croissant
+    case cupSoda = "cup-soda"
     case dessert
-    case soup
-    case salad
+    case eggFried = "egg-fried"
     case fish
+    case salad
+    case sandwich
+    case soup
+    case utensils
     case wine
+
+    // Keep legacy values decodable for lists created before the Lucide food set shipped.
+    case chefHat
     case sparkles
     case store
+
+    static let allCases: [BookmarkCoverIconID] = [
+        .beef,
+        .cakeSlice,
+        .coffee,
+        .cookingPot,
+        .croissant,
+        .cupSoda,
+        .dessert,
+        .eggFried,
+        .fish,
+        .salad,
+        .sandwich,
+        .soup,
+        .utensils,
+        .wine
+    ]
 
     var id: String { rawValue }
 
     var icon: LucideIconName {
         switch self {
+        case .beef: .beef
+        case .cakeSlice: .cakeSlice
+        case .coffee: .coffee
+        case .cookingPot: .cookingPot
+        case .croissant: .croissant
+        case .cupSoda: .cupSoda
+        case .dessert: .dessert
+        case .eggFried: .eggFried
+        case .fish: .fish
+        case .salad: .salad
+        case .sandwich: .sandwich
+        case .soup: .soup
         case .utensils: .utensils
+        case .wine: .wine
         case .chefHat: .chefHat
-        case .coffee: .store
-        case .dessert: .star
-        case .soup: .droplet
-        case .salad: .leaf
-        case .fish: .waves
-        case .wine: .sparkles
         case .sparkles: .sparkles
         case .store: .store
         }
@@ -420,7 +453,11 @@ final class AppModel: ObservableObject {
 
     func updateDiningEntry(_ entry: DiningEntry) {
         if let index = diningEntries.firstIndex(where: { $0.id == entry.id }) {
+            let previousPhotoFilename = diningEntries[index].reflectionPhotoFilename
             diningEntries[index] = entry
+            if previousPhotoFilename != entry.reflectionPhotoFilename {
+                DiningReflectionPhotoStore.remove(filename: previousPhotoFilename)
+            }
         } else {
             diningEntries.insert(entry, at: 0)
         }
@@ -430,7 +467,9 @@ final class AppModel: ObservableObject {
     }
 
     func removeDiningEntry(id: UUID) {
+        let photoFilename = diningEntries.first { $0.id == id }?.reflectionPhotoFilename
         diningEntries.removeAll { $0.id == id }
+        DiningReflectionPhotoStore.remove(filename: photoFilename)
         saveDiningEntries()
     }
 

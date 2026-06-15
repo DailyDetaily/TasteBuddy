@@ -111,7 +111,6 @@ import {
 } from './constants/reservationCatalog';
 import {
   deleteCurrentSupabaseAccount,
-  ensureSupabaseSession,
   getCurrentSupabaseSession,
   hydrateSupabaseFriendSummary,
   hydrateSupabaseProfileConnections,
@@ -1107,10 +1106,15 @@ function MainApp() {
         return;
       }
 
-      const session = await ensureSupabaseSession();
+      const session = await getCurrentSupabaseSession();
 
       if (!isCancelled) {
         setSupabaseSession(session);
+      }
+
+      if (!session || isAnonymousSupabaseSession(session)) {
+        setHasHydratedRemoteMeasurement(true);
+        return;
       }
 
       const remoteSnapshot = await hydrateLatestMeasurementSnapshot();
@@ -1617,8 +1621,8 @@ function MainApp() {
     let isCancelled = false;
 
     void (async () => {
-      const [hydratedData, hydratedCatalog] = await Promise.all([
-        hydrateReservationPageData(),
+      const [session, hydratedCatalog] = await Promise.all([
+        getCurrentSupabaseSession(),
         hydrateRestaurantContentCatalog(),
       ]);
 
@@ -1626,7 +1630,18 @@ function MainApp() {
         return;
       }
 
-      setGlobalSearchReservations(hydratedData.reservations);
+      if (session && !isAnonymousSupabaseSession(session)) {
+        const hydratedData = await hydrateReservationPageData();
+
+        if (isCancelled) {
+          return;
+        }
+
+        setGlobalSearchReservations(hydratedData.reservations);
+      } else {
+        setGlobalSearchReservations(RESERVATION_CATALOG);
+      }
+
       setGlobalSearchCatalog(hydratedCatalog);
     })();
 
@@ -2274,11 +2289,12 @@ function MainApp() {
 
     let effectiveIntent = authEntryIntent;
     let result = await sendSupabaseEmailOtp(email, authEntryIntent, {
-      shouldCreateUser: authEntryIntent !== 'start-with-email',
+      shouldCreateUser: true,
     });
 
     if (
       authEntryIntent === 'start-with-email' &&
+      supabaseSession &&
       isAnonymousUser &&
       !result.ok &&
       isMissingSupabaseEmailAccountError(result.message)

@@ -7,6 +7,7 @@ struct TasteBuddyApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .ignoresSafeArea(.keyboard, edges: .bottom)
                 .environmentObject(appModel)
                 .tint(TBColor.textPrimary)
         }
@@ -96,6 +97,7 @@ private struct RootView: View {
         "--reset-app-state"
     )
     @State private var hasAppliedLaunchReset = false
+    @State private var usesAuthEntryDarkStatusBar = false
 
     var body: some View {
         Group {
@@ -118,11 +120,14 @@ private struct RootView: View {
             } else if showsIntakePreview {
                 PreferenceIntakeFlowView(onBack: {})
             } else if showsSearchPreview {
-                HomeSearchSheet()
+                HomeSearchPreviewHost()
+                    .environmentObject(shellPreviewModel)
             } else if showsSearchResultsPreview {
-                HomeSearchSheet(initialQuery: "온지음")
+                HomeSearchPreviewHost(initialQuery: "온지음")
+                    .environmentObject(shellPreviewModel)
             } else if showsSearchEmptyPreview {
-                HomeSearchSheet(initialQuery: "없는 키워드")
+                HomeSearchPreviewHost(initialQuery: "없는 키워드")
+                    .environmentObject(shellPreviewModel)
             } else if showsRecommendationLoadingPreview {
                 HomeView(recommendationContentState: .loading)
                     .environmentObject(shellPreviewModel)
@@ -151,14 +156,15 @@ private struct RootView: View {
                 AppShellView(initialRoute: .savedRestaurants)
                     .environmentObject(shellPreviewModel)
             } else if showsDiningFeedbackPreview {
-                DiningFeedbackSheet(onSave: { _ in })
+                DiningFeedbackPreviewHost()
             } else if showsCalibrationPreview {
                 CalibrationFlowView()
             } else {
                 phaseView
             }
         }
-        .preferredColorScheme(.light)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .preferredColorScheme(usesAuthEntryDarkStatusBar ? .dark : .light)
         .onAppear(perform: applyLaunchResetIfNeeded)
         .task {
             await appModel.restoreBackendSessionIfNeeded()
@@ -178,7 +184,8 @@ private struct RootView: View {
             AuthEntryGateView(
                 onContinueAsGuest: completeAuthEntry,
                 onVerifiedEmailLogin: { _ in completeVerifiedEmailAuthEntry() },
-                onLinkedCurrentProfile: completeVerifiedEmailAuthEntry
+                onLinkedCurrentProfile: completeVerifiedEmailAuthEntry,
+                onSheetPresentationChange: setAuthEntrySheetPresentation
             )
         case .onboarding:
             OnboardingView {
@@ -193,7 +200,7 @@ private struct RootView: View {
                 }
             }
         case .calibration:
-            CalibrationFlowView(onExit: appModel.returnToPreferenceIntake)
+            CalibrationFlowView(onExit: exitCalibration)
         case .main:
             MainTabView()
         }
@@ -226,45 +233,148 @@ private struct RootView: View {
         }
     }
 
+    private func exitCalibration() {
+        if AppFlowFeatures.isPreferenceIntakeEnabled {
+            appModel.returnToPreferenceIntake()
+        } else {
+            appModel.returnToOnboarding()
+        }
+    }
+
     private func completeVerifiedEmailAuthEntry() {
         withAnimation(.easeInOut(duration: 0.3)) {
             appModel.completeVerifiedEmailAuthEntry()
         }
     }
+
+    private func setAuthEntrySheetPresentation(_ isPresented: Bool) {
+        usesAuthEntryDarkStatusBar = isPresented
+    }
 }
 
 private struct AuthEntryGateView: View {
     @State private var isSheetPresented = false
+    @State private var sheetDragTranslation: CGFloat = 0
+    @State private var isDraggingSheet = false
     @State private var didComplete = false
     let onContinueAsGuest: () -> Void
     let onVerifiedEmailLogin: (BackendAuthResult) -> Void
     let onLinkedCurrentProfile: () -> Void
+    let onSheetPresentationChange: (Bool) -> Void
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            AuthLandingView(
-                onSignUp: presentAuthSheet,
-                onLogin: presentAuthSheet
-            )
-
-            if isSheetPresented {
-                Color.black
-                    .opacity(BottomSheetShellMetrics.overlayOpacity)
-                    .ignoresSafeArea()
-                    .transition(.opacity)
-
-                AuthEntrySheet(
-                    intent: .startWithEmail,
-                    onDismissRequest: dismissAuthSheet,
-                    onContinueAsGuest: completeAsGuest,
-                    onVerifiedEmailLogin: completeVerifiedEmailLogin,
-                    onLinkedCurrentProfile: completeLinkedCurrentProfile
+        GeometryReader { proxy in
+            ZStack {
+                ZStack {
+                    TBColor.page
+                    Color.black.opacity(sheetProgress)
+                }
+                .ignoresSafeArea()
+                .animation(
+                    isDraggingSheet ? nil : StagedBottomSheetBackgroundMetrics.animation,
+                    value: sheetProgress
                 )
-                .frame(maxWidth: .infinity, alignment: .bottom)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+
+                AuthLandingView(
+                    onSignUp: presentAuthSheet,
+                    onLogin: presentAuthSheet
+                )
+                .modifier(
+                    StagedBottomSheetBackground(
+                        progress: sheetProgress,
+                        dimOpacity: BottomSheetShellMetrics.overlayOpacity * sheetProgress,
+                        animates: !isDraggingSheet
+                    )
+                )
+
+                if isSheetPresented {
+                    AuthEntrySheet(
+                        intent: .startWithEmail,
+                        prefersFullHeight: true,
+                        onDismissRequest: dismissAuthSheet,
+                        onContinueAsGuest: completeAsGuest,
+                        onVerifiedEmailLogin: completeVerifiedEmailLogin,
+                        onLinkedCurrentProfile: completeLinkedCurrentProfile
+                    )
+                    .frame(width: proxy.size.width, height: sheetHeight)
+                    .position(
+                        x: proxy.size.width / 2,
+                        y: proxy.size.height - sheetHeight / 2 + sheetDragTranslation
+                    )
+                    .simultaneousGesture(sheetDragGesture)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(edges: [.horizontal, .bottom])
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .onDisappear {
+            onSheetPresentationChange(false)
+        }
+    }
+
+    private var sheetProgress: CGFloat {
+        guard isSheetPresented else {
+            return 0
+        }
+
+        return 1 - sheetDragPercentage
+    }
+
+    private var sheetDragPercentage: CGFloat {
+        guard sheetHeight > 0 else {
+            return 0
+        }
+
+        return min(max(sheetDragTranslation / sheetHeight, 0), 1)
+    }
+
+    private var sheetHeight: CGFloat {
+        BottomSheetShellMetrics.stageHeight(
+            screenHeight: UIScreen.main.bounds.height,
+            safeAreaTop: keyWindowSafeAreaInsets.top
+        )
+    }
+
+    private var sheetDragGesture: some Gesture {
+        DragGesture(minimumDistance: StagedBottomSheetDragMetrics.minimumDistance)
+            .onChanged { value in
+                let verticalMovement = value.translation.height
+                let horizontalMovement = abs(value.translation.width)
+                guard verticalMovement > 0, verticalMovement >= horizontalMovement else {
+                    return
+                }
+
+                isDraggingSheet = true
+                sheetDragTranslation = verticalMovement
+            }
+            .onEnded { value in
+                let predictedTranslation = max(
+                    value.translation.height,
+                    value.predictedEndTranslation.height
+                )
+                let shouldDismiss = predictedTranslation >= sheetHeight
+                    * StagedBottomSheetDragMetrics.dismissProgressThreshold
+
+                if shouldDismiss {
+                    dismissAuthSheetFromDrag()
+                } else {
+                    withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+                        sheetDragTranslation = 0
+                        isDraggingSheet = false
+                    }
+                }
+            }
+    }
+
+    private var keyWindowSafeAreaInsets: UIEdgeInsets {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first { $0.isKeyWindow }?
+            .safeAreaInsets ?? .zero
     }
 
     private func presentAuthSheet() {
@@ -273,13 +383,36 @@ private struct AuthEntryGateView: View {
         }
 
         withAnimation(.easeOut(duration: 0.24)) {
+            sheetDragTranslation = 0
+            isDraggingSheet = false
             isSheetPresented = true
+            onSheetPresentationChange(true)
         }
     }
 
     private func dismissAuthSheet() {
         withAnimation(.easeInOut(duration: 0.2)) {
             isSheetPresented = false
+            sheetDragTranslation = 0
+            isDraggingSheet = false
+            onSheetPresentationChange(false)
+        }
+    }
+
+    private func dismissAuthSheetFromDrag() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            sheetDragTranslation = sheetHeight
+            isSheetPresented = false
+            isDraggingSheet = false
+            onSheetPresentationChange(false)
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+            guard !isSheetPresented else {
+                return
+            }
+
+            sheetDragTranslation = 0
         }
     }
 
@@ -289,6 +422,7 @@ private struct AuthEntryGateView: View {
         }
 
         didComplete = true
+        onSheetPresentationChange(false)
         onContinueAsGuest()
     }
 
@@ -298,6 +432,7 @@ private struct AuthEntryGateView: View {
         }
 
         didComplete = true
+        onSheetPresentationChange(false)
         onVerifiedEmailLogin(result)
     }
 
@@ -307,7 +442,59 @@ private struct AuthEntryGateView: View {
         }
 
         didComplete = true
+        onSheetPresentationChange(false)
         onLinkedCurrentProfile()
+    }
+}
+
+private struct DiningFeedbackPreviewHost: View {
+    @State private var isPresented = true
+
+    var body: some View {
+        if isPresented {
+            DiningFeedbackSheet(
+                onClose: { isPresented = false },
+                onSave: { _ in isPresented = false }
+            )
+        } else {
+            AppShellView(initialTab: .dining)
+                .environmentObject(
+                    AppModel.preview(
+                        onboardingComplete: true,
+                        profile: .sample,
+                        diningEntries: [.sample],
+                        savedRestaurantIDs: Set(RestaurantCatalog.savedDefaults)
+                    )
+                )
+        }
+    }
+}
+
+private struct HomeSearchPreviewHost: View {
+    @State private var showsSearch = true
+    let initialQuery: String
+
+    init(initialQuery: String = "") {
+        self.initialQuery = initialQuery
+    }
+
+    var body: some View {
+        ZStack {
+            AppShellView(initialTab: .home)
+
+            if showsSearch {
+                HomeSearchSheet(
+                    initialQuery: initialQuery,
+                    onCloseRequest: {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            showsSearch = false
+                        }
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(1)
+            }
+        }
     }
 }
 

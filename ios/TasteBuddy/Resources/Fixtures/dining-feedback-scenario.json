@@ -3,7 +3,8 @@
   "sourceFiles": [
     "src/constants/diningFeedbackData.ts",
     "src/constants/diningDetailTags.ts",
-    "src/constants/dishKindTags.ts"
+    "src/constants/dishKindTags.ts",
+    "src/components/reservation/DiningFeedbackFlow.tsx"
   ],
   "scenario": {
     "completedAt": "2026-03-11T20:40:00+09:00",
@@ -690,6 +691,554 @@
         "beverage",
         "pairing",
         "wine"
+      ]
+    }
+  ],
+  "tasteExperienceAxes": [
+    {
+      "id": "sweet",
+      "label": "단맛",
+      "angle": -105,
+      "words": [
+        {
+          "angleOffset": -10,
+          "intensity": 1,
+          "key": "soft",
+          "label": "부드러운 단맛",
+          "description": "단맛이 배경처럼 가볍게 받쳐줬어요."
+        },
+        {
+          "angleOffset": 10,
+          "intensity": 1,
+          "key": "fruit-soft",
+          "label": "은은한 과일 단맛",
+          "description": "과일처럼 맑은 단맛이 가볍게 지나갔어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 2,
+          "key": "front",
+          "label": "먼저 올라온 단맛",
+          "description": "다른 풍미보다 단맛이 조금 먼저 느껴졌어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 2,
+          "key": "round",
+          "label": "둥근 단맛",
+          "description": "모서리 없이 둥글게 이어지는 단맛이었어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 2,
+          "key": "caramel",
+          "label": "캐러멜 같은 단맛",
+          "description": "구운 설탕이나 캐러멜처럼 깊은 단맛이 남았어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 2,
+          "key": "clean-finish",
+          "label": "깔끔한 단맛",
+          "description": "단맛이 남더라도 마무리는 비교적 깨끗했어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 3,
+          "key": "long",
+          "label": "오래 남은 단맛",
+          "description": "식사 뒤쪽까지 단맛의 여운이 이어졌어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 3,
+          "key": "syrup",
+          "label": "시럽 같은 단맛",
+          "description": "농도 있는 단맛이 입안에 또렷하게 남았어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 3,
+          "key": "finish-hold",
+          "label": "피니시를 잡은 단맛",
+          "description": "마지막 인상이 단맛 중심으로 정리됐어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 3,
+          "key": "dense",
+          "label": "밀도 있는 단맛",
+          "description": "단맛의 농도가 높아 중심 인상으로 느껴졌어요."
+        },
+        {
+          "angleOffset": -12,
+          "intensity": 4,
+          "key": "too-much",
+          "label": "조금 과한 단맛",
+          "description": "마무리에서 단맛이 다른 인상을 덮었어요."
+        },
+        {
+          "angleOffset": 12,
+          "intensity": 4,
+          "key": "covering",
+          "label": "재료를 덮은 단맛",
+          "description": "단맛 때문에 재료의 개성이 덜 느껴졌어요."
+        }
+      ]
+    },
+    {
+      "id": "sour",
+      "label": "신맛",
+      "angle": -45,
+      "words": [
+        {
+          "angleOffset": -10,
+          "intensity": 1,
+          "key": "fresh",
+          "label": "산뜻한 산미",
+          "description": "산미가 조용하게 입맛을 열어줬어요."
+        },
+        {
+          "angleOffset": 10,
+          "intensity": 1,
+          "key": "soft-citrus",
+          "label": "부드러운 과일 산미",
+          "description": "과일처럼 부드러운 산미가 편안하게 느껴졌어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 2,
+          "key": "opening",
+          "label": "입맛을 여는 산미",
+          "description": "산미가 코스의 리듬을 또렷하게 만들었어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 2,
+          "key": "clean-finish",
+          "label": "끝맛을 정리한 산미",
+          "description": "마무리의 무게를 산미가 가볍게 정리했어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 2,
+          "key": "citrus",
+          "label": "시트러스 산미",
+          "description": "레몬이나 유자처럼 밝은 산미로 느껴졌어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 2,
+          "key": "fermented",
+          "label": "발효 산미",
+          "description": "발효에서 오는 깊은 산미가 느껴졌어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 3,
+          "key": "sharp",
+          "label": "날카로운 산미",
+          "description": "산미가 한 번에 올라와 조금 또렷하게 남았어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 3,
+          "key": "vinegar",
+          "label": "식초 같은 산미",
+          "description": "식초처럼 직선적인 산미가 선명했어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 3,
+          "key": "long",
+          "label": "오래 남은 산미",
+          "description": "산미의 여운이 예상보다 길게 이어졌어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 3,
+          "key": "tight",
+          "label": "입안을 조인 산미",
+          "description": "산미가 입안을 조이는 듯한 긴장감으로 남았어요."
+        },
+        {
+          "angleOffset": -12,
+          "intensity": 4,
+          "key": "jumping",
+          "label": "튀는 산미",
+          "description": "산미가 재료의 흐름보다 앞서 느껴졌어요."
+        },
+        {
+          "angleOffset": 12,
+          "intensity": 4,
+          "key": "covering",
+          "label": "재료를 가린 산미",
+          "description": "산미가 커서 재료의 다른 결이 덜 보였어요."
+        }
+      ]
+    },
+    {
+      "id": "salty",
+      "label": "짠맛",
+      "angle": 15,
+      "words": [
+        {
+          "angleOffset": -10,
+          "intensity": 1,
+          "key": "balanced",
+          "label": "간이 잘 맞음",
+          "description": "간이 전체 흐름을 자연스럽게 받쳐줬어요."
+        },
+        {
+          "angleOffset": 10,
+          "intensity": 1,
+          "key": "soft-salt",
+          "label": "부드러운 간",
+          "description": "짠맛이 튀지 않고 조용하게 받쳐줬어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 2,
+          "key": "clear",
+          "label": "선명한 짠맛",
+          "description": "짠맛이 풍미의 윤곽을 또렷하게 만들었어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 2,
+          "key": "flavor-lift",
+          "label": "풍미를 살린 간",
+          "description": "간이 재료의 향과 감칠맛을 살려줬어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 2,
+          "key": "broth-salt",
+          "label": "육수의 짠맛",
+          "description": "육수나 소스에서 오는 짠맛으로 느껴졌어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 2,
+          "key": "sea-clean",
+          "label": "맑은 해수감",
+          "description": "바다 향이 맑게 느껴지는 짠맛이었어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 3,
+          "key": "strong-sea",
+          "label": "해수감이 강함",
+          "description": "짠맛이나 바다 향이 앞쪽에서 분명하게 느껴졌어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 3,
+          "key": "sauce-forward",
+          "label": "소스의 간이 강함",
+          "description": "소스의 짠맛이 재료보다 더 크게 남았어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 3,
+          "key": "fermented-salt",
+          "label": "젓갈 같은 짠맛",
+          "description": "발효 해산물 같은 짠맛과 향이 느껴졌어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 3,
+          "key": "long-salty",
+          "label": "오래 남은 짠맛",
+          "description": "짠맛의 여운이 입안에 길게 남았어요."
+        },
+        {
+          "angleOffset": -12,
+          "intensity": 4,
+          "key": "front",
+          "label": "간이 앞섬",
+          "description": "간이 다른 재료보다 먼저 크게 남았어요."
+        },
+        {
+          "angleOffset": 12,
+          "intensity": 4,
+          "key": "covering",
+          "label": "재료를 가린 간",
+          "description": "짠맛 때문에 재료의 섬세함이 덜 느껴졌어요."
+        }
+      ]
+    },
+    {
+      "id": "bitter",
+      "label": "쓴맛",
+      "angle": 75,
+      "words": [
+        {
+          "angleOffset": -10,
+          "intensity": 1,
+          "key": "soft-after",
+          "label": "쌉싸름한 여운",
+          "description": "작은 쓴맛이 마무리를 정리해줬어요."
+        },
+        {
+          "angleOffset": 10,
+          "intensity": 1,
+          "key": "clean-bitter",
+          "label": "깔끔한 쌉싸름함",
+          "description": "쓴맛이 부담 없이 입안을 정리했어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 2,
+          "key": "roasted",
+          "label": "구운 향",
+          "description": "로스팅이나 직화 향이 맛의 깊이를 더했어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 2,
+          "key": "herbal",
+          "label": "허브 쌉싸름함",
+          "description": "허브나 잎채소 같은 산뜻한 쓴맛이 있었어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 2,
+          "key": "char",
+          "label": "직화의 쌉싸름함",
+          "description": "불향과 함께 오는 쌉싸름함이 느껴졌어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 2,
+          "key": "finish-clean",
+          "label": "마무리를 정리한 쓴맛",
+          "description": "작은 쓴맛이 피니시를 깨끗하게 만들었어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 3,
+          "key": "strong-smoke",
+          "label": "훈연감이 강함",
+          "description": "훈연이나 탄 향이 재료보다 또렷하게 남았어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 3,
+          "key": "burnt",
+          "label": "탄 향",
+          "description": "탄 향이나 그을린 향이 강하게 느껴졌어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 3,
+          "key": "dry-bitter",
+          "label": "건조한 쓴맛",
+          "description": "입안을 조금 마르게 하는 쓴맛이 남았어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 3,
+          "key": "long-bitter",
+          "label": "오래 남은 쓴맛",
+          "description": "쓴맛의 여운이 예상보다 길게 이어졌어요."
+        },
+        {
+          "angleOffset": -12,
+          "intensity": 4,
+          "key": "covering",
+          "label": "쓴맛이 덮음",
+          "description": "쓴맛이 다른 풍미를 가리는 쪽으로 느껴졌어요."
+        },
+        {
+          "angleOffset": 12,
+          "intensity": 4,
+          "key": "smoke-cover",
+          "label": "훈연이 재료를 덮음",
+          "description": "훈연감이 커서 재료의 개성이 묻혔어요."
+        }
+      ]
+    },
+    {
+      "id": "umami",
+      "label": "감칠맛",
+      "angle": 135,
+      "words": [
+        {
+          "angleOffset": -10,
+          "intensity": 1,
+          "key": "subtle-depth",
+          "label": "은근한 깊이",
+          "description": "감칠맛이 조용하게 배경을 채웠어요."
+        },
+        {
+          "angleOffset": 10,
+          "intensity": 1,
+          "key": "clear",
+          "label": "맑은 감칠맛",
+          "description": "깊이는 있지만 무겁지 않게 이어졌어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 2,
+          "key": "flowing",
+          "label": "풍미가 이어짐",
+          "description": "재료의 깊이가 자연스럽게 이어졌어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 2,
+          "key": "broth",
+          "label": "육수 같은 깊이",
+          "description": "맑은 육수처럼 깊고 안정적인 감칠맛이었어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 2,
+          "key": "seafood",
+          "label": "해산물 감칠맛",
+          "description": "조개나 해산물에서 오는 감칠맛이 느껴졌어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 2,
+          "key": "fermented",
+          "label": "발효 감칠맛",
+          "description": "발효 재료에서 오는 깊은 감칠맛이 있었어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 3,
+          "key": "dense",
+          "label": "밀도 있는 감칠맛",
+          "description": "감칠맛의 존재감이 코스의 중심을 만들었어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 3,
+          "key": "meaty",
+          "label": "육향의 감칠맛",
+          "description": "고기나 jus에서 오는 묵직한 감칠맛이 느껴졌어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 3,
+          "key": "long",
+          "label": "긴 감칠맛",
+          "description": "감칠맛의 여운이 길고 안정적으로 이어졌어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 3,
+          "key": "short",
+          "label": "짧게 끊긴 감칠맛",
+          "description": "기대보다 감칠맛이 빨리 사라졌어요."
+        },
+        {
+          "angleOffset": -12,
+          "intensity": 4,
+          "key": "heavy",
+          "label": "무겁게 쌓임",
+          "description": "감칠맛이 누적되며 후반이 조금 묵직했어요."
+        },
+        {
+          "angleOffset": 12,
+          "intensity": 4,
+          "key": "covering",
+          "label": "감칠맛이 재료를 덮음",
+          "description": "감칠맛이 커서 재료의 섬세함이 덜 느껴졌어요."
+        }
+      ]
+    },
+    {
+      "id": "fat",
+      "label": "지방감",
+      "angle": 195,
+      "words": [
+        {
+          "angleOffset": -10,
+          "intensity": 1,
+          "key": "soft-texture",
+          "label": "부드러운 질감",
+          "description": "기름기보다 질감의 부드러움으로 남았어요."
+        },
+        {
+          "angleOffset": 10,
+          "intensity": 1,
+          "key": "clean-fat",
+          "label": "가볍게 정리된 지방감",
+          "description": "지방감이 있지만 마무리는 가볍게 정리됐어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 2,
+          "key": "nutty-weight",
+          "label": "고소한 무게",
+          "description": "지방감이 풍성함을 만들며 편안하게 느껴졌어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 2,
+          "key": "buttery",
+          "label": "버터리함",
+          "description": "버터처럼 부드럽고 둥근 지방감이 있었어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 2,
+          "key": "creamy",
+          "label": "크리미함",
+          "description": "크림 같은 질감이 입안을 부드럽게 감쌌어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 2,
+          "key": "silky",
+          "label": "실키한 질감",
+          "description": "매끈하게 이어지는 질감으로 느껴졌어요."
+        },
+        {
+          "angleOffset": -24,
+          "intensity": 3,
+          "key": "long",
+          "label": "오래 남는 지방감",
+          "description": "지방감이나 버터감이 입안에 길게 남았어요."
+        },
+        {
+          "angleOffset": -8,
+          "intensity": 3,
+          "key": "rich",
+          "label": "풍성한 지방감",
+          "description": "지방감이 코스의 볼륨을 크게 만들었어요."
+        },
+        {
+          "angleOffset": 8,
+          "intensity": 3,
+          "key": "coating",
+          "label": "입안을 코팅함",
+          "description": "지방감이 입안을 감싸며 오래 남았어요."
+        },
+        {
+          "angleOffset": 24,
+          "intensity": 3,
+          "key": "finish-heavy",
+          "label": "무거운 피니시",
+          "description": "마무리가 조금 묵직하게 느껴졌어요."
+        },
+        {
+          "angleOffset": -12,
+          "intensity": 4,
+          "key": "greasy",
+          "label": "느끼하게 남음",
+          "description": "후반에 지방감이 정리되지 않고 크게 남았어요."
+        },
+        {
+          "angleOffset": 12,
+          "intensity": 4,
+          "key": "fat-covering",
+          "label": "지방감이 재료를 덮음",
+          "description": "지방감이 커서 재료의 향이 덜 느껴졌어요."
+        }
       ]
     }
   ]

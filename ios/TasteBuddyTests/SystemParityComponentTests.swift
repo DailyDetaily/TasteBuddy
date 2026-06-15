@@ -24,6 +24,15 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(SearchOverlayShellMetrics.bodyTopPadding, 16)
         XCTAssertEqual(SearchOverlayShellMetrics.bodyBottomPadding, 32)
         XCTAssertEqual(SearchOverlayShellMetrics.clearButtonSize, 28)
+        XCTAssertEqual(HomeSearchHeaderMetrics.horizontalPadding, 20)
+        XCTAssertEqual(HomeSearchHeaderMetrics.topPadding, 4)
+        XCTAssertEqual(HomeSearchHeaderMetrics.bottomPadding, 16)
+        XCTAssertEqual(SearchSuggestionMetrics.sectionStackGap, 20)
+        XCTAssertEqual(SearchSuggestionMetrics.cardStackGap, 12)
+        XCTAssertEqual(SearchSuggestionMetrics.titleDescriptionGap, 4)
+        XCTAssertEqual(SearchSuggestionMetrics.chipGap, 8)
+        XCTAssertEqual(SearchSuggestionChipTone.recommended.symbol, "sparkles")
+        XCTAssertEqual(SearchSuggestionChipTone.recent.symbol, "clock")
     }
 
     func testCompactCardMirrorsReactSlotMetrics() {
@@ -150,6 +159,94 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(TasteMatchRecommendationCardMetrics.borderOpacity, 0.18)
     }
 
+    func testHomeRecommendationEngineMirrorsReactAxisRanking() {
+        let sourFirstProfile = TasteProfile(
+            createdAt: .now,
+            scores: [
+                "sweet": 58,
+                "sour": 95,
+                "bitter": 42,
+                "salty": 46,
+                "umami": 76,
+                "fat": 40,
+            ],
+            confidence: "Starter",
+            summary: "fixture",
+            topAxes: [.sour, .umami],
+            cautionAxis: .fat
+        )
+
+        let recommendations = HomeRecommendationEngine.recommendations(
+            items: TasteBuddyNativeContent.tasteMatchFeed,
+            viewerProfile: sourFirstProfile,
+            mode: .buddy
+        )
+
+        XCTAssertEqual(recommendations.map(\.item.reviewerID), ["mina", "hyeon", "jae"])
+        XCTAssertEqual(recommendations.first?.sourceAxis, .sour)
+        XCTAssertEqual(Set(recommendations.map(\.item.reviewerID)).count, recommendations.count)
+    }
+
+    func testHomeRecommendationEngineKeepsHighestMatchPerEntityWithoutViewerProfile() {
+        let original = TasteBuddyNativeContent.tasteMatchFeed[0]
+        let lowerMatchDuplicate = TasteMatchFeedItem(
+            id: "duplicate-mina",
+            reviewerID: original.reviewerID,
+            reviewerName: original.reviewerName,
+            reviewerHandle: original.reviewerHandle,
+            reviewerTasteScores: original.reviewerTasteScores,
+            reviewerConfidenceScores: original.reviewerConfidenceScores,
+            relationLabel: original.relationLabel,
+            restaurantID: "duplicate-restaurant",
+            restaurantName: "중복 레스토랑",
+            dishTitle: "중복 메뉴",
+            reason: original.reason,
+            supportingSignals: original.supportingSignals,
+            tasteTags: original.tasteTags,
+            experienceTags: original.experienceTags,
+            sharedSignals: original.sharedSignals,
+            learnedConfidenceScore: original.learnedConfidenceScore,
+            matchRate: original.matchRate - 10,
+            axis: original.axis
+        )
+
+        let recommendations = HomeRecommendationEngine.recommendations(
+            items: [lowerMatchDuplicate, original],
+            viewerProfile: nil,
+            mode: .buddy
+        )
+
+        XCTAssertEqual(recommendations.count, 1)
+        XCTAssertEqual(recommendations.first?.item.id, original.id)
+    }
+
+    func testFallbackBuddyMatchScoreUsesReactClampRange() {
+        let score = HomeRecommendationEngine.profileMatchScore(
+            reviewerTasteScores: Dictionary(
+                uniqueKeysWithValues: TasteAxis.allCases.map { ($0.rawValue, 100) }
+            ),
+            viewerProfile: CalibrationEngine.makeProfile(
+                responses: Dictionary(
+                    uniqueKeysWithValues: TasteAxis.allCases.map { ($0, -3) }
+                )
+            )
+        )
+
+        XCTAssertEqual(score, 50)
+    }
+
+    func testRestaurantAndChefRecommendationCardsMirrorReactLocalLogic() {
+        XCTAssertEqual(HomeRecommendationEngine.chefName(for: "밍글스"), "강민구")
+        XCTAssertEqual(HomeRecommendationEngine.chefName(for: "숍리제 (Lysée)"), "이은지")
+        XCTAssertEqual(HomeRecommendationEngine.chefName(for: "숍리제 (Lysee)"), "이은지")
+        XCTAssertEqual(HomeRecommendationEngine.chefName(for: "정식당"), "임정식")
+        XCTAssertEqual(HomeRecommendationEngine.chefName(for: "온지음"), "온지음 셰프")
+
+        XCTAssertEqual(ChefImageResolver.bundledImageName(for: "강민구"), "KangMingoo")
+        XCTAssertEqual(ChefImageResolver.bundledImageName(for: "이은지"), "LeeEunji")
+        XCTAssertEqual(ChefImageResolver.bundledImageName(for: "임정식"), "LimJeongsik")
+    }
+
     func testOverlayAndBottomSheetShellMirrorReactChromeMetrics() {
         XCTAssertEqual(ActionOverlayCardMetrics.overlayOpacity, 0.35)
         XCTAssertEqual(ActionOverlayCardMetrics.horizontalPadding, 20)
@@ -161,13 +258,13 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(ActionOverlayCardMetrics.actionHeight, 44)
 
         XCTAssertEqual(BottomSheetShellMetrics.overlayOpacity, 0.60)
-        XCTAssertEqual(BottomSheetShellMetrics.stageHeightRatio, 0.95)
+        XCTAssertEqual(BottomSheetShellMetrics.stageHeightRatio, 0.98)
         XCTAssertEqual(BottomSheetShellMetrics.authEntryEmailMaxHeightRatio, 0.72)
         XCTAssertEqual(BottomSheetShellMetrics.stageTopInset, 12)
         XCTAssertEqual(BottomSheetShellMetrics.maxWidth, 1440)
         XCTAssertEqual(
             BottomSheetShellMetrics.stageHeight(screenHeight: 800, safeAreaTop: 47),
-            701
+            725
         )
         XCTAssertEqual(BottomSheetShellMetrics.topRadius, 24)
         XCTAssertTrue(BottomSheetShellMetrics.clipsOnlyTopCorners)
@@ -388,7 +485,7 @@ final class SystemParityComponentTests: XCTestCase {
     func testAppChromeMatchesReactShellContract() {
         XCTAssertEqual(TBSize.topAppBarHeight, 56)
         XCTAssertEqual(TBSize.bottomTabBarHeight, 60)
-        XCTAssertEqual(AppChromeMetrics.actionButtonSize, 40)
+        XCTAssertEqual(AppChromeMetrics.actionButtonSize, 32)
         XCTAssertEqual(AppChromeMetrics.iconSize, TBIcon.Size.large)
         XCTAssertEqual(AppChromeMetrics.actionGap, 8)
         XCTAssertEqual(AppChromeMetrics.avatarSize, 32)
@@ -437,11 +534,13 @@ final class SystemParityComponentTests: XCTestCase {
 
     func testLucideIconNameMapsLegacySystemSymbolsToReactLucideNames() {
         XCTAssertEqual(LucideIconName(systemName: "magnifyingglass"), .search)
+        XCTAssertEqual(LucideIconName(systemName: "mappin.circle"), .mapPin)
         XCTAssertEqual(LucideIconName(systemName: "bell"), .bell)
         XCTAssertEqual(LucideIconName(systemName: "plus.circle"), .circlePlus)
         XCTAssertEqual(LucideIconName(systemName: "line.3.horizontal"), .menu)
         XCTAssertEqual(LucideIconName(systemName: "calendar.badge.checkmark"), .calendarCheck)
         XCTAssertEqual(LucideIconName(systemName: "person"), .user)
+        XCTAssertEqual(LucideIconName(systemName: "phone"), .phone)
         XCTAssertEqual(LucideIconName(systemName: "heart.fill"), .heart)
         XCTAssertEqual(LucideIconName(systemName: "bookmark.fill"), .bookmark)
         XCTAssertEqual(LucideIconName(systemName: "text.bubble"), .messageCircle)
@@ -534,6 +633,57 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(items.first?.id, TasteBuddyNativeContent.tasteMatchFeed.first?.id)
         XCTAssertEqual(items.first?.tbaAnalysisSnapshot?.source, "TasteBuddyAgent")
         XCTAssertFalse(items.first?.tasteBubbles.isEmpty ?? true)
+    }
+
+    func testNativeDishFeedbackCardMetricsMirrorReactDishFeedbackCard() {
+        XCTAssertEqual(DishFeedbackCardMetrics.padding, 12)
+        XCTAssertEqual(DishFeedbackCardMetrics.contentGap, 12)
+        XCTAssertEqual(DishFeedbackCardMetrics.radius, 20)
+        XCTAssertEqual(DishFeedbackCardMetrics.headerGap, 8)
+        XCTAssertEqual(DishFeedbackCardMetrics.avatarSize, 32)
+        XCTAssertEqual(DishFeedbackCardMetrics.chipStackGap, 6)
+        XCTAssertEqual(DishFeedbackCardMetrics.actionDividerOpacity, 0.08, accuracy: 0.001)
+        XCTAssertEqual(DishFeedbackCardMetrics.actionGap, 8)
+        XCTAssertEqual(DishFeedbackCardMetrics.actionCountGap, 2)
+        XCTAssertEqual(DishFeedbackCardMetrics.actionIconSize, 18)
+        XCTAssertEqual(DishFeedbackCardMetrics.heartActionIconSize, 18)
+        XCTAssertEqual(DishFeedbackCardMetrics.commentActionIconSize, 18)
+        XCTAssertEqual(DishFeedbackCardMetrics.shareActionIconSize, 17)
+        XCTAssertEqual(DishFeedbackCardMetrics.actionIconFrameWidth, 18)
+        XCTAssertEqual(DishFeedbackCardMetrics.actionButtonSize, 32)
+        XCTAssertEqual(DishFeedbackCardMetrics.notePadding, 12)
+        XCTAssertEqual(DishFeedbackCardMetrics.noteRadius, 12)
+    }
+
+    func testDishFeedbackAuthorLineTruncationMatchesReactPriority() {
+        XCTAssertEqual(DishFeedbackAuthorLineTruncator.truncationMark, "..")
+        XCTAssertEqual(DishFeedbackAuthorLineTruncator.minimumAuthorNameLength, 2)
+        XCTAssertEqual(DishFeedbackAuthorLineTruncator.minimumSubjectLength, 3)
+        XCTAssertEqual(
+            DishFeedbackAuthorLineTruncator.minimumText("불향도윤", minLength: 2),
+            "불향.."
+        )
+        XCTAssertEqual(
+            DishFeedbackAuthorLineTruncator.minimumText("abcdefgh", minLength: 3),
+            "abc.."
+        )
+
+        let full = DishFeedbackAuthorLineTruncator.visibleText(
+            authorName: "김민아",
+            subject: "맑은 육수",
+            availableWidth: 1_000
+        )
+        XCTAssertEqual(full.authorName, "김민아")
+        XCTAssertEqual(full.subject, "맑은 육수")
+
+        let narrow = DishFeedbackAuthorLineTruncator.visibleText(
+            authorName: "불향도윤처럼긴닉네임",
+            subject: "맑은육수와산뜻한여운",
+            availableWidth: 80
+        )
+        XCTAssertEqual(narrow.authorName, "불향..")
+        XCTAssertTrue(narrow.subject.hasSuffix(".."))
+        XCTAssertGreaterThanOrEqual(narrow.subject.count, 5)
     }
 
     func testFeedbackReflectionMediaLifecyclePolicyMatchesPrivateR2Plan() {

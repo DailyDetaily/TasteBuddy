@@ -20,8 +20,20 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>instagram-stories</string>
+	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>결과 카드 이미지를 사진 보관함에 저장하기 위해 사용합니다.</string>
 	<key>TBBackendEnvironment</key>
 	<string>$(TB_BACKEND_ENVIRONMENT)</string>
+	<key>TBGoogleMapsAPIKey</key>
+	<string>$(TB_GOOGLE_MAPS_API_KEY)</string>
+	<key>TBInstagramFacebookAppID</key>
+	<string>$(TB_INSTAGRAM_FACEBOOK_APP_ID)</string>
+	<key>TBKakaoRestAPIKey</key>
+	<string>$(TB_KAKAO_REST_API_KEY)</string>
 	<key>TBPublicMediaBaseURL</key>
 	<string>$(TB_PUBLIC_MEDIA_BASE_URL)</string>
 	<key>TBSupabasePublishableKey</key>

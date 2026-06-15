@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AppChromeMetrics {
-    static let actionButtonSize: CGFloat = 40
+    static let actionButtonSize: CGFloat = TBIcon.Container.large
     static let actionGap: CGFloat = 8
     static let avatarSize: CGFloat = 32
     static let iconSize: CGFloat = TBIcon.Size.large
@@ -73,6 +73,7 @@ struct TopAppBar: View {
     var title: String? = nil
     var showBack = false
     var showSearchAction = false
+    var showsDefaultActions = true
     var profile: TasteProfile? = nil
     var hasUnreadNotifications = false
     var rightActions: [TopAppBarAction] = []
@@ -84,26 +85,7 @@ struct TopAppBar: View {
     var onOpenProfile: (() -> Void)? = nil
 
     var body: some View {
-        HStack(spacing: 0) {
-            leadingControl
-
-            Spacer(minLength: 0)
-
-            if rightActions.isEmpty {
-                defaultActions
-            } else {
-                HStack(spacing: AppChromeMetrics.actionGap) {
-                    ForEach(rightActions) { action in
-                        TopAppBarIconButton(
-                            symbol: action.symbol,
-                            accessibilityLabel: action.accessibilityLabel,
-                            action: action.action
-                        )
-                    }
-                }
-            }
-        }
-        .overlay {
+        ZStack {
             if let title {
                 Text(title)
                     .font(TBFont.bold(15))
@@ -112,10 +94,33 @@ struct TopAppBar: View {
                     .frame(maxWidth: 240)
                     .allowsHitTesting(false)
             }
+
+            HStack(spacing: 0) {
+                leadingControl
+
+                Spacer(minLength: 0)
+
+                if rightActions.isEmpty, showsDefaultActions {
+                    defaultActions
+                } else if !rightActions.isEmpty {
+                    HStack(spacing: AppChromeMetrics.actionGap) {
+                        ForEach(rightActions) { action in
+                            TopAppBarIconButton(
+                                symbol: action.symbol,
+                                accessibilityLabel: action.accessibilityLabel,
+                                action: action.action
+                            )
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, TBSpacing.page)
         }
+        .frame(maxWidth: .infinity)
         .frame(height: TBSize.topAppBarHeight)
-        .padding(.horizontal, TBSpacing.page)
-        .background(background)
+        .background {
+            background.ignoresSafeArea(edges: .top)
+        }
     }
 
     @ViewBuilder
@@ -206,7 +211,7 @@ private struct TopAppBarIconButton: View {
                 size: AppChromeMetrics.iconSize,
                 strokeWidth: TBIcon.Stroke.regular
             )
-                .foregroundStyle(TBColor.textSecondary)
+                .foregroundStyle(TBColor.iconPrimary)
                 .frame(
                     width: AppChromeMetrics.actionButtonSize,
                     height: AppChromeMetrics.actionButtonSize
@@ -261,10 +266,10 @@ struct BottomTabBar: View {
         }
         .frame(minHeight: TBSize.bottomTabBarHeight)
         .padding(.horizontal, 8)
-        .background(
+        .background {
             TBColor.page.opacity(0.85)
                 .background(.ultraThinMaterial)
-        )
+        }
         .overlay(alignment: .top) {
             Rectangle()
                 .fill(TBColor.border)

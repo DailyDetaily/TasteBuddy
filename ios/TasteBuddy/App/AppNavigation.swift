@@ -67,8 +67,11 @@ enum AppRoute: Hashable {
         switch self {
         case .restaurant(let id):
             RestaurantCatalog.restaurant(id: id).name
-        case .restaurantMenu(let restaurantID, _):
-            RestaurantCatalog.restaurant(id: restaurantID).name
+        case .restaurantMenu(let restaurantID, let menuID):
+            RestaurantCatalog.restaurant(id: restaurantID)
+                .memorableDishes
+                .first { $0.id == menuID }?
+                .title ?? RestaurantCatalog.restaurant(id: restaurantID).name
         case .dishFeedback:
             "디시 기록"
         case .comments:
@@ -80,7 +83,14 @@ enum AppRoute: Hashable {
         case .connectionList(let kind):
             kind.title
         case .publicProfile(let id):
-            id == "jae" ? "Jae" : "Mina"
+            switch id {
+            case "jae":
+                "정서윤"
+            case "hyeon":
+                "최도윤"
+            default:
+                "김민아"
+            }
         }
     }
 }
@@ -91,6 +101,7 @@ enum AppSheet: Identifiable {
     case notifications
     case quickRefinement
     case menu
+    case bookmark(RestaurantSummary)
     case authEntry(BackendAuthEmailIntent)
 
     var id: String {
@@ -105,6 +116,8 @@ enum AppSheet: Identifiable {
             "quick-refinement"
         case .menu:
             "menu"
+        case .bookmark(let restaurant):
+            "bookmark-\(restaurant.id)"
         case .authEntry(let intent):
             "auth-entry-\(intent.rawValue)"
         }

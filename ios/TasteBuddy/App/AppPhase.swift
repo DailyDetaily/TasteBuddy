@@ -12,7 +12,8 @@ enum AppPhase: Equatable {
         backendSessionStatus: BackendSessionStatus,
         hasSeenOnboarding: Bool,
         hasPreferenceProfile: Bool,
-        hasTasteProfile: Bool
+        hasTasteProfile: Bool,
+        isPreferenceIntakeEnabled: Bool = AppFlowFeatures.isPreferenceIntakeEnabled
     ) -> AppPhase {
         guard hasCompletedSplash else {
             return .splash
@@ -26,7 +27,7 @@ enum AppPhase: Equatable {
             return .onboarding
         }
 
-        guard hasPreferenceProfile else {
+        guard !isPreferenceIntakeEnabled || hasPreferenceProfile else {
             return .preferenceIntake
         }
 
@@ -36,4 +37,8 @@ enum AppPhase: Equatable {
 
         return .main
     }
+}
+
+enum AppFlowFeatures {
+    static let isPreferenceIntakeEnabled = false
 }

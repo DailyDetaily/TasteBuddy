@@ -9,7 +9,7 @@ import type {
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabasePublicKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY;
 const FEEDBACK_REFLECTION_PHOTO_MAX_DIMENSION = 1600;
 const FEEDBACK_REFLECTION_PHOTO_QUALITY = 0.88;
 
@@ -159,10 +159,20 @@ export async function sendSupabaseEmailOtp(
 
   const { error } =
     intent === 'link-current-profile'
-      ? await supabase.auth.updateUser(
-          { email },
-          { emailRedirectTo: getAuthRedirectUrl() },
-        )
+      ? await (async () => {
+          const session = await ensureSupabaseSession();
+
+          if (!session) {
+            return {
+              error: new Error('로그인 세션을 만들 수 없습니다.'),
+            };
+          }
+
+          return supabase.auth.updateUser(
+            { email },
+            { emailRedirectTo: getAuthRedirectUrl() },
+          );
+        })()
       : await supabase.auth.signInWithOtp({
           email,
           options: {

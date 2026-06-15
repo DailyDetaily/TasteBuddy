@@ -57,6 +57,8 @@ import {
 import { TBA } from './tasteBuddyAgent';
 import {
   ensureSupabaseSession,
+  getCurrentSupabaseSession,
+  isAnonymousSupabaseSession,
   isSupabaseConfigured,
   supabase,
   uploadSupabaseFeedbackReflectionPhoto,
@@ -279,6 +281,77 @@ export interface RestaurantContentDish {
 export interface RestaurantContentCatalog {
   chefs: RestaurantContentChef[];
   dishes: RestaurantContentDish[];
+}
+
+interface RestaurantContentCatalogCacheEntry {
+  cachedAt: number;
+  catalog: RestaurantContentCatalog;
+}
+
+const RESTAURANT_CONTENT_CATALOG_CACHE_KEY = 'tasteBuddy.restaurantContentCatalog.v1';
+const RESTAURANT_CONTENT_CATALOG_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+let restaurantContentCatalogCacheEntry: RestaurantContentCatalogCacheEntry | null = null;
+
+function isFreshRestaurantContentCatalogCache(
+  entry: RestaurantContentCatalogCacheEntry | null,
+): entry is RestaurantContentCatalogCacheEntry {
+  if (!entry || !Array.isArray(entry.catalog.chefs) || !Array.isArray(entry.catalog.dishes)) {
+    return false;
+  }
+
+  return Date.now() - entry.cachedAt < RESTAURANT_CONTENT_CATALOG_CACHE_TTL_MS;
+}
+
+function readCachedRestaurantContentCatalog() {
+  if (isFreshRestaurantContentCatalogCache(restaurantContentCatalogCacheEntry)) {
+    return restaurantContentCatalogCacheEntry.catalog;
+  }
+
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const rawCacheEntry = window.localStorage.getItem(RESTAURANT_CONTENT_CATALOG_CACHE_KEY);
+    if (!rawCacheEntry) {
+      return null;
+    }
+
+    const parsedCacheEntry = JSON.parse(rawCacheEntry) as RestaurantContentCatalogCacheEntry;
+    if (!isFreshRestaurantContentCatalogCache(parsedCacheEntry)) {
+      window.localStorage.removeItem(RESTAURANT_CONTENT_CATALOG_CACHE_KEY);
+      return null;
+    }
+
+    restaurantContentCatalogCacheEntry = parsedCacheEntry;
+    return parsedCacheEntry.catalog;
+  } catch (error) {
+    console.warn('Failed to read cached restaurant content catalog.', error);
+    return null;
+  }
+}
+
+function writeCachedRestaurantContentCatalog(catalog: RestaurantContentCatalog) {
+  const cacheEntry: RestaurantContentCatalogCacheEntry = {
+    cachedAt: Date.now(),
+    catalog,
+  };
+
+  restaurantContentCatalogCacheEntry = cacheEntry;
+
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      RESTAURANT_CONTENT_CATALOG_CACHE_KEY,
+      JSON.stringify(cacheEntry),
+    );
+  } catch (error) {
+    console.warn('Failed to cache restaurant content catalog.', error);
+  }
 }
 
 export interface RestaurantPlaceInfo {
@@ -2488,6 +2561,16 @@ async function getAuthenticatedUserId() {
   return session?.user.id ?? null;
 }
 
+async function getHydrationUserId() {
+  const session = await getCurrentSupabaseSession();
+
+  if (!session || isAnonymousSupabaseSession(session)) {
+    return null;
+  }
+
+  return session.user.id ?? null;
+}
+
 async function getOrCreateRestaurantId(reservation: ReservationPersistenceInput) {
   if (!supabase) {
     return null;
@@ -2663,7 +2746,7 @@ export async function hydrateReservationPageData(): Promise<HydratedReservationP
   }
 
   try {
-    const userId = await getAuthenticatedUserId();
+    const userId = await getHydrationUserId();
 
     if (!userId) {
       return {
@@ -2738,7 +2821,7 @@ export async function hydrateLatestMeasurementSnapshot() {
     return null;
   }
 
-  const userId = await getAuthenticatedUserId();
+  const userId = await getHydrationUserId();
 
   if (!userId) {
     return null;
@@ -2784,7 +2867,7 @@ export async function hydrateRecentMeasurementSnapshots(limit = 6) {
     return [] as TasteMeasurementSnapshot[];
   }
 
-  const userId = await getAuthenticatedUserId();
+  const userId = await getHydrationUserId();
 
   if (!userId) {
     return [] as TasteMeasurementSnapshot[];
@@ -2849,7 +2932,7 @@ export async function hydrateUserLearnedCalibration(): Promise<UserLearnedCalibr
     return null;
   }
 
-  const userId = await getAuthenticatedUserId();
+  const userId = await getHydrationUserId();
 
   if (!userId) {
     return null;
@@ -2894,7 +2977,7 @@ export async function hydrateUserTbaConfidenceStates(): Promise<TasteBuddyAgentU
     return [];
   }
 
-  const userId = await getAuthenticatedUserId();
+  const userId = await getHydrationUserId();
 
   if (!userId) {
     return [];
@@ -2924,7 +3007,16 @@ export async function hydrateUserTbaConfidenceStates(): Promise<TasteBuddyAgentU
     .filter((state): state is TasteBuddyAgentUserConfidenceState => Boolean(state));
 }
 
-export async function hydrateRestaurantContentCatalog(): Promise<RestaurantContentCatalog> {
+export async function hydrateRestaurantContentCatalog(
+  options: { bypassCache?: boolean } = {},
+): Promise<RestaurantContentCatalog> {
+  if (!options.bypassCache) {
+    const cachedCatalog = readCachedRestaurantContentCatalog();
+    if (cachedCatalog) {
+      return cachedCatalog;
+    }
+  }
+
   if (!supabase || !isSupabaseConfigured) {
     return { chefs: [], dishes: [] };
   }
@@ -3161,10 +3253,14 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       return left.restaurant.localeCompare(right.restaurant, 'ko');
     });
 
-  return {
+  const catalog = {
     chefs,
     dishes: sortedDishes,
   };
+
+  writeCachedRestaurantContentCatalog(catalog);
+
+  return catalog;
 }
 
 export async function persistTasteMeasurementSnapshot(

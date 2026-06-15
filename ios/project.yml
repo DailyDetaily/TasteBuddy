@@ -13,6 +13,11 @@ settings:
     MARKETING_VERSION: 0.1.0
     SWIFT_VERSION: "5.10"
 
+packages:
+  supabase-swift:
+    url: https://github.com/supabase/supabase-swift.git
+    from: 2.46.0
+
 targets:
   TasteBuddy:
     type: application
@@ -41,8 +46,17 @@ targets:
           UIApplicationSupportsMultipleScenes: false
         UILaunchScreen:
           UIColorName: LaunchBackground
+        TBBackendEnvironment: $(TB_BACKEND_ENVIRONMENT)
+        TBGoogleMapsAPIKey: $(TB_GOOGLE_MAPS_API_KEY)
+        TBKakaoRestAPIKey: $(TB_KAKAO_REST_API_KEY)
+        TBPublicMediaBaseURL: $(TB_PUBLIC_MEDIA_BASE_URL)
+        TBSupabasePublishableKey: $(TB_SUPABASE_PUBLISHABLE_KEY)
+        TBSupabaseURL: $(TB_SUPABASE_URL)
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
     settings:
       base:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -52,6 +66,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.tastebuddy.ios
         PRODUCT_NAME: TasteBuddy
         TARGETED_DEVICE_FAMILY: "1"
+    dependencies:
+      - package: supabase-swift
+        product: Supabase
 
   TasteBuddyTests:
     type: bundle.unit-test

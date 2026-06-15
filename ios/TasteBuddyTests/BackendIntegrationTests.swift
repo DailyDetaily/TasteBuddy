@@ -111,16 +111,8 @@ final class BackendIntegrationTests: XCTestCase {
     }
 
     @MainActor
-    func testAuthEntryModelAutoSwitchesAnonymousStartToLinkCurrentProfile() async {
-        let repository = RecordingBackendAuthRepository(
-            sendResults: [
-                .failure("Signups not allowed for this project."),
-                .success("현재 프로필을 연결할 인증 코드를 보냈습니다.")
-            ],
-            verifyResults: [
-                .success("현재 프로필이 이메일에 연결되었습니다.")
-            ]
-        )
+    func testAuthEntryModelRequestsLoginOrSignupCode() async {
+        let repository = RecordingBackendAuthRepository()
         let model = AuthEntryModel(
             intent: .startWithEmail,
             repository: repository,
@@ -131,17 +123,20 @@ final class BackendIntegrationTests: XCTestCase {
         model.email = "taste@example.com"
         await model.submitEmail()
 
-        XCTAssertEqual(repository.sendCalls.map(\.intent), [.startWithEmail, .linkCurrentProfile])
-        XCTAssertEqual(repository.sendCalls.map(\.shouldCreateUser), [false, true])
-        XCTAssertEqual(model.intent, .linkCurrentProfile)
+        XCTAssertEqual(repository.sendCalls.map(\.intent), [.startWithEmail])
+        XCTAssertEqual(repository.sendCalls.map(\.shouldCreateUser), [true])
+        XCTAssertEqual(model.intent, .startWithEmail)
         XCTAssertEqual(model.step, .code)
-        XCTAssertEqual(model.message, "현재 프로필을 연결할 인증 코드를 보냈습니다.")
+        XCTAssertEqual(model.message, "이메일로 인증 코드를 보냈습니다.")
 
         model.code = "123456"
         let completion = await model.submitCode()
 
-        XCTAssertEqual(repository.verifyCalls.map(\.intent), [.linkCurrentProfile])
-        XCTAssertEqual(completion, .linkedCurrentProfile)
+        XCTAssertEqual(repository.verifyCalls.map(\.intent), [.startWithEmail])
+        XCTAssertEqual(
+            completion,
+            .verifiedEmailLogin(.success("이메일 인증이 완료되었습니다."))
+        )
     }
 
     @MainActor

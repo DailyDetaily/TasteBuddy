@@ -83,7 +83,10 @@ final class AuthEntryModel: ObservableObject {
     }
 
     func prepareAnonymousSessionIfNeeded() async {
-        guard isConfigured, isAnonymousUser, !hasPreparedAnonymousSession else {
+        guard intent == .linkCurrentProfile,
+              isConfigured,
+              isAnonymousUser,
+              !hasPreparedAnonymousSession else {
             return
         }
 
@@ -118,35 +121,20 @@ final class AuthEntryModel: ObservableObject {
         status = .submitting
         message = nil
 
-        var effectiveIntent = intent
-        var result = await repository.sendEmailOTP(
+        let result = await repository.sendEmailOTP(
             email: nextEmail,
             intent: intent,
-            shouldCreateUser: intent != .startWithEmail,
+            shouldCreateUser: true,
             redirectTo: redirectURL
         )
 
-        if intent == .startWithEmail,
-           isAnonymousUser,
-           !result.ok,
-           AuthEntryModel.isMissingSupabaseEmailAccountError(result.message) {
-            effectiveIntent = .linkCurrentProfile
-            result = await repository.sendEmailOTP(
-                email: nextEmail,
-                intent: effectiveIntent,
-                shouldCreateUser: true,
-                redirectTo: redirectURL
-            )
-        }
-
         status = result.ok ? .success : .error
-        message = result.ok ? effectiveIntent.requestSuccessMessage : result.message
+        message = result.ok ? intent.requestSuccessMessage : result.message
 
         guard result.ok else {
             return nil
         }
 
-        intent = effectiveIntent
         pendingEmail = nextEmail
         email = nextEmail
         code = ""
@@ -278,20 +266,14 @@ final class AuthEntryModel: ObservableObject {
         String(rawCode.filter(\.isNumber).prefix(6))
     }
 
-    static func isMissingSupabaseEmailAccountError(_ message: String?) -> Bool {
-        let normalizedMessage = message?.lowercased() ?? ""
-        return normalizedMessage.contains("signup")
-            || normalizedMessage.contains("signups")
-            || normalizedMessage.contains("not allowed")
-            || normalizedMessage.contains("not found")
-            || normalizedMessage.contains("no user")
-    }
 }
 
 struct AuthEntrySheet: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var model: AuthEntryModel
+    @StateObject private var keyboard = AuthEntryKeyboardAvoidanceObserver()
     private let showsDevBypass: Bool
+    private let prefersFullHeight: Bool
     private let onDismissRequest: (() -> Void)?
     private let onContinueAsGuest: () -> Void
     private let onVerifiedEmailLogin: (BackendAuthResult) -> Void
@@ -303,6 +285,7 @@ struct AuthEntrySheet: View {
         isConfigured: Bool = BackendAuthRepositoryFactory.isConfigured(),
         isAnonymousUser: Bool = true,
         showsDevBypass: Bool = AuthEntryDebugBypass.isEnabled,
+        prefersFullHeight: Bool = false,
         onDismissRequest: (() -> Void)? = nil,
         onContinueAsGuest: @escaping () -> Void = {},
         onVerifiedEmailLogin: @escaping (BackendAuthResult) -> Void = { _ in },
@@ -317,6 +300,7 @@ struct AuthEntrySheet: View {
             )
         )
         self.showsDevBypass = showsDevBypass
+        self.prefersFullHeight = prefersFullHeight
         self.onDismissRequest = onDismissRequest
         self.onContinueAsGuest = onContinueAsGuest
         self.onVerifiedEmailLogin = onVerifiedEmailLogin
@@ -334,8 +318,9 @@ struct AuthEntrySheet: View {
                 showsSkipAction: showsSkipAction,
                 showsDevBypass: showsDevBypass
             ),
+            footerKeyboardOffset: keyboard.visibleHeight,
             floatingLayer: floatingLayer,
-            stageMode: model.step == .code
+            stageMode: prefersFullHeight || model.step == .code
                 ? .fixed
                 : .auto(maxHeightRatio: BottomSheetShellMetrics.authEntryEmailMaxHeightRatio),
             usesNativeSheetChrome: true
@@ -351,6 +336,7 @@ struct AuthEntrySheet: View {
         .presentationCornerRadius(0)
         .presentationDetents([.height(presentationDetentHeight)])
         .prefersUISheetGrabberVisible(false)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .task {
             await model.prepareAnonymousSessionIfNeeded()
         }
@@ -438,6 +424,13 @@ struct AuthEntrySheet: View {
     }
 
     private var presentationDetentHeight: CGFloat {
+        if prefersFullHeight {
+            return BottomSheetShellMetrics.stageHeight(
+                screenHeight: UIScreen.main.bounds.height,
+                safeAreaTop: topSafeAreaInset
+            )
+        }
+
         switch model.step {
         case .code:
             return BottomSheetShellMetrics.stageHeight(
@@ -651,22 +644,32 @@ private struct AuthEntryForm: View {
                 .font(TBFont.semibold(12))
                 .foregroundStyle(TBColor.textMuted)
 
-            TextField("이메일을 입력해주세요", text: $model.email)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .keyboardType(.emailAddress)
-                .textContentType(.emailAddress)
-                .font(TBFont.regular(14))
-                .foregroundStyle(TBColor.textPrimary)
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(TBColor.surface)
-                .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-                        .stroke(TBColor.border, lineWidth: 1)
+            ZStack(alignment: .leading) {
+                if model.email.isEmpty {
+                    Text("이메일을 입력해주세요")
+                        .font(TBFont.regular(14))
+                        .foregroundStyle(TBColor.textHint)
+                        .padding(.horizontal, 12)
+                        .allowsHitTesting(false)
                 }
-                .disabled(model.isSubmitting)
+
+                TextField("", text: $model.email)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .keyboardType(.emailAddress)
+                    .textContentType(.emailAddress)
+                    .font(TBFont.regular(14))
+                    .foregroundStyle(TBColor.textPrimary)
+                    .padding(.horizontal, 12)
+            }
+            .frame(height: 48)
+            .background(TBColor.surface)
+            .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
+                    .stroke(TBColor.border, lineWidth: 1)
+            }
+            .disabled(model.isSubmitting)
         }
     }
 
@@ -766,6 +769,54 @@ private struct AuthEntryOTPInput: View {
         }
 
         return String(characters[index])
+    }
+}
+
+@MainActor
+private final class AuthEntryKeyboardAvoidanceObserver: NSObject, ObservableObject {
+    @Published private(set) var visibleHeight: CGFloat = 0
+
+    override init() {
+        super.init()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleKeyboardNotification),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleKeyboardNotification),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func handleKeyboardNotification(_ notification: Notification) {
+        let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.24
+        let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero
+        let nextHeight = Self.visibleKeyboardHeight(for: keyboardFrame)
+
+        withAnimation(.easeOut(duration: duration)) {
+            visibleHeight = nextHeight
+        }
+    }
+
+    private static func visibleKeyboardHeight(for keyboardFrame: CGRect) -> CGFloat {
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow) else {
+            return 0
+        }
+
+        let keyboardFrameInWindow = window.convert(keyboardFrame, from: nil)
+        let overlap = window.bounds.maxY - keyboardFrameInWindow.minY
+        return max(0, overlap)
     }
 }
 

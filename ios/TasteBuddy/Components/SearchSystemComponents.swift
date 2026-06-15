@@ -51,6 +51,7 @@ struct SearchOverlayShell<Content: View>: View {
             }
             .scrollIndicators(.hidden)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(TBColor.page.ignoresSafeArea())
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -86,12 +87,14 @@ struct SearchOverlayShell<Content: View>: View {
             Button("취소", action: onClose)
                 .font(TBFont.semibold(13))
                 .foregroundStyle(TBColor.textBody)
+                .frame(height: SearchOverlayShellMetrics.iconButtonSize)
+                .contentShape(Rectangle())
                 .buttonStyle(.plain)
         }
         .padding(.horizontal, SearchOverlayShellMetrics.headerHorizontalPadding)
         .padding(.top, SearchOverlayShellMetrics.headerTopPadding)
         .padding(.bottom, SearchOverlayShellMetrics.headerBottomPadding)
-        .background(TBColor.page.opacity(0.95))
+        .background(TBColor.page.opacity(0.95).ignoresSafeArea(edges: .top))
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(TBColor.border)
@@ -147,6 +150,7 @@ struct SearchOverlayShell<Content: View>: View {
 enum CompactCardMetrics {
     static let padding: CGFloat = 12
     static let gap: CGFloat = 12
+    static let actionGap: CGFloat = 0
     static let radius: CGFloat = 20
     static let mediaSize: CGFloat = 40
     static let actionButtonSize: CGFloat = TBIcon.Container.large
@@ -182,25 +186,41 @@ struct CompactCard<Media: View, Actions: View>: View {
     }
 
     private var cardContent: some View {
-        HStack(spacing: CompactCardMetrics.gap) {
+        ZStack {
             if let action {
                 Button(action: action) {
-                    mainContent
+                    Color.clear
+                        .frame(maxWidth: .infinity)
+                        .frame(
+                            height: CompactCardMetrics.mediaSize
+                                + CompactCardMetrics.padding * 2
+                        )
+                        .contentShape(
+                            RoundedRectangle(
+                                cornerRadius: CompactCardMetrics.radius,
+                                style: .continuous
+                            )
+                        )
                 }
                 .buttonStyle(.plain)
-            } else {
-                mainContent
+                .accessibilityLabel(heading)
+                .accessibilityHint(metadata ?? "")
             }
 
-            actions
-                .fixedSize()
+            HStack(spacing: CompactCardMetrics.gap) {
+                mainContent
+                    .allowsHitTesting(action == nil)
+
+                actions
+                    .fixedSize()
+            }
+            .padding(CompactCardMetrics.padding)
         }
-        .padding(CompactCardMetrics.padding)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(isSelected ? TBColor.mutedSurface : TBColor.surface)
         .clipShape(RoundedRectangle(cornerRadius: CompactCardMetrics.radius, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: CompactCardMetrics.radius, style: .continuous))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: action == nil ? .combine : .contain)
     }
 
     private var mainContent: some View {
@@ -269,7 +289,8 @@ struct CompactCardIconActionButton: View {
                 width: CompactCardMetrics.actionButtonSize,
                 height: CompactCardMetrics.actionButtonSize
             )
-            .foregroundStyle(isActive ? TBColor.textSecondary : TBColor.textHint)
+            .foregroundStyle(TBColor.textSecondary)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)

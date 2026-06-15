@@ -74,6 +74,17 @@ enum TasteAxis: String, CaseIterable, Codable, Identifiable {
         }
     }
 
+    var tintSubTextColor: Color {
+        switch self {
+        case .sweet: Color(hex: 0x896735)
+        case .sour: Color(hex: 0x897C35)
+        case .bitter: Color(hex: 0x70794B)
+        case .salty: Color(hex: 0x5A6789)
+        case .umami: Color(hex: 0x705B70)
+        case .fat: Color(hex: 0x66625D)
+        }
+    }
+
     var radarLineStartColor: Color {
         switch self {
         case .sweet: Color(hex: 0xFFB342)
@@ -117,6 +128,9 @@ struct DiningEntry: Identifiable, Codable, Equatable {
     let date: Date
     let rating: Int
     let note: String
+    let tasteExperienceIDs: [String]
+    let detailTagIDs: [String]
+    let reflectionPhotoFilename: String?
 
     init(
         id: UUID = UUID(),
@@ -124,7 +138,10 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         menu: String,
         date: Date = .now,
         rating: Int,
-        note: String
+        note: String,
+        tasteExperienceIDs: [String] = [],
+        detailTagIDs: [String] = [],
+        reflectionPhotoFilename: String? = nil
     ) {
         self.id = id
         self.restaurant = restaurant
@@ -132,6 +149,55 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         self.date = date
         self.rating = rating
         self.note = note
+        self.tasteExperienceIDs = Array(tasteExperienceIDs.prefix(3))
+        self.detailTagIDs = detailTagIDs
+        self.reflectionPhotoFilename = reflectionPhotoFilename
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case restaurant
+        case menu
+        case date
+        case rating
+        case note
+        case tasteExperienceIDs
+        case detailTagIDs
+        case reflectionPhotoFilename
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        restaurant = try container.decode(String.self, forKey: .restaurant)
+        menu = try container.decode(String.self, forKey: .menu)
+        date = try container.decode(Date.self, forKey: .date)
+        rating = try container.decode(Int.self, forKey: .rating)
+        note = try container.decode(String.self, forKey: .note)
+        tasteExperienceIDs = Array(
+            try container.decodeIfPresent([String].self, forKey: .tasteExperienceIDs) ?? []
+        ).prefix(3).map(\.self)
+        detailTagIDs = try container.decodeIfPresent([String].self, forKey: .detailTagIDs) ?? []
+        reflectionPhotoFilename = try container.decodeIfPresent(
+            String.self,
+            forKey: .reflectionPhotoFilename
+        )
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(restaurant, forKey: .restaurant)
+        try container.encode(menu, forKey: .menu)
+        try container.encode(date, forKey: .date)
+        try container.encode(rating, forKey: .rating)
+        try container.encode(note, forKey: .note)
+        try container.encode(tasteExperienceIDs, forKey: .tasteExperienceIDs)
+        try container.encode(detailTagIDs, forKey: .detailTagIDs)
+        try container.encodeIfPresent(
+            reflectionPhotoFilename,
+            forKey: .reflectionPhotoFilename
+        )
     }
 
     static let sample = DiningEntry(
@@ -140,6 +206,57 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         rating: 5,
         note: "산미가 밝게 이어졌고 후반부 간은 조금 더 가벼워도 좋겠어요."
     )
+}
+
+enum DiningReflectionPhotoStore {
+    private static let directoryName = "DiningFeedbackPhotos"
+
+    static func normalizedJPEGData(_ data: Data) -> Data? {
+        guard let image = UIImage(data: data) else { return nil }
+        let maximumDimension: CGFloat = 1_600
+        let longestDimension = max(image.size.width, image.size.height)
+        let scale = min(1, maximumDimension / max(longestDimension, 1))
+        let targetSize = CGSize(
+            width: max(1, image.size.width * scale),
+            height: max(1, image.size.height * scale)
+        )
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        let normalizedImage = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+        return normalizedImage.jpegData(compressionQuality: 0.84)
+    }
+
+    static func save(_ data: Data, entryID: UUID) throws -> String {
+        let filename = "\(entryID.uuidString.lowercased()).jpg"
+        try FileManager.default.createDirectory(
+            at: directoryURL,
+            withIntermediateDirectories: true
+        )
+        try data.write(to: directoryURL.appendingPathComponent(filename), options: .atomic)
+        return filename
+    }
+
+    static func data(for filename: String?) -> Data? {
+        guard let filename else { return nil }
+        return try? Data(contentsOf: directoryURL.appendingPathComponent(filename))
+    }
+
+    static func remove(filename: String?) {
+        guard let filename else { return }
+        try? FileManager.default.removeItem(
+            at: directoryURL.appendingPathComponent(filename)
+        )
+    }
+
+    private static var directoryURL: URL {
+        let baseURL =
+            FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        return baseURL
+            .appendingPathComponent("TasteBuddy", isDirectory: true)
+            .appendingPathComponent(directoryName, isDirectory: true)
+    }
 }
 
 struct TasteAxisAnalysis: Identifiable, Equatable {
@@ -174,17 +291,70 @@ struct TasteAxisAnalysis: Identifiable, Equatable {
     }
 }
 
+struct TasteMatchSharedSignal: Equatable {
+    let axis: TasteAxis
+    let confidence: Double
+}
+
 struct TasteMatchFeedItem: Identifiable, Equatable {
     let id: String
+    let reviewerID: String
     let reviewerName: String
     let reviewerHandle: String
+    let reviewerTasteScores: [String: Int]
+    let reviewerConfidenceScores: [String: Int]
+    let relationLabel: String
+    let restaurantID: String
     let restaurantName: String
     let dishTitle: String
     let reason: String
     let supportingSignals: [String]
     let tasteTags: [String]
+    let experienceTags: [String]
+    let sharedSignals: [TasteMatchSharedSignal]
+    let learnedConfidenceScore: Double
     let matchRate: Int
     let axis: TasteAxis
+
+    init(
+        id: String,
+        reviewerID: String,
+        reviewerName: String,
+        reviewerHandle: String,
+        reviewerTasteScores: [String: Int],
+        reviewerConfidenceScores: [String: Int] = [:],
+        relationLabel: String = "Similar Palate",
+        restaurantID: String,
+        restaurantName: String,
+        dishTitle: String,
+        reason: String,
+        supportingSignals: [String],
+        tasteTags: [String],
+        experienceTags: [String] = [],
+        sharedSignals: [TasteMatchSharedSignal] = [],
+        learnedConfidenceScore: Double = 0,
+        matchRate: Int,
+        axis: TasteAxis
+    ) {
+        self.id = id
+        self.reviewerID = reviewerID
+        self.reviewerName = reviewerName
+        self.reviewerHandle = reviewerHandle
+        self.reviewerTasteScores = reviewerTasteScores
+        self.reviewerConfidenceScores = reviewerConfidenceScores
+        self.relationLabel = relationLabel
+        self.restaurantID = restaurantID
+        self.restaurantName = restaurantName
+        self.dishTitle = dishTitle
+        self.reason = reason
+        self.supportingSignals = supportingSignals
+        self.tasteTags = tasteTags
+        self.experienceTags = experienceTags
+        self.sharedSignals = sharedSignals
+        self.learnedConfidenceScore = learnedConfidenceScore
+        self.matchRate = matchRate
+        self.axis = axis
+    }
 }
 
 struct DishFeedbackTasteBubble: Identifiable, Equatable {
@@ -279,17 +449,20 @@ struct DiningDishFeedbackItem: Identifiable, Equatable {
         let alt: String
         let imageName: String?
         let imageURLString: String?
+        let imageData: Data?
 
         init(
             id: String,
             alt: String,
             imageName: String? = nil,
-            imageURLString: String? = nil
+            imageURLString: String? = nil,
+            imageData: Data? = nil
         ) {
             self.id = id
             self.alt = alt
             self.imageName = imageName
             self.imageURLString = imageURLString
+            self.imageData = imageData
         }
 
         var imageURL: URL? {
@@ -298,7 +471,7 @@ struct DiningDishFeedbackItem: Identifiable, Equatable {
         }
 
         var isUserFeedbackMedia: Bool {
-            imageURL != nil || imageName?.hasPrefix("Feedback") == true
+            imageData != nil || imageURL != nil || imageName?.hasPrefix("Feedback") == true
         }
     }
 
@@ -673,37 +846,88 @@ enum TasteBuddyNativeContent {
     static let tasteMatchFeed: [TasteMatchFeedItem] = [
         TasteMatchFeedItem(
             id: "match-onjium-broth",
-            reviewerName: "Mina",
-            reviewerHandle: "@clear_umami",
+            reviewerID: "mina",
+            reviewerName: "김민아",
+            reviewerHandle: "@맑은끝민아",
+            reviewerTasteScores: [
+                "sweet": 52, "sour": 70, "bitter": 42,
+                "salty": 48, "umami": 86, "fat": 44,
+            ],
+            reviewerConfidenceScores: [
+                "sweet": 62, "sour": 76, "bitter": 58,
+                "salty": 60, "umami": 88, "fat": 56,
+            ],
+            relationLabel: "Taste Twin",
+            restaurantID: "onjium",
             restaurantName: "온지음",
             dishTitle: "맑은 육수와 산뜻한 여운",
             reason: "감칠맛의 깊이는 살리면서 후반부 무게를 가볍게 읽기 좋은 기록이에요.",
             supportingSignals: ["맑은 감칠맛", "가벼운 피니시"],
             tasteTags: ["감칠맛", "산미"],
+            experienceTags: ["deep", "fresh", "gentle"],
+            sharedSignals: [
+                TasteMatchSharedSignal(axis: .umami, confidence: 0.92),
+                TasteMatchSharedSignal(axis: .sour, confidence: 0.74),
+            ],
+            learnedConfidenceScore: 0.82,
             matchRate: 92,
             axis: .umami
         ),
         TasteMatchFeedItem(
             id: "match-jungsik-acidity",
-            reviewerName: "Jae",
-            reviewerHandle: "@bright_course",
+            reviewerID: "jae",
+            reviewerName: "정서윤",
+            reviewerHandle: "@산미탐험서윤",
+            reviewerTasteScores: [
+                "sweet": 66, "sour": 88, "bitter": 46,
+                "salty": 42, "umami": 58, "fat": 38,
+            ],
+            reviewerConfidenceScores: [
+                "sweet": 72, "sour": 90, "bitter": 54,
+                "salty": 52, "umami": 66, "fat": 50,
+            ],
+            relationLabel: "Similar Palate",
+            restaurantID: "jungsik",
             restaurantName: "정식당",
             dishTitle: "밝은 산미가 만드는 리듬",
             reason: "산미의 작은 차이를 실제 식사 맥락에서 확인해 프로필을 다듬기 좋아요.",
             supportingSignals: ["밝은 산미", "절제된 단맛"],
             tasteTags: ["신맛", "단맛"],
+            experienceTags: ["crisp", "fresh", "delicate"],
+            sharedSignals: [
+                TasteMatchSharedSignal(axis: .sour, confidence: 0.91),
+                TasteMatchSharedSignal(axis: .sweet, confidence: 0.67),
+            ],
+            learnedConfidenceScore: 0.76,
             matchRate: 88,
             axis: .sour
         ),
         TasteMatchFeedItem(
             id: "match-mosu-bitter",
-            reviewerName: "Hyeon",
-            reviewerHandle: "@quiet_finish",
+            reviewerID: "hyeon",
+            reviewerName: "최도윤",
+            reviewerHandle: "@불향도윤",
+            reviewerTasteScores: [
+                "sweet": 38, "sour": 44, "bitter": 84,
+                "salty": 54, "umami": 72, "fat": 76,
+            ],
+            reviewerConfidenceScores: [
+                "sweet": 50, "sour": 56, "bitter": 86,
+                "salty": 62, "umami": 78, "fat": 80,
+            ],
+            relationLabel: "Worth Exploring",
+            restaurantID: "mosu",
             restaurantName: "모수",
             dishTitle: "쌉싸름한 여운이 정리하는 코스",
             reason: "쓴맛이 장식처럼 쓰이는 메뉴라 부담보다 정돈감으로 읽히는지 보기 좋습니다.",
             supportingSignals: ["긴 여운", "정돈된 쓴맛"],
             tasteTags: ["쓴맛", "지방맛"],
+            experienceTags: ["smoky", "grilled", "rich"],
+            sharedSignals: [
+                TasteMatchSharedSignal(axis: .bitter, confidence: 0.86),
+                TasteMatchSharedSignal(axis: .fat, confidence: 0.72),
+            ],
+            learnedConfidenceScore: 0.71,
             matchRate: 84,
             axis: .bitter
         )
@@ -765,7 +989,7 @@ enum TasteBuddyNativeContent {
     static let followingDishFeedbackItems: [DiningDishFeedbackItem] = [
         makeDishFeedbackItem(
             id: "following-mina-broth",
-            authorName: "Mina",
+            authorName: "김민아",
             restaurantName: "온지음",
             dishTitle: "맑은 육수와 산뜻한 여운",
             images: [
@@ -790,7 +1014,7 @@ enum TasteBuddyNativeContent {
         ),
         makeDishFeedbackItem(
             id: "following-jae-acidity",
-            authorName: "Jae",
+            authorName: "정서윤",
             restaurantName: "정식당",
             dishTitle: "밝은 산미가 만드는 리듬",
             images: [
@@ -826,7 +1050,7 @@ enum TasteBuddyNativeContent {
             ),
             DishFeedbackComment(
                 id: "following-mina-broth-comment-2",
-                authorName: "Mina",
+                authorName: "김민아",
                 message: "다음에는 산미가 먼저 올라오는 메뉴와 비교해보면 프로필 차이가 더 잘 보일 것 같아요.",
                 axis: .sour,
                 createdAt: Date(timeIntervalSince1970: 1_720_003_600)
@@ -835,14 +1059,14 @@ enum TasteBuddyNativeContent {
         "dish-onjium-clear-broth": [
             DishFeedbackComment(
                 id: "dish-onjium-clear-broth-comment-1",
-                authorName: "Mina",
+                authorName: "김민아",
                 message: "맑은 감칠맛이 유지되는 지점이 잘 보이는 기록이에요.",
                 axis: .umami,
                 createdAt: Date(timeIntervalSince1970: 1_720_007_200)
             ),
             DishFeedbackComment(
                 id: "dish-onjium-clear-broth-comment-2",
-                authorName: "Jae",
+                authorName: "정서윤",
                 message: "가벼운 피니시 쪽으로 다음 코스를 비교해보면 좋겠어요.",
                 axis: .sour,
                 createdAt: Date(timeIntervalSince1970: 1_720_010_800)

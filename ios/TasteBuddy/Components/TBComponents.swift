@@ -325,6 +325,8 @@ struct TBFlowTopBar: View {
     var showsLeading = true
     var showsDivider = true
     var backgroundColor = TBColor.focus
+    var leadingIconSize = TBIcon.Size.large
+    var leadingIconStrokeWidth = TBIcon.Stroke.regular
     let leadingAction: () -> Void
 
     var body: some View {
@@ -333,6 +335,7 @@ struct TBFlowTopBar: View {
                 Text(title)
                     .font(TBFont.bold(15))
                     .foregroundStyle(TBColor.textPrimary)
+                    .allowsHitTesting(false)
             }
 
             HStack {
@@ -340,22 +343,23 @@ struct TBFlowTopBar: View {
                     Button(action: leadingAction) {
                         LucideIcon(
                             systemName: leadingSymbol,
-                            size: TBIcon.Size.medium,
-                            strokeWidth: TBIcon.Stroke.regular
+                            size: leadingIconSize,
+                            strokeWidth: leadingIconStrokeWidth
                         )
                             .foregroundStyle(TBColor.textSecondary)
                             .frame(
-                                width: TBSize.chromeIconButton,
-                                height: TBSize.chromeIconButton
+                                width: TBIcon.Container.large,
+                                height: TBIcon.Container.large
                             )
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(leadingAccessibilityLabel)
                 } else {
                     Color.clear
                         .frame(
-                            width: TBSize.chromeIconButton,
-                            height: TBSize.chromeIconButton
+                            width: TBIcon.Container.large,
+                            height: TBIcon.Container.large
                         )
                 }
 
@@ -363,14 +367,16 @@ struct TBFlowTopBar: View {
 
                 Color.clear
                     .frame(
-                        width: TBSize.chromeIconButton,
-                        height: TBSize.chromeIconButton
+                        width: TBIcon.Container.large,
+                        height: TBIcon.Container.large
                     )
             }
+            .padding(.horizontal, TBSpacing.page)
         }
+        .frame(maxWidth: .infinity)
         .frame(height: TBSize.topAppBarHeight)
-        .padding(.horizontal, TBSpacing.page)
         .background(backgroundColor)
+        .zIndex(20)
         .overlay(alignment: .bottom) {
             if showsDivider {
                 Rectangle()
@@ -487,7 +493,7 @@ struct TBSelectionCard: View {
         case .radio:
             ZStack {
                 Circle()
-                    .stroke(
+                    .strokeBorder(
                         isSelected ? TBColor.textPrimary : TBColor.borderDisabled,
                         lineWidth: isSelected ? 2 : 1
                     )
@@ -653,13 +659,84 @@ struct TasteBubbleRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
+        DishFeedbackWrapLayout(spacing: DishFeedbackCardMetrics.chipStackGap) {
             ForEach(bubbles) { bubble in
                 DishFeedbackTasteBubbleChip(bubble: bubble)
             }
-            Spacer(minLength: 0)
         }
         .accessibilityLabel(bubbles.map(\.label).joined(separator: ", "))
+    }
+}
+
+private struct DishFeedbackWrapLayout: Layout {
+    let spacing: CGFloat
+
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) -> CGSize {
+        let availableWidth = proposal.width ?? .greatestFiniteMagnitude
+        let result = layoutRows(in: availableWidth, subviews: subviews)
+
+        return CGSize(
+            width: proposal.width ?? result.width,
+            height: result.height
+        )
+    }
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) {
+        var x = bounds.minX
+        var y = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            let shouldWrap = x > bounds.minX && x + size.width > bounds.maxX
+
+            if shouldWrap {
+                x = bounds.minX
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+
+            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+    }
+
+    private func layoutRows(in availableWidth: CGFloat, subviews: Subviews) -> CGSize {
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var maxRowWidth: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            let shouldWrap = x > 0 && x + size.width > availableWidth
+
+            if shouldWrap {
+                maxRowWidth = max(maxRowWidth, x - spacing)
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+
+        if x > 0 {
+            maxRowWidth = max(maxRowWidth, x - spacing)
+        }
+
+        return CGSize(width: maxRowWidth, height: y + rowHeight)
     }
 }
 
@@ -671,18 +748,8 @@ private struct DishFeedbackTasteBubbleChip: View {
     }
 
     var body: some View {
-        Text(bubble.label)
-            .font(TBFont.semibold(10))
-            .foregroundStyle(axis?.tintTextColor ?? TBColor.textTertiary)
+        TasteChip(title: bubble.label, tone: axis == nil ? .neutral : .taste, colorAxis: axis)
             .lineLimit(1)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(axis?.mainColor.opacity(0.05) ?? TBColor.mutedSurface)
-            .clipShape(Capsule())
-            .overlay {
-                Capsule()
-                    .stroke(axis?.mainColor.opacity(0.18) ?? TBColor.borderStrong, lineWidth: 1)
-            }
             .accessibilityLabel(bubble.title ?? bubble.label)
     }
 }
@@ -706,50 +773,42 @@ struct NativeDishFeedbackCard: View {
     @State private var isLiked = false
 
     var body: some View {
-        Group {
-            if framed {
-                SectionCard {
-                    cardContent
-                }
-            } else {
-                cardContent
+        cardBody
+            .contentShape(RoundedRectangle(cornerRadius: DishFeedbackCardMetrics.radius, style: .continuous))
+            .onTapGesture {
+                onDetailTap?()
             }
-        }
-        .contentShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
-        .onTapGesture {
-            onDetailTap?()
-        }
-        .task(id: item.id) {
-            isLiked = item.liked
-        }
-        .sheet(isPresented: $isLocalActionSheetPresented) {
-            DishFeedbackActionSheet(
-                subject: item.dishTitle,
-                onDelete: {
-                    isLocalActionSheetPresented = false
-                    isDeleteConfirmationPresented = true
-                },
-                onEdit: {
-                    isLocalActionSheetPresented = false
-                    onEdit?()
-                },
-                onShare: {
-                    isLocalActionSheetPresented = false
-                    onShare?()
-                }
-            )
-            .presentationDetents([.height(220)])
-            .presentationDragIndicator(.visible)
-            .presentationBackground(TBColor.focus)
-        }
-        .alert("이 디시 기록을 삭제할까요?", isPresented: $isDeleteConfirmationPresented) {
-            Button("취소", role: .cancel) {}
-            Button("삭제", role: .destructive) {
-                onDelete?()
+            .task(id: item.id) {
+                isLiked = item.liked
             }
-        } message: {
-            Text("삭제하면 나의 디시에서 이 기록이 사라집니다.")
-        }
+            .sheet(isPresented: $isLocalActionSheetPresented) {
+                DishFeedbackActionSheet(
+                    subject: item.dishTitle,
+                    onDelete: {
+                        isLocalActionSheetPresented = false
+                        isDeleteConfirmationPresented = true
+                    },
+                    onEdit: {
+                        isLocalActionSheetPresented = false
+                        onEdit?()
+                    },
+                    onShare: {
+                        isLocalActionSheetPresented = false
+                        onShare?()
+                    }
+                )
+                .presentationDetents([.height(220)])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(TBColor.focus)
+            }
+            .alert("이 디시 기록을 삭제할까요?", isPresented: $isDeleteConfirmationPresented) {
+                Button("취소", role: .cancel) {}
+                Button("삭제", role: .destructive) {
+                    onDelete?()
+                }
+            } message: {
+                Text("삭제하면 나의 디시에서 이 기록이 사라집니다.")
+            }
     }
 
     private var primaryAxis: TasteAxis {
@@ -757,16 +816,36 @@ struct NativeDishFeedbackCard: View {
     }
 
     @ViewBuilder
+    private var cardBody: some View {
+        if framed {
+            cardContent
+                .padding(DishFeedbackCardMetrics.padding)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(TBColor.surface)
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: DishFeedbackCardMetrics.radius,
+                        style: .continuous
+                    )
+                )
+        } else {
+            cardContent
+        }
+    }
+
+    @ViewBuilder
     private var cardContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                PalateBloomAvatar(size: 32, seed: item.id)
+        VStack(alignment: .leading, spacing: DishFeedbackCardMetrics.contentGap) {
+            HStack(spacing: DishFeedbackCardMetrics.headerGap) {
+                PalateBloomAvatar(size: DishFeedbackCardMetrics.avatarSize, seed: item.id)
+                    .accessibilityLabel("\(item.authorName) 프로필 아바타")
 
                 VStack(alignment: .leading, spacing: 2) {
-                    authorLine
+                    DishFeedbackAuthorLine(
+                        authorName: item.authorName,
+                        subject: item.dishTitle
+                    )
                         .foregroundStyle(TBColor.textPrimary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
                     Text("\(item.restaurantName) · \(relativeDateLabel)")
                         .font(TBFont.regular(12))
                         .foregroundStyle(TBColor.textMuted)
@@ -784,10 +863,13 @@ struct NativeDishFeedbackCard: View {
                     } label: {
                         LucideIcon(
                             .ellipsis,
-                            size: TBIcon.Size.base,
+                            size: DishFeedbackCardMetrics.actionIconSize,
                             strokeWidth: TBIcon.Stroke.medium
                         )
-                            .frame(width: 32, height: 32)
+                            .frame(
+                                width: DishFeedbackCardMetrics.optionButtonSize,
+                                height: DishFeedbackCardMetrics.optionButtonSize
+                            )
                             .foregroundStyle(TBColor.textHint)
                             .background(TBColor.mutedSurface.opacity(0.01))
                             .clipShape(Circle())
@@ -812,53 +894,54 @@ struct NativeDishFeedbackCard: View {
 
             DiningNotePreview(summary: item.summary)
 
-            Divider()
-                .overlay(TBColor.borderSubtle)
+            Rectangle()
+                .fill(TBColor.textPrimary.opacity(DishFeedbackCardMetrics.actionDividerOpacity))
+                .frame(height: 1)
 
-            HStack(spacing: 8) {
+            HStack(spacing: DishFeedbackCardMetrics.actionGap) {
                 Button {
                     isLiked.toggle()
                     if isLiked {
                         onLike?()
                     }
                 } label: {
-                    LucideIcon(
-                        .heart,
-                        size: TBIcon.Size.base,
-                        strokeWidth: TBIcon.Stroke.regular,
-                        filled: isLiked
-                    )
-                    .frame(width: 32, height: 32)
-                    .foregroundStyle(isLiked ? primaryAxis.mainColor : TBColor.textHint)
-                    .contentShape(Circle())
+                    HStack(spacing: DishFeedbackCardMetrics.actionCountGap) {
+                        LucideIcon(
+                            .heart,
+                            size: DishFeedbackCardMetrics.heartActionIconSize,
+                            strokeWidth: TBIcon.Stroke.regular,
+                            filled: isLiked
+                        )
+                        .frame(
+                            width: DishFeedbackCardMetrics.actionIconFrameWidth,
+                            height: DishFeedbackCardMetrics.actionButtonSize
+                        )
+                        .foregroundStyle(isLiked ? primaryAxis.mainColor : TBColor.textHint)
+
+                        actionCountText(displayedLikeCount)
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(isLiked ? "좋아요 취소" : "좋아요")
+                .accessibilityLabel(isLiked ? "좋아요 \(displayedLikeCount)개, 좋아요 취소" : "좋아요 \(displayedLikeCount)개")
 
                 if let onCommentsTap {
                     Button(action: onCommentsTap) {
-                        commentIcon
+                        commentActionLabel
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("댓글 \(item.commentCount)개 보기")
                 } else {
-                    commentIcon
+                    commentActionLabel
                 }
 
                 Button {
                     onShare?()
                 } label: {
-                    LucideIcon(
-                        .send,
-                        size: TBIcon.Size.base,
-                        strokeWidth: TBIcon.Stroke.regular
-                    )
-                    .frame(width: 32, height: 32)
-                    .foregroundStyle(TBColor.textHint)
-                    .contentShape(Circle())
+                    shareActionLabel
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("공유")
+                .accessibilityLabel("공유 \(displayedShareCount)개")
 
                 Spacer()
 
@@ -867,37 +950,221 @@ struct NativeDishFeedbackCard: View {
                     .foregroundStyle(TBColor.textMuted)
                     .lineLimit(1)
             }
-            .padding(.top, 2)
         }
     }
 
-    private var authorLine: Text {
-        Text(item.authorName)
-            .font(TBFont.semibold(14))
-        + Text("님이 ")
-            .font(TBFont.regular(14))
-        + Text(item.dishTitle)
-            .font(TBFont.semibold(14))
-        + Text("의 후기를 남기셨습니다.")
-            .font(TBFont.regular(14))
+    private var displayedLikeCount: Int {
+        isLiked ? 1 : 0
+    }
+
+    private var displayedShareCount: Int {
+        0
+    }
+
+    private var commentActionLabel: some View {
+        HStack(spacing: DishFeedbackCardMetrics.actionCountGap) {
+            commentIcon
+            actionCountText(item.commentCount)
+        }
+        .contentShape(Rectangle())
+    }
+
+    private var shareActionLabel: some View {
+        HStack(spacing: DishFeedbackCardMetrics.actionCountGap) {
+            LucideIcon(
+                .send,
+                size: DishFeedbackCardMetrics.shareActionIconSize,
+                strokeWidth: TBIcon.Stroke.regular
+            )
+            .frame(
+                width: DishFeedbackCardMetrics.actionIconFrameWidth,
+                height: DishFeedbackCardMetrics.actionButtonSize
+            )
+            .foregroundStyle(TBColor.textHint)
+
+            actionCountText(displayedShareCount)
+        }
+        .contentShape(Rectangle())
     }
 
     private var commentIcon: some View {
-        HStack(spacing: 4) {
-            LucideIcon(
-                .messageCircle,
-                size: TBIcon.Size.base,
-                strokeWidth: TBIcon.Stroke.regular
-            )
-            .frame(width: 32, height: 32)
-            .foregroundStyle(item.commentCount > 0 ? TBColor.textPrimary : TBColor.textHint)
+        LucideIcon(
+            .messageCircle,
+            size: DishFeedbackCardMetrics.commentActionIconSize,
+            strokeWidth: TBIcon.Stroke.regular
+        )
+        .frame(
+            width: DishFeedbackCardMetrics.actionIconFrameWidth,
+            height: DishFeedbackCardMetrics.actionButtonSize
+        )
+        .foregroundStyle(TBColor.textHint)
+        .contentShape(Circle())
+    }
 
-            if item.commentCount > 0 {
-                Text("\(item.commentCount)")
-                    .font(TBFont.semibold(11))
-                    .foregroundStyle(TBColor.textMuted)
+    private func actionCountText(_ count: Int) -> some View {
+        Text("\(count)")
+            .font(TBFont.regular(12))
+            .foregroundStyle(TBColor.textMuted)
+            .lineLimit(1)
+            .monospacedDigit()
+    }
+}
+
+enum DishFeedbackCardMetrics {
+    static let padding: CGFloat = 12
+    static let contentGap: CGFloat = 12
+    static let radius: CGFloat = 20
+    static let headerGap: CGFloat = 8
+    static let avatarSize: CGFloat = 32
+    static let authorLineHeight: CGFloat = 19
+    static let optionButtonSize: CGFloat = 32
+    static let chipStackGap: CGFloat = 6
+    static let actionDividerOpacity: CGFloat = 0.08
+    static let actionGap: CGFloat = 8
+    static let actionCountGap: CGFloat = 2
+    static let actionIconSize: CGFloat = 18
+    static let heartActionIconSize: CGFloat = 18
+    static let commentActionIconSize: CGFloat = 18
+    static let shareActionIconSize: CGFloat = 17
+    static let actionIconFrameWidth: CGFloat = 18
+    static let actionButtonSize: CGFloat = 32
+    static let notePadding: CGFloat = 12
+    static let noteRadius: CGFloat = 12
+}
+
+struct DishFeedbackAuthorLine: View {
+    let authorName: String
+    let subject: String
+
+    var body: some View {
+        GeometryReader { proxy in
+            let visibleText = DishFeedbackAuthorLineTruncator.visibleText(
+                authorName: authorName,
+                subject: subject,
+                availableWidth: proxy.size.width
+            )
+
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(visibleText.authorName)
+                    .font(TBFont.semibold(14))
+                Text("님이 ")
+                    .font(TBFont.regular(14))
+                Text(visibleText.subject)
+                    .font(TBFont.semibold(14))
+                Text("의 후기를 남기셨습니다.")
+                    .font(TBFont.regular(14))
+            }
+            .lineLimit(1)
+            .frame(width: proxy.size.width, alignment: .leading)
+            .clipped()
+        }
+        .frame(height: DishFeedbackCardMetrics.authorLineHeight)
+    }
+}
+
+enum DishFeedbackAuthorLineTruncator {
+    static let truncationMark = ".."
+    static let minimumAuthorNameLength = 2
+    static let minimumSubjectLength = 3
+
+    static func visibleText(
+        authorName: String,
+        subject: String,
+        availableWidth: CGFloat
+    ) -> (authorName: String, subject: String) {
+        guard availableWidth > 0 else {
+            return (
+                minimumText(authorName, minLength: minimumAuthorNameLength),
+                minimumText(subject, minLength: minimumSubjectLength)
+            )
+        }
+
+        let fixedWidth = width(of: "님이 ", weight: .regular)
+            + width(of: "의 후기를 남기셨습니다.", weight: .regular)
+        let availableLinkWidth = max(0, availableWidth - fixedWidth)
+        let fullAuthorWidth = width(of: authorName, weight: .semibold)
+        let fullSubjectWidth = width(of: subject, weight: .semibold)
+
+        if fullAuthorWidth + fullSubjectWidth <= availableLinkWidth {
+            return (authorName, subject)
+        }
+
+        let minimumAuthorName = minimumText(authorName, minLength: minimumAuthorNameLength)
+        let minimumAuthorWidth = width(of: minimumAuthorName, weight: .semibold)
+        let authorWidthWithFullSubject = availableLinkWidth - fullSubjectWidth
+
+        if authorWidthWithFullSubject >= minimumAuthorWidth {
+            return (
+                textToFitWidth(
+                    authorName,
+                    minLength: minimumAuthorNameLength,
+                    width: authorWidthWithFullSubject
+                ),
+                subject
+            )
+        }
+
+        return (
+            minimumAuthorName,
+            textToFitWidth(
+                subject,
+                minLength: minimumSubjectLength,
+                width: max(0, availableLinkWidth - minimumAuthorWidth)
+            )
+        )
+    }
+
+    static func minimumText(_ text: String, minLength: Int) -> String {
+        let characters = Array(text)
+
+        if characters.count <= minLength {
+            return text
+        }
+
+        return String(characters.prefix(minLength)) + truncationMark
+    }
+
+    private static func textToFitWidth(
+        _ text: String,
+        minLength: Int,
+        width: CGFloat
+    ) -> String {
+        let characters = Array(text)
+
+        if characters.count <= minLength || Self.width(of: text, weight: .semibold) <= width {
+            return text
+        }
+
+        let minimum = minimumText(text, minLength: minLength)
+
+        if Self.width(of: minimum, weight: .semibold) >= width {
+            return minimum
+        }
+
+        var low = minLength + 1
+        var high = characters.count - 1
+        var bestFit = minimum
+
+        while low <= high {
+            let middle = (low + high) / 2
+            let candidate = String(characters.prefix(middle)) + truncationMark
+
+            if Self.width(of: candidate, weight: .semibold) <= width {
+                bestFit = candidate
+                low = middle + 1
+            } else {
+                high = middle - 1
             }
         }
+
+        return bestFit
+    }
+
+    private static func width(of text: String, weight: UIFont.Weight) -> CGFloat {
+        let fontName = weight == .semibold ? "Pretendard-SemiBold" : "Pretendard-Regular"
+        let font = UIFont(name: fontName, size: 14)
+            ?? UIFont.systemFont(ofSize: 14, weight: weight)
+        return ceil((text as NSString).size(withAttributes: [.font: font]).width)
     }
 }
 
@@ -925,13 +1192,13 @@ private struct DishFeedbackDetailTagCandidate: View {
     var body: some View {
         HStack(spacing: 6) {
             ForEach(visibleTags) { tag in
-                NeutralChip(title: tag.label)
+                TasteChip(title: tag.label, tone: .neutral)
                     .lineLimit(1)
                     .accessibilityLabel(tag.title ?? tag.label)
             }
 
             if hiddenCount > 0 {
-                NeutralChip(title: "+\(hiddenCount)")
+                TasteChip(title: "+\(hiddenCount)", tone: .neutral)
                     .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
             }
         }
@@ -976,7 +1243,16 @@ private struct DishFeedbackImageRail: View {
     private func dishImage(_ image: DiningDishFeedbackItem.Image) -> some View {
         let tileSize: CGFloat = 144
 
-        if let imageURL = image.imageURL {
+        if let imageData = image.imageData,
+           let localImage = UIImage(data: imageData) {
+            Image(uiImage: localImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: tileSize, height: tileSize)
+                .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
+                .clipped()
+                .accessibilityLabel(image.alt)
+        } else if let imageURL = image.imageURL {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .success(let remoteImage):
@@ -1089,17 +1365,18 @@ private struct DiningNotePreview: View {
         VStack(alignment: .leading, spacing: 6) {
             (
                 Text("미식 노트: ")
-                    .font(TBFont.bold(13))
+                    .font(TBFont.semibold(12))
                     .foregroundStyle(TBColor.textPrimary)
                 + Text(summary)
-                    .font(TBFont.regular(13))
-                    .foregroundStyle(TBColor.textBody)
+                    .font(TBFont.regular(12))
+                    .foregroundStyle(TBColor.textSubtle)
             )
             .lineSpacing(4)
+            .lineLimit(4)
         }
-        .padding(12)
+        .padding(DishFeedbackCardMetrics.notePadding)
         .background(TBColor.mutedSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DishFeedbackCardMetrics.noteRadius, style: .continuous))
     }
 }
 

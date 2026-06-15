@@ -110,6 +110,9 @@ These captures are paired with the corresponding React references for layout, de
 | `Native/55-design-system-file-preview-registry-parity-368x800.jpg` | `src/components/design-system/filePreviewRegistry.tsx` | Native catalog includes file-only preview entries, measurement panels, reservation panel, and design-system component file chips |
 | `Native/56-flow-bottom-selection-sheet-adoption-368x800.jpg` | `src/components/system/FlowBottomCta.tsx`, `FlowStepCta.tsx`, `SelectionCard.tsx`, `BottomSheetShell.tsx`, `FlowHeaderBlock.tsx` | Quick refinement sheet now uses native BottomSheetShell, header slots, FlowHeaderBlock top slots/status chip, fixed footer CTA, and the expanded shared Flow/Selection component contract |
 | `Native/57-restaurant-bookmark-local-persistence-368x800.jpg` | `src/components/restaurant/RestaurantBookmarkSheet.tsx`, `src/pages/SavedRestaurantListPage.tsx` | Bookmark sheet now restores a locally persisted created list, select mode, saved state, list visibility copy, and remove/add affordance from the native bookmark record contract |
+| `Native/62-dining-feedback-taste-map-parity-368x800.jpg` | `src/components/reservation/DiningFeedbackFlow.tsx` | Current 72-word map verified with deterministic placement, entrance motion, centered focus, ordered main/secondary selection, pan/zoom/snap interaction, and candidate card progression |
+| `Native/63-dining-feedback-detail-tags-parity-368x800.jpg` | `src/components/reservation/DiningFeedbackFlow.tsx`, `src/constants/diningDetailTags.ts` | Detail editor verified with active taste hero, recommended/selected tags, custom entry, reflection actions, PhotosPicker launch, and fixed completion CTA |
+| `Native/64-dining-feedback-result-card-parity-368x800.jpg` | `src/components/reservation/DiningFeedbackFlow.tsx` | Local result card verified with taste mesh, photo placeholder, ordered taste chips, generated note, and save CTA |
 
 ## State Coverage Baseline
 
@@ -119,7 +122,7 @@ These captures are paired with the corresponding React references for layout, de
 | Calibration and profile result | Captured and simulator verified | Verified | N/A | Retry implemented | Review and result verified | Partial |
 | Home and unified search | Captured and simulator verified | Recommendation loading verified | Search empty verified | Pending | Search default, grouped result, recommendation fallback, shared search overlay/card, comment focus, and native TBA dish-card snapshot verified | Partial |
 | Analysis | React-parity first viewport and current-measurement radar verified | Pending | No measurement pending | Pending | Historical radar navigation, insight, and trend remain | Partial |
-| Dining feedback | React-parity menu and taste-word states verified | Captured | Pending | Pending | Native TBA dish-card snapshot verified; later tags, reflection media, persistence, and completion states pending | Partial |
+| Dining feedback | Menu, 72-word map, detail tags, reflection, PhotosPicker, and result-card states verified | Captured | Pending | Photo loading error handled | Ordered tastes/tags/note/local photo persist and render in the feed; remote Supabase/R2 submission remains | Partial |
 | Profile and connections | React-parity profile, connection-list, and public-profile frames verified | Pending | Pending | Pending | Follow sync and edit/setup pending | Partial |
 | Saved list and bookmark | React-parity saved-list and bookmark-selection frames verified | Pending | Pending | Pending | Create/edit/list persistence pending | Partial |
 | Restaurant detail | React-parity populated frame verified | Pending | Pending | Pending | Menu/feedback pending | Partial |
@@ -148,7 +151,7 @@ These files are generated from the current React contracts. Swift golden tests m
 - Web splash and web profile result
 - Home comment submission, paired comment-focus web capture, and full repository-backed loading states
 - Analysis no-measurement, stale, insight detail, and paired taste-change web capture
-- Dining empty, error, dish detail, paired comments web capture, later feedback editor steps, and save result
+- Dining empty, error, dish detail, paired comments web capture, and remote feedback save result
 - Profile connection/public-profile paired web captures, async follow state, edit/setup, and avatar
 - Restaurant menu detail, feedback detail, information suggestion
 - Auth, paired notification/menu web captures, support destinations, logout, and account deletion

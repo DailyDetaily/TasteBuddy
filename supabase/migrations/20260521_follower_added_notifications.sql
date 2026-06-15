@@ -1,5 +1,3 @@
-alter type public.notification_type add value if not exists 'follower_added';
-
 create or replace function public.add_friend_by_nickname(target_nickname text)
 returns table (
   ok boolean,

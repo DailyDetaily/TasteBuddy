@@ -215,19 +215,32 @@ struct ToastSurface: View {
 }
 
 struct CardScrollList<Content: View>: View {
+    var spacing: CGFloat
+    var horizontalPadding: CGFloat
+    var fullBleed: Bool
     private let content: Content
 
-    init(@ViewBuilder content: () -> Content) {
+    init(
+        spacing: CGFloat = 10,
+        horizontalPadding: CGFloat = TBSpacing.page,
+        fullBleed: Bool = true,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.spacing = spacing
+        self.horizontalPadding = horizontalPadding
+        self.fullBleed = fullBleed
         self.content = content()
     }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(alignment: .top, spacing: 10) {
+            HStack(alignment: .top, spacing: spacing) {
                 content
             }
+            .padding(.horizontal, fullBleed ? horizontalPadding : 0)
             .padding(.vertical, 2)
         }
+        .padding(.horizontal, fullBleed ? -horizontalPadding : 0)
     }
 }
 

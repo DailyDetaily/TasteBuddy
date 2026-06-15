@@ -52,6 +52,8 @@ private struct TasteSurveyFlowView: View {
     ) ?? .now
     @State private var responses: [String: TasteSurveyResponseContract] = [:]
     @State private var compatibleResult: TasteSurveyCompatibleResultContract?
+    @State private var skippedContext = false
+    @State private var skippedQuestions = false
 
     private enum Phase: Equatable {
         case intro
@@ -128,6 +130,7 @@ private struct TasteSurveyFlowView: View {
                 activeColor: ctaActiveColor,
                 backgroundColor: screenBackground,
                 showsIndicator: showsCtaIndicator,
+                secondaryActionView: introSkipAction,
                 action: continueFlow
             )
         }
@@ -226,6 +229,37 @@ private struct TasteSurveyFlowView: View {
         }
     }
 
+    private var introSkipAction: AnyView? {
+        guard isIntroPhase else {
+            return nil
+        }
+
+        return AnyView(
+            Button(action: skipCurrentIntroSection) {
+                Text("건너뛰기")
+                    .font(TBFont.semibold(12))
+                    .foregroundStyle(TBColor.textFaint)
+                    .padding(.horizontal, 8)
+                    .frame(height: 40)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(introSkipAccessibilityLabel)
+        )
+    }
+
+    private var introSkipAccessibilityLabel: String {
+        switch phase {
+        case .intro:
+            "해석 참고 정보 건너뛰기"
+        case .questionsIntro:
+            "감각 반응 설문 건너뛰기"
+        case .profileIntro:
+            "프로필 확인 건너뛰고 시작하기"
+        default:
+            "현재 단계 건너뛰기"
+        }
+    }
+
     private var isContinueEnabled: Bool {
         guard phase == .questions else {
             return true
@@ -240,6 +274,7 @@ private struct TasteSurveyFlowView: View {
     private func continueFlow() {
         switch phase {
         case .intro:
+            skippedContext = false
             contextIndex = 0
             phase = .context
         case .context:
@@ -250,6 +285,7 @@ private struct TasteSurveyFlowView: View {
                 phase = .questionsIntro
             }
         case .questionsIntro:
+            skippedQuestions = false
             questionIndex = 0
             phase = .questions
         case .questions:
@@ -291,8 +327,13 @@ private struct TasteSurveyFlowView: View {
                 phase = .intro
             }
         case .questionsIntro:
-            contextIndex = max(catalog.contextSteps.count - 1, 0)
-            phase = .context
+            if skippedContext {
+                skippedContext = false
+                phase = .intro
+            } else {
+                contextIndex = max(catalog.contextSteps.count - 1, 0)
+                phase = .context
+            }
         case .questions:
             if questionIndex > 0 {
                 questionIndex -= 1
@@ -300,12 +341,34 @@ private struct TasteSurveyFlowView: View {
                 phase = .questionsIntro
             }
         case .profileIntro:
-            questionIndex = max(catalog.items.count - 1, 0)
-            phase = .questions
+            if skippedQuestions {
+                skippedQuestions = false
+                phase = .questionsIntro
+            } else {
+                questionIndex = max(catalog.items.count - 1, 0)
+                phase = .questions
+            }
         case .review:
             phase = .profileIntro
         case .result:
             phase = .review
+        }
+    }
+
+    private func skipCurrentIntroSection() {
+        switch phase {
+        case .intro:
+            skippedContext = true
+            phase = .questionsIntro
+        case .questionsIntro:
+            skippedQuestions = true
+            phase = .profileIntro
+        case .profileIntro:
+            appModel.saveProfile(
+                CalibrationEngine.makeProfile(responses: [:])
+            )
+        default:
+            break
         }
     }
 

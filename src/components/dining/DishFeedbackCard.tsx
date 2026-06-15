@@ -584,7 +584,6 @@ function TasteBubbleRow({
     <div className="flex w-full flex-wrap items-start gap-[6px]">
       {bubbles.map((bubble) => (
         <TasteChip
-          className="max-w-full px-3 py-1.5 text-[10px] font-semibold leading-none"
           colorTaste={bubble.colorTaste}
           key={bubble.id}
           taste={bubble.label}

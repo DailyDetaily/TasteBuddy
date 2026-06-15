@@ -34,6 +34,66 @@ final class AppModelPersistenceTests: XCTestCase {
     }
 
     @MainActor
+    func testDiningEntriesRestoreTasteExperienceSelectionAndDecodeLegacyPayload() throws {
+        let suiteName = "tastebuddy.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        let entry = DiningEntry(
+            restaurant: "정식당",
+            menu: "유자 코지 굴 타르트",
+            rating: 4,
+            note: "산뜻한 산미가 입맛을 열어준 기록입니다.",
+            tasteExperienceIDs: [
+                "sour-fresh",
+                "salty-sea-clean",
+                "umami-clear",
+            ],
+            detailTagIDs: [
+                "balance-acid-cleans",
+                "flow-clean-finish",
+            ],
+            reflectionPhotoFilename: "fixture-reflection.jpg"
+        )
+
+        let firstModel = AppModel(defaults: defaults)
+        firstModel.addDiningEntry(entry)
+
+        let restoredModel = AppModel(defaults: defaults)
+        XCTAssertEqual(restoredModel.diningEntries, [entry])
+
+        let encodedEntry = try JSONEncoder().encode(entry)
+        var legacyObject = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: encodedEntry) as? [String: Any]
+        )
+        legacyObject.removeValue(forKey: "tasteExperienceIDs")
+        legacyObject.removeValue(forKey: "detailTagIDs")
+        legacyObject.removeValue(forKey: "reflectionPhotoFilename")
+        let legacyData = try JSONSerialization.data(withJSONObject: legacyObject)
+        let legacyEntry = try JSONDecoder().decode(DiningEntry.self, from: legacyData)
+
+        XCTAssertTrue(legacyEntry.tasteExperienceIDs.isEmpty)
+        XCTAssertTrue(legacyEntry.detailTagIDs.isEmpty)
+        XCTAssertNil(legacyEntry.reflectionPhotoFilename)
+        XCTAssertEqual(legacyEntry.note, entry.note)
+    }
+
+    func testDiningReflectionPhotoStoreWritesAndRemovesLocalMedia() throws {
+        let entryID = UUID()
+        let data = Data("taste-buddy-photo".utf8)
+        let filename = try DiningReflectionPhotoStore.save(data, entryID: entryID)
+        defer {
+            DiningReflectionPhotoStore.remove(filename: filename)
+        }
+
+        XCTAssertEqual(DiningReflectionPhotoStore.data(for: filename), data)
+
+        DiningReflectionPhotoStore.remove(filename: filename)
+        XCTAssertNil(DiningReflectionPhotoStore.data(for: filename))
+    }
+
+    @MainActor
     func testSavedRestaurantIDsRestoreAndToggle() {
         let suiteName = "tastebuddy.tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

@@ -5,14 +5,14 @@ final class HomeSearchEngineTests: XCTestCase {
     func testRecentSearchesDedupeAndLimitToFive() {
         var searches: [String] = []
 
-        for value in ["온지음", "정식당", "감칠맛", "Mina", "산미", "온지음"] {
+        for value in ["온지음", "정식당", "감칠맛", "김민아", "산미", "온지음"] {
             searches = HomeSearchEngine.updatedRecentSearches(
                 afterSelecting: value,
                 current: searches
             )
         }
 
-        XCTAssertEqual(searches, ["온지음", "산미", "Mina", "감칠맛", "정식당"])
+        XCTAssertEqual(searches, ["온지음", "산미", "김민아", "감칠맛", "정식당"])
         XCTAssertEqual(searches.count, HomeSearchEngine.maxRecentSearches)
     }
 
@@ -87,7 +87,7 @@ final class HomeSearchEngineTests: XCTestCase {
 
     func testFriendRepositoryMergesIdentityResultsWithoutDuplicateLocalBuddy() async throws {
         let repository = FixtureHomeSearchRepository()
-        let query = "Mina"
+        let query = "김민아"
         let localSections = HomeSearchEngine.sections(matching: query)
         let remoteResults = try await repository.friendResults(matching: query)
         let sections = HomeSearchEngine.mergedSections(
@@ -98,13 +98,13 @@ final class HomeSearchEngineTests: XCTestCase {
         )
         let friendItems = sections.first { $0.id == "friends" }?.items ?? []
 
-        XCTAssertEqual(friendItems.filter { $0.title == "Mina" }.count, 1)
-        XCTAssertEqual(friendItems.first { $0.title == "Mina" }?.source, .local)
+        XCTAssertEqual(friendItems.filter { $0.title == "김민아" }.count, 1)
+        XCTAssertEqual(friendItems.first { $0.title == "김민아" }?.source, .local)
     }
 
     func testFriendRepositoryFindsRemoteOnlyBuddyIdentityQuery() async throws {
         let repository = FixtureHomeSearchRepository()
-        let query = "@quiet_finish"
+        let query = "@불향도윤"
         let localSections = HomeSearchEngine.sections(matching: query)
         let remoteResults = try await repository.friendResults(matching: query)
         let sections = HomeSearchEngine.mergedSections(
@@ -114,7 +114,7 @@ final class HomeSearchEngineTests: XCTestCase {
             friendResults: remoteResults
         )
 
-        XCTAssertEqual(sections.first { $0.id == "friends" }?.items.first?.title, "Hyeon")
+        XCTAssertEqual(sections.first { $0.id == "friends" }?.items.first?.title, "최도윤")
         XCTAssertEqual(
             sections.first { $0.id == "friends" }?.items.first?.source,
             .profileSearch

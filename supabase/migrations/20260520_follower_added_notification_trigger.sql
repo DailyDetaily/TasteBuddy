@@ -1,5 +1,3 @@
-alter type public.notification_type add value if not exists 'follower_added';
-
 create or replace function public.notify_profile_follower_added()
 returns trigger
 language plpgsql

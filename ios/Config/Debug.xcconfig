@@ -1,7 +1,12 @@
 #include "Base.xcconfig"
-#include? "Secrets.local.xcconfig"
+
+// Swift package products are emitted to a shared simulator output path.
+// Building only the host architecture prevents x86_64/arm64 artifacts from replacing each other.
+ONLY_ACTIVE_ARCH = YES
 
 TB_BACKEND_ENVIRONMENT = staging
 TB_SUPABASE_URL = __SET_STAGING_SUPABASE_URL__
 TB_SUPABASE_PUBLISHABLE_KEY = __SET_STAGING_SUPABASE_PUBLISHABLE_KEY__
 TB_PUBLIC_MEDIA_BASE_URL = __SET_STAGING_PUBLIC_MEDIA_BASE_URL__
+
+#include? "Secrets.local.xcconfig"

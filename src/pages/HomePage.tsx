@@ -25,7 +25,11 @@ import {
   hydrateTasteBuddyAgentSocialGraph,
   type TasteBuddyAgentSocialGraph,
 } from '../lib/tasteBuddyAgentSupabase';
-import { type DiningFriendProfile } from '../lib/supabase';
+import {
+  getCurrentSupabaseSession,
+  isAnonymousSupabaseSession,
+  type DiningFriendProfile,
+} from '../lib/supabase';
 import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reservationCatalog';
 import type { TasteProfile as PalateBloomTasteProfile } from '../components/system/PalateBloomAvatar';
 import type {
@@ -121,8 +125,29 @@ export default function HomePage({
     let isCancelled = false;
     setIsTasteSocialGraphLoading(true);
 
-    const hydrateSecondaryHomeData = () => {
+    const hydrateContentCatalog = () => {
       if (isCancelled) {
+        return;
+      }
+
+      void hydrateRestaurantContentCatalog().then((hydratedCatalog) => {
+        if (!isCancelled) {
+          setContentCatalog(hydratedCatalog);
+        }
+      });
+    };
+
+    void (async () => {
+      const session = await getCurrentSupabaseSession();
+
+      if (isCancelled) {
+        return;
+      }
+
+      hydrateContentCatalog();
+
+      if (!session || isAnonymousSupabaseSession(session)) {
+        setIsTasteSocialGraphLoading(false);
         return;
       }
 
@@ -132,39 +157,31 @@ export default function HomePage({
         }
       });
 
-      void hydrateRestaurantContentCatalog().then((hydratedCatalog) => {
+      void hydrateTasteBuddyAgentSocialGraph({ includeSeedReviews: true })
+        .then((hydratedTasteSocialGraph) => {
+          if (!isCancelled) {
+            setTasteSocialGraph(hydratedTasteSocialGraph);
+          }
+        })
+        .catch(() => undefined)
+        .finally(() => {
+          if (!isCancelled) {
+            setIsTasteSocialGraphLoading(false);
+          }
+        });
+
+      void hydrateUserTbaConfidenceStates().then((hydratedUserTbaConfidenceStates) => {
         if (!isCancelled) {
-          setContentCatalog(hydratedCatalog);
+          setUserTbaConfidenceStates(hydratedUserTbaConfidenceStates);
         }
       });
-    };
 
-    void hydrateTasteBuddyAgentSocialGraph({ includeSeedReviews: true })
-      .then((hydratedTasteSocialGraph) => {
+      void hydrateUserLearnedCalibration().then((hydratedCalibration) => {
         if (!isCancelled) {
-          setTasteSocialGraph(hydratedTasteSocialGraph);
+          setUserLearnedCalibration(hydratedCalibration);
         }
-      })
-      .catch(() => undefined)
-      .finally(() => {
-        if (!isCancelled) {
-          setIsTasteSocialGraphLoading(false);
-        }
-
-        hydrateSecondaryHomeData();
       });
-
-    void hydrateUserTbaConfidenceStates().then((hydratedUserTbaConfidenceStates) => {
-      if (!isCancelled) {
-        setUserTbaConfidenceStates(hydratedUserTbaConfidenceStates);
-      }
-    });
-
-    void hydrateUserLearnedCalibration().then((hydratedCalibration) => {
-      if (!isCancelled) {
-        setUserLearnedCalibration(hydratedCalibration);
-      }
-    });
+    })();
 
     return () => {
       isCancelled = true;

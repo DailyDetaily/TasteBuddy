@@ -1,6 +1,52 @@
 import SwiftUI
 import UIKit
 
+@MainActor
+final class BottomComposerKeyboardObserver: NSObject, ObservableObject {
+    @Published private(set) var visibleHeight: CGFloat = 0
+
+    override init() {
+        super.init()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleKeyboardNotification),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleKeyboardNotification),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func handleKeyboardNotification(_ notification: Notification) {
+        let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.24
+        let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero
+
+        withAnimation(.easeOut(duration: duration)) {
+            visibleHeight = Self.visibleKeyboardHeight(for: keyboardFrame)
+        }
+    }
+
+    private static func visibleKeyboardHeight(for keyboardFrame: CGRect) -> CGFloat {
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow) else {
+            return 0
+        }
+
+        let keyboardFrameInWindow = window.convert(keyboardFrame, from: nil)
+        return max(0, window.bounds.maxY - keyboardFrameInWindow.minY)
+    }
+}
+
 enum TokenBoxSize: CaseIterable {
     case small
     case medium
@@ -186,16 +232,14 @@ struct ImageBox: View {
         case .neutral:
             return TBColor.mutedSurface
         case .taste:
-            return taste.tintColor
+            return TBColor.surface
         }
     }
 
     private var fallbackForeground: Color {
         switch variant {
-        case .neutral:
+        case .neutral, .taste:
             return fallbackIconColor
-        case .taste:
-            return taste.tintTextColor
         }
     }
 
@@ -267,6 +311,8 @@ enum ChefImageResolver {
     private static let bundledImageByName: [String: String] = [
         "강민구": "KangMingoo",
         "Kang Mingoo": "KangMingoo",
+        "이은지": "LeeEunji",
+        "임정식": "LimJeongsik",
         "온지음": "OnjiumChefs",
         "온지음 셰프": "OnjiumChefs",
         "조은희 / 박성배": "OnjiumChefs",
@@ -436,6 +482,7 @@ struct ActionOverlayCard<Content: View>: View {
     var headerStart: AnyView? = nil
     var headerEnd: AnyView? = nil
     var onBackdropTap: (() -> Void)? = nil
+    var backdropOpacity = ActionOverlayCardMetrics.overlayOpacity
     private let content: Content
 
     init(
@@ -446,6 +493,7 @@ struct ActionOverlayCard<Content: View>: View {
         headerStart: AnyView? = nil,
         headerEnd: AnyView? = nil,
         onBackdropTap: (() -> Void)? = nil,
+        backdropOpacity: Double = ActionOverlayCardMetrics.overlayOpacity,
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
@@ -455,14 +503,16 @@ struct ActionOverlayCard<Content: View>: View {
         self.headerStart = headerStart
         self.headerEnd = headerEnd
         self.onBackdropTap = onBackdropTap
+        self.backdropOpacity = backdropOpacity
         self.content = content()
     }
 
     var body: some View {
         ZStack {
             Color.black
-                .opacity(ActionOverlayCardMetrics.overlayOpacity)
+                .opacity(backdropOpacity)
                 .ignoresSafeArea()
+                .contentShape(Rectangle())
                 .onTapGesture {
                     onBackdropTap?()
                 }
@@ -613,7 +663,8 @@ extension ActionOverlayCard where Content == EmptyView {
         layout: ActionOverlayCardLayout = .stack,
         headerStart: AnyView? = nil,
         headerEnd: AnyView? = nil,
-        onBackdropTap: (() -> Void)? = nil
+        onBackdropTap: (() -> Void)? = nil,
+        backdropOpacity: Double = ActionOverlayCardMetrics.overlayOpacity
     ) {
         self.init(
             title: title,
@@ -622,7 +673,8 @@ extension ActionOverlayCard where Content == EmptyView {
             layout: layout,
             headerStart: headerStart,
             headerEnd: headerEnd,
-            onBackdropTap: onBackdropTap
+            onBackdropTap: onBackdropTap,
+            backdropOpacity: backdropOpacity
         ) {
             EmptyView()
         }
@@ -631,7 +683,7 @@ extension ActionOverlayCard where Content == EmptyView {
 
 enum BottomSheetShellMetrics {
     static let overlayOpacity: CGFloat = 0.60
-    static let stageHeightRatio: CGFloat = 0.95
+    static let stageHeightRatio: CGFloat = 0.98
     static let authEntryEmailMaxHeightRatio: CGFloat = 0.72
     static let stageTopInset: CGFloat = 12
     static let maxWidth: CGFloat = TBSize.screenMaxWidth
@@ -681,6 +733,60 @@ enum BottomSheetShellMetrics {
 enum BottomSheetStageMode: Equatable {
     case fixed
     case auto(maxHeightRatio: CGFloat)
+}
+
+enum StagedBottomSheetDragMetrics {
+    static let minimumDistance: CGFloat = 6
+    static let dismissProgressThreshold: CGFloat = 0.32
+}
+
+enum StagedBottomSheetBackgroundMetrics {
+    static let openScale: CGFloat = 0.9
+    static let openOffsetY: CGFloat = 10
+    static let openRadius: CGFloat = 20
+    static let shadowY: CGFloat = 20
+    static let shadowBlur: CGFloat = 60
+    static let shadowOpacity: CGFloat = 0.24
+    static let animation = Animation.timingCurve(0.22, 1, 0.36, 1, duration: 0.62)
+}
+
+struct StagedBottomSheetBackground: ViewModifier {
+    let progress: CGFloat
+    var dimOpacity: CGFloat = 0
+    var animates = true
+
+    private var clampedProgress: CGFloat {
+        min(max(progress, 0), 1)
+    }
+
+    private var clampedDimOpacity: CGFloat {
+        min(max(dimOpacity, 0), 1)
+    }
+
+    func body(content: Content) -> some View {
+        let scale = 1 - (1 - StagedBottomSheetBackgroundMetrics.openScale) * clampedProgress
+        let offsetY = StagedBottomSheetBackgroundMetrics.openOffsetY * clampedProgress
+        let radius = StagedBottomSheetBackgroundMetrics.openRadius * clampedProgress
+        let shadowY = StagedBottomSheetBackgroundMetrics.shadowY * clampedProgress
+        let shadowBlur = StagedBottomSheetBackgroundMetrics.shadowBlur * clampedProgress
+        let shadowOpacity = StagedBottomSheetBackgroundMetrics.shadowOpacity * clampedProgress
+
+        content
+            .overlay(Color.black.opacity(clampedDimOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .shadow(
+                color: Color.black.opacity(shadowOpacity),
+                radius: shadowBlur,
+                x: 0,
+                y: shadowY
+            )
+            .scaleEffect(scale, anchor: .top)
+            .offset(y: offsetY)
+            .animation(
+                animates ? StagedBottomSheetBackgroundMetrics.animation : nil,
+                value: clampedProgress
+            )
+    }
 }
 
 private struct BottomSheetTopRoundedShape: Shape {
@@ -753,6 +859,11 @@ struct BottomSheetShell<Content: View>: View {
     var footer: AnyView? = nil
     var footerSafeAreaAccessory: AnyView? = nil
     var footerSafeAreaAccessoryHeight = BottomSheetShellMetrics.footerSafeAreaAccessoryHeight
+    var footerHorizontalPadding = BottomSheetShellMetrics.footerHorizontalPadding
+    var footerTopPadding = BottomSheetShellMetrics.footerTopPadding
+    var footerBottomPaddingOverride: CGFloat? = nil
+    var footerBackground: Color? = nil
+    var footerKeyboardOffset: CGFloat = 0
     var floatingLayer: AnyView? = nil
     var stageMode: BottomSheetStageMode = .fixed
     var usesNativeSheetChrome = false
@@ -765,6 +876,11 @@ struct BottomSheetShell<Content: View>: View {
         footer: AnyView? = nil,
         footerSafeAreaAccessory: AnyView? = nil,
         footerSafeAreaAccessoryHeight: CGFloat = BottomSheetShellMetrics.footerSafeAreaAccessoryHeight,
+        footerHorizontalPadding: CGFloat = BottomSheetShellMetrics.footerHorizontalPadding,
+        footerTopPadding: CGFloat = BottomSheetShellMetrics.footerTopPadding,
+        footerBottomPaddingOverride: CGFloat? = nil,
+        footerBackground: Color? = nil,
+        footerKeyboardOffset: CGFloat = 0,
         floatingLayer: AnyView? = nil,
         stageMode: BottomSheetStageMode = .fixed,
         usesNativeSheetChrome: Bool = false,
@@ -776,6 +892,11 @@ struct BottomSheetShell<Content: View>: View {
         self.footer = footer
         self.footerSafeAreaAccessory = footerSafeAreaAccessory
         self.footerSafeAreaAccessoryHeight = footerSafeAreaAccessoryHeight
+        self.footerHorizontalPadding = footerHorizontalPadding
+        self.footerTopPadding = footerTopPadding
+        self.footerBottomPaddingOverride = footerBottomPaddingOverride
+        self.footerBackground = footerBackground
+        self.footerKeyboardOffset = footerKeyboardOffset
         self.floatingLayer = floatingLayer
         self.stageMode = stageMode
         self.usesNativeSheetChrome = usesNativeSheetChrome
@@ -786,7 +907,7 @@ struct BottomSheetShell<Content: View>: View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
                 Capsule()
-                    .fill(Color(uiColor: .tertiaryLabel))
+                    .fill(TBColor.textHint)
                     .frame(
                         width: BottomSheetShellMetrics.grabberWidth,
                         height: BottomSheetShellMetrics.grabberHeight
@@ -806,33 +927,39 @@ struct BottomSheetShell<Content: View>: View {
                         alignment: .topLeading
                     )
 
-                if let footer {
-                    footer
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, BottomSheetShellMetrics.footerHorizontalPadding)
-                        .padding(.top, BottomSheetShellMetrics.footerTopPadding)
-                }
-
                 if footer != nil || footerSafeAreaAccessory != nil {
-                    Group {
-                        if let footerSafeAreaAccessory {
-                            footerSafeAreaAccessory
+                    VStack(spacing: 0) {
+                        if let footer {
+                            footer
                                 .frame(maxWidth: .infinity)
-                                .padding(.horizontal, BottomSheetShellMetrics.footerHorizontalPadding)
-                                .padding(.top, BottomSheetShellMetrics.footerSafeAreaAccessoryTopGap)
-                        } else {
-                            Color.clear
+                                .padding(.horizontal, footerHorizontalPadding)
+                                .padding(.top, footerTopPadding)
                         }
+
+                        Group {
+                            if let footerSafeAreaAccessory {
+                                footerSafeAreaAccessory
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, BottomSheetShellMetrics.footerHorizontalPadding)
+                                    .padding(.top, BottomSheetShellMetrics.footerSafeAreaAccessoryTopGap)
+                            } else {
+                                Color.clear
+                            }
+                        }
+                        .frame(
+                            height: footerBottomPaddingOverride
+                                ?? BottomSheetShellMetrics.footerSafeAreaHeight(
+                                    safeAreaBottom: bottomSafeAreaInset,
+                                    accessoryHeight: footerSafeAreaAccessory == nil
+                                        ? nil
+                                        : footerSafeAreaAccessoryHeight
+                                ),
+                            alignment: .top
+                        )
                     }
-                    .frame(
-                        height: BottomSheetShellMetrics.footerSafeAreaHeight(
-                            safeAreaBottom: bottomSafeAreaInset,
-                            accessoryHeight: footerSafeAreaAccessory == nil
-                                ? nil
-                                : footerSafeAreaAccessoryHeight
-                        ),
-                        alignment: .top
-                    )
+                    .background(footerBackground ?? Color.clear)
+                    .offset(y: -footerKeyboardOffset)
+                    .animation(.easeOut(duration: 0.24), value: footerKeyboardOffset)
                 }
             }
             .frame(maxWidth: usesNativeSheetChrome ? .infinity : BottomSheetShellMetrics.maxWidth)
@@ -932,15 +1059,38 @@ private struct BottomSheetSurfaceChrome: ViewModifier {
                 content
                     .background(TBColor.focus)
                     .clipShape(BottomSheetTopRoundedShape(radius: BottomSheetShellMetrics.topRadius))
+                    .background(alignment: .bottom) {
+                        bottomSafeAreaFill
+                    }
                     .ignoresSafeArea(edges: [.horizontal, .bottom])
             } else {
                 content
                     .background(TBColor.focus)
                     .clipShape(BottomSheetTopRoundedShape(radius: BottomSheetShellMetrics.topRadius))
+                    .background(alignment: .bottom) {
+                        bottomSafeAreaFill
+                    }
                     .ignoresSafeArea(edges: .bottom)
                     .shadow(color: Color.black.opacity(0.24), radius: 30, x: 0, y: 20)
             }
         }
+    }
+
+    private var bottomSafeAreaFill: some View {
+        TBColor.focus
+            .frame(height: bottomSafeAreaInset)
+            .frame(maxWidth: .infinity)
+            .offset(y: bottomSafeAreaInset)
+            .ignoresSafeArea(edges: .bottom)
+    }
+
+    private var bottomSafeAreaInset: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first { $0.isKeyWindow }?
+            .safeAreaInsets
+            .bottom ?? 0
     }
 }
 

@@ -72,6 +72,8 @@ struct HomeSearchResultItem: Identifiable, Equatable {
     let searchText: String
     let source: HomeSearchResultSource
     let statusLabel: String?
+    let externalURL: URL?
+    let bookmarkRestaurant: RestaurantSummary?
 
     init(
         id: String,
@@ -85,7 +87,9 @@ struct HomeSearchResultItem: Identifiable, Equatable {
         route: AppRoute? = nil,
         searchText: String? = nil,
         source: HomeSearchResultSource = .local,
-        statusLabel: String? = nil
+        statusLabel: String? = nil,
+        externalURL: URL? = nil,
+        bookmarkRestaurant: RestaurantSummary? = nil
     ) {
         self.id = id
         self.kind = kind
@@ -99,6 +103,8 @@ struct HomeSearchResultItem: Identifiable, Equatable {
         self.searchText = searchText ?? [title, subtitle, detail].joined(separator: " ")
         self.source = source
         self.statusLabel = statusLabel
+        self.externalURL = externalURL
+        self.bookmarkRestaurant = bookmarkRestaurant
     }
 
     var supportsDiningRecordAction: Bool {
@@ -106,12 +112,13 @@ struct HomeSearchResultItem: Identifiable, Equatable {
     }
 
     var supportsBookmarkAction: Bool {
-        restaurantID != nil
+        bookmarkRestaurantID != nil
     }
 
-    var focusActionLabel: String {
-        route == nil ? "결과 확인" : "자세히 보기"
+    var bookmarkRestaurantID: String? {
+        bookmarkRestaurant?.id ?? restaurantID
     }
+
 }
 
 protocol HomeSearchRepository {
@@ -193,43 +200,179 @@ struct FixtureHomeSearchRepository: HomeSearchRepository {
         HomeSearchResultItem(
             id: "profile-friend-mina",
             kind: .friend,
-            title: "Mina",
-            subtitle: "@clear_umami",
+            title: "김민아",
+            subtitle: "@맑은끝민아",
             detail: "취향 적합도 92%",
             symbol: "person.crop.circle",
             axis: .umami,
             route: .publicProfile(id: "mina"),
-            searchText: "Mina clear_umami @clear_umami 감칠맛 버디 후기 팔로잉",
+            searchText: "김민아 맑은끝민아 @맑은끝민아 taste-dev-mina 감칠맛 버디 후기 팔로잉",
             source: .profileSearch,
             statusLabel: "팔로잉"
         ),
         HomeSearchResultItem(
             id: "profile-friend-jae",
             kind: .friend,
-            title: "Jae",
-            subtitle: "@bright_course",
+            title: "정서윤",
+            subtitle: "@산미탐험서윤",
             detail: "취향 적합도 88%",
             symbol: "person.crop.circle",
             axis: .sour,
             route: .publicProfile(id: "jae"),
-            searchText: "Jae bright_course @bright_course 산미 버디 후기",
+            searchText: "정서윤 산미탐험서윤 @산미탐험서윤 taste-dev-seoyoon 산미 버디 후기",
             source: .profileSearch,
             statusLabel: "검색 결과"
         ),
         HomeSearchResultItem(
             id: "profile-friend-hyeon",
             kind: .friend,
-            title: "Hyeon",
-            subtitle: "@quiet_finish",
+            title: "최도윤",
+            subtitle: "@불향도윤",
             detail: "취향 적합도 84%",
             symbol: "person.crop.circle",
             axis: .bitter,
             route: .publicProfile(id: "hyeon"),
-            searchText: "Hyeon quiet_finish @quiet_finish 여운 쓴맛 버디 후기",
+            searchText: "최도윤 불향도윤 @불향도윤 taste-dev-doyun 여운 쓴맛 불향 버디 후기",
             source: .profileSearch,
             statusLabel: "검색 결과"
         )
     ]
+}
+
+struct LiveHomeSearchRepository: HomeSearchRepository {
+    var placeClient = RestaurantPlaceAPIClient()
+    var fallbackRepository = FixtureHomeSearchRepository()
+
+    func kakaoRestaurantResults(matching query: String) async throws -> [HomeSearchResultItem] {
+        let localSections = HomeSearchEngine.sections(matching: query)
+        guard HomeSearchEngine.shouldSearchKakao(
+            query: query,
+            localSections: localSections
+        ) else {
+            return []
+        }
+
+        let places = try await placeClient.searchKakaoRestaurantPlaces(
+            query: query,
+            size: HomeSearchEngine.maxGroupResults
+        )
+
+        return places.compactMap { place in
+            Self.searchResult(from: place)
+        }
+    }
+
+    func friendResults(matching query: String) async throws -> [HomeSearchResultItem] {
+        try await fallbackRepository.friendResults(matching: query)
+    }
+
+    private static func searchResult(from place: KakaoRestaurantPlace) -> HomeSearchResultItem? {
+        let name = place.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else {
+            return nil
+        }
+
+        let address = place.displayAddress ?? "주소 확인 중"
+        let matchedRestaurant = RestaurantCatalog.restaurants.first { restaurant in
+            let normalizedRestaurantName = HomeSearchEngine.normalize(restaurant.name)
+            let normalizedPlaceName = HomeSearchEngine.normalize(name)
+
+            return normalizedRestaurantName == normalizedPlaceName
+                || normalizedPlaceName.contains(normalizedRestaurantName)
+                || normalizedRestaurantName.contains(normalizedPlaceName)
+        }
+
+        let detailParts = [
+            place.category,
+            place.phone.map { "전화 \($0)" }
+        ].compactMap { value in
+            value?.trimmingCharacters(in: .whitespacesAndNewlines)
+        }.filter { !$0.isEmpty }
+
+        let restaurantID = matchedRestaurant?.id
+        let bookmarkRestaurant = matchedRestaurant ?? externalRestaurantSummary(
+            for: place,
+            id: externalRestaurantID(for: place),
+            address: address,
+            detailParts: detailParts
+        )
+
+        return HomeSearchResultItem(
+            id: "kakao-restaurant-\(place.id)",
+            kind: .restaurant,
+            title: name,
+            subtitle: address,
+            detail: detailParts.first ?? "카카오에서 확인한 장소",
+            symbol: "store",
+            axis: matchedRestaurant?.axis ?? .umami,
+            restaurantID: restaurantID,
+            route: restaurantID.map { .restaurant(id: $0) },
+            searchText: [
+                name,
+                address,
+                place.category,
+                place.phone
+            ].compactMap(\.self).joined(separator: " "),
+            source: .kakaoPlace,
+            statusLabel: "카카오 장소",
+            externalURL: place.placeURL,
+            bookmarkRestaurant: bookmarkRestaurant
+        )
+    }
+
+    private static func externalRestaurantID(for place: KakaoRestaurantPlace) -> String {
+        let base = place.placeID ?? [place.name, place.displayAddress]
+            .compactMap(\.self)
+            .joined(separator: "-")
+        let slug = HomeSearchEngine
+            .normalize(base)
+            .replacingOccurrences(
+                of: "[^0-9a-z가-힣]+",
+                with: "-",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+
+        return "kakao-\(slug.isEmpty ? "restaurant" : slug)"
+    }
+
+    private static func externalRestaurantSummary(
+        for place: KakaoRestaurantPlace,
+        id: String,
+        address: String,
+        detailParts: [String]
+    ) -> RestaurantSummary {
+        RestaurantSummary(
+            id: id,
+            name: place.name,
+            chefName: "Taste Buddy 분석 준비 중",
+            category: place.category ?? "Kakao 장소",
+            locationLabel: address,
+            imageName: nil,
+            axis: .umami,
+            matchRate: 0,
+            summary: "카카오에서 확인한 장소입니다. 메뉴별 미각 분석은 Taste Buddy 데이터가 준비되면 이어서 볼 수 있어요.",
+            tags: Array(detailParts.prefix(3)),
+            memorableDishes: [],
+            infoRows: [
+                RestaurantSummary.InfoRow(
+                    id: "address",
+                    label: "주소",
+                    value: address,
+                    symbol: "mappin.circle"
+                )
+            ] + (place.phone.map {
+                [
+                    RestaurantSummary.InfoRow(
+                        id: "phone",
+                        label: "전화",
+                        value: $0,
+                        symbol: "phone"
+                    )
+                ]
+            } ?? [])
+        )
+    }
 }
 
 enum HomeSearchEngine {
@@ -320,24 +463,24 @@ enum HomeSearchEngine {
                 HomeSearchResultItem(
                     id: "friend-mina",
                     kind: .friend,
-                    title: "Mina",
-                    subtitle: "@clear_umami",
+                    title: "김민아",
+                    subtitle: "@맑은끝민아",
                     detail: "취향 적합도 92%",
                     symbol: "person.crop.circle",
                     axis: .umami,
                     route: .publicProfile(id: "mina"),
-                    searchText: "Mina clear_umami 감칠맛 버디 후기"
+                    searchText: "김민아 맑은끝민아 taste-dev-mina 감칠맛 버디 후기"
                 ),
                 HomeSearchResultItem(
                     id: "friend-jae",
                     kind: .friend,
-                    title: "Jae",
-                    subtitle: "@bright_course",
+                    title: "정서윤",
+                    subtitle: "@산미탐험서윤",
                     detail: "취향 적합도 88%",
                     symbol: "person.crop.circle",
                     axis: .sour,
                     route: .publicProfile(id: "jae"),
-                    searchText: "Jae bright_course 산미 버디 후기"
+                    searchText: "정서윤 산미탐험서윤 taste-dev-seoyoon 산미 버디 후기"
                 )
             ]
         ),
@@ -465,8 +608,12 @@ enum HomeSearchEngine {
             .first { $0.id == "restaurants" }?
             .items
             .count ?? 0
+        let localChefOrMenuCount = localSections
+            .filter { $0.id == "chefs" || $0.id == "menus" }
+            .flatMap(\.items)
+            .count
 
-        return localRestaurantCount == 0
+        return localRestaurantCount == 0 && localChefOrMenuCount == 0
     }
 
     static func isSearchableProfileIdentityQuery(_ query: String) -> Bool {
@@ -479,12 +626,13 @@ enum HomeSearchEngine {
         return normalizedQuery.hasPrefix("@")
             || normalizedQuery.contains("버디")
             || normalizedQuery.contains("buddy")
-            || normalizedQuery.contains("mina")
-            || normalizedQuery.contains("jae")
-            || normalizedQuery.contains("hyeon")
-            || normalizedQuery.contains("clear_")
-            || normalizedQuery.contains("bright_")
-            || normalizedQuery.contains("quiet_")
+            || normalizedQuery.contains("김민아")
+            || normalizedQuery.contains("맑은끝민아")
+            || normalizedQuery.contains("정서윤")
+            || normalizedQuery.contains("산미탐험서윤")
+            || normalizedQuery.contains("최도윤")
+            || normalizedQuery.contains("불향도윤")
+            || normalizedQuery.contains("taste-dev-")
     }
 
     static func filteredItems(
@@ -538,9 +686,13 @@ enum HomeSearchEngine {
     }
 
     static func recentSearchValue(for item: HomeSearchResultItem, query: String) -> String {
-        query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? item.title
-            : item.title
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if item.source == .kakaoPlace, !trimmedQuery.isEmpty {
+            return trimmedQuery
+        }
+
+        return item.title
     }
 
     private static func matches(
