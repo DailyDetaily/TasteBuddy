@@ -115,7 +115,7 @@ export default function TasteSurveyContextScreen({
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-focus)] font-sans">
       <header className="z-20 flex w-full shrink-0 justify-center">
         <div
-          className="w-full max-w-[1440px] border-b border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-bg-focus)]"
+          className="w-full max-w-[1440px] bg-[var(--tb-color-bg-focus)]"
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
           <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">

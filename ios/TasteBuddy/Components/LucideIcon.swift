@@ -46,22 +46,29 @@ enum LucideIconName: String, CaseIterable {
     case chevronLeft
     case chevronRight
     case chevronUp
+    case circleArrowDown
     case circleCheck
     case circleDot
+    case circleHelp
     case circlePlus
     case clock
     case coffee
     case cookingPot
+    case copy
     case croissant
     case cupSoda
     case dessert
     case droplet
     case eggFried
     case ellipsis
+    case eye
     case fish
     case globe
     case heart
+    case image
+    case info
     case leaf
+    case link
     case logOut
     case mail
     case mapPin
@@ -71,6 +78,7 @@ enum LucideIconName: String, CaseIterable {
     case pencil
     case phone
     case plus
+    case refreshCw
     case search
     case send
     case settings
@@ -80,17 +88,22 @@ enum LucideIconName: String, CaseIterable {
     case sandwich
     case soup
     case sparkles
+    case squarePen
     case star
     case store
     case sun
+    case switchCamera
     case trash2
     case trophy
     case utensils
+    case utensilsCrossed
     case user
     case userPlus
     case waves
     case wine
     case x
+    case zap
+    case zapOff
 
     init(systemName: String) {
         switch systemName {
@@ -112,6 +125,8 @@ enum LucideIconName: String, CaseIterable {
             self = .check
         case "checkmark.circle", "checkmark.circle.fill":
             self = .circleCheck
+        case "arrow.down.circle", "arrow.down.circle.fill":
+            self = .circleArrowDown
         case "chevron.down":
             self = .chevronDown
         case "chevron.left":
@@ -122,24 +137,38 @@ enum LucideIconName: String, CaseIterable {
             self = .chevronUp
         case "circle.grid.2x2.fill":
             self = .circleDot
+        case "circle-help", "circleHelp", "questionmark.circle":
+            self = .circleHelp
         case "clock":
             self = .clock
+        case "doc.on.doc":
+            self = .copy
         case "drop.fill":
             self = .droplet
         case "ellipsis":
             self = .ellipsis
+        case "eye", "doc.text.magnifyingglass":
+            self = .eye
         case "globe":
             self = .globe
         case "envelope":
             self = .mail
         case "fork.knife", "fork.knife.circle":
             self = .utensils
+        case "utensils-crossed", "utensilsCrossed":
+            self = .utensilsCrossed
         case "gearshape":
             self = .settings
         case "heart", "heart.fill":
             self = .heart
+        case "info", "info.circle":
+            self = .info
+        case "image", "photo", "photo.on.rectangle":
+            self = .image
         case "leaf.fill":
             self = .leaf
+        case "link":
+            self = .link
         case "line.3.horizontal":
             self = .menu
         case "magnifyingglass":
@@ -162,6 +191,8 @@ enum LucideIconName: String, CaseIterable {
             self = .plus
         case "plus.circle":
             self = .circlePlus
+        case "arrow.clockwise", "refresh-cw", "refreshCw":
+            self = .refreshCw
         case "rectangle.portrait.and.arrow.right":
             self = .logOut
         case "shield.checkered":
@@ -170,12 +201,16 @@ enum LucideIconName: String, CaseIterable {
             self = .sparkles
         case "square.and.arrow.up":
             self = .share
+        case "square-pen", "squarePen", "square.and.pencil":
+            self = .squarePen
         case "star", "star.fill":
             self = .star
         case "storefront":
             self = .store
         case "sun.max.fill":
             self = .sun
+        case "switch-camera", "switchCamera", "camera.rotate":
+            self = .switchCamera
         case "text.bubble":
             self = .messageCircle
         case "trash", "trash.fill":
@@ -186,6 +221,10 @@ enum LucideIconName: String, CaseIterable {
             self = .waves
         case "xmark", "x":
             self = .x
+        case "zap", "bolt":
+            self = .zap
+        case "zap-off", "zapOff", "bolt.slash":
+            self = .zapOff
         default:
             self = .circleDot
         }
@@ -267,6 +306,12 @@ struct LucideIcon: View {
             strokePath(Path(ellipseIn: CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2)))
         }
 
+        func filledCircle(_ x: CGFloat, _ y: CGFloat, _ radius: CGFloat) {
+            let path = Path(ellipseIn: CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2))
+            context.fill(path, with: .foreground)
+            context.stroke(path, with: .foreground, style: stroke)
+        }
+
         func rect(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat, _ radius: CGFloat) {
             strokePath(Path(roundedRect: CGRect(x: x, y: y, width: width, height: height), cornerRadius: radius))
         }
@@ -284,6 +329,118 @@ struct LucideIcon: View {
             } else {
                 strokePath(path)
             }
+        }
+
+        func addArcSegment(
+            to path: inout Path,
+            center: CGPoint,
+            radius: CGFloat,
+            startAngle: CGFloat,
+            endAngle: CGFloat
+        ) {
+            let maxSegment = CGFloat.pi / 2
+            let delta = endAngle - startAngle
+            let segmentCount = max(1, Int(ceil(abs(delta) / maxSegment)))
+            let segmentAngle = delta / CGFloat(segmentCount)
+
+            for index in 0..<segmentCount {
+                let start = startAngle + CGFloat(index) * segmentAngle
+                let end = start + segmentAngle
+                let controlScale = CGFloat(4.0 / 3.0) * tan(segmentAngle / 4)
+
+                let startPoint = CGPoint(
+                    x: center.x + radius * cos(start),
+                    y: center.y + radius * sin(start)
+                )
+                let endPoint = CGPoint(
+                    x: center.x + radius * cos(end),
+                    y: center.y + radius * sin(end)
+                )
+                let startDerivative = CGPoint(
+                    x: -radius * sin(start),
+                    y: radius * cos(start)
+                )
+                let endDerivative = CGPoint(
+                    x: -radius * sin(end),
+                    y: radius * cos(end)
+                )
+
+                path.addCurve(
+                    to: endPoint,
+                    control1: CGPoint(
+                        x: startPoint.x + controlScale * startDerivative.x,
+                        y: startPoint.y + controlScale * startDerivative.y
+                    ),
+                    control2: CGPoint(
+                        x: endPoint.x - controlScale * endDerivative.x,
+                        y: endPoint.y - controlScale * endDerivative.y
+                    )
+                )
+            }
+        }
+
+        func arcDelta(from start: CGFloat, to end: CGFloat, sweep: Bool) -> CGFloat {
+            let twoPi = CGFloat.pi * 2
+            var delta = end - start
+            if sweep {
+                while delta < 0 { delta += twoPi }
+                while delta >= twoPi { delta -= twoPi }
+            } else {
+                while delta > 0 { delta -= twoPi }
+                while delta <= -twoPi { delta += twoPi }
+            }
+            return delta
+        }
+
+        func addSvgArc(
+            to path: inout Path,
+            from startPoint: CGPoint,
+            to endPoint: CGPoint,
+            radius: CGFloat,
+            largeArc: Bool,
+            sweep: Bool
+        ) {
+            let dx = endPoint.x - startPoint.x
+            let dy = endPoint.y - startPoint.y
+            let distance = sqrt(dx * dx + dy * dy)
+            guard distance > 0 else { return }
+
+            let adjustedRadius = max(radius, distance / 2)
+            let midpoint = CGPoint(
+                x: (startPoint.x + endPoint.x) / 2,
+                y: (startPoint.y + endPoint.y) / 2
+            )
+            let halfChord = distance / 2
+            let centerOffset = sqrt(max(0, adjustedRadius * adjustedRadius - halfChord * halfChord))
+            let perpendicular = CGPoint(x: -dy / distance, y: dx / distance)
+            let centers = [
+                CGPoint(
+                    x: midpoint.x + perpendicular.x * centerOffset,
+                    y: midpoint.y + perpendicular.y * centerOffset
+                ),
+                CGPoint(
+                    x: midpoint.x - perpendicular.x * centerOffset,
+                    y: midpoint.y - perpendicular.y * centerOffset
+                ),
+            ]
+
+            let selected = centers.first { center in
+                let start = atan2(startPoint.y - center.y, startPoint.x - center.x)
+                let end = atan2(endPoint.y - center.y, endPoint.x - center.x)
+                let delta = arcDelta(from: start, to: end, sweep: sweep)
+                return (abs(delta) > CGFloat.pi) == largeArc
+            } ?? centers[0]
+
+            let start = atan2(startPoint.y - selected.y, startPoint.x - selected.x)
+            let end = atan2(endPoint.y - selected.y, endPoint.x - selected.x)
+            let delta = arcDelta(from: start, to: end, sweep: sweep)
+            addArcSegment(
+                to: &path,
+                center: selected,
+                radius: adjustedRadius,
+                startAngle: start,
+                endAngle: start + delta
+            )
         }
 
         switch name {
@@ -998,11 +1155,45 @@ struct LucideIcon: View {
         case .chevronUp:
             polyline([CGPoint(x: 18, y: 15), CGPoint(x: 12, y: 9), CGPoint(x: 6, y: 15)])
         case .circleCheck:
+            if filled {
+                filledCircle(12, 12, 10)
+                var path = Path()
+                path.move(to: CGPoint(x: 9, y: 12))
+                path.addLine(to: CGPoint(x: 11, y: 14))
+                path.addLine(to: CGPoint(x: 15, y: 10))
+                context.stroke(path, with: .color(.white), style: stroke)
+            } else {
+                circle(12, 12, 10)
+                polyline([CGPoint(x: 9, y: 12), CGPoint(x: 11, y: 14), CGPoint(x: 15, y: 10)])
+            }
+        case .circleArrowDown:
             circle(12, 12, 10)
-            polyline([CGPoint(x: 9, y: 12), CGPoint(x: 11, y: 14), CGPoint(x: 15, y: 10)])
+            line(12, 8, 12, 16)
+            polyline([CGPoint(x: 8, y: 12), CGPoint(x: 12, y: 16), CGPoint(x: 16, y: 12)])
         case .circleDot:
             circle(12, 12, 10)
             circle(12, 12, 2)
+        case .circleHelp:
+            circle(12, 12, 10)
+            var path = Path()
+            let helpStart = CGPoint(x: 9.09, y: 9)
+            let helpArcEnd = CGPoint(x: 14.92, y: 10)
+            path.move(to: helpStart)
+            addSvgArc(
+                to: &path,
+                from: helpStart,
+                to: helpArcEnd,
+                radius: 3,
+                largeArc: false,
+                sweep: true
+            )
+            path.addCurve(
+                to: CGPoint(x: 11.92, y: 13),
+                control1: CGPoint(x: 14.92, y: 12),
+                control2: CGPoint(x: 11.92, y: 13)
+            )
+            strokePath(path)
+            line(12, 17, 12.01, 17)
         case .circlePlus:
             circle(12, 12, 10)
             line(8, 12, 16, 12)
@@ -1010,6 +1201,16 @@ struct LucideIcon: View {
         case .clock:
             circle(12, 12, 10)
             polyline([CGPoint(x: 12, y: 6), CGPoint(x: 12, y: 12), CGPoint(x: 16, y: 14)])
+        case .copy:
+            rect(8, 8, 14, 14, 2)
+            var back = Path()
+            back.move(to: CGPoint(x: 4, y: 16))
+            back.addQuadCurve(to: CGPoint(x: 2, y: 14), control: CGPoint(x: 2, y: 16))
+            back.addLine(to: CGPoint(x: 2, y: 4))
+            back.addQuadCurve(to: CGPoint(x: 4, y: 2), control: CGPoint(x: 2, y: 2))
+            back.addLine(to: CGPoint(x: 14, y: 2))
+            back.addQuadCurve(to: CGPoint(x: 16, y: 4), control: CGPoint(x: 16, y: 2))
+            strokePath(back)
         case .droplet:
             var path = Path()
             path.move(to: CGPoint(x: 12, y: 2))
@@ -1023,6 +1224,47 @@ struct LucideIcon: View {
             circle(5, 12, 1)
             circle(12, 12, 1)
             circle(19, 12, 1)
+        case .eye:
+            var eye = Path()
+            let eyeStart = CGPoint(x: 2.062, y: 12.348)
+            let eyeTopLeft = CGPoint(x: 2.062, y: 11.652)
+            let eyeTopRight = CGPoint(x: 21.938, y: 11.652)
+            let eyeBottomRight = CGPoint(x: 21.938, y: 12.348)
+            eye.move(to: eyeStart)
+            addSvgArc(
+                to: &eye,
+                from: eyeStart,
+                to: eyeTopLeft,
+                radius: 1,
+                largeArc: false,
+                sweep: true
+            )
+            addSvgArc(
+                to: &eye,
+                from: eyeTopLeft,
+                to: eyeTopRight,
+                radius: 10.75,
+                largeArc: false,
+                sweep: true
+            )
+            addSvgArc(
+                to: &eye,
+                from: eyeTopRight,
+                to: eyeBottomRight,
+                radius: 1,
+                largeArc: false,
+                sweep: true
+            )
+            addSvgArc(
+                to: &eye,
+                from: eyeBottomRight,
+                to: eyeStart,
+                radius: 10.75,
+                largeArc: false,
+                sweep: true
+            )
+            strokePath(eye)
+            circle(12, 12, 3)
         case .globe:
             circle(12, 12, 10)
             line(2, 12, 22, 12)
@@ -1054,6 +1296,23 @@ struct LucideIcon: View {
             path.addLine(to: CGPoint(x: 12, y: 21))
             path.closeSubpath()
             fillThenStroke(path)
+        case .image:
+            rect(3, 3, 18, 18, 2)
+            circle(9, 9, 2)
+            var imagePath = Path()
+            imagePath.move(to: CGPoint(x: 21, y: 15))
+            imagePath.addLine(to: CGPoint(x: 17.914, y: 11.914))
+            imagePath.addCurve(
+                to: CGPoint(x: 15.086, y: 11.914),
+                control1: CGPoint(x: 17.133, y: 11.133),
+                control2: CGPoint(x: 15.867, y: 11.133)
+            )
+            imagePath.addLine(to: CGPoint(x: 6, y: 21))
+            strokePath(imagePath)
+        case .info:
+            circle(12, 12, 10)
+            line(12, 16, 12, 12)
+            line(12, 8, 12.01, 8)
         case .leaf:
             var path = Path()
             path.move(to: CGPoint(x: 11, y: 20))
@@ -1062,6 +1321,38 @@ struct LucideIcon: View {
             path.addCurve(to: CGPoint(x: 11, y: 20), control1: CGPoint(x: 4, y: 17), control2: CGPoint(x: 7, y: 20))
             strokePath(path)
             line(4, 20, 14, 10)
+        case .link:
+            var firstLink = Path()
+            firstLink.move(to: CGPoint(x: 10, y: 13))
+            firstLink.addCurve(
+                to: CGPoint(x: 17.54, y: 13.54),
+                control1: CGPoint(x: 11.95, y: 14.95),
+                control2: CGPoint(x: 15.12, y: 14.95)
+            )
+            firstLink.addLine(to: CGPoint(x: 20.54, y: 10.54))
+            firstLink.addCurve(
+                to: CGPoint(x: 13.46, y: 3.46),
+                control1: CGPoint(x: 25.26, y: 5.82),
+                control2: CGPoint(x: 18.18, y: -1.26)
+            )
+            firstLink.addLine(to: CGPoint(x: 11.75, y: 5.17))
+            strokePath(firstLink)
+
+            var secondLink = Path()
+            secondLink.move(to: CGPoint(x: 14, y: 11))
+            secondLink.addCurve(
+                to: CGPoint(x: 6.46, y: 10.46),
+                control1: CGPoint(x: 12.05, y: 9.05),
+                control2: CGPoint(x: 8.88, y: 9.05)
+            )
+            secondLink.addLine(to: CGPoint(x: 3.46, y: 13.46))
+            secondLink.addCurve(
+                to: CGPoint(x: 10.54, y: 20.54),
+                control1: CGPoint(x: -1.26, y: 18.18),
+                control2: CGPoint(x: 5.82, y: 25.26)
+            )
+            secondLink.addLine(to: CGPoint(x: 12.25, y: 18.83))
+            strokePath(secondLink)
         case .logOut:
             var path = Path()
             path.move(to: CGPoint(x: 9, y: 21))
@@ -1094,9 +1385,14 @@ struct LucideIcon: View {
                 control2: CGPoint(x: 4, y: 15)
             )
             path.addCurve(
-                to: CGPoint(x: 20, y: 10),
+                to: CGPoint(x: 12, y: 2),
                 control1: CGPoint(x: 4, y: 5.6),
                 control2: CGPoint(x: 7.6, y: 2)
+            )
+            path.addCurve(
+                to: CGPoint(x: 20, y: 10),
+                control1: CGPoint(x: 16.4, y: 2),
+                control2: CGPoint(x: 20, y: 5.6)
             )
             strokePath(path)
             circle(12, 10, 3)
@@ -1158,6 +1454,58 @@ struct LucideIcon: View {
         case .plus:
             line(5, 12, 19, 12)
             line(12, 5, 12, 19)
+        case .refreshCw:
+            var top = Path()
+            let topStart = CGPoint(x: 3, y: 12)
+            let topArcMid = CGPoint(x: 12, y: 3)
+            let topArcEnd = CGPoint(x: 18.74, y: 5.74)
+            top.move(to: topStart)
+            addSvgArc(
+                to: &top,
+                from: topStart,
+                to: topArcMid,
+                radius: 9,
+                largeArc: false,
+                sweep: true
+            )
+            addSvgArc(
+                to: &top,
+                from: topArcMid,
+                to: topArcEnd,
+                radius: 9.75,
+                largeArc: false,
+                sweep: true
+            )
+            top.addLine(to: CGPoint(x: 21, y: 8))
+            strokePath(top)
+            line(21, 3, 21, 8)
+            line(16, 8, 21, 8)
+
+            var bottom = Path()
+            let bottomStart = CGPoint(x: 21, y: 12)
+            let bottomArcMid = CGPoint(x: 12, y: 21)
+            let bottomArcEnd = CGPoint(x: 5.26, y: 18.26)
+            bottom.move(to: bottomStart)
+            addSvgArc(
+                to: &bottom,
+                from: bottomStart,
+                to: bottomArcMid,
+                radius: 9,
+                largeArc: false,
+                sweep: true
+            )
+            addSvgArc(
+                to: &bottom,
+                from: bottomArcMid,
+                to: bottomArcEnd,
+                radius: 9.75,
+                largeArc: false,
+                sweep: true
+            )
+            bottom.addLine(to: CGPoint(x: 3, y: 16))
+            strokePath(bottom)
+            line(3, 21, 3, 16)
+            line(8, 16, 3, 16)
         case .search:
             circle(11, 11, 8)
             line(16.7, 16.7, 21, 21)
@@ -1171,12 +1519,59 @@ struct LucideIcon: View {
             ], closed: true)
             line(22, 2, 11, 13)
         case .settings:
+            var path = Path()
+            path.move(to: CGPoint(x: 12.22, y: 2))
+            path.addLine(to: CGPoint(x: 11.78, y: 2))
+            path.addQuadCurve(to: CGPoint(x: 9.78, y: 4), control: CGPoint(x: 9.78, y: 2))
+            path.addLine(to: CGPoint(x: 9.78, y: 4.18))
+            path.addQuadCurve(to: CGPoint(x: 8.78, y: 5.91), control: CGPoint(x: 9.78, y: 5.2))
+            path.addLine(to: CGPoint(x: 8.35, y: 6.16))
+            path.addQuadCurve(to: CGPoint(x: 6.35, y: 6.16), control: CGPoint(x: 7.35, y: 6.72))
+            path.addLine(to: CGPoint(x: 6.2, y: 6.08))
+            path.addQuadCurve(to: CGPoint(x: 3.47, y: 6.81), control: CGPoint(x: 4.6, y: 5.18))
+            path.addLine(to: CGPoint(x: 3.25, y: 7.19))
+            path.addQuadCurve(to: CGPoint(x: 3.98, y: 9.92), control: CGPoint(x: 2.36, y: 8.77))
+            path.addLine(to: CGPoint(x: 4.13, y: 10.02))
+            path.addQuadCurve(to: CGPoint(x: 5.13, y: 11.74), control: CGPoint(x: 5.13, y: 10.7))
+            path.addLine(to: CGPoint(x: 5.13, y: 12.25))
+            path.addQuadCurve(to: CGPoint(x: 4.13, y: 13.99), control: CGPoint(x: 5.13, y: 13.3))
+            path.addLine(to: CGPoint(x: 3.98, y: 14.08))
+            path.addQuadCurve(to: CGPoint(x: 3.25, y: 16.81), control: CGPoint(x: 2.36, y: 15.23))
+            path.addLine(to: CGPoint(x: 3.47, y: 17.19))
+            path.addQuadCurve(to: CGPoint(x: 6.2, y: 17.92), control: CGPoint(x: 4.6, y: 18.82))
+            path.addLine(to: CGPoint(x: 6.35, y: 17.84))
+            path.addQuadCurve(to: CGPoint(x: 8.35, y: 17.84), control: CGPoint(x: 7.35, y: 17.28))
+            path.addLine(to: CGPoint(x: 8.78, y: 18.09))
+            path.addQuadCurve(to: CGPoint(x: 9.78, y: 19.82), control: CGPoint(x: 9.78, y: 18.8))
+            path.addLine(to: CGPoint(x: 9.78, y: 20))
+            path.addQuadCurve(to: CGPoint(x: 11.78, y: 22), control: CGPoint(x: 9.78, y: 22))
+            path.addLine(to: CGPoint(x: 12.22, y: 22))
+            path.addQuadCurve(to: CGPoint(x: 14.22, y: 20), control: CGPoint(x: 14.22, y: 22))
+            path.addLine(to: CGPoint(x: 14.22, y: 19.82))
+            path.addQuadCurve(to: CGPoint(x: 15.22, y: 18.09), control: CGPoint(x: 14.22, y: 18.8))
+            path.addLine(to: CGPoint(x: 15.65, y: 17.84))
+            path.addQuadCurve(to: CGPoint(x: 17.65, y: 17.84), control: CGPoint(x: 16.65, y: 17.28))
+            path.addLine(to: CGPoint(x: 17.8, y: 17.92))
+            path.addQuadCurve(to: CGPoint(x: 20.53, y: 17.19), control: CGPoint(x: 19.4, y: 18.82))
+            path.addLine(to: CGPoint(x: 20.75, y: 16.8))
+            path.addQuadCurve(to: CGPoint(x: 20.02, y: 14.07), control: CGPoint(x: 21.64, y: 15.23))
+            path.addLine(to: CGPoint(x: 19.87, y: 13.99))
+            path.addQuadCurve(to: CGPoint(x: 18.87, y: 12.25), control: CGPoint(x: 18.87, y: 13.3))
+            path.addLine(to: CGPoint(x: 18.87, y: 11.75))
+            path.addQuadCurve(to: CGPoint(x: 19.87, y: 10.01), control: CGPoint(x: 18.87, y: 10.7))
+            path.addLine(to: CGPoint(x: 20.02, y: 9.92))
+            path.addQuadCurve(to: CGPoint(x: 20.75, y: 7.19), control: CGPoint(x: 21.64, y: 8.77))
+            path.addLine(to: CGPoint(x: 20.53, y: 6.81))
+            path.addQuadCurve(to: CGPoint(x: 17.8, y: 6.08), control: CGPoint(x: 19.4, y: 5.18))
+            path.addLine(to: CGPoint(x: 17.65, y: 6.16))
+            path.addQuadCurve(to: CGPoint(x: 15.65, y: 6.16), control: CGPoint(x: 16.65, y: 6.72))
+            path.addLine(to: CGPoint(x: 15.22, y: 5.91))
+            path.addQuadCurve(to: CGPoint(x: 14.22, y: 4.18), control: CGPoint(x: 14.22, y: 5.2))
+            path.addLine(to: CGPoint(x: 14.22, y: 4))
+            path.addQuadCurve(to: CGPoint(x: 12.22, y: 2), control: CGPoint(x: 14.22, y: 2))
+            path.closeSubpath()
+            strokePath(path)
             circle(12, 12, 3)
-            for angle in stride(from: 0.0, to: Double.pi * 2, by: Double.pi / 4) {
-                let inner = CGPoint(x: 12 + CGFloat(cos(angle)) * 6.6, y: 12 + CGFloat(sin(angle)) * 6.6)
-                let outer = CGPoint(x: 12 + CGFloat(cos(angle)) * 9.6, y: 12 + CGFloat(sin(angle)) * 9.6)
-                line(inner.x, inner.y, outer.x, outer.y)
-            }
         case .share:
             var box = Path()
             box.move(to: CGPoint(x: 4, y: 12))
@@ -1214,6 +1609,93 @@ struct LucideIcon: View {
             line(22, 5, 18, 5)
             line(4, 17, 4, 19)
             line(5, 18, 3, 18)
+        case .squarePen:
+            var square = Path()
+            let squareStart = CGPoint(x: 12, y: 3)
+            let squareTopLeftStart = CGPoint(x: 5, y: 3)
+            let squareLeftTopEnd = CGPoint(x: 3, y: 5)
+            let squareLeftBottomStart = CGPoint(x: 3, y: 19)
+            let squareBottomLeftEnd = CGPoint(x: 5, y: 21)
+            let squareBottomRightStart = CGPoint(x: 19, y: 21)
+            let squareRightBottomEnd = CGPoint(x: 21, y: 19)
+            square.move(to: squareStart)
+            square.addLine(to: squareTopLeftStart)
+            addSvgArc(
+                to: &square,
+                from: squareTopLeftStart,
+                to: squareLeftTopEnd,
+                radius: 2,
+                largeArc: false,
+                sweep: false
+            )
+            square.addLine(to: squareLeftBottomStart)
+            addSvgArc(
+                to: &square,
+                from: squareLeftBottomStart,
+                to: squareBottomLeftEnd,
+                radius: 2,
+                largeArc: false,
+                sweep: false
+            )
+            square.addLine(to: squareBottomRightStart)
+            addSvgArc(
+                to: &square,
+                from: squareBottomRightStart,
+                to: squareRightBottomEnd,
+                radius: 2,
+                largeArc: false,
+                sweep: false
+            )
+            square.addLine(to: CGPoint(x: 21, y: 12))
+            strokePath(square)
+
+            var pen = Path()
+            let penStart = CGPoint(x: 18.375, y: 2.625)
+            let penArcEnd = CGPoint(x: 21.375, y: 5.625)
+            let penTipStart = CGPoint(x: 12.362, y: 14.639)
+            let penTipCurveEnd = CGPoint(x: 11.509, y: 15.144)
+            let penPocketStart = CGPoint(x: 8.636, y: 15.984)
+            let penPocketEnd = CGPoint(x: 8.016, y: 15.364)
+            let penGuideStart = CGPoint(x: 8.856, y: 12.491)
+            let penGuideEnd = CGPoint(x: 9.362, y: 11.639)
+            pen.move(to: penStart)
+            addSvgArc(
+                to: &pen,
+                from: penStart,
+                to: penArcEnd,
+                radius: 1,
+                largeArc: false,
+                sweep: true
+            )
+            pen.addLine(to: penTipStart)
+            addSvgArc(
+                to: &pen,
+                from: penTipStart,
+                to: penTipCurveEnd,
+                radius: 2,
+                largeArc: false,
+                sweep: true
+            )
+            pen.addLine(to: penPocketStart)
+            addSvgArc(
+                to: &pen,
+                from: penPocketStart,
+                to: penPocketEnd,
+                radius: 0.5,
+                largeArc: false,
+                sweep: true
+            )
+            pen.addLine(to: penGuideStart)
+            addSvgArc(
+                to: &pen,
+                from: penGuideStart,
+                to: penGuideEnd,
+                radius: 2,
+                largeArc: false,
+                sweep: true
+            )
+            pen.closeSubpath()
+            strokePath(pen)
         case .star:
             polyline([
                 CGPoint(x: 12, y: 2.5),
@@ -1249,6 +1731,28 @@ struct LucideIcon: View {
             line(17.7, 17.7, 19.1, 19.1)
             line(19.1, 4.9, 17.7, 6.3)
             line(6.3, 17.7, 4.9, 19.1)
+        case .switchCamera:
+            var leftBody = Path()
+            leftBody.move(to: CGPoint(x: 11, y: 19))
+            leftBody.addLine(to: CGPoint(x: 4, y: 19))
+            leftBody.addQuadCurve(to: CGPoint(x: 2, y: 17), control: CGPoint(x: 2, y: 19))
+            leftBody.addLine(to: CGPoint(x: 2, y: 7))
+            leftBody.addQuadCurve(to: CGPoint(x: 4, y: 5), control: CGPoint(x: 2, y: 5))
+            leftBody.addLine(to: CGPoint(x: 9, y: 5))
+            strokePath(leftBody)
+
+            var rightBody = Path()
+            rightBody.move(to: CGPoint(x: 13, y: 5))
+            rightBody.addLine(to: CGPoint(x: 20, y: 5))
+            rightBody.addQuadCurve(to: CGPoint(x: 22, y: 7), control: CGPoint(x: 22, y: 5))
+            rightBody.addLine(to: CGPoint(x: 22, y: 17))
+            rightBody.addQuadCurve(to: CGPoint(x: 20, y: 19), control: CGPoint(x: 22, y: 19))
+            rightBody.addLine(to: CGPoint(x: 15, y: 19))
+            strokePath(rightBody)
+
+            circle(12, 12, 3)
+            polyline([CGPoint(x: 18, y: 22), CGPoint(x: 15, y: 19), CGPoint(x: 18, y: 16)])
+            polyline([CGPoint(x: 6, y: 2), CGPoint(x: 9, y: 5), CGPoint(x: 6, y: 8)])
         case .trash2:
             line(3, 6, 21, 6)
             var bin = Path()
@@ -1281,6 +1785,53 @@ struct LucideIcon: View {
             knife.addLine(to: CGPoint(x: 21, y: 15))
             strokePath(knife)
             line(21, 15, 21, 22)
+        case .utensilsCrossed:
+            var upperKnife = Path()
+            upperKnife.move(to: CGPoint(x: 16, y: 2))
+            upperKnife.addLine(to: CGPoint(x: 13.7, y: 4.3))
+            addSvgArc(
+                to: &upperKnife,
+                from: CGPoint(x: 13.7, y: 4.3),
+                to: CGPoint(x: 13.7, y: 8.5),
+                radius: 3,
+                largeArc: false,
+                sweep: false
+            )
+            upperKnife.addLine(to: CGPoint(x: 15.5, y: 10.3))
+            addSvgArc(
+                to: &upperKnife,
+                from: CGPoint(x: 15.5, y: 10.3),
+                to: CGPoint(x: 19.7, y: 10.3),
+                radius: 3,
+                largeArc: false,
+                sweep: false
+            )
+            upperKnife.addLine(to: CGPoint(x: 22, y: 8))
+            strokePath(upperKnife)
+
+            var fork = Path()
+            fork.move(to: CGPoint(x: 15, y: 15))
+            fork.addLine(to: CGPoint(x: 3.3, y: 3.3))
+            addSvgArc(
+                to: &fork,
+                from: CGPoint(x: 3.3, y: 3.3),
+                to: CGPoint(x: 3.3, y: 9.3),
+                radius: 4.2,
+                largeArc: false,
+                sweep: false
+            )
+            fork.addLine(to: CGPoint(x: 10.6, y: 16.6))
+            fork.addCurve(
+                to: CGPoint(x: 13.4, y: 16.6),
+                control1: CGPoint(x: 11.3, y: 17.3),
+                control2: CGPoint(x: 12.6, y: 17.3)
+            )
+            fork.addLine(to: CGPoint(x: 15, y: 15))
+            fork.closeSubpath()
+            strokePath(fork)
+            line(15, 15, 22, 22)
+            line(2.1, 21.8, 8.5, 15.5)
+            line(19, 5, 12, 12)
         case .user:
             var shoulders = Path()
             shoulders.move(to: CGPoint(x: 19, y: 21))
@@ -1315,6 +1866,41 @@ struct LucideIcon: View {
         case .x:
             line(18, 6, 6, 18)
             line(6, 6, 18, 18)
+        case .zap:
+            polyline(
+                [
+                    CGPoint(x: 4, y: 14),
+                    CGPoint(x: 13.12, y: 2.17),
+                    CGPoint(x: 12.06, y: 8.65),
+                    CGPoint(x: 13, y: 10),
+                    CGPoint(x: 20, y: 10),
+                    CGPoint(x: 10.88, y: 21.83),
+                    CGPoint(x: 11.94, y: 15.35),
+                    CGPoint(x: 11, y: 14),
+                    CGPoint(x: 4, y: 14)
+                ],
+                closed: true
+            )
+        case .zapOff:
+            polyline([
+                CGPoint(x: 10.513, y: 4.856),
+                CGPoint(x: 13.12, y: 2.17),
+                CGPoint(x: 12.603, y: 6.947)
+            ])
+            polyline([
+                CGPoint(x: 15.656, y: 10),
+                CGPoint(x: 20, y: 10),
+                CGPoint(x: 19.06, y: 13.403)
+            ])
+            polyline([
+                CGPoint(x: 16.273, y: 16.273),
+                CGPoint(x: 10.88, y: 21.83),
+                CGPoint(x: 11.94, y: 15.35),
+                CGPoint(x: 11, y: 14),
+                CGPoint(x: 4, y: 14),
+                CGPoint(x: 7.727, y: 7.727)
+            ])
+            line(2, 2, 22, 22)
         }
     }
 }

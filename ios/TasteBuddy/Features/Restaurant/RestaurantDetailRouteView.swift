@@ -6,17 +6,21 @@ struct RestaurantDetailRouteView: View {
     @State private var hydratedPlaceInfo: RestaurantPlaceInfo?
     @State private var showsBookmarkSheet = false
     @State private var showsInfoSuggestionSheet = false
+    @State private var showsMenuSuggestionSheet = false
     @State private var feedbackEntry: DiningEntry?
 
     let restaurantID: String
+    var restaurantOverride: RestaurantSummary? = nil
     var highlightedDishID: String?
     var navigate: (AppRoute) -> Void
     var onBack: () -> Void = {}
     var onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
+    var onOpenInfoSuggestionSheet: ((String, [RestaurantInfoRowModel]) -> Void)? = nil
+    var onOpenMenuSuggestionSheet: ((String) -> Void)? = nil
     var placeClient = RestaurantPlaceAPIClient()
 
     private var restaurant: RestaurantSummary {
-        RestaurantCatalog.restaurant(id: restaurantID)
+        restaurantOverride ?? RestaurantCatalog.restaurant(id: restaurantID)
     }
 
     private var detail: RestaurantDetailModel {
@@ -25,6 +29,22 @@ struct RestaurantDetailRouteView: View {
 
     private var resolvedPlaceInfo: RestaurantPlaceInfo {
         detail.fallbackPlaceInfo.merging(hydratedPlaceInfo)
+    }
+
+    private var isExternalPlaceDetail: Bool {
+        guard let restaurantOverride else {
+            return false
+        }
+
+        return !RestaurantCatalog.restaurants.contains { $0.id == restaurantOverride.id }
+    }
+
+    private var userTasteAccentAxis: TasteAxis {
+        appModel.profile?.strongestAxis ?? TasteAxis.sweet
+    }
+
+    private var userTasteAccentMainColor: Color {
+        userTasteAccentAxis.mainColor
     }
 
     private var highlightedDishContext: (dish: RestaurantSummary.Dish, index: Int)? {
@@ -55,15 +75,19 @@ struct RestaurantDetailRouteView: View {
                 RestaurantDetailContentView(
                     detail: detail,
                     placeInfo: resolvedPlaceInfo,
+                    isExternalPlaceDetail: isExternalPlaceDetail,
                     isBookmarked: appModel.isRestaurantSaved(id: detail.id),
+                    userTasteAccentAxis: userTasteAccentAxis,
+                    userTasteAccentMainColor: userTasteAccentMainColor,
                     onBookmarkTap: presentBookmarkSheet,
-                    onVisitedTap: detail.memorableDishes.isEmpty
+                    onVisitedTap: detail.memorableDishes.isEmpty && !isExternalPlaceDetail
                         ? nil
                         : { feedbackEntry = feedbackEntryForMenu(detail.memorableDishes.first?.title ?? detail.name) },
                     onSelectDish: { dish, _ in
                         navigate(.restaurantMenu(restaurantID: detail.id, menuID: dish.id))
                     },
-                    onInfoSuggestionTap: { showsInfoSuggestionSheet = true }
+                    onMenuAddTap: presentMenuSuggestionSheet,
+                    onInfoSuggestionTap: presentInfoSuggestionSheet
                 )
             }
         }
@@ -81,6 +105,9 @@ struct RestaurantDetailRouteView: View {
                 restaurantName: detail.name,
                 infoRows: RestaurantDetailModel.infoRows(from: resolvedPlaceInfo)
             )
+        }
+        .sheet(isPresented: $showsMenuSuggestionSheet) {
+            RestaurantMenuSuggestionNativeSheet(restaurantName: detail.name)
         }
         .fullScreenCover(item: $feedbackEntry) { entry in
             DiningFeedbackSheet(entry: entry) { savedEntry in
@@ -105,74 +132,155 @@ struct RestaurantDetailRouteView: View {
             showsBookmarkSheet = true
         }
     }
+
+    private func presentInfoSuggestionSheet() {
+        let infoRows = RestaurantDetailModel.infoRows(from: resolvedPlaceInfo)
+
+        if let onOpenInfoSuggestionSheet {
+            onOpenInfoSuggestionSheet(detail.name, infoRows)
+        } else {
+            showsInfoSuggestionSheet = true
+        }
+    }
+
+    private func presentMenuSuggestionSheet() {
+        if let onOpenMenuSuggestionSheet {
+            onOpenMenuSuggestionSheet(detail.name)
+        } else {
+            showsMenuSuggestionSheet = true
+        }
+    }
 }
 
 private struct RestaurantDetailContentView: View {
+    private static let bottomSafeAreaPadding: CGFloat = 34
+
     let detail: RestaurantDetailModel
     let placeInfo: RestaurantPlaceInfo
+    let isExternalPlaceDetail: Bool
     let isBookmarked: Bool
+    let userTasteAccentAxis: TasteAxis
+    let userTasteAccentMainColor: Color
     let onBookmarkTap: () -> Void
     let onVisitedTap: (() -> Void)?
     let onSelectDish: (RestaurantSummary.Dish, Int) -> Void
+    let onMenuAddTap: () -> Void
     let onInfoSuggestionTap: () -> Void
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: TBSpacing.section) {
-                RestaurantHeroNativeDetailCard(
-                    detail: detail,
-                    placeInfo: placeInfo,
-                    isBookmarked: isBookmarked,
-                    onBookmarkTap: onBookmarkTap,
-                    onVisitedTap: onVisitedTap
-                )
-
-                if !detail.memorableDishes.isEmpty {
-                    RestaurantMemorableDishNativeCard(
-                        dishes: detail.memorableDishes,
-                        onSelectDish: onSelectDish
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: TBSpacing.section) {
+                    RestaurantHeroNativeDetailCard(
+                        detail: detail,
+                        placeInfo: placeInfo,
+                        isExternalPlaceDetail: isExternalPlaceDetail,
+                        isBookmarked: isBookmarked,
+                        userTasteAccentMainColor: userTasteAccentMainColor,
+                        onBookmarkTap: onBookmarkTap,
+                        onVisitedTap: onVisitedTap
                     )
-                }
 
-                TBPageSection(title: "위치 및 정보", titleSize: .medium) {
-                    VStack(spacing: 8) {
-                        RestaurantInfoNativeCard(infoRows: RestaurantDetailModel.infoRows(from: placeInfo))
-
-                        Button(action: onInfoSuggestionTap) {
-                            HStack(spacing: 6) {
-                                LucideIcon(
-                                    .pencil,
-                                    size: TBIcon.Size.small,
-                                    strokeWidth: TBIcon.Stroke.regular
-                                )
-                                Text("수정 제안하기")
-                            }
-                            .font(TBFont.semibold(12))
-                            .foregroundStyle(detail.axis.mainColor)
-                            .padding(.vertical, 4)
+                    if isExternalPlaceDetail {
+                        TBPageSection(title: "메뉴", titleSize: .medium) {
+                            RestaurantMenuContributionNativeCard(
+                                accentAxis: userTasteAccentAxis,
+                                onAddMenuTap: onMenuAddTap
+                            )
                         }
-                        .buttonStyle(.plain)
+                    } else if RestaurantExternalPlaceSignalNativeCard.hasSignals(in: placeInfo) {
+                        TBPageSection(title: "방문 전 참고 정보", titleSize: .medium) {
+                            RestaurantExternalPlaceSignalNativeCard(placeInfo: placeInfo)
+                        }
+                    }
+
+                    if !detail.memorableDishes.isEmpty {
+                        RestaurantMemorableDishNativeCard(
+                            dishes: detail.memorableDishes,
+                            onSelectDish: onSelectDish
+                        )
+                    }
+
+                    TBPageSection(title: "위치 및 정보", titleSize: .medium) {
+                        VStack(spacing: 8) {
+                            RestaurantInfoNativeCard(
+                                infoRows: RestaurantDetailModel.infoRows(
+                                    from: placeInfo,
+                                    includingFallbacks: isExternalPlaceDetail
+                                )
+                            )
+
+                            Button(action: onInfoSuggestionTap) {
+                                HStack(spacing: 6) {
+                                    LucideIcon(
+                                        .pencil,
+                                        size: TBIcon.Size.small,
+                                        strokeWidth: TBIcon.Stroke.regular
+                                    )
+                                    Text("수정 제안하기")
+                                }
+                                .font(TBFont.semibold(12))
+                                .foregroundStyle(userTasteAccentMainColor)
+                                .padding(.vertical, 4)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
-
-                Spacer(minLength: 24)
+                .padding(.horizontal, TBSpacing.page)
+                .padding(.top, TBSpacing.pageTop)
+                .padding(.bottom, max(proxy.safeAreaInsets.bottom, Self.bottomSafeAreaPadding))
             }
-            .padding(TBSpacing.page)
+            .scrollIndicators(.hidden)
+            .contentMargins(.bottom, 0, for: .scrollContent)
         }
-        .scrollIndicators(.hidden)
         .tbPageBackground()
+        .ignoresSafeArea(.container, edges: .bottom)
     }
 }
 
 private struct RestaurantHeroNativeDetailCard: View {
     let detail: RestaurantDetailModel
     let placeInfo: RestaurantPlaceInfo
+    let isExternalPlaceDetail: Bool
     let isBookmarked: Bool
+    let userTasteAccentMainColor: Color
     let onBookmarkTap: () -> Void
     let onVisitedTap: (() -> Void)?
     @State private var isQuickHoursExpanded = false
 
     private var quickInfoItems: [RestaurantQuickInfoItem] {
+        if isExternalPlaceDetail {
+            let address = placeInfo.address.trimmingCharacters(in: .whitespacesAndNewlines)
+            let hours = placeInfo.hours?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let phone = placeInfo.phone?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let display = hours.nilIfBlank.flatMap { RestaurantHoursDisplay(value: $0) }
+
+            return [
+                RestaurantQuickInfoItem(
+                    id: .address,
+                    value: address.isEmpty ? "주소를 알려주세요" : address,
+                    icon: .mapPin,
+                    allValues: nil,
+                    isFallback: address.isEmpty
+                ),
+                RestaurantQuickInfoItem(
+                    id: .hours,
+                    value: (display?.today ?? hours).nilIfBlank ?? "영업시간을 알려주세요",
+                    icon: .clock,
+                    allValues: display?.all,
+                    isFallback: hours?.isEmpty ?? true
+                ),
+                RestaurantQuickInfoItem(
+                    id: .phone,
+                    value: phone.nilIfBlank ?? "전화번호를 알려주세요",
+                    icon: .phone,
+                    allValues: nil,
+                    isFallback: phone?.isEmpty ?? true
+                )
+            ]
+        }
+
         var items = [
             RestaurantQuickInfoItem(id: .address, value: placeInfo.address, icon: .mapPin, allValues: nil)
         ]
@@ -196,29 +304,108 @@ private struct RestaurantHeroNativeDetailCard: View {
         return items.filter { !$0.value.isEmpty }
     }
 
-    private var tasteTags: [RestaurantTagModel] {
-        detail.tags.filter { $0.tone == .taste && $0.tasteAxis != nil }
+    private var tasteBubbleSuggestions: [RestaurantTasteBubbleSuggestion] {
+        if isExternalPlaceDetail {
+            return RestaurantTasteBubbleSuggestion.externalSuggestions(
+                category: placeInfo.category ?? detail.category,
+                name: detail.name
+            )
+        }
+
+        return detail.tags
+            .filter { $0.tone == .taste && $0.tasteAxis != nil }
+            .prefix(3)
+            .compactMap { tag in
+                guard let axis = tag.tasteAxis else { return nil }
+                return RestaurantTasteBubbleSuggestion(label: tag.label, axis: axis)
+            }
     }
 
     private var contextTags: [RestaurantTagModel] {
         detail.tags.filter { $0.tone == .neutral || $0.tasteAxis == nil }
     }
 
+    private var contextChipTitles: [String] {
+        if isExternalPlaceDetail {
+            return RestaurantTasteBubbleSuggestion.externalReferenceChips(
+                category: placeInfo.category ?? detail.category,
+                fallbackCategory: detail.category
+            )
+        }
+
+        var seen = Set<String>()
+        return ([detail.category, detail.locationLabel] + contextTags.map(\.label))
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { title in
+                !title.isEmpty && seen.insert(title).inserted
+            }
+    }
+
+    private var subtitleText: String {
+        if isExternalPlaceDetail {
+            let category = placeInfo.category ?? detail.category
+            if let categorySubtitle = Self.compactCategorySubtitle(category) {
+                return categorySubtitle
+            }
+        }
+
+        return detail.chefDisplayLabel ?? "\(detail.chefName) 셰프"
+    }
+
+    private var heroImageURL: URL? {
+        detail.heroImageName == nil ? placeInfo.googlePhotoURL : nil
+    }
+
+    private var googlePhotoAttribution: String? {
+        guard heroImageURL != nil else {
+            return nil
+        }
+
+        return placeInfo.googlePhotoAttribution
+    }
+
+    private static func compactCategorySubtitle(_ category: String?) -> String? {
+        guard let category else {
+            return nil
+        }
+
+        let parts = category
+            .components(separatedBy: ">")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty && $0 != "음식점" }
+            .suffix(2)
+
+        guard !parts.isEmpty else {
+            return nil
+        }
+
+        return parts.joined(separator: " · ")
+    }
+
     var body: some View {
         SectionCard {
             VStack(alignment: .leading, spacing: 16) {
-                ImageBox(
-                    alt: "\(detail.name) 대표 이미지",
-                    kind: .restaurant,
-                    fallback: .restaurant,
-                    imageName: detail.heroImageName,
-                    size: nil,
-                    variant: .neutral
-                )
-                .frame(maxWidth: .infinity)
-                .frame(height: 172)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .clipped()
+                VStack(alignment: .leading, spacing: 6) {
+                    ImageBox(
+                        alt: "\(detail.name) 대표 이미지",
+                        kind: .restaurant,
+                        fallback: .restaurant,
+                        imageName: detail.heroImageName,
+                        imageURL: heroImageURL,
+                        size: nil,
+                        variant: .neutral
+                    )
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 172)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .clipped()
+
+                    if let googlePhotoAttribution {
+                        Text("사진 \(googlePhotoAttribution)")
+                            .font(TBFont.medium(10))
+                            .foregroundStyle(TBColor.textHint)
+                    }
+                }
 
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .center, spacing: 12) {
@@ -236,7 +423,7 @@ private struct RestaurantHeroNativeDetailCard: View {
                                 .font(TBFont.bold(18))
                                 .foregroundStyle(TBColor.textPrimary)
                                 .lineLimit(1)
-                            Text(detail.chefDisplayLabel ?? "\(detail.chefName) 셰프")
+                            Text(subtitleText)
                                 .font(TBFont.medium(13))
                                 .foregroundStyle(TBColor.textSubtle)
                                 .lineLimit(1)
@@ -276,11 +463,6 @@ private struct RestaurantHeroNativeDetailCard: View {
                         }
                     }
 
-                    Text("• \(detail.summaryLine)")
-                        .font(TBFont.regular(12))
-                        .foregroundStyle(TBColor.textMuted)
-                        .lineSpacing(4)
-
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(quickInfoItems) { item in
                             RestaurantQuickInfoRow(
@@ -291,25 +473,41 @@ private struct RestaurantHeroNativeDetailCard: View {
                                     : nil,
                                 onToggleHours: item.id == .hours && item.allValues != nil
                                     ? { isQuickHoursExpanded.toggle() }
-                                    : nil
+                                    : nil,
+                                accentColor: userTasteAccentMainColor
                             )
                         }
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        TBFlowLayout(spacing: 8) {
-                            ForEach(tasteTags) { tag in
-                                if let axis = tag.tasteAxis {
-                                    TasteChip(axis: axis, value: tag.label)
+                    VStack(alignment: .leading, spacing: DishFeedbackCardMetrics.chipStackGap) {
+                        ScrollView(.horizontal) {
+                            HStack(spacing: DishFeedbackCardMetrics.chipStackGap) {
+                                ForEach(tasteBubbleSuggestions) { suggestion in
+                                    TasteChip(
+                                        title: suggestion.label,
+                                        tone: .taste,
+                                        colorAxis: suggestion.axis,
+                                        size: .sm
+                                    )
+                                    .fixedSize()
                                 }
                             }
+                            .padding(.horizontal, 1)
+                            .padding(.vertical, 1)
                         }
+                        .scrollIndicators(.hidden)
 
-                        TBFlowLayout(spacing: 8) {
-                            ForEach(contextTags) { tag in
-                                NeutralChip(title: tag.label, size: .extraSmall)
+                        ScrollView(.horizontal) {
+                            HStack(spacing: DishFeedbackCardMetrics.chipStackGap) {
+                                ForEach(contextChipTitles, id: \.self) { title in
+                                    NeutralChip(title: title)
+                                        .fixedSize()
+                                }
                             }
+                            .padding(.horizontal, 1)
+                            .padding(.vertical, 1)
                         }
+                        .scrollIndicators(.hidden)
                     }
                 }
                 .padding(.bottom, 16)
@@ -329,6 +527,245 @@ private struct RestaurantHeroNativeDetailCard: View {
     }
 }
 
+private struct RestaurantExternalPlaceSignalNativeCard: View {
+    let placeInfo: RestaurantPlaceInfo
+
+    private struct SignalItem: Identifiable {
+        let id: String
+        let label: String
+        let value: String
+    }
+
+    private var signals: [SignalItem] {
+        Self.signals(in: placeInfo)
+    }
+
+    static func hasSignals(in placeInfo: RestaurantPlaceInfo) -> Bool {
+        !signals(in: placeInfo).isEmpty
+    }
+
+    var body: some View {
+        SectionCard {
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: 12),
+                    GridItem(.flexible(), spacing: 12)
+                ],
+                alignment: .leading,
+                spacing: 12
+            ) {
+                ForEach(signals) { signal in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(signal.label)
+                            .font(TBFont.semibold(11))
+                            .foregroundStyle(TBColor.textTertiary)
+                        Text(signal.value)
+                            .font(TBFont.semibold(13))
+                            .foregroundStyle(TBColor.textPrimary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+    }
+
+    private static func signals(in placeInfo: RestaurantPlaceInfo) -> [SignalItem] {
+        var items: [SignalItem] = []
+
+        if let category = compactCategory(placeInfo.category) {
+            items.append(SignalItem(id: "category", label: "Kakao 분류", value: category))
+        }
+
+        if let rating = placeInfo.googleRating {
+            items.append(
+                SignalItem(
+                    id: "rating",
+                    label: "Google 평점",
+                    value: String(format: "%.1f / 5", rating)
+                )
+            )
+        }
+
+        if let reviewCount = placeInfo.googleUserRatingCount, reviewCount > 0 {
+            items.append(
+                SignalItem(
+                    id: "reviews",
+                    label: "Google 리뷰",
+                    value: "\(reviewCount.formatted())개"
+                )
+            )
+        }
+
+        if let priceLabel = priceLevelLabel(placeInfo.googlePriceLevel) {
+            items.append(SignalItem(id: "price", label: "Google 가격대", value: priceLabel))
+        }
+
+        return items
+    }
+
+    private static func compactCategory(_ category: String?) -> String? {
+        guard let category else {
+            return nil
+        }
+
+        let parts = category
+            .components(separatedBy: ">")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .suffix(2)
+
+        guard !parts.isEmpty else {
+            return nil
+        }
+
+        return parts.joined(separator: " · ")
+    }
+
+    private static func priceLevelLabel(_ priceLevel: String?) -> String? {
+        guard let priceLevel else {
+            return nil
+        }
+
+        switch priceLevel {
+        case "PRICE_LEVEL_FREE":
+            return "무료"
+        case "PRICE_LEVEL_INEXPENSIVE":
+            return "가벼운 가격대"
+        case "PRICE_LEVEL_MODERATE":
+            return "중간 가격대"
+        case "PRICE_LEVEL_EXPENSIVE":
+            return "높은 가격대"
+        case "PRICE_LEVEL_VERY_EXPENSIVE":
+            return "프리미엄 가격대"
+        default:
+            return priceLevel.replacingOccurrences(of: "PRICE_LEVEL_", with: "")
+        }
+    }
+}
+
+private struct RestaurantMenuContributionNativeCard: View {
+    let accentAxis: TasteAxis
+    let onAddMenuTap: () -> Void
+
+    var body: some View {
+        SectionCard {
+            Button(action: onAddMenuTap) {
+                HStack(alignment: .center, spacing: 12) {
+                    LucideIcon(
+                        .utensilsCrossed,
+                        size: TBIcon.Size.large,
+                        strokeWidth: TBIcon.Stroke.regular
+                    )
+                    .frame(width: 40, height: 40)
+                    .foregroundStyle(TBColor.iconMuted)
+                    .background(TBColor.mutedSurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("메뉴 추가")
+                            .font(TBFont.bold(14))
+                            .foregroundStyle(TBColor.textPrimary)
+
+                        HStack(spacing: 0) {
+                            Text("메뉴를 알고 계시면 알려주세요. ")
+                                .foregroundStyle(TBColor.textMuted)
+
+                            Text("최대 2점")
+                                .font(TBFont.semibold(12))
+                                .foregroundStyle(accentAxis.tintSubTextColor)
+                        }
+                            .font(TBFont.regular(12))
+                            .lineSpacing(3)
+                            .multilineTextAlignment(.leading)
+                    }
+
+                    Spacer(minLength: 4)
+
+                    LucideIcon(
+                        .plus,
+                        size: TBIcon.Size.medium,
+                        strokeWidth: TBIcon.Stroke.regular
+                    )
+                    .foregroundStyle(TBColor.iconMuted)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("메뉴 추가. 메뉴를 알고 계시면 알려주세요. 최대 2점")
+        }
+    }
+}
+
+private struct RestaurantTasteBubbleSuggestion: Identifiable {
+    let id: String
+    let label: String
+    let axis: TasteAxis
+
+    init(label: String, axis: TasteAxis) {
+        self.id = "\(axis.rawValue)-\(label)"
+        self.label = label
+        self.axis = axis
+    }
+
+    static func externalSuggestions(category: String, name: String) -> [RestaurantTasteBubbleSuggestion] {
+        let source = "\(category) \(name)"
+
+        if source.contains("국수")
+            || source.contains("면")
+            || source.lowercased().contains("noodle")
+            || source.contains("라멘")
+            || source.contains("냉면") {
+            return [
+                RestaurantTasteBubbleSuggestion(label: "맑은 감칠맛", axis: .umami),
+                RestaurantTasteBubbleSuggestion(label: "편안한 염도", axis: .salty),
+                RestaurantTasteBubbleSuggestion(label: "가벼운 피니시", axis: .sour)
+            ]
+        }
+
+        if source.contains("고기") || source.contains("구이") || source.contains("스테이크") {
+            return [
+                RestaurantTasteBubbleSuggestion(label: "부드러운 지방감", axis: .fat),
+                RestaurantTasteBubbleSuggestion(label: "진한 감칠맛", axis: .umami),
+                RestaurantTasteBubbleSuggestion(label: "또렷한 간", axis: .salty)
+            ]
+        }
+
+        if source.contains("중식") || source.contains("중국") {
+            return [
+                RestaurantTasteBubbleSuggestion(label: "진한 감칠맛", axis: .umami),
+                RestaurantTasteBubbleSuggestion(label: "기름진 질감", axis: .fat),
+                RestaurantTasteBubbleSuggestion(label: "향신 여운", axis: .bitter)
+            ]
+        }
+
+        if source.contains("일식") || source.contains("스시") || source.contains("오마카세") {
+            return [
+                RestaurantTasteBubbleSuggestion(label: "맑은 감칠맛", axis: .umami),
+                RestaurantTasteBubbleSuggestion(label: "절제된 염도", axis: .salty),
+                RestaurantTasteBubbleSuggestion(label: "깨끗한 마무리", axis: .sour)
+            ]
+        }
+
+        return [
+            RestaurantTasteBubbleSuggestion(label: "깊은 감칠맛", axis: .umami),
+            RestaurantTasteBubbleSuggestion(label: "절제된 염도", axis: .salty),
+            RestaurantTasteBubbleSuggestion(label: "편안한 여운", axis: .fat)
+        ]
+    }
+
+    static func externalReferenceChips(category: String, fallbackCategory: String) -> [String] {
+        var seen = Set<String>()
+        let parts = (category.isEmpty ? fallbackCategory : category)
+            .components(separatedBy: ">")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty && $0 != "음식점" }
+
+        return parts.filter { seen.insert($0).inserted }.prefix(5).map(\.self)
+    }
+}
+
 private enum RestaurantQuickInfoID: String {
     case address
     case hours
@@ -340,6 +777,7 @@ private struct RestaurantQuickInfoItem: Identifiable {
     let value: String
     let icon: LucideIconName
     let allValues: [String]?
+    var isFallback = false
 }
 
 private struct RestaurantQuickInfoRow: View {
@@ -347,6 +785,7 @@ private struct RestaurantQuickInfoRow: View {
     let isExpanded: Bool
     let onCopy: (() -> Void)?
     let onToggleHours: (() -> Void)?
+    let accentColor: Color
 
     var body: some View {
         HStack(alignment: isExpanded ? .top : .center, spacing: 6) {
@@ -370,16 +809,14 @@ private struct RestaurantQuickInfoRow: View {
                 }
             }
             .font(TBFont.medium(11))
-            .foregroundStyle(TBColor.textMuted)
+            .foregroundStyle(item.isFallback ? TBColor.textDisabled : TBColor.textMuted)
             .lineLimit(isExpanded ? nil : 2)
             .fixedSize(horizontal: false, vertical: true)
 
-            Spacer(minLength: 4)
-
-            if let onCopy {
+            if let onCopy, !item.isFallback {
                 Button("복사", action: onCopy)
                     .font(TBFont.semibold(11))
-                    .foregroundStyle(TBColor.textSecondary)
+                    .foregroundStyle(accentColor)
                     .buttonStyle(.plain)
             }
 
@@ -430,6 +867,17 @@ private struct RestaurantHoursDisplay {
                 || normalized.hasPrefix("\(label)요일")
                 || normalized.hasPrefix("\(label):")
         }
+    }
+}
+
+private extension Optional where Wrapped == String {
+    var nilIfBlank: String? {
+        guard let value = self?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !value.isEmpty else {
+            return nil
+        }
+
+        return value
     }
 }
 
@@ -605,7 +1053,7 @@ private struct RestaurantInfoNativeRow: View {
                     rowContent
                 }
                 .buttonStyle(.plain)
-            } else if let url = row.url {
+            } else if let url = row.url, !row.isPlaceholder {
                 Link(destination: url) {
                     rowContent
                 }
@@ -619,7 +1067,7 @@ private struct RestaurantInfoNativeRow: View {
     private var rowContent: some View {
         HStack(alignment: .center, spacing: 12) {
             LucideIcon(
-                systemName: row.id.symbol,
+                rowIcon,
                 size: TBIcon.Size.medium,
                 strokeWidth: TBIcon.Stroke.regular
             )
@@ -628,7 +1076,7 @@ private struct RestaurantInfoNativeRow: View {
 
             Text(displayValue)
                 .font(TBFont.regular(13))
-                .foregroundStyle(TBColor.textPrimary)
+                .foregroundStyle(row.isPlaceholder ? TBColor.textDisabled : TBColor.textPrimary)
                 .lineSpacing(3)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)
@@ -653,6 +1101,10 @@ private struct RestaurantInfoNativeRow: View {
         }
 
         return host.replacingOccurrences(of: #"^www\."#, with: "", options: .regularExpression)
+    }
+
+    private var rowIcon: LucideIconName {
+        row.id == .address ? .mapPin : LucideIconName(systemName: row.id.symbol)
     }
 }
 
@@ -796,7 +1248,7 @@ private struct RestaurantMenuDetailNativeView: View {
 
                 Spacer(minLength: 24)
             }
-            .padding(TBSpacing.page)
+            .tbPageContentPadding()
         }
         .scrollIndicators(.hidden)
         .tbPageBackground()
@@ -823,7 +1275,144 @@ private struct RestaurantMenuTextSection: View {
     }
 }
 
-private struct RestaurantInfoSuggestionNativeSheet: View {
+struct RestaurantMenuSuggestionNativeSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var menuName = ""
+    @State private var menuNote = ""
+    @State private var isSubmitted = false
+
+    let restaurantName: String
+    var onDismissRequest: (() -> Void)? = nil
+    var usesNativeSheetChrome = true
+
+    private var canSubmit: Bool {
+        !menuName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        BottomSheetShell(
+            headerStart: AnyView(
+                BottomSheetCloseButton {
+                    closeSheet()
+                }
+            ),
+            headerCenter: AnyView(
+                Text(isSubmitted ? "메뉴 제안 완료" : "메뉴 추가")
+                    .font(TBFont.bold(15))
+                    .foregroundStyle(TBColor.textPrimary)
+            ),
+            footer: AnyView(footer),
+            usesNativeSheetChrome: usesNativeSheetChrome
+        ) {
+            BottomSheetScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if isSubmitted {
+                        submittedContent
+                    } else {
+                        formContent
+                    }
+                }
+                .padding(TBSpacing.page)
+            }
+        }
+        .presentationDragIndicator(.hidden)
+        .presentationBackground(Color.clear)
+        .presentationCornerRadius(0)
+        .prefersUISheetGrabberVisible(false)
+    }
+
+    private var formContent: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("\(restaurantName)의 메뉴 정보를 알고 계시면 알려주세요.")
+                .font(TBFont.regular(13))
+                .foregroundStyle(TBColor.textMuted)
+                .lineSpacing(4)
+
+            SectionCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("메뉴명")
+                        .font(TBFont.semibold(11))
+                        .foregroundStyle(TBColor.textTertiary)
+
+                    TextField("예: 평양냉면, 들기름 막국수", text: $menuName)
+                        .font(TBFont.regular(14))
+                        .foregroundStyle(TBColor.textPrimary)
+                        .textInputAutocapitalization(.never)
+
+                    Rectangle()
+                        .fill(TBColor.borderSubtle)
+                        .frame(height: 1)
+
+                    Text("알고 있는 설명")
+                        .font(TBFont.semibold(11))
+                        .foregroundStyle(TBColor.textTertiary)
+
+                    TextEditor(text: $menuNote)
+                        .font(TBFont.regular(14))
+                        .foregroundStyle(TBColor.textPrimary)
+                        .frame(minHeight: 88)
+                        .scrollContentBackground(.hidden)
+                        .background(TBColor.mutedSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+            }
+
+            HStack(spacing: 8) {
+                LucideIcon(
+                    .circlePlus,
+                    size: TBIcon.Size.small,
+                    strokeWidth: TBIcon.Stroke.regular
+                )
+                .foregroundStyle(TasteAxis.umami.mainColor)
+
+                Text("확인 가능한 메뉴 정보를 제공하면 최대 2점을 받을 수 있어요.")
+                    .font(TBFont.medium(12))
+                    .foregroundStyle(TBColor.textMuted)
+            }
+        }
+    }
+
+    private var submittedContent: some View {
+        SectionCard {
+            VStack(alignment: .leading, spacing: 10) {
+                NeutralChip(title: "최대 2점", size: .extraSmall)
+
+                Text("메뉴 제안이 접수됐어요.")
+                    .font(TBFont.bold(15))
+                    .foregroundStyle(TBColor.textPrimary)
+
+                Text("제공한 메뉴 정보는 확인 후 Taste Buddy 상세 화면과 메뉴별 미각 해석을 준비하는 데 반영됩니다.")
+                    .font(TBFont.regular(13))
+                    .foregroundStyle(TBColor.textMuted)
+                    .lineSpacing(4)
+            }
+        }
+    }
+
+    private var footer: some View {
+        Group {
+            if isSubmitted {
+                PrimaryButton(title: "완료") {
+                    closeSheet()
+                }
+            } else {
+                PrimaryButton(title: "메뉴 제안하기", isEnabled: canSubmit) {
+                    isSubmitted = true
+                }
+            }
+        }
+    }
+
+    private func closeSheet() {
+        if let onDismissRequest {
+            onDismissRequest()
+        } else {
+            dismiss()
+        }
+    }
+}
+
+struct RestaurantInfoSuggestionNativeSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var step: Step = .select
     @State private var selectedRowIDs: Set<RestaurantInfoRowID> = []
@@ -831,6 +1420,8 @@ private struct RestaurantInfoSuggestionNativeSheet: View {
 
     let restaurantName: String
     let infoRows: [RestaurantInfoRowModel]
+    var onDismissRequest: (() -> Void)? = nil
+    var usesNativeSheetChrome = true
 
     private enum Step {
         case select
@@ -858,9 +1449,9 @@ private struct RestaurantInfoSuggestionNativeSheet: View {
                     .foregroundStyle(TBColor.textPrimary)
             ),
             footer: AnyView(footer),
-            usesNativeSheetChrome: true
+            usesNativeSheetChrome: usesNativeSheetChrome
         ) {
-            ScrollView {
+            BottomSheetScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     switch step {
                     case .select:
@@ -888,7 +1479,7 @@ private struct RestaurantInfoSuggestionNativeSheet: View {
                 }
             } else {
                 BottomSheetCloseButton {
-                    dismiss()
+                    closeSheet()
                 }
             }
         }
@@ -899,7 +1490,7 @@ private struct RestaurantInfoSuggestionNativeSheet: View {
             switch step {
             case .done:
                 PrimaryButton(title: "완료") {
-                    dismiss()
+                    closeSheet()
                 }
             case .edit:
                 HStack(spacing: 8) {
@@ -1070,6 +1661,14 @@ private struct RestaurantInfoSuggestionNativeSheet: View {
         } else {
             selectedRowIDs.insert(row.id)
             suggestedValues[row.id] = suggestedValues[row.id] ?? row.value
+        }
+    }
+
+    private func closeSheet() {
+        if let onDismissRequest {
+            onDismissRequest()
+        } else {
+            dismiss()
         }
     }
 }

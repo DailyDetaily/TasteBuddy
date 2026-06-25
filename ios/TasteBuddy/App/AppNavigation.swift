@@ -53,6 +53,7 @@ enum ProfileConnectionKind: String, CaseIterable, Hashable, Identifiable {
 
 enum AppRoute: Hashable {
     case restaurant(id: String)
+    case restaurantSummary(RestaurantSummary)
     case restaurantMenu(restaurantID: String, menuID: String)
     case dishFeedback(id: String)
     case comments(id: String)
@@ -67,6 +68,8 @@ enum AppRoute: Hashable {
         switch self {
         case .restaurant(let id):
             RestaurantCatalog.restaurant(id: id).name
+        case .restaurantSummary(let restaurant):
+            restaurant.name
         case .restaurantMenu(let restaurantID, let menuID):
             RestaurantCatalog.restaurant(id: restaurantID)
                 .memorableDishes
@@ -97,6 +100,7 @@ enum AppRoute: Hashable {
 
 enum AppSheet: Identifiable {
     case profileSummary
+    case profileEdit
     case globalSearch
     case notifications
     case quickRefinement
@@ -108,6 +112,8 @@ enum AppSheet: Identifiable {
         switch self {
         case .profileSummary:
             "profile-summary"
+        case .profileEdit:
+            "profile-edit"
         case .globalSearch:
             "global-search"
         case .notifications:

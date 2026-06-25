@@ -140,22 +140,27 @@ enum TasteRadarContract {
     }
 }
 
-struct TasteRadarView: View {
-    let entries: [RadarTasteEntry]
+/// SwiftUI-native counterpart of the React `HexRadarChart.tsx` component.
+struct HexRadarChart: View {
+    private let entries: [RadarTasteEntry]
     var shouldAnimate = true
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animationStart = Date.distantPast
     @State private var isAnimating = false
 
-    init(entries: [RadarTasteEntry], shouldAnimate: Bool = true) {
-        self.entries = TasteRadarContract.normalizedEntries(entries)
+    init(myTasteData: [RadarTasteEntry], shouldAnimate: Bool = true) {
+        self.entries = TasteRadarContract.normalizedEntries(myTasteData)
         self.shouldAnimate = shouldAnimate
+    }
+
+    init(entries: [RadarTasteEntry], shouldAnimate: Bool = true) {
+        self.init(myTasteData: entries, shouldAnimate: shouldAnimate)
     }
 
     init(profile: TasteProfile, shouldAnimate: Bool = true) {
         self.init(
-            entries: TasteAxis.allCases.map {
+            myTasteData: TasteAxis.allCases.map {
                 RadarTasteEntry(axis: $0, score: profile.score(for: $0))
             },
             shouldAnimate: shouldAnimate
@@ -222,7 +227,7 @@ struct TasteRadarView: View {
         profileProgress: CGFloat
     ) {
         let geometry = RadarGeometry(size: size)
-        let gridColor = Color(hex: 0xF2F2F2)
+        let gridColor = Color(hex: 0xF3F3F3)
         let outerPoints = entries.indices.map {
             geometry.point(index: $0, value: 1)
         }
@@ -380,6 +385,22 @@ struct TasteRadarView: View {
         case 5: .trailing
         default: .center
         }
+    }
+}
+
+struct TasteRadarView: View {
+    private let chart: HexRadarChart
+
+    init(entries: [RadarTasteEntry], shouldAnimate: Bool = true) {
+        chart = HexRadarChart(entries: entries, shouldAnimate: shouldAnimate)
+    }
+
+    init(profile: TasteProfile, shouldAnimate: Bool = true) {
+        chart = HexRadarChart(profile: profile, shouldAnimate: shouldAnimate)
+    }
+
+    var body: some View {
+        chart
     }
 }
 
@@ -600,7 +621,7 @@ private struct RadarGeometry {
                             nextSegment.0.x - arcCenter.x
                         )
                     ),
-                    clockwise: isClockwise
+                    clockwise: !isClockwise
                 )
                 gradientEnd = nextSegment.0
             }
@@ -724,7 +745,14 @@ private struct RadarGeometry {
 
 private extension TasteAxis {
     var radarSpokeColor: Color {
-        mainColor.opacity(0.4)
+        switch self {
+        case .sweet: Color(hex: 0xFFE1B3)
+        case .sour: Color(hex: 0xFEEABD)
+        case .bitter: Color(hex: 0xE1F0B7)
+        case .salty: Color(hex: 0xD7E2FF)
+        case .umami: Color(hex: 0xE8D7E9)
+        case .fat: Color(hex: 0xE0DBD8)
+        }
     }
 
     var radarOutlineColor: Color {
@@ -747,7 +775,7 @@ private extension Collection {
 
 #if canImport(PreviewsMacros)
     #Preview {
-        TasteRadarView(profile: .sample, shouldAnimate: false)
+        HexRadarChart(profile: .sample, shouldAnimate: false)
             .padding(20)
             .frame(width: 360)
             .background(Color.white)

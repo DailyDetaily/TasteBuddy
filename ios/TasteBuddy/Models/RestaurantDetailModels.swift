@@ -51,19 +51,28 @@ struct RestaurantInfoRowModel: Identifiable, Equatable {
     let value: String
     let source: RestaurantInfoSource
     let url: URL?
+    var isPlaceholder = false
 
     var label: String { id.label }
 }
 
 struct RestaurantPlaceInfo: Equatable {
     var address: String
-    var googleMapsURL: URL?
-    var lat: Double?
-    var lng: Double?
-    var mapURL: URL?
-    var phone: String?
-    var website: String?
-    var hours: String?
+    var category: String? = nil
+    var googlePhotoAttribution: String? = nil
+    var googlePhotoURL: URL? = nil
+    var googlePlaceID: String? = nil
+    var googleMapsURL: URL? = nil
+    var googlePriceLevel: String? = nil
+    var googleRating: Double? = nil
+    var googleUserRatingCount: Int? = nil
+    var kakaoPlaceID: String? = nil
+    var lat: Double? = nil
+    var lng: Double? = nil
+    var mapURL: URL? = nil
+    var phone: String? = nil
+    var website: String? = nil
+    var hours: String? = nil
     var sourceByRow: [RestaurantInfoRowID: RestaurantInfoSource]
 
     func merging(_ enrichment: RestaurantPlaceInfo?) -> RestaurantPlaceInfo {
@@ -71,7 +80,15 @@ struct RestaurantPlaceInfo: Equatable {
 
         var merged = self
         merged.address = enrichment.address.isEmpty ? address : enrichment.address
+        merged.category = enrichment.category ?? category
+        merged.googlePhotoAttribution = enrichment.googlePhotoAttribution ?? googlePhotoAttribution
+        merged.googlePhotoURL = enrichment.googlePhotoURL ?? googlePhotoURL
+        merged.googlePlaceID = enrichment.googlePlaceID ?? googlePlaceID
         merged.googleMapsURL = enrichment.googleMapsURL ?? googleMapsURL
+        merged.googlePriceLevel = enrichment.googlePriceLevel ?? googlePriceLevel
+        merged.googleRating = enrichment.googleRating ?? googleRating
+        merged.googleUserRatingCount = enrichment.googleUserRatingCount ?? googleUserRatingCount
+        merged.kakaoPlaceID = enrichment.kakaoPlaceID ?? kakaoPlaceID
         merged.lat = enrichment.lat ?? lat
         merged.lng = enrichment.lng ?? lng
         merged.mapURL = enrichment.mapURL ?? mapURL
@@ -157,16 +174,17 @@ struct RestaurantDetailModel: Identifiable, Equatable {
 extension RestaurantDetailModel {
     init(summary restaurant: RestaurantSummary) {
         let placeInfo = RestaurantDetailModel.fallbackPlaceInfo(for: restaurant)
+        let contextProfile = RestaurantDetailModel.contextProfile(for: restaurant)
         self.init(
             id: restaurant.id,
             name: restaurant.name,
-            category: restaurant.category,
+            category: contextProfile.category,
             chefName: restaurant.chefName.replacingOccurrences(of: #"\s*셰프$"#, with: "", options: .regularExpression),
             chefDisplayLabel: nil,
             chefImageName: restaurant.imageName,
             heroImageName: restaurant.imageName,
             axis: restaurant.axis,
-            locationLabel: restaurant.locationLabel,
+            locationLabel: contextProfile.locationLabel,
             summaryLine: restaurant.summary,
             fitSummary: RestaurantDetailModel.fitSummary(for: restaurant),
             mainRisk: RestaurantDetailModel.mainRisk(for: restaurant),
@@ -177,7 +195,7 @@ extension RestaurantDetailModel {
                 palateFriendsAverageScore: restaurant.id == "mingles" ? 78 : 82,
                 overallScore: restaurant.id == "mingles" ? 4.6 : 4.5
             ),
-            tags: RestaurantDetailModel.tags(for: restaurant),
+            tags: contextProfile.tags,
             memorableDishes: restaurant.memorableDishes,
             fallbackPlaceInfo: placeInfo
         )
@@ -287,9 +305,42 @@ extension RestaurantDetailModel {
         return nil
     }
 
-    static func infoRows(from info: RestaurantPlaceInfo) -> [RestaurantInfoRowModel] {
-        [
-            row(id: .address, value: info.address, source: info.sourceByRow[.address] ?? .manual, url: info.mapURL ?? mapSearchURL(for: info.address)),
+    static func infoRows(
+        from info: RestaurantPlaceInfo,
+        includingFallbacks: Bool = false
+    ) -> [RestaurantInfoRowModel] {
+        if includingFallbacks {
+            return [
+                rowOrFallback(
+                    id: .address,
+                    value: info.address,
+                    fallback: "주소를 알려주세요",
+                    source: info.sourceByRow[.address] ?? .manual,
+                    url: nil
+                ),
+                rowOrFallback(
+                    id: .hours,
+                    value: info.hours,
+                    fallback: "영업시간을 알려주세요",
+                    source: info.sourceByRow[.hours] ?? .manual
+                ),
+                rowOrFallback(
+                    id: .phone,
+                    value: info.phone,
+                    fallback: "전화번호를 알려주세요",
+                    source: info.sourceByRow[.phone] ?? .manual,
+                    url: phoneURL(for: info.phone)
+                )
+            ]
+        }
+
+        return [
+            row(
+                id: .address,
+                value: info.address,
+                source: info.sourceByRow[.address] ?? .manual,
+                url: info.sourceByRow[.address] == .kakao ? nil : mapSearchURL(for: info.address)
+            ),
             row(id: .hours, value: info.hours, source: info.sourceByRow[.hours] ?? .manual),
             row(id: .website, value: info.website, source: info.sourceByRow[.website] ?? .manual, url: websiteURL(for: info.website)),
             row(id: .phone, value: info.phone, source: info.sourceByRow[.phone] ?? .manual, url: phoneURL(for: info.phone))
@@ -305,6 +356,27 @@ extension RestaurantDetailModel {
         guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines),
               !value.isEmpty else {
             return nil
+        }
+
+        return RestaurantInfoRowModel(id: id, value: value, source: source, url: url)
+    }
+
+    private static func rowOrFallback(
+        id: RestaurantInfoRowID,
+        value: String?,
+        fallback: String,
+        source: RestaurantInfoSource,
+        url: URL? = nil
+    ) -> RestaurantInfoRowModel {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !value.isEmpty else {
+            return RestaurantInfoRowModel(
+                id: id,
+                value: fallback,
+                source: source,
+                url: nil,
+                isPlaceholder: true
+            )
         }
 
         return RestaurantInfoRowModel(id: id, value: value, source: source, url: url)
@@ -334,24 +406,82 @@ extension RestaurantDetailModel {
         return normalized.isEmpty ? nil : URL(string: "tel:\(normalized)")
     }
 
-    private static func tags(for restaurant: RestaurantSummary) -> [RestaurantTagModel] {
-        let contextTags = [restaurant.category, restaurant.locationLabel]
-        let allTags = restaurant.tags + contextTags
+    private struct RestaurantContextProfile {
+        let category: String
+        let locationLabel: String
+        let tags: [RestaurantTagModel]
+    }
+
+    private static func contextProfile(for restaurant: RestaurantSummary) -> RestaurantContextProfile {
+        switch restaurant.id {
+        case "mingles":
+            return RestaurantContextProfile(
+                category: "모던 한식 코스",
+                locationLabel: "서울 청담",
+                tags: dedupedTags([
+                    primaryTasteTag(for: restaurant.axis),
+                    tag(id: "jang-depth", label: "장 발효의 깊이", tone: .taste, tasteAxis: .umami),
+                    tag(id: "hanwoo-flow", label: "한우 메인"),
+                    tag(id: "modern-hansik", label: "현대 한식"),
+                    tag(id: "pairing-ready", label: "페어링 추천")
+                ])
+            )
+        default:
+            return RestaurantContextProfile(
+                category: restaurant.category,
+                locationLabel: restaurant.locationLabel,
+                tags: dedupedTags(restaurant.tags.map { label in
+                    let axis = tasteAxis(from: label)
+                    return tag(
+                        id: label
+                            .lowercased()
+                            .replacingOccurrences(of: "\\s+", with: "-", options: .regularExpression),
+                        label: label,
+                        tone: axis == nil ? .neutral : .taste,
+                        tasteAxis: axis
+                    )
+                })
+            )
+        }
+    }
+
+    private static func primaryTasteTag(for axis: TasteAxis) -> RestaurantTagModel {
+        switch axis {
+        case .sweet:
+            return tag(id: "primary-sweet", label: "은은한 단맛", tone: .taste, tasteAxis: .sweet)
+        case .sour:
+            return tag(id: "primary-sour", label: "절제된 산미", tone: .taste, tasteAxis: .sour)
+        case .bitter:
+            return tag(id: "primary-bitter", label: "은근한 쓴맛", tone: .taste, tasteAxis: .bitter)
+        case .salty:
+            return tag(id: "primary-salty", label: "절제된 염도", tone: .taste, tasteAxis: .salty)
+        case .umami:
+            return tag(id: "primary-umami", label: "깊은 감칠맛", tone: .taste, tasteAxis: .umami)
+        case .fat:
+            return tag(id: "primary-fat", label: "부드러운 지방감", tone: .taste, tasteAxis: .fat)
+        }
+    }
+
+    private static func tag(
+        id: String,
+        label: String,
+        tone: RestaurantTagModel.Tone = .neutral,
+        tasteAxis: TasteAxis? = nil
+    ) -> RestaurantTagModel {
+        RestaurantTagModel(
+            id: id,
+            label: label,
+            tasteAxis: tasteAxis,
+            tone: tone
+        )
+    }
+
+    private static func dedupedTags(_ tags: [RestaurantTagModel]) -> [RestaurantTagModel] {
         var seen = Set<String>()
 
-        return allTags.compactMap { label in
-            guard !seen.contains(label) else { return nil }
-            seen.insert(label)
-            let axis = tasteAxis(from: label)
-
-            return RestaurantTagModel(
-                id: label
-                    .lowercased()
-                    .replacingOccurrences(of: "\\s+", with: "-", options: .regularExpression),
-                label: label,
-                tasteAxis: axis,
-                tone: axis == nil ? .neutral : .taste
-            )
+        return tags.filter { tag in
+            let key = tag.label.trimmingCharacters(in: .whitespacesAndNewlines)
+            return !key.isEmpty && seen.insert(key).inserted
         }
     }
 

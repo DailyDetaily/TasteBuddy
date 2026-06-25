@@ -79,6 +79,30 @@ const SEARCH_EMPTY_STATE_CLASS_NAME =
 const SEARCH_SUGGESTION_SECTION_CLASS_NAME = 'tb-card-stack';
 const SEARCH_SUGGESTION_ITEMS_CLASS_NAME = 'flex flex-wrap gap-2';
 const SEARCH_PENDING_ADDRESS_LABEL = '주소 확인 중';
+const HANGUL_BASE_CODE = '가'.charCodeAt(0);
+const HANGUL_LAST_CODE = '힣'.charCodeAt(0);
+const HANGUL_INITIAL_UNIT = 588;
+const HANGUL_INITIALS = [
+  'ㄱ',
+  'ㄲ',
+  'ㄴ',
+  'ㄷ',
+  'ㄸ',
+  'ㄹ',
+  'ㅁ',
+  'ㅂ',
+  'ㅃ',
+  'ㅅ',
+  'ㅆ',
+  'ㅇ',
+  'ㅈ',
+  'ㅉ',
+  'ㅊ',
+  'ㅋ',
+  'ㅌ',
+  'ㅍ',
+  'ㅎ',
+] as const;
 
 type SearchResultType = 'restaurant' | 'chef' | 'menu';
 type SearchResultSource = 'taste-buddy' | 'kakao';
@@ -91,6 +115,7 @@ export type HomeSearchResult = {
   matchMeta: string;
   place?: {
     address: string | null;
+    category?: string | null;
     lat: number | null;
     lng: number | null;
     phone: string | null;
@@ -140,6 +165,66 @@ function normalizeSearchValue(value: string) {
     .trim();
 }
 
+function compactSearchValue(value: string) {
+  return normalizeSearchValue(value).replace(/\s+/g, '');
+}
+
+function getHangulInitialSearchValue(value: string) {
+  return Array.from(normalizeSearchValue(value))
+    .map((character) => {
+      if (character === ' ') {
+        return ' ';
+      }
+
+      const characterCode = character.charCodeAt(0);
+
+      if (characterCode >= HANGUL_BASE_CODE && characterCode <= HANGUL_LAST_CODE) {
+        return HANGUL_INITIALS[
+          Math.floor((characterCode - HANGUL_BASE_CODE) / HANGUL_INITIAL_UNIT)
+        ];
+      }
+
+      return character;
+    })
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function uniqueSearchValues(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
+function buildSearchVariants(value: string | null | undefined) {
+  if (!value) {
+    return [];
+  }
+
+  const normalizedValue = normalizeSearchValue(value);
+  const compactValue = compactSearchValue(value);
+  const initialValue = getHangulInitialSearchValue(value);
+  const compactInitialValue = initialValue.replace(/\s+/g, '');
+
+  return uniqueSearchValues([
+    normalizedValue,
+    compactValue,
+    initialValue,
+    compactInitialValue,
+  ]);
+}
+
+function buildQueryVariants(value: string) {
+  const normalizedValue = normalizeSearchValue(value);
+  const compactValue = compactSearchValue(value);
+  const hasInitialConsonantInput = /[ㄱ-ㅎ]/.test(normalizedValue);
+
+  return uniqueSearchValues([
+    normalizedValue,
+    compactValue,
+    ...(hasInitialConsonantInput ? buildSearchVariants(value) : []),
+  ]);
+}
+
 function splitSearchTerms(value: string) {
   return normalizeSearchValue(value)
     .split(' ')
@@ -148,7 +233,7 @@ function splitSearchTerms(value: string) {
 }
 
 function hasSearchableCompleteCharacter(value: string) {
-  return /[가-힣a-z0-9]/i.test(value);
+  return /[가-힣ㄱ-ㅎa-z0-9]/i.test(value);
 }
 
 function isSearchableProfileIdentityQuery(value: string) {
@@ -509,6 +594,71 @@ function buildMenuResults(
   return [...dishResults, ...reservationResults];
 }
 
+function getWeightedSearchFields(item: HomeSearchResult) {
+  const restaurantAliases =
+    item.type === 'restaurant'
+      ? getRestaurantSearchAliases(item.label)
+      : getRestaurantSearchAliases(item.restaurant);
+
+  return [
+    { value: item.label, weight: 150 },
+    ...restaurantAliases.map((alias) => ({ value: alias, weight: 132 })),
+    { value: item.restaurant, weight: item.type === 'restaurant' ? 126 : 104 },
+    { value: item.chef, weight: item.type === 'chef' ? 122 : 78 },
+    { value: item.subLabel, weight: 62 },
+    ...item.signatureItems.map((signatureItem) => ({ value: signatureItem, weight: 58 })),
+    { value: item.matchMeta, weight: 44 },
+    { value: item.searchText, weight: 36 },
+  ];
+}
+
+function getFieldMatchScore(
+  fieldValue: string,
+  queryVariants: string[],
+  queryTerms: string[],
+  weight: number,
+) {
+  const fieldVariants = buildSearchVariants(fieldValue);
+  if (fieldVariants.length === 0) {
+    return -1;
+  }
+
+  const compactTerms = queryTerms.map((term) => term.replace(/\s+/g, '')).filter(Boolean);
+
+  return fieldVariants.reduce((bestScore, fieldVariant) => {
+    const directScore = queryVariants.reduce((score, queryVariant) => {
+      if (!queryVariant) {
+        return score;
+      }
+
+      if (fieldVariant === queryVariant) {
+        return Math.max(score, weight + 70);
+      }
+
+      if (fieldVariant.startsWith(queryVariant)) {
+        return Math.max(score, weight + 45);
+      }
+
+      if (fieldVariant.includes(queryVariant)) {
+        return Math.max(score, weight + 24);
+      }
+
+      return score;
+    }, -1);
+
+    const termScore =
+      queryTerms.length > 1 &&
+      queryTerms.every((term, index) => (
+        fieldVariant.includes(term) ||
+        Boolean(compactTerms[index] && fieldVariant.includes(compactTerms[index]))
+      ))
+        ? weight + 16 + queryTerms.length * 6
+        : -1;
+
+    return Math.max(bestScore, directScore, termScore);
+  }, -1);
+}
+
 function calculateMatchScore(query: string, item: HomeSearchResult) {
   const normalizedQuery = normalizeSearchValue(query);
   if (!normalizedQuery || !hasSearchableCompleteCharacter(normalizedQuery)) {
@@ -516,37 +666,12 @@ function calculateMatchScore(query: string, item: HomeSearchResult) {
   }
 
   const terms = splitSearchTerms(query);
-  const searchableNames = [
-    item.label,
-    ...(item.type === 'restaurant' ? getRestaurantSearchAliases(item.label) : []),
-  ].map(normalizeSearchValue).filter(Boolean);
+  const queryVariants = buildQueryVariants(query);
+  const fieldScore = getWeightedSearchFields(item).reduce((bestScore, field) => (
+    Math.max(bestScore, getFieldMatchScore(field.value, queryVariants, terms, field.weight))
+  ), -1);
 
-  const hasNameMatch = searchableNames.some((name) => name.includes(normalizedQuery));
-  const hasTermMatch = terms.length > 0 && searchableNames.some((name) =>
-    terms.every((term) => name.includes(term)),
-  );
-
-  if (!hasNameMatch && !hasTermMatch) {
-    return -1;
-  }
-
-  let score = 0;
-  const normalizedLabel = normalizeSearchValue(item.label);
-
-  if (normalizedLabel === normalizedQuery) {
-    score += 150;
-  } else if (normalizedLabel.startsWith(normalizedQuery)) {
-    score += 120;
-  } else if (normalizedLabel.includes(normalizedQuery)) {
-    score += 100;
-  }
-
-  score += searchableNames
-    .filter((name) => name !== normalizedLabel && name.includes(normalizedQuery))
-    .length * 80;
-  score += terms.filter((term) => searchableNames.some((name) => name.includes(term))).length * 20;
-
-  return score;
+  return fieldScore;
 }
 
 function filterResults(results: HomeSearchResult[], query: string) {
@@ -606,6 +731,7 @@ function buildKakaoSearchResult(place: Awaited<ReturnType<typeof searchKakaoRest
     source: 'kakao',
     place: {
       address,
+      category: place.category,
       lat: place.lat,
       lng: place.lng,
       phone: place.phone,
@@ -1043,15 +1169,21 @@ export default function HomeUnifiedSearch({
   const shouldSearchKakao =
     Boolean(query.trim()) &&
     hasSearchableCompleteCharacter(normalizeSearchValue(query)) &&
-    (filteredRestaurants.length === 0 || hasRestaurantResultsNeedingKakaoAddress) &&
-    filteredChefs.length === 0 &&
-    filteredMenus.length === 0 &&
+    (
+      (filteredRestaurants.length === 0 && filteredChefs.length === 0 && filteredMenus.length === 0) ||
+      hasRestaurantResultsNeedingKakaoAddress
+    ) &&
     friendResults.length === 0 &&
     !isFriendSearching;
   const enhancedFilteredRestaurants = filteredRestaurants.map((result) =>
-    resolvePendingKakaoAddressResult(result, effectiveKakaoResults, Boolean(query.trim())),
+    resolvePendingKakaoAddressResult(
+      result,
+      effectiveKakaoResults,
+      shouldSearchKakao && (isKakaoSearching || effectiveKakaoResults.length > 0),
+    ),
   );
-  const visibleKakaoResults = shouldSearchKakao && filteredRestaurants.length === 0 ? effectiveKakaoResults : [];
+  const visibleKakaoResults =
+    shouldSearchKakao && filteredRestaurants.length === 0 ? effectiveKakaoResults : [];
   const searchGroups: SearchGroups = {
     restaurants:
       enhancedFilteredRestaurants.length > 0 ? enhancedFilteredRestaurants : visibleKakaoResults,

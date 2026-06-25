@@ -74,7 +74,7 @@ private struct TasteSurveyFlowView: View {
                         leadingSymbol: leadingSymbol,
                         leadingAccessibilityLabel: leadingAccessibilityLabel,
                         showsLeading: true,
-                        showsDivider: !isIntroPhase,
+                        showsDivider: phase != .context && !isIntroPhase,
                         backgroundColor: screenBackground,
                         leadingAction: goBack
                     )
@@ -135,6 +135,7 @@ private struct TasteSurveyFlowView: View {
             )
         }
         .background(screenBackground.ignoresSafeArea())
+        .edgeSwipeBack(action: goBack)
     }
 
     private var headerTitle: String? {
@@ -479,7 +480,7 @@ private struct SurveyIntroStepCard: View {
     let isComplete: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: rowAlignment, spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(
@@ -532,6 +533,10 @@ private struct SurveyIntroStepCard: View {
             }
         }
         .opacity(isComplete ? 0.8 : 1)
+    }
+
+    private var rowAlignment: VerticalAlignment {
+        isActive ? .top : .center
     }
 }
 
@@ -616,7 +621,7 @@ private struct SurveyContextView: View {
                 }
             }
             .padding(.horizontal, TBSpacing.page)
-            .padding(.top, 16)
+            .padding(.top, TBSpacing.pageTop)
             .padding(.bottom, 188)
         }
         .scrollIndicators(.hidden)
@@ -752,7 +757,7 @@ private struct SurveyQuestionView: View {
                 )
             }
             .padding(.horizontal, TBSpacing.page)
-            .padding(.top, 16)
+            .padding(.top, TBSpacing.pageTop)
             .padding(.bottom, 188)
         }
         .scrollIndicators(.hidden)
@@ -826,7 +831,7 @@ private struct SurveyReviewView: View {
                 }
             }
             .padding(.horizontal, TBSpacing.page)
-            .padding(.top, 16)
+            .padding(.top, TBSpacing.pageTop)
             .padding(.bottom, 156)
         }
         .scrollIndicators(.hidden)
@@ -949,7 +954,7 @@ private struct SurveyResultView: View {
                 }
             }
             .padding(.horizontal, TBSpacing.page)
-            .padding(.top, 16)
+            .padding(.top, TBSpacing.pageTop)
             .padding(.bottom, 156)
         }
         .scrollIndicators(.hidden)
@@ -991,7 +996,7 @@ private struct CalibrationErrorView: View {
             )
             PrimaryButton(title: "다시 시도", action: retry)
         }
-        .padding(TBSpacing.page)
+        .tbPageContentPadding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(TBColor.focus)
     }

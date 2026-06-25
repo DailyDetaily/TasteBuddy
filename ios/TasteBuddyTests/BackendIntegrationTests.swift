@@ -7,13 +7,15 @@ final class BackendIntegrationTests: XCTestCase {
             "TBBackendEnvironment": "staging",
             "TBSupabaseURL": "https://taste-buddy-staging.supabase.co",
             "TBSupabasePublishableKey": "sb_publishable_taste_buddy_staging",
-            "TBPublicMediaBaseURL": "https://media-staging.tastebuddy.example"
+            "TBPublicMediaBaseURL": "https://media-staging.tastebuddy.example",
+            "TBAuthRedirectURL": "tastebuddy://auth/callback"
         ])
 
         XCTAssertEqual(configuration.environment, .staging)
         XCTAssertEqual(configuration.supabaseURL.absoluteString, "https://taste-buddy-staging.supabase.co")
         XCTAssertEqual(configuration.supabasePublishableKey, "sb_publishable_taste_buddy_staging")
         XCTAssertEqual(configuration.publicMediaBaseURL?.host, "media-staging.tastebuddy.example")
+        XCTAssertEqual(configuration.authRedirectURL.absoluteString, "tastebuddy://auth/callback")
     }
 
     func testBackendConfigurationRejectsPlaceholderAndSecretValues() {
@@ -74,12 +76,15 @@ final class BackendIntegrationTests: XCTestCase {
             intent: .startWithEmail,
             redirectTo: nil
         )
+        let googleResult = await repository.continueWithGoogle(redirectTo: nil)
         let deleteResult = await repository.deleteCurrentAccount()
 
         XCTAssertTrue(sendResult.ok)
         XCTAssertEqual(sendResult.message, "현재 프로필을 연결할 인증 코드를 보냈습니다.")
         XCTAssertEqual(verifyResult.user, user)
         XCTAssertEqual(verifyResult.message, "이메일 인증이 완료되었습니다.")
+        XCTAssertEqual(googleResult.user, user)
+        XCTAssertEqual(googleResult.message, "Google 로그인이 완료되었습니다.")
         XCTAssertEqual(deleteResult.message, "계정이 삭제되었습니다.")
     }
 
@@ -137,6 +142,35 @@ final class BackendIntegrationTests: XCTestCase {
             completion,
             .verifiedEmailLogin(.success("이메일 인증이 완료되었습니다."))
         )
+    }
+
+    @MainActor
+    func testAuthEntryModelCompletesGoogleLoginFromEmailStep() async {
+        let user = BackendAuthUserSummary(
+            id: "google-user",
+            email: "taste@gmail.com",
+            isAnonymous: false
+        )
+        let repository = RecordingBackendAuthRepository(
+            googleResult: .success("Google 로그인이 완료되었습니다.", user: user)
+        )
+        let model = AuthEntryModel(
+            intent: .startWithEmail,
+            repository: repository,
+            isConfigured: true,
+            isAnonymousUser: true
+        )
+
+        let completion = await model.continueWithGoogle()
+
+        XCTAssertEqual(repository.googleRedirects.count, 1)
+        XCTAssertNil(repository.googleRedirects.first!)
+        XCTAssertEqual(
+            completion,
+            .verifiedEmailLogin(.success("Google 로그인이 완료되었습니다.", user: user))
+        )
+        XCTAssertEqual(model.step, .email)
+        XCTAssertNil(model.message)
     }
 
     @MainActor
@@ -242,8 +276,10 @@ private final class RecordingBackendAuthRepository: BackendAuthRepository {
 
     private var sendResults: [BackendAuthResult]
     private var verifyResults: [BackendAuthResult]
+    private var googleResult: BackendAuthResult
     private(set) var sendCalls: [SendCall] = []
     private(set) var verifyCalls: [VerifyCall] = []
+    private(set) var googleRedirects: [URL?] = []
 
     init(
         sendResults: [BackendAuthResult] = [
@@ -251,14 +287,21 @@ private final class RecordingBackendAuthRepository: BackendAuthRepository {
         ],
         verifyResults: [BackendAuthResult] = [
             .success("이메일 인증이 완료되었습니다.")
-        ]
+        ],
+        googleResult: BackendAuthResult = .success("Google 로그인이 완료되었습니다.")
     ) {
         self.sendResults = sendResults
         self.verifyResults = verifyResults
+        self.googleResult = googleResult
     }
 
     func ensureAnonymousSession() async -> BackendAuthResult {
         .success("게스트 세션이 준비되었습니다.")
+    }
+
+    func continueWithGoogle(redirectTo: URL?) async -> BackendAuthResult {
+        googleRedirects.append(redirectTo)
+        return googleResult
     }
 
     func sendEmailOTP(

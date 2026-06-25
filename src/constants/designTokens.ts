@@ -214,6 +214,7 @@ export const COLOR_TOKENS = {
     successSoft: '#E6F4EC',
     warning: '#A8661A',
     warningSoft: '#FFF1DE',
+    destructive: '#D4183D',
   },
   shadow: SHADOW_TOKENS,
 } as const;

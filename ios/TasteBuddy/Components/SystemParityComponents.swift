@@ -56,12 +56,20 @@ enum ChipSize: CaseIterable {
     case small
     case medium
 
-    var font: Font {
+    var fontSize: CGFloat {
         switch self {
-        case .extraSmall: TBFont.semibold(10)
-        case .small: TBFont.semibold(11)
-        case .medium: TBFont.semibold(12)
+        case .extraSmall: 10
+        case .small: 11
+        case .medium: 12
         }
+    }
+
+    var font: Font {
+        TBFont.semibold(fontSize)
+    }
+
+    var lineHeight: CGFloat {
+        fontSize * TBTypography.LineHeight.normal
     }
 
     var iconSize: CGFloat {
@@ -191,6 +199,12 @@ struct Chip: View {
     let title: String
     var leadingSymbol: String? = nil
     var trailingSymbol: String? = nil
+    var trailingAction: (() -> Void)? = nil
+    var trailingAccessibilityLabel: String? = nil
+    var backgroundColorOverride: Color? = nil
+    var foregroundColorOverride: Color? = nil
+    var trailingForegroundColorOverride: Color? = nil
+    var horizontalPaddingOverride: CGFloat? = nil
     var size: ChipSize = .small
     var tone: ChipTone = .neutral
     var variant: ChipVariant = .soft
@@ -206,29 +220,50 @@ struct Chip: View {
                     size: size.iconSize,
                     strokeWidth: TBIcon.Stroke.regular
                 )
+                .frame(width: size.iconSize, height: size.iconSize)
             }
 
             Text(title)
+                .lineLimit(1)
+                .frame(height: size.lineHeight)
+                .fixedSize(horizontal: true, vertical: false)
 
             if let trailingSymbol {
-                LucideIcon(
-                    systemName: trailingSymbol,
-                    size: size.iconSize,
-                    strokeWidth: TBIcon.Stroke.regular
-                )
+                trailingIcon(symbol: trailingSymbol)
             }
         }
         .font(size.font)
-        .foregroundStyle(style.foreground)
-        .padding(.horizontal, size.horizontalPadding)
+        .foregroundStyle(foregroundColorOverride ?? style.foreground)
+        .padding(.horizontal, horizontalPaddingOverride ?? size.horizontalPadding)
         .padding(.vertical, size.verticalPadding)
-        .background(style.background)
+        .background(backgroundColorOverride ?? style.background)
         .clipShape(Capsule())
         .overlay {
             Capsule().stroke(style.border, lineWidth: 1)
         }
         .opacity(isEnabled ? 1 : 0.6)
         .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private func trailingIcon(symbol: String) -> some View {
+        let icon = LucideIcon(
+            systemName: symbol,
+            size: size.iconSize,
+            strokeWidth: TBIcon.Stroke.regular
+        )
+        .foregroundStyle(trailingForegroundColorOverride ?? foregroundColorOverride ?? ChipStyle.resolve(tone: tone, variant: variant).foreground)
+        .frame(width: size.iconSize, height: size.iconSize)
+
+        if let trailingAction {
+            Button(action: trailingAction) {
+                icon
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(trailingAccessibilityLabel ?? "\(title) 액션")
+        } else {
+            icon
+        }
     }
 }
 
@@ -253,35 +288,78 @@ enum TasteChipTone {
     case neutral
 }
 
+enum TasteChipSize {
+    case xs
+    case sm
+    case md
+
+    var fontSize: CGFloat {
+        switch self {
+        case .xs: 10
+        case .sm: 11
+        case .md: 12
+        }
+    }
+
+    var gap: CGFloat {
+        switch self {
+        case .xs: 4
+        case .sm: 6
+        case .md: 8
+        }
+    }
+
+    var horizontalPadding: CGFloat {
+        switch self {
+        case .xs: 8
+        case .sm: 10
+        case .md: 12
+        }
+    }
+
+    var verticalPadding: CGFloat {
+        switch self {
+        case .xs: 4
+        case .sm: 6
+        case .md: 8
+        }
+    }
+}
+
 struct TasteChip: View {
     let axis: TasteAxis?
     let title: String
     var value: String? = nil
     var tone: TasteChipTone = .taste
     var colorAxis: TasteAxis? = nil
+    var size: TasteChipSize = .xs
 
     init(
         axis: TasteAxis,
         value: String? = nil,
-        tone: TasteChipTone = .taste
+        tone: TasteChipTone = .taste,
+        size: TasteChipSize = .xs
     ) {
         self.axis = axis
         self.title = axis.label
         self.value = value
         self.tone = tone
+        self.size = size
     }
 
     init(
         title: String,
         value: String? = nil,
         tone: TasteChipTone = .neutral,
-        colorAxis: TasteAxis? = nil
+        colorAxis: TasteAxis? = nil,
+        size: TasteChipSize = .xs
     ) {
         self.axis = nil
         self.title = title
         self.value = value
         self.tone = tone
         self.colorAxis = colorAxis
+        self.size = size
     }
 
     var body: some View {
@@ -291,28 +369,28 @@ struct TasteChip: View {
         let labelColor = isNeutral || value == nil ? signalColor : TBColor.textPrimary
         let background = isNeutral
             ? TBColor.mutedSurface
-            : (resolvedAxis?.mainColor.opacity(0.05) ?? TBColor.mutedSurface)
+            : (resolvedAxis?.tintSoftColor ?? TBColor.mutedSurface)
         let border = isNeutral
             ? TBColor.borderStrong
-            : (resolvedAxis?.mainColor.opacity(0.18) ?? TBColor.borderStrong)
+            : (resolvedAxis?.tintSoftBorderColor ?? TBColor.borderStrong)
 
-        HStack(spacing: 4) {
+        HStack(spacing: size.gap) {
             Text(title)
                 .foregroundStyle(labelColor)
 
             if let value {
                 Text(value)
-                    .font(TBFont.semibold(10))
+                    .font(TBFont.semibold(size.fontSize))
                     .foregroundStyle(signalColor)
             }
         }
-        .font(TBFont.medium(10))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .font(TBFont.medium(size.fontSize))
+        .padding(.horizontal, size.horizontalPadding)
+        .padding(.vertical, size.verticalPadding)
         .background(background)
         .clipShape(Capsule())
         .overlay {
-            Capsule().stroke(border, lineWidth: 1)
+            Capsule().strokeBorder(border, lineWidth: 1)
         }
         .accessibilityElement(children: .combine)
     }
@@ -520,7 +598,7 @@ struct PalateSignatureHeroCard: View {
                             .foregroundStyle(TBColor.textHint)
                         HStack(spacing: 6) {
                             ForEach(signature.accentAxes) { axis in
-                                TasteChip(axis: axis)
+                                TasteChip(axis: axis, size: .sm)
                             }
                         }
                     }
@@ -567,6 +645,8 @@ enum TasteMeasurementMiniCtaActionPlacement: CaseIterable {
 }
 
 struct TasteMeasurementMiniCta: View {
+    @Environment(\.tbCardBordersVisible) private var cardBordersVisible
+
     let actionLabel: String
     var actionFullWidth = false
     var actionPlacement: TasteMeasurementMiniCtaActionPlacement = .bottom
@@ -600,8 +680,10 @@ struct TasteMeasurementMiniCta: View {
         .background(background)
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
-                .stroke(borderColor, lineWidth: 1)
+            if cardBordersVisible {
+                RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
+                    .stroke(borderColor, lineWidth: 1)
+            }
         }
     }
 
@@ -873,7 +955,7 @@ struct TasteLineChart: View {
         if points.count > 1 {
             context.stroke(
                 path,
-                with: .color(axis.mainColor.opacity(0.18)),
+                with: .color(axis.tintSoftBorderColor),
                 style: StrokeStyle(lineWidth: 12, lineCap: .round)
             )
             context.stroke(
@@ -1020,9 +1102,9 @@ struct TasteInsightSummaryCard: View {
             let value = keyword
                 .dropFirst(axis.label.count)
                 .trimmingCharacters(in: .whitespaces)
-            TasteChip(axis: axis, value: value.isEmpty ? nil : value)
+            TasteChip(axis: axis, value: value.isEmpty ? nil : value, size: .sm)
         } else {
-            TasteChip(title: keyword)
+            TasteChip(title: keyword, size: .sm)
         }
     }
 }
@@ -1112,6 +1194,8 @@ struct InterpretationCard: View {
 }
 
 struct TasteTintCard: View {
+    @Environment(\.tbCardBordersVisible) private var cardBordersVisible
+
     let axis: TasteAxis
     let title: String
     var description: String? = nil
@@ -1178,8 +1262,10 @@ struct TasteTintCard: View {
         .background(axis.tintColor)
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
-                .stroke(axis.mainColor.opacity(0.18), lineWidth: 1)
+            if cardBordersVisible {
+                RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
+                    .stroke(axis.tintSoftBorderColor, lineWidth: 1)
+            }
         }
     }
 }
@@ -1218,14 +1304,17 @@ struct SummaryMetricCard: View {
     }
 
     private var content: some View {
-        SectionCard {
+        SectionCard(showsBorder: false) {
             HStack(spacing: 8) {
                 LucideIcon(
                     systemName: metric.symbol,
-                    size: TBIcon.Size.small,
+                    size: TBIcon.Size.medium,
                     strokeWidth: TBIcon.Stroke.regular
                 )
-                    .frame(width: 40, height: 40)
+                    .frame(
+                        width: 40,
+                        height: 40
+                    )
                     .foregroundStyle(metric.color)
                     .background(metric.color.opacity(0.12))
                     .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
@@ -1354,8 +1443,8 @@ struct ProfileConfidenceCard: View {
                             .font(TBFont.regular(11))
                             .foregroundStyle(TBColor.textSubtle)
                         HStack(spacing: 8) {
-                            TasteChip(axis: strongestAxis, value: "우선 반영")
-                            TasteChip(axis: weakestAxis, value: "더 확인 중")
+                            TasteChip(axis: strongestAxis, value: "우선 반영", size: .sm)
+                            TasteChip(axis: weakestAxis, value: "더 확인 중", size: .sm)
                         }
                         .padding(.top, 4)
                     }

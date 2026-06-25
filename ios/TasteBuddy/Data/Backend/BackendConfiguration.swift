@@ -22,6 +22,7 @@ struct BackendConfiguration: Equatable {
     let supabaseURL: URL
     let supabasePublishableKey: String
     let publicMediaBaseURL: URL?
+    let authRedirectURL: URL
 
     static func load(bundle: Bundle = .main) throws -> BackendConfiguration {
         try from(infoDictionary: bundle.infoDictionary ?? [:])
@@ -34,6 +35,7 @@ struct BackendConfiguration: Equatable {
         let supabaseURLString = normalizedString(infoDictionary["TBSupabaseURL"])
         let supabasePublishableKey = normalizedString(infoDictionary["TBSupabasePublishableKey"])
         let publicMediaURLString = normalizedString(infoDictionary["TBPublicMediaBaseURL"])
+        let authRedirectURLString = normalizedString(infoDictionary["TBAuthRedirectURL"])
 
         guard let supabaseURLString, !isPlaceholder(supabaseURLString) else {
             throw BackendConfigurationError.missingValue("TBSupabaseURL")
@@ -62,11 +64,22 @@ struct BackendConfiguration: Equatable {
             publicMediaBaseURL = nil
         }
 
+        let resolvedAuthRedirectURLString =
+            authRedirectURLString.flatMap { isPlaceholder($0) ? nil : $0 }
+            ?? "tastebuddy://auth/callback"
+        let authRedirectURL = URL(string: resolvedAuthRedirectURLString)
+        guard let authRedirectURL,
+              let authRedirectScheme = authRedirectURL.scheme,
+              !authRedirectScheme.isEmpty else {
+            throw BackendConfigurationError.invalidURL("TBAuthRedirectURL")
+        }
+
         return BackendConfiguration(
             environment: environment,
             supabaseURL: supabaseURL,
             supabasePublishableKey: supabasePublishableKey,
-            publicMediaBaseURL: publicMediaBaseURL
+            publicMediaBaseURL: publicMediaBaseURL,
+            authRedirectURL: authRedirectURL
         )
     }
 

@@ -141,7 +141,8 @@
       "success": "#2F8F5B",
       "successSoft": "#E6F4EC",
       "warning": "#A8661A",
-      "warningSoft": "#FFF1DE"
+      "warningSoft": "#FFF1DE",
+      "destructive": "#D4183D"
     }
   },
   "taste_palette": {
@@ -308,7 +309,7 @@
     "Do not exceed 18px font size in product UI.",
     "Do not use taste colors for long body copy.",
     "Do not strongly present all six tastes inside one dense block.",
-    "Start default UI states from neutral, success, or warning before taste tokens.",
+    "Start default UI states from neutral, success, or warning before taste tokens; reserve destructive for danger actions.",
     "Use taste palette only when taste meaning is the point.",
     "If a reusable visual pattern is added, reflect it in the design system preview."
   ],

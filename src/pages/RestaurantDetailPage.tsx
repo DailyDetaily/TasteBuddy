@@ -38,6 +38,7 @@ import type { HomeSearchResult } from '../components/home/HomeUnifiedSearch';
 import type { RealMenuRecommendationCardData } from '../components/analysis/RealMenuRecommendationCard';
 import type { ReservationRecord } from '../constants/reservationCatalog';
 import { hydrateRestaurantPlaceInfo } from '../lib/tasteBuddySupabase';
+import SectionCard from '../components/SectionCard';
 
 type RestaurantDetailView = 'detail' | 'feedback' | 'menuDetail';
 export type RestaurantDetailInitialView = Extract<RestaurantDetailView, 'detail' | 'feedback'>;
@@ -795,7 +796,9 @@ function createMapBackedRestaurantInfo(
 
   return {
     address,
+    category: place?.category ?? undefined,
     hours: '',
+    kakaoPlaceId: place?.placeId ?? undefined,
     mapUrl: place?.placeUrl ?? undefined,
     phone: place?.phone ?? undefined,
     sourceByRow: {
@@ -810,14 +813,102 @@ function sanitizeMapBackedRestaurantInfo(info: RestaurantInfoViewModel): Restaur
 
   return {
     address: info.address,
+    category: info.category,
+    googleMapsUrl: info.googleMapsUrl,
+    googlePhoto: info.googlePhoto,
+    googlePlaceId: info.googlePlaceId,
     hours: sourceByRow.hours ? info.hours : '',
+    kakaoPlaceId: info.kakaoPlaceId,
     mapUrl: info.mapUrl,
     phone: sourceByRow.phone ? info.phone : undefined,
+    priceLevel: info.priceLevel,
+    rating: info.rating,
     website: sourceByRow.website ? info.website : undefined,
     instagram: sourceByRow.instagram ? info.instagram : undefined,
     email: sourceByRow.email ? info.email : undefined,
     sourceByRow,
+    userRatingCount: info.userRatingCount,
   };
+}
+
+function formatGooglePriceLevel(priceLevel?: string) {
+  if (!priceLevel) {
+    return null;
+  }
+
+  const labelByLevel: Record<string, string> = {
+    PRICE_LEVEL_FREE: '무료',
+    PRICE_LEVEL_INEXPENSIVE: '가벼운 가격대',
+    PRICE_LEVEL_MODERATE: '중간 가격대',
+    PRICE_LEVEL_EXPENSIVE: '높은 가격대',
+    PRICE_LEVEL_VERY_EXPENSIVE: '프리미엄 가격대',
+  };
+
+  return labelByLevel[priceLevel] ?? priceLevel.replace(/^PRICE_LEVEL_/, '').toLowerCase();
+}
+
+function formatReviewCount(count?: number) {
+  if (typeof count !== 'number' || !Number.isFinite(count) || count <= 0) {
+    return null;
+  }
+
+  return `${Math.round(count).toLocaleString('ko-KR')}개`;
+}
+
+function RestaurantExternalPlaceSignalsCard({ info }: { info: RestaurantInfoViewModel }) {
+  const signals = [
+    info.category
+      ? {
+          id: 'category',
+          label: 'Kakao 분류',
+          value: info.category.split('>').map((item) => item.trim()).filter(Boolean).slice(-2).join(' · '),
+        }
+      : null,
+    typeof info.rating === 'number'
+      ? {
+          id: 'rating',
+          label: 'Google 평점',
+          value: `${info.rating.toFixed(1)} / 5`,
+        }
+      : null,
+    formatReviewCount(info.userRatingCount)
+      ? {
+          id: 'reviews',
+          label: 'Google 리뷰',
+          value: formatReviewCount(info.userRatingCount) ?? '',
+        }
+      : null,
+    formatGooglePriceLevel(info.priceLevel)
+      ? {
+          id: 'price',
+          label: 'Google 가격대',
+          value: formatGooglePriceLevel(info.priceLevel) ?? '',
+        }
+      : null,
+  ].filter((signal): signal is { id: string; label: string; value: string } => Boolean(signal && signal.value));
+
+  if (signals.length === 0) {
+    return null;
+  }
+
+  return (
+    <PageSection title="방문 전 참고 정보" titleAs="h2" titleSize="md">
+      <SectionCard hoverEffect={false}>
+        <div className="grid grid-cols-2 gap-3">
+          {signals.map((signal) => (
+            <div className="min-w-0" key={signal.id}>
+              <p className="text-[11px] font-semibold text-[var(--tb-color-text-tertiary)]">
+                {signal.label}
+              </p>
+              <p className="mt-1 break-words text-[13px] font-semibold leading-snug text-[var(--tb-color-text-primary)]">
+                {signal.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+    </PageSection>
+  );
 }
 
 export function createRestaurantDetailFromChefMatch(
@@ -1383,6 +1474,8 @@ export default function RestaurantDetailPage({
                 : undefined
             }
           />
+
+          <RestaurantExternalPlaceSignalsCard info={detail.info} />
 
           {detail.memorableDishes.length > 0 ? (
             <RestaurantMemorableDishCard

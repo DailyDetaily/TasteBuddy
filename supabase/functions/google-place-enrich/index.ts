@@ -1,4 +1,5 @@
 const GOOGLE_TEXT_SEARCH_URL = 'https://places.googleapis.com/v1/places:searchText';
+const GOOGLE_PLACE_PHOTO_MAX_WIDTH = 720;
 
 const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -32,7 +33,9 @@ interface GooglePlace {
       displayName?: string;
       uri?: string;
     }>;
+    heightPx?: number;
     name?: string;
+    widthPx?: number;
   }>;
   priceLevel?: string;
   rating?: number;
@@ -41,6 +44,10 @@ interface GooglePlace {
   };
   userRatingCount?: number;
   websiteUri?: string;
+}
+
+interface GooglePlacePhotoMediaResponse {
+  photoUri?: string;
 }
 
 function jsonResponse(body: unknown, init: ResponseInit = {}) {
@@ -74,8 +81,33 @@ function formatOpeningHours(weekdayDescriptions?: string[]) {
     .join(' / ');
 }
 
-function formatPlace(place: GooglePlace) {
+async function resolvePhotoURL(photoName: string, apiKey: string) {
+  const components = new URL(`https://places.googleapis.com/v1/${photoName}/media`);
+
+  components.searchParams.set('key', apiKey);
+  components.searchParams.set('maxWidthPx', String(GOOGLE_PLACE_PHOTO_MAX_WIDTH));
+  components.searchParams.set('skipHttpRedirect', 'true');
+
+  try {
+    const response = await fetch(components);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as GooglePlacePhotoMediaResponse;
+
+    return data.photoUri ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function formatPlace(place: GooglePlace, apiKey: string) {
   const firstPhoto = place.photos?.[0];
+  const firstPhotoURL = firstPhoto?.name
+    ? await resolvePhotoURL(firstPhoto.name, apiKey)
+    : null;
 
   return {
     address: place.formattedAddress ?? null,
@@ -88,7 +120,10 @@ function formatPlace(place: GooglePlace) {
     photo: firstPhoto?.name
       ? {
           attributions: firstPhoto.authorAttributions ?? [],
+          heightPx: firstPhoto.heightPx ?? null,
           name: firstPhoto.name,
+          url: firstPhotoURL,
+          widthPx: firstPhoto.widthPx ?? null,
         }
       : null,
     placeId: place.id ?? null,
@@ -192,6 +227,6 @@ Deno.serve(async (request) => {
   const place = places[0] ?? null;
 
   return jsonResponse({
-    place: place ? formatPlace(place) : null,
+    place: place ? await formatPlace(place, googleMapsApiKey) : null,
   });
 });

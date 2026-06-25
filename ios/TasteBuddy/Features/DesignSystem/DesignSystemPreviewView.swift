@@ -304,7 +304,7 @@ private struct SystemCoreComponentsPreviewSection: View {
                 ) {
                     VStack(alignment: .leading, spacing: 10) {
                         StatusChip(title: "private")
-                        Text("React BottomSheetShell의 핸들, 40pt header slot, footer padding을 SwiftUI sheet content로 재사용합니다.")
+                        Text("BottomSheetShell의 그랩버 오버레이, 32pt header slot, 20pt top / 12pt bottom inset을 SwiftUI sheet content로 재사용합니다.")
                             .font(TBFont.regular(12))
                             .foregroundStyle(TBColor.textBody)
                             .lineSpacing(3)
@@ -765,7 +765,7 @@ private struct TastePaletteCard: View {
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
-                .stroke(axis.mainColor.opacity(0.18), lineWidth: 1)
+                .stroke(axis.tintSoftBorderColor, lineWidth: 1)
         }
     }
 }

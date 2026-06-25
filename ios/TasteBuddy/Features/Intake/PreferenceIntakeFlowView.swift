@@ -67,6 +67,7 @@ private struct PreferenceIntakeQuestionsView: View {
                     leadingAccessibilityLabel: questionIndex == 0
                         ? "서비스 설명으로 돌아가기"
                         : "이전 질문으로 돌아가기",
+                    showsDivider: false,
                     leadingAction: goBack
                 )
 
@@ -95,7 +96,7 @@ private struct PreferenceIntakeQuestionsView: View {
                         }
                     }
                     .padding(.horizontal, TBSpacing.page)
-                    .padding(.top, 16)
+                    .padding(.top, TBSpacing.pageTop)
                     .padding(.bottom, 188)
                 }
                 .scrollIndicators(.hidden)
@@ -113,6 +114,7 @@ private struct PreferenceIntakeQuestionsView: View {
             )
         }
         .background(TBColor.focus.ignoresSafeArea())
+        .edgeSwipeBack(action: goBack)
         .onAppear {
             if let draft = appModel.preferenceIntakeDraft {
                 responses = draft
@@ -261,7 +263,7 @@ private struct IntakeErrorView: View {
             )
             PrimaryButton(title: "다시 시도", action: retry)
         }
-        .padding(TBSpacing.page)
+        .tbPageContentPadding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(TBColor.focus)
     }

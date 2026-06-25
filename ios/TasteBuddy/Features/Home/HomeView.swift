@@ -15,6 +15,7 @@ struct HomeView: View {
     var onOpenSearch: (() -> Void)? = nil
     var onOpenRoute: ((AppRoute) -> Void)? = nil
     var onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
+    var onStartDiningFeedback: ((HomeSearchResultItem) -> Void)? = nil
 
     @State private var recommendationMode: RecommendationMode = .buddy
     @State private var isRecommendationEditorOpen = false
@@ -25,13 +26,15 @@ struct HomeView: View {
         showsSearchTrigger: Bool = true,
         onOpenSearch: (() -> Void)? = nil,
         onOpenRoute: ((AppRoute) -> Void)? = nil,
-        onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
+        onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil,
+        onStartDiningFeedback: ((HomeSearchResultItem) -> Void)? = nil
     ) {
         self.recommendationContentState = recommendationContentState
         self.showsSearchTrigger = showsSearchTrigger
         self.onOpenSearch = onOpenSearch
         self.onOpenRoute = onOpenRoute
         self.onOpenBookmarkSheet = onOpenBookmarkSheet
+        self.onStartDiningFeedback = onStartDiningFeedback
     }
 
     var body: some View {
@@ -62,8 +65,8 @@ struct HomeView: View {
                                 VStack(spacing: 12) {
                                     switch recommendationContentState {
                                     case .loading:
-                                        ForEach(0..<2, id: \.self) { _ in
-                                            FollowingDishFeedbackSkeletonCard()
+                                        ForEach(0..<3, id: \.self) { _ in
+                                            NativeDishFeedbackCardSkeleton()
                                         }
                                     case .empty:
                                         EmptyState(
@@ -87,6 +90,7 @@ struct HomeView: View {
                                                 absoluteDateLabel: "2026년 6월 5일",
                                                 relativeDateLabel: "오늘",
                                                 showsOptions: false,
+                                                noteTrailingPadding: TBSpacing.x20,
                                                 onDetailTap: {
                                                     onOpenRoute?(.comments(id: item.id))
                                                 },
@@ -101,8 +105,8 @@ struct HomeView: View {
                         }
                     }
                     .padding(.horizontal, TBSpacing.page)
-                    .padding(.top, showsSearchTrigger ? TBSpacing.page : 0)
-                    .padding(.bottom, TBSpacing.page)
+                    .padding(.top, TBSpacing.pageTop)
+                    .padding(.bottom, TBSpacing.mainTabContentBottom)
                 }
 
                 if showsSearch {
@@ -112,7 +116,13 @@ struct HomeView: View {
                             showsSearch = false
                             onOpenRoute?(route)
                         },
-                        onOpenBookmarkSheet: onOpenBookmarkSheet
+                        onOpenBookmarkSheet: onOpenBookmarkSheet,
+                        onStartDiningFeedback: onStartDiningFeedback.map { startDiningFeedback in
+                            { item in
+                                showsSearch = false
+                                startDiningFeedback(item)
+                            }
+                        }
                     )
                     .transition(.opacity)
                     .zIndex(1)
@@ -128,13 +138,15 @@ struct HomeView: View {
 }
 
 struct HomeSearchCard: View {
+    var placeholder = "레스토랑, 메뉴, 셰프, 버디 검색"
+    var accessibilityLabel = "레스토랑, 메뉴, 셰프, 버디 검색"
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
                 HStack {
-                    Text("레스토랑, 메뉴, 셰프, 버디 검색")
+                    Text(placeholder)
                         .font(TBFont.medium(13))
                         .foregroundStyle(TBColor.textHint)
                         .lineLimit(1)
@@ -163,7 +175,57 @@ struct HomeSearchCard: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("레스토랑, 메뉴, 셰프, 버디 검색")
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+enum HomeSearchScope {
+    case all
+    case friendsOnly
+
+    var allowsRestaurantResults: Bool {
+        switch self {
+        case .all:
+            true
+        case .friendsOnly:
+            false
+        }
+    }
+
+    var suggestionTitle: String {
+        switch self {
+        case .all:
+            "추천 탐색"
+        case .friendsOnly:
+            "버디 추천"
+        }
+    }
+
+    var suggestionDescription: String {
+        switch self {
+        case .all:
+            "레스토랑을 먼저, 셰프와 메뉴, 다이닝 친구까지 함께 찾을 수 있어요."
+        case .friendsOnly:
+            "이름과 버디네임을 기준으로 다이닝 친구 후보를 찾을 수 있어요."
+        }
+    }
+
+    var suggestedQueries: [HomeSearchSuggestion] {
+        switch self {
+        case .all:
+            HomeSearchEngine.suggestedQueries
+        case .friendsOnly:
+            HomeSearchEngine.friendSuggestedQueries
+        }
+    }
+
+    func includes(section: HomeSearchResultSection) -> Bool {
+        switch self {
+        case .all:
+            true
+        case .friendsOnly:
+            section.id == "friends"
+        }
     }
 }
 
@@ -180,28 +242,37 @@ struct HomeSearchSheet: View {
     @State private var kakaoPhase: HomeSearchAsyncPhase = .idle
     @State private var friendPhase: HomeSearchAsyncPhase = .idle
     private let repository: any HomeSearchRepository
+    private let placeholder: String
+    private let scope: HomeSearchScope
     private let onCloseRequest: (() -> Void)?
     var onOpenRoute: ((AppRoute) -> Void)? = nil
     var onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
+    var onStartDiningFeedback: ((HomeSearchResultItem) -> Void)? = nil
 
     init(
         initialQuery: String = "",
+        placeholder: String = "레스토랑, 메뉴, 셰프, 버디 검색",
+        scope: HomeSearchScope = .all,
         repository: any HomeSearchRepository = LiveHomeSearchRepository(),
         onCloseRequest: (() -> Void)? = nil,
         onOpenRoute: ((AppRoute) -> Void)? = nil,
-        onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
+        onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil,
+        onStartDiningFeedback: ((HomeSearchResultItem) -> Void)? = nil
     ) {
         _query = State(initialValue: initialQuery)
         _recentSearches = State(initialValue: HomeSearchEngine.loadRecentSearches())
         self.repository = repository
+        self.placeholder = placeholder
+        self.scope = scope
         self.onCloseRequest = onCloseRequest
         self.onOpenRoute = onOpenRoute
         self.onOpenBookmarkSheet = onOpenBookmarkSheet
+        self.onStartDiningFeedback = onStartDiningFeedback
     }
 
     var body: some View {
         SearchOverlayShell(
-            placeholder: "레스토랑, 메뉴, 셰프, 버디 검색",
+            placeholder: placeholder,
             query: $query,
             onSubmit: submitSearch,
             onClose: closeSearch
@@ -215,7 +286,7 @@ struct HomeSearchSheet: View {
                     } else {
                         EmptyState(
                             title: "아직 맞는 결과를 찾지 못했어요",
-                            description: "레스토랑 이름, 셰프 이름, 코스명, 버디 이름이나 버디네임으로 다시 시도해보세요. 추천 탐색 키워드로 시작해도 좋아요.",
+                            description: emptyStateDescription,
                             icon: .search
                         )
                     }
@@ -225,13 +296,21 @@ struct HomeSearchSheet: View {
                             .font(TBFont.semibold(13))
                             .foregroundStyle(TBColor.textPrimary)
                         Spacer()
-                        Text("레스토랑 · 버디 함께 정렬")
+                        Text(resultSummaryLabel)
                             .font(TBFont.medium(11))
                             .foregroundStyle(TBColor.textHint)
                     }
 
                     ForEach(filteredSections) { section in
-                        TBPageSection(title: section.title, subtitle: section.subtitle) {
+                        VStack(alignment: .leading, spacing: TBSpacing.card) {
+                            VStack(alignment: .leading, spacing: TBSpacing.x4) {
+                                SearchSuggestionTitle(section.title)
+                                Text(section.subtitle)
+                                    .font(TBFont.regular(12))
+                                    .foregroundStyle(TBColor.textBody)
+                                    .lineSpacing(3)
+                            }
+
                             VStack(spacing: 10) {
                                 ForEach(section.items) { item in
                                     SearchResultRow(
@@ -247,6 +326,7 @@ struct HomeSearchSheet: View {
                                 }
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
                     remoteStatusRows
@@ -269,13 +349,15 @@ struct HomeSearchSheet: View {
         HomeSearchEngine.mergedSections(
             matching: query,
             localSections: localSections,
-            kakaoResults: kakaoResults,
+            kakaoResults: scope.allowsRestaurantResults ? kakaoResults : [],
             friendResults: friendResults
         )
+        .filter { scope.includes(section: $0) }
     }
 
     private var localSections: [HomeSearchResultSection] {
         HomeSearchEngine.sections(matching: query)
+            .filter { scope.includes(section: $0) }
     }
 
     private var resultCount: Int {
@@ -290,10 +372,40 @@ struct HomeSearchSheet: View {
         friendPhase.message != nil
     }
 
+    private var scopedRecentSearches: [String] {
+        switch scope {
+        case .all:
+            recentSearches
+        case .friendsOnly:
+            recentSearches.filter { value in
+                HomeSearchEngine.sections(matching: value)
+                    .contains { scope.includes(section: $0) }
+            }
+        }
+    }
+
+    private var resultSummaryLabel: String {
+        switch scope {
+        case .all:
+            "레스토랑 · 버디 함께 정렬"
+        case .friendsOnly:
+            "버디만 표시"
+        }
+    }
+
+    private var emptyStateDescription: String {
+        switch scope {
+        case .all:
+            "레스토랑 이름, 셰프 이름, 코스명, 버디 이름이나 버디네임으로 다시 시도해보세요. 추천 탐색 키워드로 시작해도 좋아요."
+        case .friendsOnly:
+            "이름이나 버디네임으로 다시 시도해보세요. 팔로워와 팔로잉 후보를 버디 프로필 중심으로 확인합니다."
+        }
+    }
+
     @ViewBuilder
     private var searchSuggestions: some View {
         VStack(alignment: .leading, spacing: SearchSuggestionMetrics.sectionStackGap) {
-            if !recentSearches.isEmpty {
+            if !scopedRecentSearches.isEmpty {
                 SearchSuggestionSection {
                     HStack {
                         SearchSuggestionTitle("최근 검색")
@@ -306,27 +418,27 @@ struct HomeSearchSheet: View {
                         .foregroundStyle(TBColor.textFaint)
                     }
                 } chips: {
-                    ForEach(recentSearches, id: \.self) { term in
-                        Button {
-                            selectSuggestion(term)
-                        } label: {
-                            SearchSuggestionChip(label: term, tone: .recent)
-                        }
-                        .buttonStyle(.plain)
+                    ForEach(scopedRecentSearches, id: \.self) { term in
+                        SearchSuggestionChip(
+                            label: term,
+                            tone: .recent,
+                            onSelect: { selectSuggestion(term) },
+                            onRemove: { removeRecentSearch(term) }
+                        )
                     }
                 }
             }
 
             SearchSuggestionSection {
                 VStack(alignment: .leading, spacing: SearchSuggestionMetrics.titleDescriptionGap) {
-                    SearchSuggestionTitle("추천 탐색")
-                    Text("레스토랑을 먼저, 셰프와 메뉴, 다이닝 친구까지 함께 찾을 수 있어요.")
+                    SearchSuggestionTitle(scope.suggestionTitle)
+                    Text(scope.suggestionDescription)
                         .font(TBFont.regular(12))
                         .foregroundStyle(TBColor.textSubtle)
                         .lineSpacing(3)
                 }
             } chips: {
-                ForEach(HomeSearchEngine.suggestedQueries) { suggestion in
+                ForEach(scope.suggestedQueries) { suggestion in
                     Button {
                         selectSuggestion(suggestion.label)
                     } label: {
@@ -365,7 +477,7 @@ struct HomeSearchSheet: View {
             return
         }
 
-        if let externalURL = item.externalURL {
+        if item.source != .kakaoPlace, let externalURL = item.externalURL {
             closeSearch()
             openURL(externalURL)
         }
@@ -381,6 +493,14 @@ struct HomeSearchSheet: View {
 
     private func recordResult(_ item: HomeSearchResultItem) {
         commitRecentSearch(HomeSearchEngine.recentSearchValue(for: item, query: trimmedQuery))
+
+        if let onStartDiningFeedback {
+            recordedResultIDs.insert(item.id)
+            closeSearch()
+            onStartDiningFeedback(item)
+            return
+        }
+
         if recordedResultIDs.contains(item.id) {
             recordedResultIDs.remove(item.id)
         } else {
@@ -411,11 +531,18 @@ struct HomeSearchSheet: View {
         }
 
         let localSections = HomeSearchEngine.sections(matching: searchQuery)
-        let shouldSearchKakao = HomeSearchEngine.shouldSearchKakao(
-            query: searchQuery,
-            localSections: localSections
-        )
-        let shouldSearchFriends = HomeSearchEngine.isSearchableProfileIdentityQuery(searchQuery)
+            .filter { scope.includes(section: $0) }
+        let shouldSearchKakao = scope.allowsRestaurantResults
+            && HomeSearchEngine.shouldSearchKakao(
+                query: searchQuery,
+                localSections: localSections
+            )
+        let shouldSearchFriends = switch scope {
+        case .all:
+            HomeSearchEngine.isSearchableProfileIdentityQuery(searchQuery)
+        case .friendsOnly:
+            HomeSearchEngine.isSearchableFriendQuery(searchQuery)
+        }
 
         kakaoResults = []
         friendResults = []
@@ -514,6 +641,12 @@ struct HomeSearchSheet: View {
         recentSearches = nextSearches
         HomeSearchEngine.saveRecentSearches(nextSearches)
     }
+
+    private func removeRecentSearch(_ value: String) {
+        let nextSearches = recentSearches.filter { $0 != value }
+        recentSearches = nextSearches
+        HomeSearchEngine.saveRecentSearches(nextSearches)
+    }
 }
 
 private struct SearchResultMedia: View {
@@ -527,7 +660,7 @@ private struct SearchResultMedia: View {
                 alt: item.title,
                 size: size,
                 taste: item.axis,
-                variant: .taste
+                variant: .neutral
             )
         case .friend:
             PalateBloomAvatar(
@@ -538,18 +671,35 @@ private struct SearchResultMedia: View {
             ImageBox(
                 alt: item.title,
                 kind: .menu,
+                fallbackIconColor: TBColor.iconPrimary,
                 size: size,
                 taste: item.axis,
-                variant: .taste
+                variant: .neutral
             )
         case .restaurant:
-            ImageBox(
-                alt: item.title,
-                kind: .restaurant,
+            TokenBox(
                 size: size,
-                taste: item.axis,
-                variant: .taste
-            )
+                background: TBColor.mutedSurface,
+                foreground: TBColor.iconPrimary
+            ) {
+                LucideIcon(
+                    .utensils,
+                    size: restaurantIconSize,
+                    strokeWidth: TBIcon.Stroke.regular
+                )
+            }
+            .accessibilityLabel(item.title)
+        }
+    }
+
+    private var restaurantIconSize: CGFloat {
+        switch size ?? .medium {
+        case .small:
+            return ImageBoxMetrics.fallbackIconSmall
+        case .medium:
+            return ImageBoxMetrics.fallbackIconMedium
+        case .large:
+            return ImageBoxMetrics.fallbackIconLarge
         }
     }
 }
@@ -577,6 +727,8 @@ private struct SearchResultRow: View {
                         symbol: isRecorded ? .circleCheck : .circlePlus,
                         isActive: isRecorded,
                         accessibilityLabel: isRecorded ? "내 기록에 추가됨" : "내 기록에 추가",
+                        actionButtonSize: SearchResultCompactCardMetrics.actionButtonSize,
+                        actionIconSize: SearchResultCompactCardMetrics.actionIconSize,
                         action: { onRecordResult(item) }
                     )
                 }
@@ -589,6 +741,8 @@ private struct SearchResultRow: View {
                         accessibilityLabel: isBookmarked
                             ? "나중에 갈 레스토랑에서 제거"
                             : "나중에 갈 레스토랑에 추가",
+                        actionButtonSize: SearchResultCompactCardMetrics.actionButtonSize,
+                        actionIconSize: SearchResultCompactCardMetrics.actionIconSize,
                         action: { onBookmarkResult(item) }
                     )
                 }
@@ -602,7 +756,8 @@ enum SearchSuggestionMetrics {
     static let sectionStackGap: CGFloat = TBSpacing.section
     static let cardStackGap: CGFloat = TBSpacing.card
     static let titleDescriptionGap: CGFloat = TBSpacing.x4
-    static let chipGap: CGFloat = TBSpacing.x8
+    static let chipGap: CGFloat = DishFeedbackCardMetrics.chipStackGap
+    static let chipHorizontalPadding: CGFloat = TBSpacing.x10
 }
 
 enum SearchSuggestionChipTone {
@@ -627,6 +782,13 @@ enum SearchSuggestionChipTone {
         switch self {
         case .recommended: TBColor.textBody
         case .recent: TBColor.textPrimary
+        }
+    }
+
+    var variant: ChipVariant {
+        switch self {
+        case .recommended: .soft
+        case .recent: .outline
         }
     }
 }
@@ -662,7 +824,7 @@ private struct SearchSuggestionTitle: View {
 
     var body: some View {
         Text(title)
-            .font(TBFont.semibold(13))
+            .font(TBFont.semibold(14))
             .foregroundStyle(TBColor.textPrimary)
     }
 }
@@ -670,31 +832,32 @@ private struct SearchSuggestionTitle: View {
 private struct SearchSuggestionChip: View {
     let label: String
     var tone: SearchSuggestionChipTone = .recommended
+    var onSelect: (() -> Void)? = nil
+    var onRemove: (() -> Void)? = nil
 
     var body: some View {
-        HStack(spacing: ChipSize.medium.gap) {
-            LucideIcon(
-                systemName: tone.symbol,
-                size: ChipSize.medium.iconSize,
-                strokeWidth: TBIcon.Stroke.regular
-            )
-
-            Text(label)
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
+        Chip(
+            title: label,
+            leadingSymbol: tone.symbol,
+            trailingSymbol: onRemove == nil ? nil : "x",
+            trailingAction: onRemove,
+            trailingAccessibilityLabel: "\(label) 최근 검색 삭제",
+            backgroundColorOverride: tone.background,
+            foregroundColorOverride: tone.foreground,
+            trailingForegroundColorOverride: TBColor.iconMuted,
+            horizontalPaddingOverride: SearchSuggestionMetrics.chipHorizontalPadding,
+            size: .medium,
+            tone: .neutral,
+            variant: tone.variant
+        )
+        .contentShape(Capsule())
+        .onTapGesture {
+            onSelect?()
         }
-        .font(ChipSize.medium.font)
-        .foregroundStyle(tone.foreground)
-        .padding(.horizontal, ChipSize.medium.horizontalPadding)
-        .padding(.vertical, ChipSize.medium.verticalPadding)
-        .background(tone.background)
-        .clipShape(Capsule())
-        .overlay {
-            Capsule().stroke(TBColor.border, lineWidth: 1)
-        }
-        .fixedSize(horizontal: true, vertical: false)
-        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(onSelect == nil ? [] : .isButton)
+        .accessibilityLabel(onSelect == nil ? label : "\(label) 검색")
     }
+
 }
 
 private struct SearchSuggestionWrap<Content: View>: View {
@@ -1513,26 +1676,22 @@ private struct GhostBuddyRecommendationCard: View {
 private struct RecommendationSkeletonCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: TasteMatchRecommendationCardMetrics.gap) {
-            Circle()
-                .fill(TBColor.disabledSurface)
+            TBSkeletonBlock(cornerRadius: TasteMatchRecommendationCardMetrics.avatarSize / 2)
                 .frame(
                     width: TasteMatchRecommendationCardMetrics.avatarSize,
                     height: TasteMatchRecommendationCardMetrics.avatarSize
                 )
 
             VStack(alignment: .leading, spacing: 6) {
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .fill(TBColor.disabledSurface)
+                TBSkeletonBlock(cornerRadius: 7)
                     .frame(width: 74, height: 14)
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .fill(TBColor.disabledSurface)
+                TBSkeletonBlock(cornerRadius: 5)
                     .frame(width: 58, height: 10)
             }
 
             Spacer(minLength: 0)
 
-            RoundedRectangle(cornerRadius: 5, style: .continuous)
-                .fill(TBColor.disabledSurface)
+            TBSkeletonBlock(cornerRadius: 5)
                 .frame(width: 82, height: 10)
         }
         .frame(
@@ -1630,42 +1789,6 @@ private struct HomeProfileContextCard: View {
                 }
             }
         }
-    }
-}
-
-private struct FollowingDishFeedbackSkeletonCard: View {
-    var body: some View {
-        SectionCard {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 10) {
-                    Circle()
-                        .fill(TBColor.disabledSurface)
-                        .frame(width: 38, height: 38)
-                    VStack(alignment: .leading, spacing: 6) {
-                        RoundedRectangle(cornerRadius: 5, style: .continuous)
-                            .fill(TBColor.disabledSurface)
-                            .frame(width: 96, height: 12)
-                        RoundedRectangle(cornerRadius: 5, style: .continuous)
-                            .fill(TBColor.disabledSurface)
-                            .frame(width: 72, height: 10)
-                    }
-                    Spacer()
-                }
-
-                RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-                    .fill(TBColor.disabledSurface)
-                    .frame(width: 144, height: 144)
-
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(TBColor.disabledSurface)
-                    .frame(height: 14)
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(TBColor.disabledSurface)
-                    .frame(width: 220, height: 14)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("팔로잉 디시 카드를 불러오는 중")
     }
 }
 

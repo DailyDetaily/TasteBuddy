@@ -253,6 +253,48 @@ enum RestaurantBookmarkSyncEngine {
     }
 }
 
+struct UserProfileIdentity: Codable, Equatable {
+    var displayName: String
+    var nickname: String
+    var birthDate: String?
+    var sexContext: String?
+    var smokingStatus: String?
+    var dietaryRestrictions: [String]
+
+    static let `default` = UserProfileIdentity(
+        displayName: "신준호",
+        nickname: "머리아깨무봄발",
+        birthDate: nil,
+        sexContext: nil,
+        smokingStatus: nil,
+        dietaryRestrictions: []
+    )
+
+    var normalizedNickname: String {
+        nickname
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+    }
+
+    var displayNickname: String {
+        let normalized = normalizedNickname
+        return normalized.isEmpty ? "@tastebuddy" : "@\(normalized)"
+    }
+
+    var sanitized: UserProfileIdentity {
+        let trimmedDisplayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedNickname = normalizedNickname
+        return UserProfileIdentity(
+            displayName: trimmedDisplayName.isEmpty ? UserProfileIdentity.default.displayName : trimmedDisplayName,
+            nickname: trimmedNickname.isEmpty ? UserProfileIdentity.default.nickname : trimmedNickname,
+            birthDate: birthDate,
+            sexContext: sexContext,
+            smokingStatus: smokingStatus,
+            dietaryRestrictions: dietaryRestrictions
+        )
+    }
+}
+
 @MainActor
 final class AppModel: ObservableObject {
     @Published private(set) var hasCompletedAuthEntry: Bool
@@ -260,6 +302,8 @@ final class AppModel: ObservableObject {
     @Published private(set) var preferenceIntakeDraft: PreferenceIntakeResponsesContract?
     @Published private(set) var preferenceProfile: PreferenceIntakeProfileContract?
     @Published private(set) var profile: TasteProfile?
+    @Published private(set) var profileIdentity: UserProfileIdentity = .default
+    @Published private(set) var profileAvatarImageData: Data?
     @Published private(set) var diningEntries: [DiningEntry]
     @Published private(set) var savedRestaurantIDs: Set<String>
     @Published private(set) var bookmarkLists: [RestaurantBookmarkList]
@@ -281,6 +325,8 @@ final class AppModel: ObservableObject {
         static let preferenceIntakeDraft = "tastebuddy.ios.preference-intake-draft.v1"
         static let preferenceProfile = "tastebuddy.ios.preference-profile.v1"
         static let profile = "tastebuddy.ios.profile.v1"
+        static let profileIdentity = "tastebuddy.ios.profile-identity.v1"
+        static let profileAvatarImageData = "tastebuddy.ios.profile-avatar-image-data.v1"
         static let diningEntries = "tastebuddy.ios.dining-entries.v1"
         static let savedRestaurantIDs = "tastebuddy.ios.saved-restaurant-ids.v1"
         static let bookmarkLists = "tastebuddy.ios.restaurant-bookmark-lists.v1"
@@ -316,6 +362,16 @@ final class AppModel: ObservableObject {
         if let profileData = defaults.data(forKey: Key.profile) {
             profile = try? decoder.decode(TasteProfile.self, from: profileData)
         }
+
+        if let profileIdentityData = defaults.data(forKey: Key.profileIdentity),
+           let decodedProfileIdentity = try? decoder.decode(
+            UserProfileIdentity.self,
+            from: profileIdentityData
+           ) {
+            profileIdentity = decodedProfileIdentity.sanitized
+        }
+
+        profileAvatarImageData = defaults.data(forKey: Key.profileAvatarImageData)
 
         if let diningData = defaults.data(forKey: Key.diningEntries),
            let decodedEntries = try? decoder.decode([DiningEntry].self, from: diningData) {
@@ -444,6 +500,25 @@ final class AppModel: ObservableObject {
     func saveProfile(_ profile: TasteProfile) {
         self.profile = profile
         defaults.set(try? encoder.encode(profile), forKey: Key.profile)
+    }
+
+    func saveProfileIdentity(_ identity: UserProfileIdentity) {
+        let sanitizedIdentity = identity.sanitized
+        profileIdentity = sanitizedIdentity
+        defaults.set(
+            try? encoder.encode(sanitizedIdentity),
+            forKey: Key.profileIdentity
+        )
+    }
+
+    func saveProfileAvatarImageData(_ data: Data?) {
+        profileAvatarImageData = data
+
+        if let data {
+            defaults.set(data, forKey: Key.profileAvatarImageData)
+        } else {
+            defaults.removeObject(forKey: Key.profileAvatarImageData)
+        }
     }
 
     func addDiningEntry(_ entry: DiningEntry) {
@@ -687,6 +762,8 @@ final class AppModel: ObservableObject {
         preferenceIntakeDraft = nil
         preferenceProfile = nil
         profile = nil
+        profileIdentity = .default
+        profileAvatarImageData = nil
         diningEntries = []
         savedRestaurantIDs = []
         bookmarkLists = []
@@ -701,6 +778,8 @@ final class AppModel: ObservableObject {
         defaults.removeObject(forKey: Key.preferenceIntakeDraft)
         defaults.removeObject(forKey: Key.preferenceProfile)
         defaults.removeObject(forKey: Key.profile)
+        defaults.removeObject(forKey: Key.profileIdentity)
+        defaults.removeObject(forKey: Key.profileAvatarImageData)
         defaults.removeObject(forKey: Key.diningEntries)
         defaults.removeObject(forKey: Key.savedRestaurantIDs)
         defaults.removeObject(forKey: Key.bookmarkLists)

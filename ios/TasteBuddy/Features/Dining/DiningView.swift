@@ -1,25 +1,81 @@
 import SwiftUI
 import UIKit
+import AVFoundation
+import CoreLocation
+import ImageIO
+import MapKit
 import Photos
 import PhotosUI
+import Vision
+
+enum DiningDishFeedbackContentState: Equatable {
+    case populated
+    case loading
+}
+
+private enum DiningDishFeedbackSkeletonMetrics {
+    static let cardSlotHeight: CGFloat = 500
+    static let viewportOffset: CGFloat = 120
+    static let minCount = 2
+    static let maxCount = 6
+}
 
 struct DiningView: View {
     @EnvironmentObject private var appModel: AppModel
     @State private var presentation: DiningPresentation?
+    let contentState: DiningDishFeedbackContentState
+    var onOpenDishOptions: ((DiningDishFeedbackItem) -> Void)? = nil
+
+    init(
+        contentState: DiningDishFeedbackContentState = .populated,
+        onOpenDishOptions: ((DiningDishFeedbackItem) -> Void)? = nil
+    ) {
+        self.contentState = contentState
+        self.onOpenDishOptions = onOpenDishOptions
+    }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: TBSpacing.section) {
-                    TBPageSection(title: "나의 디시") {
-                        VStack(spacing: 12) {
+            content
+                .navigationTitle("다이닝")
+                .tbInlineNavigationTitle()
+                .toolbar(.hidden, for: .navigationBar)
+                .tbPageBackground()
+                .fullScreenCover(item: $presentation) { presentation in
+                    switch presentation {
+                    case .newFeedback:
+                        DiningFeedbackSheet { entry in
+                            appModel.addDiningEntry(entry)
+                        }
+                    case .edit(let entry):
+                        DiningFeedbackSheet(entry: entry) { updatedEntry in
+                            appModel.updateDiningEntry(updatedEntry)
+                        }
+                    case .comments(let item):
+                        DiningCommentsFocusSheet(item: item)
+                    }
+                }
+        }
+    }
+
+    private var content: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: TBSpacing.section) {
+                TBPageSection(title: "나의 디시") {
+                    VStack(spacing: 12) {
+                        switch contentState {
+                        case .loading:
+                            ForEach(0..<dishFeedbackSkeletonCardCount, id: \.self) { _ in
+                                NativeDishFeedbackCardSkeleton()
+                            }
+                        case .populated:
                             ForEach(dishFeedItems) { item in
                                 let displayItem = appModel
                                     .dishFeedbackItemWithCurrentComments(item)
                                 NativeDishFeedbackCard(
                                     item: displayItem,
-                                    onOptionsTap: {
-                                        presentation = .actions(displayItem)
+                                    onOptionsTap: onOpenDishOptions.map { handler in
+                                        { handler(displayItem) }
                                     },
                                     onDetailTap: {
                                         presentation = .comments(displayItem)
@@ -31,44 +87,22 @@ struct DiningView: View {
                             }
                         }
                     }
-
-                }
-                .padding(TBSpacing.page)
-            }
-            .navigationTitle("다이닝")
-            .tbInlineNavigationTitle()
-            .toolbar(.hidden, for: .navigationBar)
-            .tbPageBackground()
-            .fullScreenCover(item: $presentation) { presentation in
-                switch presentation {
-                case .newFeedback:
-                    DiningFeedbackSheet { entry in
-                        appModel.addDiningEntry(entry)
-                    }
-                case .edit(let entry):
-                    DiningFeedbackSheet(entry: entry) { updatedEntry in
-                        appModel.updateDiningEntry(updatedEntry)
-                    }
-                case .comments(let item):
-                    DiningCommentsFocusSheet(item: item)
-                case .actions(let item):
-                    DishActionSheet(
-                        item: item,
-                        editableEntry: diningEntry(for: item),
-                        onShowDetail: {
-                            self.presentation = .comments(item)
-                        },
-                        onEdit: { entry in
-                            self.presentation = .edit(entry)
-                        },
-                        onDelete: { entryId in
-                            appModel.removeDiningEntry(id: entryId)
-                            self.presentation = nil
-                        }
-                    )
                 }
             }
+            .tbPageContentPadding(bottom: TBSpacing.mainTabContentBottom)
         }
+    }
+
+    private var dishFeedbackSkeletonCardCount: Int {
+        let availableHeight = max(
+            DiningDishFeedbackSkeletonMetrics.cardSlotHeight,
+            UIScreen.main.bounds.height - DiningDishFeedbackSkeletonMetrics.viewportOffset
+        )
+        let estimatedCount = Int(ceil(availableHeight / DiningDishFeedbackSkeletonMetrics.cardSlotHeight))
+        return min(
+            DiningDishFeedbackSkeletonMetrics.maxCount,
+            max(DiningDishFeedbackSkeletonMetrics.minCount, estimatedCount)
+        )
     }
 
     private var dishFeedItems: [DiningDishFeedbackItem] {
@@ -151,7 +185,6 @@ private enum DiningPresentation: Identifiable {
     case newFeedback
     case edit(DiningEntry)
     case comments(DiningDishFeedbackItem)
-    case actions(DiningDishFeedbackItem)
 
     var id: String {
         switch self {
@@ -161,8 +194,6 @@ private enum DiningPresentation: Identifiable {
             "edit-\(entry.id.uuidString)"
         case .comments(let item):
             "comments-\(item.id)"
-        case .actions(let item):
-            "actions-\(item.id)"
         }
     }
 }
@@ -187,6 +218,7 @@ private struct DiningCommentsFocusSheet: View {
             .toolbar(.hidden, for: .navigationBar)
             .tbPageBackground(TBColor.focus)
         }
+        .edgeSwipeBack { dismiss() }
     }
 }
 
@@ -465,7 +497,7 @@ private struct DishFeedbackDetailSheet: View {
                         }
                     }
                 }
-                .padding(TBSpacing.page)
+                .tbPageContentPadding()
             }
             .navigationTitle("디시 상세")
             .tbInlineNavigationTitle()
@@ -483,91 +515,81 @@ private struct DishFeedbackDetailSheet: View {
     }
 }
 
-private struct DishActionSheet: View {
+struct DishActionSheet: View {
     let item: DiningDishFeedbackItem
     let editableEntry: DiningEntry?
+    let onClose: () -> Void
     let onShowDetail: () -> Void
     let onEdit: (DiningEntry) -> Void
     let onDelete: (UUID) -> Void
-    @Environment(\.dismiss) private var dismiss
     @State private var showsDeleteAlert = false
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: TBSpacing.section) {
-                SectionCard {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(item.dishTitle)
-                            .font(TBFont.bold(17))
-                            .foregroundStyle(TBColor.textPrimary)
-                        Text("\(item.restaurantName) · \(item.reactionLabel)")
-                            .font(TBFont.regular(12))
-                            .foregroundStyle(TBColor.textHint)
-                    }
-                }
-
-                VStack(spacing: 10) {
-                    ActionSheetRow(icon: "doc.text.magnifyingglass", title: "디시 상세 보기", detail: "메인 미각, 짧은 기록, 태그를 확인합니다") {
-                        dismiss()
-                        Task { @MainActor in
-                            onShowDetail()
-                        }
-                    }
-
-                    ActionSheetRow(
-                        icon: "square.and.pencil",
-                        title: "후기 수정",
-                        detail: editableEntry == nil ? "샘플 카드는 수정할 수 없습니다" : "레스토랑, 메뉴, 만족도, 노트를 다시 정리합니다",
-                        isDisabled: editableEntry == nil
-                    ) {
-                        guard let editableEntry else { return }
-                        dismiss()
-                        Task { @MainActor in
-                            onEdit(editableEntry)
-                        }
-                    }
-
-                    ShareLink(item: shareText) {
-                        ActionSheetRowContent(
-                            icon: "square.and.arrow.up",
-                            title: "공유",
-                            detail: "이 디시 기록의 요약을 공유합니다"
-                        )
-                    }
-                    .buttonStyle(.plain)
-
-                    ActionSheetRow(
-                        icon: "trash",
-                        title: "삭제",
-                        detail: editableEntry == nil ? "샘플 카드는 삭제할 수 없습니다" : "이 기기에서 기록을 삭제합니다",
-                        isDestructive: true,
-                        isDisabled: editableEntry == nil
-                    ) {
-                        showsDeleteAlert = true
-                    }
-                }
-
-                Spacer()
+        BottomSheetShell(
+            headerStart: AnyView(BottomSheetCloseButton(action: onClose)),
+            headerCenter: AnyView(
+                Text("디시 옵션")
+                    .font(TBFont.bold(15))
+                    .foregroundStyle(TBColor.textPrimary)
+            ),
+            surfaceBackground: TBColor.page
+        ) {
+            BottomSheetScrollView {
+                actionList
+                    .padding(.horizontal, TBSpacing.page)
+                    .padding(.top, 8)
+                    .padding(.bottom, TBSpacing.page + 24)
             }
-            .padding(TBSpacing.page)
-            .navigationTitle("디시 옵션")
-            .tbInlineNavigationTitle()
-            .tbPageBackground()
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("닫기") { dismiss() }
+        }
+        .alert("이 디시 기록을 삭제할까요?", isPresented: $showsDeleteAlert) {
+            Button("취소", role: .cancel) {}
+            Button("삭제", role: .destructive) {
+                if let id = editableEntry?.id {
+                    onDelete(id)
                 }
             }
-            .alert("이 디시 기록을 삭제할까요?", isPresented: $showsDeleteAlert) {
-                Button("취소", role: .cancel) {}
-                Button("삭제", role: .destructive) {
-                    if let id = editableEntry?.id {
-                        onDelete(id)
-                    }
-                    dismiss()
-                }
-            } message: {
-                Text("삭제한 기록은 이 기기의 프로필 정교화 기준에서 제외됩니다.")
+        } message: {
+            Text("삭제한 기록은 이 기기의 프로필 정교화 기준에서 제외됩니다.")
+        }
+    }
+
+    private var actionList: some View {
+        VStack(spacing: 10) {
+            ActionSheetRow(
+                icon: "eye",
+                title: "디시 상세 보기",
+                detail: "메인 미각, 짧은 기록, 태그를 확인합니다"
+            ) {
+                onShowDetail()
+            }
+
+            ActionSheetRow(
+                icon: "square-pen",
+                title: "후기 수정",
+                detail: editableEntry == nil ? "샘플 카드는 수정할 수 없습니다" : "레스토랑, 메뉴, 만족도, 노트를 다시 정리합니다",
+                isDisabled: editableEntry == nil
+            ) {
+                guard let editableEntry else { return }
+                onEdit(editableEntry)
+            }
+
+            ShareLink(item: shareText) {
+                ActionSheetRowContent(
+                    icon: "square.and.arrow.up",
+                    title: "공유",
+                    detail: "이 디시 기록의 요약을 공유합니다"
+                )
+            }
+            .buttonStyle(.plain)
+
+            ActionSheetRow(
+                icon: "trash",
+                title: "삭제",
+                detail: editableEntry == nil ? "샘플 카드는 삭제할 수 없습니다" : "이 기기에서 기록을 삭제합니다",
+                isDestructive: true,
+                isDisabled: editableEntry == nil
+            ) {
+                showsDeleteAlert = true
             }
         }
     }
@@ -587,8 +609,13 @@ private struct ActionSheetRow: View {
 
     var body: some View {
         Button(action: action) {
-            ActionSheetRowContent(icon: icon, title: title, detail: detail, isDestructive: isDestructive)
-                .opacity(isDisabled ? 0.48 : 1)
+            ActionSheetRowContent(
+                icon: icon,
+                title: title,
+                detail: detail,
+                isDestructive: isDestructive,
+                isDisabled: isDisabled
+            )
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
@@ -600,9 +627,10 @@ private struct ActionSheetRowContent: View {
     let title: String
     let detail: String
     var isDestructive = false
+    var isDisabled = false
 
     var body: some View {
-        SectionCard {
+        SectionCard(background: isDisabled ? TBColor.disabledSurface : TBColor.surface, showsBorder: false) {
             HStack(spacing: 12) {
                 LucideIcon(
                     systemName: icon,
@@ -610,37 +638,68 @@ private struct ActionSheetRowContent: View {
                     strokeWidth: TBIcon.Stroke.regular
                 )
                     .frame(width: 36, height: 36)
-                    .foregroundStyle(isDestructive ? Color.red : TBColor.textSecondary)
-                    .background(isDestructive ? Color.red.opacity(0.08) : TBColor.mutedSurface)
+                    .foregroundStyle(iconColor)
+                    .background(iconBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(TBFont.semibold(14))
-                        .foregroundStyle(isDestructive ? Color.red : TBColor.textPrimary)
+                        .foregroundStyle(titleColor)
                     Text(detail)
                         .font(TBFont.regular(11))
-                        .foregroundStyle(TBColor.textHint)
+                        .foregroundStyle(isDisabled ? TBColor.textDisabled : TBColor.textHint)
                         .lineLimit(2)
                 }
 
                 Spacer()
                 LucideIcon(
                     .chevronRight,
-                    size: TBIcon.Size.xSmall,
+                    size: TBIcon.Size.medium,
                     strokeWidth: TBIcon.Stroke.regular
                 )
-                    .foregroundStyle(TBColor.textHint)
+                    .foregroundStyle(isDisabled ? TBColor.textDisabled : TBColor.textHint)
             }
         }
     }
+
+    private var iconColor: Color {
+        guard !isDisabled else {
+            return TBColor.textDisabled
+        }
+
+        return isDestructive ? TBColor.destructive : TBColor.textSecondary
+    }
+
+    private var iconBackground: Color {
+        guard !isDisabled else {
+            return TBColor.disabledSurface
+        }
+
+        return isDestructive ? TBColor.destructive.opacity(0.08) : TBColor.mutedSurface
+    }
+
+    private var titleColor: Color {
+        guard !isDisabled else {
+            return TBColor.textDisabled
+        }
+
+        return isDestructive ? TBColor.destructive : TBColor.textPrimary
+    }
+}
+
+enum DiningFeedbackStartMode {
+    case menu
+    case cameraCapture
 }
 
 struct DiningFeedbackSheet: View {
     private enum Phase {
         case menu
+        case restaurantSelection
         case tasteWords
         case detailTags
+        case cameraCapture
         case reflection
         case result
     }
@@ -656,13 +715,13 @@ struct DiningFeedbackSheet: View {
         var title: String {
             switch self {
             case .instagramStory:
-                "인스타그램 스토리"
+                "Instagram"
             case .copy:
-                "복사하기"
+                "이미지 복사"
             case .saveImage:
-                "이미지로 저장"
+                "사진 저장"
             case .copyLink:
-                "카피 링크"
+                "링크 복사"
             }
         }
 
@@ -671,7 +730,7 @@ struct DiningFeedbackSheet: View {
             case .instagramStory:
                 "스토리 편집 화면으로 결과 카드를 보냅니다"
             case .copy:
-                "미식 노트 요약을 텍스트로 복사합니다"
+                "전체 공유 화면을 이미지로 복사합니다"
             case .saveImage:
                 "결과 카드를 사진 보관함에 저장합니다"
             case .copyLink:
@@ -684,11 +743,11 @@ struct DiningFeedbackSheet: View {
             case .instagramStory:
                 .camera
             case .copy:
-                .share
+                .copy
             case .saveImage:
-                .archive
+                .circleArrowDown
             case .copyLink:
-                .globe
+                .link
             }
         }
     }
@@ -705,8 +764,12 @@ struct DiningFeedbackSheet: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
-    @State private var phase: Phase = .menu
+    @State private var phase: Phase
     @State private var selectedDishIndex: Int?
+    @State private var selectedRestaurantCandidateID: String?
+    @State private var usesRestaurantDirectInput = false
+    @State private var directRestaurantName: String
+    @State private var confirmedRestaurantName: String?
     @State private var usesDirectInput = false
     @State private var directMenuTitle = ""
     @State private var customDishes: [DiningFeedbackDishContract] = []
@@ -724,14 +787,23 @@ struct DiningFeedbackSheet: View {
     @State private var reflectionPhotoFilename: String?
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var photoLoadError: String?
+    @State private var pendingCaptureLocation: CLLocation?
+    @State private var cameraClosePhase: Phase?
     @State private var customTagCategoryID: String?
     @State private var customTagLabel = ""
     @State private var isResultChromeVisible = false
-    @State private var isResultShareOverlayVisible = false
+    @State private var isResultShareSheetPresented = false
+    @State private var resultShareSheetDragTranslation: CGFloat = 0
+    @State private var isDraggingResultShareSheet = false
+    @State private var canDragResultShareSheet = false
+    @State private var resultSharePreviewImage: UIImage?
     @State private var resultShareStatusMessage: String?
+    @StateObject private var cameraModel = DiningFeedbackCameraModel()
+    @StateObject private var restaurantResolver = DiningFeedbackRestaurantResolver()
 
     init(
         entry: DiningEntry? = nil,
+        startMode: DiningFeedbackStartMode = .menu,
         onClose: (() -> Void)? = nil,
         onSave: @escaping (DiningEntry) -> Void
     ) {
@@ -756,6 +828,11 @@ struct DiningFeedbackSheet: View {
         )
         self.onClose = onClose
         self.onSave = onSave
+        _phase = State(
+            initialValue: startMode == .cameraCapture ? .cameraCapture : .menu
+        )
+        _directRestaurantName = State(initialValue: entry?.restaurant ?? "")
+        _confirmedRestaurantName = State(initialValue: entry?.restaurant)
         _directMenuTitle = State(initialValue: entry?.menu ?? "")
         _selectedExperienceIDs = State(initialValue: Array(restoredExperienceIDs))
         _focusedExperienceID = State(initialValue: restoredExperienceIDs.first)
@@ -774,10 +851,14 @@ struct DiningFeedbackSheet: View {
             switch phase {
             case .menu:
                 menuSelectionView
+            case .restaurantSelection:
+                restaurantSelectionView
             case .tasteWords:
                 tasteWordsView
             case .detailTags:
                 detailTagsView
+            case .cameraCapture:
+                cameraCaptureView
             case .reflection:
                 reflectionView
             case .result:
@@ -785,6 +866,112 @@ struct DiningFeedbackSheet: View {
             }
         }
         .preferredColorScheme(.light)
+        .edgeSwipeBack(
+            isEnabled: !isTasteSearchPresented
+                && !isResultShareSheetPresented
+                && !isTasteMapInteracting,
+            action: handleEdgeSwipeBack
+        )
+    }
+
+    private var restaurantSelectionView: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                TBFlowTopBar(
+                    title: "식후 피드백",
+                    showsDivider: false,
+                    backgroundColor: TBColor.page,
+                    leadingIconSize: TBIcon.Size.large,
+                    leadingIconStrokeWidth: TBIcon.Stroke.medium,
+                    leadingAction: closeFeedback
+                )
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        DiningFeedbackIntroHeader(
+                            title: "어느 식당에서 남긴 기록인가요?",
+                            subtitle: "사진 위치를 기준으로 가까운 식당 후보를 먼저 정리했어요. 맞는 식당을 고르거나, 보이지 않으면 직접 입력해 주세요.",
+                            contextText: restaurantResolver.statusText
+                        )
+
+                        VStack(spacing: 12) {
+                            if restaurantResolver.isLoading {
+                                SectionCard {
+                                    HStack(spacing: 12) {
+                                        ProgressView()
+                                            .tint(TBColor.textSecondary)
+                                        Text("사진 위치 주변의 식당 후보를 찾고 있어요.")
+                                            .font(TBFont.regular(12))
+                                            .foregroundStyle(TBColor.textSubtle)
+                                    }
+                                }
+                            }
+
+                            ForEach(restaurantResolver.candidates) { candidate in
+                                TBSelectionCard(
+                                    title: candidate.name,
+                                    description: candidate.detailText,
+                                    indicator: .radio,
+                                    isSelected: selectedRestaurantCandidateID == candidate.id && !usesRestaurantDirectInput
+                                ) {
+                                    selectedRestaurantCandidateID = candidate.id
+                                    usesRestaurantDirectInput = false
+                                }
+                            }
+
+                            TBSelectionCard(
+                                title: "직접 입력",
+                                description: "사진 위치가 다르거나 후보가 맞지 않으면 식당명을 직접 남길 수 있어요.",
+                                indicator: .radio,
+                                isSelected: usesRestaurantDirectInput
+                            ) {
+                                selectedRestaurantCandidateID = nil
+                                usesRestaurantDirectInput.toggle()
+                            }
+
+                            if usesRestaurantDirectInput {
+                                SectionCard {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        Text("식당명 직접 입력")
+                                            .font(TBFont.semibold(14))
+                                            .foregroundStyle(TBColor.textPrimary)
+
+                                        TextField("예: 정식당", text: $directRestaurantName)
+                                            .font(TBFont.semibold(13))
+                                            .foregroundStyle(TBColor.textPrimary)
+                                            .textInputAutocapitalization(.never)
+                                            .autocorrectionDisabled()
+                                            .submitLabel(.done)
+                                            .padding(.horizontal, 12)
+                                            .frame(height: 44)
+                                            .background(TBColor.focus)
+                                            .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
+                                            .overlay {
+                                                RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
+                                                    .stroke(TBColor.border)
+                                            }
+                                            .onSubmit(continueRestaurantSelection)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .tbPageContentPadding(bottom: TBSpacing.page + 156)
+                }
+                .scrollIndicators(.hidden)
+            }
+
+            TBFlowStepCTA(
+                actionLabel: "식당 확인하고 메뉴 선택",
+                currentIndex: 0,
+                total: 1,
+                isEnabled: canContinueRestaurantSelection,
+                backgroundColor: TBColor.page,
+                showsIndicator: false,
+                action: continueRestaurantSelection
+            )
+        }
+        .background(TBColor.page.ignoresSafeArea())
     }
 
     private var menuSelectionView: some View {
@@ -801,19 +988,11 @@ struct DiningFeedbackSheet: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("어떤 메뉴를 먼저 기록할까요?")
-                                .font(TBFont.bold(16))
-                                .foregroundStyle(TBColor.textPrimary)
-                            Text("모든 코스를 한 번에 평가하지 않아도 괜찮아요. 가장 선명하게 기억나는 메뉴부터 선택하면, 그 메뉴의 미각 인상만 차분히 기록할 수 있어요.")
-                                .font(TBFont.regular(12))
-                                .foregroundStyle(TBColor.textBody)
-                                .lineSpacing(5)
-                            Text("\(scenario.courseName) · \(scenario.restaurant)")
-                                .font(TBFont.regular(12))
-                                .foregroundStyle(TBColor.textHint)
-                                .padding(.top, 4)
-                        }
+                        DiningFeedbackIntroHeader(
+                            title: "어떤 메뉴를 먼저 기록할까요?",
+                            subtitle: "모든 코스를 한 번에 평가하지 않아도 괜찮아요. 가장 선명하게 기억나는 메뉴부터 선택하면, 그 메뉴의 미각 인상만 차분히 기록할 수 있어요.",
+                            contextText: menuContextLabel
+                        )
 
                         VStack(spacing: 12) {
                             ForEach(Array(feedbackDishes.enumerated()), id: \.element.id) { index, dish in
@@ -862,12 +1041,14 @@ struct DiningFeedbackSheet: View {
                                                 .onSubmit(addCustomDish)
 
                                             Button(action: addCustomDish) {
+                                                let isDisabled = directMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
                                                 Text("추가")
                                                     .font(TBFont.semibold(12))
-                                                    .foregroundStyle(TBColor.textInverse)
+                                                    .foregroundStyle(isDisabled ? TBColor.textDisabled : TBColor.textInverse)
                                                     .padding(.horizontal, 16)
                                                     .frame(height: 44)
-                                                    .background(TBColor.textPrimary)
+                                                    .background(isDisabled ? TBColor.disabledSurface : TBColor.textPrimary)
                                                     .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
                                             }
                                             .buttonStyle(.plain)
@@ -920,8 +1101,7 @@ struct DiningFeedbackSheet: View {
                             }
                         }
                     }
-                    .padding(TBSpacing.page)
-                    .padding(.bottom, 156)
+                    .tbPageContentPadding(bottom: TBSpacing.page + 156)
                 }
                 .scrollIndicators(.hidden)
             }
@@ -951,7 +1131,7 @@ struct DiningFeedbackSheet: View {
                             description: "잠시 뒤 다시 열면 메뉴의 미각 인상을 이어서 기록할 수 있어요."
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding(TBSpacing.page)
+                        .tbPageContentPadding()
                     } else {
                         TasteExperienceMapViewport(
                             basePositions: baseTasteExperiencePositions,
@@ -1099,7 +1279,9 @@ struct DiningFeedbackSheet: View {
                         DiningReflectionEntryCard(
                             photoData: reflectionPhotoData,
                             onOpenNote: { phase = .reflection },
-                            photoPickerItem: $photoPickerItem
+                            onOpenCamera: {
+                                openCameraCapture(returningTo: .detailTags)
+                            }
                         )
 
                         VStack(spacing: 28) {
@@ -1198,8 +1380,7 @@ struct DiningFeedbackSheet: View {
                             }
                         )
                     }
-                    .padding(TBSpacing.page)
-                    .padding(.bottom, 164)
+                    .tbPageContentPadding(bottom: TBSpacing.page + 164)
                 }
                 .scrollIndicators(.hidden)
             }
@@ -1224,59 +1405,221 @@ struct DiningFeedbackSheet: View {
         }
     }
 
+    private var cameraCaptureView: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            DiningFeedbackCameraPreview(session: cameraModel.session)
+                .ignoresSafeArea()
+                .opacity(cameraModel.isRunning ? 1 : 0)
+
+            if let errorMessage = cameraModel.errorMessage {
+                DiningFeedbackCameraStatusCard(message: errorMessage)
+                    .padding(.horizontal, TBSpacing.page)
+            } else if !cameraModel.isRunning {
+                DiningFeedbackCameraStatusCard(message: "카메라를 준비하고 있어요.")
+                    .padding(.horizontal, TBSpacing.page)
+            }
+
+            VStack {
+                LinearGradient(
+                    colors: [Color.black.opacity(0.45), Color.black.opacity(0)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 132)
+
+                Spacer()
+
+                LinearGradient(
+                    colors: [Color.black.opacity(0), Color.black.opacity(0.55)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 176)
+            }
+            .allowsHitTesting(false)
+            .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                HStack {
+                    Button(action: closeCameraCapture) {
+                        DiningFeedbackCameraChromeIcon(icon: .x, showsBackground: false)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("카메라 닫기")
+
+                    Spacer()
+
+                    Button(action: cameraModel.toggleFlash) {
+                        DiningFeedbackCameraChromeIcon(
+                            icon: cameraModel.isFlashOn ? .zapOff : .zap,
+                            isActive: cameraModel.isFlashOn
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!cameraModel.canUseFlash)
+                    .accessibilityLabel(cameraModel.isFlashOn ? "플래시 끄기" : "플래시 켜기")
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+
+                Spacer()
+
+                HStack(alignment: .center) {
+                    PhotosPicker(selection: $photoPickerItem, matching: .images) {
+                        DiningFeedbackCameraChromeIcon(icon: .image)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("사진첩에서 선택")
+
+                    Spacer()
+
+                    Button(action: captureDiningPhoto) {
+                        ZStack {
+                            Circle()
+                                .stroke(Color.white, lineWidth: 2)
+                                .frame(width: 72, height: 72)
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 58, height: 58)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!cameraModel.isRunning)
+                    .accessibilityLabel("사진 촬영")
+
+                    Spacer()
+
+                    Button(action: cameraModel.switchCamera) {
+                        DiningFeedbackCameraChromeIcon(icon: .switchCamera)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!cameraModel.isRunning)
+                    .accessibilityLabel("전면 후면 카메라 전환")
+                }
+                .padding(.horizontal, 28)
+                .padding(.bottom, 24)
+            }
+        }
+        .preferredColorScheme(.dark)
+        .onAppear {
+            cameraModel.onCapture = { data in
+                Task { @MainActor in
+                    applyCameraPhoto(data)
+                }
+            }
+            restaurantResolver.prepareForPhotoLocation()
+            cameraModel.start()
+        }
+        .onDisappear {
+            cameraModel.onCapture = nil
+            cameraModel.stop()
+        }
+        .onChange(of: photoPickerItem) { _, item in
+            guard let item else { return }
+            Task {
+                if let photoPayload = await loadReflectionPhotoPayload(from: item) {
+                    let nextPhase = phaseAfterPhotoCapture
+                    photoPickerItem = nil
+                    cameraClosePhase = nil
+                    if nextPhase == .restaurantSelection {
+                        beginRestaurantResolution(
+                            from: photoPayload.data,
+                            capturedLocation: nil,
+                            assetLocation: photoPayload.assetLocation
+                        )
+                    }
+                    phase = nextPhase
+                }
+            }
+        }
+        .alert("사진을 불러오지 못했어요", isPresented: photoLoadErrorBinding) {
+            Button("확인", role: .cancel) {
+                photoLoadError = nil
+            }
+        } message: {
+            Text(photoLoadError ?? "")
+        }
+    }
+
     private var resultView: some View {
-        ZStack(alignment: .bottom) {
+        GeometryReader { proxy in
+            ZStack(alignment: .bottom) {
+                resultStageContent
+                    .allowsHitTesting(!isResultShareSheetPresented)
+
+                if isResultShareSheetPresented {
+                    resultShareSheet
+                        .frame(
+                            width: proxy.size.width,
+                            height: resultShareSheetHeight,
+                            alignment: .bottom
+                        )
+                        .offset(
+                            y: proxy.safeAreaInsets.bottom
+                                + resultShareSheetDragTranslation
+                        )
+                        .simultaneousGesture(resultShareSheetDragGesture)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .zIndex(30)
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+        }
+        .background {
             DiningFeedbackResultBackground(experiences: selectedExperiences)
                 .ignoresSafeArea()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .ignoresSafeArea(edges: .horizontal)
+    }
+
+    private var resultStageContent: some View {
+        ZStack {
+            Color.clear
                 .contentShape(Rectangle())
                 .onTapGesture(perform: showResultChrome)
 
-            VStack(spacing: 0) {
-                if isResultChromeVisible {
+            Button(action: showResultChrome) {
+                DiningFeedbackResultCardBloom(
+                    mainAxis: resultMeshAxes.main,
+                    secondaryAxis: resultMeshAxes.secondary,
+                    tertiaryAxis: resultMeshAxes.tertiary,
+                    reduceMotion: reduceMotion
+                ) {
+                    DiningFeedbackResultCard(
+                        restaurant: selectedRestaurantName,
+                        menuTitle: selectedMenuTitle,
+                        experiences: selectedExperiences,
+                        detailTags: selectedDetailTagMetadata,
+                        reflectionNote: resolvedReflectionNote,
+                        photoData: reflectionPhotoData
+                    )
+                }
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, DiningFeedbackResultLayout.cardHorizontalPadding)
+            .accessibilityLabel("결과 카드")
+            .accessibilityHint("상단 공유 버튼과 하단 저장 버튼을 표시합니다")
+
+            if isResultChromeVisible {
+                VStack(spacing: 0) {
                     resultTopBar
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                    Spacer(minLength: 0)
                 }
-
-                Spacer()
-
-                Button(action: showResultChrome) {
-                    DiningFeedbackResultCardBloom(
-                        mainAxis: resultMeshAxes.main,
-                        secondaryAxis: resultMeshAxes.secondary,
-                        tertiaryAxis: resultMeshAxes.tertiary,
-                        reduceMotion: reduceMotion
-                    ) {
-                        DiningFeedbackResultCard(
-                            restaurant: scenario.restaurant,
-                            menuTitle: selectedMenuTitle,
-                            experiences: selectedExperiences,
-                            detailTags: selectedDetailTagMetadata,
-                            reflectionNote: resolvedReflectionNote,
-                            photoData: reflectionPhotoData
-                        )
-                    }
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 50)
-                .accessibilityLabel("결과 카드")
-                .accessibilityHint("상단 공유 버튼과 하단 저장 버튼을 표시합니다")
-
-                Spacer()
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
 
             if isResultChromeVisible {
-                resultSplitCTA
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    resultSplitCTA
+                }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-
-            if isResultShareOverlayVisible {
-                resultShareOverlay
-                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
-                    .zIndex(30)
             }
         }
         .animation(.easeOut(duration: 0.3), value: isResultChromeVisible)
-        .animation(.easeOut(duration: 0.22), value: isResultShareOverlayVisible)
     }
 
     private var resultTopBar: some View {
@@ -1297,7 +1640,7 @@ struct DiningFeedbackSheet: View {
 
                 Spacer()
 
-                Button(action: showResultShareOverlay) {
+                Button(action: showResultShareSheet) {
                     LucideIcon(
                         .share,
                         size: TBIcon.Size.large,
@@ -1344,147 +1687,222 @@ struct DiningFeedbackSheet: View {
         .padding(.bottom, FlowBottomCtaMetrics.bottomPadding)
     }
 
-    private var resultShareOverlay: some View {
+    private var resultShareSheet: some View {
+        BottomSheetShell(
+            headerStart: AnyView(
+                BottomSheetCloseButton(action: hideResultShareSheet)
+            ),
+            headerCenter: AnyView(
+                Text("결과 카드 공유")
+                    .font(TBFont.bold(15))
+                    .foregroundStyle(TBColor.textPrimary)
+            ),
+            footer: AnyView(resultShareActionFooter),
+            footerBackground: TBColor.focus,
+            stageMode: .fixed,
+            usesNativeSheetChrome: false
+        ) {
+            resultSharePreviewArea
+        }
+    }
+
+    private var resultSharePreviewArea: some View {
+        GeometryReader { proxy in
+            let availableWidth = proxy.size.width - (TBSpacing.page * 2)
+            let availableHeight = max(proxy.size.height - 24, 0)
+            let previewWidth = max(
+                0,
+                min(availableWidth, availableHeight * resultShareCanvasAspectRatio)
+            )
+            let previewHeight = previewWidth / resultShareCanvasAspectRatio
+
+            resultSharePreview
+                .frame(width: previewWidth, height: previewHeight)
+                .frame(
+                    width: proxy.size.width,
+                    height: proxy.size.height,
+                    alignment: .center
+                )
+                .padding(.top, 4)
+        }
+    }
+
+    private var resultSharePreview: some View {
         ZStack {
-            Color.black.opacity(0.24)
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .onTapGesture(perform: hideResultShareOverlay)
+            if let resultSharePreviewImage {
+                Image(uiImage: resultSharePreviewImage)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                TBColor.mutedSurface
 
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("결과 카드 공유")
-                            .font(TBFont.bold(16))
-                            .foregroundStyle(TBColor.textPrimary)
-
-                        Text("다음 식사를 더 잘 맞추는 기록으로 남겨둘게요.")
-                            .font(TBFont.regular(12))
-                            .foregroundStyle(TBColor.textMuted)
-                    }
-
-                    Spacer()
-
-                    Button(action: hideResultShareOverlay) {
-                        LucideIcon(
-                            .x,
-                            size: TBIcon.Size.base,
-                            strokeWidth: TBIcon.Stroke.regular
-                        )
-                        .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
-                        .foregroundStyle(TBColor.textSecondary)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("공유 옵션 닫기")
-                }
-
-                VStack(spacing: 8) {
-                    ForEach(ResultShareOption.allCases) { option in
-                        resultShareOptionButton(option)
-                    }
-                }
-
-                if let resultShareStatusMessage {
-                    Text(resultShareStatusMessage)
-                        .font(TBFont.medium(12))
-                        .foregroundStyle(TBColor.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(TBColor.mutedSurface)
-                        .clipShape(
-                            RoundedRectangle(
-                                cornerRadius: TBRadius.row,
-                                style: .continuous
-                            )
-                        )
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
-                }
+                ProgressView()
+                    .tint(TBColor.textMuted)
             }
-            .padding(16)
-            .frame(maxWidth: 340)
-            .background(.ultraThinMaterial)
-            .background(TBColor.overlaySurface)
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: TBRadius.card,
-                    style: .continuous
-                )
-            )
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: TBRadius.card,
-                    style: .continuous
-                )
-                .stroke(Color.white.opacity(0.70), lineWidth: 1)
-            }
-            .shadow(
-                color: TBShadow.drawer.color,
-                radius: TBShadow.drawer.radius,
-                x: TBShadow.drawer.x,
-                y: TBShadow.drawer.y
-            )
-            .padding(.horizontal, TBSpacing.page)
-            .onTapGesture {}
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous)
+                .stroke(TBColor.borderSubtle, lineWidth: 1)
+        }
+        .clipped()
+        .accessibilityLabel("공유 화면 미리보기")
+    }
+
+    private var resultShareActionFooter: some View {
+        VStack(spacing: 14) {
+            Divider()
+                .overlay(TBColor.borderSubtle)
+
+            if let resultShareStatusMessage {
+                Text(resultShareStatusMessage)
+                    .font(TBFont.medium(12))
+                    .foregroundStyle(TBColor.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(TBColor.mutedSurface)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: TBRadius.row,
+                            style: .continuous
+                        )
+                    )
+                    .transition(.opacity)
+            }
+
+            HStack(alignment: .top, spacing: 14) {
+                ForEach(ResultShareOption.allCases) { option in
+                    resultShareOptionButton(option)
+                }
+            }
+        }
     }
 
     private func resultShareOptionButton(_ option: ResultShareOption) -> some View {
         Button {
             handleResultShareOption(option)
         } label: {
-            HStack(spacing: 12) {
-                LucideIcon(
-                    option.icon,
-                    size: TBIcon.Size.control,
-                    strokeWidth: TBIcon.Stroke.regular
-                )
-                .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
-                .foregroundStyle(TBColor.textPrimary)
+            VStack(spacing: 7) {
+                ZStack {
+                    if option == .instagramStory {
+                        RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous)
+                            .fill(instagramGradient)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(option.title)
-                        .font(TBFont.semibold(14))
+                        InstagramLogo()
+                            .frame(width: 26, height: 26)
+                            .foregroundStyle(Color.white)
+                    } else {
+                        RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous)
+                            .fill(TBColor.mutedSurface)
+
+                        LucideIcon(
+                            option.icon,
+                            size: TBIcon.Size.large,
+                            strokeWidth: TBIcon.Stroke.regular
+                        )
                         .foregroundStyle(TBColor.textPrimary)
 
-                    Text(option.detail)
-                        .font(TBFont.regular(11))
-                        .foregroundStyle(TBColor.textMuted)
-                        .lineLimit(1)
+                        RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous)
+                            .stroke(TBColor.borderSubtle, lineWidth: 1)
+                    }
                 }
+                .aspectRatio(1, contentMode: .fit)
+                .frame(maxWidth: .infinity)
 
-                Spacer()
-
-                LucideIcon(
-                    .chevronRight,
-                    size: TBIcon.Size.small,
-                    strokeWidth: TBIcon.Stroke.regular
-                )
-                .foregroundStyle(TBColor.textHint)
+                Text(option.title)
+                    .font(TBFont.medium(10))
+                    .foregroundStyle(TBColor.textSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(TBColor.surface)
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: TBRadius.support,
-                    style: .continuous
-                )
-            )
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: TBRadius.support,
-                    style: .continuous
-                )
-                .stroke(TBColor.borderSubtle, lineWidth: 1)
-            }
+            .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(option.title)
         .accessibilityHint(option.detail)
+    }
+
+    private var instagramGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color(red: 0.51, green: 0.22, blue: 0.71),
+                Color(red: 0.88, green: 0.19, blue: 0.42),
+                Color(red: 0.99, green: 0.68, blue: 0.28)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var resultShareSheetHeight: CGFloat {
+        BottomSheetShellMetrics.stageHeight(
+            screenHeight: UIScreen.main.bounds.height,
+            safeAreaTop: resultKeyWindowSafeAreaInsets.top
+        )
+    }
+
+    private var resultShareCanvasSize: CGSize {
+        UIScreen.main.bounds.size
+    }
+
+    private var resultShareCanvasAspectRatio: CGFloat {
+        let size = resultShareCanvasSize
+        guard size.height > 0 else {
+            return 9.0 / 19.5
+        }
+
+        return size.width / size.height
+    }
+
+    private var resultShareSheetDragGesture: some Gesture {
+        DragGesture(minimumDistance: StagedBottomSheetDragMetrics.minimumDistance)
+            .onChanged { value in
+                guard canDragResultShareSheet else {
+                    return
+                }
+
+                let verticalMovement = value.translation.height
+                let horizontalMovement = abs(value.translation.width)
+                guard verticalMovement > 0, verticalMovement >= horizontalMovement else {
+                    return
+                }
+
+                isDraggingResultShareSheet = true
+                resultShareSheetDragTranslation = verticalMovement
+            }
+            .onEnded { value in
+                guard canDragResultShareSheet else {
+                    return
+                }
+
+                let predictedTranslation = max(
+                    value.translation.height,
+                    value.predictedEndTranslation.height
+                )
+                let shouldDismiss = predictedTranslation >= resultShareSheetHeight
+                    * StagedBottomSheetDragMetrics.dismissProgressThreshold
+
+                if shouldDismiss {
+                    hideResultShareSheet()
+                } else {
+                    withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+                        resultShareSheetDragTranslation = 0
+                        isDraggingResultShareSheet = false
+                    }
+                }
+            }
+    }
+
+    private var resultKeyWindowSafeAreaInsets: UIEdgeInsets {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first { $0.isKeyWindow }?
+            .safeAreaInsets ?? .zero
     }
 
     private func detailFlowTopBar(
@@ -1536,11 +1954,36 @@ struct DiningFeedbackSheet: View {
         )
     }
 
+    private var hasExplicitRestaurantContext: Bool {
+        confirmedRestaurantName != nil || selectedRestaurantCandidate != nil || usesRestaurantDirectInput
+    }
+
+    private var menuContextLabel: String {
+        if let selectedRestaurantCatalogSummary {
+            return "\(selectedRestaurantCatalogSummary.category) · \(selectedRestaurantName)"
+        }
+
+        if isScenarioRestaurantSelected {
+            return "\(scenario.courseName) · \(selectedRestaurantName)"
+        }
+
+        return "직접 입력 · \(selectedRestaurantName)"
+    }
+
     private var feedbackDishes: [DiningFeedbackDishContract] {
         let baseDishes: [DiningFeedbackDishContract]
-        if scenario.dishes.isEmpty,
-           let entry,
-           !entry.menu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        let restaurantDishes = selectedRestaurantDishes
+        if !restaurantDishes.isEmpty {
+            baseDishes = restaurantDishes
+        } else if hasExplicitRestaurantContext,
+                  let entry,
+                  !entry.menu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            baseDishes = [customDish(title: entry.menu, id: "entry-menu")]
+        } else if hasExplicitRestaurantContext {
+            baseDishes = []
+        } else if scenario.dishes.isEmpty,
+                  let entry,
+                  !entry.menu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             baseDishes = [customDish(title: entry.menu, id: "entry-menu")]
         } else {
             baseDishes = scenario.dishes
@@ -1558,6 +2001,74 @@ struct DiningFeedbackSheet: View {
         return feedbackDishes[selectedDishIndex]
     }
 
+    private var selectedRestaurantDishes: [DiningFeedbackDishContract] {
+        if isScenarioRestaurantSelected, !scenario.dishes.isEmpty {
+            return scenario.dishes
+        }
+
+        guard let selectedRestaurantCatalogSummary else {
+            return []
+        }
+
+        return selectedRestaurantCatalogSummary.memorableDishes.enumerated().map { index, dish in
+            DiningFeedbackDishContract(
+                chefIntent: "\(selectedRestaurantCatalogSummary.name)의 메뉴를 실제 미각 기록으로 남겨 다음 다이닝 판단에 반영하기 위한 후보입니다.",
+                courseLabel: index == 0 ? "대표 메뉴 후보" : "기억 후보 \(index + 1)",
+                feedbackChoices: [],
+                flavorNotes: dish.tags,
+                id: "restaurant-\(selectedRestaurantCatalogSummary.id)-\(dish.id)",
+                ingredients: [],
+                subtitle: dish.summary,
+                techniques: [],
+                title: dish.title
+            )
+        }
+    }
+
+    private var selectedRestaurantCatalogSummary: RestaurantSummary? {
+        let selectedName = selectedRestaurantName
+        return RestaurantCatalog.restaurants.first { restaurant in
+            Self.restaurantNameMatches(selectedName, restaurant.name)
+        }
+    }
+
+    private var isScenarioRestaurantSelected: Bool {
+        Self.restaurantNameMatches(selectedRestaurantName, scenario.restaurant)
+    }
+
+    private var selectedRestaurantCandidate: DiningFeedbackRestaurantCandidate? {
+        guard let selectedRestaurantCandidateID else { return nil }
+        return restaurantResolver.candidates.first { $0.id == selectedRestaurantCandidateID }
+    }
+
+    private var selectedRestaurantName: String {
+        if let confirmedRestaurantName,
+           !confirmedRestaurantName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return confirmedRestaurantName
+        }
+
+        if usesRestaurantDirectInput {
+            let trimmedName = directRestaurantName.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedName.isEmpty {
+                return trimmedName
+            }
+        }
+
+        if let selectedRestaurantCandidate {
+            return selectedRestaurantCandidate.name
+        }
+
+        return scenario.restaurant
+    }
+
+    private var canContinueRestaurantSelection: Bool {
+        if usesRestaurantDirectInput {
+            return !directRestaurantName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+
+        return selectedRestaurantCandidate != nil
+    }
+
     private var selectedMenuTitle: String {
         usesDirectInput
             ? directMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1572,19 +2083,7 @@ struct DiningFeedbackSheet: View {
     }
 
     private var resultShareText: String {
-        "\(scenario.restaurant) \(selectedMenuTitle)의 미각 기록"
-    }
-
-    private var resultShareCopyText: String {
-        let tasteLabels = selectedExperiences.map(\.label).joined(separator: ", ")
-        let tagLabels = selectedDetailTagMetadata.map(\.label).joined(separator: ", ")
-
-        return """
-        \(scenario.restaurant) · \(selectedMenuTitle)
-        미각 인상: \(tasteLabels.isEmpty ? "기록 중" : tasteLabels)
-        디테일 단서: \(tagLabels.isEmpty ? "다음 식사에서 더 정교해질 예정" : tagLabels)
-        미식 노트: \(resolvedReflectionNote)
-        """
+        "\(selectedRestaurantName) \(selectedMenuTitle)의 미각 기록"
     }
 
     private var resultShareLink: String {
@@ -1593,7 +2092,7 @@ struct DiningFeedbackSheet: View {
         components.host = "dining-feedback"
         components.path = "/result"
         components.queryItems = [
-            URLQueryItem(name: "restaurant", value: scenario.restaurant),
+            URLQueryItem(name: "restaurant", value: selectedRestaurantName),
             URLQueryItem(name: "menu", value: selectedMenuTitle)
         ]
 
@@ -1622,6 +2121,23 @@ struct DiningFeedbackSheet: View {
         selectedDishIndex = selectedDishIndex == index ? nil : index
     }
 
+    private func continueRestaurantSelection() {
+        let directName = directRestaurantName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if usesRestaurantDirectInput, !directName.isEmpty {
+            confirmedRestaurantName = directName
+        } else if let selectedRestaurantCandidate {
+            confirmedRestaurantName = selectedRestaurantCandidate.name
+        } else {
+            return
+        }
+
+        selectedDishIndex = nil
+        customDishes = []
+        usesDirectInput = selectedRestaurantDishes.isEmpty
+        directMenuTitle = ""
+        phase = .menu
+    }
+
     private func addCustomDish() {
         let title = directMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else {
@@ -1647,6 +2163,24 @@ struct DiningFeedbackSheet: View {
             techniques: [],
             title: title
         )
+    }
+
+    private static func restaurantNameMatches(_ lhs: String, _ rhs: String) -> Bool {
+        let left = normalizedRestaurantName(lhs)
+        let right = normalizedRestaurantName(rhs)
+        guard left.count >= 2, right.count >= 2 else {
+            return false
+        }
+
+        return left == right || left.contains(right) || right.contains(left)
+    }
+
+    private static func normalizedRestaurantName(_ value: String) -> String {
+        value
+            .lowercased()
+            .filter { character in
+                character.isLetter || character.isNumber
+            }
     }
 
     private func toggleKind(_ id: String) {
@@ -1824,22 +2358,135 @@ struct DiningFeedbackSheet: View {
         customTagLabel = ""
     }
 
+    private var phaseAfterPhotoCapture: Phase {
+        if shouldResolveRestaurantAfterPhoto {
+            return .restaurantSelection
+        }
+
+        return selectedExperienceIDs.isEmpty ? Phase.menu : Phase.reflection
+    }
+
+    private var shouldResolveRestaurantAfterPhoto: Bool {
+        entry == nil && cameraClosePhase == nil && selectedExperienceIDs.isEmpty
+    }
+
+    private func openCameraCapture(returningTo phase: Phase?) {
+        photoLoadError = nil
+        cameraClosePhase = phase
+        self.phase = .cameraCapture
+    }
+
+    private func closeCameraCapture() {
+        cameraModel.stop()
+        if let cameraClosePhase {
+            phase = cameraClosePhase
+            self.cameraClosePhase = nil
+        } else {
+            closeFeedback()
+        }
+    }
+
+    private func captureDiningPhoto() {
+        pendingCaptureLocation = restaurantResolver.captureLocationSnapshot()
+        cameraModel.capturePhoto()
+    }
+
     @MainActor
-    private func loadReflectionPhoto(from item: PhotosPickerItem) async {
+    private func applyCameraPhoto(_ data: Data) {
+        guard applyReflectionPhotoData(data) else { return }
+        let nextPhase = phaseAfterPhotoCapture
+        let capturedLocation = pendingCaptureLocation
+        pendingCaptureLocation = nil
+        cameraClosePhase = nil
+        if nextPhase == .restaurantSelection {
+            beginRestaurantResolution(
+                from: data,
+                capturedLocation: capturedLocation,
+                assetLocation: nil
+            )
+        }
+        phase = nextPhase
+    }
+
+    @discardableResult
+    @MainActor
+    private func applyReflectionPhotoData(_ data: Data) -> Bool {
+        guard let normalizedData = DiningReflectionPhotoStore.normalizedJPEGData(data) else {
+            photoLoadError = "선택한 이미지를 읽을 수 없어요. 다른 사진을 선택해주세요."
+            return false
+        }
+
+        reflectionPhotoData = normalizedData
+        reflectionPhotoFilename = nil
+        photoLoadError = nil
+        return true
+    }
+
+    @MainActor
+    private func beginRestaurantResolution(
+        from photoData: Data,
+        capturedLocation: CLLocation?,
+        assetLocation: CLLocation?
+    ) {
+        selectedRestaurantCandidateID = nil
+        usesRestaurantDirectInput = false
+        directRestaurantName = ""
+        confirmedRestaurantName = nil
+
+        Task { @MainActor in
+            await restaurantResolver.resolveRestaurantCandidates(
+                from: photoData,
+                capturedLocation: capturedLocation,
+                assetLocation: assetLocation
+            )
+            selectedRestaurantCandidateID = restaurantResolver.candidates.first?.id
+            usesRestaurantDirectInput = restaurantResolver.candidates.isEmpty
+        }
+    }
+
+    @discardableResult
+    @MainActor
+    private func loadReflectionPhoto(from item: PhotosPickerItem) async -> Bool {
+        await loadReflectionPhotoData(from: item) != nil
+    }
+
+    @MainActor
+    private func loadReflectionPhotoData(from item: PhotosPickerItem) async -> Data? {
+        await loadReflectionPhotoPayload(from: item)?.data
+    }
+
+    @MainActor
+    private func loadReflectionPhotoPayload(from item: PhotosPickerItem) async -> DiningFeedbackPhotoPayload? {
         do {
-            guard let data = try await item.loadTransferable(type: Data.self),
-                  let normalizedData = DiningReflectionPhotoStore.normalizedJPEGData(data)
-            else {
+            guard let data = try await item.loadTransferable(type: Data.self) else {
                 photoLoadError = "선택한 이미지를 읽을 수 없어요. 다른 사진을 선택해주세요."
-                return
+                return nil
             }
 
-            reflectionPhotoData = normalizedData
-            reflectionPhotoFilename = nil
-            photoLoadError = nil
+            guard applyReflectionPhotoData(data) else {
+                return nil
+            }
+
+            return DiningFeedbackPhotoPayload(
+                data: data,
+                assetLocation: Self.photoLibraryLocation(for: item)
+            )
         } catch {
             photoLoadError = "사진을 불러오는 중 문제가 생겼어요. 다시 시도해주세요."
+            return nil
         }
+    }
+
+    private static func photoLibraryLocation(for item: PhotosPickerItem) -> CLLocation? {
+        guard let itemIdentifier = item.itemIdentifier else {
+            return nil
+        }
+
+        let result = PHAsset.fetchAssets(
+            withLocalIdentifiers: [itemIdentifier],
+            options: nil
+        )
+        return result.firstObject?.location
     }
 
     @MainActor
@@ -1873,7 +2520,7 @@ struct DiningFeedbackSheet: View {
         onSave(
             DiningEntry(
                 id: entryID,
-                restaurant: scenario.restaurant,
+                restaurant: selectedRestaurantName,
                 menu: selectedMenuTitle,
                 date: entry?.date ?? .now,
                 rating: TasteExperienceMapEngine.mappedRating(for: primaryExperience),
@@ -1894,9 +2541,32 @@ struct DiningFeedbackSheet: View {
         }
     }
 
+    private func handleEdgeSwipeBack() {
+        switch phase {
+        case .menu:
+            closeFeedback()
+        case .restaurantSelection:
+            closeFeedback()
+        case .tasteWords:
+            phase = .menu
+        case .detailTags:
+            phase = .tasteWords
+        case .cameraCapture:
+            closeCameraCapture()
+        case .reflection:
+            phase = .detailTags
+        case .result:
+            handleResultBack()
+        }
+    }
+
     private func showResultCard() {
         isResultChromeVisible = false
-        isResultShareOverlayVisible = false
+        isResultShareSheetPresented = false
+        resultShareSheetDragTranslation = 0
+        isDraggingResultShareSheet = false
+        canDragResultShareSheet = false
+        resultSharePreviewImage = nil
         resultShareStatusMessage = nil
         phase = .result
     }
@@ -1913,21 +2583,38 @@ struct DiningFeedbackSheet: View {
 
     private func handleResultBack() {
         isResultChromeVisible = false
-        isResultShareOverlayVisible = false
+        isResultShareSheetPresented = false
+        resultShareSheetDragTranslation = 0
+        isDraggingResultShareSheet = false
+        canDragResultShareSheet = false
+        resultSharePreviewImage = nil
         resultShareStatusMessage = nil
         phase = .detailTags
     }
 
-    private func showResultShareOverlay() {
+    private func showResultShareSheet() {
         resultShareStatusMessage = nil
-        withAnimation(.easeOut(duration: 0.22)) {
-            isResultShareOverlayVisible = true
+        resultSharePreviewImage = makeResultShareImage()
+        resultShareSheetDragTranslation = 0
+        isDraggingResultShareSheet = false
+        canDragResultShareSheet = false
+        withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+            isResultShareSheetPresented = true
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(700))
+            if isResultShareSheetPresented {
+                canDragResultShareSheet = true
+            }
         }
     }
 
-    private func hideResultShareOverlay() {
-        withAnimation(.easeOut(duration: 0.22)) {
-            isResultShareOverlayVisible = false
+    private func hideResultShareSheet() {
+        withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+            isResultShareSheetPresented = false
+            resultShareSheetDragTranslation = 0
+            isDraggingResultShareSheet = false
+            canDragResultShareSheet = false
         }
     }
 
@@ -1936,8 +2623,12 @@ struct DiningFeedbackSheet: View {
         case .instagramStory:
             shareResultToInstagramStory()
         case .copy:
-            UIPasteboard.general.string = resultShareCopyText
-            resultShareStatusMessage = "미식 노트 요약을 복사했어요."
+            guard let image = preparedResultShareImage else {
+                resultShareStatusMessage = "복사할 이미지를 준비하지 못했어요."
+                return
+            }
+            UIPasteboard.general.image = image
+            resultShareStatusMessage = "전체 공유 화면 이미지를 복사했어요."
         case .saveImage:
             saveResultImageToPhotos()
         case .copyLink:
@@ -1948,19 +2639,26 @@ struct DiningFeedbackSheet: View {
 
     @MainActor
     private func makeResultShareImage() -> UIImage? {
+        let canvasSize = resultShareCanvasSize
         let renderer = ImageRenderer(
             content: DiningFeedbackResultShareImage(
-                restaurant: scenario.restaurant,
+                restaurant: selectedRestaurantName,
                 menuTitle: selectedMenuTitle,
                 experiences: selectedExperiences,
                 detailTags: selectedDetailTagMetadata,
                 reflectionNote: resolvedReflectionNote,
-                photoData: reflectionPhotoData
+                photoData: reflectionPhotoData,
+                canvasSize: canvasSize
             )
-            .frame(width: 360, height: 640)
+            .frame(width: canvasSize.width, height: canvasSize.height)
         )
         renderer.scale = 3
         return renderer.uiImage
+    }
+
+    @MainActor
+    private var preparedResultShareImage: UIImage? {
+        resultSharePreviewImage ?? makeResultShareImage()
     }
 
     private func shareResultToInstagramStory() {
@@ -1969,7 +2667,7 @@ struct DiningFeedbackSheet: View {
             return
         }
 
-        guard let imageData = makeResultShareImage()?.pngData() else {
+        guard let imageData = preparedResultShareImage?.pngData() else {
             resultShareStatusMessage = "공유 이미지를 준비하지 못했어요."
             return
         }
@@ -1991,12 +2689,12 @@ struct DiningFeedbackSheet: View {
             ]
         )
 
-        hideResultShareOverlay()
+        hideResultShareSheet()
         UIApplication.shared.open(url)
     }
 
     private func saveResultImageToPhotos() {
-        guard let image = makeResultShareImage() else {
+        guard let image = preparedResultShareImage else {
             resultShareStatusMessage = "저장할 이미지를 준비하지 못했어요."
             return
         }
@@ -2023,6 +2721,11 @@ struct DiningFeedbackSheet: View {
 
     private func handleResultAdditionalRecord() {
         selectedDishIndex = nil
+        selectedRestaurantCandidateID = nil
+        usesRestaurantDirectInput = false
+        directRestaurantName = ""
+        confirmedRestaurantName = entry?.restaurant
+        restaurantResolver.reset()
         usesDirectInput = false
         directMenuTitle = ""
         selectedKindIDs = ["seafood", "meat", "broth"]
@@ -2039,12 +2742,71 @@ struct DiningFeedbackSheet: View {
         reflectionPhotoFilename = nil
         photoPickerItem = nil
         photoLoadError = nil
+        pendingCaptureLocation = nil
+        cameraClosePhase = nil
         customTagCategoryID = nil
         customTagLabel = ""
         isResultChromeVisible = false
-        isResultShareOverlayVisible = false
+        isResultShareSheetPresented = false
+        resultShareSheetDragTranslation = 0
+        isDraggingResultShareSheet = false
+        canDragResultShareSheet = false
+        resultSharePreviewImage = nil
         resultShareStatusMessage = nil
         phase = .menu
+    }
+}
+
+private struct DiningFeedbackIntroHeader: View {
+    let title: String
+    let subtitle: String
+    let contextText: String?
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Text(title)
+                .font(TBFont.bold(18))
+                .foregroundStyle(TBColor.textPrimary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(2)
+
+            VStack(spacing: 8) {
+                Text(subtitle)
+                    .font(TBFont.regular(14))
+                    .foregroundStyle(TBColor.textBody)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(5)
+
+                if let contextText, !contextText.isEmpty {
+                    Text(contextText)
+                        .font(TBFont.regular(12))
+                        .foregroundStyle(TBColor.textHint)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 16)
+    }
+}
+
+private struct InstagramLogo: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(lineWidth: 2)
+
+            Circle()
+                .stroke(lineWidth: 2)
+                .frame(width: 10, height: 10)
+
+            Circle()
+                .fill()
+                .frame(width: 3, height: 3)
+                .offset(x: 7, y: -7)
+        }
+        .accessibilityHidden(true)
     }
 }
 
@@ -2197,7 +2959,7 @@ private struct TasteExperienceDetailHero: View {
                 .clipShape(Circle())
                 .overlay {
                     Circle()
-                        .stroke(activeExperience.axis.mainColor.opacity(0.18))
+                        .stroke(activeExperience.axis.tintSoftBorderColor)
                 }
             }
 
@@ -2234,7 +2996,7 @@ private struct TasteExperienceDetailHero: View {
 private struct DiningReflectionEntryCard: View {
     let photoData: Data?
     let onOpenNote: () -> Void
-    @Binding var photoPickerItem: PhotosPickerItem?
+    let onOpenCamera: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -2276,7 +3038,7 @@ private struct DiningReflectionEntryCard: View {
             .buttonStyle(.plain)
             .accessibilityLabel("짧은 미식 기록 작성")
 
-            PhotosPicker(selection: $photoPickerItem, matching: .images) {
+            Button(action: onOpenCamera) {
                 LucideIcon(
                     .camera,
                     size: TBIcon.Size.small,
@@ -2357,6 +3119,824 @@ private struct DiningReflectionPhotoEditor: View {
                 }
             }
             .buttonStyle(.plain)
+        }
+    }
+}
+
+private struct DiningFeedbackCameraPreview: UIViewRepresentable {
+    let session: AVCaptureSession
+
+    func makeUIView(context: Context) -> DiningFeedbackCameraPreviewUIView {
+        let view = DiningFeedbackCameraPreviewUIView()
+        view.previewLayer.session = session
+        view.previewLayer.videoGravity = .resizeAspectFill
+        return view
+    }
+
+    func updateUIView(_ uiView: DiningFeedbackCameraPreviewUIView, context: Context) {
+        uiView.previewLayer.session = session
+    }
+}
+
+private final class DiningFeedbackCameraPreviewUIView: UIView {
+    override class var layerClass: AnyClass {
+        AVCaptureVideoPreviewLayer.self
+    }
+
+    var previewLayer: AVCaptureVideoPreviewLayer {
+        layer as! AVCaptureVideoPreviewLayer
+    }
+}
+
+private struct DiningFeedbackCameraStatusCard: View {
+    let message: String
+
+    var body: some View {
+        Text(message)
+            .font(TBFont.regular(13))
+            .foregroundStyle(Color.white)
+            .multilineTextAlignment(.center)
+            .lineSpacing(4)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .background(Color.black.opacity(0.55))
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.white.opacity(0.14))
+            }
+    }
+}
+
+private struct DiningFeedbackCameraChromeIcon: View {
+    let icon: LucideIconName
+    var isActive = false
+    var showsBackground = true
+
+    var body: some View {
+        LucideIcon(
+            icon,
+            size: TBIcon.Size.medium,
+            strokeWidth: TBIcon.Stroke.medium
+        )
+        .frame(width: 48, height: 48)
+        .foregroundStyle(Color.white)
+        .background {
+            if showsBackground {
+                Circle()
+                    .fill(Color.white.opacity(isActive ? 0.28 : 0.18))
+            }
+        }
+        .contentShape(Circle())
+    }
+}
+
+private struct DiningFeedbackPhotoPayload {
+    let data: Data
+    let assetLocation: CLLocation?
+}
+
+private struct DiningFeedbackRestaurantCandidate: Identifiable, Equatable {
+    let id: String
+    let name: String
+    let address: String?
+    let distanceMeters: CLLocationDistance?
+
+    var detailText: String {
+        let distanceText = distanceMeters.map(Self.formattedDistance)
+        return [address, distanceText].compactMap { value in
+            guard let value else { return nil }
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+        .joined(separator: " · ")
+    }
+
+    private static func formattedDistance(_ meters: CLLocationDistance) -> String {
+        if meters >= 1000 {
+            return String(format: "%.1fkm 근처", meters / 1000)
+        }
+
+        return "\(Int(round(meters / 10) * 10))m 근처"
+    }
+}
+
+private final class DiningFeedbackRestaurantResolver: NSObject, ObservableObject {
+    enum State: Equatable {
+        case idle
+        case loading
+        case found
+        case unavailable(String)
+    }
+
+    @Published private(set) var candidates: [DiningFeedbackRestaurantCandidate] = []
+    @Published private(set) var state: State = .idle
+
+    private let locationManager = CLLocationManager()
+    private let placeAPIClient = RestaurantPlaceAPIClient()
+    private var latestLocation: CLLocation?
+    private static let fullAccuracyPurposeKey = "DishMemoryRestaurantSuggestion"
+
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+    }
+
+    var isLoading: Bool {
+        if case .loading = state {
+            return true
+        }
+        return false
+    }
+
+    var statusText: String {
+        switch state {
+        case .idle:
+            return "사진 위치를 확인하면 카카오 장소 기준으로 후보를 제안할게요."
+        case .loading:
+            return "사진 위치 기준으로 가까운 식당을 카카오 장소에서 찾고 있어요."
+        case .found:
+            return "\(candidates.count)개의 가까운 식당 후보를 찾았어요."
+        case .unavailable(let message):
+            return message
+        }
+    }
+
+    func prepareForPhotoLocation() {
+        guard CLLocationManager.locationServicesEnabled() else {
+            return
+        }
+
+        switch locationManager.authorizationStatus {
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+        case .authorizedAlways, .authorizedWhenInUse:
+            requestFullAccuracyIfNeeded()
+            locationManager.startUpdatingLocation()
+        case .denied, .restricted:
+            break
+        @unknown default:
+            break
+        }
+    }
+
+    @MainActor
+    func resolveRestaurantCandidates(
+        from photoData: Data,
+        capturedLocation: CLLocation?,
+        assetLocation: CLLocation?
+    ) async {
+        state = .loading
+        candidates = []
+
+        guard let location = assetLocation
+            ?? capturedLocation
+            ?? Self.location(fromPhotoData: photoData)
+            ?? latestLocation
+            ?? locationManager.location
+        else {
+            state = .unavailable("사진에서 위치를 확인하지 못했어요. 식당명을 직접 입력해 주세요.")
+            return
+        }
+
+        let recognizedTextLines = await Self.recognizedTextLines(from: photoData)
+        let nearbyCandidates = await searchNearbyRestaurants(
+            near: location,
+            recognizedTextLines: recognizedTextLines
+        )
+        candidates = nearbyCandidates
+        state = nearbyCandidates.isEmpty
+            ? .unavailable("이 위치 주변의 식당 후보를 찾지 못했어요. 식당명을 직접 입력해 주세요.")
+            : .found
+    }
+
+    @MainActor
+    func reset() {
+        candidates = []
+        state = .idle
+    }
+
+    func captureLocationSnapshot() -> CLLocation? {
+        latestLocation ?? locationManager.location
+    }
+
+    private func requestFullAccuracyIfNeeded() {
+        guard #available(iOS 14.0, *),
+              locationManager.accuracyAuthorization == .reducedAccuracy else {
+            return
+        }
+
+        locationManager.requestTemporaryFullAccuracyAuthorization(
+            withPurposeKey: Self.fullAccuracyPurposeKey
+        ) { [weak self] _ in
+            self?.locationManager.startUpdatingLocation()
+        }
+    }
+
+    private func searchNearbyRestaurants(
+        near location: CLLocation,
+        recognizedTextLines: [String]
+    ) async -> [DiningFeedbackRestaurantCandidate] {
+        let kakaoCandidates = await searchKakaoNearbyRestaurants(
+            near: location,
+            recognizedTextLines: recognizedTextLines
+        )
+        if !kakaoCandidates.isEmpty {
+            return kakaoCandidates
+        }
+
+        return await searchMapKitNearbyRestaurants(
+            near: location,
+            recognizedTextLines: recognizedTextLines
+        )
+    }
+
+    private func searchKakaoNearbyRestaurants(
+        near location: CLLocation,
+        recognizedTextLines: [String]
+    ) async -> [DiningFeedbackRestaurantCandidate] {
+        var seenIDs = Set<String>()
+        var candidates: [DiningFeedbackRestaurantCandidate] = []
+        let radii = searchRadii(for: location)
+
+        func appendPlaces(_ places: [KakaoRestaurantPlace]) {
+            for place in places {
+                guard let candidate = candidate(from: place, photoLocation: location),
+                      seenIDs.insert(candidate.id).inserted else {
+                    continue
+                }
+                candidates.append(candidate)
+            }
+        }
+
+        for radius in radii {
+            do {
+                let places = try await placeAPIClient.searchNearbyKakaoRestaurantPlaces(
+                    latitude: location.coordinate.latitude,
+                    longitude: location.coordinate.longitude,
+                    radiusMeters: radius,
+                    size: 15
+                )
+
+                appendPlaces(places)
+
+                if candidates.count >= 5 {
+                    break
+                }
+            } catch {
+                continue
+            }
+        }
+
+        let keywordRadius = max(radii.last ?? 700, 700)
+        for query in Self.restaurantSearchQueries(from: recognizedTextLines) {
+            do {
+                let places = try await placeAPIClient.searchNearbyKakaoRestaurantPlaces(
+                    query: query,
+                    latitude: location.coordinate.latitude,
+                    longitude: location.coordinate.longitude,
+                    radiusMeters: keywordRadius,
+                    size: 5
+                )
+                appendPlaces(places)
+            } catch {
+                continue
+            }
+        }
+
+        return Array(
+            rankedCandidates(
+                candidates,
+                recognizedTextLines: recognizedTextLines
+            )
+                .prefix(5)
+        )
+    }
+
+    private func searchMapKitNearbyRestaurants(
+        near location: CLLocation,
+        recognizedTextLines: [String]
+    ) async -> [DiningFeedbackRestaurantCandidate] {
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = "restaurant"
+        request.resultTypes = .pointOfInterest
+        request.region = MKCoordinateRegion(
+            center: location.coordinate,
+            latitudinalMeters: 420,
+            longitudinalMeters: 420
+        )
+
+        do {
+            let response = try await MKLocalSearch(request: request).start()
+            return Array(
+                rankedCandidates(
+                    response.mapItems.compactMap { item in
+                        candidate(from: item, photoLocation: location)
+                    },
+                    recognizedTextLines: recognizedTextLines
+                )
+                    .prefix(5)
+            )
+        } catch {
+            return []
+        }
+    }
+
+    private func searchRadii(for location: CLLocation) -> [Int] {
+        let accuracy = location.horizontalAccuracy
+        let minimumRadius = accuracy > 0
+            ? min(700, max(120, Int(accuracy.rounded(.up)) * 2))
+            : 150
+        return [minimumRadius, 300, 700]
+            .map { min(max($0, 80), 1000) }
+            .sorted()
+            .reduce(into: [Int]()) { result, radius in
+                if !result.contains(radius) {
+                    result.append(radius)
+                }
+            }
+    }
+
+    private func rankedCandidates(
+        _ candidates: [DiningFeedbackRestaurantCandidate],
+        recognizedTextLines: [String]
+    ) -> [DiningFeedbackRestaurantCandidate] {
+        candidates.sorted { lhs, rhs in
+            candidateScore(lhs, recognizedTextLines: recognizedTextLines)
+                < candidateScore(rhs, recognizedTextLines: recognizedTextLines)
+        }
+    }
+
+    private func candidateScore(
+        _ candidate: DiningFeedbackRestaurantCandidate,
+        recognizedTextLines: [String]
+    ) -> Double {
+        let distanceScore = candidate.distanceMeters ?? .greatestFiniteMagnitude
+        return max(
+            0,
+            distanceScore - textMatchBoost(
+                for: candidate,
+                recognizedTextLines: recognizedTextLines
+            )
+        )
+    }
+
+    private func textMatchBoost(
+        for candidate: DiningFeedbackRestaurantCandidate,
+        recognizedTextLines: [String]
+    ) -> Double {
+        let recognizedText = recognizedTextLines
+            .map(Self.normalizedSearchText)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        guard !recognizedText.isEmpty else {
+            return 0
+        }
+
+        let normalizedName = Self.normalizedSearchText(candidate.name)
+        if normalizedName.count >= 2, recognizedText.contains(normalizedName) {
+            return 420
+        }
+
+        if Self.meaningfulTokens(from: candidate.name).contains(where: recognizedText.contains) {
+            return 240
+        }
+
+        if let address = candidate.address,
+           Self.meaningfulTokens(from: address).contains(where: recognizedText.contains) {
+            return 80
+        }
+
+        return 0
+    }
+
+    private func candidate(
+        from item: MKMapItem,
+        photoLocation: CLLocation
+    ) -> DiningFeedbackRestaurantCandidate? {
+        guard let name = item.name?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !name.isEmpty else {
+            return nil
+        }
+
+        let itemLocation = item.placemark.location
+        let distance = itemLocation?.distance(from: photoLocation)
+        let coordinate = item.placemark.coordinate
+        let address = formattedAddress(from: item.placemark)
+        let id = [
+            name,
+            String(format: "%.5f", coordinate.latitude),
+            String(format: "%.5f", coordinate.longitude)
+        ].joined(separator: "-")
+
+        return DiningFeedbackRestaurantCandidate(
+            id: id,
+            name: name,
+            address: address,
+            distanceMeters: distance
+        )
+    }
+
+    private func candidate(
+        from place: KakaoRestaurantPlace,
+        photoLocation: CLLocation
+    ) -> DiningFeedbackRestaurantCandidate? {
+        guard let latitude = place.latitude,
+              let longitude = place.longitude else {
+            return nil
+        }
+
+        let placeLocation = CLLocation(latitude: latitude, longitude: longitude)
+        let address = place.roadAddress ?? place.address
+        let id = place.placeID ?? [
+            place.name,
+            String(format: "%.5f", latitude),
+            String(format: "%.5f", longitude)
+        ].joined(separator: "-")
+
+        return DiningFeedbackRestaurantCandidate(
+            id: "kakao-\(id)",
+            name: place.name,
+            address: address,
+            distanceMeters: placeLocation.distance(from: photoLocation)
+        )
+    }
+
+    private func formattedAddress(from placemark: MKPlacemark) -> String? {
+        let components = [
+            placemark.locality,
+            placemark.subLocality,
+            placemark.thoroughfare
+        ]
+        .compactMap { value -> String? in
+            guard let value else { return nil }
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+
+        return components.isEmpty ? placemark.title : components.joined(separator: " ")
+    }
+
+    private static func location(fromPhotoData data: Data) -> CLLocation? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let gps = properties[kCGImagePropertyGPSDictionary] as? [CFString: Any],
+              let latitude = doubleValue(gps[kCGImagePropertyGPSLatitude]),
+              let longitude = doubleValue(gps[kCGImagePropertyGPSLongitude])
+        else {
+            return nil
+        }
+
+        let latitudeRef = stringValue(gps[kCGImagePropertyGPSLatitudeRef])
+        let longitudeRef = stringValue(gps[kCGImagePropertyGPSLongitudeRef])
+        let resolvedLatitude = latitudeRef == "S" ? -latitude : latitude
+        let resolvedLongitude = longitudeRef == "W" ? -longitude : longitude
+
+        return CLLocation(latitude: resolvedLatitude, longitude: resolvedLongitude)
+    }
+
+    private static func recognizedTextLines(from data: Data) async -> [String] {
+        guard let image = UIImage(data: data),
+              let cgImage = image.cgImage else {
+            return []
+        }
+
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let request = VNRecognizeTextRequest()
+                request.recognitionLevel = .accurate
+                request.recognitionLanguages = ["ko-KR", "en-US"]
+                request.usesLanguageCorrection = true
+
+                let handler = VNImageRequestHandler(
+                    cgImage: cgImage,
+                    orientation: cgImageOrientation(for: image.imageOrientation),
+                    options: [:]
+                )
+                do {
+                    try handler.perform([request])
+                    let lines = request.results?
+                        .compactMap { observation in
+                            observation.topCandidates(1).first?.string
+                        } ?? []
+                    continuation.resume(returning: lines)
+                } catch {
+                    continuation.resume(returning: [])
+                }
+            }
+        }
+    }
+
+    private static func restaurantSearchQueries(from lines: [String]) -> [String] {
+        let excludedFragments = [
+            "합계", "승인", "카드", "영수증", "주문", "테이블", "사업자", "대표",
+            "전화", "tel", "total", "receipt", "card", "order", "table"
+        ]
+        var seen = Set<String>()
+
+        return lines.compactMap { line -> String? in
+            let collapsed = line
+                .replacingOccurrences(of: "\n", with: " ")
+                .split(whereSeparator: \.isWhitespace)
+                .joined(separator: " ")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard collapsed.count >= 2, collapsed.count <= 32 else {
+                return nil
+            }
+            guard !isMostlyNumeric(collapsed) else {
+                return nil
+            }
+
+            let normalized = normalizedSearchText(collapsed)
+            guard normalized.count >= 2,
+                  !excludedFragments.contains(where: { normalized.contains(normalizedSearchText($0)) }),
+                  seen.insert(normalized).inserted else {
+                return nil
+            }
+
+            return collapsed
+        }
+        .prefix(4)
+        .map(\.self)
+    }
+
+    private static func meaningfulTokens(from value: String) -> [String] {
+        value
+            .split(whereSeparator: { character in
+                character.isWhitespace || character.isPunctuation || character.isSymbol
+            })
+            .map(String.init)
+            .map(normalizedSearchText)
+            .filter { token in
+                token.count >= 2 && !isMostlyNumeric(token)
+            }
+    }
+
+    private static func normalizedSearchText(_ value: String) -> String {
+        value
+            .lowercased()
+            .filter { character in
+                character.isLetter || character.isNumber || character.isWhitespace
+            }
+            .split(whereSeparator: \.isWhitespace)
+            .joined()
+    }
+
+    private static func isMostlyNumeric(_ value: String) -> Bool {
+        let characters = value.filter { !$0.isWhitespace }
+        guard !characters.isEmpty else {
+            return true
+        }
+
+        let numericCount = characters.filter(\.isNumber).count
+        return Double(numericCount) / Double(characters.count) > 0.6
+    }
+
+    private static func cgImageOrientation(for orientation: UIImage.Orientation) -> CGImagePropertyOrientation {
+        switch orientation {
+        case .up:
+            return .up
+        case .upMirrored:
+            return .upMirrored
+        case .down:
+            return .down
+        case .downMirrored:
+            return .downMirrored
+        case .left:
+            return .left
+        case .leftMirrored:
+            return .leftMirrored
+        case .right:
+            return .right
+        case .rightMirrored:
+            return .rightMirrored
+        @unknown default:
+            return .up
+        }
+    }
+
+    private static func doubleValue(_ value: Any?) -> Double? {
+        if let value = value as? Double {
+            return value
+        }
+        if let value = value as? NSNumber {
+            return value.doubleValue
+        }
+        if let value = value as? String {
+            return Double(value)
+        }
+        return nil
+    }
+
+    private static func stringValue(_ value: Any?) -> String? {
+        if let value = value as? String {
+            return value
+        }
+        return nil
+    }
+}
+
+extension DiningFeedbackRestaurantResolver: CLLocationManagerDelegate {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            requestFullAccuracyIfNeeded()
+            manager.startUpdatingLocation()
+        default:
+            break
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        latestLocation = locations.last
+    }
+}
+
+private final class DiningFeedbackCameraModel: NSObject, ObservableObject {
+    let session = AVCaptureSession()
+    var onCapture: ((Data) -> Void)?
+
+    @Published private(set) var isRunning = false
+    @Published private(set) var errorMessage: String?
+    @Published private(set) var isFlashOn = false
+    @Published private(set) var canUseFlash = false
+
+    private let sessionQueue = DispatchQueue(label: "com.tastebuddy.dining-feedback.camera")
+    private let output = AVCapturePhotoOutput()
+    private var videoInput: AVCaptureDeviceInput?
+    private var currentPosition: AVCaptureDevice.Position = .back
+
+    func start() {
+        setErrorMessage(nil)
+
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            configureAndStart()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] isGranted in
+                guard let self else { return }
+                if isGranted {
+                    self.configureAndStart()
+                } else {
+                    self.setErrorMessage("카메라 접근이 허용되지 않았어요. 설정에서 권한을 켜거나 사진첩에서 이미지를 선택해주세요.")
+                }
+            }
+        case .denied, .restricted:
+            setErrorMessage("카메라 접근이 허용되지 않았어요. 설정에서 권한을 켜거나 사진첩에서 이미지를 선택해주세요.")
+        @unknown default:
+            setErrorMessage("카메라 상태를 확인하지 못했어요. 사진첩에서 이미지를 선택해 기록을 이어갈 수 있어요.")
+        }
+    }
+
+    func stop() {
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            if self.session.isRunning {
+                self.session.stopRunning()
+            }
+            self.setIsRunning(false)
+        }
+    }
+
+    func capturePhoto() {
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            guard self.session.isRunning else {
+                self.setErrorMessage("카메라 화면을 불러온 뒤 다시 촬영해주세요.")
+                return
+            }
+
+            let settings = AVCapturePhotoSettings()
+            if self.videoInput?.device.hasFlash == true {
+                settings.flashMode = self.isFlashOn ? .on : .off
+            }
+            self.output.capturePhoto(with: settings, delegate: self)
+        }
+    }
+
+    func switchCamera() {
+        let nextPosition: AVCaptureDevice.Position = currentPosition == .back ? .front : .back
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            do {
+                try self.configureSession(position: nextPosition)
+                if !self.session.isRunning {
+                    self.session.startRunning()
+                }
+                self.setIsRunning(true)
+                self.setErrorMessage(nil)
+            } catch {
+                self.setErrorMessage("카메라를 전환하지 못했어요.")
+            }
+        }
+    }
+
+    func toggleFlash() {
+        guard canUseFlash else {
+            setErrorMessage("이 기기에서는 플래시를 바로 켤 수 없어요.")
+            return
+        }
+        isFlashOn.toggle()
+        setErrorMessage(nil)
+    }
+
+    private func configureAndStart() {
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            do {
+                try self.configureSession(position: self.currentPosition)
+                if !self.session.isRunning {
+                    self.session.startRunning()
+                }
+                self.setIsRunning(true)
+                self.setErrorMessage(nil)
+            } catch {
+                self.setErrorMessage("이 기기에서는 카메라를 바로 열 수 없어요. 사진첩에서 이미지를 골라도 기록을 이어갈 수 있어요.")
+            }
+        }
+    }
+
+    private func configureSession(position: AVCaptureDevice.Position) throws {
+        session.beginConfiguration()
+        defer { session.commitConfiguration() }
+
+        session.sessionPreset = .photo
+
+        for input in session.inputs {
+            session.removeInput(input)
+        }
+        for output in session.outputs {
+            session.removeOutput(output)
+        }
+
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position)
+            ?? AVCaptureDevice.default(for: .video)
+        else {
+            throw CameraConfigurationError.unavailable
+        }
+
+        let nextInput = try AVCaptureDeviceInput(device: device)
+        guard session.canAddInput(nextInput) else {
+            throw CameraConfigurationError.unavailable
+        }
+        session.addInput(nextInput)
+
+        guard session.canAddOutput(output) else {
+            throw CameraConfigurationError.unavailable
+        }
+        session.addOutput(output)
+
+        videoInput = nextInput
+        currentPosition = nextInput.device.position
+        setCanUseFlash(nextInput.device.hasFlash)
+    }
+
+    private func setIsRunning(_ value: Bool) {
+        DispatchQueue.main.async {
+            self.isRunning = value
+        }
+    }
+
+    private func setCanUseFlash(_ value: Bool) {
+        DispatchQueue.main.async {
+            self.canUseFlash = value
+            if !value {
+                self.isFlashOn = false
+            }
+        }
+    }
+
+    private func setErrorMessage(_ message: String?) {
+        DispatchQueue.main.async {
+            self.errorMessage = message
+        }
+    }
+
+    private enum CameraConfigurationError: Error {
+        case unavailable
+    }
+}
+
+extension DiningFeedbackCameraModel: AVCapturePhotoCaptureDelegate {
+    func photoOutput(
+        _ output: AVCapturePhotoOutput,
+        didFinishProcessingPhoto photo: AVCapturePhoto,
+        error: Error?
+    ) {
+        if error != nil {
+            setErrorMessage("사진을 저장하지 못했어요. 다시 시도해주세요.")
+            return
+        }
+
+        guard let data = photo.fileDataRepresentation() else {
+            setErrorMessage("사진을 저장하지 못했어요. 다시 시도해주세요.")
+            return
+        }
+
+        DispatchQueue.main.async {
+            self.onCapture?(data)
         }
     }
 }
@@ -2767,24 +4347,20 @@ private struct DiningFeedbackResultCard: View {
                     .foregroundStyle(TBColor.textMuted)
             }
 
-            if !experiences.isEmpty {
-                TBFlowLayout(spacing: 6) {
-                    ForEach(experiences) { experience in
-                        TasteChip(
-                            title: experience.label,
-                            tone: .taste,
-                            colorAxis: experience.axis
-                        )
-                    }
-                }
-            }
-
-            if !detailTags.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(detailTags) { tag in
-                            TasteChip(title: tag.label, tone: .neutral)
+            if !experiences.isEmpty || !detailTags.isEmpty {
+                VStack(alignment: .leading, spacing: DiningFeedbackResultLayout.chipRowGap) {
+                    if !experiences.isEmpty {
+                        HStack(spacing: DiningFeedbackResultLayout.chipGap) {
+                            ForEach(Array(experiences.prefix(3))) { experience in
+                                DiningResultReactionBubble(experience: experience)
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .clipped()
+                    }
+
+                    if !detailTags.isEmpty {
+                        DiningResultDetailTagRow(detailTags: detailTags)
                     }
                 }
             }
@@ -2844,6 +4420,97 @@ private struct DiningFeedbackResultCard: View {
     }
 }
 
+private enum DiningFeedbackResultLayout {
+    static let cardHorizontalPadding: CGFloat = 50
+    static let chipGap: CGFloat = 6
+    static let chipHeight: CGFloat = 20
+    static let chipRowGap: CGFloat = 6
+}
+
+private struct DiningResultReactionBubble: View {
+    let experience: TasteExperience
+
+    var body: some View {
+        Text(experience.label)
+            .font(TBFont.semibold(10))
+            .lineLimit(1)
+            .foregroundStyle(experience.axis.mainColor)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(experience.axis.tintSoftColor)
+            .clipShape(Capsule())
+            .overlay {
+                Capsule()
+                    .stroke(experience.axis.tintSoftBorderColor, lineWidth: 1)
+            }
+            .fixedSize(horizontal: true, vertical: false)
+            .accessibilityLabel(experience.label)
+            .accessibilityHint(experience.axis.label)
+    }
+}
+
+private struct DiningResultDetailTagRow: View {
+    let detailTags: [DiningDetailTagMetadata]
+
+    var body: some View {
+        GeometryReader { proxy in
+            let visibleCount = visibleCount(for: proxy.size.width)
+            let hiddenCount = max(0, detailTags.count - visibleCount)
+
+            HStack(spacing: DiningFeedbackResultLayout.chipGap) {
+                ForEach(Array(detailTags.prefix(visibleCount))) { tag in
+                    TasteChip(title: tag.label, tone: .neutral)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .accessibilityLabel("\(tag.label), \(tag.categoryLabel)")
+                }
+
+                if hiddenCount > 0 {
+                    TasteChip(title: "+\(hiddenCount)", tone: .neutral)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(height: DiningFeedbackResultLayout.chipHeight)
+        .clipped()
+    }
+
+    private func visibleCount(for availableWidth: CGFloat) -> Int {
+        guard availableWidth > 0 else {
+            return detailTags.count
+        }
+
+        let tagWidths = detailTags.map { chipWidth(for: $0.label) }
+        let moreWidth = chipWidth(for: "+\(detailTags.count)")
+
+        for count in stride(from: detailTags.count, through: 0, by: -1) {
+            let hiddenCount = detailTags.count - count
+            let elementCount = count + (hiddenCount > 0 ? 1 : 0)
+            let gapWidth = CGFloat(max(0, elementCount - 1)) * DiningFeedbackResultLayout.chipGap
+            let visibleWidth = tagWidths.prefix(count).reduce(0, +)
+            let requiredWidth = visibleWidth
+                + (hiddenCount > 0 ? moreWidth : 0)
+                + gapWidth
+
+            if requiredWidth <= availableWidth {
+                return count
+            }
+        }
+
+        return 0
+    }
+
+    private func chipWidth(for text: String) -> CGFloat {
+        let font = UIFont(name: "Pretendard-Medium", size: 10)
+            ?? UIFont.systemFont(ofSize: 10, weight: .medium)
+        let textWidth = ceil((text as NSString).size(withAttributes: [.font: font]).width)
+        return textWidth + 16
+    }
+}
+
 private struct DiningFeedbackResultShareImage: View {
     let restaurant: String
     let menuTitle: String
@@ -2851,39 +4518,23 @@ private struct DiningFeedbackResultShareImage: View {
     let detailTags: [DiningDetailTagMetadata]
     let reflectionNote: String
     let photoData: Data?
+    let canvasSize: CGSize
 
     var body: some View {
         ZStack {
             DiningFeedbackResultBackground(experiences: experiences)
 
-            VStack(spacing: 0) {
-                Text("Taste Buddy")
-                    .font(TBFont.semibold(12))
-                    .foregroundStyle(Color.white.opacity(0.86))
-                    .tracking(0.8)
-                    .padding(.top, 34)
-
-                Spacer(minLength: 28)
-
-                DiningFeedbackResultCard(
-                    restaurant: restaurant,
-                    menuTitle: menuTitle,
-                    experiences: experiences,
-                    detailTags: detailTags,
-                    reflectionNote: reflectionNote,
-                    photoData: photoData
-                )
-                .padding(.horizontal, 30)
-
-                Spacer(minLength: 28)
-
-                Text("다음 식사를 더 잘 맞추는 미각 기록")
-                    .font(TBFont.medium(12))
-                    .foregroundStyle(Color.white.opacity(0.78))
-                    .padding(.bottom, 34)
-            }
+            DiningFeedbackResultCard(
+                restaurant: restaurant,
+                menuTitle: menuTitle,
+                experiences: experiences,
+                detailTags: detailTags,
+                reflectionNote: reflectionNote,
+                photoData: photoData
+            )
+            .padding(.horizontal, DiningFeedbackResultLayout.cardHorizontalPadding)
         }
-        .frame(width: 360, height: 640)
+        .frame(width: canvasSize.width, height: canvasSize.height)
         .clipped()
     }
 }
@@ -3409,7 +5060,7 @@ private struct TasteExperienceBubbleView: View {
                 if isSelected {
                     Circle()
                         .stroke(
-                            position.experience.axis.mainColor.opacity(0.18),
+                            position.experience.axis.tintSoftBorderColor,
                             lineWidth: 1
                         )
                 }

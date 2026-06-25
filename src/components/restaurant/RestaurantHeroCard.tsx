@@ -39,6 +39,13 @@ export interface RestaurantHeroViewModel {
 
 interface RestaurantHeroQuickInfo {
   address?: string;
+  googlePhoto?: {
+    attributions: Array<{
+      displayName?: string;
+      uri?: string;
+    }>;
+    url?: string | null;
+  };
   hours?: string;
   phone?: string;
 }
@@ -134,7 +141,17 @@ export default function RestaurantHeroCard({
   ];
   const tasteTags = restaurant.tags.filter((tag) => tag.tone === 'taste' && tag.tasteAxis);
   const contextTags = restaurant.tags.filter((tag) => tag.tone !== 'taste' || !tag.tasteAxis);
-  const hasVerifiedMedia = restaurant.mediaStatus !== 'placeholder';
+  const googlePhotoUrl = quickInfo?.googlePhoto?.url ?? null;
+  const googlePhotoAttribution = quickInfo?.googlePhoto?.attributions
+    .map((attribution) => attribution.displayName?.trim())
+    .filter((name): name is string => Boolean(name))
+    .slice(0, 2)
+    .join(', ');
+  const heroImageSrc =
+    restaurant.mediaStatus === 'placeholder'
+      ? googlePhotoUrl
+      : restaurant.heroImageUrl ?? googlePhotoUrl;
+  const hasDisplayableMedia = Boolean(heroImageSrc);
   const chefLine =
     restaurant.chef.displayLabel ??
     (restaurant.chef.name === 'Taste Buddy 분석 준비 중' && quickInfo?.address
@@ -173,11 +190,16 @@ export default function RestaurantHeroCard({
         <ImageBox
           alt={`${restaurant.name} 대표 이미지`}
           className="h-[172px] w-full rounded-[16px]"
-          imageSrc={hasVerifiedMedia ? restaurant.heroImageUrl : null}
+          imageSrc={hasDisplayableMedia ? heroImageSrc : null}
           imageClassName="object-cover"
           kind="restaurant"
           variant="neutral"
         />
+        {restaurant.mediaStatus === 'placeholder' && googlePhotoAttribution ? (
+          <p className="-mt-2 text-[10px] font-medium text-[var(--tb-color-text-hint)]">
+            사진 {googlePhotoAttribution}
+          </p>
+        ) : null}
 
         <div className="flex flex-col gap-3 border-b border-[var(--tb-color-border-subtle)] pb-4">
           <div className="flex items-center justify-between gap-3">
@@ -186,7 +208,7 @@ export default function RestaurantHeroCard({
                 alt={`${restaurant.name} 이미지`}
                 className="rounded-[8px]"
                 fallback="person"
-                imageSrc={hasVerifiedMedia ? restaurant.chef.avatarUrl : null}
+                imageSrc={restaurant.mediaStatus !== 'placeholder' ? restaurant.chef.avatarUrl : null}
                 kind="chef"
                 size="lg"
                 variant="neutral"

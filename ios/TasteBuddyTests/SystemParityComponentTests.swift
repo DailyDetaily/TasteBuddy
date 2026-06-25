@@ -20,13 +20,14 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(SearchOverlayShellMetrics.fieldHeight, 44)
         XCTAssertEqual(SearchOverlayShellMetrics.iconButtonSize, 44)
         XCTAssertEqual(SearchOverlayShellMetrics.headerHorizontalPadding, 20)
-        XCTAssertEqual(SearchOverlayShellMetrics.headerGap, 12)
-        XCTAssertEqual(SearchOverlayShellMetrics.bodyTopPadding, 16)
+        XCTAssertEqual(SearchOverlayShellMetrics.headerTopPadding, 8)
+        XCTAssertEqual(SearchOverlayShellMetrics.headerBottomPadding, 8)
+        XCTAssertEqual(SearchOverlayShellMetrics.headerGap, 8)
+        XCTAssertEqual(SearchOverlayShellMetrics.bodyTopPadding, 8)
         XCTAssertEqual(SearchOverlayShellMetrics.bodyBottomPadding, 32)
-        XCTAssertEqual(SearchOverlayShellMetrics.clearButtonSize, 28)
         XCTAssertEqual(HomeSearchHeaderMetrics.horizontalPadding, 20)
-        XCTAssertEqual(HomeSearchHeaderMetrics.topPadding, 4)
-        XCTAssertEqual(HomeSearchHeaderMetrics.bottomPadding, 16)
+        XCTAssertEqual(HomeSearchHeaderMetrics.topPadding, 8)
+        XCTAssertEqual(HomeSearchHeaderMetrics.bottomPadding, 8)
         XCTAssertEqual(SearchSuggestionMetrics.sectionStackGap, 20)
         XCTAssertEqual(SearchSuggestionMetrics.cardStackGap, 12)
         XCTAssertEqual(SearchSuggestionMetrics.titleDescriptionGap, 4)
@@ -40,8 +41,10 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(CompactCardMetrics.gap, 12)
         XCTAssertEqual(CompactCardMetrics.radius, 20)
         XCTAssertEqual(CompactCardMetrics.mediaSize, 40)
-        XCTAssertEqual(CompactCardMetrics.actionButtonSize, 32)
-        XCTAssertEqual(CompactCardMetrics.actionIconSize, 24)
+        XCTAssertEqual(CompactCardMetrics.actionButtonSize, 24)
+        XCTAssertEqual(CompactCardMetrics.actionIconSize, 18)
+        XCTAssertEqual(SearchResultCompactCardMetrics.actionButtonSize, 32)
+        XCTAssertEqual(SearchResultCompactCardMetrics.actionIconSize, 24)
     }
 
     func testFlowSelectionAndStepComponentsMirrorReactMetrics() {
@@ -266,7 +269,8 @@ final class SystemParityComponentTests: XCTestCase {
             BottomSheetShellMetrics.stageHeight(screenHeight: 800, safeAreaTop: 47),
             725
         )
-        XCTAssertEqual(BottomSheetShellMetrics.topRadius, 24)
+        XCTAssertEqual(StagedBottomSheetBackgroundMetrics.animationDuration, 0.62)
+        XCTAssertEqual(BottomSheetShellMetrics.topRadius, 32)
         XCTAssertTrue(BottomSheetShellMetrics.clipsOnlyTopCorners)
         XCTAssertTrue(BottomSheetShellMetrics.usesCustomGrabber)
         XCTAssertEqual(BottomSheetShellMetrics.grabberTopMargin, 5)
@@ -275,8 +279,9 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(BottomSheetShellMetrics.grabberWidth, 36)
         XCTAssertEqual(BottomSheetShellMetrics.topAreaHeightIncludingGrabber, 10)
         XCTAssertEqual(BottomSheetShellMetrics.headerHorizontalPadding, 20)
-        XCTAssertEqual(BottomSheetShellMetrics.headerBottomPadding, 16)
-        XCTAssertEqual(BottomSheetShellMetrics.headerSlotSize, 40)
+        XCTAssertEqual(BottomSheetShellMetrics.headerTopPadding, 20)
+        XCTAssertEqual(BottomSheetShellMetrics.headerBottomPadding, 12)
+        XCTAssertEqual(BottomSheetShellMetrics.headerSlotSize, 32)
         XCTAssertEqual(BottomSheetShellMetrics.footerHorizontalPadding, 20)
         XCTAssertEqual(BottomSheetShellMetrics.footerTopPadding, 16)
         XCTAssertEqual(BottomSheetShellMetrics.footerBottomPadding, 12)
@@ -307,6 +312,34 @@ final class SystemParityComponentTests: XCTestCase {
         )
         XCTAssertEqual(BottomSheetShellMetrics.iconButtonSize, 32)
         XCTAssertEqual(BottomSheetShellMetrics.iconSize, TBIcon.Size.large)
+    }
+
+    func testBottomSheetScrollGeometryHandsDownwardDragToSheetAtBoundary() {
+        let fittingContent = BottomSheetScrollGeometry(
+            contentHeight: 400,
+            viewportHeight: 500,
+            contentMinY: 0
+        )
+        XCTAssertFalse(fittingContent.isScrollable)
+        XCTAssertTrue(fittingContent.allowsSheetDrag)
+
+        let longContentAtTop = BottomSheetScrollGeometry(
+            contentHeight: 800,
+            viewportHeight: 500,
+            contentMinY: 0
+        )
+        XCTAssertTrue(longContentAtTop.isScrollable)
+        XCTAssertTrue(longContentAtTop.isAtTop)
+        XCTAssertTrue(longContentAtTop.allowsSheetDrag)
+
+        let longContentScrolled = BottomSheetScrollGeometry(
+            contentHeight: 800,
+            viewportHeight: 500,
+            contentMinY: -120
+        )
+        XCTAssertTrue(longContentScrolled.isScrollable)
+        XCTAssertFalse(longContentScrolled.isAtTop)
+        XCTAssertFalse(longContentScrolled.allowsSheetDrag)
     }
 
     func testNativeDesignSystemInventoryMirrorsReactDesignSystemPage() {
@@ -483,12 +516,15 @@ final class SystemParityComponentTests: XCTestCase {
     }
 
     func testAppChromeMatchesReactShellContract() {
-        XCTAssertEqual(TBSize.topAppBarHeight, 56)
+        XCTAssertEqual(TBSize.topAppBarHeight, 32)
         XCTAssertEqual(TBSize.bottomTabBarHeight, 60)
         XCTAssertEqual(AppChromeMetrics.actionButtonSize, 32)
         XCTAssertEqual(AppChromeMetrics.iconSize, TBIcon.Size.large)
         XCTAssertEqual(AppChromeMetrics.actionGap, 8)
         XCTAssertEqual(AppChromeMetrics.avatarSize, 32)
+        XCTAssertEqual(AppChromeMetrics.topPadding, 8)
+        XCTAssertEqual(AppChromeMetrics.bottomPadding, 8)
+        XCTAssertEqual(AppChromeMetrics.backgroundOverlap, 1)
         XCTAssertEqual(AppChromeMetrics.tabHorizontalPadding, 16)
         XCTAssertEqual(AppChromeMetrics.tabLabelTracking, 0.14)
         XCTAssertEqual(
@@ -545,6 +581,16 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(LucideIconName(systemName: "bookmark.fill"), .bookmark)
         XCTAssertEqual(LucideIconName(systemName: "text.bubble"), .messageCircle)
         XCTAssertEqual(LucideIconName(systemName: "paperplane"), .send)
+        XCTAssertEqual(LucideIconName(systemName: "arrow.clockwise"), .refreshCw)
+        XCTAssertEqual(LucideIconName(systemName: "refresh-cw"), .refreshCw)
+        XCTAssertEqual(LucideIconName(systemName: "questionmark.circle"), .circleHelp)
+        XCTAssertEqual(LucideIconName(systemName: "circle-help"), .circleHelp)
+        XCTAssertEqual(LucideIconName(systemName: "info.circle"), .info)
+        XCTAssertEqual(LucideIconName(systemName: "info"), .info)
+        XCTAssertEqual(LucideIconName(systemName: "doc.text.magnifyingglass"), .eye)
+        XCTAssertEqual(LucideIconName(systemName: "eye"), .eye)
+        XCTAssertEqual(LucideIconName(systemName: "square.and.pencil"), .squarePen)
+        XCTAssertEqual(LucideIconName(systemName: "square-pen"), .squarePen)
     }
 
     func testDishFeedbackFixturesKeepReactImageRailContract() {
@@ -824,5 +870,63 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(data.details[1].changeLabel, "+28%")
         XCTAssertEqual(data.details[2].changeLabel, "-22%")
         XCTAssertEqual(TastePointTrend.allCases, [.increase, .decrease, .neutral])
+    }
+
+    func testEdgeSwipeBackRequiresAnIntentionalRightwardEdgeGesture() {
+        let containerWidth: CGFloat = 390
+
+        XCTAssertTrue(EdgeSwipeBackMetrics.shouldNavigateBack(
+            startLocation: CGPoint(x: 20, y: 300),
+            translation: CGSize(width: 140, height: 8),
+            predictedEndTranslation: CGSize(width: 160, height: 10),
+            containerWidth: containerWidth
+        ))
+        XCTAssertTrue(EdgeSwipeBackMetrics.shouldNavigateBack(
+            startLocation: CGPoint(x: 12, y: 300),
+            translation: CGSize(width: 30, height: 2),
+            predictedEndTranslation: CGSize(width: 170, height: 4),
+            containerWidth: containerWidth
+        ))
+        XCTAssertFalse(EdgeSwipeBackMetrics.shouldNavigateBack(
+            startLocation: CGPoint(x: 12, y: 300),
+            translation: CGSize(width: 80, height: 3),
+            predictedEndTranslation: CGSize(width: 100, height: 4),
+            containerWidth: containerWidth
+        ))
+
+        XCTAssertFalse(EdgeSwipeBackMetrics.shouldNavigateBack(
+            startLocation: CGPoint(x: 40, y: 300),
+            translation: CGSize(width: 140, height: 4),
+            predictedEndTranslation: CGSize(width: 170, height: 4),
+            containerWidth: containerWidth
+        ))
+        XCTAssertFalse(EdgeSwipeBackMetrics.shouldNavigateBack(
+            startLocation: CGPoint(x: 16, y: 300),
+            translation: CGSize(width: 140, height: 150),
+            predictedEndTranslation: CGSize(width: 170, height: 210),
+            containerWidth: containerWidth
+        ))
+        XCTAssertFalse(EdgeSwipeBackMetrics.shouldNavigateBack(
+            startLocation: CGPoint(x: 16, y: 300),
+            translation: CGSize(width: -90, height: 2),
+            predictedEndTranslation: CGSize(width: -110, height: 3),
+            containerWidth: containerWidth
+        ))
+
+        XCTAssertEqual(
+            EdgeSwipeBackMetrics.interactiveTranslation(
+                startLocation: CGPoint(x: 12, y: 300),
+                translation: CGSize(width: 195, height: 8),
+                containerWidth: containerWidth
+            ),
+            195
+        )
+        XCTAssertEqual(
+            EdgeSwipeBackMetrics.progress(
+                translation: 195,
+                containerWidth: containerWidth
+            ),
+            0.5
+        )
     }
 }

@@ -37,11 +37,13 @@ export default function SurveyStepCard({
   description,
   status,
 }: SurveyStepCardProps) {
+  const rowAlignmentClassName = status === 'active' ? 'items-start' : 'items-center';
+
   return (
     <div
       className={`w-full rounded-[20px] p-3 transition-all duration-300 ${CARD_CLASS[status]}`}
     >
-      <div className="flex items-start gap-3">
+      <div className={`flex gap-3 ${rowAlignmentClassName}`}>
         <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[8px] ${MARKER_CLASS[status]}`}>
           {status === 'completed' ? (
             <CheckIcon size={ICON_TOKENS.size.sm} strokeWidth={3} />

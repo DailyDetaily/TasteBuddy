@@ -19,6 +19,7 @@ import {
 import { ICON_TOKENS } from '../../constants/designTokens';
 import SectionCard from '../SectionCard';
 import ActionOverlayCard from '../system/ActionOverlayCard';
+import BottomSheetShell, { BottomSheetCloseButton } from '../system/BottomSheetShell';
 import ImageBox from '../system/ImageBox';
 import PalateBloomAvatar, {
   DEFAULT_PALATE_BLOOM_PROFILE,
@@ -112,7 +113,7 @@ function DishFeedbackActionButton({
     <button
       type="button"
       className={`flex h-12 w-full items-center gap-3 rounded-[var(--tb-radius-12)] px-3 text-left text-[14px] font-semibold transition-colors hover:bg-[var(--tb-color-surface-muted)] ${
-        danger ? 'text-[var(--destructive)]' : 'text-[var(--tb-color-text-primary)]'
+        danger ? 'text-[var(--tb-color-destructive)]' : 'text-[var(--tb-color-text-primary)]'
       }`}
       onClick={(event) => {
         event.stopPropagation();
@@ -128,48 +129,65 @@ function DishFeedbackActionButton({
 }
 
 function DishFeedbackActionSheet({
-  onClose,
   onDelete,
   onEdit,
+  onOpenChange,
   onShare,
+  open,
   subject,
 }: {
-  onClose: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
+  onOpenChange: (open: boolean) => void;
   onShare?: () => void;
+  open: boolean;
   subject: string;
 }) {
   const runAction = (action?: () => void) => {
     action?.();
-    onClose();
+    onOpenChange(false);
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/30 px-5 pb-[max(18px,var(--tb-safe-area-bottom))]"
-      onClick={(event) => {
-        event.stopPropagation();
-        onClose();
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${subject} 카드 옵션`}
-        className="w-full rounded-[20px] bg-[var(--tb-color-bg-focus)] p-3 shadow-[var(--tb-shadow-drawer)]"
-        onClick={(event) => event.stopPropagation()}
+    <div onClick={(event) => event.stopPropagation()}>
+      <BottomSheetShell
+        open={open}
+        onOpenChange={onOpenChange}
+        headerStart={<BottomSheetCloseButton ariaLabel="디시 옵션 닫기" />}
+        headerCenter={
+          <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
+            디시 옵션
+          </span>
+        }
+        bodyClassName="overflow-y-auto no-scrollbar"
       >
-        <DishFeedbackActionButton danger icon={Trash2} onClick={() => runAction(onDelete)}>
-          삭제
-        </DishFeedbackActionButton>
-        <DishFeedbackActionButton icon={Pencil} onClick={() => runAction(onEdit)}>
-          편집
-        </DishFeedbackActionButton>
-        <DishFeedbackActionButton icon={Send} onClick={() => runAction(onShare)}>
-          공유
-        </DishFeedbackActionButton>
-      </div>
+        <div className="mx-auto flex min-h-0 w-full max-w-[640px] flex-1 flex-col px-5 pb-8 pt-1">
+          <div className="border-b border-[var(--tb-color-border-subtle)] pb-4">
+            <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
+              디시 기록
+            </p>
+            <h2 className="mt-1 truncate text-[16px] font-semibold leading-snug text-[var(--tb-color-text-primary)]">
+              {subject}
+            </h2>
+          </div>
+
+          <div
+            aria-label={`${subject} 카드 옵션`}
+            className="mt-4 flex flex-col gap-1 rounded-[20px] bg-[var(--tb-color-surface-muted)] p-2"
+            role="group"
+          >
+            <DishFeedbackActionButton danger icon={Trash2} onClick={() => runAction(onDelete)}>
+              삭제
+            </DishFeedbackActionButton>
+            <DishFeedbackActionButton icon={Pencil} onClick={() => runAction(onEdit)}>
+              편집
+            </DishFeedbackActionButton>
+            <DishFeedbackActionButton icon={Send} onClick={() => runAction(onShare)}>
+              공유
+            </DishFeedbackActionButton>
+          </div>
+        </div>
+      </BottomSheetShell>
     </div>
   );
 }
@@ -829,24 +847,6 @@ export default function DishFeedbackCard({
   const isCardInteractive = interactive && Boolean(onSelect);
   const hasActions = Boolean(actions);
 
-  useEffect(() => {
-    if (!isActionSheetOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsActionSheetOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isActionSheetOpen]);
-
   const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!isCardInteractive || event.defaultPrevented || event.target !== event.currentTarget) {
       return;
@@ -966,14 +966,15 @@ export default function DishFeedbackCard({
           {card.absoluteDateLabel}
         </span>
       </div>
-      {isActionSheetOpen ? (
+      {hasActions ? (
         <DishFeedbackActionSheet
-          onClose={() => setIsActionSheetOpen(false)}
           onDelete={() => {
             setIsDeleteConfirmOpen(true);
           }}
           onEdit={actions?.onEdit}
+          onOpenChange={setIsActionSheetOpen}
           onShare={actions?.onShare}
+          open={isActionSheetOpen}
           subject={card.subject}
         />
       ) : null}

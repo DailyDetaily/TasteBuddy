@@ -65,6 +65,49 @@ struct RestaurantPlaceAPIClient {
         return documents.compactMap(\.restaurantPlace)
     }
 
+    func searchNearbyKakaoRestaurantPlaces(
+        latitude: Double,
+        longitude: Double,
+        radiusMeters: Int = 300,
+        size: Int = 10
+    ) async throws -> [KakaoRestaurantPlace] {
+        guard configuration.kakaoRestAPIKey != nil else {
+            return []
+        }
+
+        let documents = try await requestKakaoRestaurantDocuments(
+            latitude: latitude,
+            longitude: longitude,
+            radiusMeters: radiusMeters,
+            size: size
+        )
+
+        return documents.compactMap(\.restaurantPlace)
+    }
+
+    func searchNearbyKakaoRestaurantPlaces(
+        query: String,
+        latitude: Double,
+        longitude: Double,
+        radiusMeters: Int = 300,
+        size: Int = 10
+    ) async throws -> [KakaoRestaurantPlace] {
+        guard configuration.kakaoRestAPIKey != nil else {
+            return []
+        }
+
+        let documents = try await requestKakaoRestaurantDocuments(
+            query: query,
+            size: size,
+            latitude: latitude,
+            longitude: longitude,
+            radiusMeters: radiusMeters,
+            sort: "distance"
+        )
+
+        return documents.compactMap(\.restaurantPlace)
+    }
+
     func hydratePlaceInfo(
         restaurantName: String,
         basePlaceInfo: RestaurantPlaceInfo
@@ -98,7 +141,11 @@ struct RestaurantPlaceAPIClient {
 
     private func requestKakaoRestaurantDocuments(
         query: String,
-        size: Int
+        size: Int,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
+        radiusMeters: Int? = nil,
+        sort: String = "accuracy"
     ) async throws -> [KakaoPlaceDocument] {
         guard let apiKey = configuration.kakaoRestAPIKey else {
             return []
@@ -111,13 +158,23 @@ struct RestaurantPlaceAPIClient {
 
         let boundedSize = min(max(size, 1), 15)
         var components = URLComponents(string: "https://dapi.kakao.com/v2/local/search/keyword.json")
-        components?.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "category_group_code", value: "FD6"),
             URLQueryItem(name: "page", value: "1"),
             URLQueryItem(name: "query", value: trimmedQuery),
             URLQueryItem(name: "size", value: String(boundedSize)),
-            URLQueryItem(name: "sort", value: "accuracy")
+            URLQueryItem(name: "sort", value: sort)
         ]
+        if let latitude, let longitude {
+            queryItems.append(URLQueryItem(name: "x", value: String(longitude)))
+            queryItems.append(URLQueryItem(name: "y", value: String(latitude)))
+        }
+        if let radiusMeters {
+            queryItems.append(
+                URLQueryItem(name: "radius", value: String(min(max(radiusMeters, 1), 20_000)))
+            )
+        }
+        components?.queryItems = queryItems
 
         guard let url = components?.url else {
             throw RestaurantPlaceAPIError.invalidResponse
@@ -133,6 +190,49 @@ struct RestaurantPlaceAPIClient {
 
         guard (200..<300).contains(httpResponse.statusCode) else {
             throw RestaurantPlaceAPIError.providerFailed("Kakao Local Search returned \(httpResponse.statusCode)")
+        }
+
+        let decoded = try JSONDecoder().decode(KakaoLocalSearchResponse.self, from: data)
+        return decoded.documents
+    }
+
+    private func requestKakaoRestaurantDocuments(
+        latitude: Double,
+        longitude: Double,
+        radiusMeters: Int,
+        size: Int
+    ) async throws -> [KakaoPlaceDocument] {
+        guard let apiKey = configuration.kakaoRestAPIKey else {
+            return []
+        }
+
+        let boundedRadius = min(max(radiusMeters, 1), 20_000)
+        let boundedSize = min(max(size, 1), 15)
+        var components = URLComponents(string: "https://dapi.kakao.com/v2/local/search/category.json")
+        components?.queryItems = [
+            URLQueryItem(name: "category_group_code", value: "FD6"),
+            URLQueryItem(name: "page", value: "1"),
+            URLQueryItem(name: "radius", value: String(boundedRadius)),
+            URLQueryItem(name: "size", value: String(boundedSize)),
+            URLQueryItem(name: "sort", value: "distance"),
+            URLQueryItem(name: "x", value: String(longitude)),
+            URLQueryItem(name: "y", value: String(latitude))
+        ]
+
+        guard let url = components?.url else {
+            throw RestaurantPlaceAPIError.invalidResponse
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw RestaurantPlaceAPIError.invalidResponse
+        }
+
+        guard (200..<300).contains(httpResponse.statusCode) else {
+            throw RestaurantPlaceAPIError.providerFailed("Kakao Local Category Search returned \(httpResponse.statusCode)")
         }
 
         let decoded = try JSONDecoder().decode(KakaoLocalSearchResponse.self, from: data)
@@ -195,6 +295,10 @@ struct RestaurantPlaceAPIClient {
                 return nil
             }
 
+            let googlePhotoURL = await lookupGooglePlacePhotoURL(
+                photoName: place.photos?.first?.name,
+                apiKey: apiKey
+            )
             var sourceByRow: [RestaurantInfoRowID: RestaurantInfoSource] = [:]
             let hours = place.regularOpeningHours?.weekdayDescriptions?.formattedOpeningHours
             if hours != nil {
@@ -212,7 +316,13 @@ struct RestaurantPlaceAPIClient {
 
             return RestaurantPlaceInfo(
                 address: "",
+                googlePhotoAttribution: place.photos?.first?.authorAttributions?.attributionText,
+                googlePhotoURL: googlePhotoURL,
+                googlePlaceID: place.id,
                 googleMapsURL: place.googleMapsURI.flatMap(URL.init(string:)),
+                googlePriceLevel: place.priceLevel,
+                googleRating: place.rating,
+                googleUserRatingCount: place.userRatingCount,
                 lat: place.location?.latitude,
                 lng: place.location?.longitude,
                 mapURL: nil,
@@ -221,6 +331,42 @@ struct RestaurantPlaceAPIClient {
                 hours: hours,
                 sourceByRow: sourceByRow
             )
+        } catch {
+            return nil
+        }
+    }
+
+    private func lookupGooglePlacePhotoURL(
+        photoName: String?,
+        apiKey: String
+    ) async -> URL? {
+        guard let photoName = photoName?.nilIfEmpty else {
+            return nil
+        }
+
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "places.googleapis.com"
+        components.path = "/v1/\(photoName)/media"
+        components.queryItems = [
+            URLQueryItem(name: "key", value: apiKey),
+            URLQueryItem(name: "maxWidthPx", value: "720"),
+            URLQueryItem(name: "skipHttpRedirect", value: "true")
+        ]
+
+        guard let url = components.url else {
+            return nil
+        }
+
+        do {
+            let (data, response) = try await session.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200..<300).contains(httpResponse.statusCode) else {
+                return nil
+            }
+
+            let decoded = try JSONDecoder().decode(GooglePlacePhotoMediaResponse.self, from: data)
+            return decoded.photoURI.flatMap(URL.init(string:))
         } catch {
             return nil
         }
@@ -286,7 +432,9 @@ private struct KakaoPlaceDocument: Decodable {
 
         return RestaurantPlaceInfo(
             address: address,
+            category: categoryName?.nilIfEmpty,
             googleMapsURL: nil,
+            kakaoPlaceID: id?.nilIfEmpty,
             lat: latitude,
             lng: longitude,
             mapURL: placeURL?.nilIfEmpty.flatMap(URL.init(string:)),
@@ -320,7 +468,11 @@ private struct GooglePlaceTextSearchResponse: Decodable {
         "places.internationalPhoneNumber",
         "places.location",
         "places.nationalPhoneNumber",
+        "places.photos",
+        "places.priceLevel",
+        "places.rating",
         "places.regularOpeningHours",
+        "places.userRatingCount",
         "places.websiteUri"
     ].joined(separator: ",")
 
@@ -341,6 +493,16 @@ private struct GooglePlace: Decodable {
         let weekdayDescriptions: [String]?
     }
 
+    struct Photo: Decodable {
+        struct AuthorAttribution: Decodable {
+            let displayName: String?
+            let uri: String?
+        }
+
+        let authorAttributions: [AuthorAttribution]?
+        let name: String?
+    }
+
     let displayName: DisplayName?
     let formattedAddress: String?
     let googleMapsURI: String?
@@ -348,7 +510,11 @@ private struct GooglePlace: Decodable {
     let internationalPhoneNumber: String?
     let location: Location?
     let nationalPhoneNumber: String?
+    let photos: [Photo]?
+    let priceLevel: String?
+    let rating: Double?
     let regularOpeningHours: OpeningHours?
+    let userRatingCount: Int?
     let websiteURI: String?
 
     enum CodingKeys: String, CodingKey {
@@ -359,8 +525,32 @@ private struct GooglePlace: Decodable {
         case internationalPhoneNumber
         case location
         case nationalPhoneNumber
+        case photos
+        case priceLevel
+        case rating
         case regularOpeningHours
+        case userRatingCount
         case websiteURI = "websiteUri"
+    }
+}
+
+private struct GooglePlacePhotoMediaResponse: Decodable {
+    let photoURI: String?
+
+    enum CodingKeys: String, CodingKey {
+        case photoURI = "photoUri"
+    }
+}
+
+private extension Array where Element == GooglePlace.Photo.AuthorAttribution {
+    var attributionText: String? {
+        let names = compactMap { $0.displayName?.nilIfEmpty }
+
+        guard !names.isEmpty else {
+            return nil
+        }
+
+        return names.prefix(2).joined(separator: ", ")
     }
 }
 

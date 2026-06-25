@@ -3278,7 +3278,11 @@ function MainApp() {
             {shouldShowMainBottomShell ? (
               <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center">
                 <div className="pointer-events-auto w-full max-w-[1440px]">
-                  <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
+                  <BottomTabBar
+                    activeTab={activeTab}
+                    onCenterAction={() => handleStartMeasurementFromMain(activeTab)}
+                    onTabChange={handleTabChange}
+                  />
                 </div>
               </div>
             ) : null}

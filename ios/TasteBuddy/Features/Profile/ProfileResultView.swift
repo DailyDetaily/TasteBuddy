@@ -80,7 +80,7 @@ struct ProfileResultView: View {
                 }
             }
             .padding(.horizontal, TBSpacing.page)
-            .padding(.top, 16)
+            .padding(.top, TBSpacing.pageTop)
             .padding(.bottom, 40)
         }
         .background(TBColor.focus)

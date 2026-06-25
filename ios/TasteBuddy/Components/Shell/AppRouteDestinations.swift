@@ -5,6 +5,8 @@ struct AppRouteDestinationView: View {
     let navigate: (AppRoute) -> Void
     let onBack: () -> Void
     var onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
+    var onOpenInfoSuggestionSheet: ((String, [RestaurantInfoRowModel]) -> Void)? = nil
+    var onOpenMenuSuggestionSheet: ((String) -> Void)? = nil
 
     var body: some View {
         switch route {
@@ -13,7 +15,19 @@ struct AppRouteDestinationView: View {
                 restaurantID: id,
                 navigate: navigate,
                 onBack: onBack,
-                onOpenBookmarkSheet: onOpenBookmarkSheet
+                onOpenBookmarkSheet: onOpenBookmarkSheet,
+                onOpenInfoSuggestionSheet: onOpenInfoSuggestionSheet,
+                onOpenMenuSuggestionSheet: onOpenMenuSuggestionSheet
+            )
+        case .restaurantSummary(let restaurant):
+            RestaurantDetailRouteView(
+                restaurantID: restaurant.id,
+                restaurantOverride: restaurant,
+                navigate: navigate,
+                onBack: onBack,
+                onOpenBookmarkSheet: onOpenBookmarkSheet,
+                onOpenInfoSuggestionSheet: onOpenInfoSuggestionSheet,
+                onOpenMenuSuggestionSheet: onOpenMenuSuggestionSheet
             )
         case .restaurantMenu(let restaurantID, let menuID):
             RestaurantDetailRouteView(
@@ -21,7 +35,9 @@ struct AppRouteDestinationView: View {
                 highlightedDishID: menuID,
                 navigate: navigate,
                 onBack: onBack,
-                onOpenBookmarkSheet: onOpenBookmarkSheet
+                onOpenBookmarkSheet: onOpenBookmarkSheet,
+                onOpenInfoSuggestionSheet: onOpenInfoSuggestionSheet,
+                onOpenMenuSuggestionSheet: onOpenMenuSuggestionSheet
             )
         case .dishFeedback(let id):
             DishFeedbackCommentFocusView(feedbackID: id)
@@ -101,7 +117,7 @@ private struct RestaurantDetailView: View {
                     }
                 }
             }
-            .padding(TBSpacing.page)
+            .tbPageContentPadding()
         }
         .navigationTitle(restaurant.name)
         .tbInlineNavigationTitle()
@@ -382,7 +398,7 @@ struct RestaurantBookmarkNativeSheet: View {
             usesNativeSheetChrome: usesNativeSheetChrome
         ) {
             ZStack(alignment: .bottom) {
-                ScrollView {
+                BottomSheetScrollView {
                     VStack(spacing: 0) {
                         if isCreating {
                             createPreview
@@ -1065,7 +1081,7 @@ private struct SavedRestaurantListView: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .padding(TBSpacing.page)
+                .tbPageContentPadding()
             }
         }
         .background(TBColor.page.ignoresSafeArea())
@@ -1158,7 +1174,7 @@ private struct ConnectionListView: View {
                     }
                 }
             }
-            .padding(TBSpacing.page)
+            .tbPageContentPadding()
             .padding(.bottom, 60)
         }
         .tbPageBackground()
@@ -1176,47 +1192,37 @@ private struct PublicProfileView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: TBSpacing.section) {
-                SectionCard {
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack(spacing: 14) {
-                            PalateBloomAvatar(size: 64, seed: profile.id)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(profile.name)
-                                    .font(TBFont.bold(16))
-                                    .foregroundStyle(TBColor.textPrimary)
-                                Text(profile.handle)
-                                    .font(TBFont.semibold(12))
-                                    .foregroundStyle(TBColor.textHint)
+                ProfileHeroCard(
+                    title: profile.name,
+                    handle: profile.handle,
+                    followerCount: profile.followerCount,
+                    followingCount: profile.followingCount
+                ) {
+                    PalateBloomAvatar(size: 64, seed: profile.id)
+                } headerAction: {
+                    EmptyView()
+                } footerAction: {
+                    Button {
+                        isFollowing.toggle()
+                    } label: {
+                        Text(isFollowing ? "팔로잉" : "팔로우")
+                            .font(TBFont.semibold(12))
+                            .foregroundStyle(
+                                isFollowing ? TBColor.textPrimary : profile.axis.tintTextColor
+                            )
+                            .padding(.horizontal, 14)
+                            .frame(height: 36)
+                            .background(
+                                isFollowing ? TBColor.surface : profile.axis.tintColor
+                            )
+                            .clipShape(Capsule())
+                            .overlay {
+                                if isFollowing {
+                                    Capsule().stroke(TBColor.border, lineWidth: 1)
+                                }
                             }
-                        }
-
-                        HStack(spacing: 18) {
-                            PublicSocialCount(value: profile.followerCount, label: "팔로워")
-                            PublicSocialCount(value: profile.followingCount, label: "팔로잉")
-                            Spacer()
-                            Button {
-                                isFollowing.toggle()
-                            } label: {
-                                Text(isFollowing ? "팔로잉" : "팔로우")
-                                    .font(TBFont.semibold(12))
-                                    .foregroundStyle(
-                                        isFollowing ? TBColor.textPrimary : profile.axis.tintTextColor
-                                    )
-                                    .padding(.horizontal, 14)
-                                    .frame(height: 36)
-                                    .background(
-                                        isFollowing ? TBColor.surface : profile.axis.tintColor
-                                    )
-                                    .clipShape(Capsule())
-                                    .overlay {
-                                        if isFollowing {
-                                            Capsule().stroke(TBColor.border, lineWidth: 1)
-                                        }
-                                    }
-                            }
-                            .buttonStyle(.plain)
-                        }
                     }
+                    .buttonStyle(.plain)
                 }
 
                 TBPageSection(title: "활동 요약") {
@@ -1233,7 +1239,7 @@ private struct PublicProfileView: View {
                     }
                 }
             }
-            .padding(TBSpacing.page)
+            .tbPageContentPadding()
             .padding(.bottom, 60)
         }
         .tbPageBackground()
@@ -1377,23 +1383,6 @@ private struct BuddyProfileRow: View {
     }
 }
 
-private struct PublicSocialCount: View {
-    let value: Int
-    let label: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text("\(value)")
-                .font(TBFont.semibold(14))
-                .foregroundStyle(TBColor.textPrimary)
-            Text(label)
-                .font(TBFont.regular(12))
-                .foregroundStyle(TBColor.textHint)
-        }
-        .frame(minWidth: 64, alignment: .leading)
-    }
-}
-
 private struct DishFeedbackFocusView: View {
     let feedbackID: String
 
@@ -1507,7 +1496,7 @@ struct DishFeedbackCommentFocusView: View {
                 .font(TBFont.semibold(13))
                 .foregroundStyle(
                     commentDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        ? TBColor.textHint
+                        ? TBColor.textDisabled
                         : TBColor.textBody
                 )
                 .disabled(commentDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -1736,7 +1725,7 @@ private struct TasteChangeFocusView: View {
                         )
                     }
                 }
-                .padding(TBSpacing.page)
+                .tbPageContentPadding()
                 .background(TBColor.surface)
             }
         }
@@ -1762,12 +1751,12 @@ private struct CircleNavigationButton: View {
             )
                 .frame(width: 40, height: 40)
                 .foregroundStyle(isEnabled ? TBColor.textPrimary : TBColor.textDisabled)
-                .background(isEnabled ? TBColor.surface : Color.clear)
+                .background(isEnabled ? TBColor.surface : TBColor.disabledSurface)
                 .clipShape(Circle())
                 .overlay {
                     Circle()
                         .stroke(
-                            isEnabled ? TBColor.border : TBColor.borderSubtle,
+                            isEnabled ? TBColor.border : TBColor.borderDisabled,
                             lineWidth: 1
                         )
                 }

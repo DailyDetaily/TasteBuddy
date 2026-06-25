@@ -9,7 +9,13 @@ struct SupabaseClientProvider {
     func makeClient() -> SupabaseClient {
         SupabaseClient(
             supabaseURL: configuration.supabaseURL,
-            supabaseKey: configuration.supabasePublishableKey
+            supabaseKey: configuration.supabasePublishableKey,
+            options: SupabaseClientOptions(
+                auth: SupabaseClientOptions.AuthOptions(
+                    redirectToURL: configuration.authRedirectURL,
+                    emitLocalSessionAsInitialSession: true
+                )
+            )
         )
     }
 }

@@ -308,6 +308,14 @@ export const COLOR_GROUPS: Array<{
           description: "warning 배경 채움색",
         },
         {
+          name: "destructive",
+          value: COLOR_TOKENS.state.destructive,
+          cssVar: "--tb-color-destructive",
+          source: "src/styles/design-system.css / COLOR_TOKENS.state.destructive",
+          status: "currently-used",
+          description: "삭제, 위험 액션 foreground / solid fill",
+        },
+        {
           name: "primary",
           value: "#030213",
           cssVar: "--primary",
@@ -324,10 +332,10 @@ export const COLOR_GROUPS: Array<{
         },
         {
           name: "destructive",
-          value: "#d4183d",
+          value: COLOR_TOKENS.state.destructive,
           cssVar: "--destructive",
-          source: "src/styles/globals.css",
-          status: "defined-but-unused",
+          source: "src/styles/globals.css -> COLOR_TOKENS.state.destructive",
+          status: "currently-used",
         },
       ],
     },
@@ -778,9 +786,9 @@ export const INCONSISTENCIES: InventoryEntry[] = [
     note: "generic semantic token 세트에만 .dark override가 있어서, 실제 앱 shell은 일관되게 다크 모드 전환이 되지 않습니다.",
   },
   {
-    name: "앱 토큰 레이어의 상태 색상이 아직 불완전",
-    source: "src/styles/design-system.css / src/pages/DiningPage.tsx",
-    note: "success와 warning은 이제 first-class tb-* 토큰이지만, error는 아직 앱 토큰 레이어가 아니라 generic destructive token에 의존합니다.",
+    name: "상태 색상 적용 범위 점검 필요",
+    source: "src/styles/design-system.css / src/styles/globals.css",
+    note: "success, warning, destructive는 first-class tb-* 토큰으로 정의되어 있으며 generic destructive token도 앱 토큰을 참조합니다.",
   },
 ];
 

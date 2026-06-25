@@ -4,6 +4,7 @@ struct ProfileView: View {
     @EnvironmentObject private var appModel: AppModel
     var onOpenConnection: ((ProfileConnectionKind) -> Void)? = nil
     var onFindBuddy: (() -> Void)? = nil
+    var onOpenProfileSettings: (() -> Void)? = nil
     var onOpenSavedList: (() -> Void)? = nil
 
     var body: some View {
@@ -16,7 +17,8 @@ struct ProfileView: View {
                             followerCount: 3,
                             followingCount: 2,
                             onOpenConnection: onOpenConnection,
-                            onFindBuddy: onFindBuddy
+                            onFindBuddy: onFindBuddy,
+                            onOpenProfileSettings: onOpenProfileSettings
                         )
 
                         TBPageSection(title: "활동 요약") {
@@ -42,7 +44,8 @@ struct ProfileView: View {
                     }
 
                 }
-                .padding(TBSpacing.page)
+                .tbPageContentPadding(bottom: TBSpacing.mainTabContentBottom)
+                .tbCardBordersVisible(false)
             }
             .navigationTitle("프로필")
             .tbInlineNavigationTitle()
@@ -96,86 +99,81 @@ private struct ProfileIdentityCard: View {
     let followingCount: Int
     var onOpenConnection: ((ProfileConnectionKind) -> Void)? = nil
     var onFindBuddy: (() -> Void)? = nil
+    var onOpenProfileSettings: (() -> Void)? = nil
 
     var body: some View {
-        SectionCard {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top) {
-                    HStack(spacing: 14) {
-                        PalateBloomAvatar(
-                            size: 64,
-                            tasteProfile: profile,
-                            shapeSeed: "current-user"
-                        )
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("신준호")
-                                .font(TBFont.bold(16))
-                                .foregroundStyle(TBColor.textPrimary)
-                            Text("@머리아깨무봄발")
-                                .font(TBFont.semibold(12))
-                                .foregroundStyle(TBColor.textHint)
-                        }
-                    }
-
-                    Spacer()
-
-                    LucideIcon(
-                        .settings,
-                        size: TBIcon.Size.control,
-                        strokeWidth: TBIcon.Stroke.regular
-                    )
-                        .frame(width: 36, height: 36)
-                        .foregroundStyle(TBColor.textSecondary)
-                }
-
-                HStack(spacing: 18) {
-                    SocialCount(value: followerCount, label: "팔로워") {
-                        onOpenConnection?(.followers)
-                    }
-                    SocialCount(value: followingCount, label: "팔로잉") {
-                        onOpenConnection?(.following)
-                    }
-                    Spacer()
-                    Button {
-                        onFindBuddy?()
-                    } label: {
-                        NeutralChip(title: "버디 찾기", symbol: "person.badge.plus")
-                    }
-                    .buttonStyle(.plain)
-                }
+        ProfileHeroCard(
+            title: "신준호",
+            handle: "@테이스트버디",
+            followerCount: followerCount,
+            followingCount: followingCount,
+            onOpenFollowers: { onOpenConnection?(.followers) },
+            onOpenFollowing: { onOpenConnection?(.following) }
+        ) {
+            PalateBloomAvatar(
+                size: 64,
+                tasteProfile: profile,
+                shapeSeed: "current-user"
+            )
+        } headerAction: {
+            Button {
+                onOpenProfileSettings?()
+            } label: {
+                LucideIcon(
+                    .settings,
+                    size: TBIcon.Size.large,
+                    strokeWidth: TBIcon.Stroke.regular
+                )
+                .frame(
+                    width: TBIcon.Container.large,
+                    height: TBIcon.Container.large
+                )
+                .foregroundStyle(TBColor.iconPrimary)
+                .contentShape(Circle())
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("프로필 설정 열기")
+        } footerAction: {
+            Button {
+                onFindBuddy?()
+            } label: {
+                ProfileFindBuddyButtonContent()
+            }
+            .buttonStyle(.plain)
         }
     }
 }
 
-private struct SocialCount: View {
-    let value: Int
-    let label: String
-    var action: (() -> Void)? = nil
+private enum ProfileFindBuddyButtonMetrics {
+    static let height: CGFloat = 36
+    static let horizontalPadding: CGFloat = TBSpacing.x12
+    static let gap: CGFloat = TBSpacing.x8
+    static let iconSize: CGFloat = TBIcon.Size.small
+    static let fontSize: CGFloat = 12
+}
 
+private struct ProfileFindBuddyButtonContent: View {
     var body: some View {
-        Group {
-            if let action {
-                Button(action: action) {
-                    content
-                }
-                .buttonStyle(.plain)
-            } else {
-                content
-            }
-        }
-    }
+        HStack(spacing: ProfileFindBuddyButtonMetrics.gap) {
+            LucideIcon(
+                .userPlus,
+                size: ProfileFindBuddyButtonMetrics.iconSize,
+                strokeWidth: TBIcon.Stroke.regular
+            )
+            .foregroundStyle(TBColor.iconPrimary)
 
-    private var content: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text("\(value)")
-                .font(TBFont.semibold(14))
+            Text("버디 찾기")
+                .font(TBFont.semibold(ProfileFindBuddyButtonMetrics.fontSize))
                 .foregroundStyle(TBColor.textPrimary)
-            Text(label)
-                .font(TBFont.regular(12))
-                .foregroundStyle(TBColor.textHint)
         }
-        .frame(minWidth: 58, alignment: .leading)
+        .lineLimit(1)
+        .padding(.horizontal, ProfileFindBuddyButtonMetrics.horizontalPadding)
+        .frame(height: ProfileFindBuddyButtonMetrics.height)
+        .background(TBColor.surface)
+        .clipShape(Capsule())
+        .overlay {
+            Capsule().stroke(TBColor.border, lineWidth: 1)
+        }
+        .fixedSize(horizontal: true, vertical: false)
     }
 }

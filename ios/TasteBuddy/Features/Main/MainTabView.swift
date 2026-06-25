@@ -1,8 +1,10 @@
 import SwiftUI
 
 struct MainTabView: View {
+    var onStagedSheetPresentationChange: ((Bool) -> Void)? = nil
+
     var body: some View {
-        AppShellView()
+        AppShellView(onStagedSheetPresentationChange: onStagedSheetPresentationChange)
     }
 }
 

@@ -1,5 +1,27 @@
 import SwiftUI
 
+struct TasteAxisPalette: Equatable {
+    let main: Color
+    let dark: Color
+    let light: Color
+    let bg: Color
+    let tintSoft: Color
+    let tintSoftBorder: Color
+    let tintSurface: Color
+    let tintSurfaceSubText: Color
+    let tintSurfaceText: Color
+    let gradientColors: [Color]
+}
+
+struct TasteAxisMeasurementPalette: Equatable {
+    let accent: Color
+    let nodeColors: [Color]
+    let ringBaseColor: Color
+    let ringBaseColorSoft: Color
+    let ringGuideBaseColor: Color
+    let glowTransparentColor: Color
+}
+
 enum TasteAxis: String, CaseIterable, Codable, Identifiable {
     case sweet
     case sour
@@ -41,48 +63,106 @@ enum TasteAxis: String, CaseIterable, Codable, Identifiable {
         }
     }
 
-    var mainColor: Color {
+    var palette: TasteAxisPalette {
         switch self {
-        case .sweet: Color(hex: 0xFF9900)
-        case .sour: Color(hex: 0xFBC02D)
-        case .bitter: Color(hex: 0x95C900)
-        case .salty: Color(hex: 0x7299FF)
-        case .umami: Color(hex: 0xB372B4)
-        case .fat: Color(hex: 0x95867A)
+        case .sweet: .sweet
+        case .sour: .sour
+        case .bitter: .bitter
+        case .salty: .salty
+        case .umami: .umami
+        case .fat: .fat
         }
+    }
+
+    var measurementPalette: TasteAxisMeasurementPalette {
+        switch self {
+        case .sweet: .sweet
+        case .sour: .sour
+        case .bitter: .bitter
+        case .salty: .salty
+        case .umami: .umami
+        case .fat: .fat
+        }
+    }
+
+    var mainColor: Color {
+        palette.main
+    }
+
+    var darkColor: Color {
+        palette.dark
+    }
+
+    var lightColor: Color {
+        palette.light
+    }
+
+    var bgColor: Color {
+        palette.bg
+    }
+
+    var tintSoftColor: Color {
+        palette.tintSoft
+    }
+
+    var tintSoftBorderColor: Color {
+        palette.tintSoftBorder
+    }
+
+    var tintSurfaceColor: Color {
+        palette.tintSurface
     }
 
     var tintColor: Color {
-        switch self {
-        case .sweet: Color(hex: 0xFFEBCC)
-        case .sour: Color(hex: 0xFFF7CC)
-        case .bitter: Color(hex: 0xEAF4CC)
-        case .salty: Color(hex: 0xE3EBFF)
-        case .umami: Color(hex: 0xF0E3F0)
-        case .fat: Color(hex: 0xEAE7E4)
-        }
+        tintSurfaceColor
+    }
+
+    var tintSurfaceTextColor: Color {
+        palette.tintSurfaceText
     }
 
     var tintTextColor: Color {
-        switch self {
-        case .sweet: Color(hex: 0x6F4609)
-        case .sour: Color(hex: 0x6F5F09)
-        case .bitter: Color(hex: 0x505B24)
-        case .salty: Color(hex: 0x36466F)
-        case .umami: Color(hex: 0x513751)
-        case .fat: Color(hex: 0x453F3A)
-        }
+        tintSurfaceTextColor
+    }
+
+    var tintSurfaceSubTextColor: Color {
+        palette.tintSurfaceSubText
     }
 
     var tintSubTextColor: Color {
-        switch self {
-        case .sweet: Color(hex: 0x896735)
-        case .sour: Color(hex: 0x897C35)
-        case .bitter: Color(hex: 0x70794B)
-        case .salty: Color(hex: 0x5A6789)
-        case .umami: Color(hex: 0x705B70)
-        case .fat: Color(hex: 0x66625D)
-        }
+        tintSurfaceSubTextColor
+    }
+
+    var gradientColors: [Color] {
+        palette.gradientColors
+    }
+
+    var linearGradient: LinearGradient {
+        LinearGradient(colors: gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+
+    var measurementAccentColor: Color {
+        measurementPalette.accent
+    }
+
+    var measurementNodeColors: [Color] {
+        measurementPalette.nodeColors
+    }
+
+    var measurementRingBaseColor: Color {
+        measurementPalette.ringBaseColor
+    }
+
+    var measurementRingBaseColorSoft: Color {
+        measurementPalette.ringBaseColorSoft
+    }
+
+    var measurementRingGuideBaseColor: Color {
+        measurementPalette.ringGuideBaseColor
+    }
+
+    var measurementGlowTransparentColor: Color {
+        measurementPalette.glowTransparentColor
     }
 
     var radarLineStartColor: Color {
@@ -94,6 +174,162 @@ enum TasteAxis: String, CaseIterable, Codable, Identifiable {
         case .umami: Color(hex: 0xC69AC7)
         case .fat: Color(hex: 0xB1A69E)
         }
+    }
+}
+
+private extension TasteAxisPalette {
+    static let sweet = make(
+        main: 0xFF9900,
+        dark: 0xCC7A00,
+        light: 0xFFCC80,
+        bg: 0xFFD699,
+        tintSurface: 0xFFEBCC,
+        tintSurfaceSubText: 0x896735,
+        tintSurfaceText: 0x6F4609,
+        gradientEnd: 0xFFB84D
+    )
+    static let sour = make(
+        main: 0xFBC02D,
+        dark: 0xC99A00,
+        light: 0xFDD835,
+        bg: 0xFFEF99,
+        tintSurface: 0xFFF7CC,
+        tintSurfaceSubText: 0x897C35,
+        tintSurfaceText: 0x6F5F09,
+        gradientEnd: 0xFFD54F
+    )
+    static let bitter = make(
+        main: 0x95C900,
+        dark: 0x6E9600,
+        light: 0xE6EE9C,
+        bg: 0xE0EBB4,
+        tintSurface: 0xEAF4CC,
+        tintSurfaceSubText: 0x70794B,
+        tintSurfaceText: 0x505B24,
+        gradientEnd: 0xAED581
+    )
+    static let salty = make(
+        main: 0x7299FF,
+        dark: 0x4A70CC,
+        light: 0x90CAF9,
+        bg: 0xC6D6FF,
+        tintSurface: 0xE3EBFF,
+        tintSurfaceSubText: 0x5A6789,
+        tintSurfaceText: 0x36466F,
+        gradientEnd: 0x9FBFFF
+    )
+    static let umami = make(
+        main: 0xB372B4,
+        dark: 0x8A5490,
+        light: 0xCE93D8,
+        bg: 0xE1C7E1,
+        tintSurface: 0xF0E3F0,
+        tintSurfaceSubText: 0x705B70,
+        tintSurfaceText: 0x513751,
+        gradientEnd: 0xCE93D8
+    )
+    static let fat = make(
+        main: 0x95867A,
+        dark: 0x6B5E54,
+        light: 0xBCAAA4,
+        bg: 0xD5CFCA,
+        tintSurface: 0xEAE7E4,
+        tintSurfaceSubText: 0x66625D,
+        tintSurfaceText: 0x453F3A,
+        gradientEnd: 0xB0A49A
+    )
+
+    static func make(
+        main: UInt,
+        dark: UInt,
+        light: UInt,
+        bg: UInt,
+        tintSurface: UInt,
+        tintSurfaceSubText: UInt,
+        tintSurfaceText: UInt,
+        gradientEnd: UInt
+    ) -> TasteAxisPalette {
+        TasteAxisPalette(
+            main: Color(hex: main),
+            dark: Color(hex: dark),
+            light: Color(hex: light),
+            bg: Color(hex: bg),
+            tintSoft: Color(hex: main, alpha: 0.05),
+            tintSoftBorder: Color(hex: main, alpha: 0.18),
+            tintSurface: Color(hex: tintSurface),
+            tintSurfaceSubText: Color(hex: tintSurfaceSubText),
+            tintSurfaceText: Color(hex: tintSurfaceText),
+            gradientColors: [Color(hex: main), Color(hex: gradientEnd)]
+        )
+    }
+}
+
+private extension TasteAxisMeasurementPalette {
+    static let sweet = make(
+        accent: 0xFF9500,
+        nodeColors: [0xFFF5E5, 0xFFEBCC, 0xFFE0B2, 0xFFD699, 0xFFCC7F, 0xFFC266, 0xFFB74C, 0xFFAD33, 0xFFA319, 0xFF9900],
+        ringBaseColor: 0xFFEBCC,
+        ringBaseColorSoft: 0xFFEBCC1A,
+        ringGuideBaseColor: 0xFF9900,
+        glowTransparentColor: 0xFFEBCC08
+    )
+    static let sour = make(
+        accent: 0xFFD600,
+        nodeColors: [0xFFF7CC, 0xFFF4B8, 0xFFF1A3, 0xFFEE8F, 0xFFEB7A, 0xFFE866, 0xFFE552, 0xFFE23D, 0xFFDF29, 0xFFD600],
+        ringBaseColor: 0xFFF7CC,
+        ringBaseColorSoft: 0xFFF7CC1A,
+        ringGuideBaseColor: 0xFFD600,
+        glowTransparentColor: 0xFFF7CC08
+    )
+    static let bitter = make(
+        accent: 0x8CC600,
+        nodeColors: [0xEAF4CC, 0xE1EFC0, 0xD8EAB4, 0xCFE5A8, 0xC5DF9C, 0xBCDA90, 0xB3D584, 0xAAD078, 0xA0CB6C, 0x95C900],
+        ringBaseColor: 0xEAF4CC,
+        ringBaseColorSoft: 0xEAF4CC1A,
+        ringGuideBaseColor: 0x95C900,
+        glowTransparentColor: 0xEAF4CC08
+    )
+    static let salty = make(
+        accent: 0x5898FF,
+        nodeColors: [0xE3EBFF, 0xD6E2FF, 0xC9D9FF, 0xBCD0FF, 0xAFC7FF, 0xA2BEFF, 0x95B5FF, 0x88ACFF, 0x7BA3FF, 0x7299FF],
+        ringBaseColor: 0xE3EBFF,
+        ringBaseColorSoft: 0xE3EBFF1A,
+        ringGuideBaseColor: 0x7299FF,
+        glowTransparentColor: 0xE3EBFF08
+    )
+    static let umami = make(
+        accent: 0xAF52DE,
+        nodeColors: [0xF0E3F0, 0xE7D7E8, 0xDECAE0, 0xD5BED8, 0xCCB1D0, 0xC3A5C8, 0xBA98C0, 0xB18CB8, 0xA87FB0, 0xB372B4],
+        ringBaseColor: 0xF0E3F0,
+        ringBaseColorSoft: 0xF0E3F01A,
+        ringGuideBaseColor: 0xB372B4,
+        glowTransparentColor: 0xF0E3F008
+    )
+    static let fat = make(
+        accent: 0x8E8279,
+        nodeColors: [0xEAE7E4, 0xE2DEDA, 0xDAD5D0, 0xD2CCC6, 0xCAC3BC, 0xC2BAB2, 0xBAB1A8, 0xB2A89E, 0xAA9F94, 0x95867A],
+        ringBaseColor: 0xEAE7E4,
+        ringBaseColorSoft: 0xEAE7E41A,
+        ringGuideBaseColor: 0x95867A,
+        glowTransparentColor: 0xEAE7E408
+    )
+
+    static func make(
+        accent: UInt,
+        nodeColors: [UInt],
+        ringBaseColor: UInt,
+        ringBaseColorSoft: UInt,
+        ringGuideBaseColor: UInt,
+        glowTransparentColor: UInt
+    ) -> TasteAxisMeasurementPalette {
+        TasteAxisMeasurementPalette(
+            accent: Color(hex: accent),
+            nodeColors: nodeColors.map { Color(hex: $0) },
+            ringBaseColor: Color(hex: ringBaseColor),
+            ringBaseColorSoft: Color(hexRGBA: ringBaseColorSoft),
+            ringGuideBaseColor: Color(hex: ringGuideBaseColor),
+            glowTransparentColor: Color(hexRGBA: glowTransparentColor)
+        )
     }
 }
 

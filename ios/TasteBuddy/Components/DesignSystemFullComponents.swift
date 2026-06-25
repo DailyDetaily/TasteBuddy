@@ -443,29 +443,48 @@ struct TBUIButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
-        .opacity(isEnabled ? 1 : 0.45)
     }
 
     private var background: Color {
+        guard isEnabled else {
+            return TBColor.disabledSurface
+        }
+
         switch variant {
-        case .primary: TBColor.textPrimary
-        case .secondary: TBColor.mutedSurface
-        case .outline, .ghost, .link: .clear
-        case .destructive: Color.red.opacity(0.12)
+        case .primary:
+            return TBColor.textPrimary
+        case .secondary:
+            return TBColor.mutedSurface
+        case .outline, .ghost, .link:
+            return .clear
+        case .destructive:
+            return TBColor.destructive.opacity(0.12)
         }
     }
 
     private var foreground: Color {
+        guard isEnabled else {
+            return TBColor.textDisabled
+        }
+
         switch variant {
-        case .primary: TBColor.textInverse
-        case .destructive: Color.red
-        case .link: TBColor.textPrimary
-        default: TBColor.textPrimary
+        case .primary:
+            return TBColor.textInverse
+        case .destructive:
+            return TBColor.destructive
+        case .link:
+            return TBColor.textPrimary
+        default:
+            return TBColor.textPrimary
         }
     }
 
     private var border: Color {
-        variant == .outline ? TBColor.border : .clear
+        guard isEnabled else {
+            return variant == .outline ? TBColor.borderDisabled : .clear
+        }
+
+        return variant == .outline ? TBColor.border : .clear
     }
 }
 

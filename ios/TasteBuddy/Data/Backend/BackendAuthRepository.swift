@@ -72,6 +72,7 @@ struct BackendAuthResult: Equatable {
 
 protocol BackendAuthRepository {
     func ensureAnonymousSession() async -> BackendAuthResult
+    func continueWithGoogle(redirectTo: URL?) async -> BackendAuthResult
     func sendEmailOTP(
         email: String,
         intent: BackendAuthEmailIntent,
@@ -98,6 +99,10 @@ struct FixtureBackendAuthRepository: BackendAuthRepository {
 
     func ensureAnonymousSession() async -> BackendAuthResult {
         result
+    }
+
+    func continueWithGoogle(redirectTo: URL?) async -> BackendAuthResult {
+        .success("Google 로그인이 완료되었습니다.", user: result.user)
     }
 
     func sendEmailOTP(
@@ -142,6 +147,10 @@ struct MissingConfigurationAuthRepository: BackendAuthRepository {
         result
     }
 
+    func continueWithGoogle(redirectTo: URL?) async -> BackendAuthResult {
+        result
+    }
+
     func sendEmailOTP(
         email: String,
         intent: BackendAuthEmailIntent,
@@ -178,13 +187,34 @@ struct SupabaseAuthRepository: BackendAuthRepository {
     let client: SupabaseClient
 
     func ensureAnonymousSession() async -> BackendAuthResult {
-        if let currentSession = client.auth.currentSession {
-            return .success("세션이 준비되었습니다.", user: BackendAuthUserSummary(currentSession.user))
-        }
-
         do {
+            if let currentSession = client.auth.currentSession {
+                let validSession = currentSession.isExpired
+                    ? try await client.auth.session
+                    : currentSession
+                return .success(
+                    "세션이 준비되었습니다.",
+                    user: BackendAuthUserSummary(validSession.user)
+                )
+            }
+
             let session = try await client.auth.signInAnonymously()
             return .success("게스트 세션이 준비되었습니다.", user: BackendAuthUserSummary(session.user))
+        } catch {
+            return .failure(authErrorMessage(error))
+        }
+    }
+
+    func continueWithGoogle(redirectTo: URL? = nil) async -> BackendAuthResult {
+        do {
+            let session = try await client.auth.signInWithOAuth(
+                provider: .google,
+                redirectTo: redirectTo
+            )
+            return .success(
+                "Google 로그인이 완료되었습니다.",
+                user: BackendAuthUserSummary(session.user)
+            )
         } catch {
             return .failure(authErrorMessage(error))
         }
@@ -318,6 +348,21 @@ private extension BackendAuthUserSummary {
 #endif
 
 enum BackendAuthRepositoryFactory {
+    static func handleRedirectURL(_ url: URL, bundle: Bundle = .main) {
+        do {
+            let configuration = try BackendConfiguration.load(bundle: bundle)
+            let provider = SupabaseClientProvider(configuration: configuration)
+
+            #if canImport(Supabase)
+            provider.makeClient().auth.handle(url)
+            #else
+            _ = provider
+            #endif
+        } catch {
+            return
+        }
+    }
+
     static func isConfigured(bundle: Bundle = .main) -> Bool {
         do {
             _ = try BackendConfiguration.load(bundle: bundle)

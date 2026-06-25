@@ -27,12 +27,29 @@ export interface RestaurantInfoRowViewModel {
 
 export interface RestaurantInfoViewModel {
   address: string;
+  category?: string;
   email?: string;
+  googleMapsUrl?: string;
+  googlePhoto?: {
+    attributions: Array<{
+      displayName?: string;
+      uri?: string;
+    }>;
+    heightPx?: number | null;
+    name: string;
+    url?: string | null;
+    widthPx?: number | null;
+  };
+  googlePlaceId?: string;
   hours: string;
   instagram?: string;
+  kakaoPlaceId?: string;
   mapUrl?: string;
   phone?: string;
+  priceLevel?: string;
+  rating?: number;
   sourceByRow?: Partial<Record<RestaurantInfoRowId, RestaurantInfoSource>>;
+  userRatingCount?: number;
   website?: string;
 }
 

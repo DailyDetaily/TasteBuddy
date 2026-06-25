@@ -107,7 +107,8 @@ struct AnalysisView: View {
                             }
                         }
                     }
-                    .padding(TBSpacing.page)
+                    .tbPageContentPadding(bottom: TBSpacing.mainTabContentBottom)
+                    .tbCardBordersVisible(false)
                 }
             }
             .navigationTitle("분석")
@@ -191,7 +192,7 @@ private struct InsightDetailSheet: View {
                         }
                     }
                 }
-                .padding(TBSpacing.page)
+                .tbPageContentPadding()
             }
             .navigationTitle("인사이트")
             .tbInlineNavigationTitle()
@@ -242,40 +243,24 @@ private struct RadarComparisonCard: View {
                 }
 
                 TasteRadarView(entries: selectedMeasurement.entries)
-                    .frame(maxWidth: TasteRadarContract.canvasSize.width)
+                    .frame(maxWidth: 360)
+                    .frame(maxWidth: .infinity, alignment: .center)
 
                 HStack(alignment: .bottom, spacing: 4) {
                     VStack(spacing: 4) {
                         Text("나의 반응")
                             .font(TBFont.regular(10))
                             .foregroundStyle(TBColor.textHint)
-                        Text(selectedMeasurement.totalSensitivityLabel)
-                            .font(TBFont.bold(12))
-                            .foregroundStyle(Color.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 3)
-                            .background(TBColor.textPrimary)
-                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        RadarComparisonValueBadge(selectedMeasurement.totalSensitivityLabel)
                     }
 
-                    Text("→")
-                        .font(TBFont.bold(10))
-                        .frame(width: 24, height: 24)
-                        .foregroundStyle(Color.white)
-                        .background(TBColor.textDisabled)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    RadarComparisonArrowBadge()
 
                     VStack(spacing: 4) {
                         Text("기준 반응")
                             .font(TBFont.regular(10))
                             .foregroundStyle(TBColor.textHint)
-                        Text("평균")
-                            .font(TBFont.bold(12))
-                            .foregroundStyle(Color.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 3)
-                            .background(TBColor.textPrimary)
-                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        RadarComparisonValueBadge("평균")
                     }
                 }
                 .padding(.top, 8)
@@ -315,5 +300,38 @@ private struct RadarComparisonCard: View {
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.3)
         .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+private struct RadarComparisonValueBadge: View {
+    let label: String
+
+    init(_ label: String) {
+        self.label = label
+    }
+
+    var body: some View {
+        Text(label)
+            .font(TBFont.bold(12))
+            .foregroundStyle(Color.white)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: true)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 3)
+            .frame(height: 24)
+            .background(TBColor.textPrimary)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+    }
+}
+
+private struct RadarComparisonArrowBadge: View {
+    var body: some View {
+        Text("→")
+            .font(TBFont.bold(10))
+            .foregroundStyle(Color.white)
+            .frame(width: 24, height: 24)
+            .fixedSize()
+            .background(TBColor.textDisabled)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 }

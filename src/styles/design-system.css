@@ -39,6 +39,7 @@
   --tb-color-success-soft: #e6f4ec;
   --tb-color-warning: #a8661a;
   --tb-color-warning-soft: #fff1de;
+  --tb-color-destructive: #d4183d;
 
   --tb-shadow-hover: 0 1px 3px rgba(15, 15, 15, 0.06);
   --tb-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -567,6 +568,80 @@
       var(--tb-taste-axis-tab-bg) 82%,
       var(--tb-taste-axis-tab-border)
     );
+  }
+
+  .tb-bottom-tab-center-beam[data-beam] {
+    --tb-center-beam-color-a: var(--tb-taste-sweet-main);
+    --tb-center-beam-color-b: var(--tb-taste-salty-main);
+    --tb-center-beam-edge-mask: radial-gradient(
+      circle closest-side,
+      transparent calc(100% - 5px),
+      rgba(255, 255, 255, 0.72) calc(100% - 3px),
+      #fff 100%
+    );
+    --tb-center-beam-inner-mask:
+      linear-gradient(#fff, transparent 18px, transparent calc(100% - 18px), #fff),
+      linear-gradient(to right, #fff, transparent 18px, transparent calc(100% - 18px), #fff);
+    --tb-center-beam-small-track: radial-gradient(
+        ellipse calc(42px * var(--tb-beam-w1, 1)) calc(24px * var(--tb-beam-h1, 1) * var(--tb-beam-glow-h, 1)) at calc(18% + var(--tb-beam-x1, 0px)) calc(8% + var(--tb-beam-y1, 0px)),
+        var(--tb-center-beam-color-a),
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse calc(36px * var(--tb-beam-w2, 1)) calc(21px * var(--tb-beam-h2, 1)) at calc(42% + var(--tb-beam-x2, 0px)) calc(0% + var(--tb-beam-y2, 0px)),
+        var(--tb-center-beam-color-a),
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse calc(24px * var(--tb-beam-w3, 1)) calc(42px * var(--tb-beam-h3, 1) * var(--tb-beam-glow-h, 1)) at calc(0% + var(--tb-beam-x3, 0px)) calc(42% + var(--tb-beam-y3, 0px)),
+        var(--tb-center-beam-color-a),
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse calc(18px * var(--tb-beam-w2, 1)) calc(24px * var(--tb-beam-h2, 1)) at calc(29% - var(--tb-beam-x2, 0px)) calc(100% - var(--tb-beam-y2, 0px)),
+        var(--tb-center-beam-color-a),
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse calc(108px * var(--tb-beam-w1, 1)) calc(19px * var(--tb-beam-h1, 1)) at calc(74% - var(--tb-beam-x1, 0px)) calc(0% + var(--tb-beam-y1, 0px)),
+        var(--tb-center-beam-color-b),
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse calc(51px * var(--tb-beam-w3, 1)) calc(16px * var(--tb-beam-h3, 1) * var(--tb-beam-glow-h, 1)) at calc(100% - var(--tb-beam-x3, 0px)) calc(38% + var(--tb-beam-y3, 0px)),
+        var(--tb-center-beam-color-b),
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse calc(44px * var(--tb-beam-w1, 1)) calc(19px * var(--tb-beam-h1, 1) * var(--tb-beam-glow-h, 1)) at calc(78% - var(--tb-beam-x1, 0px)) calc(94% - var(--tb-beam-y1, 0px)),
+        var(--tb-center-beam-color-b),
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse calc(16px * var(--tb-beam-w2, 1)) calc(25px * var(--tb-beam-h2, 1)) at calc(52% - var(--tb-beam-x2, 0px)) calc(100% - var(--tb-beam-y2, 0px)),
+        var(--tb-center-beam-color-b),
+        transparent 78%
+      );
+  }
+
+  .tb-bottom-tab-center-beam[data-beam]::after {
+    background: var(--tb-center-beam-small-track) !important;
+    filter: hue-rotate(var(--tb-beam-hue, 0deg)) brightness(1.28) saturate(1.16) contrast(1.08) !important;
+  }
+
+  .tb-bottom-tab-center-beam[data-beam]::before {
+    background: var(--tb-center-beam-small-track) !important;
+    -webkit-mask-image: var(--tb-center-beam-inner-mask) !important;
+    -webkit-mask-composite: source-over !important;
+    mask-image: var(--tb-center-beam-inner-mask) !important;
+    mask-composite: add !important;
+    filter: hue-rotate(var(--tb-beam-hue, 0deg)) brightness(1) saturate(1) !important;
+    opacity: calc(var(--tb-beam-opacity, 1) * 0.8 * var(--beam-strength, 1)) !important;
+  }
+
+  .tb-bottom-tab-center-beam[data-beam] [data-beam-bloom] {
+    background: var(--tb-center-beam-small-track) !important;
+    filter: hue-rotate(var(--tb-beam-hue, 0deg)) blur(8px) brightness(1.04) saturate(1) !important;
   }
 }
 

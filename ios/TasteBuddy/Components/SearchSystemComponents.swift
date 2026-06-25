@@ -4,12 +4,11 @@ enum SearchOverlayShellMetrics {
     static let fieldHeight: CGFloat = 44
     static let iconButtonSize: CGFloat = 44
     static let headerHorizontalPadding: CGFloat = 20
-    static let headerTopPadding: CGFloat = 4
-    static let headerBottomPadding: CGFloat = 16
-    static let headerGap: CGFloat = 12
-    static let bodyTopPadding: CGFloat = 16
+    static let headerTopPadding: CGFloat = TBSpacing.pageTop
+    static let headerBottomPadding: CGFloat = TBSpacing.x8
+    static let headerGap: CGFloat = 8
+    static let bodyTopPadding: CGFloat = TBSpacing.pageTop
     static let bodyBottomPadding: CGFloat = 32
-    static let clearButtonSize: CGFloat = 28
 }
 
 struct SearchOverlayShell<Content: View>: View {
@@ -95,55 +94,25 @@ struct SearchOverlayShell<Content: View>: View {
         .padding(.top, SearchOverlayShellMetrics.headerTopPadding)
         .padding(.bottom, SearchOverlayShellMetrics.headerBottomPadding)
         .background(TBColor.page.opacity(0.95).ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(TBColor.border)
-                .frame(height: 1)
-        }
     }
 
     private var searchField: some View {
-        HStack(spacing: 8) {
-            TextField(placeholder, text: $query)
-                .font(TBFont.medium(13))
-                .foregroundStyle(TBColor.textPrimary)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .submitLabel(.search)
-                .focused($isSearchFocused)
-                .onSubmit(onSubmit)
-                .accessibilityLabel(accessibilityLabel)
-
-            if !query.isEmpty {
-                Button {
-                    query = ""
-                    isSearchFocused = true
-                } label: {
-                    LucideIcon(
-                        .x,
-                        size: TBIcon.Size.small,
-                        strokeWidth: TBIcon.Stroke.regular
-                    )
-                    .frame(
-                        width: SearchOverlayShellMetrics.clearButtonSize,
-                        height: SearchOverlayShellMetrics.clearButtonSize
-                    )
-                    .foregroundStyle(TBColor.textHint)
-                    .background(TBColor.disabledSurface)
-                    .clipShape(Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("검색어 지우기")
+        TextField(placeholder, text: $query)
+            .font(TBFont.medium(13))
+            .foregroundStyle(TBColor.textPrimary)
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .submitLabel(.search)
+            .focused($isSearchFocused)
+            .onSubmit(onSubmit)
+            .accessibilityLabel(accessibilityLabel)
+            .frame(height: SearchOverlayShellMetrics.fieldHeight)
+            .padding(.horizontal, 16)
+            .background(TBColor.mutedSurface)
+            .clipShape(Capsule())
+            .overlay {
+                Capsule().stroke(TBColor.border)
             }
-        }
-        .frame(height: SearchOverlayShellMetrics.fieldHeight)
-        .padding(.leading, 16)
-        .padding(.trailing, query.isEmpty ? 16 : 8)
-        .background(TBColor.mutedSurface)
-        .clipShape(Capsule())
-        .overlay {
-            Capsule().stroke(TBColor.border)
-        }
     }
 }
 
@@ -153,6 +122,11 @@ enum CompactCardMetrics {
     static let actionGap: CGFloat = 0
     static let radius: CGFloat = 20
     static let mediaSize: CGFloat = 40
+    static let actionButtonSize: CGFloat = TBIcon.Container.medium
+    static let actionIconSize: CGFloat = TBIcon.Size.medium
+}
+
+enum SearchResultCompactCardMetrics {
     static let actionButtonSize: CGFloat = TBIcon.Container.large
     static let actionIconSize: CGFloat = TBIcon.Size.large
 }
@@ -275,19 +249,21 @@ struct CompactCardIconActionButton: View {
     var isActive = false
     var filled = false
     let accessibilityLabel: String
+    var actionButtonSize = CompactCardMetrics.actionButtonSize
+    var actionIconSize = CompactCardMetrics.actionIconSize
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             LucideIcon(
                 symbol,
-                size: CompactCardMetrics.actionIconSize,
+                size: actionIconSize,
                 strokeWidth: TBIcon.Stroke.regular,
                 filled: filled || isActive
             )
             .frame(
-                width: CompactCardMetrics.actionButtonSize,
-                height: CompactCardMetrics.actionButtonSize
+                width: actionButtonSize,
+                height: actionButtonSize
             )
             .foregroundStyle(TBColor.textSecondary)
             .contentShape(Rectangle())

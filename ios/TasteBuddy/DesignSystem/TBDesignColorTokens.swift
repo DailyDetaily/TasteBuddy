@@ -127,8 +127,9 @@ enum TBDesignColorTokens {
             static let successSoft = token("state.successSoft", "--tb-color-success-soft", "#E6F4EC", .hex(0xE6F4EC))
             static let warning = token("state.warning", "--tb-color-warning", "#A8661A", .hex(0xA8661A))
             static let warningSoft = token("state.warningSoft", "--tb-color-warning-soft", "#FFF1DE", .hex(0xFFF1DE))
+            static let destructive = token("state.destructive", "--tb-color-destructive", "#D4183D", .hex(0xD4183D))
 
-            static let all = [success, successSoft, warning, warningSoft]
+            static let all = [success, successSoft, warning, warningSoft, destructive]
         }
 
         static let all = Background.all + Surface.all + Text.all + Border.all + Icon.all + State.all
@@ -512,6 +513,7 @@ enum TBDesignColorTokens {
             static let successSoft = css("--tb-color-success-soft", "#e6f4ec", .hex(0xE6F4EC))
             static let warning = css("--tb-color-warning", "#a8661a", .hex(0xA8661A))
             static let warningSoft = css("--tb-color-warning-soft", "#fff1de", .hex(0xFFF1DE))
+            static let destructive = css("--tb-color-destructive", "#d4183d", .hex(0xD4183D))
 
             static let all = [
                 bgPage, bgFocus,
@@ -519,7 +521,7 @@ enum TBDesignColorTokens {
                 textPrimary, textSecondary, textTertiary, textBody, textHint, textDisabled, textInverse, textSubtle, textMuted, textFaint,
                 borderCard, borderSubtle, borderDefault, borderStrong, borderDisabled, borderAvatar, borderAvatarSoft,
                 iconPrimary, iconHover, iconMuted,
-                success, successSoft, warning, warningSoft
+                success, successSoft, warning, warningSoft, destructive
             ]
         }
 

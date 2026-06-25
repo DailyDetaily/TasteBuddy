@@ -15,6 +15,7 @@ data/foodon/
 
 # Xcode local state
 DerivedData/
+DerivedData*/
 *.xcuserstate
 xcuserdata/
 ios/Config/Secrets.local.xcconfig

@@ -202,7 +202,7 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 - 제품 UI 텍스트는 `18px`를 넘기지 않는다.
 - 긴 본문을 taste color로 세팅하지 않는다.
 - 한 블록에 여섯 taste를 동시에 강하게 전개하지 않는다.
-- default UI state는 neutral, success, warning에서 시작한다.
+- default UI state는 neutral, success, warning에서 시작하고, destructive는 위험 액션에만 제한한다.
 - taste는 의미가 핵심일 때만 전면에 올린다.
 - 새로운 재사용 패턴이면 `/design-system` 프리뷰에 반영한다.
 

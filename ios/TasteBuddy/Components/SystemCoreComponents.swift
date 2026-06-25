@@ -627,30 +627,37 @@ struct ActionOverlayCard<Content: View>: View {
                 .overlay {
                     if layout == .split && compact == false && action.tone == .default {
                         RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-                            .stroke(TBColor.borderStrong, lineWidth: 1)
+                            .stroke(action.isDisabled ? TBColor.borderDisabled : TBColor.borderStrong, lineWidth: 1)
                     }
                 }
         }
         .buttonStyle(.plain)
         .disabled(action.isDisabled)
-        .opacity(action.isDisabled ? 0.45 : 1)
     }
 
     private func actionForeground(_ action: ActionOverlayCardAction) -> Color {
+        guard !action.isDisabled else {
+            return TBColor.textDisabled
+        }
+
         switch action.tone {
         case .default:
-            layout == .split ? TBColor.textTertiary : TBColor.textPrimary
+            return layout == .split ? TBColor.textTertiary : TBColor.textPrimary
         case .destructive:
-            Color.red
+            return TBColor.destructive
         }
     }
 
     private func actionBackground(_ action: ActionOverlayCardAction, compact: Bool) -> Color {
+        guard !action.isDisabled else {
+            return TBColor.disabledSurface
+        }
+
         switch action.tone {
         case .default:
-            compact ? TBColor.mutedSurface : Color.clear
+            return compact ? TBColor.mutedSurface : Color.clear
         case .destructive:
-            compact ? TBColor.mutedSurface : Color.red.opacity(0.12)
+            return compact ? TBColor.mutedSurface : TBColor.destructive.opacity(0.12)
         }
     }
 }
@@ -687,7 +694,7 @@ enum BottomSheetShellMetrics {
     static let authEntryEmailMaxHeightRatio: CGFloat = 0.72
     static let stageTopInset: CGFloat = 12
     static let maxWidth: CGFloat = TBSize.screenMaxWidth
-    static let topRadius: CGFloat = 24
+    static let topRadius: CGFloat = 32
     static let clipsOnlyTopCorners = true
     static let usesCustomGrabber = true
     static let grabberTopMargin: CGFloat = 5
@@ -697,8 +704,9 @@ enum BottomSheetShellMetrics {
     static let topAreaHeightIncludingGrabber: CGFloat =
         grabberTopMargin + grabberHeight + grabberToHeaderSpacing
     static let headerHorizontalPadding: CGFloat = TBSpacing.page
-    static let headerBottomPadding: CGFloat = 16
-    static let headerSlotSize: CGFloat = 40
+    static let headerTopPadding: CGFloat = TBSpacing.page
+    static let headerBottomPadding: CGFloat = TBSpacing.x12
+    static let headerSlotSize: CGFloat = 32
     static let footerHorizontalPadding: CGFloat = TBSpacing.page
     static let footerTopPadding: CGFloat = 16
     static let footerBottomPadding: CGFloat = 12
@@ -730,6 +738,151 @@ enum BottomSheetShellMetrics {
     }
 }
 
+struct BottomSheetScrollGeometry: Equatable {
+    static let boundaryTolerance: CGFloat = 1
+
+    let contentHeight: CGFloat
+    let viewportHeight: CGFloat
+    let contentMinY: CGFloat
+
+    var isScrollable: Bool {
+        contentHeight > viewportHeight + Self.boundaryTolerance
+    }
+
+    var isAtTop: Bool {
+        contentMinY >= -Self.boundaryTolerance
+    }
+
+    var allowsSheetDrag: Bool {
+        !isScrollable || isAtTop
+    }
+}
+
+@MainActor
+final class BottomSheetScrollCoordinator: ObservableObject {
+    @Published private(set) var geometry: BottomSheetScrollGeometry?
+    @Published var isSheetDragging = false
+
+    var allowsSheetDrag: Bool {
+        geometry?.allowsSheetDrag ?? true
+    }
+
+    func update(_ geometry: BottomSheetScrollGeometry) {
+        guard self.geometry != geometry else {
+            return
+        }
+
+        self.geometry = geometry
+    }
+
+    func reset() {
+        geometry = nil
+        isSheetDragging = false
+    }
+}
+
+private struct BottomSheetScrollCoordinatorKey: EnvironmentKey {
+    static let defaultValue: BottomSheetScrollCoordinator? = nil
+}
+
+extension EnvironmentValues {
+    var bottomSheetScrollCoordinator: BottomSheetScrollCoordinator? {
+        get { self[BottomSheetScrollCoordinatorKey.self] }
+        set { self[BottomSheetScrollCoordinatorKey.self] = newValue }
+    }
+}
+
+struct BottomSheetScrollView<Content: View>: View {
+    @Environment(\.bottomSheetScrollCoordinator) private var coordinator
+
+    private let showsIndicators: Bool
+    private let content: Content
+
+    init(
+        showsIndicators: Bool = true,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.showsIndicators = showsIndicators
+        self.content = content()
+    }
+
+    @ViewBuilder
+    var body: some View {
+        if let coordinator {
+            CoordinatedBottomSheetScrollView(
+                coordinator: coordinator,
+                showsIndicators: showsIndicators,
+                content: content
+            )
+        } else {
+            ScrollView(.vertical, showsIndicators: showsIndicators) {
+                content
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+}
+
+private struct BottomSheetScrollContentGeometry: Equatable {
+    let minY: CGFloat
+    let height: CGFloat
+}
+
+private struct CoordinatedBottomSheetScrollView<Content: View>: View {
+    @ObservedObject var coordinator: BottomSheetScrollCoordinator
+    let showsIndicators: Bool
+    let content: Content
+
+    @State private var coordinateSpaceID = UUID()
+    @State private var contentGeometry = BottomSheetScrollContentGeometry(minY: 0, height: 0)
+    @State private var viewportHeight: CGFloat = 0
+
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: showsIndicators) {
+            content
+                .onGeometryChange(for: BottomSheetScrollContentGeometry.self) { proxy in
+                    BottomSheetScrollContentGeometry(
+                        minY: proxy.frame(in: .named(coordinateSpaceID)).minY,
+                        height: proxy.size.height
+                    )
+                } action: { nextGeometry in
+                    contentGeometry = nextGeometry
+                    reportGeometry()
+                }
+        }
+        .coordinateSpace(name: coordinateSpaceID)
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { nextViewportHeight in
+            viewportHeight = nextViewportHeight
+            reportGeometry()
+        }
+        .scrollDisabled(
+            coordinator.isSheetDragging
+                || (coordinator.geometry.map { !$0.isScrollable } ?? false)
+        )
+        .scrollBounceBehavior(.basedOnSize)
+        .onAppear {
+            coordinator.reset()
+            reportGeometry()
+        }
+    }
+
+    private func reportGeometry() {
+        guard viewportHeight > 0, contentGeometry.height > 0 else {
+            return
+        }
+
+        coordinator.update(
+            BottomSheetScrollGeometry(
+                contentHeight: contentGeometry.height,
+                viewportHeight: viewportHeight,
+                contentMinY: contentGeometry.minY
+            )
+        )
+    }
+}
+
 enum BottomSheetStageMode: Equatable {
     case fixed
     case auto(maxHeightRatio: CGFloat)
@@ -747,7 +900,14 @@ enum StagedBottomSheetBackgroundMetrics {
     static let shadowY: CGFloat = 20
     static let shadowBlur: CGFloat = 60
     static let shadowOpacity: CGFloat = 0.24
-    static let animation = Animation.timingCurve(0.22, 1, 0.36, 1, duration: 0.62)
+    static let animationDuration: TimeInterval = 0.62
+    static let animation = Animation.timingCurve(
+        0.22,
+        1,
+        0.36,
+        1,
+        duration: animationDuration
+    )
 }
 
 struct StagedBottomSheetBackground: ViewModifier {
@@ -867,6 +1027,7 @@ struct BottomSheetShell<Content: View>: View {
     var floatingLayer: AnyView? = nil
     var stageMode: BottomSheetStageMode = .fixed
     var usesNativeSheetChrome = false
+    var surfaceBackground = TBColor.focus
     private let content: Content
 
     init(
@@ -884,6 +1045,7 @@ struct BottomSheetShell<Content: View>: View {
         floatingLayer: AnyView? = nil,
         stageMode: BottomSheetStageMode = .fixed,
         usesNativeSheetChrome: Bool = false,
+        surfaceBackground: Color = TBColor.focus,
         @ViewBuilder content: () -> Content
     ) {
         self.headerStart = headerStart
@@ -900,24 +1062,17 @@ struct BottomSheetShell<Content: View>: View {
         self.floatingLayer = floatingLayer
         self.stageMode = stageMode
         self.usesNativeSheetChrome = usesNativeSheetChrome
+        self.surfaceBackground = surfaceBackground
         self.content = content()
     }
 
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
-                Capsule()
-                    .fill(TBColor.textHint)
-                    .frame(
-                        width: BottomSheetShellMetrics.grabberWidth,
-                        height: BottomSheetShellMetrics.grabberHeight
-                    )
-                    .padding(.top, BottomSheetShellMetrics.grabberTopMargin)
-                    .padding(.bottom, BottomSheetShellMetrics.grabberToHeaderSpacing)
-                    .accessibilityHidden(true)
-
                 if hasHeader {
                     header
+                } else {
+                    grabber
                 }
 
                 content
@@ -965,7 +1120,12 @@ struct BottomSheetShell<Content: View>: View {
             .frame(maxWidth: usesNativeSheetChrome ? .infinity : BottomSheetShellMetrics.maxWidth)
             .frame(height: fixedStageHeight)
             .frame(maxHeight: automaticMaxHeight)
-            .modifier(BottomSheetSurfaceChrome(usesNativeSheetChrome: usesNativeSheetChrome))
+            .modifier(
+                BottomSheetSurfaceChrome(
+                    usesNativeSheetChrome: usesNativeSheetChrome,
+                    background: surfaceBackground
+                )
+            )
 
             if let floatingLayer {
                 floatingLayer
@@ -1019,45 +1179,64 @@ struct BottomSheetShell<Content: View>: View {
         headerStart != nil || headerCenter != nil || headerEnd != nil
     }
 
+    private var grabber: some View {
+        Capsule()
+            .fill(TBColor.textHint)
+            .frame(
+                width: BottomSheetShellMetrics.grabberWidth,
+                height: BottomSheetShellMetrics.grabberHeight
+            )
+            .padding(.top, BottomSheetShellMetrics.grabberTopMargin)
+            .padding(.bottom, BottomSheetShellMetrics.grabberToHeaderSpacing)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+
     private var header: some View {
-        ZStack {
-            HStack {
-                (headerStart ?? AnyView(Color.clear))
-                    .frame(
-                        width: BottomSheetShellMetrics.headerSlotSize,
-                        height: BottomSheetShellMetrics.headerSlotSize,
-                        alignment: .leading
-                    )
+        ZStack(alignment: .top) {
+            ZStack {
+                HStack {
+                    (headerStart ?? AnyView(Color.clear))
+                        .frame(
+                            width: BottomSheetShellMetrics.headerSlotSize,
+                            height: BottomSheetShellMetrics.headerSlotSize,
+                            alignment: .leading
+                        )
 
-                Spacer()
+                    Spacer()
 
-                (headerEnd ?? AnyView(Color.clear))
-                    .frame(
-                        width: BottomSheetShellMetrics.headerSlotSize,
-                        height: BottomSheetShellMetrics.headerSlotSize,
-                        alignment: .trailing
-                    )
+                    (headerEnd ?? AnyView(Color.clear))
+                        .frame(
+                            width: BottomSheetShellMetrics.headerSlotSize,
+                            height: BottomSheetShellMetrics.headerSlotSize,
+                            alignment: .trailing
+                        )
+                }
+
+                if let headerCenter {
+                    headerCenter
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+                }
             }
+            .padding(.horizontal, BottomSheetShellMetrics.headerHorizontalPadding)
+            .padding(.top, BottomSheetShellMetrics.headerTopPadding)
+            .padding(.bottom, BottomSheetShellMetrics.headerBottomPadding)
 
-            if let headerCenter {
-                headerCenter
-                    .frame(maxWidth: .infinity)
-                    .multilineTextAlignment(.center)
-            }
+            grabber
         }
-        .padding(.horizontal, BottomSheetShellMetrics.headerHorizontalPadding)
-        .padding(.bottom, BottomSheetShellMetrics.headerBottomPadding)
     }
 }
 
 private struct BottomSheetSurfaceChrome: ViewModifier {
     var usesNativeSheetChrome: Bool
+    var background: Color
 
     func body(content: Content) -> some View {
         Group {
             if usesNativeSheetChrome {
                 content
-                    .background(TBColor.focus)
+                    .background(background)
                     .clipShape(BottomSheetTopRoundedShape(radius: BottomSheetShellMetrics.topRadius))
                     .background(alignment: .bottom) {
                         bottomSafeAreaFill
@@ -1065,7 +1244,7 @@ private struct BottomSheetSurfaceChrome: ViewModifier {
                     .ignoresSafeArea(edges: [.horizontal, .bottom])
             } else {
                 content
-                    .background(TBColor.focus)
+                    .background(background)
                     .clipShape(BottomSheetTopRoundedShape(radius: BottomSheetShellMetrics.topRadius))
                     .background(alignment: .bottom) {
                         bottomSafeAreaFill
@@ -1077,7 +1256,7 @@ private struct BottomSheetSurfaceChrome: ViewModifier {
     }
 
     private var bottomSafeAreaFill: some View {
-        TBColor.focus
+        background
             .frame(height: bottomSafeAreaInset)
             .frame(maxWidth: .infinity)
             .offset(y: bottomSafeAreaInset)

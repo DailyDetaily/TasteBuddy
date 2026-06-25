@@ -90,6 +90,9 @@ private struct RootView: View {
     private let showsDiningPreview = ProcessInfo.processInfo.arguments.contains(
         "--dining-preview"
     )
+    private let showsDiningLoadingPreview = ProcessInfo.processInfo.arguments.contains(
+        "--dining-loading-preview"
+    )
     private let skipsSplash = ProcessInfo.processInfo.arguments.contains(
         "--skip-splash"
     )
@@ -98,16 +101,29 @@ private struct RootView: View {
     )
     @State private var hasAppliedLaunchReset = false
     @State private var usesAuthEntryDarkStatusBar = false
+    @State private var usesStagedSheetDarkStatusBar = false
 
     var body: some View {
         Group {
             if showsDesignSystemPreview {
                 DesignSystemPreviewView()
             } else if showsShellPreview {
-                AppShellView()
+                AppShellView(
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsDiningPreview {
-                AppShellView(initialTab: .dining)
+                AppShellView(
+                    initialTab: .dining,
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
+                    .environmentObject(shellPreviewModel)
+            } else if showsDiningLoadingPreview {
+                AppShellView(
+                    initialTab: .dining,
+                    onStagedSheetPresentationChange: setStagedSheetPresentation,
+                    diningContentState: .loading
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsSplashPreview {
                 SplashView(autoplays: false, onComplete: {})
@@ -135,25 +151,46 @@ private struct RootView: View {
                 HomeView(recommendationContentState: .fallbackBuddy)
                     .environmentObject(shellPreviewModel)
             } else if showsCommentsPreview {
-                AppShellView(initialRoute: .comments(id: "following-mina-broth"))
+                AppShellView(
+                    initialRoute: .comments(id: "following-mina-broth"),
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsDishFeedbackDetailPreview {
-                AppShellView(initialRoute: .dishFeedback(id: "following-mina-broth"))
+                AppShellView(
+                    initialRoute: .dishFeedback(id: "following-mina-broth"),
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsConnectionListPreview {
-                AppShellView(initialRoute: .connectionList(.followers))
+                AppShellView(
+                    initialRoute: .connectionList(.followers),
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsPublicProfilePreview {
-                AppShellView(initialRoute: .publicProfile(id: "mina"))
+                AppShellView(
+                    initialRoute: .publicProfile(id: "mina"),
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsTasteChangePreview {
-                AppShellView(initialRoute: .tasteChange)
+                AppShellView(
+                    initialRoute: .tasteChange,
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsRestaurantDetailPreview {
-                AppShellView(initialRoute: .restaurant(id: "mingles"))
+                AppShellView(
+                    initialRoute: .restaurant(id: "mingles"),
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsSavedListPreview {
-                AppShellView(initialRoute: .savedRestaurants)
+                AppShellView(
+                    initialRoute: .savedRestaurants,
+                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsDiningFeedbackPreview {
                 DiningFeedbackPreviewHost()
@@ -164,8 +201,11 @@ private struct RootView: View {
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
-        .preferredColorScheme(usesAuthEntryDarkStatusBar ? .dark : .light)
+        .preferredColorScheme(usesDarkStatusBar ? .dark : .light)
         .onAppear(perform: applyLaunchResetIfNeeded)
+        .onOpenURL { url in
+            BackendAuthRepositoryFactory.handleRedirectURL(url)
+        }
         .task {
             await appModel.restoreBackendSessionIfNeeded()
         }
@@ -202,8 +242,12 @@ private struct RootView: View {
         case .calibration:
             CalibrationFlowView(onExit: exitCalibration)
         case .main:
-            MainTabView()
+            MainTabView(onStagedSheetPresentationChange: setStagedSheetPresentation)
         }
+    }
+
+    private var usesDarkStatusBar: Bool {
+        usesAuthEntryDarkStatusBar || usesStagedSheetDarkStatusBar
     }
 
     private var currentPhase: AppPhase {
@@ -249,6 +293,10 @@ private struct RootView: View {
 
     private func setAuthEntrySheetPresentation(_ isPresented: Bool) {
         usesAuthEntryDarkStatusBar = isPresented
+    }
+
+    private func setStagedSheetPresentation(_ isPresented: Bool) {
+        usesStagedSheetDarkStatusBar = isPresented
     }
 }
 
@@ -524,15 +572,7 @@ private struct AuthLandingView: View {
         VStack(spacing: 12) {
             PrimaryButton(title: "회원가입", action: onSignUp)
 
-            Button(action: onLogin) {
-                Text("로그인")
-                    .font(TBFont.semibold(12))
-                    .foregroundStyle(TBColor.textFaint)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .frame(height: 28)
-            }
-            .buttonStyle(.plain)
+            AuthTextActionButton(title: "로그인", action: onLogin)
         }
     }
 

@@ -1682,8 +1682,8 @@ export default function DesignSystemPage() {
         "--secondary-foreground": primaryText,
         "--accent": COLOR_TOKENS.surface.muted,
         "--accent-foreground": primaryText,
-        "--destructive": "#d4183d",
-        "--destructive-foreground": "#ffffff",
+        "--destructive": COLOR_TOKENS.state.destructive,
+        "--destructive-foreground": COLOR_TOKENS.text.inverse,
         "--border": border,
         "--input": border,
         "--input-background": COLOR_TOKENS.surface.muted,
@@ -1704,6 +1704,7 @@ export default function DesignSystemPage() {
         "--tb-color-success-soft": COLOR_TOKENS.state.successSoft,
         "--tb-color-warning": COLOR_TOKENS.state.warning,
         "--tb-color-warning-soft": COLOR_TOKENS.state.warningSoft,
+        "--tb-color-destructive": COLOR_TOKENS.state.destructive,
         "--tb-radius-20": `${cardRadius}px`,
         "--tb-radius-14": `${Math.max(controlRadius + 4, controlRadius)}px`,
         "--tb-radius-12": `${Math.max(controlRadius + 2, controlRadius)}px`,
@@ -2178,7 +2179,7 @@ export default function DesignSystemPage() {
           <PlaygroundSection
             id="colors"
             title="Colors"
-            description="semantic neutral tokens, taste accents, and the parallel generic theme colors that exist in the repo. The active app token layer now includes success and warning pairs so state chips can reference real tb-* tokens."
+            description="semantic neutral tokens, taste accents, and the parallel generic theme colors that exist in the repo. The active app token layer now includes success, warning, and destructive states so status and danger actions can reference real tb-* tokens."
             controls={
               <>
                 <ColorControl label="Page background" value={background} onChange={setBackground} />
@@ -2198,7 +2199,7 @@ export default function DesignSystemPage() {
                 </ControlBlock>
                 <div className="rounded-[18px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-3 py-3 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
                   <p className="font-semibold text-[var(--tb-color-text-primary)]">State color coverage</p>
-                  <p className="mt-1">`success`와 `warning`은 이제 tb-* 토큰으로 정의되어 있습니다. `error`는 아직 generic semantic layer의 `--destructive`에 의존합니다.</p>
+                  <p className="mt-1">`success`, `warning`, `destructive`는 이제 tb-* 상태 토큰으로 정의되어 있습니다.</p>
                 </div>
               </>
             }

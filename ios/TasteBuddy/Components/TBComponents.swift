@@ -2,11 +2,19 @@ import SwiftUI
 import UIKit
 
 struct SectionCard<Content: View>: View {
+    @Environment(\.tbCardBordersVisible) private var cardBordersVisible
+
     private let content: Content
     private let background: Color
+    private let showsBorder: Bool
 
-    init(background: Color = TBColor.surface, @ViewBuilder content: () -> Content) {
+    init(
+        background: Color = TBColor.surface,
+        showsBorder: Bool = true,
+        @ViewBuilder content: () -> Content
+    ) {
         self.background = background
+        self.showsBorder = showsBorder
         self.content = content()
     }
 
@@ -17,9 +25,28 @@ struct SectionCard<Content: View>: View {
             .background(background)
             .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
-                    .stroke(TBColor.borderCard, lineWidth: 1)
+                if showsBorder && cardBordersVisible {
+                    RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
+                        .stroke(TBColor.borderCard, lineWidth: 1)
+                }
             }
+    }
+}
+
+private struct TBCardBordersVisibleKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    var tbCardBordersVisible: Bool {
+        get { self[TBCardBordersVisibleKey.self] }
+        set { self[TBCardBordersVisibleKey.self] = newValue }
+    }
+}
+
+extension View {
+    func tbCardBordersVisible(_ isVisible: Bool) -> some View {
+        environment(\.tbCardBordersVisible, isVisible)
     }
 }
 
@@ -88,6 +115,41 @@ struct PrimaryButton: View {
 
     private var appearsDisabled: Bool {
         !isEnabled || visualDisabled
+    }
+}
+
+struct AuthTextActionButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(TBFont.semibold(12))
+                .foregroundStyle(TBColor.textFaint)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .frame(height: 28)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct TBSkeletonBlock: View {
+    var cornerRadius: CGFloat = TBRadius.row
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(TBColor.disabledSurface)
+            .overlay {
+                LinearGradient(
+                    colors: [.clear, Color.white.opacity(0.54), .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .opacity(0.6)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
 }
 
@@ -228,7 +290,7 @@ struct TBFlowBottomCTA: View {
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: actionSize.height)
                 .foregroundStyle(appearsDisabled ? TBColor.textDisabled : TBColor.textTertiary)
-                .background(Color.clear)
+                .background(appearsDisabled ? TBColor.disabledSurface : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
@@ -423,13 +485,13 @@ struct TBSelectionCard: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(title)
                         .font(TBFont.semibold(14))
-                        .foregroundStyle(TBColor.textPrimary)
+                        .foregroundStyle(isEnabled ? TBColor.textPrimary : TBColor.textDisabled)
                         .lineSpacing(2)
 
                     if let description {
                         Text(description)
                             .font(TBFont.regular(12))
-                            .foregroundStyle(TBColor.textMuted)
+                            .foregroundStyle(isEnabled ? TBColor.textMuted : TBColor.textDisabled)
                             .lineSpacing(3)
                     }
                 }
@@ -447,12 +509,12 @@ struct TBSelectionCard: View {
             .overlay {
                 RoundedRectangle(cornerRadius: SelectionCardMetrics.cardRadius, style: .continuous)
                     .stroke(
-                        isSelected ? TBColor.textPrimary : TBColor.border,
+                        selectionCardBorderColor,
                         lineWidth: 1
                     )
             }
             .shadow(
-                color: isSelected ? TBColor.textPrimary.opacity(0.06) : .clear,
+                color: isSelected && isEnabled ? TBColor.textPrimary.opacity(0.06) : .clear,
                 radius: SelectionCardMetrics.selectedShadowRadius,
                 x: 0,
                 y: SelectionCardMetrics.selectedShadowYOffset
@@ -470,11 +532,11 @@ struct TBSelectionCard: View {
         case .checkbox:
             ZStack {
                 RoundedRectangle(cornerRadius: SelectionCardMetrics.checkboxRadius, style: .continuous)
-                    .fill(isSelected ? TBColor.textPrimary : Color.clear)
+                    .fill(isSelected ? selectionControlColor : Color.clear)
                     .overlay {
                         RoundedRectangle(cornerRadius: SelectionCardMetrics.checkboxRadius, style: .continuous)
                             .stroke(
-                                isSelected ? TBColor.textPrimary : TBColor.borderDisabled,
+                                isSelected ? selectionControlColor : TBColor.borderDisabled,
                                 lineWidth: 1
                             )
                     }
@@ -494,18 +556,30 @@ struct TBSelectionCard: View {
             ZStack {
                 Circle()
                     .strokeBorder(
-                        isSelected ? TBColor.textPrimary : TBColor.borderDisabled,
+                        isSelected ? selectionControlColor : TBColor.borderDisabled,
                         lineWidth: isSelected ? 2 : 1
                     )
 
                 if isSelected {
                     Circle()
-                        .fill(TBColor.textPrimary)
+                        .fill(selectionControlColor)
                         .frame(width: SelectionCardMetrics.radioDotSize, height: SelectionCardMetrics.radioDotSize)
                 }
             }
             .frame(width: SelectionCardMetrics.indicatorSize, height: SelectionCardMetrics.indicatorSize)
         }
+    }
+
+    private var selectionControlColor: Color {
+        isEnabled ? TBColor.textPrimary : TBColor.textDisabled
+    }
+
+    private var selectionCardBorderColor: Color {
+        guard isEnabled else {
+            return TBColor.borderDisabled
+        }
+
+        return isSelected ? TBColor.textPrimary : TBColor.border
     }
 }
 
@@ -748,7 +822,12 @@ private struct DishFeedbackTasteBubbleChip: View {
     }
 
     var body: some View {
-        TasteChip(title: bubble.label, tone: axis == nil ? .neutral : .taste, colorAxis: axis)
+        TasteChip(
+            title: bubble.label,
+            tone: axis == nil ? .neutral : .taste,
+            colorAxis: axis,
+            size: .sm
+        )
             .lineLimit(1)
             .accessibilityLabel(bubble.title ?? bubble.label)
     }
@@ -760,6 +839,7 @@ struct NativeDishFeedbackCard: View {
     var relativeDateLabel = "최근"
     var showsOptions = true
     var framed = true
+    var noteTrailingPadding: CGFloat = 0
     var onOptionsTap: (() -> Void)? = nil
     var onDetailTap: (() -> Void)? = nil
     var onCommentsTap: (() -> Void)? = nil
@@ -892,7 +972,10 @@ struct NativeDishFeedbackCard: View {
                 }
             }
 
-            DiningNotePreview(summary: item.summary)
+            DiningNotePreview(
+                summary: item.summary,
+                trailingPadding: noteTrailingPadding
+            )
 
             Rectangle()
                 .fill(TBColor.textPrimary.opacity(DishFeedbackCardMetrics.actionDividerOpacity))
@@ -1030,6 +1113,130 @@ enum DishFeedbackCardMetrics {
     static let actionButtonSize: CGFloat = 32
     static let notePadding: CGFloat = 12
     static let noteRadius: CGFloat = 12
+    static let skeletonImageTileSize: CGFloat = 144
+    static let skeletonChipHeight: CGFloat = 26
+    static let skeletonNoteHeight: CGFloat = 76
+}
+
+struct NativeDishFeedbackCardSkeleton: View {
+    var framed = true
+
+    var body: some View {
+        Group {
+            if framed {
+                skeletonContent
+                    .padding(DishFeedbackCardMetrics.padding)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(TBColor.surface)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: DishFeedbackCardMetrics.radius,
+                            style: .continuous
+                        )
+                    )
+            } else {
+                skeletonContent
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("디시 기록을 불러오는 중")
+    }
+
+    private var skeletonContent: some View {
+        VStack(alignment: .leading, spacing: DishFeedbackCardMetrics.contentGap) {
+            HStack(spacing: DishFeedbackCardMetrics.headerGap) {
+                TBSkeletonBlock(cornerRadius: DishFeedbackCardMetrics.avatarSize / 2)
+                    .frame(
+                        width: DishFeedbackCardMetrics.avatarSize,
+                        height: DishFeedbackCardMetrics.avatarSize
+                    )
+
+                VStack(alignment: .leading, spacing: 7) {
+                    DishFeedbackSkeletonLine(widthRatio: 0.78, maxWidth: 360, height: 14)
+                    DishFeedbackSkeletonLine(widthRatio: 0.36, maxWidth: 180, height: 10)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                TBSkeletonBlock(cornerRadius: DishFeedbackCardMetrics.optionButtonSize / 2)
+                    .frame(
+                        width: DishFeedbackCardMetrics.optionButtonSize,
+                        height: DishFeedbackCardMetrics.optionButtonSize
+                    )
+            }
+
+            TBSkeletonBlock(cornerRadius: TBRadius.support)
+                .frame(
+                    width: DishFeedbackCardMetrics.skeletonImageTileSize,
+                    height: DishFeedbackCardMetrics.skeletonImageTileSize
+                )
+
+            VStack(alignment: .leading, spacing: DishFeedbackCardMetrics.chipStackGap) {
+                HStack(spacing: DishFeedbackCardMetrics.chipStackGap) {
+                    ForEach([104, 92, 112], id: \.self) { width in
+                        TBSkeletonBlock(cornerRadius: DishFeedbackCardMetrics.skeletonChipHeight / 2)
+                            .frame(
+                                width: CGFloat(width),
+                                height: DishFeedbackCardMetrics.skeletonChipHeight
+                            )
+                    }
+                }
+
+                HStack(spacing: DishFeedbackCardMetrics.chipStackGap) {
+                    ForEach([64, 76, 84], id: \.self) { width in
+                        TBSkeletonBlock(cornerRadius: DishFeedbackCardMetrics.skeletonChipHeight / 2)
+                            .frame(
+                                width: CGFloat(width),
+                                height: DishFeedbackCardMetrics.skeletonChipHeight
+                            )
+                    }
+                }
+                .clipped()
+            }
+
+            TBSkeletonBlock(cornerRadius: DishFeedbackCardMetrics.noteRadius)
+                .frame(maxWidth: .infinity)
+                .frame(height: DishFeedbackCardMetrics.skeletonNoteHeight)
+
+            Rectangle()
+                .fill(TBColor.textPrimary.opacity(DishFeedbackCardMetrics.actionDividerOpacity))
+                .frame(height: 1)
+
+            HStack(spacing: DishFeedbackCardMetrics.actionGap) {
+                ForEach(0..<3, id: \.self) { _ in
+                    TBSkeletonBlock(cornerRadius: 10)
+                        .frame(width: 20, height: 20)
+                        .frame(
+                            width: DishFeedbackCardMetrics.actionButtonSize,
+                            height: DishFeedbackCardMetrics.actionButtonSize
+                        )
+                }
+
+                Spacer()
+
+                TBSkeletonBlock(cornerRadius: 6)
+                    .frame(width: 72, height: 11)
+            }
+        }
+    }
+}
+
+private struct DishFeedbackSkeletonLine: View {
+    let widthRatio: CGFloat
+    let maxWidth: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        GeometryReader { proxy in
+            TBSkeletonBlock(cornerRadius: height / 2)
+                .frame(
+                    width: min(proxy.size.width * widthRatio, maxWidth),
+                    height: height,
+                    alignment: .leading
+                )
+        }
+        .frame(height: height)
+    }
 }
 
 struct DishFeedbackAuthorLine: View {
@@ -1192,13 +1399,13 @@ private struct DishFeedbackDetailTagCandidate: View {
     var body: some View {
         HStack(spacing: 6) {
             ForEach(visibleTags) { tag in
-                TasteChip(title: tag.label, tone: .neutral)
+                TasteChip(title: tag.label, tone: .neutral, size: .sm)
                     .lineLimit(1)
                     .accessibilityLabel(tag.title ?? tag.label)
             }
 
             if hiddenCount > 0 {
-                TasteChip(title: "+\(hiddenCount)", tone: .neutral)
+                TasteChip(title: "+\(hiddenCount)", tone: .neutral, size: .sm)
                     .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
             }
         }
@@ -1360,21 +1567,23 @@ private struct DishFeedbackActionButton: View {
 
 private struct DiningNotePreview: View {
     let summary: String
+    var trailingPadding: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             (
                 Text("미식 노트: ")
-                    .font(TBFont.semibold(12))
+                    .font(TBFont.semibold(14))
                     .foregroundStyle(TBColor.textPrimary)
                 + Text(summary)
-                    .font(TBFont.regular(12))
+                    .font(TBFont.regular(14))
                     .foregroundStyle(TBColor.textSubtle)
             )
             .lineSpacing(4)
             .lineLimit(4)
         }
         .padding(DishFeedbackCardMetrics.notePadding)
+        .padding(.trailing, trailingPadding)
         .background(TBColor.mutedSurface)
         .clipShape(RoundedRectangle(cornerRadius: DishFeedbackCardMetrics.noteRadius, style: .continuous))
     }

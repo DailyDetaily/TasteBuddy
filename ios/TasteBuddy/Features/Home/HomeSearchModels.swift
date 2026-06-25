@@ -144,7 +144,7 @@ struct FixtureHomeSearchRepository: HomeSearchRepository {
     }
 
     func friendResults(matching query: String) async throws -> [HomeSearchResultItem] {
-        guard HomeSearchEngine.isSearchableProfileIdentityQuery(query) else {
+        guard HomeSearchEngine.isSearchableFriendQuery(query) else {
             return []
         }
 
@@ -306,7 +306,7 @@ struct LiveHomeSearchRepository: HomeSearchRepository {
             symbol: "store",
             axis: matchedRestaurant?.axis ?? .umami,
             restaurantID: restaurantID,
-            route: restaurantID.map { .restaurant(id: $0) },
+            route: matchedRestaurant.map { .restaurant(id: $0.id) } ?? .restaurantSummary(bookmarkRestaurant),
             searchText: [
                 name,
                 address,
@@ -315,7 +315,7 @@ struct LiveHomeSearchRepository: HomeSearchRepository {
             ].compactMap(\.self).joined(separator: " "),
             source: .kakaoPlace,
             statusLabel: "카카오 장소",
-            externalURL: place.placeURL,
+            externalURL: nil,
             bookmarkRestaurant: bookmarkRestaurant
         )
     }
@@ -379,6 +379,30 @@ enum HomeSearchEngine {
     static let maxRecentSearches = 5
     static let maxGroupResults = 6
     private static let recentSearchesKey = "tastebuddy.ios.home-recent-searches.v1"
+    private static let hangulBaseScalar = 0xAC00
+    private static let hangulLastScalar = 0xD7A3
+    private static let hangulInitialUnit = 588
+    private static let hangulInitialScalars = [
+        "ㄱ",
+        "ㄲ",
+        "ㄴ",
+        "ㄷ",
+        "ㄸ",
+        "ㄹ",
+        "ㅁ",
+        "ㅂ",
+        "ㅃ",
+        "ㅅ",
+        "ㅆ",
+        "ㅇ",
+        "ㅈ",
+        "ㅉ",
+        "ㅊ",
+        "ㅋ",
+        "ㅌ",
+        "ㅍ",
+        "ㅎ"
+    ]
 
     static let allSections: [HomeSearchResultSection] = [
         HomeSearchResultSection(
@@ -528,20 +552,24 @@ enum HomeSearchEngine {
         }
     }
 
-    static func sections(matching query: String) -> [HomeSearchResultSection] {
-        let normalizedQuery = normalize(query)
+    static var friendSuggestedQueries: [HomeSearchSuggestion] {
+        let candidates = allSections
+            .first { $0.id == "friends" }?
+            .items ?? []
 
-        guard !normalizedQuery.isEmpty else {
+        return candidates.map { item in
+            HomeSearchSuggestion(id: item.id, label: item.title)
+        }
+    }
+
+    static func sections(matching query: String) -> [HomeSearchResultSection] {
+        guard let searchQuery = makeSearchQuery(from: query) else {
             return []
         }
 
-        let terms = normalizedQuery
-            .split(separator: " ")
-            .map(String.init)
-
         return allSections.compactMap { section in
             let items = section.items
-                .filter { item in matches(item, terms: terms, normalizedQuery: normalizedQuery) }
+                .scoredAndSorted(matching: searchQuery)
                 .prefix(maxGroupResults)
 
             guard !items.isEmpty else {
@@ -616,6 +644,10 @@ enum HomeSearchEngine {
         return localRestaurantCount == 0 && localChefOrMenuCount == 0
     }
 
+    static func isSearchableFriendQuery(_ query: String) -> Bool {
+        hasSearchableCompleteCharacter(normalize(query))
+    }
+
     static func isSearchableProfileIdentityQuery(_ query: String) -> Bool {
         let normalizedQuery = normalize(query)
 
@@ -639,19 +671,11 @@ enum HomeSearchEngine {
         _ items: [HomeSearchResultItem],
         matching query: String
     ) -> [HomeSearchResultItem] {
-        let normalizedQuery = normalize(query)
-
-        guard !normalizedQuery.isEmpty else {
+        guard let searchQuery = makeSearchQuery(from: query) else {
             return []
         }
 
-        let terms = normalizedQuery
-            .split(separator: " ")
-            .map(String.init)
-
-        return items.filter {
-            matches($0, terms: terms, normalizedQuery: normalizedQuery)
-        }
+        return items.scoredAndSorted(matching: searchQuery)
     }
 
     static func updatedRecentSearches(
@@ -695,20 +719,6 @@ enum HomeSearchEngine {
         return item.title
     }
 
-    private static func matches(
-        _ item: HomeSearchResultItem,
-        terms: [String],
-        normalizedQuery: String
-    ) -> Bool {
-        let haystack = normalize(item.searchText)
-
-        guard !haystack.contains(normalizedQuery) else {
-            return true
-        }
-
-        return terms.allSatisfy { haystack.contains($0) }
-    }
-
     static func normalize(_ value: String) -> String {
         value
             .folding(options: [.diacriticInsensitive, .widthInsensitive, .caseInsensitive], locale: .current)
@@ -724,6 +734,190 @@ enum HomeSearchEngine {
         return value.unicodeScalars.contains { scalar in
             CharacterSet.alphanumerics.contains(scalar)
                 || (0xAC00...0xD7A3).contains(Int(scalar.value))
+                || (0x3131...0x314E).contains(Int(scalar.value))
+        }
+    }
+
+    private struct WeightedSearchField {
+        let value: String
+        let weight: Int
+    }
+
+    fileprivate struct SearchQuery {
+        let terms: [String]
+        let variants: [String]
+    }
+
+    private static func makeSearchQuery(from value: String) -> SearchQuery? {
+        let normalizedValue = normalizeForSearch(value)
+
+        guard !normalizedValue.isEmpty else {
+            return nil
+        }
+
+        return SearchQuery(
+            terms: normalizedValue
+                .split(separator: " ")
+                .map(String.init),
+            variants: queryVariants(for: value)
+        )
+    }
+
+    private static func normalizeForSearch(_ value: String) -> String {
+        normalize(value)
+            .replacingOccurrences(
+                of: #"[\(\)'"\.,\/-]+"#,
+                with: " ",
+                options: .regularExpression
+            )
+            .replacingOccurrences(
+                of: #"\s+"#,
+                with: " ",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func compactSearchValue(_ value: String) -> String {
+        normalizeForSearch(value).replacingOccurrences(of: " ", with: "")
+    }
+
+    private static func hangulInitialSearchValue(_ value: String) -> String {
+        let characters = normalizeForSearch(value).unicodeScalars.map { scalar in
+            let scalarValue = Int(scalar.value)
+
+            guard (hangulBaseScalar...hangulLastScalar).contains(scalarValue) else {
+                return String(scalar)
+            }
+
+            return hangulInitialScalars[
+                (scalarValue - hangulBaseScalar) / hangulInitialUnit
+            ]
+        }
+
+        return characters
+            .joined()
+            .replacingOccurrences(
+                of: #"\s+"#,
+                with: " ",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func uniqueSearchValues(_ values: [String]) -> [String] {
+        var seenValues: Set<String> = []
+        var nextValues: [String] = []
+
+        for value in values {
+            let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !trimmedValue.isEmpty, !seenValues.contains(trimmedValue) else {
+                continue
+            }
+
+            seenValues.insert(trimmedValue)
+            nextValues.append(trimmedValue)
+        }
+
+        return nextValues
+    }
+
+    private static func searchVariants(for value: String) -> [String] {
+        let normalizedValue = normalizeForSearch(value)
+        let compactValue = compactSearchValue(value)
+        let initialValue = hangulInitialSearchValue(value)
+        let compactInitialValue = initialValue.replacingOccurrences(of: " ", with: "")
+
+        return uniqueSearchValues([
+            normalizedValue,
+            compactValue,
+            initialValue,
+            compactInitialValue
+        ])
+    }
+
+    private static func queryVariants(for value: String) -> [String] {
+        let normalizedValue = normalizeForSearch(value)
+        let compactValue = compactSearchValue(value)
+        let hasInitialConsonantInput = normalizedValue.unicodeScalars.contains { scalar in
+            (0x3131...0x314E).contains(Int(scalar.value))
+        }
+
+        return uniqueSearchValues([
+            normalizedValue,
+            compactValue
+        ] + (hasInitialConsonantInput ? searchVariants(for: value) : []))
+    }
+
+    private static func weightedSearchFields(for item: HomeSearchResultItem) -> [WeightedSearchField] {
+        [
+            WeightedSearchField(value: item.title, weight: 150),
+            WeightedSearchField(value: item.subtitle, weight: 62),
+            WeightedSearchField(value: item.detail, weight: 44),
+            WeightedSearchField(value: item.searchText, weight: 36)
+        ]
+    }
+
+    private static func fieldMatchScore(
+        fieldValue: String,
+        queryVariants: [String],
+        queryTerms: [String],
+        weight: Int
+    ) -> Int? {
+        let fieldVariants = searchVariants(for: fieldValue)
+        let compactTerms = queryTerms
+            .map { $0.replacingOccurrences(of: " ", with: "") }
+            .filter { !$0.isEmpty }
+        var bestScore: Int?
+
+        for fieldVariant in fieldVariants {
+            for queryVariant in queryVariants {
+                let nextScore: Int?
+
+                if fieldVariant == queryVariant {
+                    nextScore = weight + 70
+                } else if fieldVariant.hasPrefix(queryVariant) {
+                    nextScore = weight + 45
+                } else if fieldVariant.contains(queryVariant) {
+                    nextScore = weight + 24
+                } else {
+                    nextScore = nil
+                }
+
+                if let nextScore {
+                    bestScore = max(bestScore ?? nextScore, nextScore)
+                }
+            }
+
+            if queryTerms.count > 1,
+               queryTerms.enumerated().allSatisfy({ index, term in
+                   fieldVariant.contains(term)
+                       || (compactTerms.indices.contains(index) && fieldVariant.contains(compactTerms[index]))
+               }) {
+                let termScore = weight + 16 + queryTerms.count * 6
+                bestScore = max(bestScore ?? termScore, termScore)
+            }
+        }
+
+        return bestScore
+    }
+
+    fileprivate static func matchScore(
+        for item: HomeSearchResultItem,
+        query: SearchQuery
+    ) -> Int? {
+        weightedSearchFields(for: item).reduce(nil) { bestScore, field in
+            guard let fieldScore = fieldMatchScore(
+                fieldValue: field.value,
+                queryVariants: query.variants,
+                queryTerms: query.terms,
+                weight: field.weight
+            ) else {
+                return bestScore
+            }
+
+            return max(bestScore ?? fieldScore, fieldScore)
         }
     }
 
@@ -747,5 +941,25 @@ enum HomeSearchEngine {
         }
 
         return nextItems
+    }
+}
+
+private extension Array where Element == HomeSearchResultItem {
+    func scoredAndSorted(matching query: HomeSearchEngine.SearchQuery) -> [HomeSearchResultItem] {
+        compactMap { item -> (item: HomeSearchResultItem, score: Int)? in
+            guard let score = HomeSearchEngine.matchScore(for: item, query: query) else {
+                return nil
+            }
+
+            return (item, score)
+        }
+        .sorted { left, right in
+            if left.score != right.score {
+                return left.score > right.score
+            }
+
+            return left.item.title.localizedCompare(right.item.title) == .orderedAscending
+        }
+        .map(\.item)
     }
 }

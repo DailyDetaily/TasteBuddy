@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum AuthEntryStep: String, Equatable {
     case email
@@ -82,6 +83,14 @@ final class AuthEntryModel: ObservableObject {
         isConfigured && !isSubmitting
     }
 
+    var showsGoogleAction: Bool {
+        step == .email && intent == .startWithEmail
+    }
+
+    var canContinueWithGoogle: Bool {
+        isConfigured && !isSubmitting && showsGoogleAction
+    }
+
     func prepareAnonymousSessionIfNeeded() async {
         guard intent == .linkCurrentProfile,
               isConfigured,
@@ -107,6 +116,28 @@ final class AuthEntryModel: ObservableObject {
         case .code:
             return await submitCode(code)
         }
+    }
+
+    @discardableResult
+    func continueWithGoogle() async -> AuthEntryCompletion? {
+        guard canContinueWithGoogle else {
+            return nil
+        }
+
+        status = .submitting
+        message = nil
+
+        let result = await repository.continueWithGoogle(redirectTo: redirectURL)
+
+        status = result.ok ? .success : .error
+        message = result.message
+
+        guard result.ok else {
+            return nil
+        }
+
+        resetAfterClose()
+        return .verifiedEmailLogin(result)
     }
 
     @discardableResult
@@ -274,6 +305,7 @@ struct AuthEntrySheet: View {
     @StateObject private var keyboard = AuthEntryKeyboardAvoidanceObserver()
     private let showsDevBypass: Bool
     private let prefersFullHeight: Bool
+    private let usesNativeSheetChrome: Bool
     private let onDismissRequest: (() -> Void)?
     private let onContinueAsGuest: () -> Void
     private let onVerifiedEmailLogin: (BackendAuthResult) -> Void
@@ -286,6 +318,7 @@ struct AuthEntrySheet: View {
         isAnonymousUser: Bool = true,
         showsDevBypass: Bool = AuthEntryDebugBypass.isEnabled,
         prefersFullHeight: Bool = false,
+        usesNativeSheetChrome: Bool = true,
         onDismissRequest: (() -> Void)? = nil,
         onContinueAsGuest: @escaping () -> Void = {},
         onVerifiedEmailLogin: @escaping (BackendAuthResult) -> Void = { _ in },
@@ -301,6 +334,7 @@ struct AuthEntrySheet: View {
         )
         self.showsDevBypass = showsDevBypass
         self.prefersFullHeight = prefersFullHeight
+        self.usesNativeSheetChrome = usesNativeSheetChrome
         self.onDismissRequest = onDismissRequest
         self.onContinueAsGuest = onContinueAsGuest
         self.onVerifiedEmailLogin = onVerifiedEmailLogin
@@ -315,15 +349,15 @@ struct AuthEntrySheet: View {
             footer: AnyView(footer),
             footerSafeAreaAccessory: footerSafeAreaAccessory,
             footerSafeAreaAccessoryHeight: AuthEntrySheetMetrics.secondaryActionsHeight(
-                showsSkipAction: showsSkipAction,
-                showsDevBypass: showsDevBypass
+                showsSkipAction: false,
+                showsDevBypass: showsDevelopmentBypassAccessory
             ),
-            footerKeyboardOffset: keyboard.visibleHeight,
+            footerKeyboardOffset: 0,
             floatingLayer: floatingLayer,
             stageMode: prefersFullHeight || model.step == .code
                 ? .fixed
                 : .auto(maxHeightRatio: BottomSheetShellMetrics.authEntryEmailMaxHeightRatio),
-            usesNativeSheetChrome: true
+            usesNativeSheetChrome: usesNativeSheetChrome
         ) {
             AuthEntryForm(model: model)
                 .padding(.horizontal, TBSpacing.page)
@@ -337,6 +371,11 @@ struct AuthEntrySheet: View {
         .presentationDetents([.height(presentationDetentHeight)])
         .prefersUISheetGrabberVisible(false)
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .background {
+            KeyboardDismissTapInstaller(isEnabled: keyboard.visibleHeight > 0) {
+                dismissKeyboard()
+            }
+        }
         .task {
             await model.prepareAnonymousSessionIfNeeded()
         }
@@ -369,6 +408,34 @@ struct AuthEntrySheet: View {
     }
 
     private var footer: some View {
+        VStack(spacing: AuthEntrySheetMetrics.secondaryActionGap) {
+            primaryActionButton
+                .offset(y: primaryActionKeyboardOffset)
+                .animation(.easeOut(duration: 0.24), value: keyboard.visibleHeight)
+                .zIndex(1)
+
+            if showsSkipAction {
+                footerTextLink("나중에 하기") {
+                    handleCompletion(model.continueAsGuest())
+                }
+            }
+
+            if model.showsGoogleAction {
+                AuthEntryDividerLabel(title: "또는")
+
+                GoogleAuthButton(
+                    isEnabled: model.canContinueWithGoogle
+                ) {
+                    Task {
+                        let completion = await model.continueWithGoogle()
+                        handleCompletion(completion)
+                    }
+                }
+            }
+        }
+    }
+
+    private var primaryActionButton: some View {
         PrimaryButton(
             title: model.footerButtonTitle,
             isEnabled: model.canSubmit,
@@ -379,27 +446,16 @@ struct AuthEntrySheet: View {
                 handleCompletion(completion)
             }
         }
-        .frame(height: AuthEntrySheetMetrics.primaryButtonHeight)
     }
 
     private var footerSafeAreaAccessory: AnyView? {
-        guard showsSkipAction || showsDevBypass else {
+        guard showsDevelopmentBypassAccessory else {
             return nil
         }
 
         return AnyView(
-            VStack(spacing: AuthEntrySheetMetrics.secondaryActionGap) {
-                if showsSkipAction {
-                    footerTextLink("나중에 하기") {
-                        handleCompletion(model.continueAsGuest())
-                    }
-                }
-
-                if showsDevBypass {
-                    footerTextLink("개발용으로 인증 건너뛰기") {
-                        handleCompletion(model.devBypass())
-                    }
-                }
+            footerTextLink("개발용으로 인증 건너뛰기") {
+                handleCompletion(model.devBypass())
             }
         )
     }
@@ -408,19 +464,44 @@ struct AuthEntrySheet: View {
         model.step == .email && model.intent == .startWithEmail
     }
 
+    private var showsDevelopmentBypassAccessory: Bool {
+        showsDevBypass && !showsSkipAction
+    }
+
+    private var primaryActionKeyboardOffset: CGFloat {
+        guard keyboard.visibleHeight > 0 && model.step == .email else {
+            return 0
+        }
+
+        let removedFooterHeight = footerSafeAreaHeight
+            + AuthEntrySheetMetrics.actionsBelowPrimaryHeight(
+                showsSkipAction: showsSkipAction,
+                showsGoogleAction: model.showsGoogleAction
+            )
+            - AuthEntrySheetMetrics.keyboardPrimaryActionGap
+
+        return min(0, -keyboard.visibleHeight + removedFooterHeight)
+    }
+
+    private var footerSafeAreaHeight: CGFloat {
+        let accessoryHeight = showsDevelopmentBypassAccessory
+            ? AuthEntrySheetMetrics.secondaryActionsHeight(
+                showsSkipAction: false,
+                showsDevBypass: true
+            )
+            : nil
+
+        return BottomSheetShellMetrics.footerSafeAreaHeight(
+            safeAreaBottom: bottomSafeAreaInset,
+            accessoryHeight: accessoryHeight
+        )
+    }
+
     private func footerTextLink(
         _ title: String,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(TBFont.semibold(12))
-                .foregroundStyle(TBColor.textFaint)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .frame(height: AuthEntrySheetMetrics.secondaryActionHeight)
-        }
-        .buttonStyle(.plain)
+        AuthTextActionButton(title: title, action: action)
     }
 
     private var presentationDetentHeight: CGFloat {
@@ -440,7 +521,8 @@ struct AuthEntrySheet: View {
         case .email:
             return AuthEntrySheetMetrics.emailPresentationHeight(
                 showsSkipAction: showsSkipAction,
-                showsDevBypass: showsDevBypass,
+                showsDevBypass: showsDevelopmentBypassAccessory,
+                showsGoogleAction: model.showsGoogleAction,
                 showsMessage: model.message != nil,
                 safeAreaBottom: bottomSafeAreaInset,
                 screenHeight: UIScreen.main.bounds.height
@@ -545,18 +627,30 @@ struct AuthEntrySheet: View {
             dismiss()
         }
     }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
+    }
 }
 
 private enum AuthEntrySheetMetrics {
     static let handleAndHeaderHeight: CGFloat =
-        BottomSheetShellMetrics.topAreaHeightIncludingGrabber
-        + BottomSheetShellMetrics.headerSlotSize
+        BottomSheetShellMetrics.headerSlotSize
+        + BottomSheetShellMetrics.headerTopPadding
         + BottomSheetShellMetrics.headerBottomPadding
     static let emailFormHeight: CGFloat = 77
     static let footerTopPadding: CGFloat = BottomSheetShellMetrics.footerTopPadding
     static let primaryButtonHeight: CGFloat = TBSize.primaryButtonHeight
     static let secondaryActionHeight: CGFloat = 28
     static let secondaryActionGap: CGFloat = 12
+    static let dividerLabelHeight: CGFloat = 14
+    static let googleButtonHeight: CGFloat = 48
+    static let keyboardPrimaryActionGap: CGFloat = TBSpacing.x12
     static let messageHeight: CGFloat = 44
     static let messageTopGap: CGFloat = 12
 
@@ -573,29 +667,64 @@ private enum AuthEntrySheetMetrics {
             + CGFloat(secondaryActionCount - 1) * secondaryActionGap
     }
 
+    static func footerActionsHeight(
+        showsSkipAction: Bool,
+        showsGoogleAction: Bool
+    ) -> CGFloat {
+        primaryButtonHeight + actionsBelowPrimaryHeight(
+            showsSkipAction: showsSkipAction,
+            showsGoogleAction: showsGoogleAction
+        )
+    }
+
+    static func actionsBelowPrimaryHeight(
+        showsSkipAction: Bool,
+        showsGoogleAction: Bool
+    ) -> CGFloat {
+        var height: CGFloat = 0
+
+        if showsSkipAction {
+            height += secondaryActionGap + secondaryActionHeight
+        }
+
+        if showsGoogleAction {
+            height += secondaryActionGap
+                + dividerLabelHeight
+                + secondaryActionGap
+                + googleButtonHeight
+        }
+
+        return height
+    }
+
     static func emailPresentationHeight(
         showsSkipAction: Bool,
         showsDevBypass: Bool,
+        showsGoogleAction: Bool,
         showsMessage: Bool,
         safeAreaBottom: CGFloat,
         screenHeight: CGFloat
     ) -> CGFloat {
-        let secondaryActionsHeight = secondaryActionsHeight(
-            showsSkipAction: showsSkipAction,
+        let accessoryActionsHeight = secondaryActionsHeight(
+            showsSkipAction: false,
             showsDevBypass: showsDevBypass
         )
         let footerSafeAreaHeight = BottomSheetShellMetrics.footerSafeAreaHeight(
             safeAreaBottom: safeAreaBottom,
-            accessoryHeight: secondaryActionsHeight > 0 ? secondaryActionsHeight : nil
+            accessoryHeight: accessoryActionsHeight > 0 ? accessoryActionsHeight : nil
         )
         let messagesHeight = CGFloat([showsMessage].filter { $0 }.count)
             * (messageHeight + messageTopGap)
+        let footerActionsHeight = footerActionsHeight(
+            showsSkipAction: showsSkipAction,
+            showsGoogleAction: showsGoogleAction
+        )
 
         let contentHeight = handleAndHeaderHeight
             + emailFormHeight
             + messagesHeight
             + footerTopPadding
-            + primaryButtonHeight
+            + footerActionsHeight
             + footerSafeAreaHeight
 
         return min(
@@ -625,7 +754,8 @@ private struct AuthEntryForm: View {
                     .lineSpacing(3)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(model.status == .error ? TBColor.mutedSurface : TasteAxis.sweet.mainColor.opacity(0.05))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(model.status == .error ? TBColor.mutedSurface : TasteAxis.sweet.tintSoftColor)
                     .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
                     .padding(.top, 12)
             }
@@ -705,12 +835,75 @@ private struct AuthEntryForm: View {
                 } label: {
                     Text("옵션보기")
                         .font(TBFont.semibold(11))
-                        .foregroundStyle(TBColor.textMuted)
+                        .foregroundStyle(model.isSubmitting ? TBColor.textDisabled : TBColor.textMuted)
                 }
                 .buttonStyle(.plain)
                 .disabled(model.isSubmitting)
             }
             .lineSpacing(3)
+        }
+    }
+}
+
+private struct GoogleAuthButton: View {
+    let isEnabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                GoogleGlyph(color: isEnabled ? TBColor.textPrimary : TBColor.textDisabled)
+
+                Text("Google로 계속하기")
+                    .font(TBFont.semibold(14))
+                    .foregroundStyle(isEnabled ? TBColor.textPrimary : TBColor.textDisabled)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+            .background(isEnabled ? TBColor.surface : TBColor.disabledSurface)
+            .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
+                    .stroke(isEnabled ? TBColor.border : TBColor.borderDisabled, lineWidth: 1)
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .accessibilityLabel("Google로 계속하기")
+    }
+}
+
+private struct GoogleGlyph: View {
+    var color = TBColor.textPrimary
+
+    var body: some View {
+        Text("G")
+            .font(.system(size: 15, weight: .semibold, design: .rounded))
+            .foregroundStyle(color)
+            .frame(width: 22, height: 22)
+            .background(TBColor.mutedSurface)
+            .clipShape(Circle())
+            .accessibilityHidden(true)
+    }
+}
+
+private struct AuthEntryDividerLabel: View {
+    let title: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Rectangle()
+                .fill(TBColor.border)
+                .frame(height: 1)
+
+            Text(title)
+                .font(TBFont.regular(11))
+                .foregroundStyle(TBColor.textFaint)
+                .fixedSize(horizontal: true, vertical: false)
+
+            Rectangle()
+                .fill(TBColor.border)
+                .frame(height: 1)
         }
     }
 }
@@ -769,6 +962,108 @@ private struct AuthEntryOTPInput: View {
         }
 
         return String(characters[index])
+    }
+}
+
+private struct KeyboardDismissTapInstaller: UIViewRepresentable {
+    let isEnabled: Bool
+    let onDismiss: () -> Void
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.isUserInteractionEnabled = false
+        attachRecognizerIfPossible(from: view, coordinator: context.coordinator)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.isEnabled = isEnabled
+        context.coordinator.onDismiss = onDismiss
+        attachRecognizerIfPossible(from: uiView, coordinator: context.coordinator)
+    }
+
+    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
+        coordinator.detach()
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(isEnabled: isEnabled, onDismiss: onDismiss)
+    }
+
+    private func attachRecognizerIfPossible(from view: UIView, coordinator: Coordinator) {
+        DispatchQueue.main.async {
+            guard let window = view.window else {
+                return
+            }
+
+            coordinator.attach(to: window)
+        }
+    }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        var isEnabled: Bool
+        var onDismiss: () -> Void
+        private weak var installedWindow: UIWindow?
+        private lazy var recognizer: UITapGestureRecognizer = {
+            let recognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+            recognizer.cancelsTouchesInView = false
+            recognizer.delegate = self
+            return recognizer
+        }()
+
+        init(isEnabled: Bool, onDismiss: @escaping () -> Void) {
+            self.isEnabled = isEnabled
+            self.onDismiss = onDismiss
+        }
+
+        func attach(to window: UIWindow) {
+            guard installedWindow !== window else {
+                return
+            }
+
+            detach()
+            installedWindow = window
+            window.addGestureRecognizer(recognizer)
+        }
+
+        func detach() {
+            installedWindow?.removeGestureRecognizer(recognizer)
+            installedWindow = nil
+        }
+
+        @objc private func handleTap() {
+            guard isEnabled else {
+                return
+            }
+
+            onDismiss()
+        }
+
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldReceive touch: UITouch
+        ) -> Bool {
+            isEnabled && !touchTargetsTextInput(touch.view)
+        }
+
+        private func touchTargetsTextInput(_ view: UIView?) -> Bool {
+            var current = view
+
+            while let candidate = current {
+                if candidate is UITextField || candidate is UITextView {
+                    return true
+                }
+
+                let typeName = String(describing: type(of: candidate))
+                if typeName.contains("TextField") || typeName.contains("TextView") {
+                    return true
+                }
+
+                current = candidate.superview
+            }
+
+            return false
+        }
     }
 }
 

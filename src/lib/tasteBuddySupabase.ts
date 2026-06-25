@@ -356,13 +356,29 @@ function writeCachedRestaurantContentCatalog(catalog: RestaurantContentCatalog) 
 
 export interface RestaurantPlaceInfo {
   address: string;
+  category?: string;
+  googlePhoto?: {
+    attributions: Array<{
+      displayName?: string;
+      uri?: string;
+    }>;
+    heightPx?: number | null;
+    name: string;
+    url?: string | null;
+    widthPx?: number | null;
+  };
+  googlePlaceId?: string;
   googleMapsUrl?: string;
+  kakaoPlaceId?: string;
   lat?: number;
   lng?: number;
   mapUrl?: string;
   phone?: string;
+  priceLevel?: string;
+  rating?: number;
   website?: string;
   hours?: string;
+  userRatingCount?: number;
   sourceByRow: {
     address: 'kakao';
     hours?: 'google';
@@ -413,7 +429,10 @@ interface GooglePlaceEnrichResponse {
         displayName?: string;
         uri?: string;
       }>;
+      heightPx?: number | null;
       name: string;
+      url?: string | null;
+      widthPx?: number | null;
     } | null;
     placeId: string | null;
     priceLevel: string | null;
@@ -1554,6 +1573,7 @@ function buildRestaurantPlaceInfoFromIndex(
 
   const placeInfo: RestaurantPlaceInfo = {
     address,
+    category: row.category ?? undefined,
     sourceByRow: {
       address: 'kakao',
     },
@@ -1569,6 +1589,10 @@ function buildRestaurantPlaceInfoFromIndex(
 
   if (row.provider_url) {
     placeInfo.mapUrl = row.provider_url;
+  }
+
+  if (row.provider === 'kakao' && row.provider_place_id) {
+    placeInfo.kakaoPlaceId = row.provider_place_id;
   }
 
   if (row.phone) {
@@ -1615,6 +1639,8 @@ async function lookupLiveKakaoPlaceInfo(
 
   const placeInfo: RestaurantPlaceInfo = {
     address,
+    category: place.category ?? undefined,
+    kakaoPlaceId: place.placeId ?? undefined,
     sourceByRow: {
       address: 'kakao',
     },
@@ -1702,6 +1728,32 @@ async function lookupGooglePlaceEnrichment(
 
   if (place.googleMapsUrl) {
     enrichment.googleMapsUrl = place.googleMapsUrl;
+  }
+
+  if (place.placeId) {
+    enrichment.googlePlaceId = place.placeId;
+  }
+
+  if (place.photo) {
+    enrichment.googlePhoto = {
+      attributions: place.photo.attributions,
+      heightPx: place.photo.heightPx,
+      name: place.photo.name,
+      url: place.photo.url,
+      widthPx: place.photo.widthPx,
+    };
+  }
+
+  if (typeof place.rating === 'number') {
+    enrichment.rating = place.rating;
+  }
+
+  if (typeof place.userRatingCount === 'number') {
+    enrichment.userRatingCount = place.userRatingCount;
+  }
+
+  if (place.priceLevel) {
+    enrichment.priceLevel = place.priceLevel;
   }
 
   return enrichment;

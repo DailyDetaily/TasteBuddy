@@ -350,7 +350,7 @@ enum TBDesignFoundationTokens {
         static let sectionGap = token("sectionGap", "SPACING_TOKENS[20]", .alias("SPACING_TOKENS.20"), "--tb-layout-section-gap")
         static let cardStackGap = token("cardStackGap", "SPACING_TOKENS[12]", .alias("SPACING_TOKENS.12"), "--tb-layout-card-stack-gap")
         static let cardPadding = token("cardPadding", "12px", .pixels(12), "--tb-layout-card-padding")
-        static let topAppBarHeight = token("topAppBarHeight", "56px", .pixels(56), "--tb-size-top-app-bar-height")
+        static let topAppBarHeight = token("topAppBarHeight", "32px", .pixels(32), "--tb-size-top-app-bar-height")
         static let bottomTabBarHeight = token("bottomTabBarHeight", "60px", .pixels(60), "--tb-size-bottom-tab-bar-height")
         static let primaryButtonHeight = token("primaryButtonHeight", "48px", .pixels(48), "--tb-size-primary-button-height")
         static let bottomFadeMinHeight = token("bottomFadeMinHeight", "140px", .pixels(140), "--tb-size-bottom-fade-min-height")
@@ -623,7 +623,7 @@ enum TBDesignFoundationTokens {
                 css("--tb-layout-card-padding", "12px", .pixels(12)),
                 css("--tb-safe-area-top", "env(safe-area-inset-top, 0px)", .text("env(safe-area-inset-top, 0px)")),
                 css("--tb-safe-area-bottom", "env(safe-area-inset-bottom, 0px)", .text("env(safe-area-inset-bottom, 0px)")),
-                css("--tb-size-top-app-bar-height", "56px", .pixels(56)),
+                css("--tb-size-top-app-bar-height", "32px", .pixels(32)),
                 css("--tb-size-bottom-tab-bar-height", "60px", .pixels(60)),
                 css("--tb-size-primary-button-height", "48px", .pixels(48)),
                 css("--tb-size-bottom-fade-min-height", "140px", .pixels(140)),

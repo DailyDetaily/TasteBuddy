@@ -308,6 +308,7 @@ Taste Buddy의 색상은 세 층으로 읽혀야 한다.
 | `--tb-color-success-soft` | `#E6F4EC` | success soft fill |
 | `--tb-color-warning` | `#A8661A` | warning foreground |
 | `--tb-color-warning-soft` | `#FFF1DE` | warning soft fill |
+| `--tb-color-destructive` | `#D4183D` | destructive foreground / solid fill |
 
 ### Taste Palette
 
@@ -706,11 +707,11 @@ Scale:
 - 설명: `.dark` override는 generic token에만 있고 앱 shell `tb-*` 레이어에는 없다.
 - 현재 판단: 다크 모드는 실제 제품 기준 완성 상태가 아니다.
 
-### 5. 상태 색상 체계가 아직 완전하지 않음
+### 5. 상태 색상은 역할에 맞게만 사용
 
-- 위치: `src/styles/design-system.css`, `src/pages/DiningPage.tsx`
-- 설명: success / warning은 `tb-*` 에 들어왔지만, error는 아직 generic destructive token에 기대는 부분이 있다.
-- 규칙: 새 에러 UI를 만들 때는 error를 `tb-*` 레이어에 정식 편입하는 쪽을 우선 검토한다.
+- 위치: `src/styles/design-system.css`, `src/styles/globals.css`
+- 설명: success / warning / destructive는 `tb-*` 상태 토큰으로 정의되어 있으며 generic destructive token도 앱 토큰을 참조한다.
+- 규칙: destructive는 삭제, 영구 손실, 위험 확인처럼 명확한 위험 액션에만 사용한다.
 
 ---
 

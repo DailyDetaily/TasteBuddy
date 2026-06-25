@@ -33,6 +33,7 @@ enum TBColor {
     static let successSoft = Color(hex: 0xE6F4EC)
     static let warning = Color(hex: 0xA8661A)
     static let warningSoft = Color(hex: 0xFFF1DE)
+    static let destructive = Color(hex: 0xD4183D)
 }
 
 enum TBSpacing {
@@ -47,6 +48,8 @@ enum TBSpacing {
     static let x24: CGFloat = 24
     static let x40: CGFloat = 40
     static let page: CGFloat = 20
+    static let pageTop: CGFloat = 8
+    static var mainTabContentBottom: CGFloat { TBSize.bottomTabBarHeight + x12 }
     static let section: CGFloat = 20
     static let card: CGFloat = 12
 }
@@ -65,7 +68,7 @@ enum TBRadius {
 
 enum TBSize {
     static let screenMaxWidth: CGFloat = 1440
-    static let topAppBarHeight: CGFloat = 56
+    static let topAppBarHeight: CGFloat = 32
     static let bottomTabBarHeight: CGFloat = 60
     static let primaryButtonHeight: CGFloat = 48
     static let bottomFadeMinHeight: CGFloat = 140
@@ -226,11 +229,24 @@ extension Color {
             opacity: alpha
         )
     }
+
+    init(hexRGBA: UInt) {
+        self.init(
+            hex: (hexRGBA >> 8) & 0xFF_FFFF,
+            alpha: Double(hexRGBA & 0xFF) / 255
+        )
+    }
 }
 
 extension View {
     func tbPageBackground(_ color: Color = TBColor.page) -> some View {
         background(color.ignoresSafeArea())
+    }
+
+    func tbPageContentPadding(bottom: CGFloat = TBSpacing.page) -> some View {
+        padding(.horizontal, TBSpacing.page)
+            .padding(.top, TBSpacing.pageTop)
+            .padding(.bottom, bottom)
     }
 
     @ViewBuilder

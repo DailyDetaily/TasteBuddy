@@ -36,7 +36,7 @@ const APP_CHROME_ICON_SIZE = ICON_TOKENS.size.lg;
 const APP_CHROME_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const CONTENT_BOTTOM_PADDING = 'calc(188px + var(--tb-safe-area-bottom))';
 const HEADER_SURFACE_CLASS =
-  'bg-white/88 supports-[backdrop-filter:blur(0px)]:bg-white/78 border-b border-[var(--tb-color-border-subtle)] backdrop-blur-md';
+  'bg-white/88 supports-[backdrop-filter:blur(0px)]:bg-white/78 backdrop-blur-md';
 
 interface PreferenceIntakeScreenProps {
   initialProfile?: PreferenceIntakeProfile | null;

@@ -26,6 +26,49 @@ final class HomeSearchEngineTests: XCTestCase {
         XCTAssertFalse(sectionIDs.contains("friends"))
     }
 
+    func testSearchMatchesCompactEnglishAliasesInSearchText() {
+        let results = HomeSearchEngine.filteredItems(
+            FixtureHomeSearchRepository.kakaoRestaurantFixtures,
+            matching: "kwonsooksoo"
+        )
+
+        XCTAssertEqual(results.first?.title, "권숙수")
+    }
+
+    func testSearchSupportsHangulInitialConsonantInput() {
+        let sections = HomeSearchEngine.sections(matching: "ㅈㅅㄷ")
+        let restaurantItems = sections.first { $0.id == "restaurants" }?.items ?? []
+
+        XCTAssertEqual(restaurantItems.first?.title, "정식당")
+    }
+
+    func testSearchRanksDirectTitleMatchesBeforeContextMatches() {
+        let items = [
+            HomeSearchResultItem(
+                id: "context-match",
+                kind: .restaurant,
+                title: "컨텍스트 후보",
+                subtitle: "정식당과 비교할 수 있는 코스",
+                detail: "Taste fit 80%",
+                symbol: "fork.knife",
+                axis: .umami,
+                searchText: "정식당 비교 후보"
+            ),
+            HomeSearchResultItem(
+                id: "title-match",
+                kind: .restaurant,
+                title: "정식당",
+                subtitle: "밝은 산미가 코스 리듬을 만듭니다",
+                detail: "Taste fit 88%",
+                symbol: "fork.knife",
+                axis: .sour,
+                searchText: "정식당 임정식 모던 한식 산미 코스 강남"
+            )
+        ]
+
+        XCTAssertEqual(HomeSearchEngine.filteredItems(items, matching: "정식당").first?.id, "title-match")
+    }
+
     func testEmptyQueryReturnsSuggestedStateInsteadOfAllResults() {
         XCTAssertTrue(HomeSearchEngine.sections(matching: "").isEmpty)
         XCTAssertFalse(HomeSearchEngine.suggestedQueries.isEmpty)
