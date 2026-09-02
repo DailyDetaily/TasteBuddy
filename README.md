@@ -47,7 +47,7 @@ If you are opening the project for the first time, start here instead of jumping
 Install dependencies:
 
 ```bash
-npm install
+npm ci
 ```
 
 Start the dev server:
@@ -127,7 +127,8 @@ Not every important doc lives in `docs/`.
 - `src/components/ui` exists, but many primitives are generic and not the first layer used by the main app shell.
 - `DESIGN.md` and the `/design-system` route are meant to stay aligned.
 - `tmp/` contains a lot of useful historical artifacts, but it is not the clean source tree.
-- `dist/` is tracked in this repo, so do not assume it is disposable build output even though it is generated.
+- Dependencies and local package caches (`node_modules/`, `scratch/SourcePackages/`, and `supabase/.temp/`) are not versioned. Install dependencies with `npm ci`; Xcode resolves the native packages from the committed project and `Package.resolved`.
+- The existing tracked files in `dist/` are not a complete deployable bundle. Build from source with `npm run build` and publish that complete output when deploying the web app.
 
 ## Related Docs
 

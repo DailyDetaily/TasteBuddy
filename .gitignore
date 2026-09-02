@@ -12,6 +12,8 @@ data/foodon/
 .env.local
 .env.*.local
 .gstack/
+scratch/SourcePackages/
+supabase/.temp/
 
 # Xcode local state
 DerivedData/
