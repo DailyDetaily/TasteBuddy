@@ -1,0 +1,88 @@
+{
+  "repository": "DailyDetaily/TasteBuddy",
+  "published_branch": "docs/chatgpt-context",
+  "captured_at": "2026-09-02T13:50:16.429239+00:00",
+  "source_branch": "codex/taste-agent-social-network",
+  "source_commit": "e7df6ea0cf9476be6c328850935ec3131abb9eb1",
+  "scope": "Selected project documents captured from the local working tree; application source is not included.",
+  "link_handling": "Links to included documents are preserved. Relative links to excluded source files are rendered as original repository paths.",
+  "files": [
+    {
+      "source_path": "AGENTS.md",
+      "snapshot_path": "context/AGENTS.md",
+      "source_sha256": "2bb39089106b8694e47bf9d4c455f82f6a8610305db0cbf2feabf7ef7449bf52",
+      "snapshot_sha256": "2bb39089106b8694e47bf9d4c455f82f6a8610305db0cbf2feabf7ef7449bf52",
+      "modified_since_source_commit": false
+    },
+    {
+      "source_path": "README.md",
+      "snapshot_path": "context/README.md",
+      "source_sha256": "7051f9cec33b6f3a63524acd606420dfa8aff8e03c63ba22a0c6a7a050bf5324",
+      "snapshot_sha256": "f80a6efbfc5722fc8520c9221f38674519738fde57d043481cfc8838ccd94171",
+      "modified_since_source_commit": false
+    },
+    {
+      "source_path": "ARCHITECTURE.md",
+      "snapshot_path": "context/ARCHITECTURE.md",
+      "source_sha256": "327ac2b9f4908ea8f6f1f2e62114a74ddeb85baa338cd6f851c19b319bf3bbe2",
+      "snapshot_sha256": "d3163d3869ef75ec62edf25ddb721fdfc99e0c1026b07233bee120c27b9d03e8",
+      "modified_since_source_commit": false
+    },
+    {
+      "source_path": "CONTRIBUTING.md",
+      "snapshot_path": "context/CONTRIBUTING.md",
+      "source_sha256": "6bf25ef22266485e530da42089338708bad1e49ebdb69aa2e2d74809fde2de09",
+      "snapshot_sha256": "7ba246ddfec8a90db95ef124d6c1804a55b96d8a3b4bd179c53bc4f14df20f26",
+      "modified_since_source_commit": false
+    },
+    {
+      "source_path": "DESIGN.md",
+      "snapshot_path": "context/DESIGN.md",
+      "source_sha256": "a404cf7b2dca235cd900ab4396be76f7b2d29947bf22f94c90b3b52a4de2a73a",
+      "snapshot_sha256": "a404cf7b2dca235cd900ab4396be76f7b2d29947bf22f94c90b3b52a4de2a73a",
+      "modified_since_source_commit": true
+    },
+    {
+      "source_path": "docs/AI_DESIGN_SYSTEM.md",
+      "snapshot_path": "context/docs/AI_DESIGN_SYSTEM.md",
+      "source_sha256": "ba70fda416261acdffabf085ca1094014daab507a2767c9dd249fb3536fa38d7",
+      "snapshot_sha256": "e019148e2c5aa64d3dece7564b1aa8c04612dbf9a01a64cfef6f419f75afab54",
+      "modified_since_source_commit": true
+    },
+    {
+      "source_path": "docs/TASTE_BUDDY_APP_SUMMARY.md",
+      "snapshot_path": "context/docs/TASTE_BUDDY_APP_SUMMARY.md",
+      "source_sha256": "1296f94319c60ef5d8072f2f7ac16d241aa033b56ef516025922b425b093e588",
+      "snapshot_sha256": "4c1acb9492254a7874c8e54ce060214ccd5e91b30814709482894494a2b83458",
+      "modified_since_source_commit": false
+    },
+    {
+      "source_path": "docs/product/taste-buddy-agent.md",
+      "snapshot_path": "context/docs/product/taste-buddy-agent.md",
+      "source_sha256": "b65e101823fd015246446bbbb782f6aa7c68735c6a07eb3f490072977c7ff21f",
+      "snapshot_sha256": "ba4d78d1d577fde0f7f41b74550f323daf8ddfdf79df9ddfd18b6e9c53b8b02d",
+      "modified_since_source_commit": false
+    },
+    {
+      "source_path": "docs/product/tba-knowledge-rag-plan.md",
+      "snapshot_path": "context/docs/product/tba-knowledge-rag-plan.md",
+      "source_sha256": "a1810ac3be8a68d7fb497105954adf1ed72ff3777292b4a58e5a865ab2cbf68d",
+      "snapshot_sha256": "06b7399b0205215af3bed2805388c4c412c30225bd8e4c9af4dcc3abce276def",
+      "modified_since_source_commit": false
+    },
+    {
+      "source_path": "src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md",
+      "snapshot_path": "context/src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md",
+      "source_sha256": "f3595789dc692b23497dd725caf69c1980d9c47310866b1e25ad15d449bf9dcb",
+      "snapshot_sha256": "f3595789dc692b23497dd725caf69c1980d9c47310866b1e25ad15d449bf9dcb",
+      "modified_since_source_commit": false
+    },
+    {
+      "source_path": "ios/README.md",
+      "snapshot_path": "context/ios/README.md",
+      "source_sha256": "641bb2cc050b2198f1f999332cab28edf330b633d4c45140936624f428869c78",
+      "snapshot_sha256": "f56e6ced91851944c28d23a898cee8c433f5b4cf1892db9a1de2e3c7bb90574b",
+      "modified_since_source_commit": false
+    }
+  ]
+}
