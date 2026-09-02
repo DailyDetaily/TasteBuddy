@@ -153,11 +153,16 @@ import {
   type RestaurantBookmarkState,
 } from './lib/restaurantBookmarksSupabase';
 import {
+  clearLocalAccountCaches,
   deleteLocalProfileAvatar,
   loadLocalProfileAvatarObjectUrl,
   saveLocalProfileAvatar,
 } from './lib/localProfileAvatar';
 import { initializeAnalytics, trackEvent, trackPageView } from './lib/analytics';
+import {
+  buildRestaurantFeedbackExternalRef,
+  canSyncFeedbackSubmission,
+} from './lib/restaurantFeedbackSync';
 import type {
   TasteSurveyCompatibleResult,
   TasteSurveyLikertValue,
@@ -358,8 +363,8 @@ function createRestaurantFeedbackReservationPersistenceInput(
     time: formatDiningFeedbackSubmittedTime(submittedDate),
     guests: 1,
     course: submission.scenario.courseName || submission.restaurant.category,
-    externalRef: `restaurant-feedback-${submission.restaurant.id}-${submission.submissionId}`,
-    remoteId: null,
+    externalRef: buildRestaurantFeedbackExternalRef(submission.restaurant.id, submission.submissionId),
+    remoteId: submission.remoteId ?? null,
     status: 'completed',
   };
 }
@@ -691,7 +696,11 @@ function consumeOnboardingResetParam() {
     return false;
   }
 
-  clearTasteBuddyLocalState();
+  try {
+    clearTasteBuddyLocalState();
+  } catch (error) {
+    console.warn('Local storage was unavailable during account reset.', error);
+  }
   url.searchParams.delete('reset');
   window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
 
@@ -1019,8 +1028,10 @@ function MainApp() {
   );
   const [externalDiningFeedbackSubmissions, setExternalDiningFeedbackSubmissions] = useState<
     DiningPageExternalFeedbackSubmission[]
-  >(() => loadPersistedDiningFeedbackSubmissions());
-  const syncedExternalDiningFeedbackSubmissionIdsRef = useRef<Set<number>>(new Set());
+  >(() => shouldStartFromOnboarding ? [] : loadPersistedDiningFeedbackSubmissions());
+  const syncingExternalDiningFeedbackSubmissionIdsRef = useRef<Set<number>>(new Set());
+  const [feedbackSyncAttempt, setFeedbackSyncAttempt] = useState(0);
+  const feedbackSyncRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const shouldLayerAuthEntrySheet = isAuthEntrySheetOpen && authEntryStep === 'code';
   const isLayeredMeasurementSheetOpen =
     shouldLayerAuthEntrySheet ||
@@ -1231,19 +1242,25 @@ function MainApp() {
       return;
     }
 
+    const userId = supabaseSession.user.id;
     const submissionsToSync = externalDiningFeedbackSubmissions.filter(
-      (submission) => !syncedExternalDiningFeedbackSubmissionIdsRef.current.has(submission.submissionId),
+      (submission) => canSyncFeedbackSubmission(submission, userId) &&
+        !syncingExternalDiningFeedbackSubmissionIdsRef.current.has(submission.submissionId),
     );
 
     if (submissionsToSync.length === 0) {
       return;
     }
 
-    let isCancelled = false;
-
     submissionsToSync.forEach((submission) => {
-      syncedExternalDiningFeedbackSubmissionIdsRef.current.add(submission.submissionId);
+      syncingExternalDiningFeedbackSubmissionIdsRef.current.add(submission.submissionId);
     });
+    // Claim guest drafts for this account before starting any network requests.
+    setExternalDiningFeedbackSubmissions((current) => current.map((submission) =>
+      submissionsToSync.some((pending) => pending.submissionId === submission.submissionId)
+        ? { ...submission, ownerUserId: userId }
+        : submission,
+    ));
 
     void (async () => {
       const syncResults = await Promise.allSettled(
@@ -1252,18 +1269,22 @@ function MainApp() {
             draft: submission.draft,
             reservation: createRestaurantFeedbackReservationPersistenceInput(submission),
             scenario: createPersistableRestaurantFeedbackScenario(submission),
+            createOnly: true,
+            expectedUserId: userId,
           }),
         ),
       );
 
-      if (isCancelled) {
-        return;
-      }
-
       syncResults.forEach((syncResult, index) => {
         const submission = submissionsToSync[index];
+        syncingExternalDiningFeedbackSubmissionIdsRef.current.delete(submission.submissionId);
 
-        if (syncResult.status === 'fulfilled') {
+        if (syncResult.status === 'fulfilled' && syncResult.value.persisted) {
+          setExternalDiningFeedbackSubmissions((current) => current.map((entry) =>
+            entry.submissionId === submission.submissionId && entry.ownerUserId === userId
+              ? { ...entry, syncedAt: new Date().toISOString(), remoteId: syncResult.value.remoteId }
+              : entry,
+          ));
           trackEvent('restaurant_feedback_background_sync_success', {
             restaurant_name: submission.restaurant.name,
             submission_id: submission.submissionId,
@@ -1271,19 +1292,31 @@ function MainApp() {
           return;
         }
 
-        syncedExternalDiningFeedbackSubmissionIdsRef.current.delete(submission.submissionId);
-        console.warn('Failed to sync persisted restaurant feedback submission.', syncResult.reason);
+        console.warn('Failed to sync persisted restaurant feedback submission.',
+          syncResult.status === 'rejected' ? syncResult.reason : 'No authenticated session');
         trackEvent('restaurant_feedback_background_sync_error', {
           restaurant_name: submission.restaurant.name,
           submission_id: submission.submissionId,
         });
+        if (!feedbackSyncRetryTimerRef.current) {
+          feedbackSyncRetryTimerRef.current = setTimeout(() => {
+            feedbackSyncRetryTimerRef.current = null;
+            setFeedbackSyncAttempt((attempt) => attempt + 1);
+          }, 30_000);
+        }
       });
     })();
 
+  }, [externalDiningFeedbackSubmissions, feedbackSyncAttempt, isAnonymousUser, supabaseSession?.user.id]);
+
+  useEffect(() => {
+    const retry = () => setFeedbackSyncAttempt((attempt) => attempt + 1);
+    window.addEventListener('online', retry);
     return () => {
-      isCancelled = true;
+      window.removeEventListener('online', retry);
+      if (feedbackSyncRetryTimerRef.current) clearTimeout(feedbackSyncRetryTimerRef.current);
     };
-  }, [externalDiningFeedbackSubmissions, isAnonymousUser, supabaseSession?.user.id]);
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -1356,15 +1389,19 @@ function MainApp() {
       profileAvatarImageSrc
     ),
   );
+  const localAvatarOwnerId = supabaseSession?.user.id ?? 'guest';
 
   useEffect(() => {
+    if (!hasHydratedRemoteMeasurement) return;
     let isCancelled = false;
+    setProfileAvatarDataUrl(null);
 
     void (async () => {
       try {
-        const localAvatarObjectUrl = await loadLocalProfileAvatarObjectUrl();
+        const localAvatarObjectUrl = await loadLocalProfileAvatarObjectUrl(localAvatarOwnerId);
 
         if (isCancelled || !localAvatarObjectUrl) {
+          if (localAvatarObjectUrl) URL.revokeObjectURL(localAvatarObjectUrl);
           return;
         }
 
@@ -1383,7 +1420,7 @@ function MainApp() {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [hasHydratedRemoteMeasurement, localAvatarOwnerId]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabaseSession) {
@@ -1889,7 +1926,7 @@ function MainApp() {
 
     if (input.shouldRemoveAvatar) {
       try {
-        await deleteLocalProfileAvatar();
+        await deleteLocalProfileAvatar(localAvatarOwnerId);
       } catch (error) {
         console.warn('Failed to delete local profile avatar.', error);
       }
@@ -1903,13 +1940,13 @@ function MainApp() {
         nextLocalAvatarUrl = null;
         shouldSyncAvatarPath = true;
         try {
-          await deleteLocalProfileAvatar();
+          await deleteLocalProfileAvatar(localAvatarOwnerId);
         } catch (error) {
           console.warn('Failed to clear local profile avatar fallback.', error);
         }
       } else {
         try {
-          nextLocalAvatarUrl = await saveLocalProfileAvatar(input.avatarFile);
+          nextLocalAvatarUrl = await saveLocalProfileAvatar(input.avatarFile, localAvatarOwnerId);
           nextAvatarPath = null;
           shouldSyncAvatarPath = false;
           trackEvent('profile_edit_avatar_local_fallback', {
@@ -2814,17 +2851,25 @@ function MainApp() {
     setIsDeleteAccountConfirmOpen(true);
   };
 
+  const resetLocalAccountState = async () => {
+    setSupabaseSession(null);
+    setProfileAvatarDataUrl(null);
+    setProfileAvatarPath(null);
+    setExternalDiningFeedbackSubmissions([]);
+    setLatestTasteMeasurementSnapshot(null);
+    setHasCompletedInitialMeasurement(false);
+    setAppState('onboarding');
+    await clearLocalAccountCaches(localAvatarOwnerId, clearTasteBuddyLocalState, clearAppliedDesignTokenRuntimeState);
+    // Start empty even when a browser refused a localStorage deletion.
+    const resetUrl = new URL(window.location.href);
+    resetUrl.searchParams.set('reset', 'onboarding');
+    window.location.replace(resetUrl.toString());
+  };
+
   const handleLogout = async () => {
     trackEvent('logout_confirm');
     await signOutSupabaseSession();
-
-    if (typeof window !== 'undefined') {
-      clearTasteBuddyLocalState();
-    }
-
-    clearAppliedDesignTokenRuntimeState();
-
-    window.location.reload();
+    await resetLocalAccountState();
   };
 
   const handleDeleteAccount = async () => {
@@ -2845,9 +2890,7 @@ function MainApp() {
       return;
     }
 
-    clearTasteBuddyLocalState();
-    clearAppliedDesignTokenRuntimeState();
-    window.location.reload();
+    await resetLocalAccountState();
   };
 
   const handleMarkNotificationAsRead = (notificationId: string) => {
@@ -2905,6 +2948,7 @@ function MainApp() {
       scenario: submittedScenario,
       submissionId,
       submittedAt,
+      ownerUserId: isAnonymousUser ? null : supabaseSession?.user.id ?? null,
     };
 
     trackEvent('restaurant_feedback_submit_complete', {
@@ -2916,16 +2960,6 @@ function MainApp() {
       submission,
       ...current.filter((currentSubmission) => currentSubmission.submissionId !== submissionId),
     ].slice(0, 50));
-    void submitDiningFeedbackToSupabase({
-      draft,
-      reservation: createRestaurantFeedbackReservationPersistenceInput(submission),
-      scenario: createPersistableRestaurantFeedbackScenario(submission),
-    }).catch((error) => {
-      console.warn('Failed to persist restaurant feedback submission.', error);
-      trackEvent('restaurant_feedback_persist_error', {
-        restaurant_name: restaurant.name,
-      });
-    });
     setSelectedRestaurantDetail(null);
     setIsRestaurantDetailFeedbackMapView(false);
     setIsReservationFeedbackMapView(false);
@@ -3372,9 +3406,26 @@ function MainApp() {
               >
                 {latestTasteMeasurementSnapshot ? (
                   <DiningPage
-                    key={`reservation-${tabResetKeys.reservation}`}
+                    key={`reservation-${supabaseSession?.user.id ?? 'guest'}-${tabResetKeys.reservation}`}
                     disableHydration={activeTab !== 'reservation'}
-                    externalFeedbackSubmissions={externalDiningFeedbackSubmissions}
+                    externalFeedbackSubmissions={externalDiningFeedbackSubmissions.filter((submission) =>
+                      !submission.ownerUserId || submission.ownerUserId === supabaseSession?.user.id,
+                    )}
+                    onExternalFeedbackSaved={(submissionId, draft, scenario, remoteId) => {
+                      setExternalDiningFeedbackSubmissions((current) => current.map((submission) =>
+                        submission.submissionId === submissionId &&
+                          (!submission.ownerUserId || submission.ownerUserId === supabaseSession?.user.id)
+                          ? {
+                            ...submission,
+                            draft,
+                            scenario,
+                            ownerUserId: supabaseSession?.user.id,
+                            syncedAt: new Date().toISOString(),
+                            remoteId: remoteId ?? submission.remoteId,
+                          }
+                          : submission,
+                      ));
+                    }}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     userAvatarImageSrc={profileAvatarImageSrc}
                     userInitials={userInitials}

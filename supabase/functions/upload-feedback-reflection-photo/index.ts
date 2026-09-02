@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { withAccountMediaUpload } from '../_shared/account-media.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -7,7 +8,7 @@ const corsHeaders = {
 };
 
 const MAX_REFLECTION_PHOTO_BYTES = 6 * 1024 * 1024;
-const PUBLIC_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+const PUBLIC_CACHE_CONTROL = 'private, no-store';
 const ALLOWED_REFLECTION_PHOTO_TYPES = new Set(['image/webp', 'image/png', 'image/jpeg']);
 
 function detectImageType(payload: ArrayBuffer) {
@@ -85,7 +86,7 @@ async function hmac(key: string | ArrayBuffer | Uint8Array, value: string) {
     typeof key === 'string'
       ? new TextEncoder().encode(key)
       : key instanceof Uint8Array
-        ? key
+        ? new Uint8Array(key)
         : new Uint8Array(key);
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
@@ -158,6 +159,7 @@ async function uploadToR2(input: {
   const response = await fetch(url, {
     method: 'PUT',
     body: input.payload,
+    signal: AbortSignal.timeout(45_000),
     headers: {
       Authorization: authorization,
       'Cache-Control': PUBLIC_CACHE_CONTROL,
@@ -259,7 +261,7 @@ Deno.serve(async (request) => {
   ].join('/');
 
   try {
-    await uploadToR2({
+    await withAccountMediaUpload(userClient, () => uploadToR2({
       accessKeyId: r2AccessKeyId,
       accountId: r2AccountId,
       bucket: r2Bucket,
@@ -267,7 +269,7 @@ Deno.serve(async (request) => {
       objectKey,
       payload,
       secretAccessKey: r2SecretAccessKey,
-    });
+    }));
   } catch (error) {
     console.error(error);
     return jsonResponse({ error: 'Failed to upload reflection photo' }, { status: 502 });

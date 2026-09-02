@@ -885,6 +885,9 @@ struct AppShellView: View {
     @State private var bookmarkCoverTasteID: TasteAxis = .sweet
     @State private var isBookmarkCoverEditorOpen = false
     @State private var showsProfileEditDeleteConfirmation = false
+    @State private var isDeletingProfileAccount = false
+    @State private var profileDeletionErrorMessage: String?
+    @State private var profileLinkErrorMessage: String?
     @State private var activeDishOptionsItem: DiningDishFeedbackItem?
     @State private var showsNewDiningFeedback = false
     @State private var showsDiningFeedbackTasteBloomTransition = false
@@ -1010,6 +1013,23 @@ struct AppShellView: View {
         }
         .animation(StagedBottomSheetBackgroundMetrics.animation, value: activeStagedSheet?.id)
         .animation(StagedBottomSheetBackgroundMetrics.animation, value: showsProfileEditDeleteConfirmation)
+        .onChange(of: showsProfileEditDeleteConfirmation) { _, isPresented in
+            if isPresented {
+                profileDeletionErrorMessage = nil
+            }
+        }
+        .alert(
+            "프로필 연결을 마무리하지 못했어요.",
+            isPresented: Binding(
+                get: { profileLinkErrorMessage != nil },
+                set: { if !$0 { profileLinkErrorMessage = nil } }
+            )
+        ) {
+            Button("다시 시도", action: completeLinkedCurrentProfile)
+            Button("닫기", role: .cancel) {}
+        } message: {
+            Text(profileLinkErrorMessage ?? "잠시 후 다시 시도해 주세요.")
+        }
         .onChange(of: activeStagedSheet != nil) { _, isPresented in
             onStagedSheetPresentationChange?(isPresented)
         }
@@ -1575,6 +1595,7 @@ struct AppShellView: View {
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture {
+                    guard !isDeletingProfileAccount else { return }
                     showsProfileEditDeleteConfirmation = false
                 }
 
@@ -1584,6 +1605,13 @@ struct AppShellView: View {
                     .foregroundStyle(TBColor.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
+
+                if let profileDeletionErrorMessage {
+                    Text(profileDeletionErrorMessage)
+                        .font(TBFont.regular(12))
+                        .foregroundStyle(TBColor.destructive)
+                        .multilineTextAlignment(.center)
+                }
 
                 HStack(spacing: 8) {
                     Button {
@@ -1602,13 +1630,10 @@ struct AppShellView: View {
                             }
                     }
                     .buttonStyle(.plain)
+                    .disabled(isDeletingProfileAccount)
 
-                    Button {
-                        appModel.resetAll()
-                        showsProfileEditDeleteConfirmation = false
-                        dismissActiveSheet()
-                    } label: {
-                        Text("예")
+                    Button(action: deleteProfileAccount) {
+                        Text(isDeletingProfileAccount ? "삭제 중" : profileDeletionErrorMessage == nil ? "예" : "다시 시도")
                             .font(TBFont.semibold(13))
                             .foregroundStyle(TBColor.textInverse)
                             .frame(maxWidth: .infinity)
@@ -1617,6 +1642,7 @@ struct AppShellView: View {
                             .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                    .disabled(isDeletingProfileAccount)
                 }
             }
             .padding(ActionOverlayCardMetrics.stackPadding)
@@ -1627,6 +1653,35 @@ struct AppShellView: View {
             .padding(.horizontal, ActionOverlayCardMetrics.horizontalPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func deleteProfileAccount() {
+        guard !isDeletingProfileAccount else { return }
+        isDeletingProfileAccount = true
+        profileDeletionErrorMessage = nil
+
+        Task {
+            let result = await appModel.deleteCurrentAccount()
+            isDeletingProfileAccount = false
+            guard result.ok else {
+                profileDeletionErrorMessage = result.message
+                return
+            }
+
+            showsProfileEditDeleteConfirmation = false
+            dismissActiveSheet()
+        }
+    }
+
+    private func completeLinkedCurrentProfile() {
+        activeSheet = .profileSummary
+        profileLinkErrorMessage = nil
+        Task {
+            let result = await appModel.completeLinkedCurrentProfileAuthEntry()
+            if !result.ok {
+                profileLinkErrorMessage = result.message
+            }
+        }
     }
 
     @ViewBuilder
@@ -1684,9 +1739,7 @@ struct AppShellView: View {
                     intent: intent,
                     usesNativeSheetChrome: false,
                     onDismissRequest: dismissActiveSheet,
-                    onLinkedCurrentProfile: {
-                        activeSheet = .profileSummary
-                    }
+                    onLinkedCurrentProfile: completeLinkedCurrentProfile
                 )
             case .bookmark(let restaurant):
                 RestaurantBookmarkNativeSheet(

@@ -417,6 +417,119 @@ final class BackendIntegrationTests: XCTestCase {
     }
 
     @MainActor
+    func testAccountDeletionPreservesLocalDataOnFailureAndClearsItAfterRetry() async {
+        let suiteName = "tastebuddy.backend.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let repository = RecordingBackendAuthRepository(deleteResults: [
+            .failure("계정 삭제에 실패했습니다."),
+            .success("계정이 삭제되었습니다.")
+        ])
+        let model = AppModel(defaults: defaults, authRepository: repository)
+        model.completeVerifiedEmailAuthEntry()
+        model.completeOnboarding()
+        model.saveProfile(.sample)
+        model.addDiningEntry(.sample)
+
+        let failure = await model.deleteCurrentAccount()
+
+        XCTAssertFalse(failure.ok)
+        XCTAssertNotNil(model.profile)
+        XCTAssertEqual(model.diningEntries, [.sample])
+        XCTAssertTrue(model.hasSeenOnboarding)
+        XCTAssertEqual(model.backendSessionStatus, .authenticated)
+        XCTAssertNotNil(AppModel(defaults: defaults).profile)
+
+        let success = await model.deleteCurrentAccount()
+
+        XCTAssertTrue(success.ok)
+        XCTAssertEqual(repository.deleteCallCount, 2)
+        XCTAssertNil(model.profile)
+        XCTAssertTrue(model.diningEntries.isEmpty)
+        XCTAssertFalse(model.hasCompletedAuthEntry)
+        XCTAssertEqual(model.backendSessionStatus, .signedOut)
+        XCTAssertNil(AppModel(defaults: defaults).profile)
+        await model.restoreBackendSessionIfNeeded()
+        XCTAssertEqual(model.backendSessionStatus, .signedOut)
+    }
+
+    @MainActor
+    func testGuestDeletionOnlySkipsBackendWhenNoSessionExists() async {
+        for hasSession in [false, true] {
+            let suiteName = "tastebuddy.backend.tests.\(UUID().uuidString)"
+            let defaults = UserDefaults(suiteName: suiteName)!
+            defer { defaults.removePersistentDomain(forName: suiteName) }
+            let repository = RecordingBackendAuthRepository(hasCurrentSession: hasSession)
+            let model = AppModel(
+                defaults: defaults,
+                authRepository: repository,
+                sessionRepository: FixtureBackendSessionRepository(status: .signedOut)
+            )
+            await model.restoreBackendSessionIfNeeded()
+            model.completeAuthEntry()
+            model.saveProfile(.sample)
+
+            let result = await model.deleteCurrentAccount()
+
+            XCTAssertTrue(result.ok)
+            XCTAssertEqual(repository.deleteCallCount, hasSession ? 1 : 0)
+            XCTAssertNil(model.profile)
+            XCTAssertEqual(model.backendSessionStatus, .signedOut)
+        }
+    }
+
+    @MainActor
+    func testAccountDeletionRequiresBackendConfirmationForAuthenticatedState() async {
+        let suiteName = "tastebuddy.backend.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let repository = RecordingBackendAuthRepository(
+            hasCurrentSession: false,
+            deleteResults: [.failure("다시 로그인해 주세요.")]
+        )
+        let model = AppModel(defaults: defaults, authRepository: repository)
+        model.completeVerifiedEmailAuthEntry()
+        model.saveProfile(.sample)
+
+        let result = await model.deleteCurrentAccount()
+
+        XCTAssertFalse(result.ok)
+        XCTAssertEqual(repository.deleteCallCount, 1)
+        XCTAssertNotNil(model.profile)
+    }
+
+    @MainActor
+    func testEmailLinkUpdatesAuthenticationAndRetriesPublishingCurrentIdentity() async {
+        let suiteName = "tastebuddy.backend.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let repository = RecordingBackendPublicProfileRepository(
+            mutationResult: .failure("프로필 저장을 다시 시도해 주세요.")
+        )
+        let model = AppModel(defaults: defaults, publicProfileRepository: repository)
+        model.completeAuthEntry()
+        var identity = UserProfileIdentity.default
+        identity.displayName = "연결할 프로필"
+        identity.nickname = "@linked-profile"
+        model.saveProfileIdentity(identity)
+
+        let failure = await model.completeLinkedCurrentProfileAuthEntry()
+
+        XCTAssertFalse(failure.ok)
+        XCTAssertEqual(model.backendSessionStatus, .authenticated)
+        XCTAssertTrue(model.hasCompletedAuthEntry)
+        XCTAssertEqual(repository.updateCalls, [identity.sanitized])
+        XCTAssertEqual(model.profileIdentity, identity.sanitized)
+
+        repository.mutationResult = .success("프로필 정보가 저장되었습니다.")
+        let success = await model.completeLinkedCurrentProfileAuthEntry()
+
+        XCTAssertTrue(success.ok)
+        XCTAssertEqual(repository.updateCalls, [identity.sanitized, identity.sanitized])
+        XCTAssertEqual(repository.currentIdentityCallCount, 0)
+    }
+
+    @MainActor
     func testGuestAuthEntryCompletionDoesNotPersistAcrossLaunches() {
         let suiteName = "tastebuddy.backend.tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -469,10 +582,13 @@ private final class RecordingBackendAuthRepository: BackendAuthRepository {
     private var verifyResults: [BackendAuthResult]
     private var googleResult: BackendAuthResult
     private var signOutResult: BackendAuthResult
+    private var deleteResults: [BackendAuthResult]
+    let hasCurrentSession: Bool
     private(set) var sendCalls: [SendCall] = []
     private(set) var verifyCalls: [VerifyCall] = []
     private(set) var googleRedirects: [URL?] = []
     private(set) var signOutCallCount = 0
+    private(set) var deleteCallCount = 0
 
     init(
         sendResults: [BackendAuthResult] = [
@@ -482,12 +598,16 @@ private final class RecordingBackendAuthRepository: BackendAuthRepository {
             .success("이메일 인증이 완료되었습니다.")
         ],
         googleResult: BackendAuthResult = .success("Google 로그인이 완료되었습니다."),
-        signOutResult: BackendAuthResult = .success("로그아웃되었습니다.")
+        signOutResult: BackendAuthResult = .success("로그아웃되었습니다."),
+        hasCurrentSession: Bool = true,
+        deleteResults: [BackendAuthResult] = [.success("계정이 삭제되었습니다.")]
     ) {
         self.sendResults = sendResults
         self.verifyResults = verifyResults
         self.googleResult = googleResult
         self.signOutResult = signOutResult
+        self.hasCurrentSession = hasCurrentSession
+        self.deleteResults = deleteResults
     }
 
     func ensureAnonymousSession() async -> BackendAuthResult {
@@ -543,7 +663,8 @@ private final class RecordingBackendAuthRepository: BackendAuthRepository {
     }
 
     func deleteCurrentAccount() async -> BackendAuthResult {
-        .success("계정이 삭제되었습니다.")
+        deleteCallCount += 1
+        return deleteResults.isEmpty ? .success("계정이 삭제되었습니다.") : deleteResults.removeFirst()
     }
 }
 

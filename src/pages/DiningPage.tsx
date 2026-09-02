@@ -62,6 +62,11 @@ import {
 import { isSupabaseConfigured } from '../lib/supabase';
 import { trackEvent, trackPageView } from '../lib/analytics';
 import { resolvePublicMediaPath } from '../lib/mediaAssets';
+import {
+  buildRestaurantFeedbackExternalRef,
+  mergeHydratedFeedbackById,
+  type FeedbackSyncMetadata,
+} from '../lib/restaurantFeedbackSync';
 import { TBA, type TasteBuddyAgentDiningNote } from '../lib/tasteBuddyAgent';
 import type {
   TasteBuddyAgentDiningAnalysisSnapshot,
@@ -130,7 +135,7 @@ type DishFeedbackEngagementNotificationEvent = {
   restaurantName: string;
 };
 
-export interface DiningPageExternalFeedbackSubmission {
+export interface DiningPageExternalFeedbackSubmission extends FeedbackSyncMetadata {
   draft: DiningFeedbackDraft;
   restaurant: {
     category: string;
@@ -197,12 +202,12 @@ function createReservationFromExternalFeedbackSubmission(
       year: 'numeric',
     }).format(safeDate),
     diningPromise: submission.restaurant.summaryLine,
-    externalRef: `restaurant-feedback-${submission.restaurant.id}`,
+    externalRef: buildRestaurantFeedbackExternalRef(submission.restaurant.id, submission.submissionId),
     guests: 1,
     guestUnderstanding: submission.restaurant.decisionReason,
     id: submission.submissionId,
     matchRate: submission.restaurant.scores.personalMatchRate,
-    remoteId: null,
+    remoteId: submission.remoteId ?? null,
     restaurant: submission.restaurant.name,
     status: 'completed',
     tcsStatus: '디시 피드백이 저장되었습니다',
@@ -977,6 +982,12 @@ interface DiningPageProps {
   userNickname?: string | null;
   onDishFeedbackEngagement?: (event: DishFeedbackEngagementNotificationEvent) => void;
   onFeedbackMapViewChange?: (isMapView: boolean) => void;
+  onExternalFeedbackSaved?: (
+    submissionId: number,
+    draft: DiningFeedbackDraft,
+    scenario: DiningFeedbackScenario,
+    remoteId?: string,
+  ) => void;
   onRootViewChange?: (isRootView: boolean) => void;
   onOpenAuthorProfile?: () => void;
   onOpenRestaurantDetail?: (reservation: Reservation) => void;
@@ -999,6 +1010,7 @@ export default function DiningPage({
   userNickname = null,
   onDishFeedbackEngagement,
   onFeedbackMapViewChange,
+  onExternalFeedbackSaved,
   onRootViewChange,
   onOpenAuthorProfile,
   onOpenRestaurantDetail,
@@ -1037,6 +1049,14 @@ export default function DiningPage({
   const consumedExternalFeedbackSubmissionIdsRef = useRef<Set<number>>(new Set());
   const feedbackSubmitInFlightRef = useRef(false);
   const hasCompletedInitialReservationHydrationRef = useRef(false);
+  const localFeedbackRevisionsRef = useRef(new Map<number, number>());
+  const hydrationProtectionRef = useRef(new Set<number>());
+  hydrationProtectionRef.current = new Set(externalFeedbackSubmissions
+    .filter((submission) => !submission.syncedAt)
+    .map((submission) => submission.submissionId));
+  if (selectedId !== null && selectedView === 'feedback') {
+    hydrationProtectionRef.current.add(selectedId);
+  }
 
   useEffect(() => {
     const newSubmissions = externalFeedbackSubmissions.filter(
@@ -1294,6 +1314,8 @@ export default function DiningPage({
       if (!persistenceResult.persisted) {
         throw new Error('Dining feedback item was not cleared in Supabase.');
       }
+      localFeedbackRevisionsRef.current.set(item.reservation.id,
+        (localFeedbackRevisionsRef.current.get(item.reservation.id) ?? 0) + 1);
 
       setFeedbackByReservationId((current) => {
         const currentDraft = current[item.reservation.id] ?? draftBeforeDelete;
@@ -1303,6 +1325,12 @@ export default function DiningPage({
           [item.reservation.id]: clearDishFeedbackItemFromDraft(currentDraft, item),
         };
       });
+      onExternalFeedbackSaved?.(
+        item.reservation.id,
+        clearDishFeedbackItemFromDraft(draftBeforeDelete, item),
+        item.scenario,
+        persistenceResult.remoteId,
+      );
     } catch (error) {
       trackEvent('dish_feedback_delete_error', {
         dish_id: item.dish.id,
@@ -1397,6 +1425,7 @@ export default function DiningPage({
     }
 
     let isCancelled = false;
+    const revisionsBeforeHydration = new Map(localFeedbackRevisionsRef.current);
     const shouldShowBriefSkeleton =
       isSupabaseConfigured &&
       !initialReservations &&
@@ -1441,10 +1470,13 @@ export default function DiningPage({
 
           return [...localReservations, ...hydratedData.reservations];
         });
-        setFeedbackByReservationId((current) => ({
-          ...hydratedData.feedbackByReservationId,
-          ...current,
-        }));
+        const protectedIds = new Set(hydrationProtectionRef.current);
+        localFeedbackRevisionsRef.current.forEach((revision, id) => {
+          if (revision !== revisionsBeforeHydration.get(id)) protectedIds.add(id);
+        });
+        setFeedbackByReservationId((current) => mergeHydratedFeedbackById(
+          current, hydratedData.feedbackByReservationId, protectedIds,
+        ));
         setSubmittedFeedbackReservationIds((current) => {
           const nextReservationIds = new Set(current);
 
@@ -1454,10 +1486,9 @@ export default function DiningPage({
 
           return nextReservationIds;
         });
-        setFeedbackScenariosByReservationId((current) => ({
-          ...hydratedData.feedbackScenariosByReservationId,
-          ...current,
-        }));
+        setFeedbackScenariosByReservationId((current) => mergeHydratedFeedbackById(
+          current, hydratedData.feedbackScenariosByReservationId, protectedIds,
+        ));
         hasCompletedInitialReservationHydrationRef.current = true;
         didHydrateReservations = true;
       } catch {
@@ -1566,6 +1597,9 @@ export default function DiningPage({
             if (!persistenceResult.persisted) {
               throw new Error('Dining feedback was not persisted to Supabase.');
             }
+            localFeedbackRevisionsRef.current.set(selectedReservation.id,
+              (localFeedbackRevisionsRef.current.get(selectedReservation.id) ?? 0) + 1);
+            onExternalFeedbackSaved?.(selectedReservation.id, nextDraft, selectedScenario, persistenceResult.remoteId);
 
             setSubmittedFeedbackReservationIds((current) => {
               const nextReservationIds = new Set(current);

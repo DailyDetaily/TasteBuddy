@@ -47,6 +47,7 @@
 		6285D92488F760AFB763DE53 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D14867A4F140B27A230794 /* SplashView.swift */; };
 		637D0F032CDC71018082FEED /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 1E9D96C68259017AB583399E /* Supabase */; };
 		A7B1C2D3E4F5061728394051 /* ProgressiveBlurHeader in Frameworks */ = {isa = PBXBuildFile; productRef = A7B1C2D3E4F5061728394053 /* ProgressiveBlurHeader */; };
+		BF45AF0DF05E87F3BB733844 /* VariableBlur in Frameworks */ = {isa = PBXBuildFile; productRef = D54CBAE0454D2383D499CF3B /* VariableBlur */; };
 		685A10211DCFC0B07D685046 /* SystemParityComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6032BAAF406EBAB87F2B9A9B /* SystemParityComponents.swift */; };
 		6F480C9447E25816E7A98C0F /* CalibrationFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A227DA0878C66E3D037888F /* CalibrationFlowView.swift */; };
 		7240E69AE0EF0CF787576ECC /* dining-feedback-scenario.json in Resources */ = {isa = PBXBuildFile; fileRef = 405C07DABEF65BE54901E1AE /* dining-feedback-scenario.json */; };
@@ -216,6 +217,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7B1C2D3E4F5061728394051 /* ProgressiveBlurHeader in Frameworks */,
+				BF45AF0DF05E87F3BB733844 /* VariableBlur in Frameworks */,
 				637D0F032CDC71018082FEED /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -617,6 +619,7 @@
 			packageProductDependencies = (
 				1E9D96C68259017AB583399E /* Supabase */,
 				A7B1C2D3E4F5061728394053 /* ProgressiveBlurHeader */,
+				D54CBAE0454D2383D499CF3B /* VariableBlur */,
 			);
 			productName = TasteBuddy;
 			productReference = 1024AB4876963918ED22259F /* TasteBuddy.app */;
@@ -647,6 +650,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A7B1C2D3E4F5061728394052 /* XCRemoteSwiftPackageReference "ProgressiveBlurHeader" */,
+				C5B41AFF56D5CD064E265C34 /* XCRemoteSwiftPackageReference "VariableBlur" */,
 				E6CF4A6AC39683D65BC68077 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -969,6 +973,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		C5B41AFF56D5CD064E265C34 /* XCRemoteSwiftPackageReference "VariableBlur" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nikstar/VariableBlur";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		A7B1C2D3E4F5061728394052 /* XCRemoteSwiftPackageReference "ProgressiveBlurHeader" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/dominikmartn/ProgressiveBlurHeader";
@@ -988,6 +1000,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D54CBAE0454D2383D499CF3B /* VariableBlur */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C5B41AFF56D5CD064E265C34 /* XCRemoteSwiftPackageReference "VariableBlur" */;
+			productName = VariableBlur;
+		};
 		1E9D96C68259017AB583399E /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E6CF4A6AC39683D65BC68077 /* XCRemoteSwiftPackageReference "supabase-swift" */;

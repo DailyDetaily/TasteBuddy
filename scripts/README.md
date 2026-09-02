@@ -6,6 +6,12 @@ If you are looking for app source code, this is not the right place. Start in `s
 
 ## Quick Map
 
+### Local regression tests
+
+Run `npm ci` followed by `npm test` to check taste scoring, the food knowledge dataset, review identity/synchronization, server-derived learning, and account/data safety. The runner is [`test-taste-survey-scoring.mjs`](./test-taste-survey-scoring.mjs).
+
+Database tests use PGlite, an isolated PostgreSQL engine, and media tests use mocked HTTP requests. These tests do not modify the linked Supabase project or delete real user media.
+
 ### Local preview helpers
 
 - [`open-design-system.mjs`](./open-design-system.mjs)

@@ -45,7 +45,7 @@ Feedback reflection photos use the same public media origin. `feedback_items` st
 - [`migrations/20260528_profile_identity_search.sql`](./migrations/20260528_profile_identity_search.sql)
 - [`migrations/20260528_restaurant_bookmarks_by_email.sql`](./migrations/20260528_restaurant_bookmarks_by_email.sql)
 
-`search_profiles_by_identity()` searches display name and nickname together while keeping `search_profiles_by_nickname()` as a compatibility wrapper. Restaurant bookmarks are stored in `restaurant_bookmark_lists` and `restaurant_bookmarks` by lowercase `owner_email`, so email-authenticated users can sync saved restaurant lists across devices while localStorage remains the fallback.
+`search_profiles_by_identity()` searches display name and nickname together while keeping `search_profiles_by_nickname()` as a compatibility wrapper. Restaurant bookmarks retain the lowercase `owner_email` client contract and are bound to their Auth account by `owner_user_id`. Account deletion removes owned rows; another account using the same email cannot inherit them. localStorage remains the offline fallback.
 
 ### Edge Functions
 
@@ -56,7 +56,7 @@ Feedback reflection photos use the same public media origin. `feedback_items` st
 
 The app uses these functions to fetch live Kakao Local place details and Google Places enrichment without exposing provider API keys in the browser. Keep `KAKAO_REST_API_KEY` and `GOOGLE_MAPS_API_KEY` as Supabase function secrets.
 
-`delete-account` lets a signed-in user delete their own Supabase Auth account from the app. It verifies the caller's JWT and then deletes the Auth user with `SUPABASE_SERVICE_ROLE_KEY`, so keep the service role key only in Supabase function secrets and never expose it to the browser bundle.
+`delete-account` verifies the caller's JWT, coordinates in-flight media uploads, removes their R2 media, purges the public media cache, and deletes the Auth user with `SUPABASE_SERVICE_ROLE_KEY` only after cleanup succeeds. Keep server credentials in Supabase function secrets. See [deployment order and configuration](../docs/operations/premerge-data-safety-release.md) before releasing these changes.
 
 `upload-feedback-reflection-photo` accepts an authenticated image upload, validates the file type/size, writes it to Cloudflare R2 under `feedback-reflections/{user-id}/{yyyy-mm-dd}/...`, and returns the object key for storage in `feedback_items.reflection_photo_preview_url`.
 

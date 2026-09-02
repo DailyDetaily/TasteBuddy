@@ -7,6 +7,9 @@ import * as esbuild from 'esbuild';
 const testEntryPoints = [
   'scripts/taste-survey-scoring.test.ts',
   'scripts/tba-food-knowledge-dataset.test.ts',
+  'scripts/restaurant-feedback-sync.test.ts',
+  'scripts/feedback-learning-sql.test.ts',
+  'scripts/backend-data-safety.test.ts',
 ];
 
 const outdir = 'node_modules/.cache/taste-buddy-tests';
@@ -19,6 +22,7 @@ for (const entryPoint of testEntryPoints) {
   await esbuild.build({
     bundle: true,
     entryPoints: [entryPoint],
+    external: ['@electric-sql/pglite'],
     format: 'esm',
     logLevel: 'silent',
     outfile,

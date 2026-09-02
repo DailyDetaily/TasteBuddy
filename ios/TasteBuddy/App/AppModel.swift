@@ -523,6 +523,37 @@ final class AppModel: ObservableObject {
     }
 
     @discardableResult
+    func completeLinkedCurrentProfileAuthEntry() async -> BackendProfileIdentityMutationResult {
+        completeVerifiedEmailAuthEntry()
+        return await publishCurrentProfileIdentity()
+    }
+
+    @discardableResult
+    func deleteCurrentAccount() async -> BackendAuthResult {
+        let requiresBackendDeletion: Bool
+        switch backendSessionStatus {
+        case .authenticated, .failed:
+            requiresBackendDeletion = true
+        case .notConfigured, .signedOut:
+            // A guest may have prepared an anonymous session while linking an email.
+            requiresBackendDeletion = authRepository.hasCurrentSession
+        case .restoring:
+            return .failure("로그인 상태를 확인하고 있습니다. 잠시 후 다시 시도해 주세요.")
+        }
+        let result = requiresBackendDeletion
+            ? await authRepository.deleteCurrentAccount()
+            : .success("이 기기의 프로필이 삭제되었습니다.")
+        guard result.ok else {
+            return result
+        }
+
+        resetAll()
+        backendSessionStatus = .signedOut
+        hasRestoredBackendSession = true
+        return result
+    }
+
+    @discardableResult
     func logout() async -> BackendAuthResult {
         let result = await authRepository.signOutLocal()
 
@@ -1000,7 +1031,12 @@ final class AppModel: ObservableObject {
         profileHistory = []
         profileIdentity = .default
         profileAvatarImageData = nil
+        for entry in diningEntries {
+            DiningReflectionPhotoStore.remove(filename: entry.reflectionPhotoFilename)
+        }
         diningEntries = []
+        tbaEvidenceEvents = []
+        tbaConfidenceStates = []
         savedRestaurantIDs = []
         bookmarkLists = []
         restaurantBookmarks = []

@@ -575,6 +575,7 @@ struct MainTabChromeScrollView<Content: View>: View {
                 content()
                     .frame(maxWidth: .infinity, alignment: .topLeading)
             }
+            .scrollClipDisabled()
             .ignoresSafeArea(.container, edges: .top)
         } else {
             ScrollView {

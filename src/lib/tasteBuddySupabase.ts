@@ -52,8 +52,8 @@ import {
   computeReservationLearningSignal,
   createEmptyUserLearnedCalibration,
   parseFeedbackSelections,
-  updateUserLearnedCalibration,
 } from './tastePersonalization';
+import { parseRestaurantFeedbackSubmissionId, serializeFeedbackMutation } from './restaurantFeedbackSync';
 import { TBA } from './tasteBuddyAgent';
 import {
   ensureSupabaseSession,
@@ -86,6 +86,7 @@ export interface ReservationPersistenceInput {
 
 interface FeedbackSubmissionResult {
   persisted: boolean;
+  remoteId?: string;
   reservationSignalReasons: string[];
 }
 
@@ -1422,6 +1423,9 @@ async function recordTbaFeedbackEvidenceEvent(params: {
     next: params.next,
     previous: params.previous,
   });
+  if (confidenceEffect.action === 'ignore') {
+    return;
+  }
 
   const { error } = await supabase
     .from('tba_feedback_evidence_events')
@@ -1477,72 +1481,6 @@ function getLegacyFeedbackTagIds(
   return hasDiningDishFeedbackResponse(response) && dish.feedbackChoices[0]
     ? [dish.feedbackChoices[0].id]
     : [];
-}
-
-async function upsertUserLearnedDeltaSafely(params: {
-  feedbackObservations: Array<{
-    daysSinceDining: number;
-    parsedReaction: ReturnType<typeof parseFeedbackSelections>;
-    rating: number;
-    sourceConfidence: number;
-  }>;
-  userId: string;
-}) {
-  const reservationSignal = computeReservationLearningSignal(params.feedbackObservations);
-
-  try {
-    const { data: existingDeltaRow, error: existingDeltaError } = await supabase
-      .from('user_learned_deltas')
-      .select(
-        'perception_taste_delta, perception_perceptual_delta, preference_taste_delta, preference_perceptual_delta, support_count, hypothesis_count',
-      )
-      .eq('user_id', params.userId)
-      .maybeSingle();
-
-    if (existingDeltaError) {
-      throw existingDeltaError;
-    }
-
-    const currentCalibration = existingDeltaRow
-      ? {
-          perceptionTasteDelta: existingDeltaRow.perception_taste_delta ?? createEmptyUserLearnedCalibration().perceptionTasteDelta,
-          perceptionPerceptualDelta:
-            existingDeltaRow.perception_perceptual_delta ?? createEmptyUserLearnedCalibration().perceptionPerceptualDelta,
-          preferenceTasteDelta:
-            existingDeltaRow.preference_taste_delta ?? createEmptyUserLearnedCalibration().preferenceTasteDelta,
-          preferencePerceptualDelta:
-            existingDeltaRow.preference_perceptual_delta ?? createEmptyUserLearnedCalibration().preferencePerceptualDelta,
-          supportCount: existingDeltaRow.support_count ?? 0,
-          hypothesisCount: existingDeltaRow.hypothesis_count ?? 0,
-        }
-      : createEmptyUserLearnedCalibration();
-
-    const learningUpdate = updateUserLearnedCalibration(currentCalibration, reservationSignal);
-
-    const { error: learnedDeltaError } = await supabase.from('user_learned_deltas').upsert(
-      {
-        user_id: params.userId,
-        perception_taste_delta: learningUpdate.next.perceptionTasteDelta,
-        perception_perceptual_delta: learningUpdate.next.perceptionPerceptualDelta,
-        preference_taste_delta: learningUpdate.next.preferenceTasteDelta,
-        preference_perceptual_delta: learningUpdate.next.preferencePerceptualDelta,
-        support_count: learningUpdate.next.supportCount,
-        hypothesis_count: learningUpdate.next.hypothesisCount,
-        confidence: learningUpdate.confidence,
-      },
-      {
-        onConflict: 'user_id',
-      },
-    );
-
-    if (learnedDeltaError) {
-      throw learnedDeltaError;
-    }
-  } catch (error) {
-    console.warn('Feedback was saved, but learned delta update failed.', error);
-  }
-
-  return reservationSignal;
 }
 
 function isMatchingPlaceIndexRow(row: RestaurantPlaceIndexQueryRow, restaurantName: string) {
@@ -2183,6 +2121,7 @@ function mapReservationRowToRecord(row: ReservationQueryRow): ReservationRecord 
 
   return {
     id:
+      parseRestaurantFeedbackSubmissionId(row.external_ref) ??
       fallbackReservation?.id ??
       parseMockReservationExternalRef(row.external_ref) ??
       hashTextToNumericId(row.id),
@@ -3377,11 +3316,26 @@ export async function persistTasteMeasurementSnapshot(
   return true;
 }
 
-export async function submitDiningFeedbackToSupabase(input: {
+interface SubmitDiningFeedbackInput {
   draft: DiningFeedbackDraft;
   reservation: ReservationPersistenceInput;
   scenario: DiningFeedbackScenario;
-}): Promise<FeedbackSubmissionResult> {
+  createOnly?: boolean;
+  expectedUserId?: string;
+}
+
+export async function submitDiningFeedbackToSupabase(input: SubmitDiningFeedbackInput): Promise<FeedbackSubmissionResult> {
+  const userId = await getAuthenticatedUserId();
+  if (input.expectedUserId && input.expectedUserId !== userId) {
+    throw new Error('The signed-in account changed before feedback could be saved.');
+  }
+  return serializeFeedbackMutation(
+    `${userId}:${input.reservation.externalRef ?? input.reservation.remoteId ?? input.reservation.id}`,
+    () => persistDiningFeedbackToSupabase({ ...input, expectedUserId: userId ?? undefined }),
+  );
+}
+
+async function persistDiningFeedbackToSupabase(input: SubmitDiningFeedbackInput): Promise<FeedbackSubmissionResult> {
   if (!supabase || !isSupabaseConfigured) {
     return {
       persisted: false,
@@ -3391,6 +3345,10 @@ export async function submitDiningFeedbackToSupabase(input: {
 
   const userId = await getAuthenticatedUserId();
 
+  if (input.expectedUserId && input.expectedUserId !== userId) {
+    throw new Error('The signed-in account changed before feedback could be saved.');
+  }
+
   if (!userId) {
     return {
       persisted: false,
@@ -3399,6 +3357,18 @@ export async function submitDiningFeedbackToSupabase(input: {
   }
 
   const reservationId = await getOrCreateReservationId(userId, input.reservation);
+  if (input.createOnly) {
+    const { data: existing, error } = await supabase.from('feedback_submissions')
+      .select('client_submission_completed_at')
+      .eq('reservation_id', reservationId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) throw error;
+    // A retry after a lost acknowledgement must never overwrite a later edit/delete.
+    if (existing?.client_submission_completed_at) {
+      return { persisted: true, remoteId: reservationId, reservationSignalReasons: [] };
+    }
+  }
   const persistableDraft = await uploadFeedbackReflectionPhotos({
     draft: input.draft,
     reservationId,
@@ -3580,28 +3550,46 @@ export async function submitDiningFeedbackToSupabase(input: {
     });
   }
 
-  const reservationSignal = await upsertUserLearnedDeltaSafely({
-    feedbackObservations,
-    userId,
-  });
+  const reservationSignal = computeReservationLearningSignal(feedbackObservations);
+  const { error: completionError } = await supabase.from('feedback_submissions')
+    .update({ client_submission_completed_at: new Date().toISOString() })
+    .eq('id', feedbackSubmission.id)
+    .eq('user_id', userId);
+  if (completionError) throw completionError;
 
   return {
     persisted: true,
+    remoteId: reservationId,
     reservationSignalReasons: reservationSignal.reasons,
   };
 }
 
-export async function clearDiningFeedbackItemInSupabase(input: {
+interface ClearDiningFeedbackInput {
   dish: DiningDishMetadata;
   draft: DiningFeedbackDraft;
   reservation: ReservationPersistenceInput;
   scenario: DiningFeedbackScenario;
-}): Promise<{ persisted: boolean }> {
+}
+
+export async function clearDiningFeedbackItemInSupabase(input: ClearDiningFeedbackInput) {
+  const userId = await getAuthenticatedUserId();
+  return serializeFeedbackMutation(
+    `${userId}:${input.reservation.externalRef ?? input.reservation.remoteId ?? input.reservation.id}`,
+    () => clearPersistedDiningFeedbackItem(input, userId),
+  );
+}
+
+async function clearPersistedDiningFeedbackItem(
+  input: ClearDiningFeedbackInput,
+  expectedUserId: string | null,
+): Promise<{ persisted: boolean; remoteId?: string }> {
   if (!supabase || !isSupabaseConfigured) {
     return { persisted: false };
   }
 
   const userId = await getAuthenticatedUserId();
+
+  if (userId !== expectedUserId) throw new Error('The signed-in account changed before feedback could be deleted.');
 
   if (!userId) {
     return { persisted: false };
@@ -3706,6 +3694,19 @@ export async function clearDiningFeedbackItemInSupabase(input: {
     throw feedbackItemError;
   }
 
+  // The server derives learning from current parses; clearing a dish must clear its parse too.
+  const emptyParse = parseFeedbackSelections([]);
+  const { error: parseError } = await supabase.from('feedback_parses').upsert({
+    feedback_item_id: feedbackItem.id,
+    perception_taste_delta: emptyParse.perceptionTasteDelta,
+    perception_perceptual_delta: emptyParse.perceptionPerceptualDelta,
+    preference_taste_delta: emptyParse.preferenceTasteDelta,
+    preference_perceptual_delta: emptyParse.preferencePerceptualDelta,
+    confidence: 0,
+    rationale: emptyParse.rationale,
+  }, { onConflict: 'feedback_item_id' });
+  if (parseError) throw parseError;
+
   await recordTbaFeedbackEvidenceEvent({
     eventType: 'deleted',
     feedbackItemId: feedbackItem?.id ?? previousFeedbackItemRow?.id ?? null,
@@ -3722,5 +3723,5 @@ export async function clearDiningFeedbackItemInSupabase(input: {
     userId,
   });
 
-  return { persisted: true };
+  return { persisted: true, remoteId: reservationId };
 }

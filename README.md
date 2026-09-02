@@ -139,3 +139,4 @@ Not every important doc lives in `docs/`.
 - Docs index: [`docs/README.md`](./docs/README.md)
 - Scripts index: [`scripts/README.md`](./scripts/README.md)
 - Supabase index: [`supabase/README.md`](./supabase/README.md)
+- Account and feedback release order: [`docs/operations/premerge-data-safety-release.md`](./docs/operations/premerge-data-safety-release.md)

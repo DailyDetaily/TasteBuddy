@@ -84,7 +84,7 @@ final class AppModelPersistenceTests: XCTestCase {
     }
 
     @MainActor
-    func testTbaSnapshotEvidenceAndConfidenceRestoreWithDiningEntry() {
+    func testTbaSnapshotEvidenceRestoresAndLogoutClearsItBeforeNextProfile() async {
         let suiteName = "tastebuddy.tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defer {
@@ -114,7 +114,10 @@ final class AppModelPersistenceTests: XCTestCase {
             tbaAnalysisSnapshot: snapshot
         )
 
-        let firstModel = AppModel(defaults: defaults)
+        let firstModel = AppModel(
+            defaults: defaults,
+            authRepository: FixtureBackendAuthRepository()
+        )
         firstModel.addDiningEntry(entry)
 
         XCTAssertEqual(firstModel.tbaEvidenceEvents.count, 1)
@@ -124,6 +127,43 @@ final class AppModelPersistenceTests: XCTestCase {
         XCTAssertEqual(restoredModel.diningEntries, [entry])
         XCTAssertEqual(restoredModel.tbaEvidenceEvents, firstModel.tbaEvidenceEvents)
         XCTAssertEqual(restoredModel.tbaConfidenceStates, firstModel.tbaConfidenceStates)
+
+        let previousEventIDs = Set(firstModel.tbaEvidenceEvents.map(\.id))
+        let logoutResult = await firstModel.logout()
+
+        XCTAssertTrue(logoutResult.ok)
+        XCTAssertTrue(firstModel.tbaEvidenceEvents.isEmpty)
+        XCTAssertTrue(firstModel.tbaConfidenceStates.isEmpty)
+        XCTAssertTrue(AppModel(defaults: defaults).tbaEvidenceEvents.isEmpty)
+
+        firstModel.addDiningEntry(entry)
+        XCTAssertEqual(firstModel.tbaEvidenceEvents.count, 1)
+        XCTAssertTrue(previousEventIDs.isDisjoint(with: firstModel.tbaEvidenceEvents.map(\.id)))
+        let nextProfileModel = AppModel(defaults: defaults)
+        XCTAssertEqual(nextProfileModel.tbaEvidenceEvents, firstModel.tbaEvidenceEvents)
+        XCTAssertEqual(nextProfileModel.tbaConfidenceStates, firstModel.tbaConfidenceStates)
+    }
+
+    @MainActor
+    func testResetRemovesDiningPhotosAlongWithLocalRecords() throws {
+        let suiteName = "tastebuddy.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let filename = try DiningReflectionPhotoStore.save(Data("photo".utf8), entryID: UUID())
+        defer { DiningReflectionPhotoStore.remove(filename: filename) }
+        let model = AppModel(defaults: defaults)
+        model.addDiningEntry(DiningEntry(
+            restaurant: "테스트 다이닝",
+            menu: "로컬 사진",
+            rating: 4,
+            note: "",
+            reflectionPhotoFilename: filename
+        ))
+
+        model.resetAll()
+
+        XCTAssertTrue(model.diningEntries.isEmpty)
+        XCTAssertNil(DiningReflectionPhotoStore.data(for: filename))
     }
 
     func testDiningReflectionPhotoStoreWritesAndRemovesLocalMedia() throws {
