@@ -4,7 +4,7 @@ import { PGlite } from '@electric-sql/pglite';
 
 // Runs real PostgreSQL SQL locally. Only Supabase Auth's platform-owned surface
 // is stubbed; all application tables, policies, functions and triggers are real.
-export async function createTestSupabaseDb({ through = '20260903090000' } = {}) {
+export async function createTestSupabaseDb({ through = '20260903090000', skipVersions = [] } = {}) {
   const db = new PGlite();
   try {
     await db.exec(`
@@ -29,7 +29,8 @@ export async function createTestSupabaseDb({ through = '20260903090000' } = {}) 
     `);
     const directory = path.resolve('supabase/migrations');
     for (const name of (await readdir(directory)).filter((name) => name.endsWith('.sql')).sort()) {
-      if (name.split('_')[0] > through) continue;
+      const version = name.split('_')[0];
+      if (version > through || skipVersions.includes(version)) continue;
       const sql = (await readFile(path.join(directory, name), 'utf8'))
         // PGlite has core gen_random_uuid; the optional pgcrypto extension is unused.
         .replace(/^create extension if not exists pgcrypto;\s*/m, '');

@@ -198,3 +198,34 @@ await test('PostgreSQL: forward migration protects shared data, deduplicates fol
     await db.close();
   }
 });
+
+await test('PostgreSQL: repairs live follower schema drift without backfilling existing follows', async () => {
+  const db = await createTestSupabaseDb({
+    through: '20260604',
+    skipVersions: ['20260519', '20260520', '20260521'],
+  });
+  try {
+    assert.equal((await db.query("select count(*)::integer as count from pg_enum where enumtypid='public.notification_type'::regtype and enumlabel='follower_added'")).rows[0].count, 0);
+    assert.equal((await db.query("select to_regprocedure('public.notify_profile_follower_added()') as function")).rows[0].function, null);
+    await db.query(`insert into auth.users (id, email, raw_user_meta_data) values
+      ($1, 'one@example.test', '{"nickname":"one"}'), ($2, 'two@example.test', '{"nickname":"two"}')`, [userId, otherUserId]);
+    await db.query('insert into public.profile_friendships (requester_id, addressee_id) values ($1,$2)', [userId, otherUserId]);
+
+    // Separate transactions reproduce the deployment ordering required by enums.
+    await db.exec(await readFile('supabase/migrations/20260903085000_restore_follower_notification_type.sql', 'utf8'));
+    await db.exec(await readFile('supabase/migrations/20260903090000_premerge_data_safety.sql', 'utf8'));
+    assert.equal((await db.query('select count(*)::integer as count from public.notifications')).rows[0].count, 0, 'repair must not notify historical followers');
+    assert.equal((await db.query("select count(*)::integer as count from pg_trigger where tgname='profile_friendships_notify_follower_added'")).rows[0].count, 1);
+
+    await db.query("select set_config('request.jwt.claim.sub',$1,false), set_config('request.jwt.claims',$2,false)", [userId, JSON.stringify({sub:userId,email:'one@example.test'})]);
+    await db.exec('set role authenticated');
+    await db.query("select * from public.add_friend_by_nickname('two')");
+    await db.exec('delete from public.profile_friendships');
+    await db.query("select * from public.add_friend_by_nickname('two')");
+    await db.query("select * from public.add_friend_by_nickname('two')");
+    await db.exec('reset role');
+    assert.equal((await db.query('select count(*)::integer as count from public.notifications')).rows[0].count, 1, 'only a new follow creates one notification after repair');
+  } finally {
+    await db.close();
+  }
+});

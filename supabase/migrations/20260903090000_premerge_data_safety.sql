@@ -6,6 +6,55 @@ drop policy if exists "restaurant_operating_hours_update_authenticated" on publi
 revoke insert, update, delete on public.restaurant_place_index, public.restaurant_operating_hours from anon, authenticated;
 
 -- The AFTER INSERT trigger is the single notification writer, including direct inserts.
+-- Ensure it exists even when migration history and the live schema have drifted.
+-- This installs the future-event writer only; it does not backfill old follows.
+create or replace function public.notify_profile_follower_added()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  requester_avatar_path text;
+  requester_display_name text;
+  requester_label text;
+begin
+  select
+    coalesce(
+      p.avatar_path,
+      nullif(btrim(users.raw_user_meta_data ->> 'avatar_path'), ''),
+      nullif(btrim(users.raw_user_meta_data ->> 'avatar_url'), ''),
+      nullif(btrim(users.raw_user_meta_data ->> 'picture'), '')
+    ),
+    nullif(p.display_name, ''),
+    coalesce(nullif(p.nickname, ''), nullif(p.display_name, ''), '새 다이닝 친구')
+  into requester_avatar_path, requester_display_name, requester_label
+  from public.profiles p
+  left join auth.users users on users.id = p.id
+  where p.id = new.requester_id;
+
+  insert into public.notifications (user_id, type, title, body, payload)
+  values (
+    new.addressee_id,
+    'follower_added'::public.notification_type,
+    '새 팔로워',
+    requester_label || '님이 회원님을 팔로우하기 시작했습니다.',
+    jsonb_build_object(
+      'follower_avatar_path', requester_avatar_path,
+      'follower_display_name', requester_display_name,
+      'follower_id', new.requester_id,
+      'follower_nickname', requester_label
+    )
+  );
+  return new;
+end;
+$$;
+revoke all on function public.notify_profile_follower_added() from public, anon, authenticated;
+drop trigger if exists profile_friendships_notify_follower_added on public.profile_friendships;
+create trigger profile_friendships_notify_follower_added
+after insert on public.profile_friendships
+for each row execute function public.notify_profile_follower_added();
+
 create or replace function public.add_friend_by_nickname(target_nickname text)
 returns table (ok boolean, message text)
 language plpgsql
