@@ -2,10 +2,11 @@
 
 Taste Buddy is a premium dining personalization app.
 
-This repo contains two big things in one place:
+This repo contains three big things in one place:
 
 1. the React app that powers the guest-facing experience
-2. the content and data pipeline used to prepare restaurant/menu data for Supabase
+2. the native SwiftUI app in [`ios/`](./ios/)
+3. the content and data pipeline used to prepare restaurant/menu data for Supabase
 
 If you are opening the project for the first time, start here instead of jumping straight into random folders.
 
@@ -13,6 +14,7 @@ If you are opening the project for the first time, start here instead of jumping
 
 ### What to read first
 
+- Codex working rules for this repo: [`AGENTS.md`](./AGENTS.md)
 - Product UX source of truth: [`src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](./src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - Visual design source of truth: [`DESIGN.md`](./DESIGN.md)
 - AI-friendly design system guide: [`docs/AI_DESIGN_SYSTEM.md`](./docs/AI_DESIGN_SYSTEM.md)
@@ -45,7 +47,7 @@ If you are opening the project for the first time, start here instead of jumping
 Install dependencies:
 
 ```bash
-npm install
+npm ci
 ```
 
 Start the dev server:
@@ -69,11 +71,30 @@ npm run dev:design-system-updates
 npm run build
 ```
 
+Open the native project and start the web dev server together:
+
+```bash
+npm run dev:all
+```
+
+### Run the native iOS app
+
+The generated Xcode project is committed at [`ios/TasteBuddy.xcodeproj`](./ios/TasteBuddy.xcodeproj).
+
+```bash
+npm run ios:open
+```
+
+Select the `TasteBuddy` scheme and an iPhone simulator. The native app currently covers onboarding, Quick Taste Calibration, profile interpretation, exploration, dining feedback, and profile management. Reservation and Tastick connectivity are intentionally outside the first native scope.
+
+See [`ios/README.md`](./ios/README.md) for project generation and native architecture notes.
+
 ## Project Map
 
 | Path | What it is | When to go there |
 | --- | --- | --- |
 | [`src/`](./src/) | Main application source | Building product UI or behavior |
+| [`ios/`](./ios/) | Native SwiftUI application | Building or previewing the native guest experience |
 | [`src/pages/`](./src/pages/) | Route-level screens and preview routes | Editing a page or flow |
 | [`src/components/system/`](./src/components/system/) | App-specific reusable building blocks | Adding product-facing shared UI |
 | [`src/components/ui/`](./src/components/ui/) | Generic Radix/shadcn-style primitives | Working on low-level primitives |
@@ -92,6 +113,7 @@ Not every important doc lives in `docs/`.
 
 | Concern | Source of truth |
 | --- | --- |
+| Codex repo-specific working rules | [`AGENTS.md`](./AGENTS.md) |
 | Product behavior and UX principles | [`src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](./src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md) |
 | Visual system and component rules | [`DESIGN.md`](./DESIGN.md) |
 | AI design-system fast path | [`docs/AI_DESIGN_SYSTEM.md`](./docs/AI_DESIGN_SYSTEM.md), [`docs/design-system.snapshot.json`](./docs/design-system.snapshot.json) |
@@ -105,7 +127,8 @@ Not every important doc lives in `docs/`.
 - `src/components/ui` exists, but many primitives are generic and not the first layer used by the main app shell.
 - `DESIGN.md` and the `/design-system` route are meant to stay aligned.
 - `tmp/` contains a lot of useful historical artifacts, but it is not the clean source tree.
-- `dist/` is tracked in this repo, so do not assume it is disposable build output even though it is generated.
+- Dependencies and local package caches (`node_modules/`, `scratch/SourcePackages/`, and `supabase/.temp/`) are not versioned. Install dependencies with `npm ci`; Xcode resolves the native packages from the committed project and `Package.resolved`.
+- The existing tracked files in `dist/` are not a complete deployable bundle. Build from source with `npm run build` and publish that complete output when deploying the web app.
 
 ## Related Docs
 
@@ -116,3 +139,4 @@ Not every important doc lives in `docs/`.
 - Docs index: [`docs/README.md`](./docs/README.md)
 - Scripts index: [`scripts/README.md`](./scripts/README.md)
 - Supabase index: [`supabase/README.md`](./supabase/README.md)
+- Account and feedback release order: [`docs/operations/premerge-data-safety-release.md`](./docs/operations/premerge-data-safety-release.md)

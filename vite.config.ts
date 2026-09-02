@@ -42,9 +42,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,json}'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
     }),
   ],
@@ -106,6 +107,15 @@ export default defineConfig({
     strictPort: true,
     allowedHosts: ['.loca.lt', '.tunnelmole.net'],
     open: true,
+    watch: {
+      ignored: [
+        '**/tmp/**',
+        '**/.tmp-playwright/**',
+        '**/test-results/**',
+        '**/dev-dist/**',
+        '**/dist/**',
+      ],
+    },
   },
   preview: {
     host: '0.0.0.0',

@@ -10,13 +10,14 @@ import {
   HomeCardStack,
   HomeChefMatchStrip,
   HomeDiningPreparationCard,
-  HomeRecentProfileChangeCard,
 } from '../home/HomeCards';
 import TasteMeasurementMiniCta from '../measurement/TasteMeasurementMiniCta';
 import InspectableComponent, {
   type InspectableNavigateHandler,
 } from '../system/InspectableComponent';
+import InterpretationCard from '../system/InterpretationCard';
 import ProfileConfidenceCard from '../system/ProfileConfidenceCard';
+import { getTasteColor } from '../../constants/tasteColors';
 
 function ArchiveEyebrow({ children }: { children: string }) {
   return (
@@ -108,9 +109,9 @@ export default function CurrentHomeCardArchive({
           <div className="flex flex-wrap gap-2">
             <ArchiveEyebrow>HomeDiningPreparationCard</ArchiveEyebrow>
             <ArchiveEyebrow>History Card reference</ArchiveEyebrow>
-            <ArchiveEyebrow>TCS gradient badge</ArchiveEyebrow>
+            <ArchiveEyebrow>TCSBadge</ArchiveEyebrow>
             <ArchiveEyebrow>TasteChip</ArchiveEyebrow>
-            <ArchiveEyebrow>QuickCalibrationHintCard</ArchiveEyebrow>
+            <ArchiveEyebrow>TCSHintCard</ArchiveEyebrow>
           </div>
           <div className="mt-4">
             {previewData.featuredReservation && previewData.featuredSummary ? (
@@ -148,20 +149,29 @@ export default function CurrentHomeCardArchive({
           </ArchivePanel>
 
           <ArchivePanel
-            componentNames={['HomeRecentProfileChangeCard', 'TasteMeasurementMiniCta']}
+            componentNames={['InterpretationCard', 'TasteMeasurementMiniCta']}
             title="변화 요약과 재측정 CTA"
-            description="현재 홈 하단의 변화 요약 카드와 미니 CTA를 함께 보관합니다."
+            description="현재 홈 하단의 변화 요약을 InterpretationCard 패턴으로 정리하고, 재측정 CTA와 함께 보관합니다."
           >
             <div className="flex flex-wrap gap-2">
-              <ArchiveEyebrow>HomeRecentProfileChangeCard</ArchiveEyebrow>
+              <ArchiveEyebrow>InterpretationCard</ArchiveEyebrow>
               <ArchiveEyebrow>TasteMeasurementMiniCta</ArchiveEyebrow>
             </div>
             <div className="mt-4 grid gap-3">
-              <HomeRecentProfileChangeCard
-                onNavigateToSection={onNavigateToSection}
-                recentChangeTasteLabel={recentChangeTasteLabel}
-                recentChangeText={previewData.recentChangeText}
-              />
+              <InspectableComponent
+                className="block w-full"
+                componentName="InterpretationCard"
+                onNavigate={onNavigateToSection}
+                sectionId="cards"
+              >
+                <InterpretationCard
+                  accentColor={getTasteColor(recentChangeTasteLabel)}
+                  detailLabel="변화 보기"
+                  description={previewData.recentChangeText}
+                  eyebrow="최근 반영 내용"
+                  supportingText="가장 최근 다이닝 피드백과 측정을 통해 반영된 내용이에요."
+                />
+              </InspectableComponent>
               <InspectableComponent
                 className="block w-full"
                 componentName="TasteMeasurementMiniCta"
@@ -195,19 +205,20 @@ export default function CurrentHomeCardArchive({
         </div>
 
         <ArchivePanel
-          componentNames={['HomeChefMatchCard', 'LegacyHomeChefCard']}
+          componentNames={['HomeChefMatchCard', 'ChefMatchCard']}
           title="셰프 매칭 카드"
-          description="현재 홈에서 레거시 셰프 카드 패턴을 다시 사용해, 레스토랑별 상위 매칭 셰프를 가로 스크롤로 노출합니다."
+          description="현재 홈에서 레스토랑별 상위 매칭 셰프를 ChefMatchCard와 CardScrollList 조합으로 노출합니다."
         >
           <div className="flex flex-wrap gap-2">
             <ArchiveEyebrow>HomeChefMatchCard</ArchiveEyebrow>
-            <ArchiveEyebrow>LegacyHomeChefCard reference</ArchiveEyebrow>
+            <ArchiveEyebrow>ChefMatchCard</ArchiveEyebrow>
             <ArchiveEyebrow>가로 스크롤 카드</ArchiveEyebrow>
             <ArchiveEyebrow>현재 홈 실사용</ArchiveEyebrow>
           </div>
           <div className="mt-4">
             <HomeChefMatchStrip
               chefCards={previewData.chefCards}
+              fullBleed={false}
               onNavigateToSection={onNavigateToSection}
               showSectionTitle={false}
             />

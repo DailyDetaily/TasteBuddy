@@ -5,13 +5,33 @@ import type {
   DiningFeedbackScenario,
 } from '../constants/diningFeedbackData';
 import {
+  createDiningDishFeedbackDraft,
   createDiningFeedbackDraft,
   getDiningFeedbackScenario,
+  hasDiningDishFeedbackResponse,
 } from '../constants/diningFeedbackData';
 import {
   TASTE_IDS,
   type TasteId,
 } from '../constants/designTokens';
+import { inferDishKindIds } from '../constants/dishKindTags';
+import {
+  PERCEPTUAL_AXES,
+  type PerceptualAxis,
+  type PerceptualVector,
+  type SignedPerceptualVector,
+  type SignedTasteVector,
+  type UserLearnedCalibration,
+} from '../types/tastePersonalization';
+import type {
+  TasteBuddyAgentDiningAnalysisSnapshot,
+  TasteBuddyAgentFeedbackEvidenceAction,
+  TasteBuddyAgentFeedbackEvidenceConfidenceEffect,
+  TasteBuddyAgentFeedbackEvidenceEvent,
+  TasteBuddyAgentFeedbackEvidenceEventType,
+  TasteBuddyAgentFeedbackEvidenceState,
+  TasteBuddyAgentUserConfidenceState,
+} from '../types/tasteBuddyAgent';
 import {
   RESERVATION_CATALOG,
   buildMockReservationExternalRef,
@@ -21,6 +41,7 @@ import {
   type ReservationStatus,
   type ReservationTimelineStep,
 } from '../constants/reservationCatalog';
+import { getChefImageByName } from '../constants/chefImages';
 import {
   TASTE_MEASUREMENT_AVERAGES,
   createInitialTasteMeasurementResults,
@@ -31,11 +52,24 @@ import {
   computeReservationLearningSignal,
   createEmptyUserLearnedCalibration,
   parseFeedbackSelections,
-  updateUserLearnedCalibration,
 } from './tastePersonalization';
-import { ensureSupabaseSession, isSupabaseConfigured, supabase } from './supabase';
+import { parseRestaurantFeedbackSubmissionId, serializeFeedbackMutation } from './restaurantFeedbackSync';
+import { TBA } from './tasteBuddyAgent';
+import {
+  ensureSupabaseSession,
+  getCurrentSupabaseSession,
+  isAnonymousSupabaseSession,
+  isSupabaseConfigured,
+  supabase,
+  uploadSupabaseFeedbackReflectionPhoto,
+} from './supabase';
+import { resolvePublicMediaPath } from './mediaAssets';
 
-type MeasurementSource = 'quick_calibration' | 'teastick' | 'manual';
+type MeasurementSource = 'quick_calibration' | 'tastick' | 'manual';
+
+interface MeasurementPersistenceOptions {
+  rawPayload?: Record<string, unknown>;
+}
 
 export interface ReservationPersistenceInput {
   id: number;
@@ -52,6 +86,7 @@ export interface ReservationPersistenceInput {
 
 interface FeedbackSubmissionResult {
   persisted: boolean;
+  remoteId?: string;
   reservationSignalReasons: string[];
 }
 
@@ -62,7 +97,10 @@ interface HydratedReservationPageData {
 }
 
 interface ReservationQueryRow {
-  chefs: { display_name: string | null } | Array<{ display_name: string | null }> | null;
+  chefs:
+    | { avatar_path: string | null; display_name: string | null }
+    | Array<{ avatar_path: string | null; display_name: string | null }>
+    | null;
   course_name: string | null;
   external_ref: string | null;
   id: string;
@@ -73,9 +111,63 @@ interface ReservationQueryRow {
 }
 
 interface FeedbackItemQueryRow {
+  custom_detail_tags?: unknown;
+  custom_dish_kind_labels?: string[] | null;
   rating: number;
+  reflection_note?: string | null;
+  reflection_photo_name?: string | null;
+  reflection_photo_preview_url?: string | null;
   reservation_dishes: { sort_order: number } | Array<{ sort_order: number }> | null;
+  selected_detail_tag_ids?: unknown;
+  selected_dish_kind_ids?: unknown;
+  selected_experience_ids?: unknown;
   selected_tag_ids: unknown;
+  tba_analysis_snapshot?: unknown;
+  tba_analysis_version?: string | null;
+  tba_confidence?: number | null;
+  tba_foodon_match_ids?: unknown;
+  tba_lexicon_candidate_ids?: unknown;
+  tba_signal_ids?: unknown;
+  updated_at?: string | null;
+}
+
+interface FeedbackItemEvidenceQueryRow {
+  id: string;
+  selected_detail_tag_ids?: unknown;
+  selected_dish_kind_ids?: unknown;
+  selected_experience_ids?: unknown;
+  selected_tag_ids: unknown;
+  tba_analysis_snapshot?: unknown;
+  tba_confidence?: number | null;
+  tba_signal_ids?: unknown;
+}
+
+interface TbaFeedbackEvidenceEventQueryRow {
+  confidence_delta: number | null;
+  confidence_effect: unknown;
+  created_at: string | null;
+  event_type: string;
+  evidence_action: string;
+  id: string;
+  next_snapshot: unknown;
+  next_tba_signal_ids: unknown;
+  payload: unknown;
+  previous_snapshot: unknown;
+  previous_tba_signal_ids: unknown;
+}
+
+interface UserTbaConfidenceStateQueryRow {
+  adjust_count: number | null;
+  confidence: number | null;
+  evidence_count: number | null;
+  label: string | null;
+  last_evidence_at: string | null;
+  last_event_id: string | null;
+  payload: unknown;
+  remove_count: number | null;
+  signal_id: string;
+  signal_type: string;
+  support_count: number | null;
 }
 
 interface ReservationDishQueryRow {
@@ -106,12 +198,15 @@ interface MeasurementSessionQueryRow {
 }
 
 interface ContentChefQueryRow {
+  avatar_path: string | null;
   display_name: string | null;
+  id: string;
   restaurants: { name: string | null; slug: string | null } | Array<{ name: string | null; slug: string | null }> | null;
 }
 
 interface ContentInferenceProfileQueryRow {
   confidence: number | null;
+  perceptual_vector: Partial<Record<PerceptualAxis, number>> | null;
   taste_vector: Partial<Record<TasteId, number>> | null;
 }
 
@@ -136,7 +231,28 @@ interface ContentDishQueryRow {
   status: string | null;
 }
 
+interface RestaurantPlaceIndexQueryRow {
+  category: string | null;
+  formatted_address: string | null;
+  id: string;
+  lat: number | null;
+  lng: number | null;
+  normalized_name: string | null;
+  phone: string | null;
+  provider: string | null;
+  provider_place_id: string | null;
+  provider_url: string | null;
+  raw_name: string | null;
+  restaurants:
+    | { name: string | null; slug: string | null }
+    | Array<{ name: string | null; slug: string | null }>
+    | null;
+  road_address: string | null;
+}
+
 export interface RestaurantContentChef {
+  avatarPath: string | null;
+  id: string;
   name: string;
   restaurant: string;
   restaurantSlug: string;
@@ -146,12 +262,15 @@ export interface RestaurantContentChef {
 
 export interface RestaurantContentDish {
   chef: string;
+  chefAvatarPath: string | null;
+  chefId: string | null;
   confidence: number;
   courseLabel: string;
   coursePosition: string;
   dominantTaste: TasteId;
   id: string;
   ingredients: string[];
+  perceptualVector: PerceptualVector;
   restaurant: string;
   restaurantSlug: string;
   seasonLabel: string | null;
@@ -165,6 +284,165 @@ export interface RestaurantContentCatalog {
   dishes: RestaurantContentDish[];
 }
 
+interface RestaurantContentCatalogCacheEntry {
+  cachedAt: number;
+  catalog: RestaurantContentCatalog;
+}
+
+const RESTAURANT_CONTENT_CATALOG_CACHE_KEY = 'tasteBuddy.restaurantContentCatalog.v1';
+const RESTAURANT_CONTENT_CATALOG_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+let restaurantContentCatalogCacheEntry: RestaurantContentCatalogCacheEntry | null = null;
+
+function isFreshRestaurantContentCatalogCache(
+  entry: RestaurantContentCatalogCacheEntry | null,
+): entry is RestaurantContentCatalogCacheEntry {
+  if (!entry || !Array.isArray(entry.catalog.chefs) || !Array.isArray(entry.catalog.dishes)) {
+    return false;
+  }
+
+  return Date.now() - entry.cachedAt < RESTAURANT_CONTENT_CATALOG_CACHE_TTL_MS;
+}
+
+function readCachedRestaurantContentCatalog() {
+  if (isFreshRestaurantContentCatalogCache(restaurantContentCatalogCacheEntry)) {
+    return restaurantContentCatalogCacheEntry.catalog;
+  }
+
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const rawCacheEntry = window.localStorage.getItem(RESTAURANT_CONTENT_CATALOG_CACHE_KEY);
+    if (!rawCacheEntry) {
+      return null;
+    }
+
+    const parsedCacheEntry = JSON.parse(rawCacheEntry) as RestaurantContentCatalogCacheEntry;
+    if (!isFreshRestaurantContentCatalogCache(parsedCacheEntry)) {
+      window.localStorage.removeItem(RESTAURANT_CONTENT_CATALOG_CACHE_KEY);
+      return null;
+    }
+
+    restaurantContentCatalogCacheEntry = parsedCacheEntry;
+    return parsedCacheEntry.catalog;
+  } catch (error) {
+    console.warn('Failed to read cached restaurant content catalog.', error);
+    return null;
+  }
+}
+
+function writeCachedRestaurantContentCatalog(catalog: RestaurantContentCatalog) {
+  const cacheEntry: RestaurantContentCatalogCacheEntry = {
+    cachedAt: Date.now(),
+    catalog,
+  };
+
+  restaurantContentCatalogCacheEntry = cacheEntry;
+
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      RESTAURANT_CONTENT_CATALOG_CACHE_KEY,
+      JSON.stringify(cacheEntry),
+    );
+  } catch (error) {
+    console.warn('Failed to cache restaurant content catalog.', error);
+  }
+}
+
+export interface RestaurantPlaceInfo {
+  address: string;
+  category?: string;
+  googlePhoto?: {
+    attributions: Array<{
+      displayName?: string;
+      uri?: string;
+    }>;
+    heightPx?: number | null;
+    name: string;
+    url?: string | null;
+    widthPx?: number | null;
+  };
+  googlePlaceId?: string;
+  googleMapsUrl?: string;
+  kakaoPlaceId?: string;
+  lat?: number;
+  lng?: number;
+  mapUrl?: string;
+  phone?: string;
+  priceLevel?: string;
+  rating?: number;
+  website?: string;
+  hours?: string;
+  userRatingCount?: number;
+  sourceByRow: {
+    address: 'kakao';
+    hours?: 'google';
+    phone?: 'kakao' | 'google';
+    website?: 'google';
+  };
+}
+
+interface KakaoPlaceLookupResponse {
+  place: {
+    address: string | null;
+    category: string | null;
+    lat: number | null;
+    lng: number | null;
+    name: string | null;
+    phone: string | null;
+    placeId: string | null;
+    placeUrl: string | null;
+    provider: 'kakao';
+    roadAddress: string | null;
+  } | null;
+}
+
+export interface KakaoPlaceSearchResult {
+  address: string | null;
+  category: string | null;
+  lat: number | null;
+  lng: number | null;
+  name: string | null;
+  phone: string | null;
+  placeId: string | null;
+  placeUrl: string | null;
+  provider: 'kakao';
+  roadAddress: string | null;
+}
+
+interface GooglePlaceEnrichResponse {
+  place: {
+    address: string | null;
+    googleMapsUrl: string | null;
+    hours: string | null;
+    lat: number | null;
+    lng: number | null;
+    name: string | null;
+    phone: string | null;
+    photo: {
+      attributions: Array<{
+        displayName?: string;
+        uri?: string;
+      }>;
+      heightPx?: number | null;
+      name: string;
+      url?: string | null;
+      widthPx?: number | null;
+    } | null;
+    placeId: string | null;
+    priceLevel: string | null;
+    rating: number | null;
+    userRatingCount: number | null;
+    website: string | null;
+  } | null;
+}
+
 interface ReservationSeedCandidate {
   chef: string;
   dishes: RestaurantContentDish[];
@@ -174,8 +452,10 @@ interface ReservationSeedCandidate {
 }
 
 const RESTAURANT_NAME_TRANSLATIONS: Record<string, string> = {
-  '7TH DOOR': '세븐도어',
-  '7TH DOOR SEOUL': '세븐도어',
+  '7TH DOOR': '7th Door',
+  '7TH DOOR SEOUL': '7th Door',
+  '세븐도어': '7th Door',
+  '세븐스도어': '7th Door',
   'ALLA PRIMA': '알라프리마',
   ALLAPRIMA: '알라프리마',
   'EATANIC GARDEN': '이타닉가든',
@@ -257,6 +537,16 @@ const COURSE_POSITION_LABELS: Record<string, string> = {
 
 function normalizeTranslationKey(value: string) {
   return value.replace(/[()]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+}
+
+function normalizeComparableName(value: string | null | undefined) {
+  return (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/[()'".,/-]/g, '')
+    .replace(/\s+/g, '');
 }
 
 function localizeRestaurantName(value: string | null | undefined) {
@@ -341,7 +631,7 @@ function buildReservationSeedSchedule(index: number, seasonLabel: string | null 
   const baseDate = new Date();
   const normalized = seasonLabel?.toLowerCase() ?? '';
   const isLunch = normalized.includes('lunch');
-  const statusCycle: ReservationStatus[] = ['preparing', 'upcoming', 'completed', 'ready'];
+  const statusCycle: ReservationStatus[] = ['ready', 'upcoming', 'completed', 'ready'];
   const status = statusCycle[index % statusCycle.length];
   const date = new Date(baseDate);
 
@@ -444,12 +734,1053 @@ function getDominantTasteFromVector(vector: Partial<Record<TasteId, number>> | n
   }, TASTE_IDS[0]);
 }
 
+function readNumericRecord<K extends string>(keys: readonly K[], value: unknown) {
+  const source =
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Partial<Record<K, unknown>>)
+      : {};
+
+  return keys.reduce<Record<K, number>>((record, key) => {
+    const numericValue = Number(source[key] ?? 0);
+    record[key] = Number.isFinite(numericValue) ? numericValue : 0;
+    return record;
+  }, {} as Record<K, number>);
+}
+
 function takeSingleRelation<T>(value: T | T[] | null | undefined): T | null {
   if (!value) {
     return null;
   }
 
   return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+function readStringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    : [];
+}
+
+function readStringArrayRecord(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  return Object.entries(value as Record<string, unknown>).reduce<Record<string, string[]>>(
+    (record, [key, entryValue]) => {
+      const labels = readStringArray(entryValue);
+
+      if (labels.length > 0) {
+        record[key] = labels;
+      }
+
+      return record;
+    },
+    {},
+  );
+}
+
+function readNullableNumber(value: unknown) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
+function readTbaAnalysisSnapshot(value: unknown): TasteBuddyAgentDiningAnalysisSnapshot | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+
+  const snapshot = value as Partial<TasteBuddyAgentDiningAnalysisSnapshot>;
+
+  if (
+    snapshot.source !== 'TasteBuddyAgent' ||
+    typeof snapshot.summary !== 'string' ||
+    typeof snapshot.version !== 'string'
+  ) {
+    return null;
+  }
+
+  return snapshot as TasteBuddyAgentDiningAnalysisSnapshot;
+}
+
+function isInlineFeedbackReflectionPhoto(value: string | null | undefined) {
+  return /^data:image\//i.test(value?.trim() ?? '');
+}
+
+async function uploadFeedbackReflectionPhotos(params: {
+  draft: DiningFeedbackDraft;
+  reservationId: string;
+}) {
+  const nextDishResponses = { ...params.draft.dishResponses };
+  let hasUploadedPhoto = false;
+
+  for (const [dishId, response] of Object.entries(params.draft.dishResponses)) {
+    const previewUrl = response.reflectionPhotoPreviewUrl;
+
+    if (!isInlineFeedbackReflectionPhoto(previewUrl)) {
+      continue;
+    }
+
+    const uploadResult = await uploadSupabaseFeedbackReflectionPhoto({
+      dataUrl: previewUrl ?? '',
+      dishId,
+      fileName: response.reflectionPhotoName,
+      reservationId: params.reservationId,
+    });
+
+    if (!uploadResult.ok || !uploadResult.objectKey) {
+      throw new Error(uploadResult.message);
+    }
+
+    nextDishResponses[dishId] = {
+      ...response,
+      reflectionPhotoPreviewUrl: uploadResult.objectKey,
+    };
+    hasUploadedPhoto = true;
+  }
+
+  return hasUploadedPhoto
+    ? {
+      ...params.draft,
+      dishResponses: nextDishResponses,
+    }
+    : params.draft;
+}
+
+function getPersistableFeedbackDishes(
+  scenario: DiningFeedbackScenario,
+  draft: DiningFeedbackDraft,
+) {
+  const dishesById = new Map<string, DiningDishMetadata>();
+
+  [...scenario.dishes, ...(draft.customDishes ?? [])].forEach((dish) => {
+    if (!dishesById.has(dish.id)) {
+      dishesById.set(dish.id, dish);
+    }
+  });
+
+  return Array.from(dishesById.values());
+}
+
+const FEEDBACK_ITEM_DETAIL_COLUMN_NAMES = [
+  'selected_experience_ids',
+  'selected_detail_tag_ids',
+  'selected_dish_kind_ids',
+  'custom_dish_kind_labels',
+  'custom_detail_tags',
+  'reflection_note',
+  'reflection_photo_name',
+  'reflection_photo_preview_url',
+] as const;
+
+const FEEDBACK_ITEM_TBA_ANALYSIS_COLUMN_NAMES = [
+  'tba_analysis_snapshot',
+  'tba_signal_ids',
+  'tba_foodon_match_ids',
+  'tba_lexicon_candidate_ids',
+  'tba_confidence',
+  'tba_analysis_version',
+] as const;
+
+function isFeedbackItemColumnSchemaError(error: unknown, columnNames: readonly string[]) {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const details = error as { code?: string; message?: string };
+  const message = details.message ?? '';
+
+  return (
+    details.code === '42703' ||
+    details.code === 'PGRST204'
+  ) && columnNames.some((columnName) => message.includes(columnName));
+}
+
+function isFeedbackItemDetailSchemaError(error: unknown) {
+  return isFeedbackItemColumnSchemaError(error, FEEDBACK_ITEM_DETAIL_COLUMN_NAMES);
+}
+
+function isFeedbackItemTbaAnalysisSchemaError(error: unknown) {
+  return isFeedbackItemColumnSchemaError(error, FEEDBACK_ITEM_TBA_ANALYSIS_COLUMN_NAMES);
+}
+
+function isTbaFeedbackEvidenceEventSchemaError(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const details = error as { code?: string; message?: string };
+  const message = details.message ?? '';
+
+  return (
+    details.code === '42P01' ||
+    details.code === '42703' ||
+    details.code === 'PGRST204' ||
+    details.code === 'PGRST205' ||
+    message.includes('tba_feedback_evidence_events')
+  );
+}
+
+function isUserTbaConfidenceStateSchemaError(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const details = error as { code?: string; message?: string };
+  const message = details.message ?? '';
+
+  return (
+    details.code === '42P01' ||
+    details.code === '42703' ||
+    details.code === 'PGRST204' ||
+    details.code === 'PGRST205' ||
+    message.includes('user_tba_confidence_states')
+  );
+}
+
+function buildFeedbackItemTbaAnalysisSnapshot(params: {
+  dish: DiningDishMetadata;
+  response: DiningFeedbackDraft['dishResponses'][string];
+  selectedChoice: DiningFeedbackChoice | null;
+}): TasteBuddyAgentDiningAnalysisSnapshot | null {
+  if (params.response.tbaAnalysisSnapshot) {
+    return params.response.tbaAnalysisSnapshot;
+  }
+
+  if (!hasDiningDishFeedbackResponse(params.response)) {
+    return null;
+  }
+
+  const detailTags = [
+    ...(params.response.selectedDetailTagIds ?? []),
+    ...Object.values(params.response.customDetailTags ?? {}).flat(),
+  ];
+  const selectedExperienceIds = [
+    ...(params.response.selectedExperienceIds ?? []),
+    params.response.selectedExperienceId ?? null,
+  ].filter((experienceId): experienceId is string => Boolean(experienceId));
+  const tasteTags = [
+    ...(params.selectedChoice?.affectedTastes ?? []),
+    ...selectedExperienceIds,
+  ];
+  const selectedDishKindIds = params.response.selectedDishKindIds?.length
+    ? params.response.selectedDishKindIds
+    : inferDishKindIds(params.dish);
+
+  return TBA.buildDiningAnalysisSnapshot({
+    detailTags,
+    dishKindTags: selectedDishKindIds,
+    id: `feedback-analysis-${params.dish.id}`,
+    ingredients: params.dish.ingredients,
+    restaurantName: '',
+    reviewSnippet:
+      params.response.reflectionNote?.trim() ||
+      params.selectedChoice?.reason ||
+      undefined,
+    subject: params.dish.title,
+    tasteTags,
+    techniques: params.dish.techniques,
+  });
+}
+
+function getFeedbackItemTbaAnalysisFields(params: {
+  dish: DiningDishMetadata;
+  response: DiningFeedbackDraft['dishResponses'][string];
+  selectedChoice: DiningFeedbackChoice | null;
+}) {
+  const snapshot = buildFeedbackItemTbaAnalysisSnapshot(params);
+  const response = params.response;
+
+  return {
+    tba_analysis_snapshot: snapshot,
+    tba_analysis_version: response.tbaAnalysisVersion ?? snapshot?.version ?? null,
+    tba_confidence: response.tbaConfidence ?? snapshot?.confidence ?? null,
+    tba_foodon_match_ids: response.tbaFoodOnMatchIds?.length
+      ? response.tbaFoodOnMatchIds
+      : snapshot?.foodOnMatchIds ?? [],
+    tba_lexicon_candidate_ids: response.tbaLexiconCandidateIds?.length
+      ? response.tbaLexiconCandidateIds
+      : snapshot?.lexiconCandidateIds ?? [],
+    tba_signal_ids: response.tbaSignalIds?.length
+      ? response.tbaSignalIds
+      : snapshot?.tbaSignalIds ?? [],
+  };
+}
+
+function getClearedFeedbackItemTbaAnalysisFields() {
+  return {
+    tba_analysis_snapshot: null,
+    tba_analysis_version: null,
+    tba_confidence: null,
+    tba_foodon_match_ids: [],
+    tba_lexicon_candidate_ids: [],
+    tba_signal_ids: [],
+  };
+}
+
+function stripFeedbackItemTbaAnalysisFields<T extends Record<string, unknown>>(row: T) {
+  const {
+    tba_analysis_snapshot: _tbaAnalysisSnapshot,
+    tba_analysis_version: _tbaAnalysisVersion,
+    tba_confidence: _tbaConfidence,
+    tba_foodon_match_ids: _tbaFoodOnMatchIds,
+    tba_lexicon_candidate_ids: _tbaLexiconCandidateIds,
+    tba_signal_ids: _tbaSignalIds,
+    ...withoutTbaAnalysis
+  } = row;
+
+  return withoutTbaAnalysis;
+}
+
+function stripFeedbackItemDetailFields<T extends Record<string, unknown>>(row: T) {
+  const {
+    custom_detail_tags: _customDetailTags,
+    custom_dish_kind_labels: _customDishKindLabels,
+    reflection_note: _reflectionNote,
+    reflection_photo_name: _reflectionPhotoName,
+    reflection_photo_preview_url: _reflectionPhotoPreviewUrl,
+    selected_detail_tag_ids: _selectedDetailTagIds,
+    selected_dish_kind_ids: _selectedDishKindIds,
+    selected_experience_ids: _selectedExperienceIds,
+    ...withoutDetails
+  } = row;
+
+  return stripFeedbackItemTbaAnalysisFields(withoutDetails);
+}
+
+function getFeedbackEvidenceSelectedExperienceIds(
+  response: DiningFeedbackDraft['dishResponses'][string],
+) {
+  return [
+    ...(response.selectedExperienceIds ?? []),
+    response.selectedExperienceId ?? null,
+  ].filter((experienceId): experienceId is string => Boolean(experienceId));
+}
+
+function flattenCustomDetailTags(customDetailTags: Record<string, string[]> | undefined) {
+  return Object.values(customDetailTags ?? {}).flat();
+}
+
+function normalizeEvidenceIdList(ids: readonly string[] | undefined) {
+  return Array.from(new Set((ids ?? []).map((id) => id.trim()).filter(Boolean))).sort();
+}
+
+function haveDifferentEvidenceIdLists(
+  left: readonly string[] | undefined,
+  right: readonly string[] | undefined,
+) {
+  const normalizedLeft = normalizeEvidenceIdList(left);
+  const normalizedRight = normalizeEvidenceIdList(right);
+
+  if (normalizedLeft.length !== normalizedRight.length) {
+    return true;
+  }
+
+  return normalizedLeft.some((id, index) => id !== normalizedRight[index]);
+}
+
+function buildFeedbackEvidenceStateFromResponse(params: {
+  response: DiningFeedbackDraft['dishResponses'][string];
+  tbaAnalysisFields: ReturnType<typeof getFeedbackItemTbaAnalysisFields>;
+}): TasteBuddyAgentFeedbackEvidenceState {
+  const response = params.response;
+  const selectedExperienceIds = getFeedbackEvidenceSelectedExperienceIds(response);
+
+  return {
+    detailTagIds: [
+      ...(response.selectedDetailTagIds ?? []),
+      ...flattenCustomDetailTags(response.customDetailTags),
+    ],
+    dishKindIds: response.selectedDishKindIds ?? [],
+    signalIds: params.tbaAnalysisFields.tba_signal_ids,
+    snapshot: params.tbaAnalysisFields.tba_analysis_snapshot,
+    tasteTagIds: [
+      response.selectedChoiceId ?? null,
+      ...selectedExperienceIds,
+    ].filter((id): id is string => Boolean(id)),
+    tbaConfidence: params.tbaAnalysisFields.tba_confidence,
+  };
+}
+
+function buildFeedbackEvidenceStateFromRow(
+  row: FeedbackItemEvidenceQueryRow | null,
+): TasteBuddyAgentFeedbackEvidenceState | null {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    detailTagIds: readStringArray(row.selected_detail_tag_ids),
+    dishKindIds: readStringArray(row.selected_dish_kind_ids),
+    signalIds: readStringArray(row.tba_signal_ids),
+    snapshot: readTbaAnalysisSnapshot(row.tba_analysis_snapshot),
+    tasteTagIds: [
+      ...readStringArray(row.selected_tag_ids),
+      ...readStringArray(row.selected_experience_ids),
+    ],
+    tbaConfidence: readNullableNumber(row.tba_confidence),
+  };
+}
+
+function readRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function readFeedbackEvidenceEventType(
+  value: string,
+): TasteBuddyAgentFeedbackEvidenceEventType {
+  const allowedTypes: TasteBuddyAgentFeedbackEvidenceEventType[] = [
+    'created',
+    'updated',
+    'deleted',
+    'taste_tags_changed',
+    'detail_tags_changed',
+    'dish_kind_tags_changed',
+    'dining_note_regenerated',
+  ];
+
+  return allowedTypes.includes(value as TasteBuddyAgentFeedbackEvidenceEventType)
+    ? value as TasteBuddyAgentFeedbackEvidenceEventType
+    : 'updated';
+}
+
+function readFeedbackEvidenceAction(value: string): TasteBuddyAgentFeedbackEvidenceAction {
+  const allowedActions: TasteBuddyAgentFeedbackEvidenceAction[] = [
+    'include',
+    'adjust',
+    'remove',
+    'ignore',
+  ];
+
+  return allowedActions.includes(value as TasteBuddyAgentFeedbackEvidenceAction)
+    ? value as TasteBuddyAgentFeedbackEvidenceAction
+    : 'ignore';
+}
+
+function readConfidenceEffect(value: unknown): TasteBuddyAgentFeedbackEvidenceConfidenceEffect | null {
+  const record = readRecord(value);
+
+  if (!record.action || typeof record.action !== 'string') {
+    return null;
+  }
+
+  return record as unknown as TasteBuddyAgentFeedbackEvidenceConfidenceEffect;
+}
+
+function mapTbaFeedbackEvidenceEventRow(
+  row: TbaFeedbackEvidenceEventQueryRow,
+): TasteBuddyAgentFeedbackEvidenceEvent {
+  const payload = readRecord(row.payload);
+
+  return {
+    confidenceDelta: readNullableNumber(row.confidence_delta) ?? 0,
+    confidenceEffect: readConfidenceEffect(row.confidence_effect),
+    createdAt: row.created_at ?? undefined,
+    eventType: readFeedbackEvidenceEventType(row.event_type),
+    evidenceAction: readFeedbackEvidenceAction(row.evidence_action),
+    id: row.id,
+    nextDishKindIds: readStringArray(payload.nextDishKindIds),
+    nextSignalIds: readStringArray(row.next_tba_signal_ids),
+    nextSnapshot: readTbaAnalysisSnapshot(row.next_snapshot),
+    previousDishKindIds: readStringArray(payload.previousDishKindIds),
+    previousSignalIds: readStringArray(row.previous_tba_signal_ids),
+    previousSnapshot: readTbaAnalysisSnapshot(row.previous_snapshot),
+  };
+}
+
+function mapUserTbaConfidenceStateRow(
+  row: UserTbaConfidenceStateQueryRow,
+): TasteBuddyAgentUserConfidenceState | null {
+  if (
+    !['tba-signal', 'lexicon', 'dish-kind', 'foodon', 'food-knowledge'].includes(row.signal_type) ||
+    !row.signal_id
+  ) {
+    return null;
+  }
+
+  return {
+    adjustCount: Number(row.adjust_count ?? 0),
+    confidence: readNullableNumber(row.confidence) ?? 0.5,
+    evidenceCount: Number(row.evidence_count ?? 0),
+    label: row.label ?? undefined,
+    lastEvidenceAt: row.last_evidence_at ?? undefined,
+    lastEventId: row.last_event_id ?? undefined,
+    payload: readRecord(row.payload),
+    removeCount: Number(row.remove_count ?? 0),
+    signalId: row.signal_id,
+    signalType: row.signal_type as TasteBuddyAgentUserConfidenceState['signalType'],
+    supportCount: Number(row.support_count ?? 0),
+  };
+}
+
+function getFeedbackEvidenceSnapshotFingerprint(
+  state: TasteBuddyAgentFeedbackEvidenceState | null,
+) {
+  const snapshot = state?.snapshot;
+
+  if (!snapshot) {
+    return '';
+  }
+
+  return JSON.stringify({
+    detailTags: snapshot.detailTags.map((tag) => tag.id),
+    foodKnowledgeMatchIds: snapshot.foodKnowledgeMatchIds,
+    foodOnMatchIds: snapshot.foodOnMatchIds,
+    lexiconCandidateIds: snapshot.lexiconCandidateIds,
+    summary: snapshot.summary,
+    tasteBubbles: snapshot.tasteBubbles.map((tag) => tag.id),
+    tbaSignalIds: snapshot.tbaSignalIds,
+    version: snapshot.version,
+  });
+}
+
+function inferTbaFeedbackEvidenceEventType(params: {
+  next: TasteBuddyAgentFeedbackEvidenceState;
+  previous: TasteBuddyAgentFeedbackEvidenceState | null;
+}): TasteBuddyAgentFeedbackEvidenceEventType {
+  if (!params.previous) {
+    return 'created';
+  }
+
+  if (haveDifferentEvidenceIdLists(params.previous.tasteTagIds, params.next.tasteTagIds)) {
+    return 'taste_tags_changed';
+  }
+
+  if (haveDifferentEvidenceIdLists(params.previous.detailTagIds, params.next.detailTagIds)) {
+    return 'detail_tags_changed';
+  }
+
+  if (haveDifferentEvidenceIdLists(params.previous.dishKindIds, params.next.dishKindIds)) {
+    return 'dish_kind_tags_changed';
+  }
+
+  if (
+    getFeedbackEvidenceSnapshotFingerprint(params.previous) !==
+    getFeedbackEvidenceSnapshotFingerprint(params.next)
+  ) {
+    return 'dining_note_regenerated';
+  }
+
+  return 'updated';
+}
+
+async function fetchFeedbackItemEvidenceRow(
+  feedbackSubmissionId: string,
+  reservationDishId: string,
+): Promise<FeedbackItemEvidenceQueryRow | null> {
+  if (!supabase) {
+    return null;
+  }
+
+  const fetchRow = (selectDetails: boolean, selectTbaAnalysis: boolean) =>
+    supabase
+      .from('feedback_items')
+      .select(`
+        id,
+        selected_tag_ids,
+        ${selectDetails
+          ? `
+        selected_experience_ids,
+        selected_detail_tag_ids,
+        selected_dish_kind_ids,
+        `
+          : ''}
+        ${selectTbaAnalysis
+          ? `
+        tba_analysis_snapshot,
+        tba_signal_ids,
+        tba_confidence
+        `
+          : ''}
+      `)
+      .eq('feedback_submission_id', feedbackSubmissionId)
+      .eq('reservation_dish_id', reservationDishId)
+      .maybeSingle();
+
+  let { data, error } = await fetchRow(true, true);
+
+  if (error && isFeedbackItemTbaAnalysisSchemaError(error)) {
+    ({ data, error } = await fetchRow(true, false));
+  }
+
+  if (error && isFeedbackItemDetailSchemaError(error)) {
+    ({ data, error } = await fetchRow(false, false));
+  }
+
+  if (error) {
+    console.warn('Failed to fetch previous TBA feedback evidence.', error);
+    return null;
+  }
+
+  return (data as FeedbackItemEvidenceQueryRow | null) ?? null;
+}
+
+async function upsertUserTbaConfidenceStates(
+  userId: string,
+  states: readonly TasteBuddyAgentUserConfidenceState[],
+) {
+  if (!supabase || states.length === 0) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from('user_tba_confidence_states')
+    .upsert(
+      states.map((state) => ({
+        user_id: userId,
+        signal_type: state.signalType,
+        signal_id: state.signalId,
+        label: state.label ?? null,
+        confidence: state.confidence,
+        evidence_count: state.evidenceCount,
+        support_count: state.supportCount,
+        adjust_count: state.adjustCount,
+        remove_count: state.removeCount,
+        last_evidence_at: state.lastEvidenceAt ?? null,
+        last_event_id: state.lastEventId ?? null,
+        payload: state.payload ?? {},
+      })),
+      {
+        onConflict: 'user_id,signal_type,signal_id',
+      },
+    );
+
+  if (error && isUserTbaConfidenceStateSchemaError(error)) {
+    console.warn('User TBA confidence state table is not ready yet.', error);
+    return;
+  }
+
+  if (error) {
+    console.warn('Failed to upsert user TBA confidence states.', error);
+  }
+}
+
+async function refreshUserTbaConfidenceStates(userId: string) {
+  if (!supabase) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('tba_feedback_evidence_events')
+    .select(`
+      id,
+      event_type,
+      evidence_action,
+      previous_snapshot,
+      next_snapshot,
+      previous_tba_signal_ids,
+      next_tba_signal_ids,
+      confidence_delta,
+      confidence_effect,
+      payload,
+      created_at
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(500);
+
+  if (error && isTbaFeedbackEvidenceEventSchemaError(error)) {
+    return;
+  }
+
+  if (error) {
+    console.warn('Failed to refresh TBA feedback evidence events.', error);
+    return;
+  }
+
+  const events = ((data ?? []) as TbaFeedbackEvidenceEventQueryRow[])
+    .slice()
+    .reverse()
+    .map(mapTbaFeedbackEvidenceEventRow);
+  const states = TBA.aggregateFeedbackEvidenceEvents({ events });
+
+  await upsertUserTbaConfidenceStates(userId, states);
+}
+
+async function recordTbaFeedbackEvidenceEvent(params: {
+  eventType: TasteBuddyAgentFeedbackEvidenceEventType;
+  feedbackItemId: string | null;
+  feedbackSubmissionId: string;
+  next: TasteBuddyAgentFeedbackEvidenceState | null;
+  payload?: Record<string, unknown>;
+  previous: TasteBuddyAgentFeedbackEvidenceState | null;
+  reservationDishId: string;
+  reservationId: string;
+  userId: string;
+}) {
+  if (!supabase) {
+    return;
+  }
+
+  const confidenceEffect = TBA.calculateFeedbackEvidenceConfidenceEffect({
+    eventType: params.eventType,
+    next: params.next,
+    previous: params.previous,
+  });
+  if (confidenceEffect.action === 'ignore') {
+    return;
+  }
+
+  const { error } = await supabase
+    .from('tba_feedback_evidence_events')
+    .insert({
+      user_id: params.userId,
+      reservation_id: params.reservationId,
+      feedback_submission_id: params.feedbackSubmissionId,
+      feedback_item_id: params.feedbackItemId,
+      reservation_dish_id: params.reservationDishId,
+      event_type: params.eventType,
+      evidence_action: confidenceEffect.action,
+      previous_snapshot: params.previous?.snapshot ?? null,
+      next_snapshot: params.next?.snapshot ?? null,
+      previous_tba_signal_ids: params.previous?.signalIds ?? [],
+      next_tba_signal_ids: params.next?.signalIds ?? [],
+      previous_tba_confidence: params.previous?.tbaConfidence ?? null,
+      next_tba_confidence: params.next?.tbaConfidence ?? null,
+      confidence_delta: confidenceEffect.confidenceDelta,
+      confidence_effect: confidenceEffect,
+      payload: {
+        ...params.payload,
+        changedDimensions: confidenceEffect.changedDimensions,
+        nextDetailTagIds: params.next?.detailTagIds ?? [],
+        nextDishKindIds: params.next?.dishKindIds ?? [],
+        nextTasteTagIds: params.next?.tasteTagIds ?? [],
+        previousDetailTagIds: params.previous?.detailTagIds ?? [],
+        previousDishKindIds: params.previous?.dishKindIds ?? [],
+        previousTasteTagIds: params.previous?.tasteTagIds ?? [],
+      },
+    });
+
+  if (error && isTbaFeedbackEvidenceEventSchemaError(error)) {
+    console.warn('TBA feedback evidence event table is not ready yet.', error);
+    return;
+  }
+
+  if (error) {
+    console.warn('Failed to record TBA feedback evidence event.', error);
+    return;
+  }
+
+  await refreshUserTbaConfidenceStates(params.userId);
+}
+
+function getLegacyFeedbackTagIds(
+  dish: DiningDishMetadata,
+  response: DiningFeedbackDraft['dishResponses'][string],
+) {
+  if (response.selectedChoiceId) {
+    return [response.selectedChoiceId];
+  }
+
+  return hasDiningDishFeedbackResponse(response) && dish.feedbackChoices[0]
+    ? [dish.feedbackChoices[0].id]
+    : [];
+}
+
+function isMatchingPlaceIndexRow(row: RestaurantPlaceIndexQueryRow, restaurantName: string) {
+  const targetName = normalizeComparableName(restaurantName);
+  const restaurantRelation = takeSingleRelation(row.restaurants);
+  const candidates = [
+    restaurantRelation?.name,
+    restaurantRelation?.slug,
+    row.normalized_name,
+    row.raw_name,
+  ].map(normalizeComparableName);
+
+  return candidates.some(
+    (candidate) =>
+      candidate &&
+      (candidate.includes(targetName) || targetName.includes(candidate)),
+  );
+}
+
+function buildRestaurantPlaceInfoFromIndex(
+  row: RestaurantPlaceIndexQueryRow,
+): RestaurantPlaceInfo | null {
+  const address = row.road_address || row.formatted_address;
+
+  if (!address) {
+    return null;
+  }
+
+  const placeInfo: RestaurantPlaceInfo = {
+    address,
+    category: row.category ?? undefined,
+    sourceByRow: {
+      address: 'kakao',
+    },
+  };
+
+  if (typeof row.lat === 'number') {
+    placeInfo.lat = row.lat;
+  }
+
+  if (typeof row.lng === 'number') {
+    placeInfo.lng = row.lng;
+  }
+
+  if (row.provider_url) {
+    placeInfo.mapUrl = row.provider_url;
+  }
+
+  if (row.provider === 'kakao' && row.provider_place_id) {
+    placeInfo.kakaoPlaceId = row.provider_place_id;
+  }
+
+  if (row.phone) {
+    placeInfo.phone = row.phone;
+    placeInfo.sourceByRow.phone = 'kakao';
+  }
+
+  return placeInfo;
+}
+
+async function lookupLiveKakaoPlaceInfo(
+  restaurantName: string,
+  placeIndexMatch?: RestaurantPlaceIndexQueryRow,
+): Promise<RestaurantPlaceInfo | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return null;
+  }
+
+  const query = placeIndexMatch?.raw_name || restaurantName;
+  const { data, error } = await supabase.functions.invoke<KakaoPlaceLookupResponse>(
+    'kakao-place-lookup',
+    {
+      body: {
+        expectedPlaceId:
+          placeIndexMatch?.provider === 'kakao'
+            ? placeIndexMatch.provider_place_id ?? undefined
+            : undefined,
+        query,
+      },
+    },
+  );
+
+  if (error) {
+    console.warn('Failed to hydrate live Kakao place info.', error);
+    return null;
+  }
+
+  const place = data?.place;
+  const address = place?.roadAddress || place?.address;
+
+  if (!place || !address) {
+    return null;
+  }
+
+  const placeInfo: RestaurantPlaceInfo = {
+    address,
+    category: place.category ?? undefined,
+    kakaoPlaceId: place.placeId ?? undefined,
+    sourceByRow: {
+      address: 'kakao',
+    },
+  };
+
+  if (typeof place.lat === 'number') {
+    placeInfo.lat = place.lat;
+  }
+
+  if (typeof place.lng === 'number') {
+    placeInfo.lng = place.lng;
+  }
+
+  if (place.placeUrl) {
+    placeInfo.mapUrl = place.placeUrl;
+  }
+
+  if (place.phone) {
+    placeInfo.phone = place.phone;
+    placeInfo.sourceByRow.phone = 'kakao';
+  }
+
+  return placeInfo;
+}
+
+async function lookupGooglePlaceEnrichment(
+  restaurantName: string,
+  basePlaceInfo: RestaurantPlaceInfo | null,
+): Promise<Partial<RestaurantPlaceInfo> | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return null;
+  }
+
+  const { data, error } = await supabase.functions.invoke<GooglePlaceEnrichResponse>(
+    'google-place-enrich',
+    {
+      body: {
+        address: basePlaceInfo?.address,
+        lat: basePlaceInfo?.lat,
+        lng: basePlaceInfo?.lng,
+        phone: basePlaceInfo?.phone,
+        query: restaurantName,
+      },
+    },
+  );
+
+  if (error) {
+    console.warn('Failed to hydrate Google place enrichment.', error);
+    return null;
+  }
+
+  const place = data?.place;
+
+  if (!place) {
+    return null;
+  }
+
+  const enrichment: Partial<RestaurantPlaceInfo> = {
+    sourceByRow: {},
+  };
+
+  if (place.hours) {
+    enrichment.hours = place.hours;
+    enrichment.sourceByRow = {
+      ...enrichment.sourceByRow,
+      hours: 'google',
+    };
+  }
+
+  if (place.website) {
+    enrichment.website = place.website;
+    enrichment.sourceByRow = {
+      ...enrichment.sourceByRow,
+      website: 'google',
+    };
+  }
+
+  if (!basePlaceInfo?.phone && place.phone) {
+    enrichment.phone = place.phone;
+    enrichment.sourceByRow = {
+      ...enrichment.sourceByRow,
+      phone: 'google',
+    };
+  }
+
+  if (place.googleMapsUrl) {
+    enrichment.googleMapsUrl = place.googleMapsUrl;
+  }
+
+  if (place.placeId) {
+    enrichment.googlePlaceId = place.placeId;
+  }
+
+  if (place.photo) {
+    enrichment.googlePhoto = {
+      attributions: place.photo.attributions,
+      heightPx: place.photo.heightPx,
+      name: place.photo.name,
+      url: place.photo.url,
+      widthPx: place.photo.widthPx,
+    };
+  }
+
+  if (typeof place.rating === 'number') {
+    enrichment.rating = place.rating;
+  }
+
+  if (typeof place.userRatingCount === 'number') {
+    enrichment.userRatingCount = place.userRatingCount;
+  }
+
+  if (place.priceLevel) {
+    enrichment.priceLevel = place.priceLevel;
+  }
+
+  return enrichment;
+}
+
+function mergePlaceInfo(
+  basePlaceInfo: RestaurantPlaceInfo | null,
+  enrichment: Partial<RestaurantPlaceInfo> | null,
+) {
+  if (!basePlaceInfo) {
+    return null;
+  }
+
+  if (!enrichment) {
+    return basePlaceInfo;
+  }
+
+  return {
+    ...basePlaceInfo,
+    ...enrichment,
+    sourceByRow: {
+      ...basePlaceInfo.sourceByRow,
+      ...enrichment.sourceByRow,
+    },
+  } satisfies RestaurantPlaceInfo;
+}
+
+export async function hydrateRestaurantPlaceInfo(
+  restaurantName: string,
+): Promise<RestaurantPlaceInfo | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('restaurant_place_index')
+    .select(
+      'id, provider, provider_place_id, normalized_name, raw_name, formatted_address, road_address, lat, lng, phone, category, provider_url, restaurants(name, slug)',
+    )
+    .order('last_synced_at', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    console.warn('Failed to hydrate restaurant place info from Supabase.', error);
+    return lookupLiveKakaoPlaceInfo(restaurantName);
+  }
+
+  const rows = (data ?? []) as RestaurantPlaceIndexQueryRow[];
+  const match = rows.find((row) => isMatchingPlaceIndexRow(row, restaurantName));
+  const livePlaceInfo = await lookupLiveKakaoPlaceInfo(restaurantName, match);
+  const basePlaceInfo = livePlaceInfo ?? (match ? buildRestaurantPlaceInfoFromIndex(match) : null);
+  const googleEnrichment = await lookupGooglePlaceEnrichment(restaurantName, basePlaceInfo);
+
+  return mergePlaceInfo(basePlaceInfo, googleEnrichment);
+}
+
+export async function searchKakaoRestaurantPlaces(
+  query: string,
+): Promise<KakaoPlaceSearchResult[]> {
+  if (!supabase || !isSupabaseConfigured) {
+    return [];
+  }
+
+  const normalizedQuery = query.trim();
+
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  const { data, error } = await supabase.functions.invoke<{
+    places?: KakaoPlaceSearchResult[];
+    place?: KakaoPlaceSearchResult | null;
+  }>('kakao-place-lookup', {
+    body: {
+      includeCandidates: true,
+      query: normalizedQuery,
+    },
+  });
+
+  if (error) {
+    console.warn('Failed to search Kakao restaurant places.', error);
+    return [];
+  }
+
+  if (Array.isArray(data?.places)) {
+    return data.places;
+  }
+
+  return data?.place ? [data.place] : [];
 }
 
 function formatReservationDateParts(dateIso: string) {
@@ -498,7 +1829,7 @@ function mapReservationStatusFromDb(status: string): ReservationStatus {
     case 'ready':
       return 'ready';
     case 'preparing':
-      return 'preparing';
+      return 'ready';
     case 'draft':
     case 'confirmed':
     case 'cancelled':
@@ -552,7 +1883,7 @@ function buildGenericTcsStatus(status: ReservationStatus) {
     case 'ready':
       return '셰프 가이드가 준비되었습니다';
     case 'preparing':
-      return '셰프가 보정 전략을 준비 중입니다';
+      return '셰프 가이드가 준비되었습니다';
     case 'upcoming':
     default:
       return '예약이 확정되었습니다';
@@ -569,7 +1900,7 @@ function buildGenericDiningPromise(
   }
 
   if (status === 'preparing' || status === 'ready') {
-    return `${courseName}에서 현재 프로필이 더 자연스럽게 전달되도록 셰프가 참고할 수 있는 개인화 가이드가 준비되고 있어요.`;
+    return `${courseName}에서 현재 프로필이 더 자연스럽게 전달되도록 셰프가 참고할 수 있는 개인화 가이드가 준비됐어요.`;
   }
 
   return `${restaurantName} 예약은 현재 프로필을 바탕으로 더 잘 맞는 다이닝 흐름을 준비할 수 있는 상태예요.`;
@@ -760,6 +2091,13 @@ function findReservationCatalogMatch(row: ReservationQueryRow) {
   );
 }
 
+function findKnownChefForRestaurant(restaurantName: string) {
+  return (
+    RESERVATION_CATALOG.find((reservation) => reservation.restaurant === restaurantName)?.chef ??
+    null
+  );
+}
+
 function isContentSeedExternalRef(externalRef: string | null | undefined) {
   return externalRef?.startsWith('content-seed:') ?? false;
 }
@@ -769,22 +2107,30 @@ function mapReservationRowToRecord(row: ReservationQueryRow): ReservationRecord 
   const { date, time } = formatReservationDateParts(row.reservation_at);
   const status = mapReservationStatusFromDb(row.status);
   const rawRestaurantName = takeSingleRelation(row.restaurants)?.name ?? null;
-  const rawChefName = takeSingleRelation(row.chefs)?.display_name ?? null;
+  const chefRelation = takeSingleRelation(row.chefs);
+  const rawChefName = chefRelation?.display_name ?? null;
+  const rawChefAvatarPath = chefRelation?.avatar_path ?? null;
   const restaurantName =
     rawRestaurantName !== null
       ? localizeRestaurantName(rawRestaurantName)
       : fallbackReservation?.restaurant ?? '예약된 레스토랑';
   const chefName =
-    rawChefName !== null ? localizeChefName(rawChefName) : fallbackReservation?.chef ?? '셰프 미정';
+    rawChefName !== null
+      ? localizeChefName(rawChefName)
+      : fallbackReservation?.chef ?? findKnownChefForRestaurant(restaurantName) ?? '셰프 미정';
 
   return {
     id:
+      parseRestaurantFeedbackSubmissionId(row.external_ref) ??
       fallbackReservation?.id ??
       parseMockReservationExternalRef(row.external_ref) ??
       hashTextToNumericId(row.id),
     restaurant: restaurantName,
     chef: chefName,
-    chefImage: fallbackReservation?.chefImage ?? null,
+    chefImage:
+      resolvePublicMediaPath(rawChefAvatarPath) ??
+      getChefImageByName(chefName) ??
+      fallbackReservation?.chefImage,
     date,
     time,
     externalRef: row.external_ref,
@@ -820,7 +2166,7 @@ async function fetchReservationRows(userId: string) {
       course_name,
       status,
       restaurants(name),
-      chefs(display_name)
+      chefs(display_name, avatar_path)
     `)
     .eq('user_id', userId)
     .order('reservation_at', { ascending: true });
@@ -963,20 +2309,54 @@ async function hydrateFeedbackDrafts(
     return {};
   }
 
-  const { data, error } = await supabase
-    .from('feedback_submissions')
-    .select(`
-      reservation_id,
-      overall_rating,
-      overall_comment,
-      return_intent,
-      feedback_items(
-        rating,
-        selected_tag_ids,
-        reservation_dishes(sort_order)
-      )
-    `)
-    .in('reservation_id', Array.from(reservationIdMap.keys()));
+  const fetchFeedbackSubmissions = (selectDetails: boolean, selectTbaAnalysis: boolean) =>
+    supabase
+      .from('feedback_submissions')
+      .select(`
+        reservation_id,
+        overall_rating,
+        overall_comment,
+        return_intent,
+        feedback_items(
+          rating,
+          updated_at,
+          selected_tag_ids,
+          ${selectDetails
+            ? `
+          selected_experience_ids,
+          selected_detail_tag_ids,
+          selected_dish_kind_ids,
+          custom_dish_kind_labels,
+          custom_detail_tags,
+          reflection_note,
+          reflection_photo_name,
+          reflection_photo_preview_url,
+          `
+            : ''}
+          ${selectTbaAnalysis
+            ? `
+          tba_analysis_snapshot,
+          tba_signal_ids,
+          tba_foodon_match_ids,
+          tba_lexicon_candidate_ids,
+          tba_confidence,
+          tba_analysis_version,
+          `
+            : ''}
+          reservation_dishes(sort_order)
+        )
+      `)
+      .in('reservation_id', Array.from(reservationIdMap.keys()));
+
+  let { data, error } = await fetchFeedbackSubmissions(true, true);
+
+  if (error && isFeedbackItemTbaAnalysisSchemaError(error)) {
+    ({ data, error } = await fetchFeedbackSubmissions(true, false));
+  }
+
+  if (error && isFeedbackItemDetailSchemaError(error)) {
+    ({ data, error } = await fetchFeedbackSubmissions(false, false));
+  }
 
   if (error) {
     console.warn('Failed to hydrate feedback drafts from Supabase.', error);
@@ -1010,13 +2390,28 @@ async function hydrateFeedbackDrafts(
         continue;
       }
 
-      const selectedTagId = Array.isArray(feedbackItem.selected_tag_ids)
-        ? feedbackItem.selected_tag_ids.find((value): value is string => typeof value === 'string') ?? null
-        : null;
+      const selectedTagIds = readStringArray(feedbackItem.selected_tag_ids);
+      const selectedExperienceIds = readStringArray(feedbackItem.selected_experience_ids);
 
       draft.dishResponses[scenarioDish.id] = {
+        customDetailTags: readStringArrayRecord(feedbackItem.custom_detail_tags),
+        customDishKindLabels: feedbackItem.custom_dish_kind_labels ?? [],
+        feedbackUpdatedAt: feedbackItem.updated_at ?? null,
         rating: feedbackItem.rating,
-        selectedChoiceId: selectedTagId,
+        reflectionNote: feedbackItem.reflection_note ?? '',
+        reflectionPhotoName: feedbackItem.reflection_photo_name,
+        reflectionPhotoPreviewUrl: feedbackItem.reflection_photo_preview_url,
+        selectedChoiceId: selectedTagIds[0] ?? null,
+        selectedDetailTagIds: readStringArray(feedbackItem.selected_detail_tag_ids),
+        selectedDishKindIds: readStringArray(feedbackItem.selected_dish_kind_ids),
+        selectedExperienceId: selectedExperienceIds[0] ?? null,
+        selectedExperienceIds,
+        tbaAnalysisSnapshot: readTbaAnalysisSnapshot(feedbackItem.tba_analysis_snapshot),
+        tbaAnalysisVersion: feedbackItem.tba_analysis_version ?? null,
+        tbaConfidence: readNullableNumber(feedbackItem.tba_confidence),
+        tbaFoodOnMatchIds: readStringArray(feedbackItem.tba_foodon_match_ids),
+        tbaLexiconCandidateIds: readStringArray(feedbackItem.tba_lexicon_candidate_ids),
+        tbaSignalIds: readStringArray(feedbackItem.tba_signal_ids),
       };
     }
 
@@ -1157,6 +2552,16 @@ async function getAuthenticatedUserId() {
   return session?.user.id ?? null;
 }
 
+async function getHydrationUserId() {
+  const session = await getCurrentSupabaseSession();
+
+  if (!session || isAnonymousSupabaseSession(session)) {
+    return null;
+  }
+
+  return session.user.id ?? null;
+}
+
 async function getOrCreateRestaurantId(reservation: ReservationPersistenceInput) {
   if (!supabase) {
     return null;
@@ -1274,6 +2679,10 @@ async function upsertReservationDishes(reservationId: string, dishes: readonly D
     return new Map<string, string>();
   }
 
+  if (dishes.length === 0) {
+    return new Map<string, string>();
+  }
+
   const rows = dishes.map((dish, index) => ({
     reservation_id: reservationId,
     course_position: mapCoursePosition(dish.courseLabel),
@@ -1327,54 +2736,75 @@ export async function hydrateReservationPageData(): Promise<HydratedReservationP
     };
   }
 
-  const userId = await getAuthenticatedUserId();
+  try {
+    const userId = await getHydrationUserId();
 
-  if (!userId) {
+    if (!userId) {
+      return {
+        reservations: [],
+        feedbackByReservationId: {},
+        feedbackScenariosByReservationId: {},
+      };
+    }
+
+    let rows = await fetchReservationRows(userId);
+
+    const shouldSeedContentReservations =
+      rows.length === 0 ||
+      rows.every((row) => parseMockReservationExternalRef(row.external_ref) !== null);
+
+    if (shouldSeedContentReservations) {
+      await syncReservationCatalogToSupabase(userId);
+      rows = await fetchReservationRows(userId);
+    }
+
+    const hasContentSeedReservations = rows.some(
+      (row) => isContentSeedExternalRef(row.external_ref),
+    );
+    const visibleRows = hasContentSeedReservations
+      ? rows.filter((row) => parseMockReservationExternalRef(row.external_ref) === null)
+      : rows;
+
+    const reservationIdMap = new Map<string, number>();
+    const reservations = visibleRows.map((row) => {
+      const reservation = mapReservationRowToRecord(row);
+      reservationIdMap.set(row.id, reservation.id);
+      return reservation;
+    });
+    const reservationDishRows = await fetchReservationDishRows(visibleRows.map((row) => row.id));
+    const feedbackScenariosByReservationId = buildHydratedFeedbackScenarioMap({
+      reservationDishRows,
+      reservationIdMap,
+      reservations,
+    });
+    const feedbackByReservationId = await hydrateFeedbackDrafts(
+      reservationIdMap,
+      feedbackScenariosByReservationId,
+    );
+
     return {
-      reservations: [],
+      reservations,
+      feedbackByReservationId,
+      feedbackScenariosByReservationId,
+    };
+  } catch (error) {
+    console.warn('Failed to hydrate reservation page data from Supabase.', error);
+
+    return {
+      reservations: RESERVATION_CATALOG,
       feedbackByReservationId: {},
-      feedbackScenariosByReservationId: {},
+      feedbackScenariosByReservationId: RESERVATION_CATALOG.reduce<Record<number, DiningFeedbackScenario>>(
+        (scenarios, reservation) => {
+          const scenario = getDiningFeedbackScenario(reservation.id);
+          if (scenario) {
+            scenarios[reservation.id] = scenario;
+          }
+          return scenarios;
+        },
+        {},
+      ),
     };
   }
-
-  let rows = await fetchReservationRows(userId);
-
-  const shouldSeedContentReservations =
-    rows.length === 0 ||
-    rows.every((row) => parseMockReservationExternalRef(row.external_ref) !== null);
-
-  if (shouldSeedContentReservations) {
-    await syncReservationCatalogToSupabase(userId);
-    rows = await fetchReservationRows(userId);
-  }
-
-  const hasContentSeedReservations = rows.some((row) => isContentSeedExternalRef(row.external_ref));
-  const visibleRows = hasContentSeedReservations
-    ? rows.filter((row) => parseMockReservationExternalRef(row.external_ref) === null)
-    : rows;
-
-  const reservationIdMap = new Map<string, number>();
-  const reservations = visibleRows.map((row) => {
-    const reservation = mapReservationRowToRecord(row);
-    reservationIdMap.set(row.id, reservation.id);
-    return reservation;
-  });
-  const reservationDishRows = await fetchReservationDishRows(visibleRows.map((row) => row.id));
-  const feedbackScenariosByReservationId = buildHydratedFeedbackScenarioMap({
-    reservationDishRows,
-    reservationIdMap,
-    reservations,
-  });
-  const feedbackByReservationId = await hydrateFeedbackDrafts(
-    reservationIdMap,
-    feedbackScenariosByReservationId,
-  );
-
-  return {
-    reservations,
-    feedbackByReservationId,
-    feedbackScenariosByReservationId,
-  };
 }
 
 export async function hydrateLatestMeasurementSnapshot() {
@@ -1382,7 +2812,7 @@ export async function hydrateLatestMeasurementSnapshot() {
     return null;
   }
 
-  const userId = await getAuthenticatedUserId();
+  const userId = await getHydrationUserId();
 
   if (!userId) {
     return null;
@@ -1428,7 +2858,7 @@ export async function hydrateRecentMeasurementSnapshots(limit = 6) {
     return [] as TasteMeasurementSnapshot[];
   }
 
-  const userId = await getAuthenticatedUserId();
+  const userId = await getHydrationUserId();
 
   if (!userId) {
     return [] as TasteMeasurementSnapshot[];
@@ -1488,7 +2918,96 @@ export async function hydrateRecentMeasurementSnapshots(limit = 6) {
     }));
 }
 
-export async function hydrateRestaurantContentCatalog(): Promise<RestaurantContentCatalog> {
+export async function hydrateUserLearnedCalibration(): Promise<UserLearnedCalibration | null> {
+  if (!supabase || !isSupabaseConfigured) {
+    return null;
+  }
+
+  const userId = await getHydrationUserId();
+
+  if (!userId) {
+    return null;
+  }
+
+  const { data: deltaRow, error: deltaError } = await supabase
+    .from('user_learned_deltas')
+    .select(
+      'perception_taste_delta, perception_perceptual_delta, preference_taste_delta, preference_perceptual_delta, support_count, hypothesis_count, updated_at',
+    )
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (deltaError) {
+    console.warn('Failed to hydrate learned taste calibration from Supabase.', deltaError);
+    return null;
+  }
+
+  if (!deltaRow) {
+    return createEmptyUserLearnedCalibration();
+  }
+
+  return {
+    perceptionTasteDelta: readNumericRecord(TASTE_IDS, deltaRow.perception_taste_delta) as SignedTasteVector,
+    perceptionPerceptualDelta: readNumericRecord(
+      PERCEPTUAL_AXES,
+      deltaRow.perception_perceptual_delta,
+    ) as SignedPerceptualVector,
+    preferenceTasteDelta: readNumericRecord(TASTE_IDS, deltaRow.preference_taste_delta) as SignedTasteVector,
+    preferencePerceptualDelta: readNumericRecord(
+      PERCEPTUAL_AXES,
+      deltaRow.preference_perceptual_delta,
+    ) as SignedPerceptualVector,
+    supportCount: Number(deltaRow.support_count ?? 0),
+    hypothesisCount: Number(deltaRow.hypothesis_count ?? 0),
+    updatedAt: deltaRow.updated_at ?? undefined,
+  };
+}
+
+export async function hydrateUserTbaConfidenceStates(): Promise<TasteBuddyAgentUserConfidenceState[]> {
+  if (!supabase || !isSupabaseConfigured) {
+    return [];
+  }
+
+  const userId = await getHydrationUserId();
+
+  if (!userId) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('user_tba_confidence_states')
+    .select(
+      'signal_type, signal_id, label, confidence, evidence_count, support_count, adjust_count, remove_count, last_evidence_at, last_event_id, payload',
+    )
+    .eq('user_id', userId)
+    .order('confidence', { ascending: false })
+    .limit(80);
+
+  if (error && isUserTbaConfidenceStateSchemaError(error)) {
+    console.warn('User TBA confidence state table is not ready yet.', error);
+    return [];
+  }
+
+  if (error) {
+    console.warn('Failed to hydrate user TBA confidence states.', error);
+    return [];
+  }
+
+  return ((data ?? []) as UserTbaConfidenceStateQueryRow[])
+    .map(mapUserTbaConfidenceStateRow)
+    .filter((state): state is TasteBuddyAgentUserConfidenceState => Boolean(state));
+}
+
+export async function hydrateRestaurantContentCatalog(
+  options: { bypassCache?: boolean } = {},
+): Promise<RestaurantContentCatalog> {
+  if (!options.bypassCache) {
+    const cachedCatalog = readCachedRestaurantContentCatalog();
+    if (cachedCatalog) {
+      return cachedCatalog;
+    }
+  }
+
   if (!supabase || !isSupabaseConfigured) {
     return { chefs: [], dishes: [] };
   }
@@ -1496,16 +3015,16 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
   const [chefResponse, dishResponse] = await Promise.all([
     supabase
       .from('chefs')
-      .select('display_name, restaurants(name, slug)')
+      .select('id, display_name, avatar_path, restaurants(name, slug)')
       .eq('is_active', true),
     supabase
       .from('dish_entities')
       .select(
-        'id, public_title, public_subtitle, season_label, course_position, status, restaurants(name, slug), dish_observed_facts(fact_type, value_text, value_json), dish_inference_profiles(confidence, taste_vector)',
+        'id, public_title, public_subtitle, season_label, course_position, status, restaurants(name, slug), dish_observed_facts(fact_type, value_text, value_json), dish_inference_profiles(confidence, taste_vector, perceptual_vector)',
       )
       .eq('status', 'active')
       .order('season_label', { ascending: false })
-      .limit(120),
+      .limit(500),
   ]);
 
   if (chefResponse.error) {
@@ -1520,7 +3039,14 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
 
   const chefRows = (chefResponse.data ?? []) as ContentChefQueryRow[];
   const dishRows = (dishResponse.data ?? []) as ContentDishQueryRow[];
-  const primaryChefByRestaurantSlug = new Map<string, string>();
+  const primaryChefByRestaurantSlug = new Map<
+    string,
+    {
+      avatarPath: string | null;
+      id: string | null;
+      name: string;
+    }
+  >();
 
   for (const row of chefRows) {
     const restaurantRelation = takeSingleRelation(row.restaurants);
@@ -1531,7 +3057,11 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       continue;
     }
 
-    primaryChefByRestaurantSlug.set(restaurantSlug, localizedChefName);
+    primaryChefByRestaurantSlug.set(restaurantSlug, {
+      avatarPath: row.avatar_path,
+      id: row.id ?? null,
+      name: localizedChefName,
+    });
   }
 
   const dishes = dishRows
@@ -1539,7 +3069,11 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       const restaurantRelation = takeSingleRelation(row.restaurants);
       const restaurantSlug = restaurantRelation?.slug ?? 'unknown-restaurant';
       const restaurantName = localizeRestaurantName(restaurantRelation?.name);
-      const chefName = primaryChefByRestaurantSlug.get(restaurantSlug) ?? '셰프 미정';
+      const chef = primaryChefByRestaurantSlug.get(restaurantSlug) ?? {
+        avatarPath: null,
+        id: null,
+        name: '셰프 미정',
+      };
       const title = localizeDishTitle(row.public_title);
 
       if (!title) {
@@ -1548,11 +3082,11 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
 
       const ingredients = extractObservedFactValues(row.dish_observed_facts, 'ingredients');
       const profile = takeSingleRelation(row.dish_inference_profiles);
-      const tasteVector = createZeroTasteVector();
-
-      for (const tasteId of TASTE_IDS) {
-        tasteVector[tasteId] = Number(profile?.taste_vector?.[tasteId] ?? 0);
-      }
+      const tasteVector = readNumericRecord(TASTE_IDS, profile?.taste_vector);
+      const perceptualVector = readNumericRecord(
+        PERCEPTUAL_AXES,
+        profile?.perceptual_vector,
+      ) as PerceptualVector;
 
       return {
         id: row.id,
@@ -1560,13 +3094,16 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
         subtitle: buildLocalizedSubtitle(title, row.public_subtitle, ingredients),
         restaurant: restaurantName,
         restaurantSlug,
-        chef: chefName,
+        chef: chef.name,
+        chefAvatarPath: chef.avatarPath,
+        chefId: chef.id,
         ingredients,
         confidence: Number(profile?.confidence ?? 0.5),
         coursePosition: row.course_position ?? 'other',
         courseLabel: formatCoursePositionLabel(row.course_position),
         seasonLabel: row.season_label,
         tasteVector,
+        perceptualVector,
         dominantTaste: getDominantTasteFromVector(profile?.taste_vector),
       };
     })
@@ -1679,6 +3216,8 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       seenChefKeys.add(key);
 
       return {
+        avatarPath: row.avatar_path,
+        id: row.id,
         name,
         restaurant,
         restaurantSlug,
@@ -1705,15 +3244,20 @@ export async function hydrateRestaurantContentCatalog(): Promise<RestaurantConte
       return left.restaurant.localeCompare(right.restaurant, 'ko');
     });
 
-  return {
+  const catalog = {
     chefs,
     dishes: sortedDishes,
   };
+
+  writeCachedRestaurantContentCatalog(catalog);
+
+  return catalog;
 }
 
 export async function persistTasteMeasurementSnapshot(
   snapshot: TasteMeasurementSnapshot,
   source: MeasurementSource,
+  options: MeasurementPersistenceOptions = {},
 ) {
   if (!supabase || !isSupabaseConfigured) {
     return false;
@@ -1725,7 +3269,7 @@ export async function persistTasteMeasurementSnapshot(
     return false;
   }
 
-  const confidenceScore = source === 'teastick' ? 0.82 : source === 'quick_calibration' ? 0.68 : 0.55;
+  const confidenceScore = source === 'tastick' ? 0.82 : source === 'quick_calibration' ? 0.68 : 0.55;
 
   const { data: sessionRow, error: sessionError } = await supabase
     .from('measurement_sessions')
@@ -1738,6 +3282,7 @@ export async function persistTasteMeasurementSnapshot(
       confidence_score: confidenceScore,
       raw_payload: {
         persisted_from: 'taste-buddy-app',
+        ...(options.rawPayload ?? {}),
       },
     })
     .select('id')
@@ -1771,11 +3316,26 @@ export async function persistTasteMeasurementSnapshot(
   return true;
 }
 
-export async function submitDiningFeedbackToSupabase(input: {
+interface SubmitDiningFeedbackInput {
   draft: DiningFeedbackDraft;
   reservation: ReservationPersistenceInput;
   scenario: DiningFeedbackScenario;
-}): Promise<FeedbackSubmissionResult> {
+  createOnly?: boolean;
+  expectedUserId?: string;
+}
+
+export async function submitDiningFeedbackToSupabase(input: SubmitDiningFeedbackInput): Promise<FeedbackSubmissionResult> {
+  const userId = await getAuthenticatedUserId();
+  if (input.expectedUserId && input.expectedUserId !== userId) {
+    throw new Error('The signed-in account changed before feedback could be saved.');
+  }
+  return serializeFeedbackMutation(
+    `${userId}:${input.reservation.externalRef ?? input.reservation.remoteId ?? input.reservation.id}`,
+    () => persistDiningFeedbackToSupabase({ ...input, expectedUserId: userId ?? undefined }),
+  );
+}
+
+async function persistDiningFeedbackToSupabase(input: SubmitDiningFeedbackInput): Promise<FeedbackSubmissionResult> {
   if (!supabase || !isSupabaseConfigured) {
     return {
       persisted: false,
@@ -1785,6 +3345,10 @@ export async function submitDiningFeedbackToSupabase(input: {
 
   const userId = await getAuthenticatedUserId();
 
+  if (input.expectedUserId && input.expectedUserId !== userId) {
+    throw new Error('The signed-in account changed before feedback could be saved.');
+  }
+
   if (!userId) {
     return {
       persisted: false,
@@ -1793,7 +3357,24 @@ export async function submitDiningFeedbackToSupabase(input: {
   }
 
   const reservationId = await getOrCreateReservationId(userId, input.reservation);
-  const reservationDishIds = await upsertReservationDishes(reservationId, input.scenario.dishes);
+  if (input.createOnly) {
+    const { data: existing, error } = await supabase.from('feedback_submissions')
+      .select('client_submission_completed_at')
+      .eq('reservation_id', reservationId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) throw error;
+    // A retry after a lost acknowledgement must never overwrite a later edit/delete.
+    if (existing?.client_submission_completed_at) {
+      return { persisted: true, remoteId: reservationId, reservationSignalReasons: [] };
+    }
+  }
+  const persistableDraft = await uploadFeedbackReflectionPhotos({
+    draft: input.draft,
+    reservationId,
+  });
+  const feedbackDishes = getPersistableFeedbackDishes(input.scenario, persistableDraft);
+  const reservationDishIds = await upsertReservationDishes(reservationId, feedbackDishes);
 
   const { data: feedbackSubmission, error: feedbackSubmissionError } = await supabase
     .from('feedback_submissions')
@@ -1801,9 +3382,9 @@ export async function submitDiningFeedbackToSupabase(input: {
       {
         reservation_id: reservationId,
         user_id: userId,
-        overall_rating: input.draft.overallRating,
-        overall_comment: input.draft.overallComment,
-        return_intent: input.draft.returnIntent,
+        overall_rating: persistableDraft.overallRating,
+        overall_comment: persistableDraft.overallComment,
+        return_intent: persistableDraft.returnIntent,
       },
       {
         onConflict: 'reservation_id',
@@ -1817,37 +3398,98 @@ export async function submitDiningFeedbackToSupabase(input: {
   }
 
   const feedbackObservations = [];
+  let shouldPersistFeedbackItemDetails = true;
 
-  for (const dish of input.scenario.dishes) {
-    const response = input.draft.dishResponses[dish.id];
+  for (const dish of feedbackDishes) {
+    const response = persistableDraft.dishResponses[dish.id];
     const reservationDishId = reservationDishIds.get(dish.id);
 
-    if (!response || !reservationDishId) {
+    if (!response || !reservationDishId || !hasDiningDishFeedbackResponse(response)) {
       continue;
     }
 
     const selectedChoice = dish.feedbackChoices.find((choice) => choice.id === response.selectedChoiceId);
+    const selectedExperienceIds = getFeedbackEvidenceSelectedExperienceIds(response);
     const parsedReaction = parseFeedbackSelections(
       selectedChoice ? [{ tagId: selectedChoice.id }] : [],
     );
+    const previousFeedbackItemRow = await fetchFeedbackItemEvidenceRow(
+      feedbackSubmission.id,
+      reservationDishId,
+    );
+    const previousEvidenceState = buildFeedbackEvidenceStateFromRow(previousFeedbackItemRow);
+    const tbaAnalysisFields = getFeedbackItemTbaAnalysisFields({
+      dish,
+      response,
+      selectedChoice: selectedChoice ?? null,
+    });
+    const nextEvidenceState = buildFeedbackEvidenceStateFromResponse({
+      response,
+      tbaAnalysisFields,
+    });
+    const baseFeedbackItemRow = {
+      feedback_submission_id: feedbackSubmission.id,
+      reservation_dish_id: reservationDishId,
+      rating: response.rating,
+      selected_tag_ids: shouldPersistFeedbackItemDetails
+        ? response.selectedChoiceId ? [response.selectedChoiceId] : []
+        : getLegacyFeedbackTagIds(dish, response),
+      selected_reason: selectedChoice?.label ?? null,
+      comment: selectedChoice?.reason ?? null,
+    };
+    const detailedFeedbackItemRow = {
+      ...baseFeedbackItemRow,
+      selected_experience_ids: [...new Set(selectedExperienceIds)],
+      selected_detail_tag_ids: response.selectedDetailTagIds ?? [],
+      selected_dish_kind_ids: response.selectedDishKindIds ?? [],
+      custom_dish_kind_labels: response.customDishKindLabels ?? [],
+      custom_detail_tags: response.customDetailTags ?? {},
+      reflection_note: response.reflectionNote?.trim() || null,
+      reflection_photo_name: response.reflectionPhotoName ?? null,
+      reflection_photo_preview_url: response.reflectionPhotoPreviewUrl ?? null,
+      ...tbaAnalysisFields,
+    };
 
-    const { data: feedbackItem, error: feedbackItemError } = await supabase
+    let { data: feedbackItem, error: feedbackItemError } = await supabase
       .from('feedback_items')
       .upsert(
-        {
-          feedback_submission_id: feedbackSubmission.id,
-          reservation_dish_id: reservationDishId,
-          rating: response.rating,
-          selected_tag_ids: selectedChoice ? [selectedChoice.id] : [],
-          selected_reason: selectedChoice?.label ?? null,
-          comment: selectedChoice?.reason ?? null,
-        },
+        shouldPersistFeedbackItemDetails ? detailedFeedbackItemRow : baseFeedbackItemRow,
         {
           onConflict: 'feedback_submission_id,reservation_dish_id',
         },
       )
       .select('id')
       .single();
+
+    if (feedbackItemError && isFeedbackItemTbaAnalysisSchemaError(feedbackItemError)) {
+      ({ data: feedbackItem, error: feedbackItemError } = await supabase
+        .from('feedback_items')
+        .upsert(
+          stripFeedbackItemTbaAnalysisFields(detailedFeedbackItemRow),
+          {
+            onConflict: 'feedback_submission_id,reservation_dish_id',
+          },
+        )
+        .select('id')
+        .single());
+    }
+
+    if (feedbackItemError && isFeedbackItemDetailSchemaError(feedbackItemError)) {
+      shouldPersistFeedbackItemDetails = false;
+      ({ data: feedbackItem, error: feedbackItemError } = await supabase
+        .from('feedback_items')
+        .upsert(
+          {
+            ...baseFeedbackItemRow,
+            selected_tag_ids: getLegacyFeedbackTagIds(dish, response),
+          },
+          {
+            onConflict: 'feedback_submission_id,reservation_dish_id',
+          },
+        )
+        .select('id')
+        .single());
+    }
 
     if (feedbackItemError) {
       throw feedbackItemError;
@@ -1874,6 +3516,26 @@ export async function submitDiningFeedbackToSupabase(input: {
       throw parseError;
     }
 
+    await recordTbaFeedbackEvidenceEvent({
+      eventType: inferTbaFeedbackEvidenceEventType({
+        next: nextEvidenceState,
+        previous: previousEvidenceState,
+      }),
+      feedbackItemId: feedbackItem.id,
+      feedbackSubmissionId: feedbackSubmission.id,
+      next: nextEvidenceState,
+      payload: {
+        dishId: dish.id,
+        dishTitle: dish.title,
+        restaurantName: input.reservation.restaurant,
+        selectedChoiceId: response.selectedChoiceId,
+      },
+      previous: previousEvidenceState,
+      reservationDishId,
+      reservationId,
+      userId,
+    });
+
     feedbackObservations.push({
       rating: response.rating,
       daysSinceDining: Math.max(
@@ -1889,57 +3551,177 @@ export async function submitDiningFeedbackToSupabase(input: {
   }
 
   const reservationSignal = computeReservationLearningSignal(feedbackObservations);
-
-  const { data: existingDeltaRow, error: existingDeltaError } = await supabase
-    .from('user_learned_deltas')
-    .select(
-      'perception_taste_delta, perception_perceptual_delta, preference_taste_delta, preference_perceptual_delta, support_count, hypothesis_count',
-    )
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (existingDeltaError) {
-    throw existingDeltaError;
-  }
-
-  const currentCalibration = existingDeltaRow
-    ? {
-        perceptionTasteDelta: existingDeltaRow.perception_taste_delta ?? createEmptyUserLearnedCalibration().perceptionTasteDelta,
-        perceptionPerceptualDelta:
-          existingDeltaRow.perception_perceptual_delta ?? createEmptyUserLearnedCalibration().perceptionPerceptualDelta,
-        preferenceTasteDelta:
-          existingDeltaRow.preference_taste_delta ?? createEmptyUserLearnedCalibration().preferenceTasteDelta,
-        preferencePerceptualDelta:
-          existingDeltaRow.preference_perceptual_delta ?? createEmptyUserLearnedCalibration().preferencePerceptualDelta,
-        supportCount: existingDeltaRow.support_count ?? 0,
-        hypothesisCount: existingDeltaRow.hypothesis_count ?? 0,
-      }
-    : createEmptyUserLearnedCalibration();
-
-  const learningUpdate = updateUserLearnedCalibration(currentCalibration, reservationSignal);
-
-  const { error: learnedDeltaError } = await supabase.from('user_learned_deltas').upsert(
-    {
-      user_id: userId,
-      perception_taste_delta: learningUpdate.next.perceptionTasteDelta,
-      perception_perceptual_delta: learningUpdate.next.perceptionPerceptualDelta,
-      preference_taste_delta: learningUpdate.next.preferenceTasteDelta,
-      preference_perceptual_delta: learningUpdate.next.preferencePerceptualDelta,
-      support_count: learningUpdate.next.supportCount,
-      hypothesis_count: learningUpdate.next.hypothesisCount,
-      confidence: learningUpdate.confidence,
-    },
-    {
-      onConflict: 'user_id',
-    },
-  );
-
-  if (learnedDeltaError) {
-    throw learnedDeltaError;
-  }
+  const { error: completionError } = await supabase.from('feedback_submissions')
+    .update({ client_submission_completed_at: new Date().toISOString() })
+    .eq('id', feedbackSubmission.id)
+    .eq('user_id', userId);
+  if (completionError) throw completionError;
 
   return {
     persisted: true,
+    remoteId: reservationId,
     reservationSignalReasons: reservationSignal.reasons,
   };
+}
+
+interface ClearDiningFeedbackInput {
+  dish: DiningDishMetadata;
+  draft: DiningFeedbackDraft;
+  reservation: ReservationPersistenceInput;
+  scenario: DiningFeedbackScenario;
+}
+
+export async function clearDiningFeedbackItemInSupabase(input: ClearDiningFeedbackInput) {
+  const userId = await getAuthenticatedUserId();
+  return serializeFeedbackMutation(
+    `${userId}:${input.reservation.externalRef ?? input.reservation.remoteId ?? input.reservation.id}`,
+    () => clearPersistedDiningFeedbackItem(input, userId),
+  );
+}
+
+async function clearPersistedDiningFeedbackItem(
+  input: ClearDiningFeedbackInput,
+  expectedUserId: string | null,
+): Promise<{ persisted: boolean; remoteId?: string }> {
+  if (!supabase || !isSupabaseConfigured) {
+    return { persisted: false };
+  }
+
+  const userId = await getAuthenticatedUserId();
+
+  if (userId !== expectedUserId) throw new Error('The signed-in account changed before feedback could be deleted.');
+
+  if (!userId) {
+    return { persisted: false };
+  }
+
+  const reservationId = await getOrCreateReservationId(userId, input.reservation);
+
+  if (!reservationId) {
+    return { persisted: false };
+  }
+
+  const persistableDishes = getPersistableFeedbackDishes(input.scenario, input.draft);
+  const feedbackDishes = persistableDishes.some((dish) => dish.id === input.dish.id)
+    ? persistableDishes
+    : [...persistableDishes, input.dish];
+  const reservationDishIds = await upsertReservationDishes(reservationId, feedbackDishes);
+  const reservationDishId = reservationDishIds.get(input.dish.id);
+
+  if (!reservationDishId) {
+    return { persisted: false };
+  }
+
+  const { data: feedbackSubmission, error: feedbackSubmissionError } = await supabase
+    .from('feedback_submissions')
+    .select('id')
+    .eq('reservation_id', reservationId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (feedbackSubmissionError) {
+    throw feedbackSubmissionError;
+  }
+
+  if (!feedbackSubmission) {
+    return { persisted: false };
+  }
+
+  const previousFeedbackItemRow = await fetchFeedbackItemEvidenceRow(
+    feedbackSubmission.id,
+    reservationDishId,
+  );
+  const previousEvidenceState = buildFeedbackEvidenceStateFromRow(previousFeedbackItemRow);
+  const clearedResponse = createDiningDishFeedbackDraft(input.dish);
+  const clearedEvidenceState: TasteBuddyAgentFeedbackEvidenceState = {
+    detailTagIds: [],
+    dishKindIds: [],
+    signalIds: [],
+    snapshot: null,
+    tasteTagIds: [],
+    tbaConfidence: null,
+  };
+  const baseFeedbackItemRow = {
+    feedback_submission_id: feedbackSubmission.id,
+    reservation_dish_id: reservationDishId,
+    rating: clearedResponse.rating,
+    selected_tag_ids: [],
+    selected_reason: null,
+    comment: null,
+  };
+  const detailedFeedbackItemRow = {
+    ...baseFeedbackItemRow,
+    selected_experience_ids: [],
+    selected_detail_tag_ids: [],
+    selected_dish_kind_ids: clearedResponse.selectedDishKindIds ?? [],
+    custom_dish_kind_labels: [],
+    custom_detail_tags: {},
+    reflection_note: null,
+    reflection_photo_name: null,
+    reflection_photo_preview_url: null,
+    ...getClearedFeedbackItemTbaAnalysisFields(),
+  };
+
+  let { data: feedbackItem, error: feedbackItemError } = await supabase
+    .from('feedback_items')
+    .upsert(detailedFeedbackItemRow, {
+      onConflict: 'feedback_submission_id,reservation_dish_id',
+    })
+    .select('id')
+    .single();
+
+  if (feedbackItemError && isFeedbackItemTbaAnalysisSchemaError(feedbackItemError)) {
+    ({ data: feedbackItem, error: feedbackItemError } = await supabase
+      .from('feedback_items')
+      .upsert(stripFeedbackItemTbaAnalysisFields(detailedFeedbackItemRow), {
+        onConflict: 'feedback_submission_id,reservation_dish_id',
+      })
+      .select('id')
+      .single());
+  }
+
+  if (feedbackItemError && isFeedbackItemDetailSchemaError(feedbackItemError)) {
+    ({ data: feedbackItem, error: feedbackItemError } = await supabase
+      .from('feedback_items')
+      .upsert(baseFeedbackItemRow, {
+        onConflict: 'feedback_submission_id,reservation_dish_id',
+      })
+      .select('id')
+      .single());
+  }
+
+  if (feedbackItemError) {
+    throw feedbackItemError;
+  }
+
+  // The server derives learning from current parses; clearing a dish must clear its parse too.
+  const emptyParse = parseFeedbackSelections([]);
+  const { error: parseError } = await supabase.from('feedback_parses').upsert({
+    feedback_item_id: feedbackItem.id,
+    perception_taste_delta: emptyParse.perceptionTasteDelta,
+    perception_perceptual_delta: emptyParse.perceptionPerceptualDelta,
+    preference_taste_delta: emptyParse.preferenceTasteDelta,
+    preference_perceptual_delta: emptyParse.preferencePerceptualDelta,
+    confidence: 0,
+    rationale: emptyParse.rationale,
+  }, { onConflict: 'feedback_item_id' });
+  if (parseError) throw parseError;
+
+  await recordTbaFeedbackEvidenceEvent({
+    eventType: 'deleted',
+    feedbackItemId: feedbackItem?.id ?? previousFeedbackItemRow?.id ?? null,
+    feedbackSubmissionId: feedbackSubmission.id,
+    next: clearedEvidenceState,
+    payload: {
+      dishId: input.dish.id,
+      dishTitle: input.dish.title,
+      restaurantName: input.reservation.restaurant,
+    },
+    previous: previousEvidenceState,
+    reservationDishId,
+    reservationId,
+    userId,
+  });
+
+  return { persisted: true, remoteId: reservationId };
 }

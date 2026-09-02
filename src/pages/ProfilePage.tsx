@@ -1,69 +1,60 @@
 import { useEffect, useState } from 'react';
 import {
-  SettingsRegular,
-  ChevronRightRegular,
-  BluetoothRegular,
-  Battery5Regular,
-  ArrowSyncRegular,
-  AlertRegular,
-  QuestionCircleRegular,
-  InfoRegular,
-  TrophyRegular,
-  ChatRegular,
-  CalendarRegular,
-  StarRegular,
-} from '@fluentui/react-icons';
+  Settings as SettingsIcon,
+  Bookmark as BookmarkIcon,
+  CircleCheck as CircleCheckIcon,
+  Trophy as TrophyIcon,
+  Star as StarIcon,
+  UserPlus as UserPlusIcon
+} from 'lucide-react';
 import React from 'react';
+
+import type { AppMenuSupportPanel } from '../components/AppMenuDrawer';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
   return ({ size, style, className, ...props }: any) => (
     <IconComponent
       {...props}
       className={className}
-      style={{ fontSize: size, width: size, height: size, ...style }}
+      style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }}
     />
   );
 };
 
-const Settings = wrapIcon(SettingsRegular);
-const ChevronRight = wrapIcon(ChevronRightRegular);
-const Bluetooth = wrapIcon(BluetoothRegular);
-const Battery = wrapIcon(Battery5Regular);
-const RefreshCw = wrapIcon(ArrowSyncRegular);
-const Bell = wrapIcon(AlertRegular);
-const HelpCircle = wrapIcon(QuestionCircleRegular);
-const Info = wrapIcon(InfoRegular);
-const Award = wrapIcon(TrophyRegular);
-const MessageCircle = wrapIcon(ChatRegular);
-const Calendar = wrapIcon(CalendarRegular);
-const Star = wrapIcon(StarRegular);
-const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
+const Settings = wrapIcon(SettingsIcon);
+const Bookmark = wrapIcon(BookmarkIcon);
+const CircleCheck = wrapIcon(CircleCheckIcon);
+const Award = wrapIcon(TrophyIcon);
+const Star = wrapIcon(StarIcon);
+const UserPlus = wrapIcon(UserPlusIcon);
 
-import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
-import SectionCard from '../components/SectionCard';
-import ChefAvatar from '../components/system/ChefAvatar';
-import OutlineBadge from '../components/system/OutlineBadge';
 import PageSection from '../components/system/PageSection';
-import TasteChip from '../components/system/TasteChip';
+import DiningFriendActionButton from '../components/profile/DiningFriendActionButton';
+import PalateBloomAvatar, {
+  createPalateBloomProfileFromMeasurementSnapshot,
+  type TasteProfile as PalateBloomTasteProfile,
+} from '../components/system/PalateBloomAvatar';
+import SummaryMetricCard from '../components/system/SummaryMetricCard';
+import DiningFriendProfileCard from '../components/profile/DiningFriendProfileCard';
 import { ICON_TOKENS } from '../constants/designTokens';
-import { type ReservationRecord } from '../constants/reservationCatalog';
-import { getTasteColor } from '../constants/tasteColors';
+import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
 import {
-  formatMeasurementDate,
-  formatMeasurementValue,
-  getAverageMeasurementMm,
-  getTasteMeasurementAgeLabel,
-  getTasteMeasurementEntries,
-  getTasteProfileBadge,
-  isBroadStarterMeasurementSnapshot,
-  isTasteMeasurementStale,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
+import { type RestaurantReadyGuidance } from '../constants/quickTasteCalibrationData';
 import {
-  getStarterAxisDisplayLabel,
-  type RestaurantReadyGuidance,
-} from '../constants/quickTasteCalibrationData';
-import { hydrateReservationPageData } from '../lib/tasteBuddySupabase';
+  hydrateRecentMeasurementSnapshots,
+  hydrateReservationPageData,
+} from '../lib/tasteBuddySupabase';
+import {
+  loadRestaurantBookmarks,
+  RESTAURANT_BOOKMARKS_CHANGED_EVENT,
+} from '../components/restaurant/RestaurantBookmarkSheet';
+import { resolvePublicMediaPath } from '../lib/mediaAssets';
+import type {
+  DiningFriendProfile,
+  ProfileConnectionKind,
+} from '../lib/supabase';
 
 interface ProfileStat {
   color: string;
@@ -72,7 +63,17 @@ interface ProfileStat {
   value: string;
 }
 
-interface FavoriteChef {
+export interface ProfileIdentityData {
+  avatarImageDataUrl?: string | null;
+  displayName?: string | null;
+  followerCount?: number;
+  followingCount?: number;
+  nickname?: string | null;
+  palateBloomProfile?: PalateBloomTasteProfile;
+  palateBloomShapeSeed?: string;
+}
+
+export interface FavoriteChef {
   image: string | null;
   matchRate: number;
   name: string;
@@ -80,80 +81,62 @@ interface FavoriteChef {
   taste: string;
 }
 
-function formatChefName(name: string) {
-  return name.endsWith('셰프') ? name : `${name} 셰프`;
-}
+const DEFAULT_PROFILE_IDENTITY: Required<Pick<ProfileIdentityData, 'displayName' | 'followerCount' | 'followingCount'>> = {
+  displayName: 'Taste Buddy Guest',
+  followerCount: 0,
+  followingCount: 0,
+};
 
-function parseReservationDisplayDate(dateText: string) {
-  const [year, month, day] = dateText.split('.');
-  if (!year || !month || !day) {
-    return null;
-  }
-
-  const parsedDate = new Date(`${year}-${month}-${day}T00:00:00+09:00`);
-  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
-}
-
-function deriveFavoriteChefs(reservations: ReservationRecord[]): FavoriteChef[] {
-  const chefMap = new Map<string, FavoriteChef>();
-
-  for (const reservation of reservations) {
-    const key = `${reservation.chef}:${reservation.restaurant}`;
-    const existing = chefMap.get(key);
-
-    if (!existing || reservation.matchRate > existing.matchRate) {
-      chefMap.set(key, {
-        name: reservation.chef,
-        restaurant: reservation.restaurant,
-        image: reservation.chefImage,
-        matchRate: reservation.matchRate,
-        taste: reservation.adjustments[0]?.taste ?? '감칠맛',
-      });
-    }
-  }
-
-  return Array.from(chefMap.values())
-    .sort((left, right) => right.matchRate - left.matchRate)
-    .slice(0, 3);
+function formatSocialCount(count: number | null | undefined) {
+  return Math.max(0, count ?? 0).toLocaleString('ko-KR');
 }
 
 function deriveProfileStats(
-  reservations: ReservationRecord[],
+  measurementSnapshots: TasteMeasurementSnapshot[],
   feedbackCount: number,
+  savedListCount: number,
   averageRating: number | null,
 ): ProfileStat[] {
-  const reservationCount = reservations.length;
-  const reservationDates = reservations
-    .map((reservation) => parseReservationDisplayDate(reservation.date))
-    .filter((date): date is Date => date !== null)
-    .sort((left, right) => left.getTime() - right.getTime());
-  const firstReservationDate = reservationDates[0] ?? null;
-  const usageMonths = firstReservationDate
-    ? Math.max(
-        1,
-        Math.floor(
-          (Date.now() - firstReservationDate.getTime()) / (1000 * 60 * 60 * 24 * 30),
-        ),
-      )
-    : 0;
+  return deriveProfileStatsFromCounts({
+    averageRating,
+    feedbackCount,
+    measurementCount: measurementSnapshots.length,
+    savedListCount,
+  });
+}
 
+function deriveProfileStatsFromCounts({
+  averageRating,
+  feedbackCount,
+  listLabel = '테이스트 리스트',
+  listValue,
+  measurementCount,
+  savedListCount,
+}: {
+  averageRating: number | null;
+  feedbackCount: number;
+  listLabel?: string;
+  listValue?: string;
+  measurementCount: number;
+  savedListCount: number;
+}): ProfileStat[] {
   return [
     {
-      label: 'TCS 보정',
-      value: `${reservationCount}회`,
+      label: '미각 기록',
+      value: `${measurementCount}회`,
       icon: Award,
       color: '#FF9900',
     },
     {
-      label: '피드백',
+      label: '다이닝 리뷰',
       value: `${feedbackCount}건`,
-      icon: MessageCircle,
+      icon: CircleCheck,
       color: '#B372B4',
     },
     {
-      label: '이용 기간',
-      value: usageMonths > 0 ? `${usageMonths}개월` : '-',
-      icon: Calendar,
+      label: listLabel,
+      value: listValue ?? `${savedListCount}개`,
+      icon: Bookmark,
       color: '#7299FF',
     },
     {
@@ -165,86 +148,121 @@ function deriveProfileStats(
   ];
 }
 
-const settingsSections = [
-  {
-    title: '미각 관리',
-    items: [
-      { label: '미각 재측정', icon: RefreshCw, desc: '테이스틱으로 미각 민감도 다시 측정' },
-      { label: '보정 알림 설정', icon: Bell, desc: '다이닝 전 미각 측정 알림' },
-    ],
-  },
-  {
-    title: '앱 정보',
-    items: [
-      { label: '도움말', icon: HelpCircle, desc: 'TCS 사용 가이드' },
-      { label: '앱 정보', icon: Info, desc: 'TasteBuddy v1.0.0' },
-    ],
-  },
-];
+function getActualMeasurementSnapshots(
+  hydratedSnapshots: TasteMeasurementSnapshot[],
+  currentSnapshot: TasteMeasurementSnapshot,
+) {
+  if (hydratedSnapshots.length === 0) {
+    return [currentSnapshot];
+  }
+
+  const seenMeasuredAt = new Set<string>();
+  return [...hydratedSnapshots, currentSnapshot].filter((snapshot) => {
+    if (seenMeasuredAt.has(snapshot.measuredAt)) {
+      return false;
+    }
+
+    seenMeasuredAt.add(snapshot.measuredAt);
+    return true;
+  });
+}
+
+function getAverageFeedbackRating(feedbackEntries: DiningFeedbackDraft[]) {
+  if (feedbackEntries.length === 0) {
+    return null;
+  }
+
+  return (
+    feedbackEntries.reduce((sum, feedback) => sum + feedback.overallRating, 0) /
+    feedbackEntries.length
+  );
+}
 
 interface ProfilePageProps {
   measurementSnapshot: TasteMeasurementSnapshot;
   starterGuidance?: RestaurantReadyGuidance | null;
+  profileIdentity?: ProfileIdentityData;
+  onOpenSupportPanel?: (panel: AppMenuSupportPanel) => void;
   onStartMeasurement: () => void;
   onNavigateToReservation?: (chefName: string) => void;
+  onOpenRestaurantDetail?: (chef: FavoriteChef) => void;
   onOpenNotifications?: () => void;
   onOpenMenu?: () => void;
+  onOpenProfileSettings?: () => void;
+  onOpenSavedList?: () => void;
+  onAddFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
+  onRemoveFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
+  activeConnectionView?: ProfileConnectionKind | null;
+  selectedConnectionProfile?: DiningFriendProfile | null;
+  onConnectionViewChange?: (kind: ProfileConnectionKind | null) => void;
+  onSelectedConnectionProfileChange?: (friend: DiningFriendProfile | null) => void;
+  onLoadConnections?: (kind: ProfileConnectionKind) => Promise<{
+    ok: boolean;
+    friends: DiningFriendProfile[];
+    message: string;
+  }>;
   hasUnreadNotifications?: boolean;
 }
 
 export default function ProfilePage({
   measurementSnapshot,
-  starterGuidance = null,
-  onStartMeasurement,
-  onNavigateToReservation,
-  onOpenNotifications,
-  onOpenMenu,
-  hasUnreadNotifications,
+  profileIdentity,
+  onOpenProfileSettings,
+  onOpenSavedList,
+  onAddFriend,
+  onRemoveFriend,
+  activeConnectionView = null,
+  selectedConnectionProfile = null,
+  onConnectionViewChange,
+  onSelectedConnectionProfileChange,
+  onLoadConnections,
 }: ProfilePageProps) {
-  const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
-  const myTasteEntries = getTasteMeasurementEntries(measurementSnapshot);
-  const myTaste = myTasteEntries.map((entry) => ({
-    maxValue: 10,
-    taste: entry.label,
-    value: entry.valueMm,
-    qualitative:
-      isBroadStarterProfile
-        ? getStarterAxisDisplayLabel(entry.valueMm)
-        : entry.valueMm >= entry.averageMm + 0.5
-          ? '반응 빠름'
-          : entry.valueMm <= entry.averageMm - 0.5
-            ? '부드럽게 반응'
-            : '균형적',
-  }));
-  const averageMeasurement = getAverageMeasurementMm(measurementSnapshot);
-  const tasteProfileBadge = getTasteProfileBadge(averageMeasurement);
-  const needsMeasurementRefresh = isTasteMeasurementStale(measurementSnapshot);
-  const measurementAgeLabel = getTasteMeasurementAgeLabel(measurementSnapshot);
-  const [favoriteChefs, setFavoriteChefs] = useState<FavoriteChef[]>([]);
-  const [stats, setStats] = useState<ProfileStat[]>(() => deriveProfileStats([], 0, null));
+  const displayName = profileIdentity?.displayName?.trim() || DEFAULT_PROFILE_IDENTITY.displayName;
+  const nickname = profileIdentity?.nickname?.trim() ?? '';
+  const nicknameLabel = nickname ? `@${nickname}` : '버디네임 미설정';
+  const followerCount = profileIdentity?.followerCount ?? DEFAULT_PROFILE_IDENTITY.followerCount;
+  const followingCount = profileIdentity?.followingCount ?? DEFAULT_PROFILE_IDENTITY.followingCount;
+  const palateBloomShapeSeed = profileIdentity?.palateBloomShapeSeed;
+  const palateBloomProfile =
+    profileIdentity?.palateBloomProfile ??
+    createPalateBloomProfileFromMeasurementSnapshot(
+      measurementSnapshot,
+      nickname || displayName || 'taste-buddy-profile',
+    );
+  const [connectionProfiles, setConnectionProfiles] = useState<DiningFriendProfile[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
+  const [updatingConnectionId, setUpdatingConnectionId] = useState<string | null>(null);
+  const [stats, setStats] = useState<ProfileStat[]>(() =>
+    deriveProfileStats([measurementSnapshot], 0, loadRestaurantBookmarks().length, null),
+  );
 
   useEffect(() => {
     let isCancelled = false;
 
     void (async () => {
-      const hydratedData = await hydrateReservationPageData();
+      const [hydratedData, hydratedMeasurements] = await Promise.all([
+        hydrateReservationPageData(),
+        hydrateRecentMeasurementSnapshots(100),
+      ]);
 
       if (isCancelled) {
         return;
       }
 
       const feedbackEntries = Object.values(hydratedData.feedbackByReservationId);
-      const averageRating =
-        feedbackEntries.length > 0
-          ? feedbackEntries.reduce((sum, feedback) => sum + feedback.overallRating, 0) /
-            feedbackEntries.length
-          : null;
+      const actualMeasurements = getActualMeasurementSnapshots(
+        hydratedMeasurements,
+        measurementSnapshot,
+      );
+      const averageRating = getAverageFeedbackRating(feedbackEntries);
+      const savedListCount = loadRestaurantBookmarks().length;
 
-      setFavoriteChefs(deriveFavoriteChefs(hydratedData.reservations));
       setStats(
         deriveProfileStats(
-          hydratedData.reservations,
+          actualMeasurements,
           feedbackEntries.length,
+          savedListCount,
           averageRating,
         ),
       );
@@ -253,249 +271,346 @@ export default function ProfilePage({
     return () => {
       isCancelled = true;
     };
+  }, [measurementSnapshot]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const syncSavedListCount = () => {
+      const savedListCount = loadRestaurantBookmarks().length;
+
+      setStats((currentStats) =>
+        currentStats.map((stat) =>
+          stat.label === '테이스트 리스트'
+            ? { ...stat, value: `${savedListCount}곳` }
+            : stat,
+        ),
+      );
+    };
+
+    window.addEventListener(RESTAURANT_BOOKMARKS_CHANGED_EVENT, syncSavedListCount);
+    window.addEventListener('storage', syncSavedListCount);
+
+    return () => {
+      window.removeEventListener(RESTAURANT_BOOKMARKS_CHANGED_EVENT, syncSavedListCount);
+      window.removeEventListener('storage', syncSavedListCount);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!activeConnectionView || !onLoadConnections) {
+      return;
+    }
+
+    let isCancelled = false;
+    setConnectionStatus('loading');
+    setConnectionMessage(null);
+
+    void (async () => {
+      const result = await onLoadConnections(activeConnectionView);
+
+      if (isCancelled) {
+        return;
+      }
+
+      setConnectionProfiles(result.friends);
+      setConnectionStatus(result.ok ? 'success' : 'error');
+      setConnectionMessage(result.ok ? null : result.message);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeConnectionView, onLoadConnections]);
+
+  const openConnectionView = (kind: ProfileConnectionKind) => {
+    onConnectionViewChange?.(kind);
+    onSelectedConnectionProfileChange?.(null);
+    setConnectionProfiles([]);
+    setConnectionStatus('idle');
+    setConnectionMessage(null);
+  };
+
+  const handleToggleConnectionFriend = async (friend: DiningFriendProfile) => {
+    const handler = friend.isFriend ? onRemoveFriend : onAddFriend;
+
+    if (!handler) {
+      return;
+    }
+
+    setUpdatingConnectionId(friend.id);
+    const result = await handler(friend);
+    setUpdatingConnectionId((currentId) => (currentId === friend.id ? null : currentId));
+    setConnectionMessage(result.message);
+
+    if (result.ok) {
+      const nextFriend = { ...friend, isFriend: !friend.isFriend };
+
+      setConnectionProfiles((currentProfiles) =>
+        friend.isFriend && activeConnectionView === 'following'
+          ? currentProfiles.filter((item) => item.id !== friend.id)
+          : currentProfiles.map((item) =>
+            item.id === friend.id ? nextFriend : item,
+          ),
+      );
+
+      if (selectedConnectionProfile?.id === friend.id) {
+        onSelectedConnectionProfileChange?.(
+          friend.isFriend && activeConnectionView === 'following' ? null : nextFriend,
+        );
+      }
+    }
+  };
+
+  if (activeConnectionView) {
+    const connectionTitle = activeConnectionView === 'followers' ? '팔로워' : '팔로잉';
+    const emptyDescription =
+      activeConnectionView === 'followers'
+        ? '아직 나를 팔로우한 다이닝 친구가 없습니다.'
+        : '아직 내가 팔로우한 다이닝 친구가 없습니다.';
+
+    if (selectedConnectionProfile) {
+      const selectedProfileName =
+        selectedConnectionProfile.displayName || selectedConnectionProfile.nickname || 'Taste Buddy Guest';
+      const selectedProfileNickname = selectedConnectionProfile.nickname
+        ? `@${selectedConnectionProfile.nickname}`
+        : '버디네임 미설정';
+      const selectedProfileSnapshot = selectedConnectionProfile.latestTasteMeasurementSnapshot;
+      const selectedProfileAvatarSrc = resolvePublicMediaPath(selectedConnectionProfile.avatarPath);
+      const selectedProfileBloom = createPalateBloomProfileFromMeasurementSnapshot(
+        selectedProfileSnapshot,
+        selectedConnectionProfile.id,
+      );
+      const isSeedTasteProfile = selectedConnectionProfile.id.startsWith('taste-dev-');
+      const selectedProfileActionDisabled =
+        isSeedTasteProfile ||
+        updatingConnectionId === selectedConnectionProfile.id ||
+        (selectedConnectionProfile.isFriend ? !onRemoveFriend : !onAddFriend);
+      const selectedProfileActionLabel = selectedConnectionProfile.isFriend
+        ? updatingConnectionId === selectedConnectionProfile.id
+          ? '취소 중'
+          : '팔로잉'
+        : isSeedTasteProfile
+          ? '개발 프로필'
+        : updatingConnectionId === selectedConnectionProfile.id
+          ? '추가 중'
+          : '팔로우';
+      const selectedProfileStats = deriveProfileStatsFromCounts({
+        averageRating: selectedConnectionProfile.activitySummary?.averageRating ?? null,
+        feedbackCount: selectedConnectionProfile.activitySummary?.feedbackCount ?? 0,
+        measurementCount:
+          selectedConnectionProfile.activitySummary?.measurementCount ??
+          (selectedProfileSnapshot ? 1 : 0),
+        savedListCount: selectedConnectionProfile.activitySummary?.savedRestaurantCount ?? 0,
+      });
+      return (
+        <div className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
+              <div className="tb-card-stack">
+                <div className="rounded-[20px] bg-white p-3">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <PalateBloomAvatar
+                        ariaLabel={selectedProfileName}
+                        imageSrc={selectedProfileAvatarSrc}
+                        profile={selectedProfileBloom}
+                        shapeSeed={`${selectedConnectionProfile.id}|${selectedProfileSnapshot?.measuredAt ?? 'no-measurement'}`}
+                        size="lg"
+                      />
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-[16px] font-bold text-[var(--tb-color-text-primary)]">
+                          {selectedProfileName}
+                        </span>
+                        <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                          {selectedProfileNickname}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex min-w-[64px] flex-col rounded-[8px] text-left">
+                        <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                          {formatSocialCount(selectedConnectionProfile.followerCount)}
+                        </span>
+                        <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로워</span>
+                      </div>
+                      <div className="flex min-w-[64px] flex-col rounded-[8px] text-left">
+                        <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                          {formatSocialCount(selectedConnectionProfile.followingCount)}
+                        </span>
+                        <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로잉</span>
+                      </div>
+                      <DiningFriendActionButton
+                        ariaLabel={
+                          selectedConnectionProfile.isFriend ? '팔로잉 취소' : '팔로우'
+                        }
+                        className="ml-auto"
+                        onClick={() => void handleToggleConnectionFriend(selectedConnectionProfile)}
+                        disabled={selectedProfileActionDisabled}
+                        label={selectedProfileActionLabel}
+                        textSize="md"
+                        variant={selectedConnectionProfile.isFriend ? 'neutral' : 'accent'}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <PageSection title="활동 요약" titleSize="md">
+                <div className="grid grid-cols-2 gap-3">
+                  {selectedProfileStats.map((stat) => (
+                    <SummaryMetricCard
+                      key={stat.label}
+                      color={stat.color}
+                      icon={stat.icon}
+                      label={stat.label}
+                      value={stat.value}
+                    />
+                  ))}
+                </div>
+              </PageSection>
+
+              <div className="h-6" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
+        <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-20 pt-5">
+          <div className="flex flex-col gap-3">
+            {connectionStatus === 'loading' ? (
+              <div className="rounded-[20px] bg-white p-4 text-[13px] font-semibold text-[var(--tb-color-text-muted)]">
+                {connectionTitle} 목록을 불러오고 있어요.
+              </div>
+            ) : null}
+
+            {connectionStatus !== 'loading' && connectionProfiles.length === 0 ? (
+              <div className="rounded-[20px] bg-white p-4">
+                <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
+                  {connectionStatus === 'error'
+                    ? `${connectionTitle} 목록을 불러오지 못했어요`
+                    : `${connectionTitle} 목록이 비어 있어요`}
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+                  {connectionMessage ?? emptyDescription}
+                </p>
+              </div>
+            ) : null}
+
+            {connectionProfiles.map((friend) => (
+              <DiningFriendProfileCard
+                key={friend.id}
+                actionAriaLabel={friend.isFriend ? '팔로잉 취소' : '팔로우'}
+                actionDisabled={updatingConnectionId === friend.id || (friend.isFriend ? !onRemoveFriend : !onAddFriend)}
+                actionLabel={
+                  friend.isFriend
+                    ? updatingConnectionId === friend.id
+                      ? '취소 중'
+                      : '팔로잉'
+                    : updatingConnectionId === friend.id
+                      ? '추가 중'
+                      : '팔로우'
+                }
+                actionVariant={friend.isFriend ? 'neutral' : 'accent'}
+                friend={friend}
+                onAction={(selectedFriend) => void handleToggleConnectionFriend(selectedFriend)}
+                onOpenProfile={(selectedFriend) => onSelectedConnectionProfileChange?.(selectedFriend)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
-        <div className="tb-section-stack p-5 animate-fadeIn">
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+        <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
           <div className="tb-card-stack">
-            <div className="flex items-center gap-4">
-              <div className="relative rounded-full size-[64px]">
-                <div className="flex items-center justify-center rounded-full size-[64px] bg-[var(--tb-taste-sweet-bg)]">
-                  <span className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">JH</span>
+            <div className="relative rounded-[20px] bg-white p-3">
+              <button
+                type="button"
+                onClick={onOpenProfileSettings}
+                className="absolute right-3 top-3 flex items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-card)]"
+                style={{
+                  width: ICON_TOKENS.container.lg,
+                  height: ICON_TOKENS.container.lg,
+                }}
+                aria-label="프로필 설정 열기"
+              >
+                <Settings size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
+              </button>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4 pr-12">
+                  <PalateBloomAvatar
+                    ariaLabel={displayName}
+                    imageSrc={profileIdentity?.avatarImageDataUrl}
+                    profile={palateBloomProfile}
+                    shapeSeed={palateBloomShapeSeed}
+                    size="lg"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-[16px] font-bold text-[var(--tb-color-text-primary)]">{displayName}</span>
+                    <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                      {nicknameLabel}
+                    </span>
+                  </div>
                 </div>
-                <div className="pointer-events-none absolute inset-0 rounded-full border border-[var(--tb-color-border-avatar-soft)]" />
-              </div>
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[18px] font-bold text-[var(--tb-color-text-primary)]">신준호</span>
-                <div className="flex items-center gap-2">
-                  <OutlineBadge>{isBroadStarterProfile ? 'Starter Profile' : tasteProfileBadge}</OutlineBadge>
-                  <span className="text-[12px] text-[var(--tb-color-text-muted)]">
-                    {isBroadStarterProfile
-                      ? '일반 식당에서도 바로 쓰는 질문 기반 시작 프로필'
-                      : averageMeasurement > 5
-                        ? '평균보다 민감한 프로필'
-                        : '균형 잡힌 프로필'}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => openConnectionView('followers')}
+                    className="flex min-w-[64px] flex-col rounded-[8px] text-left transition-colors]"
+                  >
+                    <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                      {formatSocialCount(followerCount)}
+                    </span>
+                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로워</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openConnectionView('following')}
+                    className="flex min-w-[64px] flex-col rounded-[8px] text-left transition-colors]"
+                  >
+                    <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                      {formatSocialCount(followingCount)}
+                    </span>
+                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로잉</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onOpenProfileSettings}
+                    className="ml-auto flex h-9 items-center gap-2 rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[12px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                  >
+                    <UserPlus size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
+                    <span>버디 찾기</span>
+                  </button>
                 </div>
-                <p className="mt-[2px] text-[11px] text-[var(--tb-color-text-hint)]">
-                  이 프로필은 다이닝 경험을 통해 더 정교해져요
-                </p>
-              </div>
-              <div className="ml-auto">
-                <button
-                  onClick={() => {
-                    const settingsEl = document.getElementById('profile-settings');
-                    settingsEl?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="flex items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-card)]"
-                  style={{
-                    width: ICON_TOKENS.container.lg,
-                    height: ICON_TOKENS.container.lg,
-                  }}
-                >
-                  <Settings size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
-                </button>
               </div>
             </div>
 
-            <SectionCard>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[12px] bg-[var(--tb-color-surface-muted)]">
-                    <span className="text-[10px] font-bold text-[var(--tb-color-text-primary)]">TB</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">테이스틱</span>
-                    <span className="text-[11px] text-[var(--tb-color-text-muted)]">Teastick Pro</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <Bluetooth size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
-                    <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">연결됨</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Battery size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
-                    <span className="text-[11px] font-medium text-[var(--tb-color-text-secondary)]">87%</span>
-                  </div>
-                </div>
-              </div>
-              <div className="h-px w-full bg-[var(--tb-color-border-strong)]" />
-              <div className="flex items-center justify-between w-full">
-                <span className="text-[12px] text-[var(--tb-color-text-muted)]">마지막 측정</span>
-                <span className="text-[12px] font-medium text-[var(--tb-color-text-primary)]">
-                  {formatMeasurementDate(measurementSnapshot.measuredAt)}
-                </span>
-              </div>
-            </SectionCard>
-
-            <TasteMeasurementMiniCta
-              title={
-                needsMeasurementRefresh
-                  ? isBroadStarterProfile
-                    ? '스타터 프로필을 다시 점검해보세요'
-                    : '미각 재측정이 필요해 보여요'
-                  : isBroadStarterProfile
-                    ? '프로필을 한 번 더 점검할 수 있어요'
-                    : '프로필을 한 번 더 점검할 수 있어요'
-              }
-              description={
-                needsMeasurementRefresh
-                  ? isBroadStarterProfile
-                    ? `${measurementAgeLabel} 질문 기반 시작 프로필이에요. 다시 점검하거나 식사 기록이 쌓이면 추천과 매장 전달 포인트가 더 자연스러워져요.`
-                    : `${measurementAgeLabel} 상태예요. 최신 데이터로 갱신하면 추천과 보정 정확도가 더 좋아져요.`
-                  : isBroadStarterProfile
-                    ? '입맛이 달라졌다면 지금 다시 점검해서 시작 프로필을 더 자연스럽게 유지할 수 있어요.'
-                    : '입맛이 달라졌다면 지금 다시 측정해서 내 프로필을 더 정확하게 유지할 수 있어요.'
-              }
-              meta={`마지막 측정 ${formatMeasurementDate(measurementSnapshot.measuredAt)}`}
-              actionLabel={needsMeasurementRefresh ? '재측정' : '다시 측정'}
-              onAction={onStartMeasurement}
-              tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
-            />
-
-            {starterGuidance ? (
-              <SectionCard hoverEffect={false}>
-                <div className="flex flex-col gap-3 w-full">
-                  <div>
-                    <p className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-                      {starterGuidance.surfaceLabel}
-                    </p>
-                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--tb-color-text-primary)]">
-                      {starterGuidance.summaryLine}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {starterGuidance.topLabels.map((label) => (
-                      <TasteChip key={label} taste={label} value="잘 맞는 쪽" />
-                    ))}
-                    <TasteChip taste={starterGuidance.cautionLabel} value="조심할 포인트" />
-                  </div>
-                </div>
-              </SectionCard>
-            ) : null}
           </div>
 
-          <PageSection title={isBroadStarterProfile ? '지금 잘 받는 맛 강도' : '나의 미각'}>
-            <SectionCard>
-              <div className="flex flex-col gap-3 w-full">
-                {myTaste.map((item, index) => {
-                  const color = getTasteColor(item.taste);
-                  return (
-                    <div key={item.taste} className="flex items-center gap-3 w-full">
-                      <span className="w-[42px] text-[12px] font-medium text-[var(--tb-color-text-primary)]">
-                        {item.taste}
-                      </span>
-                      <div className="h-[8px] flex-1 overflow-hidden rounded-full bg-[var(--tb-color-border-subtle)]">
-                        <div
-                          className="h-full rounded-full transition-all duration-700 animate-grow"
-                          style={{
-                            width: `${(item.value / item.maxValue) * 100}%`,
-                            backgroundColor: color,
-                            animationDelay: `${index * 100}ms`,
-                            animationFillMode: 'both',
-                          }}
-                        />
-                      </div>
-                      <span className="w-[72px] text-right text-[12px] font-semibold" style={{ color }}>
-                        {item.qualitative}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </SectionCard>
-          </PageSection>
-
-          <PageSection title="활동 요약">
+          <PageSection title="활동 요약" titleSize="md">
             <div className="grid grid-cols-2 gap-3">
-              {stats.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <SectionCard key={index}>
-                    <div className="flex items-center gap-2 w-full">
-                      <div
-                        className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[10px]"
-                        style={{ backgroundColor: `${stat.color}20` }}
-                      >
-                        <Icon size={ICON_TOKENS.size.md} strokeWidth={1.5} style={{ color: stat.color }} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[11px] text-[var(--tb-color-text-muted)]">{stat.label}</span>
-                        <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{stat.value}</span>
-                      </div>
-                    </div>
-                  </SectionCard>
-                );
-              })}
-            </div>
-          </PageSection>
-
-          <PageSection title="즐겨찾기 셰프">
-            <div className="flex flex-col gap-3">
-              {favoriteChefs.map((chef, index) => (
-                <SectionCard key={index} onClick={() => onNavigateToReservation?.(chef.name)}>
-                  <div className="flex items-center gap-3 w-full">
-                      <ChefAvatar
-                        alt={chef.name}
-                        className="h-[40px] w-[40px] rounded-[10px]"
-                      iconSize={ICON_TOKENS.size.lg}
-                        imageSrc={chef.image}
-                        taste={chef.taste}
-                        variant="neutral"
-                    />
-                    <div className="flex flex-col flex-1">
-                      <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                        {formatChefName(chef.name)}
-                      </span>
-                      <span className="text-[11px] text-[var(--tb-color-text-muted)]">{chef.restaurant}</span>
-                    </div>
-                    <span className="text-[12px] font-semibold text-[var(--tb-color-text-primary)]">{chef.matchRate}%</span>
-                    <ChevronRight
-                      size={CARD_TRAILING_ICON_SIZE}
-                      className="text-[var(--tb-color-icon-muted)]"
-                    />
-                  </div>
-                </SectionCard>
+              {stats.map((stat) => (
+                <SummaryMetricCard
+                  key={stat.label}
+                  color={stat.color}
+                  icon={stat.icon}
+                  label={stat.label}
+                  onClick={stat.label === '테이스트 리스트' ? onOpenSavedList : undefined}
+                  value={stat.value}
+                />
               ))}
             </div>
           </PageSection>
-
-          {settingsSections.map((section, sectionIndex) => (
-            <PageSection
-              key={section.title}
-              id={sectionIndex === 0 ? 'profile-settings' : undefined}
-              title={section.title}
-            >
-              <div className="flex flex-col gap-3">
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <SectionCard
-                      key={item.label}
-                      onClick={item.label === '미각 재측정' ? onStartMeasurement : undefined}
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <Icon size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-primary)]" />
-                        <div className="flex flex-col flex-1">
-                          <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                            {item.label}
-                          </span>
-                          <span className="text-[11px] text-[var(--tb-color-text-muted)]">{item.desc}</span>
-                        </div>
-                        <ChevronRight
-                          size={CARD_TRAILING_ICON_SIZE}
-                          className="text-[var(--tb-color-icon-muted)]"
-                        />
-                      </div>
-                    </SectionCard>
-                  );
-                })}
-              </div>
-            </PageSection>
-          ))}
 
           <div className="h-6" />
         </div>

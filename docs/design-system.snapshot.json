@@ -1,5 +1,5 @@
 {
-  "version": "2026-04-13",
+  "version": "2026-04-20",
   "purpose": "Fast machine-readable snapshot for AI agents that need to understand the Taste Buddy design system before making UI changes.",
   "source_of_truth": [
     {
@@ -67,6 +67,16 @@
         "measurement_emphasis"
       ]
     },
+    "tintSoft": {
+      "meaning": "Soft taste tint for inline pills and lightweight meta chips",
+      "preferred_usage": [
+        "taste_chip",
+        "calibration_meta_chip"
+      ]
+    },
+    "tintSoftBorder": {
+      "meaning": "Border token paired with tintSoft surfaces"
+    },
     "tintSurface": {
       "meaning": "Soft taste card background",
       "preferred_usage": [
@@ -120,6 +130,7 @@
     },
     "surfaces": {
       "page": "#F3F3F3",
+      "focus": "#FFFFFF",
       "base": "#FFFFFF",
       "card": "#FFFFFF",
       "muted": "#F7F7F7",
@@ -130,7 +141,8 @@
       "success": "#2F8F5B",
       "successSoft": "#E6F4EC",
       "warning": "#A8661A",
-      "warningSoft": "#FFF1DE"
+      "warningSoft": "#FFF1DE",
+      "destructive": "#D4183D"
     }
   },
   "taste_palette": {
@@ -138,6 +150,8 @@
       "label": "단맛",
       "main": "#FF9900",
       "bg": "#FFD699",
+      "tintSoft": "rgba(255, 153, 0, 0.05)",
+      "tintSoftBorder": "rgba(255, 153, 0, 0.18)",
       "tintSurface": "#FFEBCC",
       "tintSurfaceText": "#6F4609",
       "tintSurfaceSubText": "#896735"
@@ -146,6 +160,8 @@
       "label": "신맛",
       "main": "#FBC02D",
       "bg": "#FFEF99",
+      "tintSoft": "rgba(251, 192, 45, 0.05)",
+      "tintSoftBorder": "rgba(251, 192, 45, 0.18)",
       "tintSurface": "#FFF7CC",
       "tintSurfaceText": "#6F5F09",
       "tintSurfaceSubText": "#897C35"
@@ -154,6 +170,8 @@
       "label": "쓴맛",
       "main": "#95C900",
       "bg": "#E0EBB4",
+      "tintSoft": "rgba(149, 201, 0, 0.05)",
+      "tintSoftBorder": "rgba(149, 201, 0, 0.18)",
       "tintSurface": "#EAF4CC",
       "tintSurfaceText": "#505B24",
       "tintSurfaceSubText": "#70794B"
@@ -162,6 +180,8 @@
       "label": "짠맛",
       "main": "#7299FF",
       "bg": "#C6D6FF",
+      "tintSoft": "rgba(114, 153, 255, 0.05)",
+      "tintSoftBorder": "rgba(114, 153, 255, 0.18)",
       "tintSurface": "#E3EBFF",
       "tintSurfaceText": "#36466F",
       "tintSurfaceSubText": "#5A6789"
@@ -170,6 +190,8 @@
       "label": "감칠맛",
       "main": "#B372B4",
       "bg": "#E1C7E1",
+      "tintSoft": "rgba(179, 114, 180, 0.05)",
+      "tintSoftBorder": "rgba(179, 114, 180, 0.18)",
       "tintSurface": "#F0E3F0",
       "tintSurfaceText": "#513751",
       "tintSurfaceSubText": "#705B70"
@@ -178,6 +200,8 @@
       "label": "지방맛",
       "main": "#95867A",
       "bg": "#D5CFCA",
+      "tintSoft": "rgba(149, 134, 122, 0.05)",
+      "tintSoftBorder": "rgba(149, 134, 122, 0.18)",
       "tintSurface": "#EAE7E4",
       "tintSurfaceText": "#453F3A",
       "tintSurfaceSubText": "#66625D"
@@ -214,15 +238,59 @@
       }
     },
     {
+      "id": "chip",
+      "source": "src/components/system/Chip.tsx",
+      "usage": "General product chip for neutral and semantic inline labels",
+      "recipe": {
+        "sizeSet": [
+          "xs",
+          "sm",
+          "md"
+        ],
+        "variantSet": [
+          "soft",
+          "outline",
+          "solid",
+          "text"
+        ],
+        "toneSet": [
+          "neutral",
+          "success",
+          "warning",
+          "accent"
+        ],
+        "sizeRecipe": {
+          "xs": "font 10px / icon 12px / px 8 / py 4 / gap 4",
+          "sm": "font 11px / icon 12px / px 10 / py 6 / gap 6",
+          "md": "font 12px / icon 14px / px 12 / py 8 / gap 8"
+        },
+        "neutralSoft": "surface-muted / border-default / text-muted",
+        "backgroundTokenOverride": "backgroundColorToken",
+        "shape": "9999px pill",
+        "composition": "asChild"
+      }
+    },
+    {
       "id": "taste_chip",
       "source": "src/components/system/TasteChip.tsx",
       "usage": "Small taste tag",
       "recipe": {
-        "border": "rgba(getTasteColor(taste), 0.18)",
-        "background": "rgba(getTasteColor(taste), 0.05)",
+        "border": "taste.palette.tintSoftBorder",
+        "background": "taste.palette.tintSoft",
         "labelColor": "var(--tb-color-text-primary)",
         "valueColor": "getTasteColor(taste)",
         "radius": "9999px"
+      }
+    },
+    {
+      "id": "flow_step_cta",
+      "source": "src/components/system/FlowStepCta.tsx",
+      "usage": "Shared onboarding and taste measurement step footer",
+      "recipe": {
+        "layout": "relative flex min-h-[140px] w-full flex-col items-center justify-end px-5",
+        "indicatorSpacing": "mb-8",
+        "buttonSpacing": "mb-8",
+        "measurementVariant": "active indicator uses taste palette.main while inactive dots stay neutral gray"
       }
     },
     {
@@ -241,7 +309,7 @@
     "Do not exceed 18px font size in product UI.",
     "Do not use taste colors for long body copy.",
     "Do not strongly present all six tastes inside one dense block.",
-    "Start default UI states from neutral, success, or warning before taste tokens.",
+    "Start default UI states from neutral, success, or warning before taste tokens; reserve destructive for danger actions.",
     "Use taste palette only when taste meaning is the point.",
     "If a reusable visual pattern is added, reflect it in the design system preview."
   ],

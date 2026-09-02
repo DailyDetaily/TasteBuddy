@@ -462,8 +462,33 @@ Capture high-value reflection with minimal burden.
 - meaningful
 - framed as future improvement
 - never framed as admin work
+- separate private learning signals from public review/social signals when the UI exposes both
+- reflection photos should feel like memory aids for the dish card, not social proof or lifestyle content
 
-## 10.6 Bottom Sheet
+### Taste Bubble Map Layout Rules
+
+When post-dining feedback uses a bubble map for taste impressions:
+
+- each taste axis should read as a compact triangular silhouette within the shared hex grid
+- adding or removing bubbles must preserve the six triangular axis silhouettes before optimizing individual word proximity
+- boundary words may move within the layout only when they smooth the axis silhouette, not when they make a single bubble protrude from its axis cluster
+- slot overrides should be treated as visual silhouette corrections, not as changes to the word's taste axis, color, meaning, or chef-facing interpretation
+- the full map should remain evenly spaced; never fix one protruding bubble by breaking the global hex-grid rhythm
+
+## 10.6 Public Taste Profile / Match Feed
+
+### Purpose
+
+Use social dining evidence to help the user discover restaurants and dishes through people with interpretable taste similarity.
+
+### Rules
+
+- public profile must be opt-in and should expose interpreted taste identity before raw measurements
+- match feed should explain why a review is relevant to the user's palate, not imply objective quality ranking
+- similarity labels should be confidence-aware and respectful; avoid competitive follower/status framing
+- saved restaurants should support future dining decisions and comparison, not behave like a generic booking wishlist
+
+## 10.7 Bottom Sheet
 
 ### Purpose
 

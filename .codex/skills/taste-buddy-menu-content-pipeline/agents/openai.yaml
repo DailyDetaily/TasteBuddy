@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taste Buddy Menu Content Pipeline"
+  short_description: "Run Taste Buddy menu content pipeline"
+  default_prompt: "Use $taste-buddy-menu-content-pipeline to fetch and prepare reviewed restaurant menu content for Taste Buddy."

@@ -1,6 +1,4 @@
-import chefHwangJeongin from '../assets/HwangJeongin.png';
-import chefLeeEunji from '../assets/LeeEunji.png';
-import chefLimJeongsik from '../assets/LimJeongsik.png';
+import { getChefImageByName } from './chefImages';
 
 export type ReservationStatus = 'upcoming' | 'preparing' | 'ready' | 'completed';
 
@@ -40,35 +38,35 @@ export const RESERVATION_CATALOG: ReservationRecord[] = [
     id: 1,
     restaurant: '레스토랑 베누',
     chef: '황정인',
-    chefImage: chefHwangJeongin,
+    chefImage: getChefImageByName('황정인'),
     date: '2025.03.15',
     time: '저녁 7:00',
     guests: 2,
-    status: 'preparing',
+    status: 'ready',
     course: '시그니처 디너 코스',
     matchRate: 75,
-    tcsStatus: '셰프가 보정 전략을 준비 중입니다',
+    tcsStatus: '셰프 가이드가 준비되었습니다',
     adjustments: [
       { taste: '감칠맛', direction: '살리기' },
       { taste: '짠맛', direction: '정리하기' },
     ],
     diningPromise:
-      '코스의 중심 풍미는 살리되, 피니시는 조금 더 또렷하게 정리해 황정인 셰프의 의도가 더 자연스럽게 전달되도록 준비 중입니다.',
+      '코스의 중심 풍미는 살리되, 피니시는 조금 더 또렷하게 정리해 황정인 셰프의 의도가 더 자연스럽게 전달되도록 준비됐습니다.',
     guestUnderstanding:
       '지금의 프로필은 깊이감은 즐기지만 마무리가 무거워지면 만족이 떨어질 수 있다는 점을 보여줘요.',
     timeline: [
       { step: '예약 확정', done: true },
       { step: '미각 데이터 전달', done: true },
-      { step: '셰프 TCS 준비', done: false, current: true },
+      { step: '셰프 TCS 준비', done: true },
       { step: '사전 미각 측정', done: false },
-      { step: '다이닝 당일', done: false },
+      { step: '다이닝 당일', done: false, current: true },
     ],
   },
   {
     id: 2,
     restaurant: '숍 리제 (Lysée)',
     chef: '이은지',
-    chefImage: chefLeeEunji,
+    chefImage: getChefImageByName('이은지'),
     date: '2025.03.22',
     time: '저녁 6:30',
     guests: 2,
@@ -96,7 +94,7 @@ export const RESERVATION_CATALOG: ReservationRecord[] = [
     id: 3,
     restaurant: '정식당',
     chef: '임정식',
-    chefImage: chefLimJeongsik,
+    chefImage: getChefImageByName('임정식'),
     date: '2025.02.28',
     time: '저녁 7:30',
     guests: 4,

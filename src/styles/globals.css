@@ -16,8 +16,8 @@
   --muted-foreground: #717182;
   --accent: #e9ebef;
   --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
+  --destructive: var(--tb-color-destructive, #d4183d);
+  --destructive-foreground: var(--tb-color-text-inverse, #ffffff);
   --border: rgba(0, 0, 0, 0.1);
   --input: transparent;
   --input-background: #f3f3f5;
@@ -56,8 +56,8 @@
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --destructive: var(--tb-color-destructive, #d4183d);
+  --destructive-foreground: var(--tb-color-text-inverse, #ffffff);
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);
@@ -300,6 +300,298 @@ html {
 .animate-grow {
   animation: grow 0.6s ease-out;
   transform-origin: left;
+}
+
+@keyframes taste-experience-map-veil {
+  0%,
+  48% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes taste-experience-bubble-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  54% {
+    opacity: 1;
+    transform: scale(1.045);
+  }
+
+  74% {
+    transform: scale(0.985);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.taste-experience-map-intro-veil {
+  animation: taste-experience-map-veil 0.54s ease-out forwards;
+}
+
+.taste-experience-bubble-intro {
+  animation-fill-mode: both;
+  animation-name: taste-experience-bubble-enter;
+  animation-timing-function: cubic-bezier(0.18, 0.92, 0.2, 1);
+  transform-origin: center;
+}
+
+.dining-result-mesh {
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 132% 108% at 38% 42%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-main) 92%, transparent) 0%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-main) 68%, transparent) 52%,
+      transparent 92%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--tb-dining-result-mesh-secondary) 10%, transparent) 0%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-main) 42%, transparent) 48%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-tertiary) 8%, transparent) 100%
+    );
+  background-position: 42% 44%, 50% 50%;
+  background-size: 135% 135%, 115% 115%;
+  opacity: 0.92;
+  transform: translate3d(0, 0, 0) scale(1.06);
+  animation: dining-result-mesh-main-drift 3.8s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.dining-result-mesh::before,
+.dining-result-mesh::after {
+  position: absolute;
+  inset: -4%;
+  display: block;
+  content: '';
+  background-repeat: no-repeat;
+  transform: translate3d(0, 0, 0) scale(1.08);
+  will-change: transform, opacity, background-position, background-size;
+}
+
+.dining-result-mesh::before {
+  background-image:
+    radial-gradient(
+      ellipse 30% 24% at 72% 22%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-secondary) 96%, transparent) 0%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-secondary) 70%, transparent) 34%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 20% 32% at 88% 40%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-secondary) 78%, transparent) 0%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-secondary) 48%, transparent) 38%,
+      transparent 64%
+    ),
+    radial-gradient(
+      ellipse 18% 18% at 62% 48%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-secondary) 58%, transparent) 0%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-secondary) 34%, transparent) 32%,
+      transparent 60%
+    );
+  background-position: 64% 22%, 78% 36%, 56% 48%;
+  background-size: 118% 108%, 104% 128%, 92% 104%;
+  opacity: 0.86;
+  animation: dining-result-mesh-secondary-drift 3.2s ease-in-out infinite alternate;
+}
+
+.dining-result-mesh::after {
+  background-image:
+    radial-gradient(
+      ellipse 28% 26% at 38% 80%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-tertiary) 94%, transparent) 0%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-tertiary) 68%, transparent) 34%,
+      transparent 56%
+    ),
+    radial-gradient(
+      ellipse 22% 30% at 58% 70%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-tertiary) 74%, transparent) 0%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-tertiary) 46%, transparent) 36%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 16% 20% at 26% 62%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-tertiary) 56%, transparent) 0%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-tertiary) 32%, transparent) 34%,
+      transparent 60%
+    );
+  background-position: 40% 78%, 58% 68%, 28% 62%;
+  background-size: 112% 116%, 98% 126%, 90% 104%;
+  opacity: 0.82;
+  animation: dining-result-mesh-tertiary-drift 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes dining-result-mesh-main-drift {
+  0% {
+    background-position: 22% 28%, 44% 48%;
+    opacity: 0.86;
+    transform: translate3d(-8%, -5%, 0) scale(1.08);
+  }
+
+  48% {
+    background-position: 74% 58%, 56% 44%;
+    opacity: 1;
+    transform: translate3d(7%, 8%, 0) scale(1.18);
+  }
+
+  100% {
+    background-position: 36% 82%, 60% 56%;
+    opacity: 0.9;
+    transform: translate3d(10%, -7%, 0) scale(1.12);
+  }
+}
+
+@keyframes dining-result-mesh-secondary-drift {
+  0% {
+    background-position: 86% 12%, 70% 34%, 58% 52%;
+    background-size: 112% 112%, 98% 132%, 88% 104%;
+    opacity: 0.8;
+    transform: translate3d(14%, -9%, 0) scale(1.1) rotate(0.001deg);
+  }
+
+  52% {
+    background-position: 24% 46%, 44% 22%, 72% 58%;
+    background-size: 128% 98%, 118% 118%, 102% 128%;
+    opacity: 0.94;
+    transform: translate3d(-13%, 11%, 0) scale(1.25) rotate(0.001deg);
+  }
+
+  100% {
+    background-position: 76% 72%, 30% 58%, 64% 28%;
+    background-size: 104% 128%, 126% 100%, 94% 116%;
+    opacity: 0.84;
+    transform: translate3d(11%, 14%, 0) scale(1.16) rotate(0.001deg);
+  }
+}
+
+@keyframes dining-result-mesh-tertiary-drift {
+  0% {
+    background-position: 24% 92%, 56% 76%, 34% 58%;
+    background-size: 110% 122%, 96% 128%, 86% 106%;
+    opacity: 0.76;
+    transform: translate3d(-12%, 13%, 0) scale(1.12) rotate(0.001deg);
+  }
+
+  50% {
+    background-position: 78% 42%, 38% 64%, 62% 82%;
+    background-size: 128% 104%, 116% 112%, 104% 124%;
+    opacity: 0.9;
+    transform: translate3d(13%, -12%, 0) scale(1.28) rotate(0.001deg);
+  }
+
+  100% {
+    background-position: 86% 84%, 66% 48%, 22% 78%;
+    background-size: 102% 132%, 124% 98%, 92% 118%;
+    opacity: 0.8;
+    transform: translate3d(-7%, -15%, 0) scale(1.18) rotate(0.001deg);
+  }
+}
+
+.dining-result-card-bloom {
+  isolation: isolate;
+  transform-origin: 50% 58%;
+  animation: dining-result-card-bloom-enter 860ms cubic-bezier(0.18, 0.92, 0.2, 1) 120ms both;
+  will-change: opacity, transform, filter;
+}
+
+.dining-result-card-bloom::before {
+  position: absolute;
+  inset: -22px;
+  z-index: -1;
+  display: block;
+  border-radius: 32px;
+  pointer-events: none;
+  content: '';
+  background:
+    radial-gradient(
+      ellipse 58% 42% at 50% 56%,
+      color-mix(in srgb, var(--tb-dining-result-mesh-main) 26%, transparent) 0%,
+      transparent 72%
+    ),
+    conic-gradient(
+      from -18deg at 50% 54%,
+      transparent 0deg,
+      color-mix(in srgb, var(--tb-dining-result-mesh-main) 22%, transparent) 34deg,
+      transparent 68deg,
+      color-mix(in srgb, var(--tb-dining-result-mesh-secondary) 18%, transparent) 118deg,
+      transparent 154deg,
+      color-mix(in srgb, var(--tb-dining-result-mesh-tertiary) 16%, transparent) 218deg,
+      transparent 252deg,
+      color-mix(in srgb, var(--tb-dining-result-mesh-main) 18%, transparent) 314deg,
+      transparent 360deg
+    );
+  filter: blur(16px);
+  opacity: 0;
+  transform: scale(0.56) rotate(-12deg);
+  animation: dining-result-card-bloom-halo 980ms cubic-bezier(0.18, 0.92, 0.2, 1) 80ms both;
+  will-change: opacity, transform, filter;
+}
+
+@keyframes dining-result-card-bloom-enter {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate3d(0, 24px, 0) scale(0.88);
+  }
+
+  46% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, -4px, 0) scale(1.018);
+  }
+
+  72% {
+    transform: translate3d(0, 1px, 0) scale(0.996);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes dining-result-card-bloom-halo {
+  0% {
+    opacity: 0;
+    filter: blur(18px);
+    transform: scale(0.52) rotate(-14deg);
+  }
+
+  38% {
+    opacity: 0.72;
+    filter: blur(14px);
+    transform: scale(1.08) rotate(5deg);
+  }
+
+  100% {
+    opacity: 0;
+    filter: blur(22px);
+    transform: scale(1.34) rotate(18deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taste-experience-map-intro-veil,
+  .taste-experience-bubble-intro,
+  .dining-result-mesh,
+  .dining-result-mesh::before,
+  .dining-result-mesh::after,
+  .dining-result-card-bloom,
+  .dining-result-card-bloom::before {
+    animation-delay: 0ms !important;
+    animation-duration: 1ms !important;
+  }
 }
 
 @keyframes symbol-bloom-move {

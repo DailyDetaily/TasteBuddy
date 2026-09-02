@@ -106,9 +106,11 @@ export const ICON_TOKENS = {
   size: {
     xs: 12,
     sm: 14,
+    base: 16,
     md: 18,
+    control: 20,
     lg: 24,
-    xl: 24,
+    xl: 28,
     touch: 24,
     hero: 24,
   },
@@ -127,6 +129,14 @@ export const ICON_TOKENS = {
   },
 } as const;
 
+export const BOX_TOKENS = {
+  size: {
+    sm: 32,
+    md: 40,
+    lg: 48,
+  },
+} as const;
+
 export const DATA_VIZ_TOKENS = {
   progress: {
     barHeight: 8,
@@ -139,7 +149,7 @@ export const DATA_VIZ_TOKENS = {
     averageStroke: '#D0D0D0',
     highlightFill: 'rgba(255, 153, 0, 0.12)',
     highlightStroke: '#FF9900',
-    labelSize: 9,
+    labelSize: 10,
     labelColor: '#888888',
     nodeSize: 3,
     outerDotSize: 8,
@@ -162,6 +172,7 @@ export const DATA_VIZ_TOKENS = {
 export const COLOR_TOKENS = {
   background: {
     page: '#F3F3F3',
+    focus: '#FFFFFF',
   },
   surface: {
     base: '#FFFFFF',
@@ -203,6 +214,7 @@ export const COLOR_TOKENS = {
     successSoft: '#E6F4EC',
     warning: '#A8661A',
     warningSoft: '#FFF1DE',
+    destructive: '#D4183D',
   },
   shadow: SHADOW_TOKENS,
 } as const;
@@ -214,6 +226,7 @@ export const LAYOUT_TOKENS = {
   cardStackGap: SPACING_TOKENS[12],
   cardPadding: '12px',
   topAppBarHeight: '56px',
+  bottomTabBarHeight: '60px',
   primaryButtonHeight: '48px',
   bottomFadeMinHeight: '140px',
   bottomIndicatorWidth: '134px',
@@ -249,6 +262,122 @@ export const COMPONENT_TOKENS = {
     paddingInline: SPACING_TOKENS[8],
     paddingBlock: SPACING_TOKENS[2],
   },
+  chip: {
+    radius: RADIUS_TOKENS.full,
+    size: {
+      xs: {
+        fontSize: TYPOGRAPHY_TOKENS.fontSize[10],
+        gap: SPACING_TOKENS[4],
+        iconSize: TYPOGRAPHY_TOKENS.fontSize[12],
+        paddingBlock: SPACING_TOKENS[4],
+        paddingInline: SPACING_TOKENS[8],
+      },
+      sm: {
+        fontSize: TYPOGRAPHY_TOKENS.fontSize[11],
+        gap: SPACING_TOKENS[6],
+        iconSize: TYPOGRAPHY_TOKENS.fontSize[12],
+        paddingBlock: SPACING_TOKENS[6],
+        paddingInline: SPACING_TOKENS[10],
+      },
+      md: {
+        fontSize: TYPOGRAPHY_TOKENS.fontSize[12],
+        gap: SPACING_TOKENS[8],
+        iconSize: TYPOGRAPHY_TOKENS.fontSize[14],
+        paddingBlock: SPACING_TOKENS[8],
+        paddingInline: SPACING_TOKENS[12],
+      },
+    },
+    tone: {
+      neutral: {
+        soft: {
+          backgroundColor: COLOR_TOKENS.surface.muted,
+          borderColor: COLOR_TOKENS.border.default,
+          color: COLOR_TOKENS.text.muted,
+        },
+        outline: {
+          backgroundColor: 'transparent',
+          borderColor: COLOR_TOKENS.border.default,
+          color: COLOR_TOKENS.text.secondary,
+        },
+        solid: {
+          backgroundColor: COLOR_TOKENS.text.primary,
+          borderColor: COLOR_TOKENS.text.primary,
+          color: COLOR_TOKENS.text.inverse,
+        },
+        text: {
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          color: COLOR_TOKENS.text.secondary,
+        },
+      },
+      success: {
+        soft: {
+          backgroundColor: COLOR_TOKENS.state.successSoft,
+          borderColor: COLOR_TOKENS.state.successSoft,
+          color: COLOR_TOKENS.state.success,
+        },
+        outline: {
+          backgroundColor: 'transparent',
+          borderColor: COLOR_TOKENS.state.success,
+          color: COLOR_TOKENS.state.success,
+        },
+        solid: {
+          backgroundColor: COLOR_TOKENS.state.success,
+          borderColor: COLOR_TOKENS.state.success,
+          color: COLOR_TOKENS.text.inverse,
+        },
+        text: {
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          color: COLOR_TOKENS.state.success,
+        },
+      },
+      warning: {
+        soft: {
+          backgroundColor: COLOR_TOKENS.state.warningSoft,
+          borderColor: COLOR_TOKENS.state.warningSoft,
+          color: COLOR_TOKENS.state.warning,
+        },
+        outline: {
+          backgroundColor: 'transparent',
+          borderColor: COLOR_TOKENS.state.warning,
+          color: COLOR_TOKENS.state.warning,
+        },
+        solid: {
+          backgroundColor: COLOR_TOKENS.state.warning,
+          borderColor: COLOR_TOKENS.state.warning,
+          color: COLOR_TOKENS.text.inverse,
+        },
+        text: {
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          color: COLOR_TOKENS.state.warning,
+        },
+      },
+      accent: {
+        soft: {
+          backgroundColor: COLOR_TOKENS.surface.base,
+          borderColor: COLOR_TOKENS.text.primary,
+          color: COLOR_TOKENS.text.primary,
+        },
+        outline: {
+          backgroundColor: 'transparent',
+          borderColor: COLOR_TOKENS.text.primary,
+          color: COLOR_TOKENS.text.primary,
+        },
+        solid: {
+          backgroundColor: COLOR_TOKENS.text.primary,
+          borderColor: COLOR_TOKENS.text.primary,
+          color: COLOR_TOKENS.text.inverse,
+        },
+        text: {
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          color: COLOR_TOKENS.text.primary,
+        },
+      },
+    },
+  },
   pill: {
     radius: RADIUS_TOKENS.full,
   },
@@ -277,6 +406,8 @@ interface TastePalette {
   gradient: string;
   light: string;
   main: string;
+  tintSoft: string;
+  tintSoftBorder: string;
   tintSurface: string;
   tintSurfaceSubText: string;
   tintSurfaceText: string;
@@ -308,6 +439,8 @@ export const TASTE_TOKENS = {
       dark: '#CC7A00',
       light: '#FFCC80',
       bg: '#FFD699',
+      tintSoft: 'rgba(255, 153, 0, 0.05)',
+      tintSoftBorder: 'rgba(255, 153, 0, 0.18)',
       tintSurface: '#FFEBCC',
       tintSurfaceSubText: '#896735',
       tintSurfaceText: '#6F4609',
@@ -343,6 +476,8 @@ export const TASTE_TOKENS = {
       dark: '#C99A00',
       light: '#FDD835',
       bg: '#FFEF99',
+      tintSoft: 'rgba(251, 192, 45, 0.05)',
+      tintSoftBorder: 'rgba(251, 192, 45, 0.18)',
       tintSurface: '#FFF7CC',
       tintSurfaceSubText: '#897C35',
       tintSurfaceText: '#6F5F09',
@@ -378,6 +513,8 @@ export const TASTE_TOKENS = {
       dark: '#6E9600',
       light: '#E6EE9C',
       bg: '#E0EBB4',
+      tintSoft: 'rgba(149, 201, 0, 0.05)',
+      tintSoftBorder: 'rgba(149, 201, 0, 0.18)',
       tintSurface: '#EAF4CC',
       tintSurfaceSubText: '#70794B',
       tintSurfaceText: '#505B24',
@@ -413,6 +550,8 @@ export const TASTE_TOKENS = {
       dark: '#4A70CC',
       light: '#90CAF9',
       bg: '#C6D6FF',
+      tintSoft: 'rgba(114, 153, 255, 0.05)',
+      tintSoftBorder: 'rgba(114, 153, 255, 0.18)',
       tintSurface: '#E3EBFF',
       tintSurfaceSubText: '#5A6789',
       tintSurfaceText: '#36466F',
@@ -448,6 +587,8 @@ export const TASTE_TOKENS = {
       dark: '#8A5490',
       light: '#CE93D8',
       bg: '#E1C7E1',
+      tintSoft: 'rgba(179, 114, 180, 0.05)',
+      tintSoftBorder: 'rgba(179, 114, 180, 0.18)',
       tintSurface: '#F0E3F0',
       tintSurfaceSubText: '#705B70',
       tintSurfaceText: '#513751',
@@ -483,6 +624,8 @@ export const TASTE_TOKENS = {
       dark: '#6B5E54',
       light: '#BCAAA4',
       bg: '#D5CFCA',
+      tintSoft: 'rgba(149, 134, 122, 0.05)',
+      tintSoftBorder: 'rgba(149, 134, 122, 0.18)',
       tintSurface: '#EAE7E4',
       tintSurfaceSubText: '#66625D',
       tintSurfaceText: '#453F3A',
@@ -522,6 +665,14 @@ export const TASTE_LABEL_TO_ID = Object.fromEntries(
 export const TASTE_COLORS = Object.fromEntries(
   TASTE_IDS.map((id) => [TASTE_TOKENS[id].label, TASTE_TOKENS[id].palette]),
 ) as Record<(typeof TASTE_LABELS)[number], TastePalette>;
+
+export const NEUTRAL_TASTE_TOKENS = {
+  label: '모든맛',
+  palette: {
+    main: '#7A7A7A',
+    tintSurface: '#E4E4E4',
+  },
+} as const;
 
 export const DESIGN_TOKENS = {
   colors: COLOR_TOKENS,

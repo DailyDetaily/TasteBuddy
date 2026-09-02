@@ -389,6 +389,6 @@ Building Profile
 
 - `src/pages/AnalysisPage.tsx`
 - `src/components/analysis/PalateSignatureHeroCard.tsx`
-- `src/pages/ReservationPage.tsx`
+- `src/pages/DiningPage.tsx`
 - `src/pages/QuickTasteCalibrationScreen.tsx`
 - `src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`

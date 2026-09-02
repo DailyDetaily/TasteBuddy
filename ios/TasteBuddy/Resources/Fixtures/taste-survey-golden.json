@@ -1,0 +1,483 @@
+{
+  "schemaVersion": 1,
+  "sourceFiles": [
+    "src/constants/tasteSurveyConfig.ts",
+    "src/constants/tasteSurveyItems.ts",
+    "src/lib/tasteSurveyScoring.ts"
+  ],
+  "instrument": {
+    "id": "taste-buddy-initial-six-taste-survey",
+    "title": "Taste Buddy Initial Six-Taste Survey",
+    "version": "1.0.0"
+  },
+  "likertScale": {
+    "min": 1,
+    "max": 7,
+    "neutralValue": 4,
+    "uncertainLabel": "잘 모르겠어요",
+    "labels": {
+      "1": "전혀 그렇지 않다",
+      "2": "그렇지 않은 편이다",
+      "3": "조금 그렇지 않다",
+      "4": "보통이다",
+      "5": "조금 그렇다",
+      "6": "그런 편이다",
+      "7": "매우 그렇다"
+    }
+  },
+  "contextSteps": [
+    {
+      "id": "birthDate",
+      "badgeLabel": "생년월일",
+      "title": "생년월일을 선택해주세요.",
+      "description": "선택한 날짜는 미각 응답을 더 안정적으로 해석하기 위한 참고값으로만 사용됩니다.",
+      "options": []
+    },
+    {
+      "id": "sexContext",
+      "badgeLabel": "참고 정보",
+      "title": "성별 관련 정보를 선택해주세요.",
+      "description": "정체성 판단이 아니라 향후 미각 기준 보정을 위한 참고값으로만 사용됩니다.",
+      "options": [
+        {
+          "value": "female",
+          "label": "여성"
+        },
+        {
+          "value": "male",
+          "label": "남성"
+        },
+        {
+          "value": "other_or_not_listed",
+          "label": "기타 / 직접 응답하지 않음"
+        },
+        {
+          "value": "prefer_not_to_say",
+          "label": "답변하지 않음"
+        }
+      ]
+    },
+    {
+      "id": "smokingStatus",
+      "badgeLabel": "생활 맥락",
+      "title": "흡연 상태를 선택해주세요.",
+      "description": "점수를 조정하지 않고, 결과 해석과 향후 confidence 개선에 참고합니다.",
+      "options": [
+        {
+          "value": "never",
+          "label": "비흡연"
+        },
+        {
+          "value": "former",
+          "label": "과거 흡연"
+        },
+        {
+          "value": "current",
+          "label": "현재 흡연"
+        },
+        {
+          "value": "prefer_not_to_say",
+          "label": "답변하지 않음"
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "sweet-salience-v1",
+      "tasteId": "sweet",
+      "construct": "salience",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "잘 익은 바나나 한 입",
+        "description": "잘 익은 바나나를 한 입 먹었을 때의 단맛을 떠올리는 기준입니다.",
+        "stability": "medium"
+      },
+      "prompt": "단맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요."
+    },
+    {
+      "id": "sweet-overload-v1",
+      "tasteId": "sweet",
+      "construct": "overload",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "잘 익은 바나나 한 입",
+        "description": "같은 바나나라도 더 달게 느껴지는 한 입을 떠올리는 기준입니다.",
+        "stability": "medium"
+      },
+      "prompt": "단맛이 조금만 강해져도 쉽게 과하게 느껴졌어요."
+    },
+    {
+      "id": "salty-salience-v1",
+      "tasteId": "salty",
+      "construct": "salience",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "맑은 물에 소금을 한 꼬집 더한 맛",
+        "description": "맑은 물이나 아주 연한 국물에 소금 한 꼬집이 더해진 짠맛을 떠올리는 기준입니다.",
+        "stability": "medium"
+      },
+      "prompt": "짠맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요."
+    },
+    {
+      "id": "salty-overload-v1",
+      "tasteId": "salty",
+      "construct": "overload",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "맑은 물에 소금을 한 꼬집 더한 맛",
+        "description": "소금기가 한 단계 더해졌을 때 입안에서 느껴지는 짠맛을 떠올리는 기준입니다.",
+        "stability": "medium"
+      },
+      "prompt": "짠맛이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요."
+    },
+    {
+      "id": "sour-salience-v1",
+      "tasteId": "sour",
+      "construct": "salience",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "레몬즙이 살짝 들어간 물 한 모금",
+        "description": "물 한 모금에 레몬즙이 조금 들어갔을 때의 신맛을 떠올리는 기준입니다.",
+        "stability": "medium"
+      },
+      "prompt": "신맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요."
+    },
+    {
+      "id": "sour-overload-v1",
+      "tasteId": "sour",
+      "construct": "overload",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "레몬즙이 살짝 들어간 물 한 모금",
+        "description": "레몬즙이 조금 더 들어갔을 때 입안에서 올라오는 신맛을 떠올리는 기준입니다.",
+        "stability": "medium"
+      },
+      "prompt": "신맛이 조금만 강해져도 쉽게 과하게 느껴졌어요."
+    },
+    {
+      "id": "bitter-salience-v1",
+      "tasteId": "bitter",
+      "construct": "salience",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "아메리카노 첫 모금",
+        "description": "아메리카노를 처음 마셨을 때 입안에 바로 닿는 쓴맛을 떠올리는 기준입니다.",
+        "stability": "medium"
+      },
+      "prompt": "쓴맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요."
+    },
+    {
+      "id": "bitter-overload-v1",
+      "tasteId": "bitter",
+      "construct": "overload",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "아메리카노 첫 모금",
+        "description": "아메리카노의 쓴맛이 한 단계 더 강하게 느껴지는 상황을 떠올리는 기준입니다.",
+        "stability": "medium"
+      },
+      "prompt": "쓴맛이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요."
+    },
+    {
+      "id": "umami-salience-v1",
+      "tasteId": "umami",
+      "construct": "salience",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "맑은 버섯 육수 한 숟갈",
+        "description": "간을 세게 하지 않은 맑은 버섯 육수에서 느껴지는 감칠맛을 떠올리는 기준입니다.",
+        "stability": "low"
+      },
+      "exploratoryMetadata": {
+        "appliesToTasteIds": [
+          "umami"
+        ],
+        "rationale": "감칠맛은 재료 상태와 농도, 짠맛의 영향이 함께 작용할 수 있어 v1에서는 탐색 축으로 다룹니다.",
+        "interpretationCaution": "단일 응답만으로 확정하지 않고 반복 응답과 식후 피드백을 함께 보며 해석해야 합니다."
+      },
+      "prompt": "감칠맛의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요."
+    },
+    {
+      "id": "umami-overload-v1",
+      "tasteId": "umami",
+      "construct": "overload",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "맑은 버섯 육수 한 숟갈",
+        "description": "버섯 육수의 감칠맛이 한 단계 더 진해졌을 때를 떠올리는 기준입니다.",
+        "stability": "low"
+      },
+      "exploratoryMetadata": {
+        "appliesToTasteIds": [
+          "umami"
+        ],
+        "rationale": "감칠맛의 과함은 짠맛이나 농도와 겹쳐 느껴질 수 있어 v1에서는 탐색적으로 기록합니다.",
+        "interpretationCaution": "셰프 가이드에서는 감칠맛을 줄이라는 지시가 아니라 강도와 누적감을 조절할 참고 신호로 사용해야 합니다."
+      },
+      "prompt": "감칠맛이 조금만 강해져도 쉽게 무겁거나 과하게 느껴졌어요."
+    },
+    {
+      "id": "fat-salience-v1",
+      "tasteId": "fat",
+      "construct": "salience",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "무가당 생크림의 지방감",
+        "description": "단맛을 더하지 않은 생크림 한 숟갈에서 느껴지는 지방감을 떠올리는 기준입니다.",
+        "stability": "low"
+      },
+      "exploratoryMetadata": {
+        "appliesToTasteIds": [
+          "fat"
+        ],
+        "rationale": "지방감은 질감, 온도, 양의 영향을 크게 받을 수 있어 v1에서는 탐색 축으로 다룹니다.",
+        "interpretationCaution": "기호 판단이 아니라 지방감의 인지 속도와 부담 신호를 중심으로 해석해야 합니다."
+      },
+      "prompt": "지방감의 작은 차이도 비교적 빨리 또렷하게 느껴졌어요."
+    },
+    {
+      "id": "fat-overload-v1",
+      "tasteId": "fat",
+      "construct": "overload",
+      "recallWindow": "recent-3-months",
+      "reverseKeyed": false,
+      "anchor": {
+        "label": "무가당 생크림의 지방감",
+        "description": "생크림의 지방감이 한 단계 더 두껍게 느껴지는 상황을 떠올리는 기준입니다.",
+        "stability": "low"
+      },
+      "exploratoryMetadata": {
+        "appliesToTasteIds": [
+          "fat"
+        ],
+        "rationale": "지방감의 과함은 질감과 잔여감에 따라 달라질 수 있어 v1에서는 탐색적으로 기록합니다.",
+        "interpretationCaution": "셰프 가이드에서는 지방을 배제하라는 뜻이 아니라 잔여감과 정리감을 조절할 참고 신호로 사용해야 합니다."
+      },
+      "prompt": "지방감이 조금만 강해져도 쉽게 부담스럽게 느껴졌어요."
+    }
+  ],
+  "cases": [
+    {
+      "id": "neutral",
+      "responses": [
+        {
+          "itemId": "sweet-salience-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "sweet-overload-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "salty-salience-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "salty-overload-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "sour-salience-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "sour-overload-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "bitter-salience-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "bitter-overload-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "umami-salience-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "umami-overload-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "fat-salience-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        },
+        {
+          "itemId": "fat-overload-v1",
+          "selectedValue": 4,
+          "uncertain": false
+        }
+      ],
+      "expected": {
+        "snapshot": {
+          "measuredAt": "2026-06-05T00:00:00.000Z",
+          "results": {
+            "sweet": 5,
+            "sour": 5,
+            "bitter": 5,
+            "salty": 5,
+            "umami": 5,
+            "fat": 5
+          },
+          "source": "broad-starter"
+        },
+        "starterGuidance": {
+          "cautionAxis": "fat",
+          "cautionLabel": "지방맛",
+          "confidence": "Starter",
+          "context": {
+            "baselineReference": "popular-k-fnb",
+            "calibrationMode": "digital-anchoring"
+          },
+          "evidence": [
+            "단맛은 최근 응답에서 먼저 읽히는 축으로 나타났어요.",
+            "신맛은 최근 응답에서 먼저 읽히는 축으로 나타났어요.",
+            "조심할 축은 지방맛이고, 강도가 빠르게 쌓이는지 이어서 확인합니다.",
+            "감칠맛은 탐색 축이라 다음 식사 피드백과 함께 조심스럽게 다듬어요.",
+            "지방맛은 탐색 축이라 다음 식사 피드백과 함께 조심스럽게 다듬어요."
+          ],
+          "goalPhrase": "기준점 근처에서 밸런스가 좋은 메뉴",
+          "summaryLine": "최근 응답에서는 단맛과 신맛 쪽의 차이가 먼저 읽히는 시작 프로필로 보여요. 지방맛은 아직 확정하기보다 다음 식사에서 더 확인할 포인트예요. 이 해석은 예약 개인화의 출발점으로 쓰이고, 식후 피드백이 쌓이면 더 정교해집니다.",
+          "surfaceLabel": "설문 기반 스타터 가이드",
+          "topAxes": [
+            "sweet",
+            "sour"
+          ],
+          "topLabels": [
+            "단맛",
+            "신맛"
+          ]
+        }
+      }
+    },
+    {
+      "id": "uncertain",
+      "responses": [
+        {
+          "itemId": "sweet-salience-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "sweet-overload-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "salty-salience-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "salty-overload-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "sour-salience-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "sour-overload-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "bitter-salience-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "bitter-overload-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "umami-salience-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "umami-overload-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "fat-salience-v1",
+          "selectedValue": null,
+          "uncertain": true
+        },
+        {
+          "itemId": "fat-overload-v1",
+          "selectedValue": null,
+          "uncertain": true
+        }
+      ],
+      "expected": {
+        "snapshot": {
+          "measuredAt": "2026-06-05T00:00:00.000Z",
+          "results": {
+            "sweet": null,
+            "sour": null,
+            "bitter": null,
+            "salty": null,
+            "umami": null,
+            "fat": null
+          },
+          "source": "broad-starter"
+        },
+        "starterGuidance": {
+          "cautionAxis": "umami",
+          "cautionLabel": "감칠맛",
+          "confidence": "Starter",
+          "context": {
+            "baselineReference": "popular-k-fnb",
+            "calibrationMode": "digital-anchoring"
+          },
+          "evidence": [
+            "단맛은 최근 응답에서 아직 더 확인할 축으로 나타났어요.",
+            "신맛은 최근 응답에서 아직 더 확인할 축으로 나타났어요.",
+            "조심할 축은 감칠맛이고, 강도가 빠르게 쌓이는지 이어서 확인합니다."
+          ],
+          "goalPhrase": "기준점 근처에서 밸런스가 좋은 메뉴",
+          "summaryLine": "최근 응답에서는 단맛과 신맛 쪽의 차이가 먼저 읽히는 시작 프로필로 보여요. 감칠맛은 아직 확정하기보다 다음 식사에서 더 확인할 포인트예요. 이 해석은 예약 개인화의 출발점으로 쓰이고, 식후 피드백이 쌓이면 더 정교해집니다.",
+          "surfaceLabel": "설문 기반 스타터 가이드",
+          "topAxes": [
+            "sweet",
+            "sour"
+          ],
+          "topLabels": [
+            "단맛",
+            "신맛"
+          ]
+        }
+      }
+    }
+  ]
+}

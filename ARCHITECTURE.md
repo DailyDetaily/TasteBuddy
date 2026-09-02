@@ -4,13 +4,29 @@ This file explains how the Taste Buddy repo is laid out so you can find the righ
 
 ## High-Level Shape
 
-The repo has three active layers:
+The repo has four active layers:
 
 1. the React app in `src/`
-2. the content/data pipeline in `scripts/`, `docs/content/`, and `supabase/`
-3. supporting documentation in root docs and `docs/`
+2. the native SwiftUI app in `ios/`
+3. the content/data pipeline in `scripts/`, `docs/content/`, and `supabase/`
+4. supporting documentation in root docs and `docs/`
 
 That split matters because the codebase mixes product UI work with content ingestion work.
+
+## Native iOS Layer
+
+The native guest app lives in [`ios/`](./ios/).
+
+- Xcode project: [`ios/TasteBuddy.xcodeproj`](./ios/TasteBuddy.xcodeproj)
+- XcodeGen source: [`ios/project.yml`](./ios/project.yml)
+- app state and entry point: [`ios/TasteBuddy/App`](./ios/TasteBuddy/App)
+- Swift design tokens and shared components: [`ios/TasteBuddy/DesignSystem`](./ios/TasteBuddy/DesignSystem), [`ios/TasteBuddy/Components`](./ios/TasteBuddy/Components)
+- feature screens: [`ios/TasteBuddy/Features`](./ios/TasteBuddy/Features)
+- scoring and model tests: [`ios/TasteBuddyTests`](./ios/TasteBuddyTests)
+
+The React and SwiftUI apps are independent presentation layers. They should share product language, scoring behavior, design intent, and future Supabase contracts without requiring one app to generate the other.
+
+The first native scope intentionally excludes reservation and Tastick connectivity. It focuses on onboarding, Quick Taste Calibration, profile interpretation, restaurant exploration, dining feedback, and profile refinement.
 
 ## App Layer
 
@@ -27,7 +43,7 @@ Common examples:
 
 - [`HomePage.tsx`](./src/pages/HomePage.tsx)
 - [`AnalysisPage.tsx`](./src/pages/AnalysisPage.tsx)
-- [`ReservationPage.tsx`](./src/pages/ReservationPage.tsx)
+- [`DiningPage.tsx`](./src/pages/DiningPage.tsx)
 - [`ProfilePage.tsx`](./src/pages/ProfilePage.tsx)
 - [`DesignSystemPage.tsx`](./src/pages/DesignSystemPage.tsx)
 
@@ -119,6 +135,7 @@ These folders exist, but they are not the cleanest source tree:
 | Folder | Meaning |
 | --- | --- |
 | [`dist/`](./dist/) | Generated build output |
+| `DerivedData/`, `xcuserdata/` | Local Xcode build and user state |
 | [`tmp/`](./tmp/) | Scratch files, captures, OCR output, experimental previews |
 | [`test-results/`](./test-results/) | Test runner artifacts |
 | [`.tmp-playwright/`](./.tmp-playwright/) | Browser automation artifacts |

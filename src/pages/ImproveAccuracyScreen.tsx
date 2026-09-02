@@ -1,11 +1,16 @@
-import { SparkleRegular, BluetoothRegular, ArrowRightRegular } from '@fluentui/react-icons';
-const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
-const Sparkles = wrapIcon(SparkleRegular);
-const Bluetooth = wrapIcon(BluetoothRegular);
-const ArrowRight = wrapIcon(ArrowRightRegular);
+import {
+  Sparkles as SparklesIcon,
+  Bluetooth as BluetoothIcon,
+  ArrowRight as ArrowRightIcon
+} from 'lucide-react';
+const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
+const Sparkles = wrapIcon(SparklesIcon);
+const Bluetooth = wrapIcon(BluetoothIcon);
+const ArrowRight = wrapIcon(ArrowRightIcon);
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
-import PrimaryButton from '../components/system/PrimaryButton';
+import TokenBox from '../components/system/TokenBox';
+import FlowBottomCta from '../components/system/FlowBottomCta';
 import OutlineBadge from '../components/system/OutlineBadge';
 import { ICON_TOKENS } from '../constants/designTokens';
 
@@ -74,9 +79,9 @@ export default function ImproveAccuracyScreen({
                   </p>
                 </div>
               </div>
-              <div className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)]">
+              <TokenBox backgroundToken="surface-base" textToken="text-primary">
                 <Sparkles size={ICON_TOKENS.size.lg} />
-              </div>
+              </TokenBox>
             </div>
           </SectionCard>
 
@@ -139,15 +144,14 @@ export default function ImproveAccuracyScreen({
             {benefits.map((benefit) => (
               <SectionCard key={benefit.title} hoverEffect={false}>
                 <div className="flex items-start gap-3">
-                  <div
-                    className="flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)]"
+                  <TokenBox
                     style={{
                       backgroundColor: benefit.iconBg,
                       color: benefit.iconColor,
                     }}
                   >
                     <Sparkles size={ICON_TOKENS.size.md} />
-                  </div>
+                  </TokenBox>
                   <div className="flex flex-col gap-1">
                     <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
                       {benefit.title}
@@ -176,22 +180,25 @@ export default function ImproveAccuracyScreen({
         </div>
       </div>
 
-      {/* Bottom CTA */}
-      <div className="tb-bottom-fade absolute bottom-0 left-0 right-0 z-20 flex min-h-[140px] w-full flex-col items-center justify-end gap-2 px-5 pb-10">
-        <PrimaryButton onClick={onConnectDevice}>
+      <FlowBottomCta
+        actionLabel={
           <div className="flex items-center gap-2">
             <Bluetooth size={ICON_TOKENS.size.md} />
             <span>테이스틱 연결하기</span>
           </div>
-        </PrimaryButton>
-        <button
-          type="button"
-          onClick={onSkip}
-          className="text-[12px] font-semibold text-[var(--tb-color-text-muted)] hover:text-[var(--tb-color-text-primary)] transition-colors py-2"
-        >
-          지금은 괜찮아요, 나중에 할게요
-        </button>
-      </div>
+        }
+        onAction={onConnectDevice}
+        secondaryAction={
+          <button
+            type="button"
+            onClick={onSkip}
+            className="py-2 text-[12px] font-semibold text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
+          >
+            지금은 괜찮아요, 나중에 할게요
+          </button>
+        }
+        secondaryActionClassName="flex justify-center"
+      />
     </div>
   );
 }

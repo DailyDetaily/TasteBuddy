@@ -17,7 +17,11 @@ export default function StatusChip({
   return (
     <span
       className={cn('tb-status-chip', className)}
-      style={{ ...style, backgroundColor, color } as CSSProperties}
+      style={{
+        ...style,
+        ...(backgroundColor ? { backgroundColor } : {}),
+        ...(color ? { color } : {}),
+      } as CSSProperties}
       {...props}
     />
   );

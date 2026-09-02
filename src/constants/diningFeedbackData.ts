@@ -1,3 +1,6 @@
+import { inferDishKindIds } from './dishKindTags';
+import type { TasteBuddyAgentDiningAnalysisSnapshot } from '../types/tasteBuddyAgent';
+
 export interface DiningFeedbackChoice {
   affectedTastes: string[];
   id: string;
@@ -29,15 +32,114 @@ export interface DiningFeedbackScenario {
 }
 
 export interface DiningDishFeedbackDraft {
+  customDishKindLabels?: string[];
+  customDetailTags?: Record<string, string[]>;
+  feedbackUpdatedAt?: string | null;
+  reflectionNote?: string;
+  reflectionPhotoName?: string | null;
+  reflectionPhotoPreviewUrl?: string | null;
+  selectedDishKindIds?: string[];
+  selectedDetailTagIds?: string[];
   rating: number;
   selectedChoiceId: string | null;
+  selectedExperienceId?: string | null;
+  selectedExperienceIds?: string[];
+  tbaAnalysisSnapshot?: TasteBuddyAgentDiningAnalysisSnapshot | null;
+  tbaAnalysisVersion?: string | null;
+  tbaConfidence?: number | null;
+  tbaFoodOnMatchIds?: string[];
+  tbaLexiconCandidateIds?: string[];
+  tbaSignalIds?: string[];
 }
 
 export interface DiningFeedbackDraft {
+  customDishes?: DiningDishMetadata[];
   dishResponses: Record<string, DiningDishFeedbackDraft>;
   overallComment: string;
   overallRating: number;
   returnIntent: 'yes' | 'maybe' | 'no';
+}
+
+export function hasDiningDishFeedbackResponse(
+  response: DiningDishFeedbackDraft | null | undefined,
+) {
+  if (!response) {
+    return false;
+  }
+
+  const hasSelectedExperience =
+    Boolean(response.selectedExperienceId) ||
+    (response.selectedExperienceIds?.some(Boolean) ?? false);
+  const hasSelectedDetailTag = response.selectedDetailTagIds?.some(Boolean) ?? false;
+  const hasCustomDetailTag = Object.values(response.customDetailTags ?? {}).some((labels) =>
+    labels.some((label) => label.trim().length > 0),
+  );
+  const hasReflection =
+    Boolean(response.reflectionNote?.trim()) ||
+    Boolean(response.reflectionPhotoName) ||
+    Boolean(response.reflectionPhotoPreviewUrl);
+
+  return Boolean(
+    response.selectedChoiceId ||
+      hasSelectedExperience ||
+      hasSelectedDetailTag ||
+      hasCustomDetailTag ||
+      hasReflection,
+  );
+}
+
+export function createDiningDishFeedbackDraft(
+  dish: DiningDishMetadata,
+): DiningDishFeedbackDraft {
+  return {
+    customDetailTags: {},
+    customDishKindLabels: [],
+    rating: 3,
+    reflectionNote: '',
+    reflectionPhotoName: null,
+    reflectionPhotoPreviewUrl: null,
+    selectedChoiceId: null,
+    selectedDetailTagIds: [],
+    selectedDishKindIds: inferDishKindIds(dish),
+    selectedExperienceId: null,
+    selectedExperienceIds: [],
+    tbaAnalysisSnapshot: null,
+    tbaAnalysisVersion: null,
+    tbaConfidence: null,
+    tbaFoodOnMatchIds: [],
+    tbaLexiconCandidateIds: [],
+    tbaSignalIds: [],
+  };
+}
+
+export function createCustomDiningDishMetadata(title: string): DiningDishMetadata {
+  const safeTitle = title.trim() || '직접 입력한 메뉴';
+  const normalizedId = safeTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 36) || 'dish';
+
+  return {
+    chefIntent: '사용자가 직접 입력한 메뉴입니다. 미각 기록을 바탕으로 다음 다이닝 기준에 반영합니다.',
+    courseLabel: '직접 입력',
+    feedbackChoices: [
+      {
+        affectedTastes: ['감칠맛'],
+        id: 'custom-dish-note',
+        ingredientPairing: '사용자가 남긴 미각 인상을 중심으로 다음 경험을 조율합니다.',
+        label: '이 메뉴의 인상을 기록했어요',
+        recommendation: '선택한 미각 인상과 디테일 태그를 다음 다이닝 기준에 반영합니다.',
+        reason: '직접 입력한 메뉴라 사용자가 남긴 감각 단서가 가장 중요한 기준입니다.',
+      },
+    ],
+    flavorNotes: [],
+    id: `custom-dish-${normalizedId}-${Date.now().toString(36)}`,
+    ingredients: [],
+    subtitle: '직접 입력한 메뉴',
+    techniques: [],
+    title: safeTitle,
+  };
 }
 
 export const DINING_FEEDBACK_SCENARIOS: Record<number, DiningFeedbackScenario> = {
@@ -230,46 +332,16 @@ export function createDiningFeedbackDraft(
 ): DiningFeedbackDraft {
   const defaultDishResponses = scenario.dishes.reduce<Record<string, DiningDishFeedbackDraft>>(
     (responses, dish) => {
-      responses[dish.id] = {
-        rating: 3,
-        selectedChoiceId: dish.feedbackChoices[0]?.id ?? null,
-      };
+      responses[dish.id] = createDiningDishFeedbackDraft(dish);
       return responses;
     },
     {},
   );
 
-  if (scenario.reservationId !== 3) {
-    return {
-      dishResponses: defaultDishResponses,
-      overallComment: '',
-      overallRating: 3,
-      returnIntent: 'maybe',
-    };
-  }
-
   return {
-    dishResponses: {
-      ...defaultDishResponses,
-      'amuse-oyster-tart': {
-        rating: 4,
-        selectedChoiceId: 'starter-balanced',
-      },
-      'dessert-black-sesame': {
-        rating: 2,
-        selectedChoiceId: 'sweet-front',
-      },
-      'fish-kinmedai': {
-        rating: 3,
-        selectedChoiceId: 'butter-too-long',
-      },
-      'main-hanwoo': {
-        rating: 3,
-        selectedChoiceId: 'umami-flat',
-      },
-    },
-    overallComment:
-      '전반적인 코스의 흐름은 좋았지만 메인 이후에는 무게감이 쌓였고, 디저트는 단맛이 먼저 크게 느껴졌어요.',
+    customDishes: [],
+    dishResponses: defaultDishResponses,
+    overallComment: '',
     overallRating: 3,
     returnIntent: 'maybe',
   };

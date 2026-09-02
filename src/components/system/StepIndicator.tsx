@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-interface StepIndicatorProps {
+export interface StepIndicatorProps {
   total: number;
   currentIndex: number;
   activeColor?: string;

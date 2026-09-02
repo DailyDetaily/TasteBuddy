@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taste Buddy Native Porting"
+  short_description: "Port React UI to SwiftUI with lean iOS QA"
+  default_prompt: "Use $taste-buddy-react-native-porting to port this Taste Buddy React UI into SwiftUI with parity and lightweight iOS verification."

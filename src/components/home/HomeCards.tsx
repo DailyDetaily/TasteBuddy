@@ -4,47 +4,32 @@ import ChefAvatar from '../system/ChefAvatar';
 import InspectableComponent, {
   type InspectableNavigateHandler,
 } from '../system/InspectableComponent';
+import InterpretationCard from '../system/InterpretationCard';
+import TCSBadge from '../system/TCSBadge';
 import { type ProfileConfidenceStage } from '../system/ProfileConfidenceCard';
-import QuickCalibrationHintCard from '../system/QuickCalibrationHintCard';
+import TCSHintCard from '../system/TCSHintCard';
 import SectionTitle from '../system/SectionTitle';
 import StatusChip from '../system/StatusChip';
 import TasteChip from '../system/TasteChip';
-import { LegacyHomeChefCard } from '../../imports/Home';
-import { type TasteId, TASTE_TOKENS } from '../../constants/designTokens';
+import CardScrollList from '../system/CardScrollList';
+import ChefMatchCard from './ChefMatchCard';
+import { type TasteId } from '../../constants/designTokens';
 import { type ReservationRecord, RESERVATION_CATALOG } from '../../constants/reservationCatalog';
 import {
   createInitialTasteMeasurementSnapshot,
   formatMeasurementDate,
-  getStrongestTasteMeasurement,
   getTasteMeasurementAgeLabel,
   getTasteMeasurementEntries,
-  getWeakestTasteMeasurement,
   isBroadStarterMeasurementSnapshot,
   isTasteMeasurementStale,
   type TasteMeasurementEntry,
   type TasteMeasurementSnapshot,
 } from '../../constants/tasteMeasurementData';
 import { type RestaurantReadyGuidance } from '../../constants/quickTasteCalibrationData';
-import {
-  buildTasteAdjustmentGradient,
-  getTasteColor,
-} from '../../constants/tasteColors';
+import { getTasteColor } from '../../constants/tasteColors';
+import type { PersonalizedMatchConfidence } from '../../lib/chefMatching';
 
-import chefHwangJeongin from '../../assets/HwangJeongin.png';
-import chefHyunseokChoi from '../../assets/HyunseokChoi.png';
-import chefLeeEunji from '../../assets/LeeEunji.png';
-import chefLeeJun from '../../assets/LeeJun.png';
-import chefLimJeongsik from '../../assets/LimJeongsik.png';
-import chefSonJongwon from '../../assets/SonJongwon.png';
-
-const CHEF_IMAGE_BY_NAME: Record<string, string> = {
-  손종원: chefSonJongwon,
-  이은지: chefLeeEunji,
-  이준: chefLeeJun,
-  임정식: chefLimJeongsik,
-  최현석: chefHyunseokChoi,
-  황정인: chefHwangJeongin,
-};
+import { getChefImageByName } from '../../constants/chefImages';
 
 const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
   {
@@ -52,6 +37,8 @@ const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
     image: getChefImageByName('황정인'),
     match: 75,
     restaurant: '레스토랑 베누',
+    profileRank: 1,
+    sourceTasteId: 'umami',
     tasteId: 'umami',
   },
   {
@@ -59,6 +46,8 @@ const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
     image: getChefImageByName('이은지'),
     match: 72,
     restaurant: '숍 리제 (Lysee)',
+    profileRank: 2,
+    sourceTasteId: 'sweet',
     tasteId: 'sweet',
   },
   {
@@ -66,15 +55,24 @@ const CURRENT_HOME_PREVIEW_CHEFS: HomeChefMatchCardData[] = [
     image: getChefImageByName('임정식'),
     match: 70,
     restaurant: '정식당',
+    profileRank: 3,
+    sourceTasteId: 'fat',
     tasteId: 'fat',
   },
 ] as const;
 
 export interface HomeChefMatchCardData {
   chef: string;
+  chefAvatarPath?: string | null;
   image: string | null;
   match: number;
+  matchConfidence?: PersonalizedMatchConfidence;
+  matchReason?: string;
+  profileRank?: number;
+  representativeDishTitle?: string;
   restaurant: string;
+  restaurantSlug?: string;
+  sourceTasteId?: TasteId;
   tasteId: TasteId;
 }
 
@@ -109,26 +107,21 @@ interface HomeDiningPreparationCardProps {
 
 interface HomeChefMatchStripProps {
   chefCards: HomeChefMatchCardData[];
+  fullBleed?: boolean;
   onNavigateToSection?: InspectableNavigateHandler;
+  onSelectChefMatch?: (chef: HomeChefMatchCardData) => void;
   showSectionTitle?: boolean;
-}
-
-interface HomeRecentProfileChangeCardProps {
-  recentChangeTasteLabel: string;
-  onNavigateToSection?: InspectableNavigateHandler;
-  recentChangeText: string;
 }
 
 interface HomeCardStackProps
   extends Omit<HomeCardPreviewData, 'confidenceStage' | 'measurementCount'> {
   onNavigateToSection?: InspectableNavigateHandler;
+  onSelectChefMatch?: (chef: HomeChefMatchCardData) => void;
   onStartMeasurement: () => void;
   onStartRemeasurement: () => void;
 }
 
-export function getChefImageByName(name: string) {
-  return CHEF_IMAGE_BY_NAME[name.replace(/\s*셰프$/, '')] ?? null;
-}
+export { getChefImageByName } from '../../constants/chefImages';
 
 export function buildReservationPersonalizationSummary(
   measurementSnapshot: TasteMeasurementSnapshot,
@@ -141,9 +134,21 @@ export function buildReservationPersonalizationSummary(
   const primary = entries.slice(0, 2);
   const softest = entries[entries.length - 1];
   const topTasteLabels = primary.map((entry) => entry.label).join('과 ');
-  const chefGuidance = reservation.adjustments.map((adjustment, index) => {
+  const profileAdjustments =
+    reservation.adjustments.length > 0
+      ? reservation.adjustments
+      : primary.map((entry, index) => ({
+          taste: entry.label,
+          direction: index === 0 ? '살리기' : '정리하기',
+        }));
+  const chefGuidance = profileAdjustments.map((adjustment, index) => {
     const matchingAxis = primary[index] ?? primary[0];
-    return `${adjustment.taste} 포인트는 ${adjustment.direction} 방향으로 ${matchingAxis.label} 인상이 더 자연스럽게 전달되도록 참고합니다.`;
+    const deltaText =
+      matchingAxis.deltaMm >= 0
+        ? `기준보다 ${matchingAxis.deltaMm.toFixed(1)}mm 또렷한`
+        : `기준보다 ${Math.abs(matchingAxis.deltaMm).toFixed(1)}mm 부드러운`;
+
+    return `${adjustment.taste} 포인트는 ${adjustment.direction} 방향으로, ${deltaText} ${matchingAxis.label} 반응을 셰프 가이드의 기준점으로 씁니다.`;
   });
 
   return {
@@ -231,30 +236,49 @@ export function HomeDiningPreparationCard({
   reservation,
   summary,
 }: HomeDiningPreparationCardProps) {
+  const isReady = reservation.status === 'ready' || reservation.status === 'preparing';
+  const activeAdjustments =
+    reservation.adjustments.length > 0
+      ? reservation.adjustments
+      : summary.primary.map((entry, index) => ({
+          direction: index === 0 ? '살리기' : '정리하기',
+          taste: entry.label,
+        }));
+  const tcsAdjustments = activeAdjustments.map((adjustment, index) => {
+    const matchingAxis = summary.primary[index] ?? summary.primary[0];
+    const change = matchingAxis
+      ? `${Math.max(6, Math.round(Math.abs(matchingAxis.deltaMm) * 3 + 6))}%`
+      : `${Math.max(6, 12 - index * 2)}%`;
+
+    return {
+      change,
+      taste: adjustment.taste,
+    };
+  });
+  const tcsStatusText = isReady ? '셰프 가이드가 준비되었습니다' : reservation.tcsStatus;
   const reservationStatusLabel =
     reservation.status === 'ready'
-      ? '준비 완료'
+      ? '준비완료'
       : reservation.status === 'preparing'
-        ? '셰프 준비 중'
+        ? '준비완료'
         : '예약 확정';
-  const reservationBadgeGradient = buildTasteAdjustmentGradient(
-    reservation.adjustments.map((adjustment, index) => ({
-      change: `${Math.max(6, 12 - index * 2)}%`,
-      taste: adjustment.taste,
-    })),
-  );
 
   return (
     <div className="relative w-full rounded-[20px] bg-white transition-all duration-300">
       <div className="size-full overflow-clip rounded-[inherit]">
         <div className="box-border flex w-full flex-col items-start gap-[12px] p-[12px]">
           <div className="flex w-full items-center gap-2">
-            <span
-              className="tb-badge-elevated relative rounded-[6px] px-[6px] py-[2px] text-[10px] font-bold text-white"
-              style={{ background: reservationBadgeGradient }}
+            <InspectableComponent
+              className="shrink-0"
+              componentName="TCSBadge"
+              onNavigate={onNavigateToSection}
+              sectionId="badges"
             >
-              TCS
-            </span>
+              <TCSBadge
+                adjustments={tcsAdjustments}
+                disabled={!isReady}
+              />
+            </InspectableComponent>
             <p className="min-w-0 flex-1 truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
               {reservation.course}
             </p>
@@ -265,8 +289,6 @@ export function HomeDiningPreparationCard({
               sectionId="badges"
             >
               <StatusChip
-                color="var(--tb-color-text-body)"
-                backgroundColor="var(--tb-color-bg-page)"
               >
                 {reservationStatusLabel}
               </StatusChip>
@@ -279,7 +301,7 @@ export function HomeDiningPreparationCard({
               className="size-[40px] shrink-0 rounded-[8px]"
               iconSize={24}
               imageSrc={reservation.chefImage}
-              taste={reservation.adjustments[0]?.taste}
+              taste={activeAdjustments[0]?.taste}
               variant="neutral"
             />
             <div className="grow">
@@ -297,11 +319,11 @@ export function HomeDiningPreparationCard({
               {reservation.date} {reservation.time}
             </p>
             <p className="font-normal">• {reservation.guests}인</p>
-            <p className="font-normal">• {reservation.tcsStatus}</p>
+            <p className="font-normal">• {tcsStatusText}</p>
           </div>
 
           <div className="flex w-full flex-wrap items-start gap-[6px]">
-            {reservation.adjustments.map((adjustment, index) => (
+            {activeAdjustments.map((adjustment, index) => (
               <InspectableComponent
                 key={`${reservation.id}-${adjustment.taste}-${index}`}
                 componentName="TasteChip"
@@ -327,13 +349,14 @@ export function HomeDiningPreparationCard({
 
           <InspectableComponent
             className="block w-full"
-            componentName="QuickCalibrationHintCard"
+            componentName="TCSHintCard"
             onNavigate={onNavigateToSection}
             sectionId="appSpecific"
           >
-            <QuickCalibrationHintCard
+            <TCSHintCard
               title="이번 식사에서 달라지는 점"
-              description={summary.guestMessage}
+              description={isReady ? summary.chefGuidance[0] ?? summary.recommendationLogic : summary.guestMessage}
+              surface="nested"
             />
           </InspectableComponent>
         </div>
@@ -345,38 +368,46 @@ export function HomeDiningPreparationCard({
 export function HomeChefMatchCard({
   chef,
   onNavigateToSection,
+  onSelect,
 }: {
   chef: HomeChefMatchCardData;
   onNavigateToSection?: InspectableNavigateHandler;
+  onSelect?: (chef: HomeChefMatchCardData) => void;
 }) {
-  const dominantTasteLabel = TASTE_TOKENS[chef.tasteId].label;
   const chefName = chef.chef.endsWith('셰프') ? chef.chef : `${chef.chef} 셰프`;
 
   return (
     <InspectableComponent
       className="shrink-0"
-      componentName="LegacyHomeChefCard"
+      componentName="ChefMatchCard"
       onNavigate={onNavigateToSection}
       sectionId="cards"
     >
-      <LegacyHomeChefCard
-        chef={{
-          image: chef.image,
-          match: chef.match,
-          name: chefName,
-          restaurant: chef.restaurant,
-          taste: dominantTasteLabel,
-        }}
-        hoverMotion={false}
-        hoverShadow={false}
-      />
+      <button
+        type="button"
+        className="block text-left"
+        onClick={() => onSelect?.(chef)}
+      >
+        <ChefMatchCard
+          chefName={chefName}
+          hoverMotion={false}
+          hoverShadow={false}
+          imageSrc={chef.image}
+          matchRate={chef.match}
+          matchReason={chef.matchReason}
+          restaurant={chef.restaurant}
+          tasteId={chef.sourceTasteId ?? chef.tasteId}
+        />
+      </button>
     </InspectableComponent>
   );
 }
 
 export function HomeChefMatchStrip({
   chefCards,
+  fullBleed = true,
   onNavigateToSection,
+  onSelectChefMatch,
   showSectionTitle = true,
 }: HomeChefMatchStripProps) {
   if (chefCards.length === 0) {
@@ -384,56 +415,29 @@ export function HomeChefMatchStrip({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="tb-card-stack">
       {showSectionTitle ? (
         <SectionTitle as="h3" size="md">
           셰프 매칭
         </SectionTitle>
       ) : null}
-      <div className="mx-[-20px] w-[calc(100%+40px)] overflow-x-auto no-scrollbar">
-        <div className="flex gap-[10px] px-[20px]">
-          {chefCards.map((chef) => (
-            <HomeChefMatchCard
-              key={`${chef.chef}-${chef.restaurant}-${chef.match}`}
-              chef={chef}
-              onNavigateToSection={onNavigateToSection}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function HomeRecentProfileChangeCard({
-  recentChangeTasteLabel,
-  onNavigateToSection,
-  recentChangeText,
-}: HomeRecentProfileChangeCardProps) {
-  return (
-    <InspectableComponent
-      className="block w-full"
-      componentName="SectionCard"
-      onNavigate={onNavigateToSection}
-      sectionId="cards"
-    >
-      <SectionCard hoverEffect={false}>
-        <div className="flex w-full items-center gap-3">
-          <div
-            className="h-[36px] w-[8px] shrink-0 rounded-full"
-            style={{ backgroundColor: getTasteColor(recentChangeTasteLabel) }}
+      <CardScrollList fullBleed={fullBleed}>
+        {chefCards.map((chef) => (
+          <HomeChefMatchCard
+            key={[
+              chef.profileRank ?? 'match',
+              chef.sourceTasteId ?? chef.tasteId,
+              chef.chef,
+              chef.restaurant,
+              chef.match,
+            ].join('-')}
+            chef={chef}
+            onNavigateToSection={onNavigateToSection}
+            onSelect={onSelectChefMatch}
           />
-          <div className="flex min-w-0 flex-col gap-1">
-            <p className="text-[14px] font-medium leading-relaxed text-[var(--tb-color-text-primary)]">
-              {recentChangeText}
-            </p>
-            <span className="text-[12px] text-[var(--tb-color-text-muted)]">
-              가장 최근 다이닝 피드백과 측정을 통해 반영된 내용이에요.
-            </span>
-          </div>
-        </div>
-      </SectionCard>
-    </InspectableComponent>
+        ))}
+      </CardScrollList>
+    </div>
   );
 }
 
@@ -445,14 +449,12 @@ export function HomeCardStack({
   measurementSnapshot,
   needsMeasurementRefresh,
   onNavigateToSection,
+  onSelectChefMatch,
   onStartMeasurement,
   onStartRemeasurement,
   recentChangeText,
 }: HomeCardStackProps) {
-  const strongestTasteLabel = getStrongestTasteMeasurement(measurementSnapshot).label;
-  const weakestTasteLabel = getWeakestTasteMeasurement(measurementSnapshot).label;
   const recentChangeTasteLabel = getRecentChangeTasteMeasurement(measurementSnapshot).label;
-  const remeasurementAccentTaste = strongestTasteLabel;
   const isBroadStarterProfile = isBroadStarterMeasurementSnapshot(measurementSnapshot);
 
   return (
@@ -460,10 +462,11 @@ export function HomeCardStack({
       <HomeChefMatchStrip
         chefCards={chefCards}
         onNavigateToSection={onNavigateToSection}
+        onSelectChefMatch={onSelectChefMatch}
       />
 
       {featuredReservation && featuredSummary ? (
-        <div className="flex flex-col gap-3">
+        <div className="tb-card-stack">
           <SectionTitle as="h2" size="md">
             다음 다이닝 준비
           </SectionTitle>
@@ -475,15 +478,24 @@ export function HomeCardStack({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3">
+      <div className="tb-card-stack">
         <SectionTitle as="h3" size="md">
           최근 프로필 변화
         </SectionTitle>
-        <HomeRecentProfileChangeCard
-          onNavigateToSection={onNavigateToSection}
-          recentChangeTasteLabel={recentChangeTasteLabel}
-          recentChangeText={recentChangeText}
-        />
+        <InspectableComponent
+          className="block w-full"
+          componentName="InterpretationCard"
+          onNavigate={onNavigateToSection}
+          sectionId="cards"
+        >
+          <InterpretationCard
+            accentColor={getTasteColor(recentChangeTasteLabel)}
+            detailLabel="변화 보기"
+            description={recentChangeText}
+            eyebrow="최근 반영 내용"
+            supportingText="가장 최근 다이닝 피드백과 측정을 통해 반영된 내용이에요."
+          />
+        </InspectableComponent>
       </div>
 
       <InspectableComponent
@@ -493,7 +505,6 @@ export function HomeCardStack({
         sectionId="appSpecific"
       >
         <TasteMeasurementMiniCta
-          accentTaste={remeasurementAccentTaste}
           title={
             needsMeasurementRefresh
               ? isBroadStarterProfile

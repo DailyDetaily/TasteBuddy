@@ -1,31 +1,46 @@
-import { DismissRegular } from '@fluentui/react-icons';
 import {
-  ArrowSyncRegular,
-  AlertRegular,
-  QuestionCircleRegular,
-  InfoRegular,
-  SignOutRegular,
-  ShieldCheckmarkRegular,
-  ChevronRightRegular,
-} from '@fluentui/react-icons';
+  X as XIcon
+} from 'lucide-react';
+import {
+  RefreshCw as RefreshCwIcon,
+  Bell as BellIcon,
+  CircleHelp as CircleHelpIcon,
+  Info as InfoIcon,
+  LogIn as LogInIcon,
+  LogOut as LogOutIcon,
+  Mail as MailIcon,
+  ShieldCheck as ShieldCheckIcon,
+  ChevronRight as ChevronRightIcon
+} from 'lucide-react';
 import React from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
+import PalateBloomAvatar, {
+  DEFAULT_PALATE_BLOOM_PROFILE,
+  type TasteProfile as PalateBloomTasteProfile,
+} from './system/PalateBloomAvatar';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
-  return ({ size, style, ...props }: any) => (
-    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
+  return ({ size, fontSize, style, ...props }: any) => (
+    <IconComponent {...props} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />
   );
 };
 
-const RefreshCw = wrapIcon(ArrowSyncRegular);
-const Bell = wrapIcon(AlertRegular);
-const HelpCircle = wrapIcon(QuestionCircleRegular);
-const Info = wrapIcon(InfoRegular);
-const LogOut = wrapIcon(SignOutRegular);
-const Shield = wrapIcon(ShieldCheckmarkRegular);
-const ChevronRight = wrapIcon(ChevronRightRegular);
+const RefreshCw = wrapIcon(RefreshCwIcon);
+const Bell = wrapIcon(BellIcon);
+const HelpCircle = wrapIcon(CircleHelpIcon);
+const Info = wrapIcon(InfoIcon);
+const LogIn = wrapIcon(LogInIcon);
+const LogOut = wrapIcon(LogOutIcon);
+const Mail = wrapIcon(MailIcon);
+const Shield = wrapIcon(ShieldCheckIcon);
+const ChevronRight = wrapIcon(ChevronRightIcon);
 const CARD_TRAILING_ICON_SIZE = ICON_TOKENS.size.md;
 const CHROME_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
+
+export type AppMenuSupportPanel =
+  | 'notification-settings'
+  | 'help'
+  | 'about';
 
 interface MenuItem {
   icon: ReturnType<typeof wrapIcon>;
@@ -57,6 +72,16 @@ interface AppMenuDrawerProps {
   onClose: () => void;
   onStartMeasurement?: () => void;
   onImproveAccuracy?: () => void;
+  onOpenSupportPanel?: (panel: AppMenuSupportPanel) => void;
+  onOpenAuth?: () => void;
+  onOpenLogin?: () => void;
+  onRequestLogout?: () => void;
+  userEmail?: string | null;
+  userAvatarImageSrc?: string | null;
+  userPalateBloomProfile?: PalateBloomTasteProfile;
+  userPalateBloomShapeSeed?: string;
+  userLabel?: string;
+  isAnonymousUser?: boolean;
 }
 
 export default function AppMenuDrawer({
@@ -64,7 +89,21 @@ export default function AppMenuDrawer({
   onClose,
   onStartMeasurement,
   onImproveAccuracy,
+  onOpenSupportPanel,
+  onOpenAuth,
+  onOpenLogin,
+  onRequestLogout,
+  userEmail,
+  userAvatarImageSrc,
+  userPalateBloomProfile,
+  userPalateBloomShapeSeed,
+  userLabel = 'Taste Buddy',
+  isAnonymousUser = true,
 }: AppMenuDrawerProps) {
+  const FooterIcon = isAnonymousUser ? LogIn : LogOut;
+  const footerAction = isAnonymousUser ? 'auth' : 'logout';
+  const footerLabel = isAnonymousUser ? '로그인' : '로그아웃';
+
   const handleAction = (action: string) => {
     switch (action) {
       case 'remeasure':
@@ -74,6 +113,24 @@ export default function AppMenuDrawer({
       case 'improve-accuracy':
         onClose();
         onImproveAccuracy?.();
+        break;
+      case 'notification-settings':
+      case 'help':
+      case 'about':
+        onClose();
+        onOpenSupportPanel?.(action);
+        break;
+      case 'logout':
+        onClose();
+        onRequestLogout?.();
+        break;
+      case 'auth':
+        onClose();
+        onOpenAuth?.();
+        break;
+      case 'login':
+        onClose();
+        onOpenLogin?.();
         break;
       default:
         break;
@@ -91,8 +148,11 @@ export default function AppMenuDrawer({
 
       {/* Drawer */}
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-[300px] max-w-[85vw] bg-white/85 supports-[backdrop-filter:blur(0px)]:bg-white/85 backdrop-blur-xl shadow-[var(--tb-shadow-drawer)] transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${isOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        className={`fixed inset-y-0 right-0 z-[70] w-[300px] max-w-[85vw] bg-white/85 supports-[backdrop-filter:blur(0px)]:bg-white/85 backdrop-blur-xl transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          isOpen
+            ? 'translate-x-0 shadow-[var(--tb-shadow-drawer)]'
+            : 'translate-x-full shadow-none pointer-events-none'
+        }`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -107,20 +167,44 @@ export default function AppMenuDrawer({
                 height: CHROME_ICON_BUTTON_SIZE,
               }}
             >
-              <DismissRegular fontSize={ICON_TOKENS.size.lg} />
+              <XIcon size={ICON_TOKENS.size.lg} />
             </button>
           </div>
 
           {/* Profile Summary */}
-          <div className="mx-5 mb-4 flex items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-card)] p-3">
-            <div className="flex items-center justify-center rounded-full size-[40px] bg-[var(--tb-taste-sweet-bg)]">
-              <span className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">JH</span>
+          <button
+            type="button"
+            onClick={() => handleAction('auth')}
+            className="mx-5 mb-4 flex items-center gap-3 rounded-[var(--tb-radius-14)] bg-[var(--tb-color-surface-card)] p-3 text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+          >
+            <PalateBloomAvatar
+              ariaLabel={userLabel}
+              imageSrc={userAvatarImageSrc}
+              profile={userPalateBloomProfile ?? DEFAULT_PALATE_BLOOM_PROFILE}
+              shapeSeed={userPalateBloomShapeSeed}
+              size="sm"
+            />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
+                {userLabel}
+              </span>
+              <span className="truncate text-[11px] text-[var(--tb-color-text-muted)]">
+                {isAnonymousUser
+                  ? '프로필 보관 전'
+                  : userEmail
+                    ? userEmail
+                    : 'Building Profile'}
+              </span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">신준호</span>
-              <span className="text-[11px] text-[var(--tb-color-text-muted)]">Building Profile</span>
-            </div>
-          </div>
+            {isAnonymousUser ? (
+              <Mail size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
+            ) : (
+              <ChevronRight
+                size={CARD_TRAILING_ICON_SIZE}
+                className="shrink-0 text-[var(--tb-color-icon-muted)]"
+              />
+            )}
+          </button>
 
           {/* Menu Sections */}
           <div className="flex-1 overflow-y-auto no-scrollbar px-5">
@@ -140,7 +224,7 @@ export default function AppMenuDrawer({
                           onClick={() => handleAction(item.action)}
                           className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 text-left transition-colors bg-[var(--tb-color-surface-card)]"
                         >
-                          <Icon size={18} className="shrink-0 text-[var(--tb-color-icon-primary)]" />
+                          <Icon size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-primary)]" />
                           <div className="flex flex-col flex-1 min-w-0">
                             <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
                               {item.label}
@@ -168,10 +252,11 @@ export default function AppMenuDrawer({
           <div className="px-4 py-4 border-t border-[var(--tb-color-border-default)]">
             <button
               type="button"
+              onClick={() => handleAction(isAnonymousUser ? 'login' : footerAction)}
               className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 w-full text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
             >
-              <LogOut size={18} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
-              <span className="text-[13px] font-medium text-[var(--tb-color-text-hint)]">로그아웃</span>
+              <FooterIcon size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
+              <span className="text-[13px] font-medium text-[var(--tb-color-text-hint)]">{footerLabel}</span>
             </button>
           </div>
         </div>

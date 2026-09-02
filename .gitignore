@@ -3,7 +3,21 @@ node_modules
 dist/
 build/
 .vite/
+tmp/
+.tmp-playwright/
+test-results/
+dev-dist/
+data/foodon/
 .env
 .env.local
 .env.*.local
 .gstack/
+scratch/SourcePackages/
+supabase/.temp/
+
+# Xcode local state
+DerivedData/
+DerivedData*/
+*.xcuserstate
+xcuserdata/
+ios/Config/Secrets.local.xcconfig

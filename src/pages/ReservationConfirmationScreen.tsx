@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
-import { CheckmarkCircleRegular, PersonRegular, SendRegular, CalendarCheckmarkRegular } from '@fluentui/react-icons';
-const wrapIcon = (Icon: any) => ({ size, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size, width: size, height: size, ...style }} />;
-const CheckCircle2 = wrapIcon(CheckmarkCircleRegular);
-const ChefHat = wrapIcon(PersonRegular);
-const Send = wrapIcon(SendRegular);
-const CalendarCheck = wrapIcon(CalendarCheckmarkRegular);
+import {
+  CircleCheck as CircleCheckIcon,
+  ChefHat as ChefHatIcon,
+  Send as SendIcon,
+  CalendarCheck as CalendarCheckIcon
+} from 'lucide-react';
+const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...p }: any) => <Icon {...p} className={className} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />;
+const CheckCircle2 = wrapIcon(CircleCheckIcon);
+const ChefHat = wrapIcon(ChefHatIcon);
+const Send = wrapIcon(SendIcon);
+const CalendarCheck = wrapIcon(CalendarCheckIcon);
 import TopAppBar from '../components/TopAppBar';
 import SectionCard from '../components/SectionCard';
-import PrimaryButton from '../components/system/PrimaryButton';
+import TokenBox from '../components/system/TokenBox';
+import FlowBottomCta from '../components/system/FlowBottomCta';
 import { ICON_TOKENS } from '../constants/designTokens';
 
 interface ReservationConfirmationScreenProps {
@@ -111,8 +117,8 @@ export default function ReservationConfirmationScreen({
                 >
                   <SectionCard hoverEffect={false}>
                     <div className="flex items-start gap-3">
-                      <div
-                        className={`flex size-[32px] shrink-0 items-center justify-center rounded-[var(--tb-radius-14)] transition-all duration-500 ${
+                      <TokenBox
+                        className={`transition-all duration-500 ${
                           isCurrent ? 'animate-pulse' : ''
                         }`}
                         style={{
@@ -121,7 +127,7 @@ export default function ReservationConfirmationScreen({
                         }}
                       >
                         <Icon size={ICON_TOKENS.size.md} />
-                      </div>
+                      </TokenBox>
                       <div className="flex flex-col gap-1 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
@@ -159,14 +165,13 @@ export default function ReservationConfirmationScreen({
         </div>
       </div>
 
-      {/* Bottom CTA */}
       {isComplete && (
-        <div className="tb-bottom-fade absolute bottom-0 left-0 right-0 z-20 flex min-h-[140px] w-full flex-col items-center justify-end gap-2 px-5 pb-10 animate-fadeIn">
-          <PrimaryButton onClick={onComplete}>예약 상세 보기</PrimaryButton>
-          <p className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">
-            프로필 기반 개인화 과정은 예약 상세에서 계속 확인할 수 있어요.
-          </p>
-        </div>
+        <FlowBottomCta
+          actionLabel="예약 상세 보기"
+          className="animate-fadeIn"
+          helperText="프로필 기반 개인화 과정은 예약 상세에서 계속 확인할 수 있어요."
+          onAction={onComplete}
+        />
       )}
     </div>
   );

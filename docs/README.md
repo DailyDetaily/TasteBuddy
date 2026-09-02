@@ -15,6 +15,7 @@ The important thing to know is that some of the most important docs live at the 
 - Product UX guideline: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - AI-friendly design system guide: [`AI_DESIGN_SYSTEM.md`](./AI_DESIGN_SYSTEM.md)
 - Machine-readable design snapshot: [`design-system.snapshot.json`](./design-system.snapshot.json)
+- App/service summary: [`TASTE_BUDDY_APP_SUMMARY.md`](./TASTE_BUDDY_APP_SUMMARY.md)
 
 ## Docs Folder Structure
 
@@ -30,9 +31,13 @@ The important thing to know is that some of the most important docs live at the 
 
 ### Product and UX
 
+- App/service summary: [`TASTE_BUDDY_APP_SUMMARY.md`](./TASTE_BUDDY_APP_SUMMARY.md)
 - Product source of truth: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - Design system: [`../DESIGN.md`](../DESIGN.md)
+- TasteBuddyAgent guide: [`product/taste-buddy-agent.md`](./product/taste-buddy-agent.md)
+- TBA knowledge/RAG plan: [`product/tba-knowledge-rag-plan.md`](./product/tba-knowledge-rag-plan.md)
 - Onboarding product note: [`product/onboarding-digital-anchoring.md`](./product/onboarding-digital-anchoring.md)
+- Onboarding intake plan: [`product/onboarding-preference-intake-plan.md`](./product/onboarding-preference-intake-plan.md)
 
 ### Design
 
@@ -52,6 +57,7 @@ The important thing to know is that some of the most important docs live at the 
 - Catchtable workflow: [`operations/catchtable-menu-automation.md`](./operations/catchtable-menu-automation.md)
 - Batch run log: [`operations/catchtable-batch-run-2026-03-29.md`](./operations/catchtable-batch-run-2026-03-29.md)
 - Supabase setup: [`operations/supabase-connect-and-seed.md`](./operations/supabase-connect-and-seed.md)
+- Cloudflare R2 media storage: [`operations/cloudflare-r2-media-storage.md`](./operations/cloudflare-r2-media-storage.md)
 
 ## Notes
 

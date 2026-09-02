@@ -1,5 +1,5 @@
 const RESTAURANT_NAME_BY_SLUG = {
-  '7th-door-seoul': '세븐도어',
+  '7th-door-seoul': '7th Door',
   'eatanic-garden-seoul': '이타닉가든',
   evett: '에빗',
   jungsik: '정식당',
@@ -16,8 +16,10 @@ const RESTAURANT_NAME_BY_SLUG = {
 };
 
 const RESTAURANT_NAME_TRANSLATIONS = {
-  '7TH DOOR': '세븐도어',
-  '7TH DOOR SEOUL': '세븐도어',
+  '7TH DOOR': '7th Door',
+  '7TH DOOR SEOUL': '7th Door',
+  '세븐도어': '7th Door',
+  '세븐스도어': '7th Door',
   'EATANIC GARDEN': '이타닉가든',
   EVETT: '에빗',
   JUNGSIK: '정식당',

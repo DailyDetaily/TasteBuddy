@@ -13,7 +13,11 @@ import { LineChart, Line, ResponsiveContainer, BarChart, Bar, Cell } from "recha
 import TasteChip from "../components/system/TasteChip";
 import TopAppBar from "../components/TopAppBar";
 import ChefAvatar from "../components/system/ChefAvatar";
-import { TASTE_IDS, TASTE_TOKENS, type TasteId } from "../constants/designTokens";
+import CardDetailLabel from "../components/system/CardDetailLabel";
+import TasteInsightSummaryCard from "../components/system/TasteInsightSummaryCard";
+import TCSBadge from "../components/system/TCSBadge";
+import TastePointArrowBox from "../components/system/TastePointArrowBox";
+import { ICON_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from "../constants/designTokens";
 import {
   buildTasteAdjustmentGradient,
   getTasteBg,
@@ -22,7 +26,6 @@ import {
   getTasteTintSurface,
   getTasteTintSurfaceSubText,
   getTasteTintSurfaceText,
-  mixHexColors,
   TASTE_TYPES,
 } from "../constants/tasteColors";
 import { type DiningFeedbackDraft } from "../constants/diningFeedbackData";
@@ -38,24 +41,29 @@ import {
   hydrateRestaurantContentCatalog,
   type RestaurantContentDish,
 } from "../lib/tasteBuddySupabase";
-import {  
-  StarRegular, StarHalfRegular, ClockRegular, SearchRegular,
-  ChevronDownRegular, ChevronRightRegular, ChevronUpRegular 
-} from '@fluentui/react-icons';
+import {
+  Star as StarIcon,
+  StarHalf as StarHalfIcon,
+  Clock as ClockIcon,
+  Search as SearchIcon,
+  ChevronDown as ChevronDownIcon,
+  ChevronRight as ChevronRightIcon,
+  ChevronUp as ChevronUpIcon
+} from 'lucide-react';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
-  return ({ size, style, ...props }: any) => (
-    <IconComponent {...props} style={{ fontSize: size, width: size, height: size, ...style }} />
+  return ({ size, fontSize, style, ...props }: any) => (
+    <IconComponent {...props} style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }} />
   );
 };
 
-const Star = wrapIcon(StarRegular);
-const StarHalf = wrapIcon(StarHalfRegular);
-const Clock = wrapIcon(ClockRegular);
-const Search = wrapIcon(SearchRegular);
-const ChevronDown = wrapIcon(ChevronDownRegular);
-const ChevronRight = wrapIcon(ChevronRightRegular);
-const ChevronUp = wrapIcon(ChevronUpRegular);
+const Star = wrapIcon(StarIcon);
+const StarHalf = wrapIcon(StarHalfIcon);
+const Clock = wrapIcon(ClockIcon);
+const Search = wrapIcon(SearchIcon);
+const ChevronDown = wrapIcon(ChevronDownIcon);
+const ChevronRight = wrapIcon(ChevronRightIcon);
+const ChevronUp = wrapIcon(ChevronUpIcon);
 
 type HomeChefCardData = {
   bgColor?: string;
@@ -363,31 +371,6 @@ function getHomeSpecialNoteSummaryDetails() {
 }
 
 const HOME_SPECIAL_NOTE_SUMMARY_DETAILS = getHomeSpecialNoteSummaryDetails();
-
-function buildSpecialNoteTrendPath(points: Array<{ x: number; y: number }>) {
-  if (points.length === 0) {
-    return "";
-  }
-
-  let path = `M ${points[0]?.x ?? 0} ${points[0]?.y ?? 0}`;
-
-  for (let index = 1; index < points.length; index += 1) {
-    const current = points[index];
-
-    if (!current) {
-      continue;
-    }
-    path += ` L ${current.x} ${current.y}`;
-  }
-
-  return path;
-}
-
-
-
-
-
-
 
 function Heading() {
   return (
@@ -1089,6 +1072,24 @@ function getHomeCardSummaryDetails(details: HomeTrendDetail[]) {
   return summaryDetails;
 }
 
+function getHomeKeywordTasteLabel(keyword: string) {
+  return TASTE_IDS
+    .map((tasteId) => TASTE_TOKENS[tasteId].label)
+    .find((label) => keyword.startsWith(label));
+}
+
+function HomeKeywordChip({ keyword }: { keyword: string }) {
+  const tasteLabel = getHomeKeywordTasteLabel(keyword);
+
+  if (!tasteLabel) {
+    return <TasteChip taste={keyword} tone="neutral" />;
+  }
+
+  const value = keyword.slice(tasteLabel.length).trim();
+
+  return <TasteChip taste={tasteLabel} value={value || undefined} />;
+}
+
 function buildHomeCardCircleGradient(details: HomeTrendDetail[]) {
   return buildTasteAdjustmentGradient(
     details.map((detail) => ({
@@ -1457,6 +1458,7 @@ function ChefCard({
         <ChefAvatar
           alt={chef.name}
           className="relative shrink-0 size-[48px] rounded-[8px]"
+          iconSize={ICON_TOKENS.size.xl}
           imageSrc={chef.image}
           taste={chef.taste}
         />
@@ -1596,43 +1598,6 @@ function Head({ details }: { details: HomeTrendDetail[] }) {
   );
 }
 
-function Content7({ periodLabel }: { periodLabel: string }) {
-  return (
-    <div className="flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[12px] text-[var(--tb-color-text-muted)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">
-        {periodLabel}
-      </p>
-      <div className="flex items-center justify-center relative shrink-0">
-        <div className="flex-none rotate-[180deg]">
-          <div className="h-[8px] relative w-[4px]">
-            <div className="absolute inset-[-6.25%_-12.5%]" style={{ "--stroke-0": "rgba(111, 111, 111, 1)" } as React.CSSProperties}>
-              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5 9">
-                <path d="M4.5 0.5L0.5 4.5L4.5 8.5" id="Vector 143" stroke="var(--stroke-0, #6F6F6F)" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MoreInfo4({ periodLabel }: { periodLabel: string }) {
-  return (
-    <div className="basis-0 flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
-      <Content7 periodLabel={periodLabel} />
-    </div>
-  );
-}
-
-function Right1({ periodLabel }: { periodLabel: string }) {
-  return (
-    <div className="flex gap-[6px] items-center relative shrink-0 w-[59px]" data-name="Right">
-      <MoreInfo4 periodLabel={periodLabel} />
-    </div>
-  );
-}
-
 function Heading4({
   details,
   periodLabel,
@@ -1643,169 +1608,7 @@ function Heading4({
   return (
     <div className="flex gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
       <Head details={details} />
-      <Right1 periodLabel={periodLabel} />
-    </div>
-  );
-}
-
-function TasteChangeMiniGraph({ details }: { details: HomeTrendDetail[] }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [availableWidth, setAvailableWidth] = useState(128);
-  const graphEntries = getHomeCardSummaryDetails(details).map((detail) => ({
-    ...detail,
-    graphValues: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
-  }));
-  const currentDotRadius = 6;
-  const historyDotRadius = 2;
-  const tintedLineWidth = 12;
-  const maxPointGap = 36;
-  const graphHeight = 24;
-  const graphInsetX = 6;
-  const lineStartWhiteMix = 0.6;
-
-  useEffect(() => {
-    const node = containerRef.current;
-
-    if (!node) {
-      return;
-    }
-
-    const updateWidth = (nextWidth: number) => {
-      setAvailableWidth((previousWidth) => {
-        const roundedWidth = Math.max(0, Math.round(nextWidth));
-        return previousWidth === roundedWidth ? previousWidth : roundedWidth;
-      });
-    };
-
-    updateWidth(node.clientWidth);
-
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) {
-        return;
-      }
-
-      updateWidth(entry.contentRect.width);
-    });
-
-    observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  return (
-    <div
-      aria-hidden="true"
-      ref={containerRef}
-      className="content-stretch flex w-full flex-col gap-[4px] shrink-0"
-      data-name="Taste Change Graph"
-    >
-      {graphEntries.map((entry, index) => {
-        const fillColor = getTasteColor(entry.parentTaste);
-        const trackColor = getTasteTint(entry.parentTaste, 0.18);
-        const lineStartColor = mixHexColors(fillColor, '#FFFFFF', lineStartWhiteMix);
-        const maxVisiblePoints = Math.max(
-          2,
-          Math.floor(Math.max(availableWidth - graphInsetX * 2, 0) / maxPointGap) + 1,
-        );
-        const visibleValues = entry.graphValues.slice(-maxVisiblePoints);
-        const graphWidth =
-          graphInsetX * 2 + Math.max(visibleValues.length - 1, 0) * maxPointGap;
-        const values = visibleValues;
-        const minValue = Math.min(...values);
-        const maxValue = Math.max(...values);
-        const xStep = maxPointGap;
-        const gradientId = `taste-change-graph-gradient-${index}`;
-        const points = values.map((value, pointIndex) => {
-          const normalized =
-            maxValue === minValue ? 0.5 : (value - minValue) / (maxValue - minValue);
-
-          return {
-            x: Math.round(graphInsetX + xStep * pointIndex),
-            y: Math.round(18 - normalized * 10),
-          };
-        });
-        const graphPath = buildSpecialNoteTrendPath(points);
-        const currentPoint =
-          points[points.length - 1] ?? { x: graphWidth - graphInsetX, y: graphHeight / 2 };
-
-        return (
-          <div key={entry.detailLabel} className="flex h-[24px] w-full items-center justify-end">
-            <div className="relative h-[24px]" style={{ width: `${graphWidth}px` }}>
-              <svg className="absolute inset-0 size-full" viewBox={`0 0 ${graphWidth} ${graphHeight}`}>
-                <defs>
-                  <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="0" x2={graphWidth} y1="0" y2="0">
-                    <stop offset="0%" stopColor={lineStartColor} />
-                    <stop offset="100%" stopColor={fillColor} />
-                  </linearGradient>
-                </defs>
-                <path
-                  d={graphPath}
-                  fill="none"
-                  stroke={trackColor}
-                  strokeLinecap="round"
-                  strokeWidth={tintedLineWidth}
-                />
-                <path
-                  d={graphPath}
-                  fill="none"
-                  stroke={`url(#${gradientId})`}
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              {points.slice(0, -1).map((point, historyIndex) => {
-                const progress =
-                  graphWidth <= graphInsetX * 2
-                    ? 1
-                    : Math.min(
-                        1,
-                        Math.max(0, (point.x - graphInsetX) / (graphWidth - graphInsetX * 2)),
-                      );
-                const pointColor = mixHexColors(
-                  fillColor,
-                  '#FFFFFF',
-                  lineStartWhiteMix * (1 - progress),
-                );
-
-                return (
-                  <span
-                    key={`${entry.detailLabel}-history-${historyIndex}`}
-                    aria-hidden="true"
-                    className="absolute rounded-full"
-                    style={{
-                      backgroundColor: pointColor,
-                      height: `${historyDotRadius * 2}px`,
-                      left: `${point.x}px`,
-                      top: `${point.y}px`,
-                      transform: 'translate(-50%, -50%)',
-                      width: `${historyDotRadius * 2}px`,
-                    }}
-                  />
-                );
-              })}
-              <span
-                aria-hidden="true"
-                className="absolute rounded-full"
-                style={{
-                  backgroundColor: fillColor,
-                  height: `${currentDotRadius * 2}px`,
-                  left: `${currentPoint.x}px`,
-                  top: `${currentPoint.y}px`,
-                  transform: 'translate(-50%, -50%)',
-                  width: `${currentDotRadius * 2}px`,
-                }}
-              />
-            </div>
-          </div>
-        );
-      })}
+      <CardDetailLabel label={periodLabel} />
     </div>
   );
 }
@@ -1817,64 +1620,15 @@ function Cards3({
   cardData: HomeTasteProfileCardData;
   onOpenDetail: () => void;
 }) {
-  const summaryDetails = getHomeCardSummaryDetails(cardData.details);
-
   return (
-    <button
-      type="button"
+    <TasteInsightSummaryCard
+      actionLabel={cardData.periodLabel}
+      details={cardData.details}
+      keywords={cardData.keywords}
       onClick={onOpenDetail}
-      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer"
-      data-name="Cards"
-    >
-      <div className="overflow-clip rounded-[inherit] size-full">
-        <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
-          <Heading4 details={cardData.details} periodLabel={cardData.periodLabel} />
-
-          <div className="box-border content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full">
-            <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
-              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[var(--tb-color-text-primary)] text-[16px] w-full">
-                {cardData.title}
-              </p>
-            </div>
-
-            <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
-              <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
-                {summaryDetails.map((detail) => (
-                  <div key={detail.detailLabel} className="flex items-center gap-[8px] w-full">
-                    <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
-                    <div className="flex min-w-0 items-center gap-[6px]">
-                      <p className="truncate text-[14px] font-medium text-[var(--tb-color-text-secondary)]">
-                        {detail.detailLabel}
-                      </p>
-                      <p
-                        className="shrink-0 text-[12px] font-semibold leading-[1.1]"
-                        style={{ color: getTasteColor(detail.parentTaste) }}
-                      >
-                        {detail.change}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
-                <TasteChangeMiniGraph details={cardData.details} />
-              </div>
-            </div>
-
-            <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
-              {cardData.keywords.map((keyword) => (
-                <span
-                  key={keyword}
-                  className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-white px-[8px] py-[4px] text-[10px] font-semibold text-[var(--tb-color-text-muted)]"
-                >
-                  {keyword}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </button>
+      sectionLabel="미각변화"
+      title={cardData.title}
+    />
   );
 }
 
@@ -1897,41 +1651,6 @@ function Head1({ details }: { details: HomeTrendDetail[] }) {
   );
 }
 
-function Content9({ periodLabel }: { periodLabel: string }) {
-  return (
-    <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-name="Content">
-      <p className="font-['Pretendard_Variable:Medium',sans-serif] font-medium leading-[1.273] relative shrink-0 text-[12px] text-[var(--tb-color-text-muted)] text-nowrap text-right tracking-[0.3421px] whitespace-pre">{periodLabel}</p>
-      <div className="flex items-center justify-center relative shrink-0">
-        <div className="flex-none rotate-[180deg]">
-          <div className="h-[8px] relative w-[4px]">
-            <div className="absolute inset-[-6.25%_-12.5%]" style={{ "--stroke-0": "rgba(111, 111, 111, 1)" } as React.CSSProperties}>
-              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5 9">
-                <path d="M4.5 0.5L0.5 4.5L4.5 8.5" id="Vector 143" stroke="var(--stroke-0, #6F6F6F)" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MoreInfo5({ periodLabel }: { periodLabel: string }) {
-  return (
-    <div className="basis-0 content-stretch flex gap-[6px] grow items-center min-h-px min-w-px relative shrink-0" data-name="More info">
-      <Content9 periodLabel={periodLabel} />
-    </div>
-  );
-}
-
-function Right3({ periodLabel }: { periodLabel: string }) {
-  return (
-    <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-[59px]" data-name="Right">
-      <MoreInfo5 periodLabel={periodLabel} />
-    </div>
-  );
-}
-
 function Heading5({
   details,
   periodLabel,
@@ -1942,201 +1661,7 @@ function Heading5({
   return (
     <div className="content-center flex flex-wrap gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full" data-name="Heading">
       <Head1 details={details} />
-      <Right3 periodLabel={periodLabel} />
-    </div>
-  );
-}
-
-function SpecialNoteArrowBox({
-  parentTaste,
-  trend,
-}: {
-  parentTaste: string;
-  trend: "increase" | "decrease";
-}) {
-  const fillColor = getTasteColor(parentTaste);
-
-  return (
-    <div className="relative shrink-0 size-[18px]" data-name="Arrow Box">
-      <div className="absolute inset-0" style={{ "--fill-0": fillColor } as React.CSSProperties}>
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
-          <g id="Arrow Box">
-            <rect fill="var(--fill-0, #B372B4)" height="18" rx="4" width="18" />
-            <path
-              d={trend === "increase" ? svgPaths.p3d191ac0 : svgPaths.p1157b300}
-              id="Vector 222"
-              stroke="var(--stroke-0, white)"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            />
-          </g>
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function SpecialNoteMiniGraph({ details }: { details: HomeTrendDetail[] }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [availableWidth, setAvailableWidth] = useState(128);
-  const graphEntries = getHomeCardSummaryDetails(details).map((detail) => ({
-    ...detail,
-    graphValues: [...detail.history, detail.change].map((value) => parseTasteChangeValue(value)),
-  }));
-  const currentDotRadius = 6;
-  const historyDotRadius = 2;
-  const tintedLineWidth = 12;
-  const maxPointGap = 36;
-  const graphHeight = 24;
-  const graphInsetX = 6;
-  const lineStartWhiteMix = 0.6;
-
-  useEffect(() => {
-    const node = containerRef.current;
-
-    if (!node) {
-      return;
-    }
-
-    const updateWidth = (nextWidth: number) => {
-      setAvailableWidth((previousWidth) => {
-        const roundedWidth = Math.max(0, Math.round(nextWidth));
-        return previousWidth === roundedWidth ? previousWidth : roundedWidth;
-      });
-    };
-
-    updateWidth(node.clientWidth);
-
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) {
-        return;
-      }
-
-      updateWidth(entry.contentRect.width);
-    });
-
-    observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  return (
-    <div
-      aria-hidden="true"
-      ref={containerRef}
-      className="content-stretch flex w-full flex-col gap-[4px] shrink-0"
-      data-name="Special Note Graph"
-    >
-      {graphEntries.map((entry, index) => {
-        const fillColor = getTasteColor(entry.parentTaste);
-        const trackColor = getTasteTint(entry.parentTaste, 0.18);
-        const lineStartColor = mixHexColors(fillColor, '#FFFFFF', lineStartWhiteMix);
-        const maxVisiblePoints = Math.max(
-          2,
-          Math.floor(Math.max(availableWidth - graphInsetX * 2, 0) / maxPointGap) + 1,
-        );
-        const visibleValues = entry.graphValues.slice(-maxVisiblePoints);
-        const graphWidth =
-          graphInsetX * 2 + Math.max(visibleValues.length - 1, 0) * maxPointGap;
-        const values = visibleValues;
-        const minValue = Math.min(...values);
-        const maxValue = Math.max(...values);
-        const xStep = maxPointGap;
-        const gradientId = `special-note-graph-gradient-${index}`;
-        const points = values.map((value, index) => {
-          const normalized =
-            maxValue === minValue ? 0.5 : (value - minValue) / (maxValue - minValue);
-
-          return {
-            x: Math.round(graphInsetX + xStep * index),
-            y: Math.round(18 - normalized * 10),
-          };
-        });
-        const graphPath = buildSpecialNoteTrendPath(points);
-        const currentPoint = points[points.length - 1] ?? { x: graphWidth - graphInsetX, y: graphHeight / 2 };
-
-        return (
-          <div key={entry.detailLabel} className="flex h-[24px] w-full items-center justify-end">
-            <div className="relative h-[24px]" style={{ width: `${graphWidth}px` }}>
-              <svg
-                className="absolute inset-0 size-full"
-                viewBox={`0 0 ${graphWidth} ${graphHeight}`}
-              >
-                <defs>
-                  <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="0" x2={graphWidth} y1="0" y2="0">
-                    <stop offset="0%" stopColor={lineStartColor} />
-                    <stop offset="100%" stopColor={fillColor} />
-                  </linearGradient>
-                </defs>
-                <path
-                  d={graphPath}
-                  fill="none"
-                  stroke={trackColor}
-                  strokeLinecap="round"
-                  strokeWidth={tintedLineWidth}
-                />
-                <path
-                  d={graphPath}
-                  fill="none"
-                  stroke={`url(#${gradientId})`}
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              {points.slice(0, -1).map((point, historyIndex) => {
-                const progress =
-                  graphWidth <= graphInsetX * 2
-                    ? 1
-                    : Math.min(
-                        1,
-                        Math.max(0, (point.x - graphInsetX) / (graphWidth - graphInsetX * 2)),
-                      );
-                const pointColor = mixHexColors(
-                  fillColor,
-                  '#FFFFFF',
-                  lineStartWhiteMix * (1 - progress),
-                );
-
-                return (
-                  <span
-                    key={`${entry.detailLabel}-history-${historyIndex}`}
-                    aria-hidden="true"
-                    className="absolute rounded-full"
-                    style={{
-                      backgroundColor: pointColor,
-                      height: `${historyDotRadius * 2}px`,
-                      left: `${point.x}px`,
-                      top: `${point.y}px`,
-                      transform: 'translate(-50%, -50%)',
-                      width: `${historyDotRadius * 2}px`,
-                    }}
-                  />
-                );
-              })}
-              <span
-                aria-hidden="true"
-                className="absolute rounded-full"
-                style={{
-                  backgroundColor: fillColor,
-                  height: `${currentDotRadius * 2}px`,
-                  left: `${currentPoint.x}px`,
-                  top: `${currentPoint.y}px`,
-                  transform: 'translate(-50%, -50%)',
-                  width: `${currentDotRadius * 2}px`,
-                }}
-              />
-            </div>
-          </div>
-        );
-      })}
+      <CardDetailLabel label={periodLabel} />
     </div>
   );
 }
@@ -2154,7 +1679,7 @@ function SpecialNoteInfo({
       className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full rounded-[12px] bg-[var(--tb-color-surface-muted)] px-[10px] py-[10px]"
       data-name="Info"
     >
-      <SpecialNoteArrowBox parentTaste={item.parentTaste} trend={item.trend} />
+      <TastePointArrowBox parentTaste={item.parentTaste} trend={item.trend} />
       <div className="basis-0 content-stretch flex grow min-h-px min-w-px relative shrink-0">
         <div className="content-stretch flex flex-col gap-[4px] items-start relative w-full">
           <div className="flex flex-wrap items-center gap-[6px]">
@@ -2471,73 +1996,15 @@ function Cards4({
   cardData: HomeSpecialNoteCardData;
   onOpenDetail: () => void;
 }) {
-  const summaryDetails = getHomeCardSummaryDetails(cardData.details);
-
   return (
-    <button
-      type="button"
+    <TasteInsightSummaryCard
+      action={<CardDetailLabel />}
+      details={cardData.details}
+      keywords={cardData.keywords}
       onClick={onOpenDetail}
-      className="bg-white h-auto relative rounded-[20px] shrink-0 w-full text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--tb-shadow-strong)] active:scale-[0.99] cursor-pointer"
-      data-name="Cards"
-    >
-      <div className="overflow-clip rounded-[inherit] size-full">
-        <div className="box-border content-stretch flex flex-col gap-[12px] h-auto items-start p-[12px] relative w-full">
-          <div className="content-center flex flex-wrap gap-4 items-center justify-between min-w-[311px] relative shrink-0 w-full">
-            <Head1 details={cardData.details} />
-            <div className="flex items-center gap-1 text-[var(--tb-color-text-hint)]">
-              <span className="text-[12px] font-medium">자세히</span>
-              <ChevronRight className="w-3 h-3 text-[var(--tb-color-text-secondary)]" />
-            </div>
-          </div>
-
-          <div className="box-border content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full">
-            <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
-              <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[1.25] relative shrink-0 text-[var(--tb-color-text-primary)] text-[16px] w-full">
-                {cardData.title}
-              </p>
-            </div>
-
-            <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
-              <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
-                {summaryDetails.map((detail) => (
-                  <div
-                    key={detail.detailLabel}
-                    className="flex items-center gap-[8px] w-full"
-                  >
-                    <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
-                    <div className="flex min-w-0 items-center gap-[6px]">
-                      <p className="truncate text-[14px] font-medium text-[var(--tb-color-text-secondary)]">
-                        {detail.detailLabel}
-                      </p>
-                      <p
-                        className="shrink-0 text-[12px] font-semibold leading-[1.1]"
-                        style={{ color: getTasteColor(detail.parentTaste) }}
-                      >
-                        {detail.change}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
-                <SpecialNoteMiniGraph details={cardData.details} />
-              </div>
-            </div>
-
-            <div className="content-stretch flex flex-wrap gap-[6px] items-center relative shrink-0 w-full">
-              {cardData.keywords.map((keyword) => (
-                <span
-                  key={keyword}
-                  className="inline-flex items-center rounded-full border border-[var(--tb-color-border-default)] bg-white px-[8px] py-[4px] text-[10px] font-semibold text-[var(--tb-color-text-muted)]"
-                >
-                  {keyword}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </button>
+      sectionLabel="특이사항"
+      title={cardData.title}
+    />
   );
 }
 
@@ -2757,14 +2224,7 @@ function HistoryCard({
       <div className="overflow-clip rounded-[inherit] size-full cursor-pointer" onClick={onClick}>
         <div className="box-border content-stretch flex flex-col gap-[12px] items-start p-[12px] relative w-full">
           <div className="flex items-center gap-2 w-full">
-            <span
-              className="tb-badge-elevated text-white text-[10px] px-[6px] py-[2px] rounded-[6px] font-bold relative"
-              style={{
-                background: buildTasteAdjustmentGradient(history.adjustments),
-              }}
-            >
-              TCS
-            </span>
+            <TCSBadge adjustments={history.adjustments} />
             <p className="font-bold text-[14px]">{history.menu}</p>
             <div className="grow" />
             {isCompareMode ? (
@@ -3071,7 +2531,7 @@ function AdjustmentHistoryScreen({
             className={`ml-auto flex items-center justify-center size-[32px] rounded-full transition-colors z-20 ${isSearchOpen ? 'text-[var(--tb-color-text-primary)]' : 'hover:bg-gray-100 text-[var(--tb-color-text-secondary)]'}`}
             aria-label={isSearchOpen ? '검색창 닫기' : '검색 열기'}
           >
-            <Search size={24} />
+            <Search size={ICON_TOKENS.size.lg} />
           </button>
         </div>
       </div>
@@ -3081,7 +2541,7 @@ function AdjustmentHistoryScreen({
           <div className="flex flex-col gap-[8px] px-[20px] pt-[8px] pb-[10px]">
             {isSearchOpen ? (
               <div className="flex items-center gap-[10px] rounded-[var(--tb-radius-20)] bg-white px-[14px] py-[12px] shadow-[var(--tb-shadow-soft)]">
-                <Search size={16} className="text-[var(--tb-color-icon-muted)]" />
+                <Search size={ICON_TOKENS.size.base} className="text-[var(--tb-color-icon-muted)]" />
                 <input
                   ref={searchInputRef}
                   type="search"
@@ -3679,7 +3139,7 @@ function TasteProfileDetailScreen({
               key={detail.detailLabel}
               className="flex gap-[10px] items-start rounded-[12px] bg-[var(--tb-color-surface-muted)] px-[10px] py-[10px]"
             >
-              <SpecialNoteArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
+              <TastePointArrowBox parentTaste={detail.parentTaste} trend={detail.trend} />
               <div className="flex min-w-0 flex-col gap-[4px]">
                 <div className="flex min-w-0 flex-wrap items-center gap-[6px]">
                   <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
@@ -3854,13 +3314,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
             <div className="bg-[var(--tb-color-bg-page)] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
               {/* Header: Icon + Label */}
               <div className="flex items-center gap-[6px]">
-                <div className="relative shrink-0 size-[18px]">
-                  <div className="absolute inset-0 rounded-[4px]" style={{ backgroundColor: tasteColors[minusTaste] || '#3B82F6' }}>
-                    <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
-                      <path d={svgPaths.p1157b300} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                </div>
+                <TastePointArrowBox parentTaste={minusTaste ?? '짠맛'} trend="decrease" />
                 <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] text-[var(--tb-color-text-primary)] text-[14px]">줄였어요</p>
               </div>
 
@@ -3876,7 +3330,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
             {/* Connection Arrow */}
             <div className="flex justify-center -my-3 z-10">
               <div className="bg-white p-2 rounded-full text-[var(--tb-color-text-secondary)] shadow-sm">
-                <ChevronDown size={20} />
+                <ChevronDown size={ICON_TOKENS.size.control} />
               </div>
             </div>
 
@@ -3884,13 +3338,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
             <div className="bg-[var(--tb-color-bg-page)] rounded-[20px] p-[12px] flex flex-col gap-[12px] transition-all hover:bg-[#eaeaea]">
               {/* Header: Icon + Label */}
               <div className="flex items-center gap-[6px]">
-                <div className="relative shrink-0 size-[18px]">
-                  <div className="absolute inset-0 rounded-[4px]" style={{ backgroundColor: tasteColors[plusTaste] || '#7C3AED' }}>
-                    <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
-                      <path d={svgPaths.p3d191ac0} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                </div>
+                <TastePointArrowBox parentTaste={plusTaste ?? '감칠맛'} trend="increase" />
                 <p className="font-['Pretendard_Variable:Bold',sans-serif] font-bold leading-[normal] text-[var(--tb-color-text-primary)] text-[14px]">대신 넣었어요</p>
               </div>
 
@@ -4012,11 +3460,13 @@ function Viewport({
 export {
   Cards3 as LegacyHomeTasteProfileCard,
   Cards4 as LegacyHomeSpecialNoteCard,
+  SpecialNoteDetailScreen as LegacyHomeSpecialNoteDetailScreen,
   ChefCard as LegacyHomeChefCard,
   EmptyChefCard as LegacyHomeEmptyChefCard,
   HistoryCard as LegacyHomeHistoryCard,
   Section1 as LegacyHomeTasteSummarySection,
   SectionAdjustmentHistory as LegacyHomeAdjustmentHistorySection,
+  TasteProfileDetailScreen as LegacyHomeTasteProfileDetailScreen,
 };
 
 export default function Home({

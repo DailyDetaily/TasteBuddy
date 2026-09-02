@@ -1,4 +1,3 @@
-import { getTasteColor, getTasteDark, mixHexColors } from '../../constants/tasteColors';
 import PrimaryButton from '../system/PrimaryButton';
 
 interface TasteMeasurementMiniCtaProps {
@@ -15,14 +14,13 @@ interface TasteMeasurementMiniCtaProps {
 }
 
 export default function TasteMeasurementMiniCta({
-  accentTaste,
   actionLabel,
   actionFullWidth = false,
   actionPlacement = 'bottom',
   description,
   meta,
   onAction,
-  padding = 'default',
+  padding = 'compact',
   title,
   tone = 'neutral',
 }: TasteMeasurementMiniCtaProps) {
@@ -32,24 +30,22 @@ export default function TasteMeasurementMiniCta({
     tone === 'alert'
       ? 'border-[var(--tb-taste-sweet-light)] bg-[linear-gradient(135deg,var(--tb-taste-sweet-bg)_0%,var(--tb-color-surface-base)_100%)]'
       : 'border-[var(--tb-color-border-card)] bg-[var(--tb-color-surface-card)]';
-  const actionButtonStyle = accentTaste
-    ? {
-        background: mixHexColors(getTasteColor(accentTaste), '#FFFFFF', 0.76),
-        border: 'none',
-        color: getTasteDark(accentTaste),
-      }
-    : undefined;
+  const actionButtonStyle = {
+    background: 'var(--tb-user-accent-tint-surface, var(--tb-taste-sweet-bg))',
+    border: 'none',
+    color: 'var(--tb-user-accent-dark, var(--tb-taste-sweet-dark))',
+  };
 
   return (
     <div className={`rounded-[var(--tb-radius-20)] border ${paddingClass} ${accentClass}`}>
       <div className={isRightAction ? 'flex items-end justify-between gap-3' : undefined}>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
-          <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
+          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">{title}</p>
+          <p className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-subtle)]">
             {description}
           </p>
           {meta ? (
-            <p className="mt-1 text-[11px] font-medium text-[var(--tb-color-text-faint)]">{meta}</p>
+            <p className="mt-2 text-[11px] font-medium text-[var(--tb-color-text-faint)]">{meta}</p>
           ) : null}
         </div>
 

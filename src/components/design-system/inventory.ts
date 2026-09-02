@@ -4,6 +4,7 @@ import {
   ICON_TOKENS,
   LAYOUT_TOKENS,
   MOTION_TOKENS,
+  NEUTRAL_TASTE_TOKENS,
   RADIUS_TOKENS,
   SHADOW_TOKENS,
   SPACING_TOKENS,
@@ -109,6 +110,14 @@ export const COLOR_GROUPS: Array<{
           source: "src/styles/design-system.css / COLOR_TOKENS.background.page",
           status: "currently-used",
           description: "앱 shell 배경",
+        },
+        {
+          name: "bg-focus",
+          value: COLOR_TOKENS.background.focus,
+          cssVar: "--tb-color-bg-focus",
+          source: "src/styles/design-system.css / COLOR_TOKENS.background.focus",
+          status: "currently-used",
+          description: "집중형 flow 화면 배경",
         },
         {
           name: "surface-base",
@@ -299,6 +308,14 @@ export const COLOR_GROUPS: Array<{
           description: "warning 배경 채움색",
         },
         {
+          name: "destructive",
+          value: COLOR_TOKENS.state.destructive,
+          cssVar: "--tb-color-destructive",
+          source: "src/styles/design-system.css / COLOR_TOKENS.state.destructive",
+          status: "currently-used",
+          description: "삭제, 위험 액션 foreground / solid fill",
+        },
+        {
           name: "primary",
           value: "#030213",
           cssVar: "--primary",
@@ -315,10 +332,10 @@ export const COLOR_GROUPS: Array<{
         },
         {
           name: "destructive",
-          value: "#d4183d",
+          value: COLOR_TOKENS.state.destructive,
           cssVar: "--destructive",
-          source: "src/styles/globals.css",
-          status: "defined-but-unused",
+          source: "src/styles/globals.css -> COLOR_TOKENS.state.destructive",
+          status: "currently-used",
         },
       ],
     },
@@ -334,7 +351,14 @@ export const COLOR_GROUPS: Array<{
           status: "currently-used",
           description: definition.label,
         }),
-      ),
+      ).concat({
+        name: "neutral",
+        value: NEUTRAL_TASTE_TOKENS.palette.main,
+        cssVar: "--tb-taste-neutral-main",
+        source: "src/styles/design-system.css / NEUTRAL_TASTE_TOKENS",
+        status: "currently-used",
+        description: "모든맛 / 중립 미각 포인트 컬러",
+      }),
     },
     {
       id: "taste-tint-surface",
@@ -346,7 +370,42 @@ export const COLOR_GROUPS: Array<{
           cssVar: `--tb-taste-${tasteId}-tint-surface`,
           source: "src/styles/design-system.css / src/constants/designTokens.ts",
           status: "currently-used",
-          description: `${definition.label} 해석형 카드 배경 (셰프 매칭 / 세부 분석)`,
+          description: `${definition.label} 해석형 카드 배경 (미각 틴트 카드 / 세부 분석)`,
+        }),
+      ).concat({
+        name: "neutral",
+        value: NEUTRAL_TASTE_TOKENS.palette.tintSurface,
+        cssVar: "--tb-taste-neutral-tint-surface",
+        source: "src/styles/design-system.css / NEUTRAL_TASTE_TOKENS",
+        status: "currently-used",
+        description: "모든맛 활성 상태 배경 (#7A7A7A + white 80%)",
+      }),
+    },
+    {
+      id: "taste-tint-soft",
+      name: "미각 틴트 소프트",
+      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+        ([tasteId, definition]) => ({
+          name: tasteId,
+          value: definition.palette.tintSoft,
+          cssVar: `--tb-taste-${tasteId}-tint-soft`,
+          source: "src/styles/design-system.css / src/constants/designTokens.ts",
+          status: "currently-used",
+          description: `${definition.label} 인라인 칩 / 메타 칩 배경`,
+        }),
+      ),
+    },
+    {
+      id: "taste-tint-soft-border",
+      name: "미각 틴트 소프트 보더",
+      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+        ([tasteId, definition]) => ({
+          name: tasteId,
+          value: definition.palette.tintSoftBorder,
+          cssVar: `--tb-taste-${tasteId}-tint-soft-border`,
+          source: "src/styles/design-system.css / src/constants/designTokens.ts",
+          status: "currently-used",
+          description: `${definition.label} 인라인 칩 / 메타 칩 보더`,
         }),
       ),
     },
@@ -397,7 +456,7 @@ export const TYPOGRAPHY_SPECS: TypographySpec[] = [
   {
     name: "헤딩",
     sample: "프로필은 조금씩 더 정교해집니다",
-    source: "DESIGN.md / src/pages/OnboardingScreen.tsx / src/pages/TeastickConnectScreen.tsx",
+    source: "DESIGN.md / src/pages/OnboardingScreen.tsx / src/pages/TastickConnectScreen.tsx",
     usage: "온보딩과 드로어 타이틀",
     cssVars: ["--tb-font-size-22", "--tb-font-weight-bold", "--tb-line-height-snug"],
     value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[22], fontWeight: 700, lineHeight: 1.35 },
@@ -418,7 +477,7 @@ export const TYPOGRAPHY_SPECS: TypographySpec[] = [
   {
     name: "본문",
     sample: "현재 프로필을 빠르게 정리해 첫 예약부터 활용할 수 있도록 돕습니다.",
-    source: "src/styles/design-system.css / src/pages/ReservationPage.tsx",
+    source: "src/styles/design-system.css / src/pages/DiningPage.tsx",
     usage: "카드 본문과 설명 문구",
     cssVars: ["--tb-font-size-14", "--tb-font-weight-regular", "--tb-line-height-relaxed"],
     value: { fontSize: TYPOGRAPHY_TOKENS.fontSize[14], fontWeight: 400, lineHeight: 1.5 },
@@ -471,14 +530,14 @@ export const BORDER_ITEMS = [
 
 export const ICON_RULES = [
   {
-    name: "Fluent 시스템 아이콘",
-    source: "src/components/TopAppBar.tsx / src/components/BottomTabBar.tsx / src/components/AppMenuDrawer.tsx / src/components/NotificationPanel.tsx / src/pages/AnalysisPage.tsx / src/pages/ProfilePage.tsx / src/pages/TeastickConnectScreen.tsx / src/pages/TasteMeasurementScreen.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
-    description: "메인 내비게이션, 오버레이, 측정/피드백 플로우까지 현재 실제 앱 아이콘 언어는 대부분 @fluentui/react-icons로 정리되었습니다.",
+    name: "Lucide 시스템 아이콘",
+    source: "src/components/TopAppBar.tsx / src/components/BottomTabBar.tsx / src/components/AppMenuDrawer.tsx / src/components/NotificationPanel.tsx / src/pages/AnalysisPage.tsx / src/pages/ProfilePage.tsx / src/pages/TastickConnectScreen.tsx / src/pages/TasteMeasurementScreen.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
+    description: "메인 내비게이션, 오버레이, 측정/피드백 플로우까지 현재 실제 앱 아이콘 언어는 lucide-react로 정리되었습니다.",
   },
   {
     name: "Lucide 보조 아이콘",
     source: "src/pages/DesignSystemPage.tsx / src/components/design-system/CardGallery.tsx / src/components/ui",
-    description: "Lucide는 현재 디자인 시스템 문서, 카드 갤러리 샘플, 일부 generic UI primitive 내부에서 주로 보조적으로 남아 있습니다.",
+    description: "Lucide는 현재 디자인 시스템 문서, 카드 갤러리 샘플, 일부 generic UI primitive 내부의 예시와 샘플에 사용됩니다.",
   },
   {
     name: "아이콘 사이즈 토큰",
@@ -491,13 +550,31 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
   {
     name: "SectionCard",
     source: "src/components/SectionCard.tsx",
-    note: "카드, 통계 타일, 리스트 섹션의 기본 shell입니다.",
+    note: "카드와 리스트 섹션의 기본 shell입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "SummaryMetricCard",
+    source: "src/components/system/SummaryMetricCard.tsx",
+    note: "아이콘, 라벨, 값을 묶는 2열 요약 지표 타일입니다.",
     status: "currently-used",
   },
   {
     name: "PrimaryButton",
     source: "src/components/system/PrimaryButton.tsx",
     note: "온보딩, 측정, 예약, 피드백 플로우 전반의 주요 CTA입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "FlowBottomCta",
+    source: "src/components/system/FlowBottomCta.tsx",
+    note: "온보딩과 미각 측정, 그리고 여러 flow screen의 하단 CTA shell입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "FlowStepCta",
+    source: "src/components/system/FlowStepCta.tsx",
+    note: "온보딩과 미각 측정의 하단 스텝 footer를 공통 패턴으로 통일합니다.",
     status: "currently-used",
   },
   {
@@ -525,9 +602,51 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     status: "currently-used",
   },
   {
+    name: "BottomSheetShell",
+    source: "src/components/system/BottomSheetShell.tsx",
+    note: "Tastick 연결 플로우와 해석 상세 drawer가 공유하는 공용 바텀시트 셸입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "TasteProfileAvatar",
+    source: "src/components/system/TasteProfileAvatar.tsx",
+    note: "미각 데이터 6축을 그라데이션으로 번역하는 기본 프로필 아바타입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "PalateSignatureAvatar",
+    source: "src/components/system/PalateSignatureAvatar.tsx",
+    note: "0-100 미각 비율을 원형 halo와 soft bloom으로 번역하는 프로필 시그니처 아바타입니다.",
+    status: "defined-only",
+  },
+  {
+    name: "PalateBloomAvatar",
+    source: "src/components/system/PalateBloomAvatar.tsx",
+    note: "6가지 미각 우선순위를 꽃잎과 이중 별 구조로 번역하는 프로필용 Palate Bloom 아바타입니다.",
+    status: "defined-only",
+  },
+  {
+    name: "PalateOrbAvatar",
+    source: "src/components/system/PalateOrbAvatar.tsx",
+    note: "1~3순위 미각은 앞면, 4~6순위 미각은 뒷면 조각으로 번역하는 원형 palate orb 아바타입니다.",
+    status: "defined-only",
+  },
+  {
+    name: "Chip",
+    source: "src/components/system/Chip.tsx",
+    note: "일반 목적의 neutral / semantic / icon label chip입니다.",
+    status: "currently-used",
+  },
+  {
     name: "OutlineBadge",
     source: "src/components/system/OutlineBadge.tsx",
     note: "섹션과 프로필 라벨에 쓰입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "StepBadge",
+    source: "src/components/system/StepBadge.tsx",
+    note: "사전 조사와 미각 측정의 진행 단계를 보여주는 아웃라인 배지입니다.",
     status: "currently-used",
   },
   {
@@ -537,9 +656,9 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     status: "currently-used",
   },
   {
-    name: "Home TCS Badge",
-    source: "src/imports/Home.tsx",
-    note: "홈 탭 히스토리 카드 상단의 gradient TCS 배지입니다.",
+    name: "TCSBadge",
+    source: "src/components/system/TCSBadge.tsx",
+    note: "홈 다이닝 준비 카드와 레거시 히스토리 카드 상단의 gradient TCS 배지입니다.",
     status: "currently-used",
   },
   {
@@ -549,15 +668,51 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     status: "currently-used",
   },
   {
-    name: "InsightCard",
-    source: "src/components/system/InsightCard.tsx",
-    note: "분석 인사이트와 셰프 번역 요약에 공통으로 쓰이는 카드입니다.",
+    name: "TastePointArrowBox",
+    source: "src/components/system/TastePointArrowBox.tsx",
+    note: "미각 변화 요약과 셰프 조정 포인트 앞에 붙는 taste-colored 화살표 박스입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "TasteLineChart",
+    source: "src/components/system/TasteLineChart.tsx",
+    note: "특이사항과 미각 변화 카드에서 쓰는 compact taste-aware line graph입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "InterpretationCard",
+    source: "src/components/system/InterpretationCard.tsx",
+    note: "분석 인사이트, 셰프 번역 요약, 홈의 최근 프로필 변화 요약에 공통으로 쓰이는 해석 카드입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "TasteTintCard",
+    source: "src/components/system/TasteTintCard.tsx",
+    note: "정사각형 미각 틴트 해석 카드입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "TasteTintCardList",
+    source: "src/components/system/TasteTintCardList.tsx",
+    note: "미각 틴트 카드의 grid 전용 리스트 래퍼입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "CardScrollList",
+    source: "src/components/system/CardScrollList.tsx",
+    note: "셰프 매칭과 세부 분석에 쓰는 가로 스크롤 카드 스트립 래퍼입니다.",
     status: "currently-used",
   },
   {
     name: "SectionTitle",
     source: "src/components/system/SectionTitle.tsx",
     note: "가이드라인 기반 heading helper로, 분석과 다이닝 피드백에서 쓰입니다.",
+    status: "currently-used",
+  },
+  {
+    name: "FlowHeaderBlock",
+    source: "src/components/system/FlowHeaderBlock.tsx",
+    note: "사전 조사와 미각 보정 intro에서 배지 행과 title / description 블록을 묶는 공통 header block입니다.",
     status: "currently-used",
   },
   {
@@ -617,7 +772,7 @@ export const INCONSISTENCIES: InventoryEntry[] = [
   },
   {
     name: "기능 페이지에 하드코딩 유틸리티 값이 남아 있음",
-    source: "src/pages/ReservationPage.tsx / src/pages/ProfilePage.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
+    source: "src/pages/DiningPage.tsx / src/pages/ProfilePage.tsx / src/components/reservation/DiningFeedbackFlow.tsx",
     note: "여러 padding, radius, text size가 시각적으로는 토큰과 맞지만, 토큰 참조 대신 raw arbitrary value로 반복됩니다.",
   },
   {
@@ -631,26 +786,26 @@ export const INCONSISTENCIES: InventoryEntry[] = [
     note: "generic semantic token 세트에만 .dark override가 있어서, 실제 앱 shell은 일관되게 다크 모드 전환이 되지 않습니다.",
   },
   {
-    name: "앱 토큰 레이어의 상태 색상이 아직 불완전",
-    source: "src/styles/design-system.css / src/pages/ReservationPage.tsx",
-    note: "success와 warning은 이제 first-class tb-* 토큰이지만, error는 아직 앱 토큰 레이어가 아니라 generic destructive token에 의존합니다.",
+    name: "상태 색상 적용 범위 점검 필요",
+    source: "src/styles/design-system.css / src/styles/globals.css",
+    note: "success, warning, destructive는 first-class tb-* 토큰으로 정의되어 있으며 generic destructive token도 앱 토큰을 참조합니다.",
   },
 ];
 
 export const TODO_ITEMS: InventoryEntry[] = [
   {
     name: "공용 폼 필드 추출",
-    source: "src/components/reservation/DiningFeedbackFlow.tsx / src/pages/ReservationPage.tsx",
+    source: "src/components/reservation/DiningFeedbackFlow.tsx / src/pages/DiningPage.tsx",
     note: "검색 행, textarea shell, choice selector가 재사용 가능한 field component로 추출될 수 있을 만큼 시각 규칙을 반복합니다.",
   },
   {
     name: "리스트 아이템 프리미티브 추출",
-    source: "src/pages/ProfilePage.tsx / src/pages/ReservationPage.tsx",
+    source: "src/pages/ProfilePage.tsx / src/pages/DiningPage.tsx",
     note: "예약 행, 셰프 행, 설정 행이 비슷한 list-cell 패턴을 공유하지만 아직 inline으로 작성되어 있습니다.",
   },
   {
     name: "오버레이 전략 통합",
-    source: "src/pages/TeastickConnectScreen.tsx / src/components/ui/dialog.tsx / src/components/ui/sheet.tsx / src/components/ui/drawer.tsx",
+    source: "src/pages/TastickConnectScreen.tsx / src/components/ui/dialog.tsx / src/components/ui/sheet.tsx / src/components/ui/drawer.tsx",
     note: "제품은 custom drawer형 레이아웃을 쓰고 있고, Radix/Vaul overlay도 존재하지만 아직 메인 앱에는 통합되지 않았습니다.",
   },
   {
@@ -734,7 +889,7 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
   icons: [
     {
       file: "src/components/TopAppBar.tsx",
-      note: "내비게이션에서의 Fluent 아이콘 사용 예시입니다.",
+      note: "내비게이션에서의 Lucide 아이콘 사용 예시입니다.",
     },
     {
       file: "src/components/measurement/TasteMeasurementMiniCta.tsx",
@@ -753,12 +908,16 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
   ],
   badges: [
     {
-      file: "src/components/ui/badge.tsx",
-      note: "정의된 범용 badge 프리미티브입니다.",
+      file: "src/components/system/TCSBadge.tsx",
+      note: "홈 카드 상단에 쓰이는 gradient TCS 배지 컴포넌트입니다.",
     },
     {
-      file: "src/imports/Home.tsx",
-      note: "홈 탭 히스토리 카드의 gradient TCS 배지 원본입니다.",
+      file: "src/components/system/Chip.tsx",
+      note: "제품 레벨의 공용 neutral / semantic chip입니다.",
+    },
+    {
+      file: "src/components/ui/badge.tsx",
+      note: "정의된 범용 badge 프리미티브입니다.",
     },
     {
       file: "src/components/system/OutlineBadge.tsx",
@@ -787,8 +946,8 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "Radix 기반 select 필드입니다.",
     },
     {
-      file: "src/components/reservation/DiningFeedbackFlow.tsx",
-      note: "현재 앱 전용 field 조합과 choice selector가 있습니다.",
+      file: "src/components/system/SelectionCard.tsx",
+      note: "현재 공용 field 계열로 유지되는 선택형 카드 컴포넌트입니다.",
     },
   ],
   cards: [
@@ -821,7 +980,7 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "기기 상태 카드, 활동 통계 타일, 셰프 카드, 설정 카드 패턴입니다.",
     },
     {
-      file: "src/pages/ReservationPage.tsx",
+      file: "src/pages/DiningPage.tsx",
       note: "예약 요약 카드와 예약 상세 보정 카드 패턴입니다.",
     },
     {
@@ -829,16 +988,16 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "피드백 요약, 변화 노트, confidence, 셰프용 요약 카드가 있습니다.",
     },
     {
-      file: "src/pages/QuickTasteCalibrationScreen.tsx",
-      note: "빠른 보정 힌트 카드와 스타터 프로필 결과 카드 패턴입니다.",
+      file: "src/pages/TasteSurveyResultScreen.tsx",
+      note: "설문 기반 스타터 프로필 결과 카드 패턴입니다.",
     },
     {
-      file: "src/components/system/QuickCalibrationHintCard.tsx",
-      note: "빠른 보정 힌트 카드를 공용 컴포넌트로 재사용합니다.",
+      file: "src/components/system/TCSHintCard.tsx",
+      note: "미각 설문과 보정 안내의 힌트 카드를 공용 컴포넌트로 재사용합니다.",
     },
     {
-      file: "src/components/system/InsightCard.tsx",
-      note: "분석 인사이트와 셰프 번역 요약의 공통 카드 형태를 재사용합니다.",
+      file: "src/components/system/InterpretationCard.tsx",
+      note: "분석 인사이트, 셰프 번역 요약, 홈 변화 요약까지 같은 해석 카드 형태로 재사용합니다.",
     },
     {
       file: "src/pages/ImproveAccuracyScreen.tsx",
@@ -863,14 +1022,6 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "블러 배경과 press scale이 추가된 현재 하단 내비게이션 shell입니다.",
     },
     {
-      file: "src/components/NotificationPanel.tsx",
-      note: "TopAppBar 알림 액션에서 열리는 상단 오버레이입니다.",
-    },
-    {
-      file: "src/components/AppMenuDrawer.tsx",
-      note: "TopAppBar 메뉴 액션에서 열리는 우측 드로어입니다.",
-    },
-    {
       file: "src/components/ui/tabs.tsx",
       note: "정의된 세그먼트 / tabs 프리미티브입니다.",
     },
@@ -890,11 +1041,15 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     },
     {
       file: "src/components/system/EmptyState.tsx",
-      note: "ReservationPage에서 실제로 사용하는 empty state 피드백 컴포넌트입니다.",
+      note: "DiningPage에서 실제로 사용하는 empty state 피드백 컴포넌트입니다.",
+    },
+    {
+      file: "src/components/system/ToastSurface.tsx",
+      note: "테이스트 리스트 액션 뒤에 뜨는 실제 앱 토스트 표면입니다.",
     },
     {
       file: "src/components/ui/sonner.tsx",
-      note: "toast wrapper는 존재하지만 현재 화면에는 연결되어 있지 않습니다.",
+      note: "generic toast wrapper입니다. 제품 액션 토스트 표면은 ToastSurface가 담당합니다.",
     },
   ],
   overlay: [
@@ -929,6 +1084,26 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
       note: "메인 앱 전용 재사용 컴포넌트입니다.",
     },
     {
+      file: "src/components/system/TasteProfileAvatar.tsx",
+      note: "미각 측정값 6축으로 멀티컬러 기본 프로필 아바타를 만드는 공용 컴포넌트입니다.",
+    },
+    {
+      file: "src/components/system/profileAvatarSizeTokens.ts",
+      note: "프로필형 아바타가 공유하는 sm 32px, md 42px, lg 68px, xl 96px 사이즈 토큰입니다.",
+    },
+    {
+      file: "src/components/system/PalateSignatureAvatar.tsx",
+      note: "0-100 미각 비율을 차트가 아닌 개인 미각 시그니처형 avatar로 표현하는 SVG 컴포넌트입니다.",
+    },
+    {
+      file: "src/components/system/PalateBloomAvatar.tsx",
+      note: "미각 우선순위를 6개 꽃 구조 레이어로 번역하는 SVG 프로필 아바타입니다.",
+    },
+    {
+      file: "src/components/system/PalateOrbAvatar.tsx",
+      note: "앞면/뒷면 조각의 깊이감으로 미각 우선순위를 표현하는 SVG 프로필 아바타입니다.",
+    },
+    {
       file: "src/components/measurement/TasteMeasurementMiniCta.tsx",
       note: "Taste Buddy 전용 CTA 카드입니다.",
     },
@@ -938,7 +1113,7 @@ export const PLAYGROUND_SECTION_SOURCES: Record<string, SourceReference[]> = {
     },
     {
       file: "src/pages/ImproveAccuracyScreen.tsx",
-      note: "프로필 정교화 단계와 benefits를 묶은 신규 app-specific screen입니다.",
+      note: "선택형 정밀도 개선 안내와 benefits를 묶은 app-specific screen입니다.",
     },
     {
       file: "src/pages/ReservationConfirmationScreen.tsx",
