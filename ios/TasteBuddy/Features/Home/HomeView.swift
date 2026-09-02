@@ -8,14 +8,75 @@ enum HomeRecommendationContentState: Equatable {
     case failed(String)
 }
 
+enum HomePresentationMode: Equatable {
+    case personalJournal
+    case socialArchive
+}
+
+struct HomeJournalBuckets {
+    let lastSevenDays: [DiningEntry]
+    let daysEightThroughThirty: [DiningEntry]
+    let older: [DiningEntry]
+}
+
+enum HomeJournalBucketEngine {
+    static func buckets(
+        for entries: [DiningEntry],
+        referenceDate: Date = .now,
+        calendar: Calendar = .current
+    ) -> HomeJournalBuckets {
+        let referenceDay = calendar.startOfDay(for: referenceDate)
+        let sortedEntries = entries.sorted { lhs, rhs in
+            if lhs.date != rhs.date {
+                return lhs.date > rhs.date
+            }
+            return lhs.id.uuidString < rhs.id.uuidString
+        }
+
+        var lastSevenDays: [DiningEntry] = []
+        var daysEightThroughThirty: [DiningEntry] = []
+        var older: [DiningEntry] = []
+
+        for entry in sortedEntries {
+            let entryDay = calendar.startOfDay(for: entry.date)
+            guard entryDay <= referenceDay,
+                  let daysAgo = calendar.dateComponents(
+                      [.day],
+                      from: entryDay,
+                      to: referenceDay
+                  ).day
+            else { continue }
+
+            switch daysAgo {
+            case 0...7:
+                lastSevenDays.append(entry)
+            case 8...30:
+                daysEightThroughThirty.append(entry)
+            default:
+                older.append(entry)
+            }
+        }
+
+        return HomeJournalBuckets(
+            lastSevenDays: lastSevenDays,
+            daysEightThroughThirty: daysEightThroughThirty,
+            older: older
+        )
+    }
+}
+
 struct HomeView: View {
     @EnvironmentObject private var appModel: AppModel
     let recommendationContentState: HomeRecommendationContentState
+    let presentationMode: HomePresentationMode
     let showsSearchTrigger: Bool
+    let systemTopChrome: AnyView?
     var onOpenSearch: (() -> Void)? = nil
     var onOpenRoute: ((AppRoute) -> Void)? = nil
     var onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
     var onStartDiningFeedback: ((HomeSearchResultItem) -> Void)? = nil
+    var onOpenJournal: (() -> Void)? = nil
+    var onOpenTasteAnalysis: (() -> Void)? = nil
 
     @State private var recommendationMode: RecommendationMode = .buddy
     @State private var isRecommendationEditorOpen = false
@@ -23,24 +84,32 @@ struct HomeView: View {
 
     init(
         recommendationContentState: HomeRecommendationContentState = .populated,
+        presentationMode: HomePresentationMode = .personalJournal,
         showsSearchTrigger: Bool = true,
+        systemTopChrome: AnyView? = nil,
         onOpenSearch: (() -> Void)? = nil,
         onOpenRoute: ((AppRoute) -> Void)? = nil,
         onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil,
-        onStartDiningFeedback: ((HomeSearchResultItem) -> Void)? = nil
+        onStartDiningFeedback: ((HomeSearchResultItem) -> Void)? = nil,
+        onOpenJournal: (() -> Void)? = nil,
+        onOpenTasteAnalysis: (() -> Void)? = nil
     ) {
         self.recommendationContentState = recommendationContentState
+        self.presentationMode = presentationMode
         self.showsSearchTrigger = showsSearchTrigger
+        self.systemTopChrome = systemTopChrome
         self.onOpenSearch = onOpenSearch
         self.onOpenRoute = onOpenRoute
         self.onOpenBookmarkSheet = onOpenBookmarkSheet
         self.onStartDiningFeedback = onStartDiningFeedback
+        self.onOpenJournal = onOpenJournal
+        self.onOpenTasteAnalysis = onOpenTasteAnalysis
     }
 
     var body: some View {
         NavigationStack {
             ZStack {
-                ScrollView {
+                MainTabChromeScrollView(topChrome: systemTopChrome) {
                     VStack(alignment: .leading, spacing: TBSpacing.section) {
                         if showsSearchTrigger {
                             HomeSearchCard {
@@ -52,56 +121,11 @@ struct HomeView: View {
                             }
                         }
 
-                        if appModel.profile != nil {
-                            HomeRecommendationSection(
-                                isEditorOpen: $isRecommendationEditorOpen,
-                                mode: $recommendationMode,
-                                contentState: recommendationContentState,
-                                viewerProfile: appModel.profile ?? .sample,
-                                onOpenRoute: onOpenRoute
-                            )
-
-                            TBPageSection(title: "팔로잉 디시 카드", titleSize: .medium) {
-                                VStack(spacing: 12) {
-                                    switch recommendationContentState {
-                                    case .loading:
-                                        ForEach(0..<3, id: \.self) { _ in
-                                            NativeDishFeedbackCardSkeleton()
-                                        }
-                                    case .empty:
-                                        EmptyState(
-                                            title: "아직 팔로잉 디시 카드가 없어요",
-                                            description: "버디를 팔로우하거나 다이닝 피드백을 남기면 같은 구조의 디시 카드가 이곳에 쌓입니다.",
-                                            icon: .messageCircle
-                                        )
-                                    case .failed(let message):
-                                        EmptyState(
-                                            title: "디시 카드를 불러오지 못했어요",
-                                            description: message,
-                                            actionLabel: "다시 시도",
-                                            icon: .sparkles
-                                        )
-                                    case .populated, .fallbackBuddy:
-                                        ForEach(TasteBuddyNativeContent.followingDishFeedbackItems) { item in
-                                            let displayItem = appModel
-                                                .dishFeedbackItemWithCurrentComments(item)
-                                            NativeDishFeedbackCard(
-                                                item: displayItem,
-                                                absoluteDateLabel: "2026년 6월 5일",
-                                                relativeDateLabel: "오늘",
-                                                showsOptions: false,
-                                                noteTrailingPadding: TBSpacing.x20,
-                                                onDetailTap: {
-                                                    onOpenRoute?(.comments(id: item.id))
-                                                },
-                                                onCommentsTap: {
-                                                    onOpenRoute?(.comments(id: item.id))
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                        switch presentationMode {
+                        case .personalJournal:
+                            personalJournalContent
+                        case .socialArchive:
+                            socialArchiveContent
                         }
                     }
                     .padding(.horizontal, TBSpacing.page)
@@ -134,7 +158,118 @@ struct HomeView: View {
             .tbPageBackground()
             .toolbar(.hidden, for: .navigationBar)
         }
+        .ignoresSafeArea(.container, edges: systemTopChrome == nil ? [] : .top)
     }
+
+    @ViewBuilder
+    private var personalJournalContent: some View {
+        let insightSections = HomePeriodInsightEngine.sections(
+            for: appModel.diningEntries
+        )
+
+        HomeSummaryRail(
+            metrics: HomeSummaryEngine.metrics(for: appModel.diningEntries),
+            onSelect: summarySelectionHandler
+        )
+
+        if appModel.diningEntries.isEmpty {
+            TBPageSection(title: "최근 기록") {
+                HomeJournalEmptyState()
+            }
+        } else {
+            ForEach(insightSections) { section in
+                HomePeriodInsightSection(
+                    section: section,
+                    onSelect: periodInsightSelectionHandler
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var socialArchiveContent: some View {
+        if appModel.profile != nil {
+            HomeRecommendationSection(
+                isEditorOpen: $isRecommendationEditorOpen,
+                mode: $recommendationMode,
+                contentState: recommendationContentState,
+                viewerProfile: appModel.profile ?? .sample,
+                onOpenRoute: onOpenRoute
+            )
+
+            TBPageSection(title: "팔로잉 디시 카드", titleSize: .medium) {
+                VStack(spacing: 12) {
+                    switch recommendationContentState {
+                    case .loading:
+                        ForEach(0..<3, id: \.self) { _ in
+                            NativeDishFeedbackCardSkeleton()
+                        }
+                    case .empty:
+                        EmptyState(
+                            title: "아직 팔로잉 디시 카드가 없어요",
+                            description: "버디를 팔로우하거나 다이닝 피드백을 남기면 같은 구조의 디시 카드가 이곳에 쌓입니다.",
+                            icon: .messageCircle
+                        )
+                    case .failed(let message):
+                        EmptyState(
+                            title: "디시 카드를 불러오지 못했어요",
+                            description: message,
+                            icon: .sparkles
+                        )
+                    case .populated, .fallbackBuddy:
+                        ForEach(TasteBuddyNativeContent.followingDishFeedbackItems) { item in
+                            let displayItem = appModel
+                                .dishFeedbackItemWithCurrentComments(item)
+                            NativeDishFeedbackCard(
+                                item: displayItem,
+                                absoluteDateLabel: "2026년 6월 5일",
+                                relativeDateLabel: "오늘",
+                                showsOptions: false,
+                                noteTrailingPadding: TBSpacing.x20,
+                                onDetailTap: {
+                                    onOpenRoute?(.comments(id: item.id))
+                                },
+                                onCommentsTap: {
+                                    onOpenRoute?(.comments(id: item.id))
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var summarySelectionHandler: ((HomeSummaryMetricKind) -> Void)? {
+        guard onOpenJournal != nil || onOpenTasteAnalysis != nil else {
+            return nil
+        }
+
+        return { kind in
+            switch kind {
+            case .tasteDiscovery, .tasteChange:
+                onOpenTasteAnalysis?()
+            case .record, .frequentMenu, .regularRestaurant, .breadth:
+                onOpenJournal?()
+            }
+        }
+    }
+
+    private var periodInsightSelectionHandler: ((HomePeriodInsightKind) -> Void)? {
+        guard onOpenJournal != nil || onOpenTasteAnalysis != nil else {
+            return nil
+        }
+
+        return { kind in
+            switch kind {
+            case .tasteClue, .tasteChange:
+                onOpenTasteAnalysis?()
+            case .recordFlow, .newExperiences, .repeatPatterns, .experienceBreadth:
+                onOpenJournal?()
+            }
+        }
+    }
+
 }
 
 struct HomeSearchCard: View {
@@ -756,7 +891,7 @@ enum SearchSuggestionMetrics {
     static let sectionStackGap: CGFloat = TBSpacing.section
     static let cardStackGap: CGFloat = TBSpacing.card
     static let titleDescriptionGap: CGFloat = TBSpacing.x4
-    static let chipGap: CGFloat = DishFeedbackCardMetrics.chipStackGap
+    static let chipGap: CGFloat = TBSpacing.x8
     static let chipHorizontalPadding: CGFloat = TBSpacing.x10
 }
 
@@ -966,19 +1101,7 @@ enum RecommendationMode: String, CaseIterable, Identifiable {
     }
 }
 
-enum TasteMatchRecommendationCardMetrics {
-    static let width: CGFloat = 132
-    static let height: CGFloat = 132
-    static let radius: CGFloat = TBRadius.card
-    static let padding: CGFloat = 12
-    static let contentWidth: CGFloat = width - padding * 2
-    static let contentHeight: CGFloat = height - padding * 2
-    static let gap: CGFloat = 12
-    static let avatarSize: CGFloat = 42
-    static let imageBoxSize = TokenBoxSize.large
-    static let imageFallbackIconSize = TBIcon.Size.extraLarge
-    static let borderOpacity = 0.18
-}
+typealias TasteMatchRecommendationCardMetrics = RecommendationMiniCardMetrics
 
 struct HomeRecommendationCandidate: Identifiable, Equatable {
     let item: TasteMatchFeedItem
@@ -1394,55 +1517,19 @@ private struct BuddyRecommendationCard: View {
     let recommendation: HomeRecommendationCandidate
     var onOpenProfile: (() -> Void)? = nil
 
-    @ViewBuilder
     var body: some View {
-        if let onOpenProfile {
-            Button(action: onOpenProfile) {
-                cardContent
-            }
-            .buttonStyle(.plain)
-        } else {
-            cardContent
-        }
-    }
-
-    private var cardContent: some View {
-        VStack(alignment: .leading, spacing: TasteMatchRecommendationCardMetrics.gap) {
+        RecommendationMiniCardLayout(
+            axis: sourceAxis,
+            title: item.reviewerName,
+            subtitle: item.reviewerHandle,
+            detail: "취향 적합도 \(item.matchRate)%",
+            onTap: onOpenProfile
+        ) {
             PalateBloomAvatar(
                 size: TasteMatchRecommendationCardMetrics.avatarSize,
                 seed: "\(item.reviewerID)|native"
             )
-
-            RecommendationCardTextLayout(
-                title: item.reviewerName,
-                subtitle: item.reviewerHandle,
-                fitLabel: "취향 적합도 \(item.matchRate)%",
-                axis: sourceAxis
-            )
         }
-        .frame(
-            width: TasteMatchRecommendationCardMetrics.contentWidth,
-            height: TasteMatchRecommendationCardMetrics.contentHeight,
-            alignment: .topLeading
-        )
-        .padding(TasteMatchRecommendationCardMetrics.padding)
-        .background(sourceAxis.tintColor)
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: TasteMatchRecommendationCardMetrics.radius,
-                style: .continuous
-            )
-        )
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: TasteMatchRecommendationCardMetrics.radius,
-                style: .continuous
-            )
-            .stroke(sourceAxis.mainColor.opacity(TasteMatchRecommendationCardMetrics.borderOpacity))
-        }
-        .accessibilityLabel(
-            "\(item.reviewerName), \(item.reviewerHandle), 취향 적합도 \(item.matchRate)%"
-        )
     }
 
     private var item: TasteMatchFeedItem {
@@ -1469,10 +1556,10 @@ private struct RestaurantRecommendationCard: View {
                 variant: .taste
             )
 
-            RecommendationCardTextLayout(
+            RecommendationMiniCardTextLayout(
                 title: item.restaurantName,
                 subtitle: dishLabel,
-                fitLabel: "적합도 \(item.matchRate)%",
+                detail: "적합도 \(item.matchRate)%",
                 axis: sourceAxis
             )
         }
@@ -1530,10 +1617,10 @@ private struct ChefRecommendationCard: View {
                 variant: .taste
             )
 
-            RecommendationCardTextLayout(
+            RecommendationMiniCardTextLayout(
                 title: chefName,
                 subtitle: item.restaurantName,
-                fitLabel: "적합도 \(item.matchRate)%",
+                detail: "적합도 \(item.matchRate)%",
                 axis: sourceAxis
             )
         }
@@ -1579,86 +1666,24 @@ private struct ChefRecommendationCard: View {
     }
 }
 
-private struct RecommendationCardTextLayout: View {
-    let title: String
-    let subtitle: String
-    let fitLabel: String
-    let axis: TasteAxis
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(TBFont.bold(14))
-                    .foregroundStyle(axis.tintTextColor)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                Text(subtitle)
-                    .font(TBFont.regular(10))
-                    .foregroundStyle(axis.tintSubTextColor)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            Spacer(minLength: 0)
-
-            Text(fitLabel)
-                .font(TBFont.semibold(10))
-                .foregroundStyle(axis.tintTextColor)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    }
-}
-
 private struct GhostBuddyRecommendationCard: View {
     let buddy: FallbackBuddyRecommendation
     let viewerProfile: TasteProfile
     var onTap: (() -> Void)? = nil
 
-    @ViewBuilder
     var body: some View {
-        if let onTap {
-            Button(action: onTap) {
-                cardContent
-            }
-            .buttonStyle(.plain)
-        } else {
-            cardContent
-        }
-    }
-
-    private var cardContent: some View {
-        VStack(alignment: .leading, spacing: TasteMatchRecommendationCardMetrics.gap) {
+        RecommendationMiniCardLayout(
+            axis: axis,
+            title: buddy.name,
+            subtitle: buddy.handle,
+            detail: "취향 적합도 \(matchRate)%",
+            onTap: onTap
+        ) {
             PalateBloomAvatar(
                 size: TasteMatchRecommendationCardMetrics.avatarSize,
                 seed: buddy.id
             )
-
-            RecommendationCardTextLayout(
-                title: buddy.name,
-                subtitle: buddy.handle,
-                fitLabel: "취향 적합도 \(matchRate)%",
-                axis: axis
-            )
         }
-        .frame(
-            width: TasteMatchRecommendationCardMetrics.contentWidth,
-            height: TasteMatchRecommendationCardMetrics.contentHeight,
-            alignment: .topLeading
-        )
-        .padding(TasteMatchRecommendationCardMetrics.padding)
-        .background(axis.tintColor)
-        .clipShape(RoundedRectangle(cornerRadius: TasteMatchRecommendationCardMetrics.radius, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: TasteMatchRecommendationCardMetrics.radius, style: .continuous)
-                .stroke(axis.mainColor.opacity(TasteMatchRecommendationCardMetrics.borderOpacity))
-        }
-        .accessibilityLabel("\(buddy.name), \(buddy.handle), 취향 적합도 \(matchRate)%")
     }
 
     private var axis: TasteAxis {

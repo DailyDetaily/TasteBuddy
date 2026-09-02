@@ -134,6 +134,7 @@ private struct TasteSurveyFlowView: View {
                 action: continueFlow
             )
         }
+        .tbScreenTopChrome(isEnabled: phase != .result)
         .background(screenBackground.ignoresSafeArea())
         .edgeSwipeBack(action: goBack)
     }

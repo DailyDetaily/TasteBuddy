@@ -329,7 +329,8 @@ struct AuthEntrySheet: View {
                 intent: intent,
                 repository: repository,
                 isConfigured: isConfigured,
-                isAnonymousUser: isAnonymousUser
+                isAnonymousUser: isAnonymousUser,
+                redirectURL: BackendAuthRepositoryFactory.authRedirectURL()
             )
         )
         self.showsDevBypass = showsDevBypass
@@ -382,7 +383,7 @@ struct AuthEntrySheet: View {
     }
 
     private var headerTitle: some View {
-        Text(model.intent == .linkCurrentProfile ? "계정 연결" : "로그인")
+        Text(model.intent == .linkCurrentProfile ? "계정 연결" : "시작하기")
             .font(TBFont.bold(16))
             .foregroundStyle(TBColor.textPrimary)
     }
@@ -867,7 +868,7 @@ private struct GoogleAuthButton: View {
                     .stroke(isEnabled ? TBColor.border : TBColor.borderDisabled, lineWidth: 1)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
         .accessibilityLabel("Google로 계속하기")
     }

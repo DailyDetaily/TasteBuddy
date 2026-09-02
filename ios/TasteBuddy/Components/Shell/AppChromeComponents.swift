@@ -1,5 +1,7 @@
+import ProgressiveBlurHeader
 import SwiftUI
 import UIKit
+import VariableBlur
 
 enum AppChromeMetrics {
     static let actionButtonSize: CGFloat = TBIcon.Container.large
@@ -220,6 +222,368 @@ private struct EdgeSwipeBackModifier: ViewModifier {
     }
 }
 
+enum TBTopChromeBlurMetrics {
+    static let maxBlurRadius: CGFloat = 8
+    static let fadeExtension: CGFloat = AppChromeMetrics.bottomPadding
+    static let tintOpacityTop = 0.0
+    static let tintOpacityMiddle = 0.0
+}
+
+// Keep the main-tab contract while sharing the effect with routed screens and flows.
+typealias MainTabProgressiveBlurMetrics = TBTopChromeBlurMetrics
+
+enum TBTopChromeDissolveRole {
+    case title
+    case controls
+
+    var scrollRange: ClosedRange<CGFloat> {
+        switch self {
+        case .title: 0.06...0.82
+        case .controls: 0.18...1
+        }
+    }
+}
+
+enum TBTopChromeCollapseMetrics {
+    static let initialHeaderHeight = TBSize.topAppBarHeight
+        + AppChromeMetrics.topPadding + AppChromeMetrics.bottomPadding
+    static let minimumElementScale: CGFloat = 0.96
+    static let maximumElementBlur: CGFloat = 12
+    static let maximumElementLift: CGFloat = 6
+
+    static func travel(scrollOffset: CGFloat, headerHeight: CGFloat) -> CGFloat {
+        min(max(scrollOffset, 0), max(headerHeight, 0))
+    }
+
+    static func progress(travel: CGFloat, headerHeight: CGFloat) -> CGFloat {
+        guard headerHeight > 0 else { return 0 }
+        return min(max(travel / headerHeight, 0), 1)
+    }
+
+    static func dissolveProgress(_ progress: CGFloat, role: TBTopChromeDissolveRole) -> CGFloat {
+        let range = role.scrollRange
+        return min(max((progress - range.lowerBound) / (range.upperBound - range.lowerBound), 0), 1)
+    }
+
+    static func ease(_ progress: CGFloat) -> CGFloat {
+        progress * progress * (3 - 2 * progress)
+    }
+}
+
+private struct TBTopChromeCollapseProgressKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+private struct TBTopChromeInsetKey: EnvironmentKey {
+    static let defaultValue: CGFloat? = nil
+}
+
+extension EnvironmentValues {
+    var tbTopChromeCollapseProgress: CGFloat {
+        get { self[TBTopChromeCollapseProgressKey.self] }
+        set { self[TBTopChromeCollapseProgressKey.self] = newValue }
+    }
+
+    var tbTopChromeInset: CGFloat? {
+        get { self[TBTopChromeInsetKey.self] }
+        set { self[TBTopChromeInsetKey.self] = newValue }
+    }
+}
+
+private struct TBTopChromeDissolveModifier: ViewModifier {
+    @Environment(\.tbTopChromeCollapseProgress) private var collapseProgress
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let role: TBTopChromeDissolveRole
+
+    func body(content: Content) -> some View {
+        let progress = TBTopChromeCollapseMetrics.dissolveProgress(collapseProgress, role: role)
+        let easedProgress = TBTopChromeCollapseMetrics.ease(progress)
+        // Fade trails the initial blur, so the spreading edge remains visible.
+        let fadeProgress = min(max((progress - 0.12) / 0.88, 0), 1)
+
+        content
+            .scaleEffect(reduceMotion ? 1 : 1 - (1 - TBTopChromeCollapseMetrics.minimumElementScale) * easedProgress)
+            .offset(y: reduceMotion ? 0 : -TBTopChromeCollapseMetrics.maximumElementLift * easedProgress)
+            .blur(radius: reduceMotion ? 0 : TBTopChromeCollapseMetrics.maximumElementBlur * progress * progress)
+            .opacity(1 - Double(TBTopChromeCollapseMetrics.ease(fadeProgress)))
+            .allowsHitTesting(progress < 0.85)
+            .accessibilityHidden(progress >= 0.85)
+    }
+}
+
+private struct TBScreenTopChromeModifier: ViewModifier {
+    var isEnabled: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            GeometryReader { geometry in
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .environment(\.tbTopChromeInset, geometry.safeAreaInsets.top)
+                    .scrollClipDisabled()
+                    .clipShape(TopOverflowRoundedRectangle(
+                        cornerRadius: 0,
+                        topOverflowInset: geometry.safeAreaInsets.top
+                    ))
+            }
+        } else {
+            content
+                .environment(\.tbTopChromeInset, nil)
+        }
+    }
+}
+
+/// Background-only effect. Header elevation belongs to the foreground container, not this view.
+private struct TBTopChromeBackdrop: View {
+    @Environment(\.tbTopChromeInset) private var topInset
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorScheme) private var colorScheme
+
+    let fallback: Color
+
+    var body: some View {
+        Group {
+            if let topInset {
+                GeometryReader { geometry in
+                    let headerHeight = geometry.size.height + topInset
+                    let totalHeight = headerHeight + TBTopChromeBlurMetrics.fadeExtension
+                    let tint: Color = colorScheme == .dark ? .black : .white
+
+                    Group {
+                        if reduceTransparency {
+                            fallback
+                                .frame(height: headerHeight)
+                        } else {
+                            VariableBlurView(
+                                maxBlurRadius: TBTopChromeBlurMetrics.maxBlurRadius,
+                                direction: .blurredTopClearBottom
+                            )
+                            .overlay {
+                                LinearGradient(stops: [
+                                    .init(color: tint.opacity(TBTopChromeBlurMetrics.tintOpacityTop), location: 0),
+                                    .init(color: tint.opacity(TBTopChromeBlurMetrics.tintOpacityMiddle), location: 0.5),
+                                    .init(color: .clear, location: 1)
+                                ], startPoint: .top, endPoint: .bottom)
+                            }
+                            .frame(height: totalHeight)
+                        }
+                    }
+                    .frame(width: geometry.size.width)
+                    .offset(y: -topInset)
+                }
+            } else {
+                fallback
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct TBTopChromeBackgroundModifier: ViewModifier {
+    let fallback: Color
+
+    func body(content: Content) -> some View {
+        content
+            .background(alignment: .top) {
+                TBTopChromeBackdrop(fallback: fallback)
+            }
+            // Elevate the complete header for existing fixed-header screens.
+            .zIndex(20)
+    }
+}
+
+extension View {
+    /// Enable once at a full-screen container, not on each scroll view or flow step.
+    func tbScreenTopChrome(isEnabled: Bool = true) -> some View {
+        modifier(TBScreenTopChromeModifier(isEnabled: isEnabled))
+    }
+
+    func tbTopChromeBackground(fallback: Color) -> some View {
+        modifier(TBTopChromeBackgroundModifier(fallback: fallback))
+    }
+
+    fileprivate func tbTopChromeDissolve(_ role: TBTopChromeDissolveRole) -> some View {
+        modifier(TBTopChromeDissolveModifier(role: role))
+    }
+}
+
+/// A single fixed viewport: the primary header collapses, then the accessory pins.
+/// Use inside `tbScreenTopChrome()`; both headers share its progressive backdrop.
+struct TBCollapsingTopChromeScrollView<PinnedHeader: View, Content: View>: View {
+    let topChrome: AnyView?
+    // The route already translates the destination; keep its primary chrome stationary horizontally.
+    let contentOffset: CGFloat
+    private let pinnedHeader: () -> PinnedHeader
+    private let content: () -> Content
+
+    @State private var coordinateSpaceID = UUID()
+    @State private var headerHeight: CGFloat
+    @State private var pinnedHeaderHeight: CGFloat = 0
+    @State private var collapsedHeight: CGFloat = 0
+
+    init(
+        topChrome: AnyView?,
+        contentOffset: CGFloat = 0,
+        @ViewBuilder pinnedHeader: @escaping () -> PinnedHeader,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.topChrome = topChrome
+        self.contentOffset = contentOffset
+        self.pinnedHeader = pinnedHeader
+        self.content = content
+        _headerHeight = State(initialValue: topChrome == nil ? 0 : TBTopChromeCollapseMetrics.initialHeaderHeight)
+    }
+
+    var body: some View {
+        GeometryReader { geometry in
+            let travel = TBTopChromeCollapseMetrics.travel(scrollOffset: collapsedHeight, headerHeight: headerHeight)
+            let progress = TBTopChromeCollapseMetrics.progress(travel: travel, headerHeight: headerHeight)
+            let expandedChromeHeight = headerHeight + pinnedHeaderHeight
+            let visibleChromeHeight = expandedChromeHeight - travel
+
+            ZStack(alignment: .top) {
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // This inset never shrinks while scrolling: changing it would feed back into the offset.
+                        Color.clear
+                            .frame(height: expandedChromeHeight)
+                            .accessibilityHidden(true)
+
+                        content()
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .frame(minHeight: geometry.size.height + headerHeight, alignment: .top)
+                    .onGeometryChange(for: CGFloat.self) { proxy in
+                        TBTopChromeCollapseMetrics.travel(
+                            scrollOffset: -proxy.frame(in: .named(coordinateSpaceID)).minY,
+                            headerHeight: headerHeight
+                        )
+                    } action: { nextTravel in
+                        // Position drives every effect; no timed animation can lag behind the finger.
+                        withTransaction(Transaction(animation: nil)) {
+                            collapsedHeight = nextTravel
+                        }
+                    }
+                }
+                .coordinateSpace(name: coordinateSpaceID)
+                .scrollIndicators(.hidden)
+                .scrollClipDisabled()
+                .zIndex(0)
+
+                // Keep the backdrop between the scroll body and all foreground controls.
+                // A full-header modifier here would also bring its elevated z-index.
+                TBTopChromeBackdrop(fallback: TBColor.page)
+                    .frame(height: visibleChromeHeight)
+                    .offset(x: -contentOffset)
+                    .zIndex(1)
+
+                ZStack(alignment: .top) {
+                    if let topChrome {
+                        topChrome
+                            .environment(\.tbTopChromeCollapseProgress, progress)
+                            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headerHeight = $0 }
+                            .offset(x: -contentOffset, y: -travel)
+                            .allowsHitTesting(progress < 1)
+                            .accessibilityHidden(progress >= 1)
+                            .zIndex(1)
+                    }
+
+                    pinnedHeader()
+                        .environment(\.tbTopChromeCollapseProgress, 0)
+                        .frame(maxWidth: .infinity)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { pinnedHeaderHeight = $0 }
+                        .offset(y: headerHeight - travel)
+                        .zIndex(2)
+                }
+                .frame(height: visibleChromeHeight, alignment: .top)
+                .zIndex(2)
+            }
+        }
+    }
+}
+
+#Preview("Shared Progressive Top Chrome") {
+    VStack(spacing: 0) {
+        TBFlowTopBar(title: "식후 피드백", showsDivider: false, leadingAction: {})
+
+        ScrollView {
+            LazyVStack(spacing: TBSpacing.x8) {
+                ForEach(1..<16) { index in
+                    HStack {
+                        Text("메뉴 \(index)")
+                            .font(TBFont.bold(15))
+                        Spacer()
+                        Text("오늘의 다이닝")
+                            .font(TBFont.regular(13))
+                            .foregroundStyle(TBColor.textSecondary)
+                    }
+                    .padding(TBSpacing.page)
+                    .background(TBColor.page, in: RoundedRectangle(cornerRadius: 16))
+                }
+            }
+            .padding(TBSpacing.page)
+        }
+    }
+    .tbScreenTopChrome()
+    .background(TBColor.focus.ignoresSafeArea())
+}
+
+private struct MainTabStatusBarHeightKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+extension EnvironmentValues {
+    var mainTabStatusBarHeight: CGFloat {
+        get { self[MainTabStatusBarHeightKey.self] }
+        set { self[MainTabStatusBarHeightKey.self] = newValue }
+    }
+}
+
+struct MainTabChromeScrollView<Content: View>: View {
+    @Environment(\.mainTabStatusBarHeight) private var statusBarHeight
+
+    let topChrome: AnyView?
+    private let content: () -> Content
+
+    init(
+        topChrome: AnyView?,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.topChrome = topChrome
+        self.content = content
+    }
+
+    @ViewBuilder
+    var body: some View {
+        if let topChrome {
+            StickyBlurHeader(
+                maxBlurRadius: TBTopChromeBlurMetrics.maxBlurRadius,
+                fadeExtension: TBTopChromeBlurMetrics.fadeExtension,
+                tintOpacityTop: TBTopChromeBlurMetrics.tintOpacityTop,
+                tintOpacityMiddle: TBTopChromeBlurMetrics.tintOpacityMiddle
+            ) {
+                VStack(spacing: 0) {
+                    Color.clear
+                        .frame(height: statusBarHeight)
+
+                    topChrome
+                }
+            } content: {
+                content()
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+            .ignoresSafeArea(.container, edges: .top)
+        } else {
+            ScrollView {
+                content()
+            }
+        }
+    }
+}
+
 extension View {
     func edgeSwipeBack(
         isEnabled: Bool = true,
@@ -295,6 +659,8 @@ struct TopAppBarAction: Identifiable {
 }
 
 struct TopAppBar: View {
+    @Environment(\.tbTopChromeInset) private var topChromeInset
+
     var appearance: TopAppBarAppearance = .default
     var solidBackground: TopAppBarSolidBackground = .page
     var title: String? = nil
@@ -322,17 +688,20 @@ struct TopAppBar: View {
                     .lineLimit(1)
                     .frame(maxWidth: 240)
                     .offset(x: centerContentOffset)
+                    .tbTopChromeDissolve(.title)
                     .allowsHitTesting(false)
             }
 
             HStack(spacing: 0) {
                 leadingControl
                     .topAppBarBloom(token: bloomToken)
+                    .tbTopChromeDissolve(.controls)
 
                 Spacer(minLength: 0)
 
                 if rightActions.isEmpty, showsDefaultActions {
                     defaultActions
+                        .tbTopChromeDissolve(.controls)
                 } else if !rightActions.isEmpty {
                     HStack(spacing: AppChromeMetrics.actionGap) {
                         ForEach(rightActions.indices, id: \.self) { index in
@@ -349,6 +718,7 @@ struct TopAppBar: View {
                             )
                         }
                     }
+                    .tbTopChromeDissolve(.controls)
                 }
             }
             .padding(.horizontal, TBSpacing.page)
@@ -358,17 +728,23 @@ struct TopAppBar: View {
         .padding(.top, AppChromeMetrics.topPadding)
         .padding(.bottom, AppChromeMetrics.bottomPadding)
         .background {
-            background
-                .ignoresSafeArea(edges: .top)
-                .overlay(alignment: .bottom) {
-                    background
-                        .frame(height: AppChromeMetrics.backgroundOverlap)
-                        .offset(y: AppChromeMetrics.backgroundOverlap)
-                }
-                .transaction { transaction in
-                    transaction.animation = nil
-                }
+            if topChromeInset != nil, appearance != .transparent {
+                Color.clear
+                    .tbTopChromeBackground(fallback: solidBackground.color)
+            } else {
+                background
+                    .ignoresSafeArea(edges: .top)
+                    .overlay(alignment: .bottom) {
+                        background
+                            .frame(height: AppChromeMetrics.backgroundOverlap)
+                            .offset(y: AppChromeMetrics.backgroundOverlap)
+                    }
+                    .transaction { transaction in
+                        transaction.animation = nil
+                    }
+            }
         }
+        .zIndex(20)
     }
 
     @ViewBuilder
@@ -610,6 +986,7 @@ private extension View {
 struct BottomTabBar: View {
     @Binding var activeTab: MainTab
     var onCreateDishMemory: () -> Void = {}
+    @State private var isCenterButtonPressing = false
 
     private var leadingTabs: [MainTab] {
         Array(MainTab.allCases.prefix(2))
@@ -625,7 +1002,20 @@ struct BottomTabBar: View {
                 BottomTabButton(tab: tab, activeTab: $activeTab)
             }
 
-            BottomTabCenterButton(action: onCreateDishMemory)
+            BottomTabCenterButton(
+                action: onCreateDishMemory,
+                onPressingChange: { isPressing in
+                    isCenterButtonPressing = isPressing
+                }
+            )
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: BottomTabCenterButtonFramePreferenceKey.self,
+                            value: proxy.frame(in: .global)
+                        )
+                    }
+                }
 
             ForEach(trailingTabs) { tab in
                 BottomTabButton(tab: tab, activeTab: $activeTab)
@@ -641,6 +1031,19 @@ struct BottomTabBar: View {
             Rectangle()
                 .fill(TBColor.border)
                 .frame(height: 1)
+                .opacity(isCenterButtonPressing ? 0 : 1)
+                .animation(.easeOut(duration: 0.12), value: isCenterButtonPressing)
+        }
+    }
+}
+
+struct BottomTabCenterButtonFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .null
+
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        let nextFrame = nextValue()
+        if !nextFrame.isNull {
+            value = nextFrame
         }
     }
 }

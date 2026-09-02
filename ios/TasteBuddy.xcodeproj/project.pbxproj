@@ -11,14 +11,21 @@
 		0D37088E45B49265366FADC6 /* BackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165982BAF0AC97708BD16954 /* BackendConfiguration.swift */; };
 		0FB2C57CD4C3023CF6AD0AED /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC60E87FE0A09550F80114AE /* HomeView.swift */; };
 		1096287E849DED5CA20FFD5B /* RestaurantModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25278C28794B0DA6AB0C0936 /* RestaurantModels.swift */; };
+		13E3DF7A4D1427B5B290C5B0 /* ProfileSummarySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0707C9A7E4C62E491BC0F2 /* ProfileSummarySheet.swift */; };
 		144872B135E3BED0A7212EFE /* TasteContractGoldenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C556260CD56CE5508A071FC /* TasteContractGoldenTests.swift */; };
+		1740781D2BD461F8CC997C1E /* HomePeriodInsightComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0499927227AF4D260476CA60 /* HomePeriodInsightComponents.swift */; };
 		19CF246C391C193EE3E24274 /* onboarding_render_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 6CBB51EEE7F364B4D8D44DA5 /* onboarding_render_3.png */; };
+		1A2B3C4D5E6F708192A3B4C5 /* TasteGradientIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3C4D5E6F708192A3B4C5D6 /* TasteGradientIndicator.swift */; };
+		1D5CA070DF05A2F1F07E1A99 /* tba-native-runtime.json in Resources */ = {isa = PBXBuildFile; fileRef = D557C66B7A2A25AEFAEC23D5 /* tba-native-runtime.json */; };
 		1EE23A2656F66A172EE974E2 /* PreferenceIntakeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 299CBB172BB9DD7A45AC8152 /* PreferenceIntakeFlowView.swift */; };
 		2061C7A32543EDCCF5D80A6F /* PreferenceIntakeContractEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 707A0EA80C859E46424A512E /* PreferenceIntakeContractEngine.swift */; };
 		20BF8429AA06525406C3CAB5 /* PreferenceIntakeContractModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8236E5FF5BF53E69783272E /* PreferenceIntakeContractModels.swift */; };
+		232E80707B6D8F7FC3B6D2F8 /* HomeSummaryComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0D9E6D1B4C34AB8D214782D /* HomeSummaryComponents.swift */; };
 		2493D0E2453CA3E746896955 /* ProfileResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FAE22F295FDD372876B0F73 /* ProfileResultView.swift */; };
 		2596DF0EA089B585C5879748 /* SystemParityComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCCD25AE6830EEF9D5BFA01 /* SystemParityComponentTests.swift */; };
 		26CC6DBC5C6868F737D2AEF2 /* SessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6968C567D3992E322FDB98E7 /* SessionController.swift */; };
+		29F029D1CC1FBBED5A015D28 /* tba-food-knowledge-full.json in Resources */ = {isa = PBXBuildFile; fileRef = 5BD7F7E0F2256686E31F25AC /* tba-food-knowledge-full.json */; };
+		29F4630E37E5A1DE5286865D /* HomeSummaryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F5298012A107A0C17D0B8D4 /* HomeSummaryModels.swift */; };
 		31D801BC68376702C8A1F979 /* AnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271CCB49234022B594B97B87 /* AnalysisView.swift */; };
 		3353AC80393649E95F37D94A /* RestaurantPlaceAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 972940A3F99C394276DDD024 /* RestaurantPlaceAPIClient.swift */; };
 		39FAB6487B1A8F56FBFB989F /* TBDesignColorTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9BDC6A9C0B316BB4107C906 /* TBDesignColorTokens.swift */; };
@@ -27,6 +34,7 @@
 		3E445BF908C9858D4E332F0E /* TasteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80C57ADB1168D4C45BE60C /* TasteModels.swift */; };
 		40B36F22023B1ACDED1EEAB3 /* Pretendard-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 2F28594BB23EE55B51DC6607 /* Pretendard-Bold.otf */; };
 		42A40726B3808027C6EF400C /* TasteContractModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0339FA6EB6B2A6442B4E5470 /* TasteContractModels.swift */; };
+		468FF2C181020E765E241F6C /* HomeSummaryEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 447EF85B631CE34E2BE90F74 /* HomeSummaryEngineTests.swift */; };
 		473CC960FE9C80516C16B602 /* AppChromeComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0407AA73CECE5A105C204BF9 /* AppChromeComponents.swift */; };
 		4ABD96C465393A6DD28B74C5 /* TasteSurveyScoringEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C72D55438B5084E29B0C46B /* TasteSurveyScoringEngine.swift */; };
 		4B7D46F9F6941CF82B7CD258 /* TasteSurveyContractModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EA9D5752E6785C160448D5 /* TasteSurveyContractModels.swift */; };
@@ -38,9 +46,11 @@
 		5FC55B0228A53D8F46FC67A3 /* AppPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6276760A70198EEE1BB03BD /* AppPhase.swift */; };
 		6285D92488F760AFB763DE53 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D14867A4F140B27A230794 /* SplashView.swift */; };
 		637D0F032CDC71018082FEED /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 1E9D96C68259017AB583399E /* Supabase */; };
+		A7B1C2D3E4F5061728394051 /* ProgressiveBlurHeader in Frameworks */ = {isa = PBXBuildFile; productRef = A7B1C2D3E4F5061728394053 /* ProgressiveBlurHeader */; };
 		685A10211DCFC0B07D685046 /* SystemParityComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6032BAAF406EBAB87F2B9A9B /* SystemParityComponents.swift */; };
 		6F480C9447E25816E7A98C0F /* CalibrationFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A227DA0878C66E3D037888F /* CalibrationFlowView.swift */; };
 		7240E69AE0EF0CF787576ECC /* dining-feedback-scenario.json in Resources */ = {isa = PBXBuildFile; fileRef = 405C07DABEF65BE54901E1AE /* dining-feedback-scenario.json */; };
+		748FDF587D68D2D015D37476 /* TasteBuddyAgentKnowledgeRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99F951063411F255356F6BD8 /* TasteBuddyAgentKnowledgeRuntime.swift */; };
 		7A10726E1185FFA43409A1D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 38B55D2D2377C0B51ADA3CEC /* Assets.xcassets */; };
 		7B740B1507F60570047959FB /* TasteBuddyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF3F689A6462A9519F1CEDCD /* TasteBuddyApp.swift */; };
 		7D331DECCAD2ADD44E175514 /* TBComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E7C1932791B7E998DF0B5 /* TBComponents.swift */; };
@@ -60,6 +70,7 @@
 		A92A5F54ADF10DB4D7735EDD /* AppModelPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF07C4BA880F9227790D2407 /* AppModelPersistenceTests.swift */; };
 		AA67D50AA1E4B8DDC138140D /* DiningFeedbackContractModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED8C2836CDC2913C4922B87 /* DiningFeedbackContractModels.swift */; };
 		AE8BA02385DA0E6483AABC50 /* OnjiumChefs.png in Resources */ = {isa = PBXBuildFile; fileRef = F91C9D342A693D1E2578CCB9 /* OnjiumChefs.png */; };
+		B0CC4FEAE07EC69AF15CE02D /* tba-full-engine-golden.json in Resources */ = {isa = PBXBuildFile; fileRef = E8F43443BA9C2AAD93BE734D /* tba-full-engine-golden.json */; };
 		B4705F9B20C206E6BCF8F358 /* TBTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B217BDC0E560B5AF9EBDAFB2 /* TBTheme.swift */; };
 		B6A07C0197ACFA213433BCC0 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F0E48B03AFDD3724522B0E /* ProfileView.swift */; };
 		B73261F33E62B86478B476B4 /* SearchSystemComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99F21B8A110BF569AFC66B3 /* SearchSystemComponents.swift */; };
@@ -82,9 +93,12 @@
 		E8E428E1AFF9746FA632E68A /* quick-calibration-golden.json in Resources */ = {isa = PBXBuildFile; fileRef = 749620770BB5FE31680339C7 /* quick-calibration-golden.json */; };
 		EDFB2D3B3611CE07679581FD /* PalateBloomAvatarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CC688ADBDDF2B4A3AA01C5 /* PalateBloomAvatarTests.swift */; };
 		F182BC4FF9D246B20BE9EE67 /* ProfileHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F75774CA9817C9AB32B67F5 /* ProfileHeroCard.swift */; };
+		F39EB5FC95A256064D732B67 /* TasteBuddyAgentFullEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1611A016F4E7D8D524459978 /* TasteBuddyAgentFullEngine.swift */; };
 		F71B4799BEBC4247521B7F7A /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EB6948450C5679653E3575 /* MainTabView.swift */; };
 		F7696C275ABB4E3E355CF4AA /* AppShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C60FA463A35D18513E71FC7 /* AppShellView.swift */; };
 		F7A59A2A67D1F4EDCB5A1A3B /* preference-intake.json in Resources */ = {isa = PBXBuildFile; fileRef = 55300A016465D1ACE12B6790 /* preference-intake.json */; };
+		FC19F6D40344BDDF5E78CDC0 /* TasteBuddyAgentFullEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECDD6715FCA659A456151BE /* TasteBuddyAgentFullEngineTests.swift */; };
+		FCE0FF8129A5CE4EADE35F06 /* TasteBuddyAgentFullModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4935BC763775F919421F2554 /* TasteBuddyAgentFullModels.swift */; };
 		FD45CDC8949D95AF57165FB1 /* BackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056EE252D8671B982A6790CB /* BackendIntegrationTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -102,6 +116,7 @@
 		00EB6948450C5679653E3575 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		0339FA6EB6B2A6442B4E5470 /* TasteContractModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteContractModels.swift; sourceTree = "<group>"; };
 		0407AA73CECE5A105C204BF9 /* AppChromeComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppChromeComponents.swift; sourceTree = "<group>"; };
+		0499927227AF4D260476CA60 /* HomePeriodInsightComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePeriodInsightComponents.swift; sourceTree = "<group>"; };
 		056EE252D8671B982A6790CB /* BackendIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendIntegrationTests.swift; sourceTree = "<group>"; };
 		059E477763679895089F8762 /* HomeSearchEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchEngineTests.swift; sourceTree = "<group>"; };
 		06A08F9100C47A8485B6452C /* onboarding_render_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = onboarding_render_1.png; sourceTree = "<group>"; };
@@ -109,6 +124,7 @@
 		0C556260CD56CE5508A071FC /* TasteContractGoldenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteContractGoldenTests.swift; sourceTree = "<group>"; };
 		0C72D55438B5084E29B0C46B /* TasteSurveyScoringEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteSurveyScoringEngine.swift; sourceTree = "<group>"; };
 		1024AB4876963918ED22259F /* TasteBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TasteBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1611A016F4E7D8D524459978 /* TasteBuddyAgentFullEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyAgentFullEngine.swift; sourceTree = "<group>"; };
 		165982BAF0AC97708BD16954 /* BackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendConfiguration.swift; sourceTree = "<group>"; };
 		19BB11AFEC07305CE8096FC3 /* BottomTabCenterButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomTabCenterButton.swift; sourceTree = "<group>"; };
 		1B2E29BFDC69DD0B99E642B2 /* AuthEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthEntryView.swift; sourceTree = "<group>"; };
@@ -117,17 +133,21 @@
 		25278C28794B0DA6AB0C0936 /* RestaurantModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestaurantModels.swift; sourceTree = "<group>"; };
 		271CCB49234022B594B97B87 /* AnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisView.swift; sourceTree = "<group>"; };
 		299CBB172BB9DD7A45AC8152 /* PreferenceIntakeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceIntakeFlowView.swift; sourceTree = "<group>"; };
+		2B3C4D5E6F708192A3B4C5D6 /* TasteGradientIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteGradientIndicator.swift; sourceTree = "<group>"; };
 		2F28594BB23EE55B51DC6607 /* Pretendard-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Bold.otf"; sourceTree = "<group>"; };
 		30D1FB364B0F37004EAA8AF3 /* TasteBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TasteBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		38B55D2D2377C0B51ADA3CEC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		405C07DABEF65BE54901E1AE /* dining-feedback-scenario.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "dining-feedback-scenario.json"; sourceTree = "<group>"; };
 		409AB2FD887A798BC23019B8 /* Pretendard-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Regular.otf"; sourceTree = "<group>"; };
 		43385E4A64879AB4C5AC32A4 /* Pretendard-SemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-SemiBold.otf"; sourceTree = "<group>"; };
+		447EF85B631CE34E2BE90F74 /* HomeSummaryEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSummaryEngineTests.swift; sourceTree = "<group>"; };
 		48874CE71BD30EF3CA90A482 /* RestaurantDetailRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestaurantDetailRouteView.swift; sourceTree = "<group>"; };
+		4935BC763775F919421F2554 /* TasteBuddyAgentFullModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyAgentFullModels.swift; sourceTree = "<group>"; };
 		4A227DA0878C66E3D037888F /* CalibrationFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationFlowView.swift; sourceTree = "<group>"; };
 		4C60FA463A35D18513E71FC7 /* AppShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellView.swift; sourceTree = "<group>"; };
 		52CC688ADBDDF2B4A3AA01C5 /* PalateBloomAvatarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PalateBloomAvatarTests.swift; sourceTree = "<group>"; };
 		55300A016465D1ACE12B6790 /* preference-intake.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "preference-intake.json"; sourceTree = "<group>"; };
+		5BD7F7E0F2256686E31F25AC /* tba-food-knowledge-full.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "tba-food-knowledge-full.json"; sourceTree = "<group>"; };
 		5BF90B387EF3DFD69FE4D71A /* LucideIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LucideIcon.swift; sourceTree = "<group>"; };
 		5C49F8752DF2008673767AA7 /* AppRouteDestinations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouteDestinations.swift; sourceTree = "<group>"; };
 		5FAE22F295FDD372876B0F73 /* ProfileResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileResultView.swift; sourceTree = "<group>"; };
@@ -138,6 +158,7 @@
 		66EA9D5752E6785C160448D5 /* TasteSurveyContractModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteSurveyContractModels.swift; sourceTree = "<group>"; };
 		6968C567D3992E322FDB98E7 /* SessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionController.swift; sourceTree = "<group>"; };
 		6CBB51EEE7F364B4D8D44DA5 /* onboarding_render_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = onboarding_render_3.png; sourceTree = "<group>"; };
+		6F5298012A107A0C17D0B8D4 /* HomeSummaryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSummaryModels.swift; sourceTree = "<group>"; };
 		707A0EA80C859E46424A512E /* PreferenceIntakeContractEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceIntakeContractEngine.swift; sourceTree = "<group>"; };
 		749620770BB5FE31680339C7 /* quick-calibration-golden.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "quick-calibration-golden.json"; sourceTree = "<group>"; };
 		76746ED777A21D33293E4E8B /* BackendAuthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendAuthRepository.swift; sourceTree = "<group>"; };
@@ -153,14 +174,17 @@
 		95F0E48B03AFDD3724522B0E /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		972940A3F99C394276DDD024 /* RestaurantPlaceAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestaurantPlaceAPIClient.swift; sourceTree = "<group>"; };
 		99789CE7034024596EB1F4A0 /* tba-dining-analysis-golden.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "tba-dining-analysis-golden.json"; sourceTree = "<group>"; };
+		99F951063411F255356F6BD8 /* TasteBuddyAgentKnowledgeRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyAgentKnowledgeRuntime.swift; sourceTree = "<group>"; };
 		9A5335B548DC231587577531 /* CalibrationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationModels.swift; sourceTree = "<group>"; };
 		9AFA9B3031BA22AEF4F9A30B /* TasteBuddyAgentContractModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyAgentContractModels.swift; sourceTree = "<group>"; };
 		AF3F689A6462A9519F1CEDCD /* TasteBuddyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyApp.swift; sourceTree = "<group>"; };
 		AF87310122F81A81CA8C0086 /* DiningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiningView.swift; sourceTree = "<group>"; };
 		AFC2F781CE354A21BE7530A9 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		B0D9E6D1B4C34AB8D214782D /* HomeSummaryComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSummaryComponents.swift; sourceTree = "<group>"; };
 		B217BDC0E560B5AF9EBDAFB2 /* TBTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TBTheme.swift; sourceTree = "<group>"; };
 		B793BA91CC35971A14D971DF /* DesignSystemFullComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemFullComponents.swift; sourceTree = "<group>"; };
 		B917845974FD8A8819709546 /* Pretendard-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Medium.otf"; sourceTree = "<group>"; };
+		BB0707C9A7E4C62E491BC0F2 /* ProfileSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSummarySheet.swift; sourceTree = "<group>"; };
 		C2D153EDACAD1EB569EBFE8D /* taste-survey-golden.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "taste-survey-golden.json"; sourceTree = "<group>"; };
 		C3ABC5F38F90B9F4EB9AB1FC /* KangMingoo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = KangMingoo.png; sourceTree = "<group>"; };
 		C40AA737B5DA8CCADD1B54A0 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -169,11 +193,13 @@
 		C8236E5FF5BF53E69783272E /* PreferenceIntakeContractModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceIntakeContractModels.swift; sourceTree = "<group>"; };
 		CF9AF7FC3DD3169225CEB166 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		D4ECA5CE1DD2A7B8EB34549F /* SupabaseClientProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClientProvider.swift; sourceTree = "<group>"; };
+		D557C66B7A2A25AEFAEC23D5 /* tba-native-runtime.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "tba-native-runtime.json"; sourceTree = "<group>"; };
 		DED8C2836CDC2913C4922B87 /* DiningFeedbackContractModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiningFeedbackContractModels.swift; sourceTree = "<group>"; };
 		DF07C4BA880F9227790D2407 /* AppModelPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelPersistenceTests.swift; sourceTree = "<group>"; };
 		E5EE872EC659816958E80D2E /* TasteBuddyAgentEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyAgentEngine.swift; sourceTree = "<group>"; };
 		E7D14867A4F140B27A230794 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		E842696EAA914DDC7B8BC6DB /* onboarding_render_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = onboarding_render_4.png; sourceTree = "<group>"; };
+		E8F43443BA9C2AAD93BE734D /* tba-full-engine-golden.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "tba-full-engine-golden.json"; sourceTree = "<group>"; };
 		E99F21B8A110BF569AFC66B3 /* SearchSystemComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchSystemComponents.swift; sourceTree = "<group>"; };
 		EC60E87FE0A09550F80114AE /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		ED80C57ADB1168D4C45BE60C /* TasteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteModels.swift; sourceTree = "<group>"; };
@@ -181,6 +207,7 @@
 		F91C9D342A693D1E2578CCB9 /* OnjiumChefs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OnjiumChefs.png; sourceTree = "<group>"; };
 		F9BDC6A9C0B316BB4107C906 /* TBDesignColorTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TBDesignColorTokens.swift; sourceTree = "<group>"; };
 		FCB74E266F2F1EF4B4F2EBCB /* DesignSystemPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemPreviewView.swift; sourceTree = "<group>"; };
+		FECDD6715FCA659A456151BE /* TasteBuddyAgentFullEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyAgentFullEngineTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,6 +215,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7B1C2D3E4F5061728394051 /* ProgressiveBlurHeader in Frameworks */,
 				637D0F032CDC71018082FEED /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -230,8 +258,10 @@
 				056EE252D8671B982A6790CB /* BackendIntegrationTests.swift */,
 				8A933DCD5B7447867EC1BBCD /* CalibrationEngineTests.swift */,
 				059E477763679895089F8762 /* HomeSearchEngineTests.swift */,
+				447EF85B631CE34E2BE90F74 /* HomeSummaryEngineTests.swift */,
 				52CC688ADBDDF2B4A3AA01C5 /* PalateBloomAvatarTests.swift */,
 				8DCCD25AE6830EEF9D5BFA01 /* SystemParityComponentTests.swift */,
+				FECDD6715FCA659A456151BE /* TasteBuddyAgentFullEngineTests.swift */,
 				0C556260CD56CE5508A071FC /* TasteContractGoldenTests.swift */,
 			);
 			path = TasteBuddyTests;
@@ -272,6 +302,15 @@
 				D4ECA5CE1DD2A7B8EB34549F /* SupabaseClientProvider.swift */,
 			);
 			path = Backend;
+			sourceTree = "<group>";
+		};
+		33463B11F2EC4B86379DFDD8 /* TBA */ = {
+			isa = PBXGroup;
+			children = (
+				5BD7F7E0F2256686E31F25AC /* tba-food-knowledge-full.json */,
+				D557C66B7A2A25AEFAEC23D5 /* tba-native-runtime.json */,
+			);
+			path = TBA;
 			sourceTree = "<group>";
 		};
 		361AB4051DB13492785E4B29 /* Config */ = {
@@ -358,6 +397,8 @@
 				707A0EA80C859E46424A512E /* PreferenceIntakeContractEngine.swift */,
 				1F8A5FF1A003F69B12D1D603 /* QuickCalibrationContractEngine.swift */,
 				E5EE872EC659816958E80D2E /* TasteBuddyAgentEngine.swift */,
+				1611A016F4E7D8D524459978 /* TasteBuddyAgentFullEngine.swift */,
+				99F951063411F255356F6BD8 /* TasteBuddyAgentKnowledgeRuntime.swift */,
 				0C72D55438B5084E29B0C46B /* TasteSurveyScoringEngine.swift */,
 			);
 			path = UseCases;
@@ -383,7 +424,10 @@
 		93973E66A1A41B9A90C04F89 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				0499927227AF4D260476CA60 /* HomePeriodInsightComponents.swift */,
 				87BAC2F716755DB861406A0C /* HomeSearchModels.swift */,
+				B0D9E6D1B4C34AB8D214782D /* HomeSummaryComponents.swift */,
+				6F5298012A107A0C17D0B8D4 /* HomeSummaryModels.swift */,
 				EC60E87FE0A09550F80114AE /* HomeView.swift */,
 			);
 			path = Home;
@@ -422,6 +466,7 @@
 				DED8C2836CDC2913C4922B87 /* DiningFeedbackContractModels.swift */,
 				C8236E5FF5BF53E69783272E /* PreferenceIntakeContractModels.swift */,
 				9AFA9B3031BA22AEF4F9A30B /* TasteBuddyAgentContractModels.swift */,
+				4935BC763775F919421F2554 /* TasteBuddyAgentFullModels.swift */,
 				0339FA6EB6B2A6442B4E5470 /* TasteContractModels.swift */,
 				66EA9D5752E6785C160448D5 /* TasteSurveyContractModels.swift */,
 			);
@@ -438,6 +483,7 @@
 				43385E4A64879AB4C5AC32A4 /* Pretendard-SemiBold.otf */,
 				C36E1ED7A309F7798C9F551D /* Fixtures */,
 				4BC3780FF461BF361C8155CD /* Images */,
+				33463B11F2EC4B86379DFDD8 /* TBA */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -466,6 +512,7 @@
 				749620770BB5FE31680339C7 /* quick-calibration-golden.json */,
 				C2D153EDACAD1EB569EBFE8D /* taste-survey-golden.json */,
 				99789CE7034024596EB1F4A0 /* tba-dining-analysis-golden.json */,
+				E8F43443BA9C2AAD93BE734D /* tba-full-engine-golden.json */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -509,6 +556,7 @@
 				F9BDC6A9C0B316BB4107C906 /* TBDesignColorTokens.swift */,
 				EF66F7EEEA4B499D9BB55CAA /* TBDesignFoundationTokens.swift */,
 				B217BDC0E560B5AF9EBDAFB2 /* TBTheme.swift */,
+				2B3C4D5E6F708192A3B4C5D6 /* TasteGradientIndicator.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -526,6 +574,7 @@
 			isa = PBXGroup;
 			children = (
 				5FAE22F295FDD372876B0F73 /* ProfileResultView.swift */,
+				BB0707C9A7E4C62E491BC0F2 /* ProfileSummarySheet.swift */,
 				95F0E48B03AFDD3724522B0E /* ProfileView.swift */,
 			);
 			path = Profile;
@@ -567,6 +616,7 @@
 			name = TasteBuddy;
 			packageProductDependencies = (
 				1E9D96C68259017AB583399E /* Supabase */,
+				A7B1C2D3E4F5061728394053 /* ProgressiveBlurHeader */,
 			);
 			productName = TasteBuddy;
 			productReference = 1024AB4876963918ED22259F /* TasteBuddy.app */;
@@ -579,7 +629,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2650;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					BBCEB883B6BC907FEDB3092D = {
 						ProvisioningStyle = Automatic;
@@ -596,6 +646,7 @@
 			mainGroup = E37EE6A5225480B3CE74C1DA;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				A7B1C2D3E4F5061728394052 /* XCRemoteSwiftPackageReference "ProgressiveBlurHeader" */,
 				E6CF4A6AC39683D65BC68077 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -632,6 +683,9 @@
 				E8E428E1AFF9746FA632E68A /* quick-calibration-golden.json in Resources */,
 				9A9255CECF092C2133139CD7 /* taste-survey-golden.json in Resources */,
 				C093AFC5A76C132619442CE0 /* tba-dining-analysis-golden.json in Resources */,
+				29F029D1CC1FBBED5A015D28 /* tba-food-knowledge-full.json in Resources */,
+				B0CC4FEAE07EC69AF15CE02D /* tba-full-engine-golden.json in Resources */,
+				1D5CA070DF05A2F1F07E1A99 /* tba-native-runtime.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -647,8 +701,10 @@
 				FD45CDC8949D95AF57165FB1 /* BackendIntegrationTests.swift in Sources */,
 				86D40577E2255928F7E934C3 /* CalibrationEngineTests.swift in Sources */,
 				C4BB16E19A004BE6A99AC0D8 /* HomeSearchEngineTests.swift in Sources */,
+				468FF2C181020E765E241F6C /* HomeSummaryEngineTests.swift in Sources */,
 				EDFB2D3B3611CE07679581FD /* PalateBloomAvatarTests.swift in Sources */,
 				2596DF0EA089B585C5879748 /* SystemParityComponentTests.swift in Sources */,
+				FC19F6D40344BDDF5E78CDC0 /* TasteBuddyAgentFullEngineTests.swift in Sources */,
 				144872B135E3BED0A7212EFE /* TasteContractGoldenTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -674,7 +730,10 @@
 				88E529E7C333E85C112DB960 /* DesignSystemPreviewView.swift in Sources */,
 				AA67D50AA1E4B8DDC138140D /* DiningFeedbackContractModels.swift in Sources */,
 				9F87A513CC4426C16694CD03 /* DiningView.swift in Sources */,
+				1740781D2BD461F8CC997C1E /* HomePeriodInsightComponents.swift in Sources */,
 				C356919D2D6B81A41D976366 /* HomeSearchModels.swift in Sources */,
+				232E80707B6D8F7FC3B6D2F8 /* HomeSummaryComponents.swift in Sources */,
+				29F4630E37E5A1DE5286865D /* HomeSummaryModels.swift in Sources */,
 				0FB2C57CD4C3023CF6AD0AED /* HomeView.swift in Sources */,
 				E87CE3A2134B80ECC318B02B /* LucideIcon.swift in Sources */,
 				F71B4799BEBC4247521B7F7A /* MainTabView.swift in Sources */,
@@ -685,6 +744,7 @@
 				1EE23A2656F66A172EE974E2 /* PreferenceIntakeFlowView.swift in Sources */,
 				F182BC4FF9D246B20BE9EE67 /* ProfileHeroCard.swift in Sources */,
 				2493D0E2453CA3E746896955 /* ProfileResultView.swift in Sources */,
+				13E3DF7A4D1427B5B290C5B0 /* ProfileSummarySheet.swift in Sources */,
 				B6A07C0197ACFA213433BCC0 /* ProfileView.swift in Sources */,
 				3B14BD3C99A7F3A5E3DB2D42 /* QuickCalibrationContractEngine.swift in Sources */,
 				90A6C8C4B307BD5DCFD7E7C6 /* RestaurantDetailModels.swift in Sources */,
@@ -701,8 +761,12 @@
 				39FAB6487B1A8F56FBFB989F /* TBDesignColorTokens.swift in Sources */,
 				A493D282D5653D2575063FA8 /* TBDesignFoundationTokens.swift in Sources */,
 				B4705F9B20C206E6BCF8F358 /* TBTheme.swift in Sources */,
+				1A2B3C4D5E6F708192A3B4C5 /* TasteGradientIndicator.swift in Sources */,
 				4FB79DECD540AD816CEF966F /* TasteBuddyAgentContractModels.swift in Sources */,
 				BA4051755A6A5EFC0411517E /* TasteBuddyAgentEngine.swift in Sources */,
+				F39EB5FC95A256064D732B67 /* TasteBuddyAgentFullEngine.swift in Sources */,
+				FCE0FF8129A5CE4EADE35F06 /* TasteBuddyAgentFullModels.swift in Sources */,
+				748FDF587D68D2D015D37476 /* TasteBuddyAgentKnowledgeRuntime.swift in Sources */,
 				7B740B1507F60570047959FB /* TasteBuddyApp.swift in Sources */,
 				42A40726B3808027C6EF400C /* TasteContractModels.swift in Sources */,
 				3E445BF908C9858D4E332F0E /* TasteModels.swift in Sources */,
@@ -905,6 +969,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		A7B1C2D3E4F5061728394052 /* XCRemoteSwiftPackageReference "ProgressiveBlurHeader" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dominikmartn/ProgressiveBlurHeader";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		E6CF4A6AC39683D65BC68077 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift.git";
@@ -920,6 +992,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E6CF4A6AC39683D65BC68077 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		A7B1C2D3E4F5061728394053 /* ProgressiveBlurHeader */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A7B1C2D3E4F5061728394052 /* XCRemoteSwiftPackageReference "ProgressiveBlurHeader" */;
+			productName = ProgressiveBlurHeader;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -117,6 +117,31 @@ private struct TastePalettePreviewSection: View {
                 }
 
                 SectionCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Taste Gradient Indicator")
+                            .font(TBFont.semibold(14))
+                            .foregroundStyle(TBColor.textPrimary)
+
+                        HStack(spacing: TBSpacing.x16) {
+                            TasteGradientIndicator(
+                                segments: previewIndicatorSegments
+                            )
+
+                            TasteGradientIndicator(
+                                segments: previewIndicatorSegments,
+                                style: .verticalCapsule
+                            )
+                            .frame(height: 40)
+
+                            Text("같은 가중치와 혼합 규칙을 원형·세로 캡슐에 적용합니다.")
+                                .font(TBFont.regular(11))
+                                .foregroundStyle(TBColor.textHint)
+                                .lineSpacing(2)
+                        }
+                    }
+                }
+
+                SectionCard {
                     VStack(alignment: .leading, spacing: 14) {
                         Text("Palate Bloom Avatar")
                             .font(TBFont.semibold(14))
@@ -146,6 +171,13 @@ private struct TastePalettePreviewSection: View {
                 }
             }
         }
+    }
+
+    private var previewIndicatorSegments: [TasteGradientIndicatorSegment] {
+        [
+            TasteGradientIndicatorSegment(color: TasteAxis.sour.mainColor, weight: 3),
+            TasteGradientIndicatorSegment(color: TasteAxis.umami.mainColor, weight: 1),
+        ]
     }
 }
 

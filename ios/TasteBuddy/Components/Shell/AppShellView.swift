@@ -25,8 +25,849 @@ private enum ActiveStagedSheet: Identifiable {
     }
 }
 
+struct DiningFeedbackTasteBloomTransitionOverlay: View {
+    var launchOrigin: CGPoint? = nil
+
+    var body: some View {
+        TasteBloomTransition(origin: launchOrigin)
+    }
+}
+
+struct TasteBloomTransition: View {
+    var origin: CGPoint? = nil
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var startedAt = Date()
+
+    var body: some View {
+        GeometryReader { proxy in
+            TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: reduceMotion)) { timeline in
+                let elapsed = reduceMotion
+                    ? TasteBloomTransitionMetrics.duration
+                    : timeline.date.timeIntervalSince(startedAt)
+                let progress = TasteBloomTransitionMetrics.normalizedProgress(elapsed)
+                let expansionProgress = TasteBloomTransitionMetrics.expansionProgress(progress)
+                let animation = animationState(elapsed: elapsed)
+                let size = proxy.size
+                let origin = TasteBloomTransitionMetrics.bloomOrigin(
+                    in: size,
+                    safeAreaBottom: proxy.safeAreaInsets.bottom,
+                    measuredOrigin: self.origin
+                )
+                let radius = TasteBloomTransitionMetrics.expansionRadius(
+                    size: size,
+                    origin: origin,
+                    progress: expansionProgress
+                )
+                let cameraRevealRadius = TasteBloomTransitionMetrics.cameraRevealRadius(
+                    size: size,
+                    radius: radius,
+                    expansionProgress: expansionProgress
+                )
+
+                ZStack {
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Color.white.opacity(
+                                TasteBloomTransitionMetrics.whiteScrimOpacity(progress)
+                            )
+                        )
+                        .ignoresSafeArea()
+
+                    Canvas(opaque: false, colorMode: .nonLinear, rendersAsynchronously: true) {
+                        context,
+                        canvasSize in
+                        drawBloom(
+                            in: &context,
+                            size: canvasSize,
+                            animation: animation,
+                            origin: origin,
+                            expansionProgress: expansionProgress
+                        )
+                    }
+                    .mask {
+                        TasteBloomRadialMask(
+                            origin: origin,
+                            radius: radius,
+                            phase: animation.phase,
+                            expansionProgress: expansionProgress
+                        )
+                        .blur(
+                            radius: TasteBloomTransitionMetrics.maskFeatherRadius(
+                                expansionProgress: expansionProgress
+                            )
+                        )
+                    }
+                    .compositingGroup()
+
+                    TasteBloomCameraRevealMask(
+                        origin: origin,
+                        radius: cameraRevealRadius,
+                        phase: animation.phase - .pi / 7,
+                        expansionProgress: expansionProgress
+                    )
+                    .blur(
+                        radius: TasteBloomTransitionMetrics.cameraRevealFeatherRadius(
+                            expansionProgress: expansionProgress
+                        )
+                    )
+                    .blendMode(.destinationOut)
+                    .allowsHitTesting(false)
+
+                    Canvas(opaque: false, colorMode: .nonLinear, rendersAsynchronously: true) {
+                        context,
+                        canvasSize in
+                        drawExpansionEdge(
+                            in: &context,
+                            size: canvasSize,
+                            origin: origin,
+                            radius: radius,
+                            animation: animation,
+                            expansionProgress: expansionProgress
+                        )
+                    }
+                    .opacity(TasteBloomTransitionMetrics.edgeGlowOpacity(progress))
+                    .blur(
+                        radius: TasteBloomTransitionMetrics.edgeBlurRadius(
+                            expansionProgress: expansionProgress
+                        )
+                    )
+                    .compositingGroup()
+                    .allowsHitTesting(false)
+                }
+                .frame(width: size.width, height: size.height)
+                .opacity(TasteBloomTransitionMetrics.overlayOpacity(progress))
+                .compositingGroup()
+            }
+        }
+        .ignoresSafeArea()
+        .contentShape(Rectangle())
+        .onAppear {
+            startedAt = Date()
+        }
+    }
+
+    private func drawExpansionEdge(
+        in context: inout GraphicsContext,
+        size: CGSize,
+        origin: CGPoint,
+        radius: CGFloat,
+        animation: TasteBloomAnimationState,
+        expansionProgress: Double
+    ) {
+        let firstColor = animation.firstColor.filtered(
+            hueRotation: animation.hueRotation,
+            brightness: TasteBloomTransitionMetrics.bloomBrightness(
+                expansionProgress: expansionProgress
+            ),
+            saturation: TasteBloomTransitionMetrics.bloomSaturation(
+                expansionProgress: expansionProgress
+            ),
+            contrast: TasteBloomTransitionMetrics.bloomContrast(
+                expansionProgress: expansionProgress
+            )
+        )
+        .limitingLuminance(
+            to: TasteBloomTransitionMetrics.bloomMaxLuminance(
+                expansionProgress: expansionProgress
+            )
+        )
+        .color
+        let secondColor = animation.secondColor.filtered(
+            hueRotation: animation.hueRotation,
+            brightness: TasteBloomTransitionMetrics.bloomBrightness(
+                expansionProgress: expansionProgress
+            ),
+            saturation: TasteBloomTransitionMetrics.bloomSaturation(
+                expansionProgress: expansionProgress
+            ),
+            contrast: TasteBloomTransitionMetrics.bloomContrast(
+                expansionProgress: expansionProgress
+            )
+        )
+        .limitingLuminance(
+            to: TasteBloomTransitionMetrics.bloomMaxLuminance(
+                expansionProgress: expansionProgress
+            )
+        )
+        .color
+        let edgePath = TasteBloomTransitionMetrics.radialBlobPath(
+            size: size,
+            origin: origin,
+            radius: radius,
+            phase: animation.phase,
+            expansionProgress: expansionProgress
+        )
+
+        context.stroke(
+            edgePath,
+            with: .radialGradient(
+                Gradient(stops: [
+                    .init(color: firstColor.opacity(0.46), location: 0),
+                    .init(color: secondColor.opacity(0.38), location: 0.58),
+                    .init(color: Color.white.opacity(0.16), location: 1)
+                ]),
+                center: origin,
+                startRadius: max(radius - 120, 0),
+                endRadius: radius + 120
+            ),
+            lineWidth: TasteBloomTransitionMetrics.edgeGlowWidth(
+                size: size,
+                expansionProgress: expansionProgress
+            )
+        )
+
+        context.stroke(
+            edgePath,
+            with: .linearGradient(
+                Gradient(stops: [
+                    .init(color: firstColor.opacity(0.92), location: 0),
+                    .init(color: secondColor.opacity(0.82), location: 0.52),
+                    .init(color: firstColor.opacity(0.92), location: 1)
+                ]),
+                startPoint: CGPoint(x: origin.x - radius, y: origin.y + radius),
+                endPoint: CGPoint(x: origin.x + radius, y: origin.y - radius)
+            ),
+            lineWidth: TasteBloomTransitionMetrics.edgeRimWidth
+        )
+    }
+
+    private func drawBloom(
+        in context: inout GraphicsContext,
+        size: CGSize,
+        animation: TasteBloomAnimationState,
+        origin: CGPoint,
+        expansionProgress: Double
+    ) {
+        let metrics = TasteBloomTransitionMetrics.self
+        let firstColor = animation.firstColor.filtered(
+            hueRotation: animation.hueRotation,
+            brightness: metrics.bloomBrightness(expansionProgress: expansionProgress),
+            saturation: metrics.bloomSaturation(expansionProgress: expansionProgress),
+            contrast: metrics.bloomContrast(expansionProgress: expansionProgress)
+        )
+        .limitingLuminance(to: metrics.bloomMaxLuminance(expansionProgress: expansionProgress))
+        .color
+        let secondColor = animation.secondColor.filtered(
+            hueRotation: animation.hueRotation,
+            brightness: metrics.bloomBrightness(expansionProgress: expansionProgress),
+            saturation: metrics.bloomSaturation(expansionProgress: expansionProgress),
+            contrast: metrics.bloomContrast(expansionProgress: expansionProgress)
+        )
+        .limitingLuminance(to: metrics.bloomMaxLuminance(expansionProgress: expansionProgress))
+        .color
+        let rect = CGRect(origin: .zero, size: size)
+
+        context.fill(
+            Path(rect),
+            with: .linearGradient(
+                Gradient(stops: [
+                    .init(color: firstColor.opacity(0.96), location: 0),
+                    .init(color: secondColor.opacity(0.90), location: 0.42),
+                    .init(color: firstColor.opacity(0.98), location: 1)
+                ]),
+                startPoint: CGPoint(x: size.width * 0.16, y: size.height),
+                endPoint: CGPoint(x: size.width * 0.92, y: 0)
+            )
+        )
+
+        let sourceRadius = max(size.width, size.height)
+            * CGFloat(0.12 + 0.24 * expansionProgress)
+        let sourcePath = metrics.radialBlobPath(
+            size: size,
+            origin: origin,
+            radius: sourceRadius,
+            phase: animation.phase + .pi / 9,
+            expansionProgress: max(expansionProgress, 0.22)
+        )
+        context.fill(
+            sourcePath,
+            with: .radialGradient(
+                Gradient(stops: [
+                    .init(
+                        color: Color.white.opacity(
+                            metrics.sourceWhiteOpacity(expansionProgress: expansionProgress)
+                        ),
+                        location: 0
+                    ),
+                    .init(
+                        color: firstColor.opacity(
+                            metrics.sourceFirstOpacity(expansionProgress: expansionProgress)
+                        ),
+                        location: 0.24
+                    ),
+                    .init(
+                        color: secondColor.opacity(
+                            metrics.sourceSecondOpacity(expansionProgress: expansionProgress)
+                        ),
+                        location: 0.58
+                    ),
+                    .init(color: Color.white.opacity(0), location: 1)
+                ]),
+                center: origin,
+                startRadius: 0,
+                endRadius: sourceRadius
+            )
+        )
+
+        let specs = TasteBloomTransitionMetrics.blobSpecs
+        let waveHeight = CGFloat(0.90 + ((1 - cos(animation.phase + .pi / 3)) / 2) * 0.24)
+
+        for index in specs.indices.reversed() {
+            let spec = specs[index]
+            let color = spec.color == .first ? firstColor : secondColor
+            let motion = motionGroup(
+                phase: animation.phase,
+                offset: spec.offset,
+                size: size
+            )
+            let center = CGPoint(
+                x: size.width * spec.x + motion.x * spec.xSign,
+                y: size.height * spec.y + motion.y * spec.ySign
+            )
+            let radiusX = size.width * spec.radiusX * motion.widthScale
+            let radiusY = size.height * spec.radiusY * motion.heightScale
+                * (spec.usesWaveHeight ? waveHeight : 1)
+
+            drawBlob(
+                context: context,
+                center: center,
+                radiusX: radiusX,
+                radiusY: radiusY,
+                color: color.opacity(spec.opacity)
+            )
+        }
+
+    }
+
+    private func motionGroup(
+        phase: Double,
+        offset: Double,
+        size: CGSize
+    ) -> TasteBloomMotionGroup {
+        TasteBloomMotionGroup(
+            widthScale: CGFloat(0.86 + ((1 - cos(phase + offset)) / 2) * 0.30),
+            heightScale: CGFloat(0.88 + ((1 - cos(phase + offset + .pi)) / 2) * 0.24),
+            x: size.width * 0.045 * CGFloat(sin(phase + offset)),
+            y: size.height * 0.030 * CGFloat(sin(phase + offset + .pi / 2))
+        )
+    }
+
+    private func drawBlob(
+        context: GraphicsContext,
+        center: CGPoint,
+        radiusX: CGFloat,
+        radiusY: CGFloat,
+        color: Color
+    ) {
+        var blobContext = context
+        blobContext.translateBy(x: center.x, y: center.y)
+        blobContext.scaleBy(x: radiusX, y: radiusY)
+        let unitCircle = Path(ellipseIn: CGRect(x: -1, y: -1, width: 2, height: 2))
+        blobContext.fill(
+            unitCircle,
+            with: .radialGradient(
+                Gradient(stops: [
+                    .init(color: color, location: 0),
+                    .init(color: color.opacity(0.30), location: 0.52),
+                    .init(color: color.opacity(0), location: 0.86),
+                    .init(color: color.opacity(0), location: 1)
+                ]),
+                center: .zero,
+                startRadius: 0,
+                endRadius: 1
+            )
+        )
+    }
+
+    private func animationState(elapsed: TimeInterval) -> TasteBloomAnimationState {
+        guard !reduceMotion else {
+            let pair = TasteBloomPalette.pair(cycle: 0)
+            return TasteBloomAnimationState(
+                phase: 0,
+                firstColor: pair.first,
+                secondColor: pair.second,
+                hueRotation: 0
+            )
+        }
+
+        let safeElapsed = max(0, elapsed)
+        let cycle = Int(floor(safeElapsed / TasteBloomTransitionMetrics.motionDuration))
+        let progress = safeElapsed
+            .truncatingRemainder(dividingBy: TasteBloomTransitionMetrics.motionDuration)
+            / TasteBloomTransitionMetrics.motionDuration
+        let launchProgress = TasteBloomTransitionMetrics.normalizedProgress(safeElapsed)
+        let easedProgress = TasteBloomTransitionMetrics.smoothStep(progress)
+        let currentPair = TasteBloomPalette.pair(cycle: cycle)
+        let nextPair = TasteBloomPalette.pair(cycle: cycle + 1)
+        let phase = progress * .pi * 2
+        let launchHueRotation = sin(launchProgress * .pi * 2.35)
+            * TasteBloomTransitionMetrics.launchHueRotationAmplitude
+
+        return TasteBloomAnimationState(
+            phase: phase,
+            firstColor: currentPair.first.mixed(with: nextPair.first, amount: easedProgress),
+            secondColor: currentPair.second.mixed(with: nextPair.second, amount: easedProgress),
+            hueRotation: sin(phase + .pi / 6)
+                * TasteBloomTransitionMetrics.hueRotationAmplitude
+                + launchHueRotation
+        )
+    }
+}
+
+private struct TasteBloomRadialMask: View {
+    let origin: CGPoint
+    let radius: CGFloat
+    let phase: Double
+    let expansionProgress: Double
+
+    var body: some View {
+        Canvas(opaque: false, colorMode: .linear, rendersAsynchronously: true) {
+            context,
+            size in
+            let path = TasteBloomTransitionMetrics.radialBlobPath(
+                size: size,
+                origin: origin,
+                radius: radius,
+                phase: phase,
+                expansionProgress: expansionProgress
+            )
+
+            context.fill(path, with: .color(.white))
+        }
+    }
+}
+
+private struct TasteBloomCameraRevealMask: View {
+    let origin: CGPoint
+    let radius: CGFloat
+    let phase: Double
+    let expansionProgress: Double
+
+    var body: some View {
+        Canvas(opaque: false, colorMode: .linear, rendersAsynchronously: true) {
+            context,
+            size in
+            guard radius > 0 else {
+                return
+            }
+
+            var path = TasteBloomTransitionMetrics.radialBlobPath(
+                size: size,
+                origin: origin,
+                radius: radius,
+                phase: phase,
+                expansionProgress: expansionProgress
+            )
+            let protectedRadius = TasteBloomTransitionMetrics
+                .cameraRevealProtectedRadius(
+                    revealRadius: radius,
+                    expansionProgress: expansionProgress
+                )
+            if protectedRadius > 0.5 {
+                path.addEllipse(
+                    in: CGRect(
+                        x: origin.x - protectedRadius,
+                        y: origin.y - protectedRadius,
+                        width: protectedRadius * 2,
+                        height: protectedRadius * 2
+                    )
+                )
+            }
+
+            context.fill(path, with: .color(.white), style: FillStyle(eoFill: true))
+        }
+    }
+}
+
+private enum TasteBloomTransitionMetrics {
+    static let duration: TimeInterval = 0.88
+    static let motionDuration: TimeInterval = 3.6
+    static let hueRotationAmplitude = 17.0
+    static let launchHueRotationAmplitude = 42.0
+    static let sourceButtonRadius: CGFloat = 24
+    static let edgeRimWidth: CGFloat = 2.2
+    static let cameraRevealStartProgress = 0.70
+
+    static let blobSpecs: [TasteBloomBlobSpec] = [
+        .init(color: .first, radiusX: 0.42, radiusY: 0.18, x: 0.18, y: 0.10, offset: 0, xSign: 1, ySign: 1, opacity: 0.84, usesWaveHeight: true),
+        .init(color: .first, radiusX: 0.36, radiusY: 0.22, x: 0.45, y: 0.02, offset: .pi * 2 / 3, xSign: 1, ySign: 1, opacity: 0.72),
+        .init(color: .first, radiusX: 0.28, radiusY: 0.46, x: 0.02, y: 0.48, offset: .pi * 4 / 3, xSign: 1, ySign: 1, opacity: 0.78, usesWaveHeight: true),
+        .init(color: .first, radiusX: 0.32, radiusY: 0.24, x: 0.32, y: 0.96, offset: .pi * 2 / 3, xSign: -1, ySign: -1, opacity: 0.80),
+        .init(color: .second, radiusX: 0.74, radiusY: 0.16, x: 0.78, y: 0.02, offset: 0, xSign: -1, ySign: 1, opacity: 0.80),
+        .init(color: .second, radiusX: 0.42, radiusY: 0.18, x: 1.02, y: 0.42, offset: .pi * 4 / 3, xSign: -1, ySign: 1, opacity: 0.74, usesWaveHeight: true),
+        .init(color: .second, radiusX: 0.48, radiusY: 0.20, x: 0.80, y: 0.88, offset: 0, xSign: -1, ySign: -1, opacity: 0.86, usesWaveHeight: true),
+        .init(color: .second, radiusX: 0.28, radiusY: 0.28, x: 0.52, y: 1.04, offset: .pi * 2 / 3, xSign: -1, ySign: -1, opacity: 0.82)
+    ]
+
+    static func normalizedProgress(_ elapsed: TimeInterval) -> Double {
+        min(max(elapsed / duration, 0), 1)
+    }
+
+    static func smoothStep(_ value: Double) -> Double {
+        let t = min(max(value, 0), 1)
+        return t * t * (3 - 2 * t)
+    }
+
+    static func expansionProgress(_ progress: Double) -> Double {
+        smoothStep(progress)
+    }
+
+    static func overlayOpacity(_ progress: Double) -> Double {
+        1
+    }
+
+    static func whiteScrimOpacity(_ progress: Double) -> Double {
+        0.34 + 0.48 * smoothStep(progress / 0.18)
+    }
+
+    static func edgeGlowOpacity(_ progress: Double) -> Double {
+        let appear = smoothStep(progress / 0.10)
+        let disappear = 1 - smoothStep((progress - 0.92) / 0.08)
+        return min(max(appear * disappear, 0), 1)
+    }
+
+    static func maskFeatherRadius(expansionProgress: Double) -> CGFloat {
+        let arrival = min(max(expansionProgress / 0.24, 0), 1)
+        let finishSoftening = 1 - min(max((expansionProgress - 0.90) / 0.10, 0), 1) * 0.20
+        return CGFloat(5.5 + 10.5 * arrival) * CGFloat(finishSoftening)
+    }
+
+    static func edgeBlurRadius(expansionProgress: Double) -> CGFloat {
+        let arrival = min(max(expansionProgress / 0.22, 0), 1)
+        let finishSoftening = 1 - min(max((expansionProgress - 0.88) / 0.12, 0), 1) * 0.18
+        return CGFloat(7.0 + 13.0 * arrival) * CGFloat(finishSoftening)
+    }
+
+    static func cameraRevealRadius(
+        size: CGSize,
+        radius: CGFloat,
+        expansionProgress: Double
+    ) -> CGFloat {
+        let progress = cameraRevealProgress(expansionProgress: expansionProgress)
+        let haloWidth = colorHaloWidth(size: size, expansionProgress: expansionProgress)
+        return max(0, radius - haloWidth) * CGFloat(progress)
+    }
+
+    static func cameraRevealFeatherRadius(expansionProgress: Double) -> CGFloat {
+        let progress = cameraRevealProgress(expansionProgress: expansionProgress)
+        return CGFloat(8 + 14 * progress)
+    }
+
+    static func cameraRevealProgress(expansionProgress: Double) -> Double {
+        let span = max(1 - cameraRevealStartProgress, 0.001)
+        return smoothStep((expansionProgress - cameraRevealStartProgress) / span)
+    }
+
+    static func colorHaloWidth(size: CGSize, expansionProgress: Double) -> CGFloat {
+        let progress = cameraRevealProgress(expansionProgress: expansionProgress)
+        let base = max(min(size.width, size.height) * 0.28, 104)
+        let lateCompression = 1 - progress * 0.30
+        return base * CGFloat(lateCompression)
+    }
+
+    static func cameraRevealProtectedRadius(
+        revealRadius: CGFloat,
+        expansionProgress: Double
+    ) -> CGFloat {
+        let reveal = cameraRevealProgress(expansionProgress: expansionProgress)
+        let protectedRadius = CGFloat(74 - 12 * reveal)
+        let featherRadius = cameraRevealFeatherRadius(expansionProgress: expansionProgress)
+        let releaseStart = protectedRadius + featherRadius * 1.35
+        let releaseDistance = max(protectedRadius * 0.82, 52)
+        let release = smoothStep(
+            Double((revealRadius - releaseStart) / releaseDistance)
+        )
+
+        return protectedRadius * CGFloat(1 - release)
+    }
+
+    static func bloomBrightness(expansionProgress: Double) -> Double {
+        let p = smoothStep(expansionProgress)
+        return 1.02 + 0.34 * p
+    }
+
+    static func bloomSaturation(expansionProgress: Double) -> Double {
+        let p = smoothStep(expansionProgress)
+        return 1.78 - 0.10 * p
+    }
+
+    static func bloomContrast(expansionProgress: Double) -> Double {
+        let p = smoothStep(expansionProgress)
+        return 1.22 - 0.08 * p
+    }
+
+    static func bloomMaxLuminance(expansionProgress: Double) -> Double {
+        let p = smoothStep(expansionProgress)
+        return 0.50 + 0.40 * p
+    }
+
+    static func sourceWhiteOpacity(expansionProgress: Double) -> Double {
+        let p = smoothStep(expansionProgress)
+        return 0.08 + 0.20 * p
+    }
+
+    static func sourceFirstOpacity(expansionProgress: Double) -> Double {
+        let p = smoothStep(expansionProgress)
+        return 0.78 - 0.10 * p
+    }
+
+    static func sourceSecondOpacity(expansionProgress: Double) -> Double {
+        let p = smoothStep(expansionProgress)
+        return 0.56 - 0.08 * p
+    }
+
+    static func bloomOrigin(
+        in size: CGSize,
+        safeAreaBottom: CGFloat,
+        measuredOrigin: CGPoint? = nil
+    ) -> CGPoint {
+        let fallbackOrigin = CGPoint(
+            x: size.width * 0.5,
+            y: size.height - safeAreaBottom - TBSize.bottomTabBarHeight / 2
+        )
+
+        guard let measuredOrigin,
+              measuredOrigin.x.isFinite,
+              measuredOrigin.y.isFinite else {
+            return fallbackOrigin
+        }
+
+        return CGPoint(
+            x: min(max(measuredOrigin.x, 0), size.width),
+            y: min(max(measuredOrigin.y, 0), size.height)
+        )
+    }
+
+    static func expansionRadius(
+        size: CGSize,
+        origin: CGPoint,
+        progress: Double
+    ) -> CGFloat {
+        let targetRadius = maximumExpansionRadius(size: size, origin: origin)
+        return sourceButtonRadius + (targetRadius - sourceButtonRadius) * CGFloat(progress)
+    }
+
+    static func edgeGlowWidth(size: CGSize, expansionProgress: Double) -> CGFloat {
+        let base = max(min(size.width, size.height) * 0.09, 34)
+        let arrival = min(max(expansionProgress / 0.28, 0), 1)
+        let settle = 1 - min(max((expansionProgress - 0.88) / 0.12, 0), 1) * 0.42
+        return base * CGFloat(0.58 + 0.42 * arrival) * CGFloat(settle)
+    }
+
+    static func radialBlobPath(
+        size: CGSize,
+        origin: CGPoint,
+        radius: CGFloat,
+        phase: Double,
+        expansionProgress: Double
+    ) -> Path {
+        let sampleCount = 128
+        let amplitude = radialBlobAmplitude(
+            size: size,
+            radius: radius,
+            expansionProgress: expansionProgress
+        )
+        var path = Path()
+
+        for index in 0 ... sampleCount {
+            let xProgress = CGFloat(index) / CGFloat(sampleCount)
+            let angle = Double(xProgress) * .pi * 2
+            let wideWave = sin(angle * 3.0 + phase * 1.18)
+            let midWave = sin(angle * 6.0 - phase * 0.74)
+            let slowWave = cos(angle * 2.0 + phase * 0.46)
+            let fineWave = sin(angle * 10.0 + phase * 1.72)
+            let notchWave = cos(angle * 13.0 - phase * 1.08)
+            let directionalLift = sin(angle - .pi / 2)
+            let wave = wideWave * 0.52
+                + midWave * 0.24
+                + slowWave * 0.14
+                + fineWave * 0.12
+                + notchWave * 0.09
+                + directionalLift * 0.10
+            let localRadius = max(sourceButtonRadius * 0.72, radius + amplitude * CGFloat(wave))
+            let point = CGPoint(
+                x: origin.x + CGFloat(cos(angle)) * localRadius,
+                y: origin.y + CGFloat(sin(angle)) * localRadius
+            )
+
+            if index == 0 {
+                path.move(to: point)
+            } else {
+                path.addLine(to: point)
+            }
+        }
+
+        path.closeSubpath()
+        return path
+    }
+
+    private static func maximumExpansionRadius(size: CGSize, origin: CGPoint) -> CGFloat {
+        let topLeft = distance(from: origin, to: CGPoint(x: 0, y: 0))
+        let topRight = distance(from: origin, to: CGPoint(x: size.width, y: 0))
+        let bottomLeft = distance(from: origin, to: CGPoint(x: 0, y: size.height))
+        let bottomRight = distance(from: origin, to: CGPoint(x: size.width, y: size.height))
+        let farthestCorner = max(max(topLeft, topRight), max(bottomLeft, bottomRight))
+        return farthestCorner + max(size.width, size.height) * 0.16
+    }
+
+    private static func distance(from origin: CGPoint, to point: CGPoint) -> CGFloat {
+        let dx = point.x - origin.x
+        let dy = point.y - origin.y
+        return sqrt(dx * dx + dy * dy)
+    }
+
+    private static func radialBlobAmplitude(
+        size: CGSize,
+        radius: CGFloat,
+        expansionProgress: Double
+    ) -> CGFloat {
+        let base = max(min(size.width, size.height) * 0.072, 26)
+        let growth = min(max(expansionProgress / 0.30, 0), 1)
+        let settle = 1 - min(max((expansionProgress - 0.90) / 0.10, 0), 1) * 0.54
+        let radiusClamp = min(radius / 180, 1)
+        return base
+            * CGFloat(0.72 + 0.34 * growth)
+            * CGFloat(settle)
+            * CGFloat(0.76 + 0.24 * radiusClamp)
+    }
+}
+
+private enum TasteBloomBlobColor {
+    case first
+    case second
+}
+
+private struct TasteBloomBlobSpec {
+    let color: TasteBloomBlobColor
+    let radiusX: CGFloat
+    let radiusY: CGFloat
+    let x: CGFloat
+    let y: CGFloat
+    let offset: Double
+    let xSign: CGFloat
+    let ySign: CGFloat
+    let opacity: Double
+    var usesWaveHeight = false
+}
+
+private struct TasteBloomMotionGroup {
+    let widthScale: CGFloat
+    let heightScale: CGFloat
+    let x: CGFloat
+    let y: CGFloat
+}
+
+private struct TasteBloomAnimationState {
+    let phase: Double
+    let firstColor: TasteBloomColor
+    let secondColor: TasteBloomColor
+    let hueRotation: Double
+}
+
+private struct TasteBloomColor {
+    let red: Double
+    let green: Double
+    let blue: Double
+
+    var color: Color {
+        Color(red: red, green: green, blue: blue)
+    }
+
+    func mixed(with other: TasteBloomColor, amount: Double) -> TasteBloomColor {
+        TasteBloomColor(
+            red: red + (other.red - red) * amount,
+            green: green + (other.green - green) * amount,
+            blue: blue + (other.blue - blue) * amount
+        )
+    }
+
+    func filtered(
+        hueRotation: Double,
+        brightness: Double,
+        saturation: Double,
+        contrast: Double = 1
+    ) -> TasteBloomColor {
+        let radians = hueRotation * .pi / 180
+        let cosine = cos(radians)
+        let sine = sin(radians)
+        let hueRed =
+            (0.213 + cosine * 0.787 - sine * 0.213) * red
+            + (0.715 - cosine * 0.715 - sine * 0.715) * green
+            + (0.072 - cosine * 0.072 + sine * 0.928) * blue
+        let hueGreen =
+            (0.213 - cosine * 0.213 + sine * 0.143) * red
+            + (0.715 + cosine * 0.285 + sine * 0.140) * green
+            + (0.072 - cosine * 0.072 - sine * 0.283) * blue
+        let hueBlue =
+            (0.213 - cosine * 0.213 - sine * 0.787) * red
+            + (0.715 - cosine * 0.715 + sine * 0.715) * green
+            + (0.072 + cosine * 0.928 + sine * 0.072) * blue
+        let brightRed = hueRed * brightness
+        let brightGreen = hueGreen * brightness
+        let brightBlue = hueBlue * brightness
+        let luminance = brightRed * 0.213 + brightGreen * 0.715 + brightBlue * 0.072
+
+        return TasteBloomColor(
+            red: clamp(((luminance + (brightRed - luminance) * saturation) - 0.5) * contrast + 0.5),
+            green: clamp(((luminance + (brightGreen - luminance) * saturation) - 0.5) * contrast + 0.5),
+            blue: clamp(((luminance + (brightBlue - luminance) * saturation) - 0.5) * contrast + 0.5)
+        )
+    }
+
+    func limitingLuminance(to maxLuminance: Double) -> TasteBloomColor {
+        let luminance = red * 0.213 + green * 0.715 + blue * 0.072
+        guard luminance > maxLuminance, luminance > 0 else {
+            return self
+        }
+
+        let scale = maxLuminance / luminance
+        return TasteBloomColor(
+            red: clamp(red * scale),
+            green: clamp(green * scale),
+            blue: clamp(blue * scale)
+        )
+    }
+
+    private func clamp(_ value: Double) -> Double {
+        min(max(value, 0), 1)
+    }
+}
+
+private struct TasteBloomColorPair {
+    let firstIndex: Int
+    let secondIndex: Int
+}
+
+private enum TasteBloomPalette {
+    static let colors = [
+        TasteBloomColor(red: 1, green: 0.6, blue: 0),
+        TasteBloomColor(red: 251 / 255, green: 192 / 255, blue: 45 / 255),
+        TasteBloomColor(red: 149 / 255, green: 201 / 255, blue: 0),
+        TasteBloomColor(red: 114 / 255, green: 153 / 255, blue: 1),
+        TasteBloomColor(red: 179 / 255, green: 114 / 255, blue: 180 / 255),
+        TasteBloomColor(red: 149 / 255, green: 134 / 255, blue: 122 / 255)
+    ]
+
+    private static let sequence = [
+        TasteBloomColorPair(firstIndex: 0, secondIndex: 3),
+        TasteBloomColorPair(firstIndex: 1, secondIndex: 4),
+        TasteBloomColorPair(firstIndex: 2, secondIndex: 5),
+        TasteBloomColorPair(firstIndex: 3, secondIndex: 0),
+        TasteBloomColorPair(firstIndex: 4, secondIndex: 1),
+        TasteBloomColorPair(firstIndex: 5, secondIndex: 2)
+    ]
+
+    static func pair(cycle: Int) -> (first: TasteBloomColor, second: TasteBloomColor) {
+        let pair = sequence[cycle % sequence.count]
+        return (colors[pair.firstIndex], colors[pair.secondIndex])
+    }
+}
+
 struct AppShellView: View {
     @EnvironmentObject private var appModel: AppModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var activeTab: MainTab
     @State private var routeStack: [AppRoute] = []
     @State private var routeSwipeTranslation: CGFloat = 0
@@ -46,7 +887,10 @@ struct AppShellView: View {
     @State private var showsProfileEditDeleteConfirmation = false
     @State private var activeDishOptionsItem: DiningDishFeedbackItem?
     @State private var showsNewDiningFeedback = false
+    @State private var showsDiningFeedbackTasteBloomTransition = false
     @State private var newDiningFeedbackStartMode: DiningFeedbackStartMode = .cameraCapture
+    @State private var bottomTabCenterButtonFrame: CGRect = .null
+    @State private var diningFeedbackLaunchOrigin: CGPoint?
     @State private var activeDiningFeedbackEditEntry: DiningEntry?
     @State private var activeInfoSuggestionSheet: (restaurantName: String, infoRows: [RestaurantInfoRowModel])?
     @State private var activeMenuSuggestionSheetRestaurantName: String?
@@ -81,14 +925,17 @@ struct AppShellView: View {
                 )
 
                 shellContent
+                    .environment(\.mainTabStatusBarHeight, proxy.safeAreaInsets.top)
                     .modifier(
                         StagedBottomSheetBackground(
                             progress: stagedSheetProgress,
                             dimOpacity: BottomSheetShellMetrics.overlayOpacity * stagedSheetProgress,
-                            animates: !isDraggingStagedSheet
+                            animates: !isDraggingStagedSheet,
+                            topOverflowInset: proxy.safeAreaInsets.top
                         )
                     )
                     .allowsHitTesting(activeStagedSheet == nil)
+                    .zIndex(1)
 
                 if !currentRouteShowsContentUnderBottomSafeArea {
                     bottomSafeAreaBackground(safeAreaBottom: proxy.safeAreaInsets.bottom)
@@ -207,6 +1054,11 @@ struct AppShellView: View {
                     startQuickRefinement: { activeSheet = .quickRefinement },
                     openSavedList: { navigate(.savedRestaurants) }
                 )
+            case .publicProfileActions(let profileID):
+                PublicProfileActionsSheet(
+                    profileID: profileID,
+                    onDismissRequest: dismissActiveSheet
+                )
             case .bookmark(_):
                 EmptyView()
             case .authEntry:
@@ -219,23 +1071,40 @@ struct AppShellView: View {
             }
         }
         .fullScreenCover(isPresented: $showsNewDiningFeedback) {
-            DiningFeedbackSheet(startMode: newDiningFeedbackStartMode) { entry in
+            DiningFeedbackSheet(
+                startMode: newDiningFeedbackStartMode,
+                showsLaunchTransition: showsDiningFeedbackTasteBloomTransition,
+                launchOrigin: diningFeedbackLaunchOrigin
+            ) { entry in
                 appModel.addDiningEntry(entry)
             }
         }
+        .onChange(of: showsNewDiningFeedback) { _, isPresented in
+            guard !isPresented else {
+                return
+            }
+
+            showsDiningFeedbackTasteBloomTransition = false
+            diningFeedbackLaunchOrigin = nil
+        }
     }
 
+    @ViewBuilder
     private func statusBarBackground(safeAreaTop: CGFloat) -> some View {
-        VStack(spacing: 0) {
-            ZStack {
-                currentTopChromeBackground
-                Color.black.opacity(stagedSheetProgress)
+        if !usesProgressiveTopChrome || stagedSheetProgress > 0 {
+            VStack(spacing: 0) {
+                ZStack {
+                    if !usesProgressiveTopChrome {
+                        currentTopChromeBackground
+                    }
+                    Color.black.opacity(stagedSheetProgress)
+                }
+                .frame(height: safeAreaTop)
+                Spacer(minLength: 0)
             }
-            .frame(height: safeAreaTop)
-            Spacer(minLength: 0)
+            .ignoresSafeArea(edges: .top)
+            .allowsHitTesting(false)
         }
-        .ignoresSafeArea(edges: .top)
-        .allowsHitTesting(false)
     }
 
     private func bottomSafeAreaBackground(safeAreaBottom: CGFloat) -> some View {
@@ -263,12 +1132,37 @@ struct AppShellView: View {
         return TBColor.page
     }
 
+    private var usesSystemMainTabScrollEdgeChrome: Bool {
+        routeStack.isEmpty
+            && !isGlobalSearchActive
+            && !usesStagedTopAppBarChrome
+    }
+
+    private var usesProgressiveTopChrome: Bool {
+        usesSystemMainTabScrollEdgeChrome
+            || (!routeStack.isEmpty && !isGlobalSearchActive && !usesStagedTopAppBarChrome)
+    }
+
     private var currentBottomChromeBackground: Color {
         if currentRouteUsesCommentFocus {
             return TBColor.focus
         }
 
         return TBColor.page
+    }
+
+    private var measuredBottomTabCenterButtonOrigin: CGPoint? {
+        guard !bottomTabCenterButtonFrame.isNull,
+              !bottomTabCenterButtonFrame.isEmpty,
+              bottomTabCenterButtonFrame.midX.isFinite,
+              bottomTabCenterButtonFrame.midY.isFinite else {
+            return nil
+        }
+
+        return CGPoint(
+            x: bottomTabCenterButtonFrame.midX,
+            y: bottomTabCenterButtonFrame.midY
+        )
     }
 
     private var currentRouteShowsContentUnderBottomSafeArea: Bool {
@@ -342,7 +1236,10 @@ struct AppShellView: View {
                     )
                     .zIndex(1)
             }
-            .clipped()
+            .clipShape(TopOverflowRoundedRectangle(
+                cornerRadius: 0,
+                topOverflowInset: keyWindowSafeAreaInsets.top
+            ))
         } else {
             mainShellLayer
         }
@@ -370,7 +1267,9 @@ struct AppShellView: View {
                 onBack: popRoute,
                 navigate: navigateImmediately,
                 onOpenSearch: { activeSheet = .globalSearch },
-                onOpenMenu: { activeSheet = .menu },
+                onOpenPublicProfileActions: { profileID in
+                    activeSheet = .publicProfileActions(profileID: profileID)
+                },
                 onOpenBookmarkSheet: presentBookmarkSheet,
                 onOpenInfoSuggestionSheet: presentInfoSuggestionSheet,
                 onOpenMenuSuggestionSheet: presentMenuSuggestionSheet
@@ -393,39 +1292,83 @@ struct AppShellView: View {
     }
 
     private var mainShellLayer: some View {
-        VStack(spacing: 0) {
-            TopAppBar(
-                appearance: usesStagedTopAppBarChrome ? .solid : .default,
-                solidBackground: .page,
-                showSearchAction: activeTab != .home,
-                profile: appModel.profile,
-                hasUnreadNotifications: hasUnreadNotifications,
-                bloomToken: topAppBarBloomToken,
-                onStartMeasurement: {
-                    activeSheet = .quickRefinement
-                },
-                onOpenSearch: {
-                    activeSheet = .globalSearch
-                },
-                onOpenNotifications: {
-                    hasUnreadNotifications = false
-                    activeSheet = .notifications
-                },
-                onOpenMenu: { activeSheet = .menu },
-                onOpenProfile: { activeSheet = .profileSummary }
-            )
-
-            currentTabStack
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        Group {
+            if usesSystemMainTabScrollEdgeChrome {
+                currentTabStack
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                legacyMainShellContent
+            }
         }
         .background(TBColor.page)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             BottomTabBar(activeTab: $activeTab) {
-                activeSheet = nil
-                newDiningFeedbackStartMode = .cameraCapture
-                showsNewDiningFeedback = true
+                startDiningFeedbackFromCenterButton()
             }
         }
+        .onPreferenceChange(BottomTabCenterButtonFramePreferenceKey.self) { frame in
+            bottomTabCenterButtonFrame = frame
+        }
+    }
+
+    private var legacyMainShellContent: some View {
+        VStack(spacing: 0) {
+            mainTopAppBar(
+                appearance: usesStagedTopAppBarChrome ? .solid : .default
+            )
+
+            if activeTab == .home, !isGlobalSearchActive {
+                HomeSearchHeader {
+                    activeSheet = .globalSearch
+                }
+            }
+
+            currentTabStack
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private var systemMainTabTopChrome: some View {
+        VStack(spacing: 0) {
+            mainTopAppBar(appearance: .transparent)
+
+            if activeTab == .home {
+                HomeSearchHeader(showsBackground: false) {
+                    activeSheet = .globalSearch
+                }
+            }
+        }
+    }
+
+    private var currentSystemMainTabTopChrome: AnyView? {
+        guard usesSystemMainTabScrollEdgeChrome else {
+            return nil
+        }
+
+        return AnyView(systemMainTabTopChrome)
+    }
+
+    private func mainTopAppBar(appearance: TopAppBarAppearance) -> some View {
+        TopAppBar(
+            appearance: appearance,
+            solidBackground: .page,
+            showSearchAction: activeTab != .home,
+            profile: appModel.profile,
+            hasUnreadNotifications: hasUnreadNotifications,
+            bloomToken: topAppBarBloomToken,
+            onStartMeasurement: {
+                activeSheet = .quickRefinement
+            },
+            onOpenSearch: {
+                activeSheet = .globalSearch
+            },
+            onOpenNotifications: {
+                hasUnreadNotifications = false
+                activeSheet = .notifications
+            },
+            onOpenMenu: { activeSheet = .menu },
+            onOpenProfile: { activeSheet = .profileSummary }
+        )
     }
 
     private var routeSwipeProgress: CGFloat {
@@ -452,16 +1395,8 @@ struct AppShellView: View {
     @ViewBuilder
     private var currentTabStack: some View {
         ZStack {
-            VStack(spacing: 0) {
-                if activeTab == .home {
-                    HomeSearchHeader {
-                        activeSheet = .globalSearch
-                    }
-                }
-
-                currentTabView
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
+            currentTabView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if isGlobalSearchActive {
                 HomeSearchSheet(
@@ -501,7 +1436,7 @@ struct AppShellView: View {
         }
 
         switch activeSheet {
-        case .profileSummary, .profileEdit, .notifications, .quickRefinement, .menu, .authEntry:
+        case .profileSummary, .profileEdit, .notifications, .quickRefinement, .menu, .publicProfileActions, .authEntry:
             return .app(activeSheet)
         case .bookmark(let restaurant):
             return .bookmark(restaurant)
@@ -728,6 +1663,12 @@ struct AppShellView: View {
                     startQuickRefinement: { activeSheet = .quickRefinement },
                     openSavedList: { navigate(.savedRestaurants) }
                 )
+            case .publicProfileActions(let profileID):
+                PublicProfileActionsSheet(
+                    profileID: profileID,
+                    onDismissRequest: dismissActiveSheet,
+                    usesNativeSheetChrome: false
+                )
             case .notifications:
                 NotificationsSheet(
                     onDismissRequest: dismissActiveSheet,
@@ -930,7 +1871,31 @@ struct AppShellView: View {
         stagedSheetDragTranslation = 0
         isDraggingStagedSheet = false
         newDiningFeedbackStartMode = .menu
+        showsDiningFeedbackTasteBloomTransition = false
         showsNewDiningFeedback = true
+    }
+
+    private func startDiningFeedbackFromCenterButton() {
+        guard !showsNewDiningFeedback else {
+            return
+        }
+
+        triggerDiningFeedbackLaunchHaptic()
+        activeSheet = nil
+        newDiningFeedbackStartMode = .cameraCapture
+        diningFeedbackLaunchOrigin = measuredBottomTabCenterButtonOrigin
+        showsDiningFeedbackTasteBloomTransition = true
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            showsNewDiningFeedback = true
+        }
+    }
+
+    private func triggerDiningFeedbackLaunchHaptic() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.prepare()
+        generator.impactOccurred(intensity: 0.76)
     }
 
     private func presentDishOptionsSheet(_ item: DiningDishFeedbackItem) {
@@ -1056,13 +2021,17 @@ struct AppShellView: View {
         case .home:
             HomeView(
                 showsSearchTrigger: false,
+                systemTopChrome: currentSystemMainTabTopChrome,
                 onOpenSearch: { activeSheet = .globalSearch },
                 onOpenRoute: navigate,
                 onOpenBookmarkSheet: presentBookmarkSheet,
-                onStartDiningFeedback: startDiningFeedbackFromSearch
+                onStartDiningFeedback: startDiningFeedbackFromSearch,
+                onOpenJournal: { activeTab = .dining },
+                onOpenTasteAnalysis: { activeTab = .analysis }
             )
         case .analysis:
             AnalysisView(
+                systemTopChrome: currentSystemMainTabTopChrome,
                 onStartMeasurement: {
                     activeSheet = .quickRefinement
                 },
@@ -1073,10 +2042,12 @@ struct AppShellView: View {
         case .dining:
             DiningView(
                 contentState: diningContentState,
+                systemTopChrome: currentSystemMainTabTopChrome,
                 onOpenDishOptions: presentDishOptionsSheet
             )
         case .profile:
             ProfileView(
+                systemTopChrome: currentSystemMainTabTopChrome,
                 onOpenConnection: { kind in navigateImmediately(.connectionList(kind)) },
                 onFindBuddy: { activeSheet = .globalSearch },
                 onOpenProfileSettings: { activeSheet = .profileSummary },
@@ -1095,6 +2066,7 @@ enum HomeSearchHeaderMetrics {
 private struct HomeSearchHeader: View {
     var placeholder = "레스토랑, 메뉴, 셰프, 버디 검색"
     var accessibilityLabel = "레스토랑, 메뉴, 셰프, 버디 검색"
+    var showsBackground = true
     let action: () -> Void
 
     var body: some View {
@@ -1106,7 +2078,11 @@ private struct HomeSearchHeader: View {
             .padding(.horizontal, HomeSearchHeaderMetrics.horizontalPadding)
             .padding(.top, HomeSearchHeaderMetrics.topPadding)
             .padding(.bottom, HomeSearchHeaderMetrics.bottomPadding)
-            .background(TBColor.page)
+            .background {
+                if showsBackground {
+                    TBColor.page
+                }
+            }
     }
 }
 
@@ -1117,16 +2093,33 @@ private struct AppRouteFocusContainer: View {
     let onBack: () -> Void
     let navigate: (AppRoute) -> Void
     let onOpenSearch: () -> Void
-    let onOpenMenu: () -> Void
+    let onOpenPublicProfileActions: (String) -> Void
     let onOpenBookmarkSheet: (RestaurantSummary) -> Void
     let onOpenInfoSuggestionSheet: (String, [RestaurantInfoRowModel]) -> Void
     let onOpenMenuSuggestionSheet: (String) -> Void
 
     var body: some View {
+        Group {
+            if route.usesCollapsingTopChrome {
+                destination
+            } else {
+                VStack(spacing: 0) {
+                    topChrome
+                        .tbTopChromeBackground(fallback: routeBackground)
+
+                    destination
+                }
+            }
+        }
+        .tbScreenTopChrome()
+        .ignoresSafeArea(.container, edges: showsContentUnderBottomSafeArea ? .bottom : [])
+        .accessibilityAction(.escape, onBack)
+    }
+
+    private var topChrome: some View {
         VStack(spacing: 0) {
             TopAppBar(
-                appearance: .solid,
-                solidBackground: topAppBarBackground,
+                appearance: .transparent,
                 title: topAppBarTitle,
                 centerContentOffset: contentOffset,
                 showBack: true,
@@ -1136,37 +2129,36 @@ private struct AppRouteFocusContainer: View {
                 onBack: onBack
             )
 
-            VStack(spacing: 0) {
-                if route.usesBuddySearchHeader {
-                    HomeSearchHeader(
-                        placeholder: "버디 검색",
-                        accessibilityLabel: "버디 검색",
-                        action: onOpenSearch
-                    )
-                }
-
-                AppRouteDestinationView(
-                    route: route,
-                    navigate: navigate,
-                    onBack: onBack,
-                    onOpenBookmarkSheet: onOpenBookmarkSheet,
-                    onOpenInfoSuggestionSheet: onOpenInfoSuggestionSheet,
-                    onOpenMenuSuggestionSheet: onOpenMenuSuggestionSheet
+            if route.usesBuddySearchHeader {
+                HomeSearchHeader(
+                    placeholder: "버디 검색",
+                    accessibilityLabel: "버디 검색",
+                    showsBackground: false,
+                    action: onOpenSearch
                 )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .offset(x: contentOffset)
             }
-            .background(routeBackground)
-            .offset(x: contentOffset)
         }
-        .ignoresSafeArea(.container, edges: showsContentUnderBottomSafeArea ? .bottom : [])
+    }
+
+    private var destination: some View {
+        AppRouteDestinationView(
+            route: route,
+            navigate: navigate,
+            onBack: onBack,
+            onOpenBookmarkSheet: onOpenBookmarkSheet,
+            onOpenInfoSuggestionSheet: onOpenInfoSuggestionSheet,
+            onOpenMenuSuggestionSheet: onOpenMenuSuggestionSheet,
+            collapsingTopChrome: route.usesCollapsingTopChrome ? AnyView(topChrome) : nil,
+            contentOffset: contentOffset
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(routeBackground)
+        .offset(x: contentOffset)
     }
 
     private var topAppBarTitle: String? {
         isCommentsRoute ? nil : route.title
-    }
-
-    private var topAppBarBackground: TopAppBarSolidBackground {
-        isCommentsRoute ? .focus : .page
     }
 
     private var routeBackground: Color {
@@ -1215,13 +2207,13 @@ private struct AppRouteFocusContainer: View {
                     action: {}
                 )
             ]
-        case .publicProfile:
+        case .publicProfile(let profileID):
             return [
                 TopAppBarAction(
-                    id: "menu",
-                    symbol: "line.3.horizontal",
-                    accessibilityLabel: "메뉴 열기",
-                    action: onOpenMenu
+                    id: "more",
+                    symbol: "ellipsis",
+                    accessibilityLabel: "프로필 옵션 열기",
+                    action: { onOpenPublicProfileActions(profileID) }
                 )
             ]
         default:
@@ -1231,6 +2223,11 @@ private struct AppRouteFocusContainer: View {
 }
 
 private extension AppRoute {
+    var usesCollapsingTopChrome: Bool {
+        if case .tasteChange = self { return true }
+        return false
+    }
+
     var showsTopAppBarDefaultActions: Bool {
         switch self {
         case .dishFeedback, .comments, .savedRestaurants, .connectionList, .publicProfile:
@@ -1412,6 +2409,7 @@ private struct ProfileEditSheet: View {
     @State private var activePicker: ProfileEditPicker?
     @State private var birthDateSelection = Date()
     @State private var isPreparingAvatar = false
+    @State private var isSavingProfile = false
     @State private var statusMessage: String?
 
     var body: some View {
@@ -1588,19 +2586,31 @@ private struct ProfileEditSheet: View {
             ProfileEditFooterButton(
                 title: "내 계정 삭제하기",
                 tone: .destructive,
-                isEnabled: !isPreparingAvatar
+                isEnabled: !isPreparingAvatar && !isSavingProfile
             ) {
                 showsDeleteConfirmation = true
             }
 
             ProfileEditFooterButton(
-                title: isPreparingAvatar ? "사진 준비 중" : "저장",
+                title: profileSaveButtonTitle,
                 tone: .primary,
-                isEnabled: !isPreparingAvatar
+                isEnabled: !isPreparingAvatar && !isSavingProfile
             ) {
                 saveProfileEdit()
             }
         }
+    }
+
+    private var profileSaveButtonTitle: String {
+        if isPreparingAvatar {
+            return "사진 준비 중"
+        }
+
+        if isSavingProfile {
+            return "공개 프로필 저장 중"
+        }
+
+        return "저장"
     }
 
     private var floatingLayer: AnyView? {
@@ -1628,13 +2638,38 @@ private struct ProfileEditSheet: View {
         selectedPhotoItem = nil
         activePicker = nil
         showsDeleteConfirmation = false
+        isSavingProfile = false
     }
 
     private func saveProfileEdit() {
+        guard !isSavingProfile else {
+            return
+        }
+
         appModel.saveProfileIdentity(draftIdentity)
         appModel.saveProfileAvatarImageData(draftAvatarImageData)
-        statusMessage = nil
-        onBackToProfile()
+
+        guard appModel.backendSessionStatus == .authenticated else {
+            statusMessage = nil
+            onBackToProfile()
+            return
+        }
+
+        isSavingProfile = true
+        statusMessage = "공개 프로필에 반영하고 있어요."
+
+        Task { @MainActor in
+            let result = await appModel.publishCurrentProfileIdentity()
+            isSavingProfile = false
+
+            guard result.ok else {
+                statusMessage = result.message
+                return
+            }
+
+            statusMessage = nil
+            onBackToProfile()
+        }
     }
 
     private func loadSelectedPhoto(_ item: PhotosPickerItem?) async {
@@ -1898,7 +2933,7 @@ private struct ProfileEditFooterButton: View {
                 .background(background)
                 .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
     }
 
@@ -2256,9 +3291,216 @@ private struct QuickRefinementSheet: View {
 
 private let appMenuSheetCardCornerRadius: CGFloat = 20
 
+private struct PublicProfileActionsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var copyToastToken = 0
+    let profileID: String
+    var onDismissRequest: (() -> Void)? = nil
+    var usesNativeSheetChrome = true
+
+    private var profileName: String {
+        AppRoute.publicProfile(id: profileID).title
+    }
+
+    private var profileURLString: String {
+        let encodedID = profileID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? profileID
+        return "https://tastebuddy.app/profile/\(encodedID)"
+    }
+
+    var body: some View {
+        BottomSheetShell(
+            headerStart: AnyView(BottomSheetCloseButton(action: close)),
+            headerCenter: AnyView(
+                Text("프로필 옵션")
+                    .font(TBFont.bold(15))
+                    .foregroundStyle(TBColor.textPrimary)
+            ),
+            footer: AnyView(closeFooter),
+            usesNativeSheetChrome: usesNativeSheetChrome,
+            surfaceBackground: TBColor.page
+        ) {
+            ZStack(alignment: .bottom) {
+                BottomSheetScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        profileContextCard
+
+                        PublicProfileActionSection(title: "안전 관리") {
+                            Button(action: {}) {
+                                MenuActionRowContent(
+                                    icon: "shield.checkered",
+                                    title: "신고",
+                                    detail: "부적절한 소개나 활동을 안전 팀에 알립니다.",
+                                    destructive: true,
+                                    showsChevron: false
+                                )
+                            }
+                            .buttonStyle(.plain)
+
+                            Button(action: {}) {
+                                MenuActionRowContent(
+                                    icon: "eye-off",
+                                    title: "제한",
+                                    detail: "추천과 피드에서 이 프로필 노출을 줄입니다.",
+                                    showsChevron: false
+                                )
+                            }
+                            .buttonStyle(.plain)
+
+                            Button(action: {}) {
+                                MenuActionRowContent(
+                                    icon: "user-lock",
+                                    title: "차단",
+                                    detail: "서로의 프로필과 활동 노출을 숨깁니다.",
+                                    showsChevron: false
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        PublicProfileActionSection(title: "공유") {
+                            Button(action: copyProfileURL) {
+                                MenuActionRowContent(
+                                    icon: "link",
+                                    title: "프로필 URL 복사",
+                                    detail: "공개 프로필 링크를 클립보드에 복사합니다.",
+                                    showsChevron: false
+                                )
+                            }
+                            .buttonStyle(.plain)
+
+                            ShareLink(item: profileURLString) {
+                                MenuActionRowContent(
+                                    icon: "square.and.arrow.up",
+                                    title: "이 프로필 공유하기",
+                                    detail: "친구에게 Taste Buddy 프로필을 보냅니다.",
+                                    showsChevron: false
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, TBSpacing.page)
+                    .padding(.bottom, TBSpacing.page + 24)
+                }
+
+                if copyToastToken > 0 {
+                    ToastSurface(
+                        title: "프로필 URL을 복사했어요",
+                        message: "원하는 곳에 붙여넣어 공유할 수 있어요.",
+                        icon: .copy,
+                        tone: .success
+                    )
+                    .padding(.horizontal, TBSpacing.page)
+                    .padding(.bottom, 12)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(1)
+                }
+            }
+        }
+        .task(id: copyToastToken) {
+            guard copyToastToken > 0 else {
+                return
+            }
+
+            let token = copyToastToken
+            try? await Task.sleep(nanoseconds: ToastSurface.defaultDisplayDurationNanoseconds)
+
+            guard !Task.isCancelled, copyToastToken == token else {
+                return
+            }
+
+            withAnimation(.easeOut(duration: 0.2)) {
+                copyToastToken = 0
+            }
+        }
+        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: copyToastToken)
+        .presentationDragIndicator(.hidden)
+        .presentationBackground(Color.clear)
+        .presentationCornerRadius(0)
+        .prefersUISheetGrabberVisible(false)
+    }
+
+    private var profileContextCard: some View {
+        SectionCard(showsBorder: false) {
+            HStack(spacing: 12) {
+                TokenBox(
+                    size: .medium,
+                    background: TBColor.mutedSurface,
+                    foreground: TBColor.iconPrimary
+                ) {
+                    LucideIcon(
+                        .user,
+                        size: TBIcon.Size.medium,
+                        strokeWidth: TBIcon.Stroke.regular
+                    )
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(profileName)
+                        .font(TBFont.semibold(14))
+                        .foregroundStyle(TBColor.textPrimary)
+                    Text("이 프로필의 노출, 안전 조치, 공유 링크를 관리합니다.")
+                        .font(TBFont.regular(12))
+                        .foregroundStyle(TBColor.textMuted)
+                        .lineSpacing(3)
+                }
+
+                Spacer(minLength: 0)
+            }
+        }
+    }
+
+    private var closeFooter: some View {
+        PrimaryButton(title: "닫기") {
+            close()
+        }
+    }
+
+    private func copyProfileURL() {
+        UIPasteboard.general.string = profileURLString
+
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            copyToastToken += 1
+        }
+    }
+
+    private func close() {
+        if let onDismissRequest {
+            onDismissRequest()
+        } else {
+            dismiss()
+        }
+    }
+}
+
+private struct PublicProfileActionSection<Content: View>: View {
+    let title: String
+    let content: Content
+
+    init(title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased())
+                .font(TBFont.semibold(11))
+                .tracking(0.14)
+                .foregroundStyle(TBColor.textFaint)
+
+            VStack(spacing: 4) {
+                content
+            }
+        }
+    }
+}
+
 private struct AppMenuSheet: View {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
+    @State private var isLoggingOut = false
+    @State private var logoutErrorMessage: String?
     let onDismissRequest: (() -> Void)?
     let openProfile: () -> Void
     let openNotifications: () -> Void
@@ -2288,7 +3530,7 @@ private struct AppMenuSheet: View {
                                 shapeSeed: "current-user"
                             )
                             VStack(alignment: .leading, spacing: 3) {
-                                Text("신준호")
+                                Text(appModel.profileIdentity.displayName)
                                     .font(TBFont.semibold(14))
                                     .foregroundStyle(TBColor.textPrimary)
                                 Text("프로필 보관 전")
@@ -2381,22 +3623,53 @@ private struct AppMenuSheet: View {
                 .frame(height: 1)
                 .accessibilityHidden(true)
 
+            if let logoutErrorMessage {
+                Text(logoutErrorMessage)
+                    .font(TBFont.regular(11))
+                    .foregroundStyle(TBColor.destructive)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, TBSpacing.page)
+                    .padding(.top, 10)
+            }
+
             logoutButton
         }
     }
 
     private var logoutButton: some View {
         Button(role: .destructive) {
-            appModel.resetAll()
-            close()
+            guard !isLoggingOut else {
+                return
+            }
+
+            isLoggingOut = true
+            logoutErrorMessage = nil
+
+            Task {
+                let result = await appModel.logout()
+
+                guard result.ok else {
+                    logoutErrorMessage = result.message
+                    isLoggingOut = false
+                    return
+                }
+
+                close()
+            }
         } label: {
             HStack(spacing: 12) {
-                LucideIcon(
-                    .logOut,
-                    size: TBIcon.Size.base,
-                    strokeWidth: TBIcon.Stroke.regular
-                )
-                Text("로그아웃")
+                if isLoggingOut {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(TBColor.textHint)
+                } else {
+                    LucideIcon(
+                        .logOut,
+                        size: TBIcon.Size.base,
+                        strokeWidth: TBIcon.Stroke.regular
+                    )
+                }
+                Text(isLoggingOut ? "로그아웃 중" : "로그아웃")
                     .font(TBFont.medium(13))
             }
             .foregroundStyle(TBColor.textHint)
@@ -2404,6 +3677,7 @@ private struct AppMenuSheet: View {
             .frame(height: 56)
         }
         .buttonStyle(.plain)
+        .disabled(isLoggingOut)
     }
 
     private func close() {
@@ -2556,6 +3830,7 @@ private struct MenuActionRowContent: View {
     let title: String
     let detail: String
     var destructive = false
+    var showsChevron = true
 
     var body: some View {
         HStack(spacing: 12) {
@@ -2579,12 +3854,14 @@ private struct MenuActionRowContent: View {
             }
 
             Spacer()
-            LucideIcon(
-                .chevronRight,
-                size: TBIcon.Size.xSmall,
-                strokeWidth: TBIcon.Stroke.regular
-            )
-                .foregroundStyle(TBColor.textHint)
+            if showsChevron {
+                LucideIcon(
+                    .chevronRight,
+                    size: TBIcon.Size.xSmall,
+                    strokeWidth: TBIcon.Stroke.regular
+                )
+                    .foregroundStyle(TBColor.textHint)
+            }
         }
         .padding(12)
         .background(TBColor.surface)

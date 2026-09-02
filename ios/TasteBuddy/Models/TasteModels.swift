@@ -357,6 +357,10 @@ struct TasteProfile: Codable, Equatable {
     )
 }
 
+enum TasteProfileHistoryContract {
+    static let maximumStoredProfiles = 6
+}
+
 struct DiningEntry: Identifiable, Codable, Equatable {
     let id: UUID
     let restaurant: String
@@ -366,7 +370,9 @@ struct DiningEntry: Identifiable, Codable, Equatable {
     let note: String
     let tasteExperienceIDs: [String]
     let detailTagIDs: [String]
+    let dishKindIDs: [String]
     let reflectionPhotoFilename: String?
+    let tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot?
 
     init(
         id: UUID = UUID(),
@@ -377,7 +383,9 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         note: String,
         tasteExperienceIDs: [String] = [],
         detailTagIDs: [String] = [],
-        reflectionPhotoFilename: String? = nil
+        dishKindIDs: [String] = [],
+        reflectionPhotoFilename: String? = nil,
+        tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot? = nil
     ) {
         self.id = id
         self.restaurant = restaurant
@@ -387,7 +395,9 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         self.note = note
         self.tasteExperienceIDs = Array(tasteExperienceIDs.prefix(3))
         self.detailTagIDs = detailTagIDs
+        self.dishKindIDs = dishKindIDs
         self.reflectionPhotoFilename = reflectionPhotoFilename
+        self.tbaAnalysisSnapshot = tbaAnalysisSnapshot
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -399,7 +409,9 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         case note
         case tasteExperienceIDs
         case detailTagIDs
+        case dishKindIDs
         case reflectionPhotoFilename
+        case tbaAnalysisSnapshot
     }
 
     init(from decoder: Decoder) throws {
@@ -414,9 +426,14 @@ struct DiningEntry: Identifiable, Codable, Equatable {
             try container.decodeIfPresent([String].self, forKey: .tasteExperienceIDs) ?? []
         ).prefix(3).map(\.self)
         detailTagIDs = try container.decodeIfPresent([String].self, forKey: .detailTagIDs) ?? []
+        dishKindIDs = try container.decodeIfPresent([String].self, forKey: .dishKindIDs) ?? []
         reflectionPhotoFilename = try container.decodeIfPresent(
             String.self,
             forKey: .reflectionPhotoFilename
+        )
+        tbaAnalysisSnapshot = try container.decodeIfPresent(
+            TasteBuddyAgentDiningAnalysisSnapshot.self,
+            forKey: .tbaAnalysisSnapshot
         )
     }
 
@@ -430,10 +447,12 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         try container.encode(note, forKey: .note)
         try container.encode(tasteExperienceIDs, forKey: .tasteExperienceIDs)
         try container.encode(detailTagIDs, forKey: .detailTagIDs)
+        try container.encode(dishKindIDs, forKey: .dishKindIDs)
         try container.encodeIfPresent(
             reflectionPhotoFilename,
             forKey: .reflectionPhotoFilename
         )
+        try container.encodeIfPresent(tbaAnalysisSnapshot, forKey: .tbaAnalysisSnapshot)
     }
 
     static let sample = DiningEntry(

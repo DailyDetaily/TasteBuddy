@@ -3,20 +3,23 @@ import SwiftUI
 struct AnalysisView: View {
     @EnvironmentObject private var appModel: AppModel
     @State private var selectedInsight: NativeInsight?
+    let systemTopChrome: AnyView?
     let onStartMeasurement: () -> Void
     let onOpenTasteChange: () -> Void
 
     init(
+        systemTopChrome: AnyView? = nil,
         onStartMeasurement: @escaping () -> Void = {},
         onOpenTasteChange: @escaping () -> Void = {}
     ) {
+        self.systemTopChrome = systemTopChrome
         self.onStartMeasurement = onStartMeasurement
         self.onOpenTasteChange = onOpenTasteChange
     }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            MainTabChromeScrollView(topChrome: systemTopChrome) {
                 if let profile = appModel.profile {
                     VStack(alignment: .leading, spacing: TBSpacing.section) {
                         TBPageSection(title: "나의 미각") {
@@ -27,6 +30,14 @@ struct AnalysisView: View {
                                 eyebrow: "셰프 참고 가이드",
                                 detailLabel: "가이드 보기",
                                 indicatorColors: profile.topAxes.map(\.mainColor),
+                                indicatorWeights: profile.topAxes.map { axis in
+                                    Double(
+                                        abs(
+                                            profile.score(for: axis)
+                                                - TasteRadarContract.averageScore(for: axis)
+                                        )
+                                    )
+                                },
                                 onExpand: {
                                     selectedInsight = TasteBuddyNativeContent.insights[0]
                                 }
@@ -61,17 +72,26 @@ struct AnalysisView: View {
                             )
 
                             TasteInsightSummaryCard(
-                                data: .tasteProfile(profile),
+                                data: .tasteProfile(
+                                    profile,
+                                    history: appModel.profileHistory
+                                ),
                                 onTap: onOpenTasteChange
                             )
 
                             TasteInsightSummaryCard(
-                                data: .specialNote(profile)
+                                data: .specialNote(
+                                    profile,
+                                    history: appModel.profileHistory
+                                )
                             ) {
                                 selectedInsight = NativeInsight(
                                     id: "special-note",
                                     eyebrow: "특이사항",
-                                    title: TasteInsightSummaryCardData.specialNote(profile).title,
+                                    title: TasteInsightSummaryCardData.specialNote(
+                                        profile,
+                                        history: appModel.profileHistory
+                                    ).title,
                                     description: profile.specialNote,
                                     supportingText: profile.chefTranslationCopy,
                                     axis: profile.weakestAxis
@@ -79,14 +99,11 @@ struct AnalysisView: View {
                             }
                         }
 
-                        TBPageSection(title: "세부 분석") {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 12) {
-                                    ForEach(profile.analysisEntries) { entry in
-                                        TasteTintMiniCard(entry: entry)
-                                    }
+                        TBPageSection(title: "세부 분석", titleSize: .medium) {
+                            CardScrollList(spacing: TBSpacing.x12) {
+                                ForEach(profile.analysisEntries) { entry in
+                                    TasteTintMiniCard(entry: entry)
                                 }
-                                .padding(.trailing, TBSpacing.page)
                             }
                         }
 
@@ -108,9 +125,11 @@ struct AnalysisView: View {
                         }
                     }
                     .tbPageContentPadding(bottom: TBSpacing.mainTabContentBottom)
+                    .containerRelativeFrame(.horizontal, alignment: .leading)
                     .tbCardBordersVisible(false)
                 }
             }
+            .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
             .navigationTitle("분석")
             .tbInlineNavigationTitle()
             .toolbar(.hidden, for: .navigationBar)
@@ -119,6 +138,7 @@ struct AnalysisView: View {
                 InsightDetailSheet(insight: insight)
             }
         }
+        .ignoresSafeArea(.container, edges: systemTopChrome == nil ? [] : .top)
     }
 }
 
@@ -292,13 +312,12 @@ private struct RadarComparisonCard: View {
                 size: TBIcon.Size.base,
                 strokeWidth: TBIcon.Stroke.regular
             )
-                .foregroundStyle(TBColor.textPrimary)
+                .foregroundStyle(isEnabled ? TBColor.textPrimary : TBColor.textDisabled)
                 .frame(width: 32, height: 32)
                 .contentShape(Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
-        .opacity(isEnabled ? 1 : 0.3)
         .accessibilityLabel(accessibilityLabel)
     }
 }

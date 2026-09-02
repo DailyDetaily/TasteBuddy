@@ -62,6 +62,7 @@ enum LucideIconName: String, CaseIterable {
     case eggFried
     case ellipsis
     case eye
+    case eyeOff
     case fish
     case globe
     case heart
@@ -98,6 +99,7 @@ enum LucideIconName: String, CaseIterable {
     case utensils
     case utensilsCrossed
     case user
+    case userLock
     case userPlus
     case waves
     case wine
@@ -149,6 +151,8 @@ enum LucideIconName: String, CaseIterable {
             self = .ellipsis
         case "eye", "doc.text.magnifyingglass":
             self = .eye
+        case "eye-off", "eyeOff", "eye.slash":
+            self = .eyeOff
         case "globe":
             self = .globe
         case "envelope":
@@ -185,6 +189,8 @@ enum LucideIconName: String, CaseIterable {
             self = .phone
         case "person":
             self = .user
+        case "user-lock", "userLock", "person.badge.key":
+            self = .userLock
         case "person.badge.plus":
             self = .userPlus
         case "plus":
@@ -1265,6 +1271,56 @@ struct LucideIcon: View {
             )
             strokePath(eye)
             circle(12, 12, 3)
+        case .eyeOff:
+            var eye = Path()
+            let eyeStart = CGPoint(x: 2.062, y: 12.348)
+            let eyeTopLeft = CGPoint(x: 2.062, y: 11.652)
+            let eyeTopRight = CGPoint(x: 21.938, y: 11.652)
+            let eyeBottomRight = CGPoint(x: 21.938, y: 12.348)
+            eye.move(to: eyeStart)
+            addSvgArc(
+                to: &eye,
+                from: eyeStart,
+                to: eyeTopLeft,
+                radius: 1,
+                largeArc: false,
+                sweep: true
+            )
+            addSvgArc(
+                to: &eye,
+                from: eyeTopLeft,
+                to: eyeTopRight,
+                radius: 10.75,
+                largeArc: false,
+                sweep: true
+            )
+            addSvgArc(
+                to: &eye,
+                from: eyeTopRight,
+                to: eyeBottomRight,
+                radius: 1,
+                largeArc: false,
+                sweep: true
+            )
+            addSvgArc(
+                to: &eye,
+                from: eyeBottomRight,
+                to: eyeStart,
+                radius: 10.75,
+                largeArc: false,
+                sweep: true
+            )
+            strokePath(eye)
+
+            var pupil = Path()
+            pupil.move(to: CGPoint(x: 10.1, y: 10.1))
+            pupil.addCurve(
+                to: CGPoint(x: 13.9, y: 13.9),
+                control1: CGPoint(x: 9.3, y: 11.4),
+                control2: CGPoint(x: 11.6, y: 14.7)
+            )
+            strokePath(pupil)
+            line(3, 3, 21, 21)
         case .globe:
             circle(12, 12, 10)
             line(2, 12, 22, 12)
@@ -1842,6 +1898,29 @@ struct LucideIcon: View {
             shoulders.addLine(to: CGPoint(x: 5, y: 21))
             strokePath(shoulders)
             circle(12, 7, 4)
+        case .userLock:
+            var shoulders = Path()
+            shoulders.move(to: CGPoint(x: 15, y: 21))
+            shoulders.addLine(to: CGPoint(x: 15, y: 19))
+            shoulders.addCurve(to: CGPoint(x: 11, y: 15), control1: CGPoint(x: 15, y: 16.8), control2: CGPoint(x: 13.2, y: 15))
+            shoulders.addLine(to: CGPoint(x: 6, y: 15))
+            shoulders.addCurve(to: CGPoint(x: 2, y: 19), control1: CGPoint(x: 3.8, y: 15), control2: CGPoint(x: 2, y: 16.8))
+            shoulders.addLine(to: CGPoint(x: 2, y: 21))
+            strokePath(shoulders)
+            circle(8.5, 7, 4)
+
+            var shackle = Path()
+            shackle.move(to: CGPoint(x: 16, y: 12))
+            shackle.addLine(to: CGPoint(x: 16, y: 10))
+            shackle.addCurve(
+                to: CGPoint(x: 20, y: 10),
+                control1: CGPoint(x: 16, y: 7.33),
+                control2: CGPoint(x: 20, y: 7.33)
+            )
+            shackle.addLine(to: CGPoint(x: 20, y: 12))
+            strokePath(shackle)
+            rect(14, 12, 8, 8, 1.5)
+            line(18, 15.8, 18.01, 15.8)
         case .userPlus:
             var shoulders = Path()
             shoulders.move(to: CGPoint(x: 16, y: 21))

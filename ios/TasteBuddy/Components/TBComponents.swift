@@ -83,7 +83,21 @@ enum PrimaryButtonSize: Equatable {
     }
 }
 
+/// Disabled appearance belongs to the label's color tokens, never whole-button opacity.
+struct TBTokenButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(isEnabled && configuration.isPressed && !reduceMotion ? 0.98 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
 struct PrimaryButton: View {
+    @Environment(\.isEnabled) private var environmentIsEnabled
+
     let title: String
     var isEnabled = true
     var visualDisabled = false
@@ -109,12 +123,12 @@ struct PrimaryButton: View {
                     y: 8
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
     }
 
     private var appearsDisabled: Bool {
-        !isEnabled || visualDisabled
+        !isEnabled || !environmentIsEnabled || visualDisabled
     }
 }
 
@@ -194,6 +208,8 @@ enum FlowBottomCtaMetrics {
 }
 
 struct TBFlowBottomCTA: View {
+    @Environment(\.isEnabled) private var environmentIsEnabled
+
     let actionLabel: String
     var isEnabled = true
     var actionVisualDisabled = false
@@ -282,7 +298,7 @@ struct TBFlowBottomCTA: View {
         visualDisabled: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        let appearsDisabled = !isEnabled || visualDisabled
+        let appearsDisabled = !isEnabled || !environmentIsEnabled || visualDisabled
 
         return Button(action: action) {
             Text(title)
@@ -297,7 +313,7 @@ struct TBFlowBottomCTA: View {
                         .stroke(appearsDisabled ? TBColor.borderDisabled : TBColor.borderStrong)
                 }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
     }
 }
@@ -397,6 +413,7 @@ struct TBFlowTopBar: View {
                 Text(title)
                     .font(TBFont.bold(15))
                     .foregroundStyle(TBColor.textPrimary)
+                    .lineLimit(1)
                     .allowsHitTesting(false)
             }
 
@@ -437,8 +454,7 @@ struct TBFlowTopBar: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: TBSize.topAppBarHeight)
-        .background(backgroundColor)
-        .zIndex(20)
+        .tbTopChromeBackground(fallback: backgroundColor)
         .overlay(alignment: .bottom) {
             if showsDivider {
                 Rectangle()
@@ -462,6 +478,8 @@ enum SelectionCardMetrics {
 }
 
 struct TBSelectionCard: View {
+    @Environment(\.isEnabled) private var environmentIsEnabled
+
     enum Indicator {
         case checkbox
         case radio
@@ -473,8 +491,13 @@ struct TBSelectionCard: View {
     var isSelected = false
     var singleLine = false
     var isEnabled = true
+    var showsUnselectedBorder = true
     var trailing: AnyView? = nil
     let action: () -> Void
+
+    private var isEffectivelyEnabled: Bool {
+        isEnabled && environmentIsEnabled
+    }
 
     var body: some View {
         Button(action: action) {
@@ -485,13 +508,13 @@ struct TBSelectionCard: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(title)
                         .font(TBFont.semibold(14))
-                        .foregroundStyle(isEnabled ? TBColor.textPrimary : TBColor.textDisabled)
+                        .foregroundStyle(isEffectivelyEnabled ? TBColor.textPrimary : TBColor.textDisabled)
                         .lineSpacing(2)
 
                     if let description {
                         Text(description)
                             .font(TBFont.regular(12))
-                            .foregroundStyle(isEnabled ? TBColor.textMuted : TBColor.textDisabled)
+                            .foregroundStyle(isEffectivelyEnabled ? TBColor.textMuted : TBColor.textDisabled)
                             .lineSpacing(3)
                     }
                 }
@@ -504,7 +527,7 @@ struct TBSelectionCard: View {
             }
             .padding(SelectionCardMetrics.padding)
             .frame(maxWidth: .infinity, minHeight: singleLine ? 44 : nil, alignment: .leading)
-            .background(isEnabled ? TBColor.surface : TBColor.disabledSurface)
+            .background(isEffectivelyEnabled ? TBColor.surface : TBColor.disabledSurface)
             .clipShape(RoundedRectangle(cornerRadius: SelectionCardMetrics.cardRadius, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: SelectionCardMetrics.cardRadius, style: .continuous)
@@ -514,14 +537,14 @@ struct TBSelectionCard: View {
                     )
             }
             .shadow(
-                color: isSelected && isEnabled ? TBColor.textPrimary.opacity(0.06) : .clear,
+                color: isSelected && isEffectivelyEnabled ? TBColor.textPrimary.opacity(0.06) : .clear,
                 radius: SelectionCardMetrics.selectedShadowRadius,
                 x: 0,
                 y: SelectionCardMetrics.selectedShadowYOffset
             )
             .contentShape(RoundedRectangle(cornerRadius: SelectionCardMetrics.cardRadius, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
@@ -571,12 +594,16 @@ struct TBSelectionCard: View {
     }
 
     private var selectionControlColor: Color {
-        isEnabled ? TBColor.textPrimary : TBColor.textDisabled
+        isEffectivelyEnabled ? TBColor.textPrimary : TBColor.textDisabled
     }
 
     private var selectionCardBorderColor: Color {
-        guard isEnabled else {
+        guard isEffectivelyEnabled else {
             return TBColor.borderDisabled
+        }
+
+        guard isSelected || showsUnselectedBorder else {
+            return .clear
         }
 
         return isSelected ? TBColor.textPrimary : TBColor.border
@@ -1594,12 +1621,14 @@ struct StatusRow: View {
         case neutral
         case success
         case warning
+        case destructive
 
         var foreground: Color {
             switch self {
             case .neutral: TBColor.textSecondary
             case .success: TBColor.success
             case .warning: TBColor.warning
+            case .destructive: TBColor.destructive
             }
         }
 
@@ -1608,6 +1637,7 @@ struct StatusRow: View {
             case .neutral: TBColor.mutedSurface
             case .success: TBColor.successSoft
             case .warning: TBColor.warningSoft
+            case .destructive: TBColor.destructive.opacity(0.10)
             }
         }
     }
@@ -1715,6 +1745,23 @@ struct SectionHeading: View {
 }
 
 #if canImport(PreviewsMacros)
+    #Preview("CTA Disabled Color Tokens") {
+        ZStack {
+            LinearGradient(
+                colors: [TBColor.textPrimary, TBColor.warning, TBColor.surface],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            VStack(spacing: TBSpacing.x16) {
+                PrimaryButton(title: "식당 확인하고 메뉴 선택", isEnabled: false) {}
+                PrimaryButton(title: "선택한 메뉴 기록하기", visualDisabled: true) {}
+                PrimaryButton(title: "상위 화면에서 비활성화") {}
+                    .disabled(true)
+            }
+            .padding(TBSpacing.page)
+        }
+    }
+
     #Preview("Status Row") {
         StatusRowPreviewGallery()
     }

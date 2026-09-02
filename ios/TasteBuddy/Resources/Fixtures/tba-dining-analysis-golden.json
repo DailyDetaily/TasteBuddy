@@ -55,11 +55,6 @@
               "title": "질감 신호"
             },
             {
-              "id": "following-mina-broth-lexicon-detail-note-fat-acid-balance",
-              "label": "지방감과 산미 균형",
-              "title": "구성 신호"
-            },
-            {
               "id": "following-mina-broth-lexicon-detail-note-umami-salt-balance",
               "label": "감칠맛과 간의 균형",
               "title": "구성 신호"
@@ -69,6 +64,12 @@
               "label": "맑은 감칠맛",
               "score": 0.29879999999999995,
               "title": "맑은 감칠맛"
+            },
+            {
+              "id": "following-mina-broth-detail-note-가벼운 피니시-1",
+              "label": "가벼운 피니시",
+              "score": 0.29879999999999995,
+              "title": "가벼운 피니시"
             }
           ],
           "summary": "맑은 육수와 산뜻한 여운은 국물 맛이 천천히 열렸고, 맑은 감칠맛과 깊은 감칠맛이 차분하게 이어졌어요. 육수 향과 육수 농축 덕분에 흐름이 편안했어요. 감칠맛의 깊이는 살리면서 후반부 무게를 가볍게 읽기 좋은 기록이에요.",
@@ -86,15 +87,15 @@
               "title": "감칠맛"
             },
             {
-              "colorTaste": "지방맛",
-              "id": "following-mina-broth-lexicon-taste-note-fat-acid-balance",
-              "label": "지방감과 산미 균형",
-              "title": "지방맛"
+              "colorTaste": "감칠맛",
+              "id": "following-mina-broth-lexicon-taste-note-umami-salt-balance",
+              "label": "감칠맛과 간의 균형",
+              "title": "감칠맛"
             }
           ]
         },
         "snapshot": {
-          "confidence": 0.852,
+          "confidence": 0.817,
           "detailTags": [
             {
               "id": "following-mina-broth-lexicon-detail-note-broth-aroma",
@@ -112,11 +113,6 @@
               "title": "질감 신호"
             },
             {
-              "id": "following-mina-broth-lexicon-detail-note-fat-acid-balance",
-              "label": "지방감과 산미 균형",
-              "title": "구성 신호"
-            },
-            {
               "id": "following-mina-broth-lexicon-detail-note-umami-salt-balance",
               "label": "감칠맛과 간의 균형",
               "title": "구성 신호"
@@ -126,6 +122,12 @@
               "label": "맑은 감칠맛",
               "score": 0.29879999999999995,
               "title": "맑은 감칠맛"
+            },
+            {
+              "id": "following-mina-broth-detail-note-가벼운 피니시-1",
+              "label": "가벼운 피니시",
+              "score": 0.29879999999999995,
+              "title": "가벼운 피니시"
             }
           ],
           "foodKnowledgeMatchIds": [],
@@ -139,9 +141,9 @@
             "broth-reduction",
             "soft-broth-body",
             "deep-umami",
-            "fat-acid-balance",
             "umami-salt-balance",
-            "fermented-umami"
+            "mushroom-earthy-umami",
+            "crustacean-umami"
           ],
           "source": "TasteBuddyAgent",
           "subject": "맑은 육수와 산뜻한 여운",
@@ -160,10 +162,10 @@
               "title": "감칠맛"
             },
             {
-              "colorTaste": "지방맛",
-              "id": "following-mina-broth-lexicon-taste-note-fat-acid-balance",
-              "label": "지방감과 산미 균형",
-              "title": "지방맛"
+              "colorTaste": "감칠맛",
+              "id": "following-mina-broth-lexicon-taste-note-umami-salt-balance",
+              "label": "감칠맛과 간의 균형",
+              "title": "감칠맛"
             }
           ],
           "tbaSignalIds": [
@@ -171,13 +173,12 @@
             "process:broth",
             "lexicon:clear-umami",
             "lexicon:umami-salt-balance",
+            "lexicon:crustacean-umami",
             "lexicon:deep-umami",
             "lexicon:soft-broth-body",
-            "lexicon:fermented-umami",
+            "lexicon:mushroom-earthy-umami",
             "lexicon:broth-reduction",
             "lexicon:broth-aroma",
-            "lexicon:fat-acid-balance",
-            "lexicon:crustacean-umami",
             "lexicon:bright-transition",
             "lexicon:pickled-brightness",
             "ingredient:white-fish",
@@ -270,7 +271,7 @@
           ]
         },
         "snapshot": {
-          "confidence": 0.892,
+          "confidence": 0.891,
           "detailTags": [
             {
               "id": "dish-onjium-clear-broth-lexicon-detail-note-meaty-aroma",

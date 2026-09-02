@@ -113,6 +113,7 @@ private struct PreferenceIntakeQuestionsView: View {
                 action: continueFlow
             )
         }
+        .tbScreenTopChrome()
         .background(TBColor.focus.ignoresSafeArea())
         .edgeSwipeBack(action: goBack)
         .onAppear {

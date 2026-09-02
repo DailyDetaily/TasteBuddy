@@ -164,6 +164,31 @@ final class HomeSearchEngineTests: XCTestCase {
         )
     }
 
+    func testLiveFriendRepositoryMapsPublicProfileSearchResults() async throws {
+        let repository = LiveHomeSearchRepository(
+            publicProfileRepository: FixtureBackendPublicProfileRepository(
+                identities: [
+                    BackendPublicProfileIdentity(
+                        id: "public-user-1",
+                        displayName: "박혜린",
+                        nickname: "섬세한끝혜린",
+                        isFriend: false
+                    )
+                ]
+            )
+        )
+
+        let results = try await repository.friendResults(matching: "혜린")
+        let storedIdentity = await PublicProfileSnapshotStore.shared.profile(id: "public-user-1")
+
+        XCTAssertEqual(results.first?.id, "profile-public-user-1")
+        XCTAssertEqual(results.first?.title, "박혜린")
+        XCTAssertEqual(results.first?.subtitle, "@섬세한끝혜린")
+        XCTAssertEqual(results.first?.route, .publicProfile(id: "public-user-1"))
+        XCTAssertEqual(results.first?.statusLabel, "검색 결과")
+        XCTAssertEqual(storedIdentity?.displayName, "박혜린")
+    }
+
     func testRemoteSearchPhaseCarriesReactLoadingAndFailureMessages() {
         let loading = HomeSearchAsyncPhase.loading("외부 장소 검색 중")
         let failed = HomeSearchAsyncPhase.failed("장소 검색을 다시 시도해 주세요")

@@ -63,6 +63,16 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 - 작은 pill / 메타 칩 배경은 `tintSoft`와 `tintSoftBorder`를 우선 사용한다.
 - "같은 값이지만 다른 역할"이 생기면 의미 토큰을 먼저 보고, 그래픽 구현 토큰은 필요할 때만 본다.
 
+## Taste Gradient Indicator
+
+복수 미각을 작은 시각 신호로 보여줄 때는 iOS의 `TasteGradientIndicator`를 사용한다.
+
+- `circle`: 16pt, 미각 변화·특이사항 요약 헤더
+- `verticalCapsule`: width 8pt, 셰프 참고 가이드·해석 카드
+- 색상 면적은 각 미각의 변화량 또는 해석 중요도에 비례
+- 모든 가중치가 0이면 균등 분배, 단일 미각은 단색, 데이터 없음은 `textDisabled`
+- 색상 경계 혼합 폭은 공용 metric으로 유지하며 화면별 `LinearGradient` 중복 구현을 만들지 않는다.
+
 ## Core Tokens
 
 ### Layout

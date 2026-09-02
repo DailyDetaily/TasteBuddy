@@ -49,21 +49,21 @@ enum TasteBuddyAgent {
             return []
         }
 
-        var scoredOptions: [(id: String, score: Int)] = []
-        for option in TasteBuddyAgentKnowledge.dishKindOptions {
+        var scoredOptions: [(id: String, score: Int, sourceIndex: Int)] = []
+        for (sourceIndex, option) in TasteBuddyAgentKnowledge.dishKindOptions.enumerated() {
             var score = 0
             for keyword in option.keywords where searchableText.contains(keyword.lowercased()) {
                 score += 1
             }
 
             if score > 0 {
-                scoredOptions.append((id: option.id, score: score))
+                scoredOptions.append((id: option.id, score: score, sourceIndex: sourceIndex))
             }
         }
 
         scoredOptions.sort {
             if $0.score == $1.score {
-                return $0.id < $1.id
+                return $0.sourceIndex < $1.sourceIndex
             }
 
             return $0.score > $1.score
@@ -81,11 +81,13 @@ enum TasteBuddyAgent {
         let fallbackTasteBubbles = buildDiningNoteTasteBubbles(
             detailTags: normalizedDetailTags,
             id: input.id,
+            reviewerProfile: input.reviewerProfile,
             tasteTags: normalizedTasteTags
         )
         let fallbackDetailTags = buildDiningNoteDetailTags(
             detailTags: normalizedDetailTags,
             id: input.id,
+            reviewerProfile: input.reviewerProfile,
             tasteTags: normalizedTasteTags
         )
         let tasteBubbles = mergeByLabel(
@@ -159,6 +161,7 @@ enum TasteBuddyAgent {
     private static func buildDiningNoteTasteBubbles(
         detailTags: [String],
         id: String,
+        reviewerProfile: TasteBuddyAgentTasteProfileSnapshot?,
         tasteTags: [String]
     ) -> [TasteBuddyAgentDiningAnalysisTagSnapshot] {
         let signalTags = tasteTags + detailTags
@@ -168,7 +171,13 @@ enum TasteBuddyAgent {
         var candidates: [(tag: TasteBuddyAgentDiningAnalysisTagSnapshot, score: Double)] = []
         for axis in TasteAxis.allCases {
             let tagScore = getTagTasteScore(tags: signalTags, axis: axis)
-            let profileScore = 0.5
+            let profileScore = reviewerProfile.map {
+                clamp(
+                    ($0.tasteVector[axis.rawValue] ?? 0.5) * 0.44
+                        + ($0.preferenceVector[axis.rawValue] ?? 0.5) * 0.36
+                        + ($0.confidenceByAxis[axis.rawValue] ?? 0.5) * 0.2
+                )
+            } ?? 0.5
             let score = hasReviewTasteSignals
                 ? tagScore * 0.62 + profileScore * 0.38
                 : profileScore
@@ -208,12 +217,12 @@ enum TasteBuddyAgent {
     private static func buildDiningNoteDetailTags(
         detailTags: [String],
         id: String,
+        reviewerProfile: TasteBuddyAgentTasteProfileSnapshot?,
         tasteTags: [String]
     ) -> [TasteBuddyAgentDiningAnalysisTagSnapshot] {
         let sourceTags = detailTags.isEmpty ? tasteTags : detailTags
         var seenLabels: Set<String> = []
-
-        return sourceTags.enumerated()
+        let tagCandidates = sourceTags.enumerated()
             .map { index, tag in
                 let metadata = TasteBuddyAgentKnowledge.detailTagMetadata[tag]
                 return TasteBuddyAgentDiningAnalysisTagSnapshot(
@@ -223,6 +232,26 @@ enum TasteBuddyAgent {
                     title: metadata?.categoryLabel ?? getDiningNoteDetailTitle(tag)
                 )
             }
+        let profileCandidates = reviewerProfile.map { profile in
+            TasteBuddyAgentPerceptualAxis.allCases
+                .sorted {
+                    (profile.perceptualVector[$0.rawValue] ?? 0)
+                        > (profile.perceptualVector[$1.rawValue] ?? 0)
+                }
+                .prefix(4)
+                .enumerated()
+                .map { index, axis in
+                    TasteBuddyAgentDiningAnalysisTagSnapshot(
+                        id: "\(id)-profile-detail-note-\(axis.rawValue)-\(index)",
+                        label: axis.label,
+                        score: (profile.perceptualVector[axis.rawValue] ?? 0.5) * 0.8,
+                        title: "작성자 미각 프로필"
+                    )
+                }
+        } ?? []
+
+        return (tagCandidates + (sourceTags.isEmpty ? profileCandidates : []))
+            .sorted { ($0.score ?? 0) > ($1.score ?? 0) }
             .filter { tag in
                 if seenLabels.contains(tag.label) { return false }
                 seenLabels.insert(tag.label)
@@ -458,16 +487,25 @@ private enum TasteBuddyAgentKnowledge {
     }
 
     static let dishKindOptions: [DishKindOption] = [
-        .init(id: "seafood", label: "해산물", keywords: ["굴", "생선", "금태", "조개", "백합", "해산물", "오징어", "문어", "새우", "seafood", "fish", "oyster"]),
-        .init(id: "meat", label: "육류", keywords: ["한우", "소고기", "오리", "돼지", "양갈비", "갈비", "등갈비", "백립", "립", "닭", "고기", "육향", "beef", "duck", "lamb", "pork", "rib", "ribs"]),
-        .init(id: "vegetable_herb", label: "채소/허브", keywords: ["채소", "나물", "봄동", "더덕", "오이", "허브", "딜", "가니시", "vegetable", "herb"]),
-        .init(id: "grain_noodle", label: "면/곡물", keywords: ["메밀", "면", "국수", "카펠리니", "밥", "쌀", "곡물", "타르트 셸", "grain", "noodle"]),
-        .init(id: "broth", label: "국물/브로스", keywords: ["육수", "국물", "브로스", "jus", "쥬", "소스", "broth", "stock"]),
-        .init(id: "grilled_smoked", label: "구이/훈연", keywords: ["숯불", "직화", "굽기", "구운", "훈연", "스모키", "불맛", "grill", "charcoal", "smoke"]),
-        .init(id: "fermented_jang", label: "발효/장", keywords: ["된장", "간장", "백간장", "장", "발효", "코지", "미소", "fermented", "jang", "koji", "miso"]),
-        .init(id: "dessert", label: "디저트", keywords: ["디저트", "아이스크림", "타르트", "캐러멜", "그라니타", "배 콩포트", "단맛", "dessert", "ice cream"]),
-        .init(id: "cold", label: "차가운 요리", keywords: ["차가운", "차갑게", "냉", "아이스", "그라니타", "cold", "cool"]),
-        .init(id: "beverage_pairing", label: "음료/페어링", keywords: ["음료", "차", "와인", "페어링", "주스", "beverage", "pairing", "wine"]),
+        .init(id: "seafood", label: "해산물", keywords: ["굴", "생선", "금태", "조개", "백합", "해산물", "오징어", "문어", "새우", "성게", "해삼", "seafood", "fish", "oyster", "shellfish", "shrimp"]),
+        .init(id: "meat", label: "육류", keywords: ["한우", "소고기", "오리", "돼지", "양갈비", "갈비", "등갈비", "백립", "립", "닭", "고기", "육향", "beef", "duck", "lamb", "pork", "chicken", "rib", "ribs"]),
+        .init(id: "vegetable_herb", label: "채소/허브", keywords: ["채소", "나물", "봄동", "더덕", "오이", "허브", "딜", "가니시", "버섯", "토마토", "vegetable", "herb", "mushroom"]),
+        .init(id: "legume_tofu", label: "두부/콩", keywords: ["두부", "콩", "콩물", "두유", "유바", "템페", "비지", "tofu", "soy", "soybean", "yuba", "tempeh"]),
+        .init(id: "grain_noodle", label: "면/밥/곡물", keywords: ["메밀", "면", "국수", "카펠리니", "파스타", "라멘", "우동", "소바", "밥", "쌀", "죽", "리조또", "빵", "곡물", "grain", "noodle", "rice", "pasta", "ramen", "udon", "soba", "risotto", "bread"]),
+        .init(id: "dumpling_batter", label: "만두/전/반죽", keywords: ["만두", "딤섬", "교자", "전", "부침개", "반죽", "크레페", "라비올리", "피에로기", "dumpling", "dimsum", "dim sum", "gyoza", "jeon", "batter", "dough", "crepe", "ravioli"]),
+        .init(id: "broth", label: "국물/브로스", keywords: ["육수", "국물", "브로스", "수프", "탕", "국", "찌개", "스톡", "broth", "stock", "soup", "consomme", "stew"]),
+        .init(id: "sauce_glaze", label: "소스/글레이즈", keywords: ["소스", "글레이즈", "리덕션", "쥬", "jus", "그레이비", "드레싱", "비네그레트", "퓌레", "쿨리", "sauce", "glaze", "reduction", "gravy", "dressing", "vinaigrette", "puree", "coulis"]),
+        .init(id: "grilled_smoked", label: "구이/훈연", keywords: ["숯불", "직화", "굽기", "구운", "훈연", "스모키", "불맛", "로스팅", "오븐", "grill", "grilled", "charcoal", "smoke", "smoked", "roasted", "oven", "broil", "bbq"]),
+        .init(id: "stir_fried_wok", label: "볶음/웍", keywords: ["볶음", "볶은", "볶기", "웍", "소테", "stir-fry", "stir fried", "stir-frying", "wok", "saute", "sauteed"]),
+        .init(id: "fried_crispy", label: "튀김/크리스피", keywords: ["튀김", "튀긴", "프라이", "바삭", "크리스피", "덴푸라", "가라아게", "커틀릿", "fried", "fry", "crispy", "crisp", "tempura", "karaage", "fritter", "cutlet"]),
+        .init(id: "steamed_braised", label: "찜/브레이즈", keywords: ["찜", "찐", "조림", "졸임", "브레이즈", "라구", "찜닭", "동파육", "steamed", "braised", "braise", "jorim", "simmered", "ragu", "confit"]),
+        .init(id: "raw_cured", label: "생/절임/큐어", keywords: ["회", "생", "날것", "타르타르", "카르파초", "세비체", "큐어", "절임", "초절임", "숙성회", "마리네", "raw", "sashimi", "tartare", "carpaccio", "ceviche", "cured", "pickled", "marinated"]),
+        .init(id: "fermented_jang", label: "발효/장", keywords: ["된장", "간장", "백간장", "장", "발효", "코지", "미소", "고추장", "청국장", "김치", "fermented", "jang", "koji", "miso", "soy sauce", "doenjang", "gochujang", "kimchi"]),
+        .init(id: "dairy_cheese", label: "유제품/치즈", keywords: ["치즈", "버터", "크림", "유청", "우유", "요거트", "부라타", "리코타", "마스카포네", "dairy", "cheese", "butter", "cream", "whey", "milk", "yogurt", "burrata", "ricotta", "mascarpone"]),
+        .init(id: "spice_heat", label: "향신료/매운맛", keywords: ["향신료", "매운맛", "매운", "맵", "고추", "후추", "산초", "마라", "마파", "사천", "생강", "겨자", "와사비", "카레", "칠리", "spice", "spicy", "heat", "chili", "pepper", "mala", "mapo", "sichuan", "ginger", "wasabi", "curry"]),
+        .init(id: "cold", label: "차가운 요리", keywords: ["차가운", "차갑게", "차게", "냉", "아이스", "소르베", "그라니타", "cold", "cool", "chilled", "iced", "sorbet", "granita"]),
+        .init(id: "dessert", label: "디저트", keywords: ["디저트", "아이스크림", "타르트", "캐러멜", "그라니타", "소르베", "콩포트", "단맛", "초콜릿", "dessert", "ice cream", "sorbet", "tart", "caramel", "granita", "compote", "chocolate"]),
+        .init(id: "beverage_pairing", label: "음료/페어링", keywords: ["음료", "차", "와인", "페어링", "주스", "커피", "칵테일", "beverage", "pairing", "wine", "tea", "juice", "coffee", "cocktail"]),
     ]
 
     static let dishKindLabelById = Dictionary(uniqueKeysWithValues: dishKindOptions.map { ($0.id, $0.label) })
@@ -559,24 +597,22 @@ private enum TasteBuddyAgentKnowledge {
     ]
 
     static func mapCoreTasteLexiconSignals(_ input: TasteBuddyAgentDiningAnalysisInput) -> Mapping {
-        if input.subject.contains("시트러스") || input.ingredients.contains("생선") {
-            return seafoodMapping
-        }
-
-        if input.subject == "맑은 육수 코스" || input.id == "dish-onjium-clear-broth" {
-            return diningBrothMapping
-        }
-
-        if input.dishKindTags.contains("broth") || input.subject.contains("육수") {
-            return homeBrothMapping
-        }
-
+        let mapping = TasteBuddyAgentKnowledgeRuntime.mapDiningNote(input)
         return Mapping(
-            candidates: [],
-            confidence: 0.5,
-            foodKnowledgeMatchIds: [],
-            foodOnMatchIds: [],
-            tbaSignalIds: input.dishKindTags.map { "dish-kind:\($0)" }
+            candidates: mapping.candidates.map { candidate in
+                LexiconCandidate(
+                    categoryLabel: candidate.categoryLabel,
+                    colorTaste: candidate.colorTaste,
+                    id: candidate.entry.id,
+                    isDetailTag: candidate.isDetailTag,
+                    isTasteBubble: candidate.isTasteBubble,
+                    label: candidate.entry.label
+                )
+            },
+            confidence: mapping.confidence,
+            foodKnowledgeMatchIds: mapping.foodKnowledgeMatches.map(\.entry.id),
+            foodOnMatchIds: mapping.foodOnMatches.map(\.entry.id),
+            tbaSignalIds: mapping.tbaSignalIds
         )
     }
 

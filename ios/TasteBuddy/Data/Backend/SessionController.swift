@@ -51,23 +51,48 @@ struct MissingConfigurationSessionRepository: BackendSessionRepository {
     }
 }
 
+enum BackendSessionRestoreResolver {
+    static func resolve(
+        currentSessionIsExpired: Bool?,
+        refreshSession: () async throws -> Void
+    ) async -> BackendSessionStatus {
+        guard let currentSessionIsExpired else {
+            return .signedOut
+        }
+
+        guard currentSessionIsExpired else {
+            return .authenticated
+        }
+
+        do {
+            try await refreshSession()
+            return .authenticated
+        } catch {
+            return status(for: error)
+        }
+    }
+
+    static func status(for error: Error) -> BackendSessionStatus {
+        let errorText = String(describing: error)
+        if errorText.localizedCaseInsensitiveContains("missing")
+            || errorText.localizedCaseInsensitiveContains("not found")
+            || errorText.localizedCaseInsensitiveContains("session") {
+            return .signedOut
+        }
+
+        return .failed("Supabase session restore failed")
+    }
+}
+
 #if canImport(Supabase)
 struct SupabaseSessionRepository: BackendSessionRepository {
     let client: SupabaseClient
 
     func restoreSession() async -> BackendSessionStatus {
-        do {
+        await BackendSessionRestoreResolver.resolve(
+            currentSessionIsExpired: client.auth.currentSession?.isExpired
+        ) {
             _ = try await client.auth.session
-            return .authenticated
-        } catch {
-            let errorText = String(describing: error)
-            if errorText.localizedCaseInsensitiveContains("missing")
-                || errorText.localizedCaseInsensitiveContains("not found")
-                || errorText.localizedCaseInsensitiveContains("session") {
-                return .signedOut
-            }
-
-            return .failed("Supabase session restore failed")
         }
     }
 }

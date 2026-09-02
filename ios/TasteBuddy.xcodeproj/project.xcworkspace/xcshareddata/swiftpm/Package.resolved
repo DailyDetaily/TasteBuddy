@@ -1,6 +1,15 @@
 {
-  "originHash" : "ccc727310637079b7355ccf59e7d153c26677020c1a43e177b78cc9df7963c0f",
+  "originHash" : "651a0cec9b25a80e6b3c7b7b5b11b270e0217e16877ce45d6abd8ce1a3fa82fd",
   "pins" : [
+    {
+      "identity" : "progressiveblurheader",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dominikmartn/ProgressiveBlurHeader",
+      "state" : {
+        "branch" : "main",
+        "revision" : "0e8c29bc90d52e592fd63e034ca15b59095855f3"
+      }
+    },
     {
       "identity" : "supabase-swift",
       "kind" : "remoteSourceControl",
@@ -53,6 +62,15 @@
       "state" : {
         "revision" : "db774a277f60063a32d854f2980299caf06da041",
         "version" : "1.6.0"
+      }
+    },
+    {
+      "identity" : "variableblur",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nikstar/VariableBlur",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5073a0d9080e488a2d317e04859c001a57fbb3e8"
       }
     },
     {

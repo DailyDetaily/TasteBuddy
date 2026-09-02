@@ -342,6 +342,22 @@ Taste Buddy의 색상은 세 층으로 읽혀야 한다.
 - 기본 상태는 neutral, success, warning으로 시작한다.
 - "맛의 의미"가 핵심일 때만 taste palette를 전면에 올린다.
 
+### Taste Gradient Indicator
+
+여러 미각이 함께 작용하는 작은 신호는 iOS 공용 `TasteGradientIndicator`를 사용한다.
+
+| Variant | 규격 | 사용처 |
+| --- | --- | --- |
+| Circle | `16px × 16px` | 미각 변화, 특이사항 같은 요약 카드 헤더 |
+| Vertical capsule | width `8px`, 높이는 콘텐츠에 맞춤 | 셰프 참고 가이드, 해석 카드 |
+
+- 각 색상의 면적은 전달된 미각 가중치에 비례한다.
+- 가중치가 모두 `0`이면 같은 비율로 나눈다.
+- 단일 미각은 그라디언트로 꾸미지 않고 해당 `main` 컬러를 단색으로 표시한다.
+- 인접 색상 경계는 전체 길이의 최대 `16%`씩 부드럽게 혼합한다.
+- 데이터가 없으면 `textDisabled`로 표시한다.
+- 화면에서 별도의 `LinearGradient`를 만들지 말고 원형과 세로 캡슐 모두 같은 컴포넌트와 규칙을 재사용한다.
+
 ### Hospitality Warmth
 
 현재 구현에는 전용 warmth token 세트가 독립 토큰으로 자리잡지는 않았지만, 문서 기준으로는 아래 역할을 유지한다.

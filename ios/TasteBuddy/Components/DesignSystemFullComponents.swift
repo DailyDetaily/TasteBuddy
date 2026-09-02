@@ -179,10 +179,15 @@ struct PalateOrbAvatar: View {
 }
 
 struct ToastSurface: View {
+    static let defaultDisplayDurationNanoseconds: UInt64 = 3_500_000_000
+
     let title: String
     var message: String? = nil
+    var messageLineLimit: Int? = nil
     var icon: LucideIconName = .circleCheck
     var tone: StatusRow.Tone = .neutral
+    var actionTitle: String? = nil
+    var action: (() -> Void)? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
@@ -201,16 +206,29 @@ struct ToastSurface: View {
                         .font(TBFont.regular(12))
                         .foregroundStyle(TBColor.textBody)
                         .lineSpacing(3)
+                        .lineLimit(messageLineLimit)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer(minLength: 0)
+            if let actionTitle, let action {
+                Button(action: action) {
+                    Text(actionTitle)
+                        .font(TBFont.semibold(12))
+                        .foregroundStyle(TBColor.textPrimary)
+                        .padding(.horizontal, 12)
+                        .frame(height: 32)
+                        .background(TBColor.mutedSurface)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(12)
         .background(TBColor.focus)
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
         .shadow(color: Color.black.opacity(0.10), radius: 20, x: 0, y: 4)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: actionTitle == nil ? .combine : .contain)
     }
 }
 
@@ -421,6 +439,8 @@ enum TBUIButtonVariant {
 }
 
 struct TBUIButton: View {
+    @Environment(\.isEnabled) private var environmentIsEnabled
+
     let title: String
     var variant: TBUIButtonVariant = .primary
     var size: CGFloat = TBSize.primaryButtonHeight
@@ -441,12 +461,12 @@ struct TBUIButton: View {
                         .stroke(border, lineWidth: variant == .outline ? 1 : 0)
                 }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
     }
 
     private var background: Color {
-        guard isEnabled else {
+        guard isEnabled && environmentIsEnabled else {
             return TBColor.disabledSurface
         }
 
@@ -463,7 +483,7 @@ struct TBUIButton: View {
     }
 
     private var foreground: Color {
-        guard isEnabled else {
+        guard isEnabled && environmentIsEnabled else {
             return TBColor.textDisabled
         }
 
@@ -480,7 +500,7 @@ struct TBUIButton: View {
     }
 
     private var border: Color {
-        guard isEnabled else {
+        guard isEnabled && environmentIsEnabled else {
             return variant == .outline ? TBColor.borderDisabled : .clear
         }
 

@@ -69,14 +69,61 @@ final class AppModelPersistenceTests: XCTestCase {
         )
         legacyObject.removeValue(forKey: "tasteExperienceIDs")
         legacyObject.removeValue(forKey: "detailTagIDs")
+        legacyObject.removeValue(forKey: "dishKindIDs")
         legacyObject.removeValue(forKey: "reflectionPhotoFilename")
+        legacyObject.removeValue(forKey: "tbaAnalysisSnapshot")
         let legacyData = try JSONSerialization.data(withJSONObject: legacyObject)
         let legacyEntry = try JSONDecoder().decode(DiningEntry.self, from: legacyData)
 
         XCTAssertTrue(legacyEntry.tasteExperienceIDs.isEmpty)
         XCTAssertTrue(legacyEntry.detailTagIDs.isEmpty)
+        XCTAssertTrue(legacyEntry.dishKindIDs.isEmpty)
         XCTAssertNil(legacyEntry.reflectionPhotoFilename)
+        XCTAssertNil(legacyEntry.tbaAnalysisSnapshot)
         XCTAssertEqual(legacyEntry.note, entry.note)
+    }
+
+    @MainActor
+    func testTbaSnapshotEvidenceAndConfidenceRestoreWithDiningEntry() {
+        let suiteName = "tastebuddy.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        let snapshot = TasteBuddyAgent.buildDiningAnalysisSnapshot(
+            TasteBuddyAgentDiningAnalysisInput(
+                detailTags: ["flow-clean-finish"],
+                dishKindTags: ["grilled_smoked"],
+                id: "persisted-tba-entry",
+                ingredients: ["표고버섯"],
+                restaurantName: "테스트 다이닝",
+                subject: "표고버섯 숯불 구이",
+                tasteTags: ["savory"],
+                techniques: ["charcoal broiling"]
+            ),
+            generatedAt: "2026-06-05T00:00:00.000Z"
+        )
+        let entry = DiningEntry(
+            restaurant: "테스트 다이닝",
+            menu: "표고버섯 숯불 구이",
+            rating: 5,
+            note: "버섯의 깊이와 숯불 향이 깨끗하게 이어졌어요.",
+            tasteExperienceIDs: ["umami-clear"],
+            detailTagIDs: ["flow-clean-finish"],
+            dishKindIDs: ["grilled_smoked"],
+            tbaAnalysisSnapshot: snapshot
+        )
+
+        let firstModel = AppModel(defaults: defaults)
+        firstModel.addDiningEntry(entry)
+
+        XCTAssertEqual(firstModel.tbaEvidenceEvents.count, 1)
+        XCTAssertFalse(firstModel.tbaConfidenceStates.isEmpty)
+
+        let restoredModel = AppModel(defaults: defaults)
+        XCTAssertEqual(restoredModel.diningEntries, [entry])
+        XCTAssertEqual(restoredModel.tbaEvidenceEvents, firstModel.tbaEvidenceEvents)
+        XCTAssertEqual(restoredModel.tbaConfidenceStates, firstModel.tbaConfidenceStates)
     }
 
     func testDiningReflectionPhotoStoreWritesAndRemovesLocalMedia() throws {
@@ -277,6 +324,109 @@ final class AppModelPersistenceTests: XCTestCase {
         XCTAssertEqual(
             restoredModel.dishFeedbackItemWithCurrentComments(item).commentCount,
             3
+        )
+    }
+
+    @MainActor
+    func testRememberedRestaurantMenusRestoreUpdateAndRemove() {
+        let suiteName = "tastebuddy.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+
+        let firstModel = AppModel(defaults: defaults)
+        firstModel.rememberRestaurantMenu(
+            "  고등어 파스타  ",
+            for: "몽중식",
+            restaurantKey: "kakao-123"
+        )
+        firstModel.rememberRestaurantMenu(
+            "고등어파스타",
+            for: "몽중식",
+            restaurantKey: "kakao-123"
+        )
+
+        let restoredModel = AppModel(defaults: defaults)
+        XCTAssertEqual(
+            restoredModel.rememberedMenus(
+                for: "몽중식",
+                restaurantKey: "kakao-123"
+            ),
+            ["고등어 파스타"]
+        )
+        XCTAssertEqual(
+            restoredModel.rememberedMenus(for: "몽중식"),
+            ["고등어 파스타"]
+        )
+
+        restoredModel.updateRememberedRestaurantMenu(
+            "고등어 파스타",
+            to: "문어 라구 파스타",
+            for: "몽중식",
+            restaurantKey: "kakao-123"
+        )
+
+        let updatedModel = AppModel(defaults: defaults)
+        XCTAssertEqual(
+            updatedModel.rememberedMenus(
+                for: "몽중식",
+                restaurantKey: "kakao-123"
+            ),
+            ["문어 라구 파스타"]
+        )
+
+        updatedModel.removeRememberedRestaurantMenu(
+            "문어 라구 파스타",
+            for: "몽중식",
+            restaurantKey: "kakao-123"
+        )
+
+        let removedModel = AppModel(defaults: defaults)
+        XCTAssertTrue(
+            removedModel.rememberedMenus(
+                for: "몽중식",
+                restaurantKey: "kakao-123"
+            ).isEmpty
+        )
+    }
+
+    @MainActor
+    func testTasteProfileHistoryPersistsOnlyTheLatestSixPastMeasurements() {
+        let suiteName = "tastebuddy.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        let profiles = (0..<8).map { index in
+            TasteProfile(
+                createdAt: Date(timeIntervalSince1970: Double(index)),
+                scores: [TasteAxis.sour.rawValue: 40 + index],
+                confidence: "형성 중",
+                summary: "fixture",
+                topAxes: [.sour],
+                cautionAxis: .bitter
+            )
+        }
+        let model = AppModel(defaults: defaults)
+
+        profiles.forEach(model.saveProfile)
+
+        XCTAssertEqual(model.profile, profiles.last)
+        XCTAssertEqual(model.profileHistory.map(\.createdAt), profiles[1...6].map(\.createdAt))
+
+        let restoredModel = AppModel(defaults: defaults)
+        XCTAssertEqual(restoredModel.profile, profiles.last)
+        XCTAssertEqual(
+            restoredModel.profileHistory.map(\.createdAt),
+            profiles[1...6].map(\.createdAt)
+        )
+
+        restoredModel.restartCalibration()
+        XCTAssertNil(restoredModel.profile)
+        XCTAssertEqual(
+            restoredModel.profileHistory.map(\.createdAt),
+            profiles[2...7].map(\.createdAt)
         )
     }
 }

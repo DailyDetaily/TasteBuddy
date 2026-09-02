@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject private var appModel: AppModel
+    var systemTopChrome: AnyView? = nil
     var onOpenConnection: ((ProfileConnectionKind) -> Void)? = nil
     var onFindBuddy: (() -> Void)? = nil
     var onOpenProfileSettings: (() -> Void)? = nil
@@ -9,10 +10,11 @@ struct ProfileView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            MainTabChromeScrollView(topChrome: systemTopChrome) {
                 VStack(alignment: .leading, spacing: TBSpacing.section) {
                     if let profile = appModel.profile {
                         ProfileIdentityCard(
+                            identity: appModel.profileIdentity,
                             profile: profile,
                             followerCount: 3,
                             followingCount: 2,
@@ -52,6 +54,7 @@ struct ProfileView: View {
             .toolbar(.hidden, for: .navigationBar)
             .tbPageBackground()
         }
+        .ignoresSafeArea(.container, edges: systemTopChrome == nil ? [] : .top)
     }
 
     private func activityMetrics(for profile: TasteProfile) -> [ProfileActivityMetric] {
@@ -94,6 +97,7 @@ struct ProfileView: View {
 }
 
 private struct ProfileIdentityCard: View {
+    let identity: UserProfileIdentity
     let profile: TasteProfile
     let followerCount: Int
     let followingCount: Int
@@ -103,8 +107,8 @@ private struct ProfileIdentityCard: View {
 
     var body: some View {
         ProfileHeroCard(
-            title: "신준호",
-            handle: "@테이스트버디",
+            title: identity.displayName,
+            handle: identity.displayNickname,
             followerCount: followerCount,
             followingCount: followingCount,
             onOpenFollowers: { onOpenConnection?(.followers) },

@@ -14,8 +14,17 @@ await mkdir(temporaryDirectory, { recursive: true });
 
 await esbuild.build({
   bundle: true,
+  define: {
+    'import.meta.env': '{}',
+  },
   entryPoints: [path.join(import.meta.dirname, 'contract-fixture-entry.ts')],
   format: 'esm',
+  loader: {
+    '.jpeg': 'dataurl',
+    '.jpg': 'dataurl',
+    '.png': 'dataurl',
+    '.svg': 'text',
+  },
   logLevel: 'silent',
   outfile: bundledEntry,
   platform: 'node',
@@ -33,6 +42,7 @@ const outputs = [
   ['preference-intake.json', fixtures.preferenceIntake],
   ['dining-feedback-scenario.json', fixtures.diningFeedback],
   ['tba-dining-analysis-golden.json', fixtures.tbaDiningAnalysis],
+  ['tba-full-engine-golden.json', fixtures.tbaFullEngine],
 ];
 
 for (const [filename, payload] of outputs) {

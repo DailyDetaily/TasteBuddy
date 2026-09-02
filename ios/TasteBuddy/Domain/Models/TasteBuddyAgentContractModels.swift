@@ -7,6 +7,7 @@ struct TasteBuddyAgentDiningAnalysisInput: Codable, Equatable {
     let ingredients: [String]
     let restaurantName: String
     let reviewSnippet: String?
+    let reviewerProfile: TasteBuddyAgentTasteProfileSnapshot?
     let subject: String
     let tasteTags: [String]
     let techniques: [String]
@@ -18,6 +19,7 @@ struct TasteBuddyAgentDiningAnalysisInput: Codable, Equatable {
         ingredients: [String] = [],
         restaurantName: String,
         reviewSnippet: String? = nil,
+        reviewerProfile: TasteBuddyAgentTasteProfileSnapshot? = nil,
         subject: String,
         tasteTags: [String],
         techniques: [String] = []
@@ -28,6 +30,7 @@ struct TasteBuddyAgentDiningAnalysisInput: Codable, Equatable {
         self.ingredients = ingredients
         self.restaurantName = restaurantName
         self.reviewSnippet = reviewSnippet
+        self.reviewerProfile = reviewerProfile
         self.subject = subject
         self.tasteTags = tasteTags
         self.techniques = techniques

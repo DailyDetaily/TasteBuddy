@@ -242,6 +242,7 @@ struct FixtureHomeSearchRepository: HomeSearchRepository {
 struct LiveHomeSearchRepository: HomeSearchRepository {
     var placeClient = RestaurantPlaceAPIClient()
     var fallbackRepository = FixtureHomeSearchRepository()
+    var publicProfileRepository: any BackendPublicProfileRepository = BackendPublicProfileRepositoryFactory.makeDefault()
 
     func kakaoRestaurantResults(matching query: String) async throws -> [HomeSearchResultItem] {
         let localSections = HomeSearchEngine.sections(matching: query)
@@ -263,7 +264,26 @@ struct LiveHomeSearchRepository: HomeSearchRepository {
     }
 
     func friendResults(matching query: String) async throws -> [HomeSearchResultItem] {
-        try await fallbackRepository.friendResults(matching: query)
+        guard HomeSearchEngine.isSearchableFriendQuery(query) else {
+            return []
+        }
+
+        do {
+            let identities = try await publicProfileRepository.searchProfileIdentities(matching: query)
+            await PublicProfileSnapshotStore.shared.store(identities)
+
+            if identities.isEmpty {
+                return []
+            }
+
+            return Array(
+                identities
+                    .map(Self.searchResult(from:))
+                    .prefix(HomeSearchEngine.maxGroupResults)
+            )
+        } catch {
+            return try await fallbackRepository.friendResults(matching: query)
+        }
     }
 
     private static func searchResult(from place: KakaoRestaurantPlace) -> HomeSearchResultItem? {
@@ -317,6 +337,32 @@ struct LiveHomeSearchRepository: HomeSearchRepository {
             statusLabel: "카카오 장소",
             externalURL: nil,
             bookmarkRestaurant: bookmarkRestaurant
+        )
+    }
+
+    private static func searchResult(from identity: BackendPublicProfileIdentity) -> HomeSearchResultItem {
+        let title = identity.title
+        let subtitle = identity.displayNickname
+
+        return HomeSearchResultItem(
+            id: "profile-\(identity.id)",
+            kind: .friend,
+            title: title,
+            subtitle: subtitle,
+            detail: "공개 프로필",
+            symbol: "person.crop.circle",
+            axis: .umami,
+            route: .publicProfile(id: identity.id),
+            searchText: [
+                title,
+                subtitle,
+                identity.nickname,
+                identity.isFriend ? "팔로잉" : "버디 검색"
+            ]
+            .compactMap(\.self)
+            .joined(separator: " "),
+            source: .profileSearch,
+            statusLabel: identity.isFriend ? "팔로잉" : "검색 결과"
         )
     }
 

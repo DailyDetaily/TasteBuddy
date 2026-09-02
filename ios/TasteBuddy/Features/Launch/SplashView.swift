@@ -11,13 +11,34 @@ struct SplashView: View {
         ZStack {
             TBColor.page.ignoresSafeArea()
 
-            TasteBuddySplashLogo(autoplays: autoplays)
+            VStack(spacing: 0) {
+                Spacer()
+
+                TasteBuddySplashLogo(autoplays: autoplays)
+
+                Spacer()
+
+                Color.clear
+                    .frame(height: TBSize.primaryButtonHeight)
+            }
+            .padding(.horizontal, TBSpacing.page)
+            .padding(.bottom, max(12, bottomSafeAreaInset))
         }
+        .ignoresSafeArea(edges: [.horizontal, .bottom])
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Taste Buddy 시작 화면")
         .onAppear {
             scheduleCompletionIfNeeded()
         }
+    }
+
+    private var bottomSafeAreaInset: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first { $0.isKeyWindow }?
+            .safeAreaInsets
+            .bottom ?? 0
     }
 
     private func scheduleCompletionIfNeeded() {

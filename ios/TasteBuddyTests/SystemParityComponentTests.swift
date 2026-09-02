@@ -1,5 +1,6 @@
 import XCTest
 import SwiftUI
+import UIKit
 @testable import TasteBuddy
 
 final class SystemParityComponentTests: XCTestCase {
@@ -400,21 +401,21 @@ final class SystemParityComponentTests: XCTestCase {
     }
 
     func testDesignColorTokenMirrorExposesCompleteReactColorLayer() {
-        XCTAssertEqual(TBDesignColorTokens.ColorTokens.all.count, 33)
+        XCTAssertEqual(TBDesignColorTokens.ColorTokens.all.count, 34)
         XCTAssertEqual(TBDesignColorTokens.ShadowTokens.all.count, 5)
         XCTAssertEqual(TBDesignColorTokens.DataVizTokens.all.count, 7)
         XCTAssertEqual(TBDesignColorTokens.TasteTokens.all.count, 150)
         XCTAssertEqual(TBDesignColorTokens.NeutralTasteTokens.all.count, 2)
-        XCTAssertEqual(TBDesignColorTokens.designTokensAll.count, 192)
-        XCTAssertEqual(TBDesignColorTokens.designTokensColorLikeAll.count, 197)
+        XCTAssertEqual(TBDesignColorTokens.designTokensAll.count, 193)
+        XCTAssertEqual(TBDesignColorTokens.designTokensColorLikeAll.count, 198)
 
-        XCTAssertEqual(TBDesignColorTokens.CSSVariables.Color.all.count, 33)
+        XCTAssertEqual(TBDesignColorTokens.CSSVariables.Color.all.count, 34)
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.Shadow.all.count, 6)
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.DataViz.all.count, 7)
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.Taste.all.count, 78)
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.NeutralTaste.all.count, 2)
-        XCTAssertEqual(TBDesignColorTokens.cssVariableAll.count, 126)
-        XCTAssertEqual(Set(TBDesignColorTokens.cssVariableAll.compactMap(\.cssVariable)).count, 126)
+        XCTAssertEqual(TBDesignColorTokens.cssVariableAll.count, 127)
+        XCTAssertEqual(Set(TBDesignColorTokens.cssVariableAll.compactMap(\.cssVariable)).count, 127)
 
         XCTAssertEqual(TBDesignColorTokens.ColorTokens.Background.page.rawValue, "#F3F3F3")
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.Color.bgPage.rawValue, "#f3f3f3")
@@ -524,6 +525,13 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(AppChromeMetrics.avatarSize, 32)
         XCTAssertEqual(AppChromeMetrics.topPadding, 8)
         XCTAssertEqual(AppChromeMetrics.bottomPadding, 8)
+        XCTAssertEqual(MainTabProgressiveBlurMetrics.maxBlurRadius, 8)
+        XCTAssertEqual(
+            MainTabProgressiveBlurMetrics.fadeExtension,
+            AppChromeMetrics.bottomPadding
+        )
+        XCTAssertEqual(MainTabProgressiveBlurMetrics.tintOpacityTop, 0.0)
+        XCTAssertEqual(MainTabProgressiveBlurMetrics.tintOpacityMiddle, 0.0)
         XCTAssertEqual(AppChromeMetrics.backgroundOverlap, 1)
         XCTAssertEqual(AppChromeMetrics.tabHorizontalPadding, 16)
         XCTAssertEqual(AppChromeMetrics.tabLabelTracking, 0.14)
@@ -543,6 +551,55 @@ final class SystemParityComponentTests: XCTestCase {
             TopAppBarPrimaryAction.search.accessibilityLabel,
             "통합 검색 열기"
         )
+    }
+
+    @MainActor
+    func testAnalysisMainScrollDoesNotOverflowHorizontally() {
+        let viewport = CGRect(x: 0, y: 0, width: 390, height: 844)
+        let model = AppModel.preview(profile: .sample)
+        let view = AnalysisView(
+            systemTopChrome: AnyView(Color.clear.frame(height: 104))
+        )
+        .environmentObject(model)
+        .environment(\.mainTabStatusBarHeight, 59)
+        let host = UIHostingController(rootView: view)
+        let window = UIWindow(frame: viewport)
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        host.view.frame = viewport
+        host.view.setNeedsLayout()
+        host.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        host.view.layoutIfNeeded()
+
+        func scrollViews(in view: UIView) -> [UIScrollView] {
+            let current = (view as? UIScrollView).map { [$0] } ?? []
+            return current + view.subviews.flatMap(scrollViews(in:))
+        }
+
+        let verticalScrollViews = scrollViews(in: host.view).filter {
+            $0.contentSize.height > $0.bounds.height
+        }
+        XCTAssertFalse(verticalScrollViews.isEmpty)
+        let mainScrollView = verticalScrollViews.first { scrollView in
+            scrollView.convert(scrollView.bounds, to: host.view).minY <= 1
+        }
+        XCTAssertNotNil(
+            mainScrollView,
+            "The main scroll view must extend behind the status bar"
+        )
+        XCTAssertEqual(
+            mainScrollView?.clipsToBounds,
+            false,
+            "The main scroll content must remain visible behind the status bar"
+        )
+        for scrollView in verticalScrollViews {
+            XCTAssertLessThanOrEqual(
+                scrollView.contentSize.width,
+                scrollView.bounds.width + 1,
+                "Vertical scroll content width must stay inside its viewport"
+            )
+        }
     }
 
     func testLucideIconTokensMirrorReactIconTokens() {
@@ -870,6 +927,63 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(data.details[1].changeLabel, "+28%")
         XCTAssertEqual(data.details[2].changeLabel, "-22%")
         XCTAssertEqual(TastePointTrend.allCases, [.increase, .decrease, .neutral])
+    }
+
+    func testTasteInsightSummaryUsesAtMostSixHistoricalProfiles() throws {
+        let profiles = (0..<8).map { index in
+            TasteProfile(
+                createdAt: Date(timeIntervalSince1970: Double(index)),
+                scores: [TasteAxis.sweet.rawValue: 40 + index],
+                confidence: "형성 중",
+                summary: "fixture",
+                topAxes: [.sweet],
+                cautionAxis: .bitter
+            )
+        }
+        let current = TasteProfile(
+            createdAt: Date(timeIntervalSince1970: 20),
+            scores: [TasteAxis.sweet.rawValue: 55],
+            confidence: "형성 중",
+            summary: "fixture",
+            topAxes: [.sweet],
+            cautionAxis: .bitter
+        )
+
+        let data = TasteInsightSummaryCardData.tasteProfile(
+            current,
+            history: profiles
+        )
+        let sweet = try XCTUnwrap(data.details.first { $0.axis == .sweet })
+
+        XCTAssertEqual(TasteLineChartMetrics.maximumHistoryCount, 6)
+        XCTAssertEqual(TasteLineChartMetrics.maximumPointCount, 7)
+        XCTAssertEqual(TasteLineChartMetrics.trackLineWidth, 12)
+        XCTAssertEqual(TasteLineChartMetrics.coreLineWidth, 2)
+        XCTAssertEqual(TasteLineChartMetrics.currentNodeDiameter, 12)
+        XCTAssertEqual(sweet.history, [-8, -7, -6, -5, -4, -3])
+        XCTAssertEqual(
+            TasteLineChartMetrics.visibleValues(Array(0...9).map(Double.init)),
+            Array(3...9).map(Double.init)
+        )
+    }
+
+    func testTasteGradientIndicatorUsesMagnitudeAcrossSharedShapeVariants() {
+        let weighted = TasteGradientIndicatorMetrics.normalizedWeights(
+            [30, 10],
+            count: 2
+        )
+        let neutral = TasteGradientIndicatorMetrics.normalizedWeights(
+            [0, 0],
+            count: 2
+        )
+
+        XCTAssertEqual(TasteGradientIndicatorMetrics.circleSize, 16)
+        XCTAssertEqual(TasteGradientIndicatorMetrics.verticalCapsuleWidth, 8)
+        XCTAssertEqual(TasteGradientIndicatorMetrics.transitionHalfWidth, 0.16)
+        XCTAssertEqual(weighted[0], 0.75, accuracy: 0.0001)
+        XCTAssertEqual(weighted[1], 0.25, accuracy: 0.0001)
+        XCTAssertEqual(neutral[0], 0.5, accuracy: 0.0001)
+        XCTAssertEqual(neutral[1], 0.5, accuracy: 0.0001)
     }
 
     func testEdgeSwipeBackRequiresAnIntentionalRightwardEdgeGesture() {

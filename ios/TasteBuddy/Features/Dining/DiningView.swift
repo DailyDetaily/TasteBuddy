@@ -24,13 +24,16 @@ struct DiningView: View {
     @EnvironmentObject private var appModel: AppModel
     @State private var presentation: DiningPresentation?
     let contentState: DiningDishFeedbackContentState
+    let systemTopChrome: AnyView?
     var onOpenDishOptions: ((DiningDishFeedbackItem) -> Void)? = nil
 
     init(
         contentState: DiningDishFeedbackContentState = .populated,
+        systemTopChrome: AnyView? = nil,
         onOpenDishOptions: ((DiningDishFeedbackItem) -> Void)? = nil
     ) {
         self.contentState = contentState
+        self.systemTopChrome = systemTopChrome
         self.onOpenDishOptions = onOpenDishOptions
     }
 
@@ -56,10 +59,11 @@ struct DiningView: View {
                     }
                 }
         }
+        .ignoresSafeArea(.container, edges: systemTopChrome == nil ? [] : .top)
     }
 
     private var content: some View {
-        ScrollView {
+        MainTabChromeScrollView(topChrome: systemTopChrome) {
             VStack(alignment: .leading, spacing: TBSpacing.section) {
                 TBPageSection(title: "나의 디시") {
                     VStack(spacing: 12) {
@@ -127,11 +131,14 @@ struct DiningView: View {
                         : ["balance-one-note-forward", "flow-finish-piled", "composition-course-fit"]
                 )
                 : entry.detailTagIDs
-            let dishKindTags = TasteBuddyAgent.inferDishKindIds(
-                title: subject,
-                subtitle: entry.restaurant,
-                flavorNotes: tasteTags + detailTags
-            )
+            let dishKindTags = entry.dishKindIDs.isEmpty
+                ? TasteBuddyAgent.inferDishKindIds(
+                    title: subject,
+                    subtitle: entry.restaurant,
+                    flavorNotes: tasteTags + detailTags
+                )
+                : entry.dishKindIDs
+            let reviewerProfile = appModel.tbaTasteProfile
             let tbaInput = TasteBuddyAgentDiningAnalysisInput(
                 detailTags: detailTags,
                 dishKindTags: dishKindTags,
@@ -141,11 +148,13 @@ struct DiningView: View {
                 reviewSnippet: entry.note.isEmpty
                     ? "전체 만족도 \(entry.rating)점으로 남긴 기록입니다. 다음에는 더 구체적인 미각 단서를 함께 남겨보세요."
                     : entry.note,
+                reviewerProfile: reviewerProfile,
                 subject: subject,
                 tasteTags: tasteTags,
                 techniques: []
             )
-            let snapshot = TasteBuddyAgent.buildDiningAnalysisSnapshot(tbaInput)
+            let snapshot = entry.tbaAnalysisSnapshot
+                ?? TasteBuddyAgent.buildDiningAnalysisSnapshot(tbaInput)
             let images = DiningReflectionPhotoStore.data(
                 for: entry.reflectionPhotoFilename
             ).map {
@@ -215,6 +224,7 @@ private struct DiningCommentsFocusSheet: View {
 
                 DishFeedbackCommentFocusView(item: item)
             }
+            .tbScreenTopChrome()
             .toolbar(.hidden, for: .navigationBar)
             .tbPageBackground(TBColor.focus)
         }
@@ -617,7 +627,7 @@ private struct ActionSheetRow: View {
                 isDisabled: isDisabled
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(isDisabled)
     }
 }
@@ -693,6 +703,113 @@ enum DiningFeedbackStartMode {
     case cameraCapture
 }
 
+enum DiningFeedbackDishKindAutoSelection {
+    static let defaultLimit = 4
+
+    static func inferredKindIDs(
+        for dish: DiningFeedbackDishContract,
+        limit: Int = defaultLimit
+    ) -> [String] {
+        inferredKindIDs(
+            menuTitle: dish.title,
+            subtitle: dish.subtitle,
+            ingredients: dish.ingredients,
+            techniques: dish.techniques,
+            flavorNotes: dish.flavorNotes,
+            limit: limit
+        )
+    }
+
+    static func inferredKindIDs(
+        menuTitle: String,
+        subtitle: String? = nil,
+        ingredients: [String] = [],
+        techniques: [String] = [],
+        flavorNotes: [String] = [],
+        limit: Int = defaultLimit
+    ) -> [String] {
+        let trimmedTitle = menuTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else { return [] }
+
+        let menuContext = TasteBuddyAgent.inferMenuContext(trimmedTitle)
+        let keywordKinds = TasteBuddyAgent.inferDishKindIds(
+            title: trimmedTitle,
+            subtitle: subtitle,
+            ingredients: ingredients + menuContext.ingredients,
+            techniques: techniques + menuContext.techniques,
+            flavorNotes: flavorNotes,
+            limit: limit
+        )
+
+        return uniqueIDs(menuContext.dishKindIds + keywordKinds, limit: limit)
+    }
+
+    private static func uniqueIDs(_ ids: [String], limit: Int) -> [String] {
+        var seen = Set<String>()
+        var unique: [String] = []
+
+        for id in ids {
+            let trimmedID = id.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedID.isEmpty, !seen.contains(trimmedID) else { continue }
+
+            seen.insert(trimmedID)
+            unique.append(trimmedID)
+
+            if unique.count >= limit {
+                break
+            }
+        }
+
+        return unique
+    }
+}
+
+private struct DirectMenuInputFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .null
+
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
+}
+
+private struct DirectMenuOptionCardsFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .null
+
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
+}
+
+private struct PendingDeletedCustomMenu: Identifiable, Equatable {
+    let id = UUID()
+    let customIndex: Int?
+    let dish: DiningFeedbackDishContract
+    let restaurantKey: String?
+    let restaurantName: String
+    let selectedDishID: String?
+}
+
+enum DiningFeedbackTasteBloomTransitionMetrics {
+    static let duration: TimeInterval = 0.92
+    static let reducedMotionDuration: TimeInterval = 0.16
+    static let fadeOutDuration: TimeInterval = 0.12
+    static let reducedMotionFadeOutDuration: TimeInterval = 0.12
+}
+
+private struct TasteMapChromeGlass<ChromeShape: Shape>: ViewModifier {
+    let shape: ChromeShape
+    var isInteractive = false
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.clear.interactive(isInteractive), in: shape)
+        } else {
+            content.background(.ultraThinMaterial, in: shape)
+        }
+    }
+}
+
 struct DiningFeedbackSheet: View {
     private enum Phase {
         case menu
@@ -704,6 +821,10 @@ struct DiningFeedbackSheet: View {
         case result
     }
 
+    private static let menuSelectionCoordinateSpace = "DiningFeedbackMenuSelection"
+    private static let directMenuInputScrollID = "DiningFeedbackDirectMenuInput"
+    private static let directRestaurantInputScrollID = "DiningFeedbackDirectRestaurantInput"
+    private static let outsideTapTranslationTolerance: CGFloat = 8
     private enum ResultShareOption: CaseIterable, Identifiable {
         case instagramStory
         case copy
@@ -759,21 +880,34 @@ struct DiningFeedbackSheet: View {
     private let detailTagCategories: [DiningFeedbackTagCategoryContract]
     private let baseTasteExperiencePositions: [TasteExperienceBubblePosition]
     private let tasteExperienceIntroDelays: [String: TimeInterval]
+    private let startsWithLaunchTransition: Bool
+    private let launchOrigin: CGPoint?
     let onClose: (() -> Void)?
     let onSave: (DiningEntry) -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var appModel: AppModel
     @State private var phase: Phase
     @State private var selectedDishIndex: Int?
     @State private var selectedRestaurantCandidateID: String?
     @State private var usesRestaurantDirectInput = false
     @State private var directRestaurantName: String
+    @FocusState private var isDirectRestaurantInputFocused: Bool
     @State private var confirmedRestaurantName: String?
     @State private var usesDirectInput = false
     @State private var directMenuTitle = ""
+    @FocusState private var isDirectMenuInputFocused: Bool
+    @StateObject private var menuKeyboard = BottomComposerKeyboardObserver()
     @State private var customDishes: [DiningFeedbackDishContract] = []
-    @State private var selectedKindIDs: Set<String> = ["seafood", "meat", "broth"]
+    @State private var editingCustomDishID: String?
+    @State private var editingCustomDishOriginalTitle: String?
+    @State private var directMenuOptionCardsFrame: CGRect = .null
+    @State private var directMenuInputFrame: CGRect = .null
+    @State private var isTrackingDirectMenuOutsideTap = false
+    @State private var directMenuOutsideTapStartedOpen = false
+    @State private var pendingDeletedMenu: PendingDeletedCustomMenu?
+    @State private var selectedKindIDs: Set<String> = []
     @State private var selectedExperienceIDs: [String]
     @State private var focusedExperienceID: String?
     @State private var focusRequest: TasteExperienceMapFocusRequest?
@@ -798,12 +932,15 @@ struct DiningFeedbackSheet: View {
     @State private var canDragResultShareSheet = false
     @State private var resultSharePreviewImage: UIImage?
     @State private var resultShareStatusMessage: String?
+    @State private var showsLaunchTransitionOverlay: Bool
     @StateObject private var cameraModel = DiningFeedbackCameraModel()
     @StateObject private var restaurantResolver = DiningFeedbackRestaurantResolver()
 
     init(
         entry: DiningEntry? = nil,
         startMode: DiningFeedbackStartMode = .menu,
+        showsLaunchTransition: Bool = false,
+        launchOrigin: CGPoint? = nil,
         onClose: (() -> Void)? = nil,
         onSave: @escaping (DiningEntry) -> Void
     ) {
@@ -826,6 +963,8 @@ struct DiningFeedbackSheet: View {
             axes: axes,
             positions: positions
         )
+        startsWithLaunchTransition = showsLaunchTransition && startMode == .cameraCapture
+        self.launchOrigin = launchOrigin
         self.onClose = onClose
         self.onSave = onSave
         _phase = State(
@@ -834,6 +973,13 @@ struct DiningFeedbackSheet: View {
         _directRestaurantName = State(initialValue: entry?.restaurant ?? "")
         _confirmedRestaurantName = State(initialValue: entry?.restaurant)
         _directMenuTitle = State(initialValue: entry?.menu ?? "")
+        _selectedKindIDs = State(
+            initialValue: Set(
+                entry?.dishKindIDs.isEmpty == false
+                    ? entry?.dishKindIDs ?? []
+                    : []
+            )
+        )
         _selectedExperienceIDs = State(initialValue: Array(restoredExperienceIDs))
         _focusedExperienceID = State(initialValue: restoredExperienceIDs.first)
         _selectedDetailTagIDs = State(initialValue: entry?.detailTagIDs ?? [])
@@ -844,27 +990,24 @@ struct DiningFeedbackSheet: View {
                 for: entry?.reflectionPhotoFilename
             )
         )
+        _showsLaunchTransitionOverlay = State(
+            initialValue: showsLaunchTransition && startMode == .cameraCapture
+        )
     }
 
     var body: some View {
-        Group {
-            switch phase {
-            case .menu:
-                menuSelectionView
-            case .restaurantSelection:
-                restaurantSelectionView
-            case .tasteWords:
-                tasteWordsView
-            case .detailTags:
-                detailTagsView
-            case .cameraCapture:
-                cameraCaptureView
-            case .reflection:
-                reflectionView
-            case .result:
-                resultView
+        ZStack {
+            phaseView
+
+            if showsLaunchTransitionOverlay {
+                DiningFeedbackTasteBloomTransitionOverlay(launchOrigin: launchOrigin)
+                    .transition(.opacity)
+                    .zIndex(20)
             }
         }
+        .tbScreenTopChrome(
+            isEnabled: phase != .tasteWords && phase != .cameraCapture && phase != .result
+        )
         .preferredColorScheme(.light)
         .edgeSwipeBack(
             isEnabled: !isTasteSearchPresented
@@ -872,10 +1015,87 @@ struct DiningFeedbackSheet: View {
                 && !isTasteMapInteracting,
             action: handleEdgeSwipeBack
         )
+        .task(id: showsLaunchTransitionOverlay) {
+            await dismissLaunchTransitionAfterDelay()
+        }
+    }
+
+    @ViewBuilder
+    private var phaseView: some View {
+        switch phase {
+        case .menu:
+            menuSelectionView
+        case .restaurantSelection:
+            restaurantSelectionView
+        case .tasteWords:
+            tasteWordsView
+        case .detailTags:
+            detailTagsView
+        case .cameraCapture:
+            cameraCaptureView
+        case .reflection:
+            reflectionView
+        case .result:
+            resultView
+        }
+    }
+
+    private func dismissLaunchTransitionAfterDelay() async {
+        guard startsWithLaunchTransition, showsLaunchTransitionOverlay else {
+            return
+        }
+
+        let delay = reduceMotion
+            ? DiningFeedbackTasteBloomTransitionMetrics.reducedMotionDuration
+            : DiningFeedbackTasteBloomTransitionMetrics.duration
+        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+        guard !Task.isCancelled else {
+            return
+        }
+
+        withAnimation(
+            .easeOut(
+                duration: reduceMotion
+                    ? DiningFeedbackTasteBloomTransitionMetrics.reducedMotionFadeOutDuration
+                    : DiningFeedbackTasteBloomTransitionMetrics.fadeOutDuration
+            )
+        ) {
+            showsLaunchTransitionOverlay = false
+        }
     }
 
     private var restaurantSelectionView: some View {
-        ZStack(alignment: .bottom) {
+        ScrollViewReader { scrollProxy in
+            restaurantSelectionContent
+                .onChange(of: isDirectRestaurantInputFocused) { _, _ in
+                    revealDirectRestaurantInput(using: scrollProxy)
+                }
+                .onChange(of: menuKeyboard.visibleHeight) { _, _ in
+                    revealDirectRestaurantInput(using: scrollProxy)
+                }
+                .onReceive(
+                    NotificationCenter.default.publisher(
+                        for: UIResponder.keyboardDidChangeFrameNotification
+                    )
+                ) { _ in
+                    revealDirectRestaurantInput(using: scrollProxy)
+                }
+        }
+    }
+
+    private func revealDirectRestaurantInput(using scrollProxy: ScrollViewProxy) {
+        guard usesRestaurantDirectInput,
+              isDirectRestaurantInputFocused,
+              menuKeyboard.visibleHeight > 0 else { return }
+
+        withAnimation(.easeOut(duration: 0.24)) {
+            scrollProxy.scrollTo(Self.directRestaurantInputScrollID, anchor: .bottom)
+        }
+    }
+
+    private var restaurantSelectionContent: some View {
+        // Reserve the CTA's height so the input card scrolls above it, not behind it.
+        VStack(spacing: 0) {
             VStack(spacing: 0) {
                 TBFlowTopBar(
                     title: "식후 피드백",
@@ -912,10 +1132,12 @@ struct DiningFeedbackSheet: View {
                                     title: candidate.name,
                                     description: candidate.detailText,
                                     indicator: .radio,
-                                    isSelected: selectedRestaurantCandidateID == candidate.id && !usesRestaurantDirectInput
+                                    isSelected: selectedRestaurantCandidateID == candidate.id && !usesRestaurantDirectInput,
+                                    showsUnselectedBorder: false
                                 ) {
                                     selectedRestaurantCandidateID = candidate.id
                                     usesRestaurantDirectInput = false
+                                    isDirectRestaurantInputFocused = false
                                 }
                             }
 
@@ -923,10 +1145,14 @@ struct DiningFeedbackSheet: View {
                                 title: "직접 입력",
                                 description: "사진 위치가 다르거나 후보가 맞지 않으면 식당명을 직접 남길 수 있어요.",
                                 indicator: .radio,
-                                isSelected: usesRestaurantDirectInput
+                                isSelected: usesRestaurantDirectInput,
+                                showsUnselectedBorder: false
                             ) {
                                 selectedRestaurantCandidateID = nil
                                 usesRestaurantDirectInput.toggle()
+                                if !usesRestaurantDirectInput {
+                                    isDirectRestaurantInputFocused = false
+                                }
                             }
 
                             if usesRestaurantDirectInput {
@@ -937,6 +1163,7 @@ struct DiningFeedbackSheet: View {
                                             .foregroundStyle(TBColor.textPrimary)
 
                                         TextField("예: 정식당", text: $directRestaurantName)
+                                            .focused($isDirectRestaurantInputFocused)
                                             .font(TBFont.semibold(13))
                                             .foregroundStyle(TBColor.textPrimary)
                                             .textInputAutocapitalization(.never)
@@ -953,12 +1180,15 @@ struct DiningFeedbackSheet: View {
                                             .onSubmit(continueRestaurantSelection)
                                     }
                                 }
+                                .id(Self.directRestaurantInputScrollID)
                             }
                         }
                     }
-                    .tbPageContentPadding(bottom: TBSpacing.page + 156)
+                    .tbPageContentPadding(bottom: TBSpacing.page)
                 }
                 .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollDismissesKeyboard(.interactively)
             }
 
             TBFlowStepCTA(
@@ -966,7 +1196,7 @@ struct DiningFeedbackSheet: View {
                 currentIndex: 0,
                 total: 1,
                 isEnabled: canContinueRestaurantSelection,
-                backgroundColor: TBColor.page,
+                backgroundColor: .clear,
                 showsIndicator: false,
                 action: continueRestaurantSelection
             )
@@ -975,6 +1205,38 @@ struct DiningFeedbackSheet: View {
     }
 
     private var menuSelectionView: some View {
+        ScrollViewReader { scrollProxy in
+            menuSelectionContent
+                .onChange(of: isDirectMenuInputFocused) { _, _ in
+                    revealDirectMenuInput(using: scrollProxy)
+                }
+                .onChange(of: menuKeyboard.visibleHeight) { _, _ in
+                    revealDirectMenuInput(using: scrollProxy)
+                }
+                .onReceive(
+                    NotificationCenter.default.publisher(
+                        for: UIResponder.keyboardDidChangeFrameNotification
+                    )
+                ) { _ in
+                    // Re-align after the keyboard has resized the scroll viewport.
+                    revealDirectMenuInput(using: scrollProxy)
+                }
+        }
+    }
+
+    private var isEditingDirectMenuWithKeyboard: Bool {
+        usesDirectInput && isDirectMenuInputFocused && menuKeyboard.visibleHeight > 0
+    }
+
+    private func revealDirectMenuInput(using scrollProxy: ScrollViewProxy) {
+        guard isEditingDirectMenuWithKeyboard else { return }
+
+        withAnimation(.easeOut(duration: 0.24)) {
+            scrollProxy.scrollTo(Self.directMenuInputScrollID, anchor: .bottom)
+        }
+    }
+
+    private var menuSelectionContent: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
                 TBFlowTopBar(
@@ -995,36 +1257,73 @@ struct DiningFeedbackSheet: View {
                         )
 
                         VStack(spacing: 12) {
-                            ForEach(Array(feedbackDishes.enumerated()), id: \.element.id) { index, dish in
+                            VStack(spacing: 12) {
+                                ForEach(Array(feedbackDishes.enumerated()), id: \.element.id) { index, dish in
+                                    if isEditableUserMenu(dish) {
+                                        SwipeableCustomMenuCard(
+                                            title: dish.title,
+                                            description: menuCardDishKindDescription(for: dish),
+                                            isSelected: selectedDishIndex == index && !usesDirectInput,
+                                            onSelect: {
+                                                selectDish(at: index)
+                                            },
+                                            onEdit: {
+                                                startEditingCustomDish(dish)
+                                            },
+                                            onDelete: {
+                                                deleteCustomDish(dish)
+                                            }
+                                        )
+                                        .transition(menuCardRemovalTransition)
+                                    } else {
+                                        TBSelectionCard(
+                                            title: dish.title,
+                                            description: menuCardDishKindDescription(for: dish),
+                                            indicator: .radio,
+                                            isSelected: selectedDishIndex == index && !usesDirectInput,
+                                            showsUnselectedBorder: false
+                                        ) {
+                                            selectDish(at: index)
+                                        }
+                                        .transition(menuCardRemovalTransition)
+                                    }
+                                }
+
                                 TBSelectionCard(
-                                    title: dish.title,
-                                    description: dish.subtitle,
+                                    title: "직접 입력",
+                                    description: "코스 목록에 없는 메뉴도 미각 기록으로 남길 수 있어요.",
                                     indicator: .radio,
-                                    isSelected: selectedDishIndex == index && !usesDirectInput
+                                    isSelected: usesDirectInput,
+                                    showsUnselectedBorder: false
                                 ) {
-                                    selectDish(at: index)
+                                    if usesDirectInput {
+                                        dismissDirectMenuInput()
+                                    } else {
+                                        openDirectMenuInput()
+                                    }
                                 }
                             }
-
-                            TBSelectionCard(
-                                title: "직접 입력",
-                                description: "코스 목록에 없는 메뉴도 미각 기록으로 남길 수 있어요.",
-                                indicator: .radio,
-                                isSelected: usesDirectInput
-                            ) {
-                                selectedDishIndex = nil
-                                usesDirectInput.toggle()
+                            .background {
+                                GeometryReader { proxy in
+                                    Color.clear.preference(
+                                        key: DirectMenuOptionCardsFramePreferenceKey.self,
+                                        value: proxy.frame(
+                                            in: .named(Self.menuSelectionCoordinateSpace)
+                                        )
+                                    )
+                                }
                             }
 
                             if usesDirectInput {
                                 SectionCard {
                                     VStack(alignment: .leading, spacing: 12) {
-                                        Text("메뉴 직접 입력")
+                                        Text(editingCustomDishID == nil ? "메뉴 직접 입력" : "메뉴 수정")
                                             .font(TBFont.semibold(14))
                                             .foregroundStyle(TBColor.textPrimary)
 
                                         HStack(spacing: 8) {
                                             TextField("예: 오미자와 배 디저트", text: $directMenuTitle)
+                                                .focused($isDirectMenuInputFocused)
                                                 .font(TBFont.semibold(13))
                                                 .foregroundStyle(TBColor.textPrimary)
                                                 .textInputAutocapitalization(.never)
@@ -1043,7 +1342,7 @@ struct DiningFeedbackSheet: View {
                                             Button(action: addCustomDish) {
                                                 let isDisabled = directMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
-                                                Text("추가")
+                                                Text(directMenuActionLabel)
                                                     .font(TBFont.semibold(12))
                                                     .foregroundStyle(isDisabled ? TBColor.textDisabled : TBColor.textInverse)
                                                     .padding(.horizontal, 16)
@@ -1051,11 +1350,22 @@ struct DiningFeedbackSheet: View {
                                                     .background(isDisabled ? TBColor.disabledSurface : TBColor.textPrimary)
                                                     .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
                                             }
-                                            .buttonStyle(.plain)
+                                            .buttonStyle(TBTokenButtonStyle())
                                             .disabled(directMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                                         }
                                     }
                                 }
+                                .background {
+                                    GeometryReader { proxy in
+                                        Color.clear.preference(
+                                            key: DirectMenuInputFramePreferenceKey.self,
+                                            value: proxy.frame(
+                                                in: .named(Self.menuSelectionCoordinateSpace)
+                                            )
+                                        )
+                                    }
+                                }
+                                .id(Self.directMenuInputScrollID)
                             }
                         }
 
@@ -1091,10 +1401,8 @@ struct DiningFeedbackSheet: View {
                                             }
                                         }
 
-                                        DiningFeedbackKindChip(
-                                            title: "직접 입력",
-                                            symbol: .plus,
-                                            isDashed: true
+                                        DiningFeedbackAddChipButton(
+                                            accessibilityLabel: "디시 종류 직접 입력"
                                         ) {}
                                     }
                                 }
@@ -1104,6 +1412,10 @@ struct DiningFeedbackSheet: View {
                     .tbPageContentPadding(bottom: TBSpacing.page + 156)
                 }
                 .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollClipDisabled()
+                .scrollDismissesKeyboard(.interactively)
+                .padding(.bottom, isEditingDirectMenuWithKeyboard ? TBSpacing.x12 : 0)
             }
 
             TBFlowStepCTA(
@@ -1117,8 +1429,46 @@ struct DiningFeedbackSheet: View {
                     phase = .tasteWords
                 }
             )
+            .opacity(isEditingDirectMenuWithKeyboard ? 0 : 1)
+            .allowsHitTesting(!isEditingDirectMenuWithKeyboard)
+            .accessibilityHidden(isEditingDirectMenuWithKeyboard)
+
+            if let pendingDeletedMenu {
+                ToastSurface(
+                    title: "메뉴를 삭제했어요",
+                    message: pendingDeletedMenu.dish.title,
+                    messageLineLimit: 1,
+                    icon: .trash2,
+                    tone: .destructive,
+                    actionTitle: "되돌리기",
+                    action: restoreDeletedCustomDish
+                )
+                .padding(.horizontal, TBSpacing.page)
+                .padding(.bottom, 96)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .zIndex(10)
+            }
         }
         .background(TBColor.page.ignoresSafeArea())
+        .coordinateSpace(name: Self.menuSelectionCoordinateSpace)
+        .onPreferenceChange(DirectMenuInputFramePreferenceKey.self) { frame in
+            directMenuInputFrame = frame
+        }
+        .onPreferenceChange(DirectMenuOptionCardsFramePreferenceKey.self) { frame in
+            directMenuOptionCardsFrame = frame
+        }
+        .simultaneousGesture(directMenuOutsideTapGesture)
+        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: feedbackDishes.map(\.id))
+        .task(id: pendingDeletedMenu?.id) {
+            guard let toastID = pendingDeletedMenu?.id else { return }
+
+            try? await Task.sleep(nanoseconds: ToastSurface.defaultDisplayDurationNanoseconds)
+            guard !Task.isCancelled, pendingDeletedMenu?.id == toastID else { return }
+
+            withAnimation(.easeOut(duration: 0.2)) {
+                pendingDeletedMenu = nil
+            }
+        }
     }
 
     private var tasteWordsView: some View {
@@ -1192,19 +1542,28 @@ struct DiningFeedbackSheet: View {
     }
 
     private var tasteMapTopBar: some View {
+        Group {
+            if #available(iOS 26.0, *) {
+                GlassEffectContainer(spacing: 0) {
+                    tasteMapTopBarContent
+                }
+            } else {
+                tasteMapTopBarContent
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: TBSize.topAppBarHeight)
+        .zIndex(20)
+    }
+
+    private var tasteMapTopBarContent: some View {
         ZStack {
             Text(selectedMenuTitle)
                 .font(TBFont.bold(15))
                 .foregroundStyle(TBColor.textPrimary)
                 .padding(.horizontal, 12)
                 .frame(height: 32)
-                .background {
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                        .overlay {
-                            Capsule().fill(Color.white.opacity(0.72))
-                        }
-                }
+                .modifier(TasteMapChromeGlass(shape: Capsule()))
                 .allowsHitTesting(false)
 
             HStack {
@@ -1218,13 +1577,7 @@ struct DiningFeedbackSheet: View {
                     )
                     .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
                     .foregroundStyle(TBColor.textSecondary)
-                    .background {
-                        Circle()
-                            .fill(.ultraThinMaterial)
-                            .overlay {
-                                Circle().fill(Color.white.opacity(0.72))
-                            }
-                    }
+                    .modifier(TasteMapChromeGlass(shape: Circle(), isInteractive: true))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -1242,13 +1595,7 @@ struct DiningFeedbackSheet: View {
                     )
                     .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
                     .foregroundStyle(TBColor.textSecondary)
-                    .background {
-                        Circle()
-                            .fill(.ultraThinMaterial)
-                            .overlay {
-                                Circle().fill(Color.white.opacity(0.72))
-                            }
-                    }
+                    .modifier(TasteMapChromeGlass(shape: Circle(), isInteractive: true))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -1256,9 +1603,6 @@ struct DiningFeedbackSheet: View {
             }
             .padding(.horizontal, TBSpacing.page)
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: TBSize.topAppBarHeight)
-        .zIndex(20)
     }
 
     private var detailTagsView: some View {
@@ -1313,6 +1657,7 @@ struct DiningFeedbackSheet: View {
                     .padding(.bottom, 164)
                 }
                 .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
             }
 
             TBFlowBottomCTA(
@@ -1383,6 +1728,7 @@ struct DiningFeedbackSheet: View {
                     .tbPageContentPadding(bottom: TBSpacing.page + 164)
                 }
                 .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
             }
 
             TBFlowBottomCTA(
@@ -1409,9 +1755,11 @@ struct DiningFeedbackSheet: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            DiningFeedbackCameraPreview(session: cameraModel.session)
-                .ignoresSafeArea()
-                .opacity(cameraModel.isRunning ? 1 : 0)
+            if let session = cameraModel.previewSession {
+                DiningFeedbackCameraPreview(session: session)
+                    .ignoresSafeArea()
+                    .opacity(cameraModel.isRunning ? 1 : 0)
+            }
 
             if let errorMessage = cameraModel.errorMessage {
                 DiningFeedbackCameraStatusCard(message: errorMessage)
@@ -1462,7 +1810,7 @@ struct DiningFeedbackSheet: View {
                     .accessibilityLabel(cameraModel.isFlashOn ? "플래시 끄기" : "플래시 켜기")
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 16)
+                .padding(.top, DiningFeedbackCameraControlMetrics.topChromePadding)
 
                 Spacer()
 
@@ -1479,10 +1827,16 @@ struct DiningFeedbackSheet: View {
                         ZStack {
                             Circle()
                                 .stroke(Color.white, lineWidth: 2)
-                                .frame(width: 72, height: 72)
+                                .frame(
+                                    width: DiningFeedbackCameraControlMetrics.captureButtonSize,
+                                    height: DiningFeedbackCameraControlMetrics.captureButtonSize
+                                )
                             Circle()
                                 .fill(Color.white)
-                                .frame(width: 58, height: 58)
+                                .frame(
+                                    width: DiningFeedbackCameraControlMetrics.captureButtonInnerSize,
+                                    height: DiningFeedbackCameraControlMetrics.captureButtonInnerSize
+                                )
                         }
                     }
                     .buttonStyle(.plain)
@@ -1498,8 +1852,12 @@ struct DiningFeedbackSheet: View {
                     .disabled(!cameraModel.isRunning)
                     .accessibilityLabel("전면 후면 카메라 전환")
                 }
+                .frame(height: DiningFeedbackCameraControlMetrics.captureButtonSize)
                 .padding(.horizontal, 28)
-                .padding(.bottom, 24)
+                .padding(.bottom, DiningFeedbackCameraControlMetrics.bottomPadding)
+                .opacity(showsLaunchTransitionOverlay ? 0 : 1)
+                .allowsHitTesting(!showsLaunchTransitionOverlay)
+                .animation(.easeOut(duration: 0.16), value: showsLaunchTransitionOverlay)
             }
         }
         .preferredColorScheme(.dark)
@@ -1909,38 +2267,11 @@ struct DiningFeedbackSheet: View {
         title: String? = nil,
         onBack: @escaping () -> Void
     ) -> some View {
-        ZStack {
-            Text(title ?? selectedMenuTitle)
-                .font(TBFont.bold(15))
-                .foregroundStyle(TBColor.textPrimary)
-                .lineLimit(1)
-                .allowsHitTesting(false)
-
-            HStack {
-                Button(action: onBack) {
-                    LucideIcon(
-                        .chevronLeft,
-                        size: TBIcon.Size.large,
-                        strokeWidth: TBIcon.Stroke.regular
-                    )
-                    .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
-                    .foregroundStyle(TBColor.textSecondary)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("이전 화면으로 돌아가기")
-
-                Spacer()
-
-                Color.clear
-                    .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
-            }
-            .padding(.horizontal, TBSpacing.page)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: TBSize.topAppBarHeight)
-        .background(TBColor.focus)
-        .zIndex(20)
+        TBFlowTopBar(
+            title: title ?? selectedMenuTitle,
+            showsDivider: false,
+            leadingAction: onBack
+        )
     }
 
     private var scenario: DiningFeedbackScenarioContract {
@@ -1970,6 +2301,18 @@ struct DiningFeedbackSheet: View {
         return "직접 입력 · \(selectedRestaurantName)"
     }
 
+    private var dishKindLabelByID: [String: String] {
+        Dictionary(uniqueKeysWithValues: (fixture?.dishKindOptions ?? []).map { ($0.id, $0.label) })
+    }
+
+    private func menuCardDishKindDescription(for dish: DiningFeedbackDishContract) -> String {
+        let labels = initialKindIDs(for: dish)
+            .map { dishKindLabelByID[$0] ?? $0 }
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+        return labels.isEmpty ? "디시 종류 미분류" : labels.joined(separator: " · ")
+    }
+
     private var feedbackDishes: [DiningFeedbackDishContract] {
         let baseDishes: [DiningFeedbackDishContract]
         let restaurantDishes = selectedRestaurantDishes
@@ -1989,7 +2332,9 @@ struct DiningFeedbackSheet: View {
             baseDishes = scenario.dishes
         }
 
-        return baseDishes + customDishes
+        return baseDishes
+            + rememberedRestaurantDishes(excluding: baseDishes + customDishes)
+            + customDishes
     }
 
     private var selectedDish: DiningFeedbackDishContract? {
@@ -2029,6 +2374,32 @@ struct DiningFeedbackSheet: View {
         let selectedName = selectedRestaurantName
         return RestaurantCatalog.restaurants.first { restaurant in
             Self.restaurantNameMatches(selectedName, restaurant.name)
+        }
+    }
+
+    private var selectedRestaurantMenuStorageKey: String? {
+        selectedRestaurantCandidate?.id
+            ?? selectedRestaurantCatalogSummary.map { "catalog-\($0.id)" }
+    }
+
+    private func rememberedRestaurantDishes(
+        excluding excludedDishes: [DiningFeedbackDishContract]
+    ) -> [DiningFeedbackDishContract] {
+        let excludedTitles = Set(
+            excludedDishes.map { Self.normalizedMenuTitle($0.title) }
+        )
+
+        return appModel.rememberedMenus(
+            for: selectedRestaurantName,
+            restaurantKey: selectedRestaurantMenuStorageKey
+        )
+        .filter { !excludedTitles.contains(Self.normalizedMenuTitle($0)) }
+        .enumerated()
+        .map { index, title in
+            customDish(
+                title: title,
+                id: "remembered-\(index)-\(Self.normalizedMenuTitle(title))"
+            )
         }
     }
 
@@ -2075,6 +2446,46 @@ struct DiningFeedbackSheet: View {
             : selectedDish?.title ?? entry?.menu ?? "메뉴"
     }
 
+    private var directMenuActionLabel: String {
+        editingCustomDishID == nil ? "추가" : "수정"
+    }
+
+    private var menuCardRemovalTransition: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .move(edge: .leading).combined(with: .opacity)
+        )
+    }
+
+    private var directMenuOutsideTapGesture: some Gesture {
+        DragGesture(
+            minimumDistance: 0,
+            coordinateSpace: .named(Self.menuSelectionCoordinateSpace)
+        )
+        .onChanged { value in
+            guard !isTrackingDirectMenuOutsideTap else { return }
+
+            isTrackingDirectMenuOutsideTap = true
+            // The keyboard may move the card before the original touch ends.
+            directMenuOutsideTapStartedOpen = usesDirectInput
+                && !directMenuInputFrame.isNull
+                && !directMenuInputFrame.contains(value.startLocation)
+        }
+        .onEnded { value in
+            let startedOpen = directMenuOutsideTapStartedOpen
+            isTrackingDirectMenuOutsideTap = false
+            directMenuOutsideTapStartedOpen = false
+
+            guard startedOpen,
+                  usesDirectInput,
+                  isOutsideDirectMenuInputTap(value) else {
+                return
+            }
+
+            dismissDirectMenuInput()
+        }
+    }
+
     private var resultMeshAxes: (main: TasteAxis, secondary: TasteAxis, tertiary: TasteAxis) {
         let mainAxis = selectedExperiences.first?.axis ?? .umami
         let secondaryAxis = selectedExperiences.dropFirst().first?.axis ?? mainAxis
@@ -2116,9 +2527,58 @@ struct DiningFeedbackSheet: View {
     }
 
     private func selectDish(at index: Int) {
+        isDirectMenuInputFocused = false
         usesDirectInput = false
         directMenuTitle = ""
-        selectedDishIndex = selectedDishIndex == index ? nil : index
+        editingCustomDishID = nil
+        editingCustomDishOriginalTitle = nil
+        directMenuInputFrame = .null
+        if selectedDishIndex == index {
+            selectedDishIndex = nil
+            selectedKindIDs = []
+        } else {
+            selectedDishIndex = index
+            if feedbackDishes.indices.contains(index) {
+                selectedKindIDs = Set(
+                    initialKindIDs(for: feedbackDishes[index])
+                )
+            }
+        }
+    }
+
+    private func openDirectMenuInput() {
+        selectedDishIndex = nil
+        selectedKindIDs = []
+        directMenuInputFrame = .null
+        usesDirectInput = true
+        editingCustomDishID = nil
+        editingCustomDishOriginalTitle = nil
+        directMenuTitle = ""
+    }
+
+    private func dismissDirectMenuInput() {
+        isDirectMenuInputFocused = false
+        selectedDishIndex = nil
+        selectedKindIDs = []
+        usesDirectInput = false
+        editingCustomDishID = nil
+        editingCustomDishOriginalTitle = nil
+        directMenuTitle = ""
+        directMenuInputFrame = .null
+    }
+
+    private func isOutsideDirectMenuInputTap(_ value: DragGesture.Value) -> Bool {
+        let tolerance = Self.outsideTapTranslationTolerance
+        guard abs(value.translation.width) <= tolerance,
+              abs(value.translation.height) <= tolerance else {
+            return false
+        }
+
+        let isInsideInputCard = !directMenuInputFrame.isNull
+            && directMenuInputFrame.contains(value.location)
+        let isInsideOptionCards = !directMenuOptionCardsFrame.isNull
+            && directMenuOptionCardsFrame.contains(value.location)
+        return !isInsideInputCard && !isInsideOptionCards
     }
 
     private func continueRestaurantSelection() {
@@ -2131,10 +2591,18 @@ struct DiningFeedbackSheet: View {
             return
         }
 
+        isDirectRestaurantInputFocused = false
         selectedDishIndex = nil
         customDishes = []
+        selectedKindIDs = []
         usesDirectInput = selectedRestaurantDishes.isEmpty
+            && appModel.rememberedMenus(
+                for: selectedRestaurantName,
+                restaurantKey: selectedRestaurantMenuStorageKey
+            ).isEmpty
         directMenuTitle = ""
+        editingCustomDishID = nil
+        editingCustomDishOriginalTitle = nil
         phase = .menu
     }
 
@@ -2144,11 +2612,65 @@ struct DiningFeedbackSheet: View {
             return
         }
 
+        isDirectMenuInputFocused = false
+
+        if let editingCustomDishID,
+           let customIndex = customDishes.firstIndex(where: { $0.id == editingCustomDishID }) {
+            let updatedDish = customDish(title: title, id: editingCustomDishID)
+            customDishes[customIndex] = updatedDish
+            appModel.updateRememberedRestaurantMenu(
+                editingCustomDishOriginalTitle ?? updatedDish.title,
+                to: title,
+                for: selectedRestaurantName,
+                restaurantKey: selectedRestaurantMenuStorageKey
+            )
+            selectedDishIndex = feedbackDishes.firstIndex { $0.id == editingCustomDishID }
+            selectedKindIDs = Set(
+                DiningFeedbackDishKindAutoSelection.inferredKindIDs(for: updatedDish)
+            )
+            usesDirectInput = false
+            directMenuTitle = ""
+            self.editingCustomDishID = nil
+            editingCustomDishOriginalTitle = nil
+            return
+        }
+
+        if let editingCustomDishID {
+            appModel.updateRememberedRestaurantMenu(
+                editingCustomDishOriginalTitle ?? title,
+                to: title,
+                for: selectedRestaurantName,
+                restaurantKey: selectedRestaurantMenuStorageKey
+            )
+            selectedDishIndex = feedbackDishes.firstIndex {
+                Self.normalizedMenuTitle($0.title) == Self.normalizedMenuTitle(title)
+                    || $0.id == editingCustomDishID
+            }
+            selectedKindIDs = Set(
+                DiningFeedbackDishKindAutoSelection.inferredKindIDs(menuTitle: title)
+            )
+            usesDirectInput = false
+            directMenuTitle = ""
+            self.editingCustomDishID = nil
+            editingCustomDishOriginalTitle = nil
+            return
+        }
+
         let nextDish = customDish(title: title, id: "custom-\(UUID().uuidString)")
         customDishes.append(nextDish)
+        appModel.rememberRestaurantMenu(
+            title,
+            for: selectedRestaurantName,
+            restaurantKey: selectedRestaurantMenuStorageKey
+        )
         selectedDishIndex = feedbackDishes.count - 1
+        selectedKindIDs = Set(
+            DiningFeedbackDishKindAutoSelection.inferredKindIDs(for: nextDish)
+        )
         usesDirectInput = false
         directMenuTitle = ""
+        editingCustomDishID = nil
+        editingCustomDishOriginalTitle = nil
     }
 
     private func customDish(title: String, id: String) -> DiningFeedbackDishContract {
@@ -2165,6 +2687,103 @@ struct DiningFeedbackSheet: View {
         )
     }
 
+    private func isEditableUserMenu(_ dish: DiningFeedbackDishContract) -> Bool {
+        customDishes.contains { $0.id == dish.id }
+            || dish.id.hasPrefix("remembered-")
+    }
+
+    private func startEditingCustomDish(_ dish: DiningFeedbackDishContract) {
+        selectedDishIndex = nil
+        selectedKindIDs = []
+        directMenuTitle = dish.title
+        editingCustomDishID = dish.id
+        editingCustomDishOriginalTitle = dish.title
+        usesDirectInput = true
+    }
+
+    private func deleteCustomDish(_ dish: DiningFeedbackDishContract) {
+        let selectedDishID = selectedDish?.id
+        let deletedMenu = PendingDeletedCustomMenu(
+            customIndex: customDishes.firstIndex { $0.id == dish.id },
+            dish: dish,
+            restaurantKey: selectedRestaurantMenuStorageKey,
+            restaurantName: selectedRestaurantName,
+            selectedDishID: selectedDishID
+        )
+
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
+            customDishes.removeAll { $0.id == dish.id }
+            appModel.removeRememberedRestaurantMenu(
+                dish.title,
+                for: selectedRestaurantName,
+                restaurantKey: selectedRestaurantMenuStorageKey
+            )
+
+            if editingCustomDishID == dish.id {
+                editingCustomDishID = nil
+                editingCustomDishOriginalTitle = nil
+                directMenuTitle = ""
+                usesDirectInput = false
+            }
+
+            if selectedDishID == nil || selectedDishID == dish.id {
+                selectedDishIndex = nil
+                selectedKindIDs = []
+            } else {
+                selectedDishIndex = feedbackDishes.firstIndex { $0.id == selectedDishID }
+            }
+
+            pendingDeletedMenu = deletedMenu
+        }
+    }
+
+    private func restoreDeletedCustomDish() {
+        guard let pendingDeletedMenu else { return }
+
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
+            if let customIndex = pendingDeletedMenu.customIndex,
+               !customDishes.contains(where: { $0.id == pendingDeletedMenu.dish.id }) {
+                customDishes.insert(
+                    pendingDeletedMenu.dish,
+                    at: min(customIndex, customDishes.count)
+                )
+            }
+
+            appModel.rememberRestaurantMenu(
+                pendingDeletedMenu.dish.title,
+                for: pendingDeletedMenu.restaurantName,
+                restaurantKey: pendingDeletedMenu.restaurantKey
+            )
+
+            if pendingDeletedMenu.selectedDishID == pendingDeletedMenu.dish.id {
+                selectedDishIndex = feedbackDishes.firstIndex { restoredDish in
+                    restoredDish.id == pendingDeletedMenu.dish.id
+                        || Self.normalizedMenuTitle(restoredDish.title)
+                            == Self.normalizedMenuTitle(pendingDeletedMenu.dish.title)
+                }
+                selectedKindIDs = Set(
+                    DiningFeedbackDishKindAutoSelection.inferredKindIDs(
+                        for: pendingDeletedMenu.dish
+                    )
+                )
+            }
+
+            self.pendingDeletedMenu = nil
+        }
+    }
+
+    private func initialKindIDs(for dish: DiningFeedbackDishContract) -> [String] {
+        if let entry,
+           !entry.dishKindIDs.isEmpty,
+           Self.normalizedMenuTitle(entry.menu) == Self.normalizedMenuTitle(dish.title) {
+            return entry.dishKindIDs
+        }
+
+        return DiningFeedbackDishKindAutoSelection.inferredKindIDs(for: dish)
+    }
+
     private static func restaurantNameMatches(_ lhs: String, _ rhs: String) -> Bool {
         let left = normalizedRestaurantName(lhs)
         let right = normalizedRestaurantName(rhs)
@@ -2176,6 +2795,14 @@ struct DiningFeedbackSheet: View {
     }
 
     private static func normalizedRestaurantName(_ value: String) -> String {
+        value
+            .lowercased()
+            .filter { character in
+                character.isLetter || character.isNumber
+            }
+    }
+
+    private static func normalizedMenuTitle(_ value: String) -> String {
         value
             .lowercased()
             .filter { character in
@@ -2516,6 +3143,23 @@ struct DiningFeedbackSheet: View {
             DiningReflectionPhotoStore.remove(filename: existingFilename)
             photoFilename = nil
         }
+        let selectedTasteTags = selectedExperienceIDs.compactMap {
+            experienceByID[$0]?.label
+        }
+        let dishKindIDs = resolvedSelectedDishKindIDs
+        let reviewerProfile = appModel.tbaTasteProfile
+        let tbaSnapshot = TasteBuddyAgent.buildDiningAnalysisSnapshot(
+            TasteBuddyAgentDiningAnalysisInput(
+                detailTags: selectedDetailTagIDs,
+                dishKindTags: dishKindIDs,
+                id: entryID.uuidString,
+                restaurantName: selectedRestaurantName,
+                reviewSnippet: resolvedReflectionNote,
+                reviewerProfile: reviewerProfile,
+                subject: selectedMenuTitle,
+                tasteTags: selectedTasteTags
+            )
+        )
 
         onSave(
             DiningEntry(
@@ -2527,7 +3171,9 @@ struct DiningFeedbackSheet: View {
                 note: resolvedReflectionNote,
                 tasteExperienceIDs: selectedExperienceIDs,
                 detailTagIDs: selectedDetailTagIDs,
-                reflectionPhotoFilename: photoFilename
+                dishKindIDs: dishKindIDs,
+                reflectionPhotoFilename: photoFilename,
+                tbaAnalysisSnapshot: tbaSnapshot
             )
         )
         closeFeedback()
@@ -2539,6 +3185,21 @@ struct DiningFeedbackSheet: View {
         } else {
             dismiss()
         }
+    }
+
+    private var resolvedSelectedDishKindIDs: [String] {
+        let selectedIDs = Array(selectedKindIDs).sorted()
+        guard selectedIDs.isEmpty else { return selectedIDs }
+
+        if let selectedDish {
+            return DiningFeedbackDishKindAutoSelection
+                .inferredKindIDs(for: selectedDish)
+                .sorted()
+        }
+
+        return DiningFeedbackDishKindAutoSelection
+            .inferredKindIDs(menuTitle: selectedMenuTitle)
+            .sorted()
     }
 
     private func handleEdgeSwipeBack() {
@@ -2728,7 +3389,9 @@ struct DiningFeedbackSheet: View {
         restaurantResolver.reset()
         usesDirectInput = false
         directMenuTitle = ""
-        selectedKindIDs = ["seafood", "meat", "broth"]
+        editingCustomDishID = nil
+        editingCustomDishOriginalTitle = nil
+        selectedKindIDs = []
         selectedExperienceIDs = []
         focusedExperienceID = nil
         focusRequest = nil
@@ -2754,6 +3417,234 @@ struct DiningFeedbackSheet: View {
         resultSharePreviewImage = nil
         resultShareStatusMessage = nil
         phase = .menu
+    }
+}
+
+private enum SwipeableCustomMenuCardMetrics {
+    static let actionWidth: CGFloat = 74
+    static let revealWidth = actionWidth * 2
+    static let revealThreshold: CGFloat = 44
+    static let closeThreshold = actionWidth * 0.7
+    static let editBackgroundExtension = SelectionCardMetrics.cardRadius
+    static let deleteBackgroundExtension = SelectionCardMetrics.cardRadius
+
+    static var maxDragWidth: CGFloat {
+        max(UIScreen.main.bounds.width, revealWidth)
+    }
+
+    static var fullSwipeThreshold: CGFloat {
+        max(revealWidth + actionWidth * 0.6, maxDragWidth * 0.6)
+    }
+}
+
+private struct SwipeableCustomMenuCard: View {
+    let title: String
+    let description: String?
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+
+    @State private var settledOffset: CGFloat = 0
+    @GestureState private var dragTranslation: CGFloat = 0
+
+    private var currentOffset: CGFloat {
+        let rawOffset = settledOffset + dragTranslation
+        return min(
+            0,
+            max(-SwipeableCustomMenuCardMetrics.maxDragWidth, rawOffset)
+        )
+    }
+
+    private var showsActions: Bool {
+        currentOffset < -1
+    }
+
+    private var revealDistance: CGFloat {
+        -currentOffset
+    }
+
+    private var visibleActionDistance: CGFloat {
+        max(SwipeableCustomMenuCardMetrics.revealWidth, revealDistance)
+    }
+
+    private var actionLayerWidth: CGFloat {
+        visibleActionDistance + SwipeableCustomMenuCardMetrics.editBackgroundExtension
+    }
+
+    private var deleteActionWidth: CGFloat {
+        max(
+            SwipeableCustomMenuCardMetrics.actionWidth,
+            visibleActionDistance - SwipeableCustomMenuCardMetrics.actionWidth
+        )
+    }
+
+    private var deleteBackgroundWidth: CGFloat {
+        deleteActionWidth + SwipeableCustomMenuCardMetrics.deleteBackgroundExtension
+    }
+
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            ZStack(alignment: .trailing) {
+                actionBackground(
+                    TBColor.destructive,
+                    roundsTrailingCorners: true
+                )
+                .frame(width: deleteBackgroundWidth)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                .allowsHitTesting(false)
+
+                HStack(spacing: 0) {
+                    TasteAxis.salty.tintColor
+                        .frame(width: SwipeableCustomMenuCardMetrics.editBackgroundExtension)
+
+                    actionButton(
+                        title: "수정",
+                        icon: .pencil,
+                        foreground: TasteAxis.salty.mainColor,
+                        background: TasteAxis.salty.tintColor,
+                        width: SwipeableCustomMenuCardMetrics.actionWidth,
+                        roundsTrailingCorners: true
+                    ) {
+                        closeActions()
+                        onEdit()
+                    }
+
+                    actionButton(
+                        title: "삭제",
+                        icon: .trash2,
+                        foreground: TBColor.textInverse,
+                        background: TBColor.destructive,
+                        width: deleteActionWidth,
+                        roundsTrailingCorners: true
+                    ) {
+                        onDelete()
+                    }
+                }
+            }
+            .frame(width: actionLayerWidth)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+            .opacity(showsActions ? 1 : 0)
+            .allowsHitTesting(settledOffset <= -SwipeableCustomMenuCardMetrics.revealWidth)
+
+            TBSelectionCard(
+                title: title,
+                description: description,
+                indicator: .radio,
+                isSelected: isSelected && !showsActions,
+                showsUnselectedBorder: false
+            ) {
+                if settledOffset == 0 {
+                    onSelect()
+                } else {
+                    closeActions()
+                }
+            }
+            .offset(x: currentOffset)
+            .highPriorityGesture(swipeGesture)
+        }
+        .accessibilityAction(named: "수정", onEdit)
+        .accessibilityAction(named: "삭제", onDelete)
+    }
+
+    private var swipeGesture: some Gesture {
+        DragGesture(minimumDistance: 12, coordinateSpace: .local)
+            .updating($dragTranslation) { value, state, _ in
+                guard abs(value.translation.width) > abs(value.translation.height) else {
+                    return
+                }
+                state = value.translation.width
+            }
+            .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height) else {
+                    return
+                }
+
+                let proposedOffset = settledOffset + value.translation.width
+                let proposedRevealDistance = clampedRevealDistance(for: proposedOffset)
+                if proposedRevealDistance >= SwipeableCustomMenuCardMetrics.fullSwipeThreshold {
+                    settledOffset = 0
+                    onDelete()
+                    return
+                }
+
+                let predictedOffset = settledOffset + value.predictedEndTranslation.width
+                let revealDistance = max(
+                    proposedRevealDistance,
+                    clampedRevealDistance(for: predictedOffset)
+                )
+                let threshold = settledOffset < 0 && value.translation.width > 0
+                    ? SwipeableCustomMenuCardMetrics.closeThreshold
+                    : SwipeableCustomMenuCardMetrics.revealThreshold
+                let targetOffset = revealDistance >= threshold
+                    ? -SwipeableCustomMenuCardMetrics.revealWidth
+                    : 0
+
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+                    settledOffset = targetOffset
+                }
+            }
+    }
+
+    private func actionButton(
+        title: String,
+        icon: LucideIconName,
+        foreground: Color,
+        background: Color,
+        width: CGFloat,
+        roundsTrailingCorners: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                LucideIcon(
+                    icon,
+                    size: TBIcon.Size.small,
+                    strokeWidth: TBIcon.Stroke.medium
+                )
+                Text(title)
+                    .font(TBFont.semibold(11))
+            }
+            .frame(width: width)
+            .frame(maxHeight: .infinity)
+            .foregroundStyle(foreground)
+            .background(actionBackground(background, roundsTrailingCorners: roundsTrailingCorners))
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func actionBackground(
+        _ color: Color,
+        roundsTrailingCorners: Bool
+    ) -> some View {
+        if roundsTrailingCorners {
+            color
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: SelectionCardMetrics.cardRadius,
+                        style: .continuous
+                    )
+                )
+                .overlay(alignment: .leading) {
+                    color.frame(width: SelectionCardMetrics.cardRadius)
+                }
+        } else {
+            color
+        }
+    }
+
+    private func clampedRevealDistance(for offset: CGFloat) -> CGFloat {
+        min(
+            SwipeableCustomMenuCardMetrics.maxDragWidth,
+            max(0, -offset)
+        )
+    }
+
+    private func closeActions() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            settledOffset = 0
+        }
     }
 }
 
@@ -3169,6 +4060,25 @@ private struct DiningFeedbackCameraStatusCard: View {
     }
 }
 
+private enum DiningFeedbackCameraControlMetrics {
+    static let chromeButtonSize: CGFloat = 48
+    static let captureButtonSize: CGFloat = 72
+    static let captureButtonInnerSize: CGFloat = 58
+
+    static var topChromePadding: CGFloat {
+        max(
+            0,
+            AppChromeMetrics.topPadding
+                + TBSize.topAppBarHeight / 2
+                - chromeButtonSize / 2
+        )
+    }
+
+    static var bottomPadding: CGFloat {
+        (TBSize.bottomTabBarHeight - captureButtonSize) / 2
+    }
+}
+
 private struct DiningFeedbackCameraChromeIcon: View {
     let icon: LucideIconName
     var isActive = false
@@ -3177,10 +4087,13 @@ private struct DiningFeedbackCameraChromeIcon: View {
     var body: some View {
         LucideIcon(
             icon,
-            size: TBIcon.Size.medium,
-            strokeWidth: TBIcon.Stroke.medium
+            size: AppChromeMetrics.iconSize,
+            strokeWidth: TBIcon.Stroke.regular
         )
-        .frame(width: 48, height: 48)
+        .frame(
+            width: DiningFeedbackCameraControlMetrics.chromeButtonSize,
+            height: DiningFeedbackCameraControlMetrics.chromeButtonSize
+        )
         .foregroundStyle(Color.white)
         .background {
             if showsBackground {
@@ -3755,16 +4668,19 @@ extension DiningFeedbackRestaurantResolver: CLLocationManagerDelegate {
 }
 
 private final class DiningFeedbackCameraModel: NSObject, ObservableObject {
-    let session = AVCaptureSession()
     var onCapture: ((Data) -> Void)?
 
+    @Published private(set) var previewSession: AVCaptureSession?
     @Published private(set) var isRunning = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var isFlashOn = false
     @Published private(set) var canUseFlash = false
 
     private let sessionQueue = DispatchQueue(label: "com.tastebuddy.dining-feedback.camera")
-    private let output = AVCapturePhotoOutput()
+    // First-use AVFoundation setup must not block the launch overlay's first frame.
+    // Both properties are accessed only on sessionQueue.
+    private lazy var session = AVCaptureSession()
+    private lazy var output = AVCapturePhotoOutput()
     private var videoInput: AVCaptureDeviceInput?
     private var currentPosition: AVCaptureDevice.Position = .back
 
@@ -3793,9 +4709,11 @@ private final class DiningFeedbackCameraModel: NSObject, ObservableObject {
     func stop() {
         sessionQueue.async { [weak self] in
             guard let self else { return }
+            self.turnOffTorchIfNeeded()
             if self.session.isRunning {
                 self.session.stopRunning()
             }
+            self.setIsFlashOn(false)
             self.setIsRunning(false)
         }
     }
@@ -3821,10 +4739,12 @@ private final class DiningFeedbackCameraModel: NSObject, ObservableObject {
         sessionQueue.async { [weak self] in
             guard let self else { return }
             do {
+                self.turnOffTorchIfNeeded()
                 try self.configureSession(position: nextPosition)
                 if !self.session.isRunning {
                     self.session.startRunning()
                 }
+                self.setIsFlashOn(false)
                 self.setIsRunning(true)
                 self.setErrorMessage(nil)
             } catch {
@@ -3834,12 +4754,27 @@ private final class DiningFeedbackCameraModel: NSObject, ObservableObject {
     }
 
     func toggleFlash() {
-        guard canUseFlash else {
-            setErrorMessage("이 기기에서는 플래시를 바로 켤 수 없어요.")
-            return
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            guard let device = self.videoInput?.device,
+                  device.hasTorch || device.hasFlash else {
+                self.setErrorMessage("이 기기에서는 플래시를 바로 켤 수 없어요.")
+                self.setIsFlashOn(false)
+                return
+            }
+
+            let nextFlashState = !self.isFlashOn
+            do {
+                if device.hasTorch {
+                    try self.setTorch(nextFlashState, on: device)
+                }
+                self.setIsFlashOn(nextFlashState)
+                self.setErrorMessage(nil)
+            } catch {
+                self.setIsFlashOn(false)
+                self.setErrorMessage("플래시를 켜지 못했어요.")
+            }
         }
-        isFlashOn.toggle()
-        setErrorMessage(nil)
     }
 
     private func configureAndStart() {
@@ -3863,6 +4798,7 @@ private final class DiningFeedbackCameraModel: NSObject, ObservableObject {
         defer { session.commitConfiguration() }
 
         session.sessionPreset = .photo
+        turnOffTorchIfNeeded()
 
         for input in session.inputs {
             session.removeInput(input)
@@ -3890,12 +4826,44 @@ private final class DiningFeedbackCameraModel: NSObject, ObservableObject {
 
         videoInput = nextInput
         currentPosition = nextInput.device.position
-        setCanUseFlash(nextInput.device.hasFlash)
+        setCanUseFlash(nextInput.device.hasTorch || nextInput.device.hasFlash)
+    }
+
+    private func turnOffTorchIfNeeded() {
+        guard let device = videoInput?.device,
+              device.hasTorch,
+              device.torchMode != .off else {
+            return
+        }
+
+        try? setTorch(false, on: device)
+    }
+
+    private func setTorch(_ isOn: Bool, on device: AVCaptureDevice) throws {
+        try device.lockForConfiguration()
+        defer {
+            device.unlockForConfiguration()
+        }
+
+        if isOn {
+            let level = min(Float(0.78), AVCaptureDevice.maxAvailableTorchLevel)
+            try device.setTorchModeOn(level: level)
+        } else {
+            device.torchMode = .off
+        }
     }
 
     private func setIsRunning(_ value: Bool) {
+        let preparedSession = value ? session : nil
         DispatchQueue.main.async {
+            self.previewSession = preparedSession
             self.isRunning = value
+        }
+    }
+
+    private func setIsFlashOn(_ value: Bool) {
+        DispatchQueue.main.async {
+            self.isFlashOn = value
         }
     }
 
@@ -4044,22 +5012,10 @@ private struct DiningDetailTagSelector: View {
                 }
                 .accessibilityLabel("\(category.label) 직접 입력")
         } else {
-            Button(action: onOpenCustomInput) {
-                LucideIcon(
-                    .plus,
-                    size: TBIcon.Size.small,
-                    strokeWidth: TBIcon.Stroke.regular
-                )
-                .frame(width: 36, height: 36)
-                .foregroundStyle(TBColor.textMuted)
-                .background(TBColor.mutedSurface)
-                .clipShape(Circle())
-                .overlay {
-                    Circle().stroke(TBColor.border)
-                }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("\(category.label) 직접 입력")
+            DiningFeedbackAddChipButton(
+                accessibilityLabel: "\(category.label) 직접 입력",
+                action: onOpenCustomInput
+            )
         }
     }
 
@@ -5148,24 +6104,38 @@ private enum DiningFeedbackKindChipMetrics {
     static let gap: CGFloat = 6
 }
 
+private struct DiningFeedbackAddChipButton: View {
+    let accessibilityLabel: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            LucideIcon(
+                .plus,
+                size: TBIcon.Size.small,
+                strokeWidth: TBIcon.Stroke.regular
+            )
+            .frame(width: 36, height: 36)
+            .foregroundStyle(TBColor.textMuted)
+            .background(TBColor.mutedSurface)
+            .clipShape(Circle())
+            .overlay {
+                Circle().stroke(TBColor.border)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
+
 private struct DiningFeedbackKindChip: View {
     let title: String
-    var symbol: LucideIconName? = nil
     var isSelected = false
-    var isDashed = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: DiningFeedbackKindChipMetrics.gap) {
-                if let symbol {
-                    LucideIcon(
-                        symbol,
-                        size: TBIcon.Size.small,
-                        strokeWidth: TBIcon.Stroke.regular
-                    )
-                }
-
                 Text(title)
                     .font(TBFont.semibold(12))
                     .lineLimit(1)
@@ -5177,13 +6147,7 @@ private struct DiningFeedbackKindChip: View {
             .clipShape(Capsule())
             .overlay {
                 Capsule()
-                    .strokeBorder(
-                        isSelected ? TBColor.textPrimary : TBColor.border,
-                        style: StrokeStyle(
-                            lineWidth: 1,
-                            dash: isDashed ? [4, 3] : []
-                        )
-                    )
+                    .strokeBorder(isSelected ? TBColor.textPrimary : TBColor.border)
             }
         }
         .buttonStyle(.plain)

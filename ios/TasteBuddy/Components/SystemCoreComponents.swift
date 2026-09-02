@@ -475,6 +475,8 @@ enum ActionOverlayCardMetrics {
 }
 
 struct ActionOverlayCard<Content: View>: View {
+    @Environment(\.isEnabled) private var environmentIsEnabled
+
     let title: String
     var description: String? = nil
     var actions: [ActionOverlayCardAction] = []
@@ -627,16 +629,16 @@ struct ActionOverlayCard<Content: View>: View {
                 .overlay {
                     if layout == .split && compact == false && action.tone == .default {
                         RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-                            .stroke(action.isDisabled ? TBColor.borderDisabled : TBColor.borderStrong, lineWidth: 1)
+                            .stroke(action.isDisabled || !environmentIsEnabled ? TBColor.borderDisabled : TBColor.borderStrong, lineWidth: 1)
                     }
                 }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(action.isDisabled)
     }
 
     private func actionForeground(_ action: ActionOverlayCardAction) -> Color {
-        guard !action.isDisabled else {
+        guard !action.isDisabled && environmentIsEnabled else {
             return TBColor.textDisabled
         }
 
@@ -649,7 +651,7 @@ struct ActionOverlayCard<Content: View>: View {
     }
 
     private func actionBackground(_ action: ActionOverlayCardAction, compact: Bool) -> Color {
-        guard !action.isDisabled else {
+        guard !action.isDisabled && environmentIsEnabled else {
             return TBColor.disabledSurface
         }
 
@@ -914,6 +916,7 @@ struct StagedBottomSheetBackground: ViewModifier {
     let progress: CGFloat
     var dimOpacity: CGFloat = 0
     var animates = true
+    var topOverflowInset: CGFloat = 0
 
     private var clampedProgress: CGFloat {
         min(max(progress, 0), 1)
@@ -933,7 +936,12 @@ struct StagedBottomSheetBackground: ViewModifier {
 
         content
             .overlay(Color.black.opacity(clampedDimOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .clipShape(
+                TopOverflowRoundedRectangle(
+                    cornerRadius: radius,
+                    topOverflowInset: topOverflowInset * (1 - clampedProgress)
+                )
+            )
             .shadow(
                 color: Color.black.opacity(shadowOpacity),
                 radius: shadowBlur,
@@ -946,6 +954,32 @@ struct StagedBottomSheetBackground: ViewModifier {
                 animates ? StagedBottomSheetBackgroundMetrics.animation : nil,
                 value: clampedProgress
             )
+    }
+}
+
+struct TopOverflowRoundedRectangle: Shape {
+    var cornerRadius: CGFloat
+    var topOverflowInset: CGFloat
+
+    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get { AnimatablePair(cornerRadius, topOverflowInset) }
+        set {
+            cornerRadius = newValue.first
+            topOverflowInset = newValue.second
+        }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        // Reveal the status-bar overflow without moving the content or bottom tab bar.
+        let overflow = max(topOverflowInset, 0)
+        let bounds = CGRect(
+            x: rect.minX,
+            y: rect.minY - overflow,
+            width: rect.width,
+            height: rect.height + overflow
+        )
+        return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .path(in: bounds)
     }
 }
 

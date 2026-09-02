@@ -87,12 +87,14 @@ enum AppRoute: Hashable {
             kind.title
         case .publicProfile(let id):
             switch id {
+            case "mina":
+                "김민아"
             case "jae":
                 "정서윤"
             case "hyeon":
                 "최도윤"
             default:
-                "김민아"
+                "공개 프로필"
             }
         }
     }
@@ -105,6 +107,7 @@ enum AppSheet: Identifiable {
     case notifications
     case quickRefinement
     case menu
+    case publicProfileActions(profileID: String)
     case bookmark(RestaurantSummary)
     case authEntry(BackendAuthEmailIntent)
 
@@ -122,6 +125,8 @@ enum AppSheet: Identifiable {
             "quick-refinement"
         case .menu:
             "menu"
+        case .publicProfileActions(let profileID):
+            "public-profile-actions-\(profileID)"
         case .bookmark(let restaurant):
             "bookmark-\(restaurant.id)"
         case .authEntry(let intent):

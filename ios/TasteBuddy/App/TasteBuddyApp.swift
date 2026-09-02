@@ -19,6 +19,7 @@ private struct RootView: View {
     @StateObject private var shellPreviewModel = AppModel.preview(
         onboardingComplete: true,
         profile: .sample,
+        profileHistory: TasteProfile.shellPreviewHistory,
         diningEntries: [.sample],
         savedRestaurantIDs: Set(RestaurantCatalog.savedDefaults)
     )
@@ -145,10 +146,16 @@ private struct RootView: View {
                 HomeSearchPreviewHost(initialQuery: "없는 키워드")
                     .environmentObject(shellPreviewModel)
             } else if showsRecommendationLoadingPreview {
-                HomeView(recommendationContentState: .loading)
+                HomeView(
+                    recommendationContentState: .loading,
+                    presentationMode: .socialArchive
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsRecommendationFallbackPreview {
-                HomeView(recommendationContentState: .fallbackBuddy)
+                HomeView(
+                    recommendationContentState: .fallbackBuddy,
+                    presentationMode: .socialArchive
+                )
                     .environmentObject(shellPreviewModel)
             } else if showsCommentsPreview {
                 AppShellView(
@@ -201,6 +208,7 @@ private struct RootView: View {
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .scrollBounceBehavior(.basedOnSize)
         .preferredColorScheme(usesDarkStatusBar ? .dark : .light)
         .onAppear(perform: applyLaunchResetIfNeeded)
         .onOpenURL { url in
@@ -223,8 +231,8 @@ private struct RootView: View {
         case .authEntry:
             AuthEntryGateView(
                 onContinueAsGuest: completeAuthEntry,
-                onVerifiedEmailLogin: { _ in completeVerifiedEmailAuthEntry() },
-                onLinkedCurrentProfile: completeVerifiedEmailAuthEntry,
+                onVerifiedEmailLogin: { _ in completeVerifiedEmailAuthEntry(publishCurrentProfile: false) },
+                onLinkedCurrentProfile: { completeVerifiedEmailAuthEntry(publishCurrentProfile: true) },
                 onSheetPresentationChange: setAuthEntrySheetPresentation
             )
         case .onboarding:
@@ -285,9 +293,17 @@ private struct RootView: View {
         }
     }
 
-    private func completeVerifiedEmailAuthEntry() {
+    private func completeVerifiedEmailAuthEntry(publishCurrentProfile: Bool) {
         withAnimation(.easeInOut(duration: 0.3)) {
             appModel.completeVerifiedEmailAuthEntry()
+        }
+
+        Task {
+            if publishCurrentProfile {
+                _ = await appModel.publishCurrentProfileIdentity()
+            } else {
+                _ = await appModel.hydratePublicProfileIdentity()
+            }
         }
     }
 
@@ -323,10 +339,7 @@ private struct AuthEntryGateView: View {
                     value: sheetProgress
                 )
 
-                AuthLandingView(
-                    onSignUp: presentAuthSheet,
-                    onLogin: presentAuthSheet
-                )
+                AuthLandingView(onStart: presentAuthSheet)
                 .modifier(
                     StagedBottomSheetBackground(
                         progress: sheetProgress,
@@ -547,8 +560,7 @@ private struct HomeSearchPreviewHost: View {
 }
 
 private struct AuthLandingView: View {
-    var onSignUp: () -> Void
-    var onLogin: () -> Void
+    var onStart: () -> Void
 
     var body: some View {
         ZStack {
@@ -569,11 +581,7 @@ private struct AuthLandingView: View {
     }
 
     private var authActions: some View {
-        VStack(spacing: 12) {
-            PrimaryButton(title: "회원가입", action: onSignUp)
-
-            AuthTextActionButton(title: "로그인", action: onLogin)
-        }
+        PrimaryButton(title: "시작하기", action: onStart)
     }
 
     private var bottomSafeAreaInset: CGFloat {
@@ -606,6 +614,41 @@ private struct TasteBuddyStaticLogo: View {
         }
         .frame(width: logoSize.width, height: logoSize.height, alignment: .topLeading)
         .accessibilityHidden(true)
+    }
+}
+
+private extension TasteProfile {
+    static var shellPreviewHistory: [TasteProfile] {
+        let sweetAdjustments = [-7, -3, 1, -2, 3, 0]
+        let sourAdjustments = [-6, -2, 3, 0, 5, 2]
+        let bitterAdjustments = [4, 1, -2, 2, -1, 0]
+
+        return sweetAdjustments.indices.map { index in
+            var historicalScores = sample.scores
+            historicalScores[TasteAxis.sweet.rawValue] = min(
+                max(sample.score(for: .sweet) + sweetAdjustments[index], 0),
+                100
+            )
+            historicalScores[TasteAxis.sour.rawValue] = min(
+                max(sample.score(for: .sour) + sourAdjustments[index], 0),
+                100
+            )
+            historicalScores[TasteAxis.bitter.rawValue] = min(
+                max(sample.score(for: .bitter) + bitterAdjustments[index], 0),
+                100
+            )
+
+            return TasteProfile(
+                createdAt: .now.addingTimeInterval(
+                    -Double(sweetAdjustments.count - index) * 30 * 24 * 60 * 60
+                ),
+                scores: historicalScores,
+                confidence: sample.confidence,
+                summary: sample.summary,
+                topAxes: sample.topAxes,
+                cautionAxis: sample.cautionAxis
+            )
+        }
     }
 }
 

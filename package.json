@@ -94,6 +94,7 @@
             "native-food:fetch": "node scripts/fetch-nongsaro-native-food-dataset.mjs",
             "food-knowledge:build": "node scripts/build-tba-food-knowledge-dataset.mjs",
             "food-knowledge:runtime": "node scripts/build-tba-food-knowledge-runtime.mjs",
+            "tba:native-bundle": "node ios/Tools/generate-tba-native-bundle.mjs",
             "test": "node scripts/test-taste-survey-scoring.mjs"
       }
 }

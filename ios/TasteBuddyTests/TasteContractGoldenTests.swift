@@ -62,7 +62,13 @@ final class TasteContractGoldenTests: XCTestCase {
         XCTAssertEqual(fixture.scenario.dishes.count, 4)
         XCTAssertEqual(fixture.scenario.dishes.first?.feedbackChoices.count, 3)
         XCTAssertEqual(fixture.detailTagCategories.count, 5)
-        XCTAssertEqual(fixture.dishKindOptions.count, 10)
+        XCTAssertEqual(fixture.dishKindOptions.count, 19)
+        XCTAssertTrue(
+            fixture.dishKindOptions.map(\.id).contains("stir_fried_wok")
+        )
+        XCTAssertTrue(
+            fixture.dishKindOptions.map(\.id).contains("dairy_cheese")
+        )
         XCTAssertTrue(
             fixture.scenario.dishes.allSatisfy {
                 !$0.chefIntent.isEmpty && !$0.feedbackChoices.isEmpty
@@ -76,6 +82,54 @@ final class TasteContractGoldenTests: XCTestCase {
         XCTAssertEqual(fixture.tasteExperiences.count, 72)
         XCTAssertEqual(Set(fixture.tasteExperiences.map(\.id)).count, 72)
         XCTAssertTrue(fixture.detailTagCategories.allSatisfy { $0.tags.count == 12 })
+    }
+
+    func testDiningFeedbackDishKindAutoSelectionUsesMenuNameBeforeFallbackDefaults() {
+        XCTAssertEqual(
+            DiningFeedbackDishKindAutoSelection.inferredKindIDs(
+                menuTitle: "오미자와 배 디저트"
+            ),
+            ["dessert"]
+        )
+        XCTAssertEqual(
+            DiningFeedbackDishKindAutoSelection.inferredKindIDs(menuTitle: "백립"),
+            ["meat"]
+        )
+        XCTAssertEqual(
+            DiningFeedbackDishKindAutoSelection.inferredKindIDs(
+                menuTitle: "맑은 육수 코스"
+            ),
+            ["broth"]
+        )
+        let mapoTofuKinds = DiningFeedbackDishKindAutoSelection.inferredKindIDs(
+            menuTitle: "마파두부"
+        )
+        XCTAssertTrue(mapoTofuKinds.contains("legume_tofu"))
+        XCTAssertTrue(mapoTofuKinds.contains("spice_heat"))
+
+        let fixtureDish = DiningFeedbackDishContract(
+            chefIntent: "메뉴명과 조리 단서를 함께 기록합니다.",
+            courseLabel: "테스트",
+            feedbackChoices: [],
+            flavorNotes: ["스모키", "불맛"],
+            id: "auto-kind-smoked-beef",
+            ingredients: ["한우"],
+            subtitle: "숯불에 구운 한우",
+            techniques: ["숯불"],
+            title: "오늘의 코스"
+        )
+        let inferredKinds = DiningFeedbackDishKindAutoSelection.inferredKindIDs(
+            for: fixtureDish
+        )
+
+        XCTAssertTrue(inferredKinds.contains("meat"))
+        XCTAssertTrue(inferredKinds.contains("grilled_smoked"))
+
+        let wokKinds = DiningFeedbackDishKindAutoSelection.inferredKindIDs(
+            menuTitle: "토마토 달걀 볶음"
+        )
+        XCTAssertTrue(wokKinds.contains("stir_fried_wok"))
+        XCTAssertTrue(wokKinds.contains("vegetable_herb"))
     }
 
     func testDiningDetailTagRecommendationsAndCustomMetadataMatchReactRules() {

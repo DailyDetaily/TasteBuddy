@@ -7,6 +7,8 @@ struct AppRouteDestinationView: View {
     var onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil
     var onOpenInfoSuggestionSheet: ((String, [RestaurantInfoRowModel]) -> Void)? = nil
     var onOpenMenuSuggestionSheet: ((String) -> Void)? = nil
+    var collapsingTopChrome: AnyView? = nil
+    var contentOffset: CGFloat = 0
 
     var body: some View {
         switch route {
@@ -44,7 +46,10 @@ struct AppRouteDestinationView: View {
         case .comments(let id):
             DishFeedbackCommentFocusView(feedbackID: id)
         case .tasteChange:
-            TasteChangeFocusView()
+            TasteChangeFocusView(
+                topChrome: collapsingTopChrome,
+                contentOffset: contentOffset
+            )
         case .savedRestaurants:
             SavedRestaurantListView { restaurantID in
                 navigate(.restaurant(id: restaurantID))
@@ -675,7 +680,7 @@ struct RestaurantBookmarkNativeSheet: View {
                         .background(canSave ? TBColor.textPrimary : TBColor.disabledSurface)
                         .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TBTokenButtonStyle())
                 .disabled(!canSave)
             }
         )
@@ -1061,7 +1066,7 @@ private struct SavedRestaurantListView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
 
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("신준호")
+                                Text(appModel.profileIdentity.displayName)
                                     .font(TBFont.bold(15))
                                     .foregroundStyle(TBColor.textPrimary)
                                 Text("공개 리스트 · 1")
@@ -1184,21 +1189,42 @@ private struct ConnectionListView: View {
 private struct PublicProfileView: View {
     let profileID: String
     @State private var isFollowing = true
+    @State private var publicIdentity: BackendPublicProfileIdentity?
 
-    private var profile: BuddyProfile {
-        BuddyProfile.samples.first { $0.id == profileID } ?? BuddyProfile.samples[0]
+    private var sampleProfile: BuddyProfile? {
+        BuddyProfile.samples.first { $0.id == profileID }
+    }
+
+    private var displayName: String {
+        publicIdentity?.title ?? sampleProfile?.name ?? "공개 프로필"
+    }
+
+    private var displayHandle: String {
+        publicIdentity?.displayNickname ?? sampleProfile?.handle ?? "@tastebuddy"
+    }
+
+    private var displayAxis: TasteAxis {
+        sampleProfile?.axis ?? .umami
+    }
+
+    private var avatarSeed: String {
+        publicIdentity?.id ?? sampleProfile?.id ?? profileID
+    }
+
+    private var activityMetrics: [ProfileActivityMetric] {
+        sampleProfile?.activityMetrics ?? BuddyProfile.placeholderActivityMetrics
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: TBSpacing.section) {
                 ProfileHeroCard(
-                    title: profile.name,
-                    handle: profile.handle,
-                    followerCount: profile.followerCount,
-                    followingCount: profile.followingCount
+                    title: displayName,
+                    handle: displayHandle,
+                    followerCount: sampleProfile?.followerCount ?? 0,
+                    followingCount: sampleProfile?.followingCount ?? 0
                 ) {
-                    PalateBloomAvatar(size: 64, seed: profile.id)
+                    PalateBloomAvatar(size: 64, seed: avatarSeed)
                 } headerAction: {
                     EmptyView()
                 } footerAction: {
@@ -1208,12 +1234,12 @@ private struct PublicProfileView: View {
                         Text(isFollowing ? "팔로잉" : "팔로우")
                             .font(TBFont.semibold(12))
                             .foregroundStyle(
-                                isFollowing ? TBColor.textPrimary : profile.axis.tintTextColor
+                                isFollowing ? TBColor.textPrimary : displayAxis.tintTextColor
                             )
                             .padding(.horizontal, 14)
                             .frame(height: 36)
                             .background(
-                                isFollowing ? TBColor.surface : profile.axis.tintColor
+                                isFollowing ? TBColor.surface : displayAxis.tintColor
                             )
                             .clipShape(Capsule())
                             .overlay {
@@ -1233,7 +1259,7 @@ private struct PublicProfileView: View {
                         ],
                         spacing: 12
                     ) {
-                        ForEach(profile.activityMetrics) { metric in
+                        ForEach(activityMetrics) { metric in
                             SummaryMetricCard(metric: metric)
                         }
                     }
@@ -1243,6 +1269,12 @@ private struct PublicProfileView: View {
             .padding(.bottom, 60)
         }
         .tbPageBackground()
+        .task(id: profileID) {
+            publicIdentity = await PublicProfileSnapshotStore.shared.profile(id: profileID)
+            if let publicIdentity {
+                isFollowing = publicIdentity.isFriend
+            }
+        }
     }
 }
 
@@ -1290,6 +1322,37 @@ private struct BuddyProfile: Identifiable {
             ),
         ]
     }
+
+    static let placeholderActivityMetrics: [ProfileActivityMetric] = [
+        ProfileActivityMetric(
+            id: "measurements",
+            label: "미각 기록",
+            value: "-",
+            symbol: "trophy",
+            color: TasteAxis.sweet.mainColor
+        ),
+        ProfileActivityMetric(
+            id: "feedback",
+            label: "다이닝 리뷰",
+            value: "-",
+            symbol: "checkmark.circle",
+            color: TasteAxis.umami.mainColor
+        ),
+        ProfileActivityMetric(
+            id: "saved",
+            label: "테이스트 리스트",
+            value: "-",
+            symbol: "bookmark",
+            color: TasteAxis.salty.mainColor
+        ),
+        ProfileActivityMetric(
+            id: "rating",
+            label: "평균 만족도",
+            value: "-",
+            symbol: "star",
+            color: TasteAxis.sour.mainColor
+        ),
+    ]
 
     static let samples: [BuddyProfile] = [
         BuddyProfile(
@@ -1578,6 +1641,9 @@ private struct DishFeedbackCommentRow: View {
 }
 
 private struct TasteChangeFocusView: View {
+    let topChrome: AnyView?
+    let contentOffset: CGFloat
+
     @State private var selectedRange = "3개월"
     @State private var selectedTasteIndex = 2
 
@@ -1597,144 +1663,160 @@ private struct TasteChangeFocusView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                ForEach(ranges, id: \.self) { range in
-                    Button {
-                        selectedRange = range
-                    } label: {
-                        Text(range)
-                            .font(TBFont.semibold(13))
-                            .foregroundStyle(
-                                selectedRange == range
-                                    ? selectedTaste.mainColor
-                                    : TBColor.textTertiary
-                            )
-                            .padding(.horizontal, 14)
-                            .frame(height: 32)
-                            .background(
-                                selectedRange == range
-                                    ? selectedTaste.tintColor
-                                    : Color.clear
-                            )
-                            .clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
+        TBCollapsingTopChromeScrollView(
+            topChrome: topChrome,
+            contentOffset: contentOffset
+        ) {
+            periodTabs
+        } content: {
+            VStack(spacing: 16) {
+                HStack {
+                    CircleNavigationButton(
+                        symbol: "chevron.left",
+                        isEnabled: false,
+                        action: {}
+                    )
+
+                    Spacer()
+
+                    Text("2026. 3. 5 - 2026. 6. 5")
+                        .font(TBFont.semibold(15))
+                        .foregroundStyle(TBColor.textPrimary)
+
+                    Spacer()
+
+                    CircleNavigationButton(
+                        symbol: "chevron.right",
+                        isEnabled: true,
+                        action: {}
+                    )
                 }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, TBSpacing.page)
-            .padding(.bottom, 16)
-            .background(TBColor.page)
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .fill(TBColor.border)
-                    .frame(height: 1)
-            }
 
-            ScrollView {
-                VStack(spacing: 16) {
-                    HStack {
-                        CircleNavigationButton(
-                            symbol: "chevron.left",
-                            isEnabled: false,
-                            action: {}
-                        )
-
-                        Spacer()
-
-                        Text("2026. 3. 5 - 2026. 6. 5")
-                            .font(TBFont.semibold(15))
-                            .foregroundStyle(TBColor.textPrimary)
-
-                        Spacer()
-
-                        CircleNavigationButton(
-                            symbol: "chevron.right",
-                            isEnabled: true,
-                            action: {}
-                        )
+                HStack {
+                    TasteSelectorButton(axis: previousTaste, isMuted: true) {
+                        moveTaste(-1)
                     }
 
-                    HStack {
-                        TasteSelectorButton(axis: previousTaste, isMuted: true) {
-                            moveTaste(-1)
-                        }
-
-                        Spacer()
-
-                        HStack(spacing: 8) {
-                            LucideIcon(
-                                systemName: selectedTaste.symbol,
-                                size: TBIcon.Size.base,
-                                strokeWidth: TBIcon.Stroke.regular
-                            )
-                                .foregroundStyle(selectedTaste.mainColor)
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(selectedTaste.label)
-                                    .font(TBFont.semibold(14))
-                                    .foregroundStyle(TBColor.textPrimary)
-                                Text("\(TasteProfile.sample.score(for: selectedTaste))점")
-                                    .font(TBFont.medium(11))
-                                    .foregroundStyle(TBColor.textSecondary)
-                            }
-                        }
-                        .padding(12)
-                        .background(TBColor.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(TBColor.border, lineWidth: 1)
-                        }
-
-                        Spacer()
-
-                        TasteSelectorButton(axis: nextTaste, isMuted: true) {
-                            moveTaste(1)
-                        }
-                    }
-
-                    TasteTrendChart(axis: selectedTaste)
-                        .frame(height: 280)
-                        .padding(.horizontal, -12)
+                    Spacer()
 
                     HStack(spacing: 8) {
-                        TrendMetric(label: "첫 기록", value: "62점")
-                        TrendMetric(label: "현재", value: "\(TasteProfile.sample.score(for: selectedTaste))점")
-                        TrendMetric(
-                            label: "변화",
-                            value: "+8",
-                            accent: selectedTaste.mainColor,
-                            labelColor: selectedTaste.mainColor,
-                            background: selectedTaste.tintColor
+                        LucideIcon(
+                            systemName: selectedTaste.symbol,
+                            size: TBIcon.Size.base,
+                            strokeWidth: TBIcon.Stroke.regular
                         )
+                            .foregroundStyle(selectedTaste.mainColor)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(selectedTaste.label)
+                                .font(TBFont.semibold(14))
+                                .foregroundStyle(TBColor.textPrimary)
+                            Text("\(TasteProfile.sample.score(for: selectedTaste))점")
+                                .font(TBFont.medium(11))
+                                .foregroundStyle(TBColor.textSecondary)
+                        }
+                    }
+                    .padding(12)
+                    .background(TBColor.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(TBColor.border, lineWidth: 1)
                     }
 
-                    VStack(spacing: 8) {
-                        TrendMeaningRow(
-                            title: "지금 읽히는 변화",
-                            detail: "\(selectedTaste.label) 반응이 이전보다 조금 더 또렷하게 읽히고 있습니다."
-                        )
-                        TrendMeaningRow(
-                            title: "다이닝에서의 의미",
-                            detail: "재료의 강도보다 코스 안에서 언제 나타나는지 함께 보면 더 정확한 기준이 됩니다."
-                        )
-                        TrendMeaningRow(
-                            title: "다음 반영 방식",
-                            detail: "다음 식후 피드백에서 같은 축의 편안함과 여운을 다시 확인합니다."
-                        )
+                    Spacer()
+
+                    TasteSelectorButton(axis: nextTaste, isMuted: true) {
+                        moveTaste(1)
                     }
                 }
-                .tbPageContentPadding()
-                .background(TBColor.surface)
+
+                TasteTrendChart(axis: selectedTaste)
+                    .frame(height: 280)
+                    .padding(.horizontal, -12)
+
+                HStack(spacing: 8) {
+                    TrendMetric(label: "첫 기록", value: "62점")
+                    TrendMetric(label: "현재", value: "\(TasteProfile.sample.score(for: selectedTaste))점")
+                    TrendMetric(
+                        label: "변화",
+                        value: "+8",
+                        accent: selectedTaste.mainColor,
+                        labelColor: selectedTaste.mainColor,
+                        background: selectedTaste.tintColor
+                    )
+                }
+
+                VStack(spacing: 8) {
+                    TrendMeaningRow(
+                        title: "지금 읽히는 변화",
+                        detail: "\(selectedTaste.label) 반응이 이전보다 조금 더 또렷하게 읽히고 있습니다."
+                    )
+                    TrendMeaningRow(
+                        title: "다이닝에서의 의미",
+                        detail: "재료의 강도보다 코스 안에서 언제 나타나는지 함께 보면 더 정확한 기준이 됩니다."
+                    )
+                    TrendMeaningRow(
+                        title: "다음 반영 방식",
+                        detail: "다음 식후 피드백에서 같은 축의 편안함과 여운을 다시 확인합니다."
+                    )
+                }
             }
+            .tbPageContentPadding()
+            .background(TBColor.surface)
         }
         .tbPageBackground()
+    }
+
+    private var periodTabs: some View {
+        HStack(spacing: 8) {
+            ForEach(ranges, id: \.self) { range in
+                Button {
+                    selectedRange = range
+                } label: {
+                    Text(range)
+                        .font(TBFont.semibold(13))
+                        .foregroundStyle(
+                            selectedRange == range
+                                ? selectedTaste.mainColor
+                                : TBColor.textTertiary
+                        )
+                        .padding(.horizontal, 14)
+                        .frame(height: 32)
+                        .background(
+                            selectedRange == range
+                                ? selectedTaste.tintColor
+                                : Color.clear
+                        )
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selectedRange == range ? .isSelected : [])
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, TBSpacing.page)
+        .padding(.bottom, 16)
     }
 
     private func moveTaste(_ direction: Int) {
         selectedTasteIndex = (selectedTasteIndex + direction + tastes.count) % tastes.count
     }
+}
+
+#Preview("Taste Change Collapsing Header") {
+    TasteChangeFocusView(
+        topChrome: AnyView(
+            TopAppBar(
+                appearance: .transparent,
+                title: "미각 변화",
+                showBack: true,
+                showsDefaultActions: false,
+                onBack: {}
+            )
+        ),
+        contentOffset: 0
+    )
+    .tbScreenTopChrome()
 }
 
 private struct CircleNavigationButton: View {
@@ -1761,7 +1843,7 @@ private struct CircleNavigationButton: View {
                         )
                 }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
     }
 }
