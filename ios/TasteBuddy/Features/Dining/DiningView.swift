@@ -66,28 +66,21 @@ struct DiningView: View {
         MainTabChromeScrollView(topChrome: systemTopChrome) {
             VStack(alignment: .leading, spacing: TBSpacing.section) {
                 TBPageSection(title: "나의 디시") {
-                    VStack(spacing: 12) {
+                    LazyVStack(spacing: 12) {
                         switch contentState {
                         case .loading:
                             ForEach(0..<dishFeedbackSkeletonCardCount, id: \.self) { _ in
                                 NativeDishFeedbackCardSkeleton()
                             }
                         case .populated:
-                            ForEach(dishFeedItems) { item in
-                                let displayItem = appModel
-                                    .dishFeedbackItemWithCurrentComments(item)
-                                NativeDishFeedbackCard(
-                                    item: displayItem,
-                                    onOptionsTap: onOpenDishOptions.map { handler in
-                                        { handler(displayItem) }
-                                    },
-                                    onDetailTap: {
-                                        presentation = .comments(displayItem)
-                                    },
-                                    onCommentsTap: {
-                                        presentation = .comments(displayItem)
-                                    }
-                                )
+                            if appModel.diningEntries.isEmpty {
+                                ForEach(TasteBuddyNativeContent.fallbackDishFeedbackItems) { item in
+                                    dishFeedbackCard(item)
+                                }
+                            } else {
+                                ForEach(appModel.diningEntries) { entry in
+                                    dishFeedbackCard(dishFeedItem(for: entry))
+                                }
                             }
                         }
                     }
@@ -109,79 +102,81 @@ struct DiningView: View {
         )
     }
 
-    private var dishFeedItems: [DiningDishFeedbackItem] {
-        if appModel.diningEntries.isEmpty {
-            return TasteBuddyNativeContent.fallbackDishFeedbackItems.map {
-                appModel.dishFeedbackItemWithCurrentComments($0)
-            }
-        }
+    private func dishFeedbackCard(_ item: DiningDishFeedbackItem) -> some View {
+        let displayItem = appModel.dishFeedbackItemWithCurrentComments(item)
+        return NativeDishFeedbackCard(
+            item: displayItem,
+            onOptionsTap: onOpenDishOptions.map { handler in
+                { handler(displayItem) }
+            },
+            onDetailTap: { presentation = .comments(displayItem) },
+            onCommentsTap: { presentation = .comments(displayItem) }
+        )
+    }
 
-        return appModel.diningEntries.map { entry in
-            let subject = entry.menu.isEmpty ? "다이닝 기록" : entry.menu
-            let recordedTasteTags = entry.tasteExperienceIDs.compactMap {
-                TasteExperienceCatalog.experienceByID[$0]?.label
-            }
-            let tasteTags = recordedTasteTags.isEmpty
-                ? (appModel.profile?.topAxes ?? [.umami, .sour]).map(\.label)
-                : recordedTasteTags
-            let detailTags = entry.detailTagIDs.isEmpty
-                ? (
-                    entry.rating >= 4
-                        ? ["balance-well-balanced", "flow-opens-next", "composition-connected"]
-                        : ["balance-one-note-forward", "flow-finish-piled", "composition-course-fit"]
-                )
-                : entry.detailTagIDs
-            let dishKindTags = entry.dishKindIDs.isEmpty
-                ? TasteBuddyAgent.inferDishKindIds(
-                    title: subject,
-                    subtitle: entry.restaurant,
-                    flavorNotes: tasteTags + detailTags
-                )
-                : entry.dishKindIDs
-            let reviewerProfile = appModel.tbaTasteProfile
-            let tbaInput = TasteBuddyAgentDiningAnalysisInput(
-                detailTags: detailTags,
-                dishKindTags: dishKindTags,
-                id: entry.id.uuidString,
-                ingredients: [],
-                restaurantName: entry.restaurant,
-                reviewSnippet: entry.note.isEmpty
-                    ? "전체 만족도 \(entry.rating)점으로 남긴 기록입니다. 다음에는 더 구체적인 미각 단서를 함께 남겨보세요."
-                    : entry.note,
-                reviewerProfile: reviewerProfile,
-                subject: subject,
-                tasteTags: tasteTags,
-                techniques: []
+    private func dishFeedItem(for entry: DiningEntry) -> DiningDishFeedbackItem {
+        let subject = entry.menu.isEmpty ? "다이닝 기록" : entry.menu
+        let recordedTasteTags = entry.tasteExperienceIDs.compactMap {
+            TasteExperienceCatalog.experienceByID[$0]?.label
+        }
+        let tasteTags = recordedTasteTags.isEmpty
+            ? (appModel.profile?.topAxes ?? [.umami, .sour]).map(\.label)
+            : recordedTasteTags
+        let detailTags = entry.detailTagIDs.isEmpty
+            ? (
+                entry.rating >= 4
+                    ? ["balance-well-balanced", "flow-opens-next", "composition-connected"]
+                    : ["balance-one-note-forward", "flow-finish-piled", "composition-course-fit"]
             )
-            let snapshot = entry.tbaAnalysisSnapshot
-                ?? TasteBuddyAgent.buildDiningAnalysisSnapshot(tbaInput)
-            let images = DiningReflectionPhotoStore.data(
-                for: entry.reflectionPhotoFilename
-            ).map {
-                [
-                    DiningDishFeedbackItem.Image(
-                        id: "\(entry.id.uuidString)-reflection-photo",
-                        alt: "\(subject) 미식 기록 사진",
-                        imageData: $0
-                    ),
-                ]
-            } ?? []
+            : entry.detailTagIDs
+        let dishKindTags = entry.dishKindIDs.isEmpty
+            ? TasteBuddyAgent.inferDishKindIds(
+                title: subject,
+                subtitle: entry.restaurant,
+                flavorNotes: tasteTags + detailTags
+            )
+            : entry.dishKindIDs
+        let reviewerProfile = appModel.tbaTasteProfile
+        let tbaInput = TasteBuddyAgentDiningAnalysisInput(
+            detailTags: detailTags,
+            dishKindTags: dishKindTags,
+            id: entry.id.uuidString,
+            ingredients: [],
+            restaurantName: entry.restaurant,
+            reviewSnippet: entry.note.isEmpty
+                ? "전체 만족도 \(entry.rating)점으로 남긴 기록입니다. 다음에는 더 구체적인 미각 단서를 함께 남겨보세요."
+                : entry.note,
+            reviewerProfile: reviewerProfile,
+            subject: subject,
+            tasteTags: tasteTags,
+            techniques: []
+        )
+        let snapshot = entry.tbaAnalysisSnapshot
+            ?? TasteBuddyAgent.buildDiningAnalysisSnapshot(tbaInput)
+        let images = entry.reflectionPhotoFilename.map { filename in
+            [
+                DiningDishFeedbackItem.Image(
+                    id: "\(entry.id.uuidString)-reflection-photo",
+                    alt: "\(subject) 미식 기록 사진",
+                    localPhotoFilename: filename
+                ),
+            ]
+        } ?? []
 
-            return appModel.dishFeedbackItemWithCurrentComments(DiningDishFeedbackItem(
-                id: entry.id.uuidString,
-                authorName: "나",
-                restaurantName: entry.restaurant,
-                dishTitle: subject,
-                summary: snapshot.summary,
-                reactionLabel: snapshot.tasteBubbles.first?.label ?? (entry.rating >= 4 ? "편안한 밸런스" : "다음 조절 필요"),
-                images: images,
-                detailTags: snapshot.detailTags.map(DishFeedbackCardTag.fromTBA),
-                tasteBubbles: snapshot.tasteBubbles.map(DishFeedbackTasteBubble.fromTBA),
-                commentCount: 0,
-                liked: entry.rating >= 4,
-                tbaAnalysisSnapshot: snapshot
-            ))
-        }
+        return DiningDishFeedbackItem(
+            id: entry.id.uuidString,
+            authorName: "나",
+            restaurantName: entry.restaurant,
+            dishTitle: subject,
+            summary: snapshot.summary,
+            reactionLabel: snapshot.tasteBubbles.first?.label ?? (entry.rating >= 4 ? "편안한 밸런스" : "다음 조절 필요"),
+            images: images,
+            detailTags: snapshot.detailTags.map(DishFeedbackCardTag.fromTBA),
+            tasteBubbles: snapshot.tasteBubbles.map(DishFeedbackTasteBubble.fromTBA),
+            commentCount: 0,
+            liked: entry.rating >= 4,
+            tbaAnalysisSnapshot: snapshot
+        )
     }
 
     private func diningEntry(for item: DiningDishFeedbackItem) -> DiningEntry? {
@@ -811,7 +806,7 @@ private struct TasteMapChromeGlass<ChromeShape: Shape>: ViewModifier {
 }
 
 struct DiningFeedbackSheet: View {
-    private enum Phase {
+    private enum Phase: Equatable {
         case menu
         case restaurantSelection
         case tasteWords
@@ -920,6 +915,10 @@ struct DiningFeedbackSheet: View {
     @State private var reflectionPhotoData: Data?
     @State private var reflectionPhotoFilename: String?
     @State private var photoPickerItem: PhotosPickerItem?
+    @State private var photoLoadTask: Task<Void, Never>?
+    @State private var photoLoadRequestID = UUID()
+    @State private var cameraSessionID = UUID()
+    @State private var restaurantResolutionTask: Task<Void, Never>?
     @State private var photoLoadError: String?
     @State private var pendingCaptureLocation: CLLocation?
     @State private var cameraClosePhase: Phase?
@@ -1017,6 +1016,21 @@ struct DiningFeedbackSheet: View {
         )
         .task(id: showsLaunchTransitionOverlay) {
             await dismissLaunchTransitionAfterDelay()
+        }
+        // Keep one picker consumer alive across the detail/reflection phase transition.
+        .onChange(of: photoPickerItem) { _, item in
+            guard let item, photoPickerItem == item else { return }
+            startLoadingReflectionPhoto(from: item)
+        }
+        .onChange(of: phase) { previousPhase, nextPhase in
+            if previousPhase == .cameraCapture, nextPhase != .cameraCapture {
+                cancelPhotoLoading()
+            }
+        }
+        .onDisappear {
+            cancelPhotoLoading()
+            restaurantResolutionTask?.cancel()
+            restaurantResolutionTask = nil
         }
     }
 
@@ -1670,12 +1684,6 @@ struct DiningFeedbackSheet: View {
             )
         }
         .background(TBColor.focus.ignoresSafeArea())
-        .onChange(of: photoPickerItem) { _, item in
-            guard let item else { return }
-            Task {
-                await loadReflectionPhoto(from: item)
-            }
-        }
         .alert("사진을 불러오지 못했어요", isPresented: photoLoadErrorBinding) {
             Button("확인", role: .cancel) {
                 photoLoadError = nil
@@ -1720,6 +1728,7 @@ struct DiningFeedbackSheet: View {
                             photoData: reflectionPhotoData,
                             photoPickerItem: $photoPickerItem,
                             onRemove: {
+                                cancelPhotoLoading()
                                 reflectionPhotoData = nil
                                 reflectionPhotoFilename = nil
                             }
@@ -1743,12 +1752,6 @@ struct DiningFeedbackSheet: View {
             )
         }
         .background(TBColor.focus.ignoresSafeArea())
-        .onChange(of: photoPickerItem) { _, item in
-            guard let item else { return }
-            Task {
-                await loadReflectionPhoto(from: item)
-            }
-        }
     }
 
     private var cameraCaptureView: some View {
@@ -1862,35 +1865,22 @@ struct DiningFeedbackSheet: View {
         }
         .preferredColorScheme(.dark)
         .onAppear {
+            let sessionID = UUID()
+            cameraSessionID = sessionID
             cameraModel.onCapture = { data in
                 Task { @MainActor in
-                    applyCameraPhoto(data)
+                    guard cameraSessionID == sessionID, phase == .cameraCapture,
+                          photoPickerItem == nil else { return }
+                    startLoadingCameraPhoto(data)
                 }
             }
             restaurantResolver.prepareForPhotoLocation()
             cameraModel.start()
         }
         .onDisappear {
+            cameraSessionID = UUID()
             cameraModel.onCapture = nil
             cameraModel.stop()
-        }
-        .onChange(of: photoPickerItem) { _, item in
-            guard let item else { return }
-            Task {
-                if let photoPayload = await loadReflectionPhotoPayload(from: item) {
-                    let nextPhase = phaseAfterPhotoCapture
-                    photoPickerItem = nil
-                    cameraClosePhase = nil
-                    if nextPhase == .restaurantSelection {
-                        beginRestaurantResolution(
-                            from: photoPayload.data,
-                            capturedLocation: nil,
-                            assetLocation: photoPayload.assetLocation
-                        )
-                    }
-                    phase = nextPhase
-                }
-            }
         }
         .alert("사진을 불러오지 못했어요", isPresented: photoLoadErrorBinding) {
             Button("확인", role: .cancel) {
@@ -2998,12 +2988,16 @@ struct DiningFeedbackSheet: View {
     }
 
     private func openCameraCapture(returningTo phase: Phase?) {
+        cancelPhotoLoading()
         photoLoadError = nil
         cameraClosePhase = phase
         self.phase = .cameraCapture
     }
 
     private func closeCameraCapture() {
+        cancelPhotoLoading()
+        cameraSessionID = UUID()
+        pendingCaptureLocation = nil
         cameraModel.stop()
         if let cameraClosePhase {
             phase = cameraClosePhase
@@ -3014,31 +3008,66 @@ struct DiningFeedbackSheet: View {
     }
 
     private func captureDiningPhoto() {
+        cancelPhotoLoading()
         pendingCaptureLocation = restaurantResolver.captureLocationSnapshot()
         cameraModel.capturePhoto()
     }
 
     @MainActor
-    private func applyCameraPhoto(_ data: Data) {
-        guard applyReflectionPhotoData(data) else { return }
+    private func startLoadingCameraPhoto(_ data: Data) {
+        cancelPhotoLoading()
+        let requestID = photoLoadRequestID
         let nextPhase = phaseAfterPhotoCapture
         let capturedLocation = pendingCaptureLocation
         pendingCaptureLocation = nil
-        cameraClosePhase = nil
-        if nextPhase == .restaurantSelection {
-            beginRestaurantResolution(
-                from: data,
-                capturedLocation: capturedLocation,
-                assetLocation: nil
-            )
+        photoLoadTask = Task { @MainActor in
+            defer { finishPhotoLoading(requestID: requestID) }
+            guard await applyReflectionPhotoData(data, requestID: requestID),
+                  phase == .cameraCapture else { return }
+            cameraClosePhase = nil
+            if nextPhase == .restaurantSelection {
+                beginRestaurantResolution(
+                    from: data,
+                    capturedLocation: capturedLocation,
+                    assetLocation: nil
+                )
+            }
+            phase = nextPhase
         }
-        phase = nextPhase
     }
 
-    @discardableResult
     @MainActor
-    private func applyReflectionPhotoData(_ data: Data) -> Bool {
-        guard let normalizedData = DiningReflectionPhotoStore.normalizedJPEGData(data) else {
+    private func cancelPhotoLoading() {
+        photoLoadRequestID = UUID()
+        photoLoadTask?.cancel()
+        photoLoadTask = nil
+        photoPickerItem = nil
+    }
+
+    @MainActor
+    private func finishPhotoLoading(requestID: UUID, selection: PhotosPickerItem? = nil) {
+        guard photoLoadRequestID == requestID else { return }
+        photoLoadTask = nil
+        // Do not clear a newer selection whose onChange has not run yet.
+        if photoPickerItem == selection {
+            photoPickerItem = nil
+        }
+    }
+
+    @MainActor
+    private func isCurrentPhotoRequest(_ requestID: UUID, selection: PhotosPickerItem? = nil) -> Bool {
+        !Task.isCancelled && photoLoadRequestID == requestID && photoPickerItem == selection
+    }
+
+    @MainActor
+    private func applyReflectionPhotoData(
+        _ data: Data,
+        requestID: UUID,
+        selection: PhotosPickerItem? = nil
+    ) async -> Bool {
+        let normalizedData = await DiningReflectionPhotoStore.normalizedJPEGDataInBackground(data)
+        guard isCurrentPhotoRequest(requestID, selection: selection) else { return false }
+        guard let normalizedData else {
             photoLoadError = "선택한 이미지를 읽을 수 없어요. 다른 사진을 선택해주세요."
             return false
         }
@@ -3060,47 +3089,53 @@ struct DiningFeedbackSheet: View {
         directRestaurantName = ""
         confirmedRestaurantName = nil
 
-        Task { @MainActor in
+        restaurantResolutionTask?.cancel()
+        restaurantResolutionTask = Task { @MainActor in
             await restaurantResolver.resolveRestaurantCandidates(
                 from: photoData,
                 capturedLocation: capturedLocation,
                 assetLocation: assetLocation
             )
+            guard !Task.isCancelled else { return }
             selectedRestaurantCandidateID = restaurantResolver.candidates.first?.id
             usesRestaurantDirectInput = restaurantResolver.candidates.isEmpty
         }
     }
 
-    @discardableResult
     @MainActor
-    private func loadReflectionPhoto(from item: PhotosPickerItem) async -> Bool {
-        await loadReflectionPhotoData(from: item) != nil
-    }
-
-    @MainActor
-    private func loadReflectionPhotoData(from item: PhotosPickerItem) async -> Data? {
-        await loadReflectionPhotoPayload(from: item)?.data
-    }
-
-    @MainActor
-    private func loadReflectionPhotoPayload(from item: PhotosPickerItem) async -> DiningFeedbackPhotoPayload? {
-        do {
-            guard let data = try await item.loadTransferable(type: Data.self) else {
-                photoLoadError = "선택한 이미지를 읽을 수 없어요. 다른 사진을 선택해주세요."
-                return nil
+    private func startLoadingReflectionPhoto(from item: PhotosPickerItem) {
+        guard photoPickerItem == item else { return }
+        photoLoadTask?.cancel()
+        photoLoadRequestID = UUID()
+        let requestID = photoLoadRequestID
+        let isCameraSelection = phase == .cameraCapture
+        let nextPhase = phaseAfterPhotoCapture
+        photoLoadTask = Task { @MainActor in
+            defer { finishPhotoLoading(requestID: requestID, selection: item) }
+            do {
+                let data = try await item.loadTransferable(type: Data.self)
+                guard isCurrentPhotoRequest(requestID, selection: item) else { return }
+                guard let data else {
+                    photoLoadError = "선택한 이미지를 읽을 수 없어요. 다른 사진을 선택해주세요."
+                    return
+                }
+                guard await applyReflectionPhotoData(data, requestID: requestID, selection: item) else { return }
+                if isCameraSelection {
+                    guard phase == .cameraCapture else { return }
+                    cameraClosePhase = nil
+                    if nextPhase == .restaurantSelection {
+                        beginRestaurantResolution(
+                            from: data,
+                            capturedLocation: nil,
+                            assetLocation: Self.photoLibraryLocation(for: item)
+                        )
+                    }
+                    phase = nextPhase
+                }
+            } catch {
+                guard isCurrentPhotoRequest(requestID, selection: item) else { return }
+                photoLoadError = "사진을 불러오는 중 문제가 생겼어요. 다시 시도해주세요."
             }
-
-            guard applyReflectionPhotoData(data) else {
-                return nil
-            }
-
-            return DiningFeedbackPhotoPayload(
-                data: data,
-                assetLocation: Self.photoLibraryLocation(for: item)
-            )
-        } catch {
-            photoLoadError = "사진을 불러오는 중 문제가 생겼어요. 다시 시도해주세요."
-            return nil
         }
     }
 
@@ -3180,6 +3215,9 @@ struct DiningFeedbackSheet: View {
     }
 
     private func closeFeedback() {
+        cancelPhotoLoading()
+        restaurantResolutionTask?.cancel()
+        restaurantResolutionTask = nil
         if let onClose {
             onClose()
         } else {
@@ -3381,6 +3419,9 @@ struct DiningFeedbackSheet: View {
     }
 
     private func handleResultAdditionalRecord() {
+        cancelPhotoLoading()
+        restaurantResolutionTask?.cancel()
+        restaurantResolutionTask = nil
         selectedDishIndex = nil
         selectedRestaurantCandidateID = nil
         usesRestaurantDirectInput = false
@@ -4105,10 +4146,7 @@ private struct DiningFeedbackCameraChromeIcon: View {
     }
 }
 
-private struct DiningFeedbackPhotoPayload {
-    let data: Data
-    let assetLocation: CLLocation?
-}
+
 
 private struct DiningFeedbackRestaurantCandidate: Identifiable, Equatable {
     let id: String
@@ -4149,6 +4187,7 @@ private final class DiningFeedbackRestaurantResolver: NSObject, ObservableObject
     private let locationManager = CLLocationManager()
     private let placeAPIClient = RestaurantPlaceAPIClient()
     private var latestLocation: CLLocation?
+    private var activeResolutionID = UUID()
     private static let fullAccuracyPurposeKey = "DishMemoryRestaurantSuggestion"
 
     override init() {
@@ -4201,6 +4240,9 @@ private final class DiningFeedbackRestaurantResolver: NSObject, ObservableObject
         capturedLocation: CLLocation?,
         assetLocation: CLLocation?
     ) async {
+        guard !Task.isCancelled else { return }
+        let resolutionID = UUID()
+        activeResolutionID = resolutionID
         state = .loading
         candidates = []
 
@@ -4215,10 +4257,12 @@ private final class DiningFeedbackRestaurantResolver: NSObject, ObservableObject
         }
 
         let recognizedTextLines = await Self.recognizedTextLines(from: photoData)
+        guard !Task.isCancelled, activeResolutionID == resolutionID else { return }
         let nearbyCandidates = await searchNearbyRestaurants(
             near: location,
             recognizedTextLines: recognizedTextLines
         )
+        guard !Task.isCancelled, activeResolutionID == resolutionID else { return }
         candidates = nearbyCandidates
         state = nearbyCandidates.isEmpty
             ? .unavailable("이 위치 주변의 식당 후보를 찾지 못했어요. 식당명을 직접 입력해 주세요.")
@@ -4227,6 +4271,7 @@ private final class DiningFeedbackRestaurantResolver: NSObject, ObservableObject
 
     @MainActor
     func reset() {
+        activeResolutionID = UUID()
         candidates = []
         state = .idle
     }

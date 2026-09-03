@@ -1,4 +1,6 @@
 import SwiftUI
+import ImageIO
+import UniformTypeIdentifiers
 
 struct TasteAxisPalette: Equatable {
     let main: Color
@@ -465,30 +467,71 @@ struct DiningEntry: Identifiable, Codable, Equatable {
 
 enum DiningReflectionPhotoStore {
     private static let directoryName = "DiningFeedbackPhotos"
+    private static let thumbnailCache = ThumbnailCache()
 
     static func normalizedJPEGData(_ data: Data) -> Data? {
-        guard let image = UIImage(data: data) else { return nil }
-        let maximumDimension: CGFloat = 1_600
-        let longestDimension = max(image.size.width, image.size.height)
-        let scale = min(1, maximumDimension / max(longestDimension, 1))
-        let targetSize = CGSize(
-            width: max(1, image.size.width * scale),
-            height: max(1, image.size.height * scale)
-        )
-        let renderer = UIGraphicsImageRenderer(size: targetSize)
-        let normalizedImage = renderer.image { _ in
-            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        guard let source = imageSource(data: data),
+              let image = downsample(source, maximumPixelDimension: 1_600) else { return nil }
+        let result = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(
+            result, UTType.jpeg.identifier as CFString, 1, nil
+        ) else { return nil }
+        CGImageDestinationAddImage(destination, image, [
+            kCGImageDestinationLossyCompressionQuality: 0.84,
+            kCGImagePropertyOrientation: 1
+        ] as CFDictionary)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return result as Data
+    }
+
+    static func normalizedJPEGDataInBackground(_ data: Data) async -> Data? {
+        let worker = Task.detached(priority: .userInitiated) {
+            guard !Task.isCancelled else { return nil as Data? }
+            let result = normalizedJPEGData(data)
+            return Task.isCancelled ? nil : result
         }
-        return normalizedImage.jpegData(compressionQuality: 0.84)
+        let result = await withTaskCancellationHandler {
+            await worker.value
+        } onCancel: {
+            worker.cancel()
+        }
+        return Task.isCancelled ? nil : result
+    }
+
+    static func thumbnail(
+        for filename: String?, data: Data? = nil, fillingSquareOf pixels: Int
+    ) async -> CGImage? {
+        let worker = Task.detached(priority: .userInitiated) {
+            guard !Task.isCancelled else { return nil as CGImage? }
+            let result: CGImage?
+            if let data {
+                result = imageSource(data: data).flatMap {
+                    squareFillThumbnail($0, pixels: pixels)
+                }
+            } else if let filename {
+                result = cachedThumbnail(for: filename, pixels: pixels)
+            } else {
+                result = nil
+            }
+            return Task.isCancelled ? nil : result
+        }
+        let result = await withTaskCancellationHandler {
+            await worker.value
+        } onCancel: {
+            worker.cancel()
+        }
+        return Task.isCancelled ? nil : result
     }
 
     static func save(_ data: Data, entryID: UUID) throws -> String {
-        let filename = "\(entryID.uuidString.lowercased()).jpg"
+        // A replacement must also change the SwiftUI image task's identity.
+        let filename = "\(entryID.uuidString.lowercased())-\(UUID().uuidString.lowercased()).jpg"
         try FileManager.default.createDirectory(
             at: directoryURL,
             withIntermediateDirectories: true
         )
         try data.write(to: directoryURL.appendingPathComponent(filename), options: .atomic)
+        thumbnailCache.invalidate()
         return filename
     }
 
@@ -502,6 +545,129 @@ enum DiningReflectionPhotoStore {
         try? FileManager.default.removeItem(
             at: directoryURL.appendingPathComponent(filename)
         )
+        thumbnailCache.invalidate()
+    }
+
+    private static func imageSource(data: Data) -> CGImageSource? {
+        CGImageSourceCreateWithData(data as CFData, [
+            kCGImageSourceShouldCache: false
+        ] as CFDictionary)
+    }
+
+    private static func dimensions(of source: CGImageSource) -> (width: Int, height: Int)? {
+        guard let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil)
+                as? [CFString: Any],
+              let width = properties[kCGImagePropertyPixelWidth] as? Int,
+              let height = properties[kCGImagePropertyPixelHeight] as? Int,
+              width > 0, height > 0 else { return nil }
+        return (width, height)
+    }
+
+    private static func downsample(
+        _ source: CGImageSource, maximumPixelDimension: Int
+    ) -> CGImage? {
+        guard maximumPixelDimension > 0, let size = dimensions(of: source) else { return nil }
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: min(maximumPixelDimension, max(size.width, size.height)),
+            kCGImageSourceShouldCacheImmediately: true
+        ] as CFDictionary)
+    }
+
+    private static func squareFillThumbnail(_ source: CGImageSource, pixels: Int) -> CGImage? {
+        guard pixels > 0, let size = dimensions(of: source) else { return nil }
+        // Preserve the square crop's short edge, but do not decode an entire panorama.
+        let scale = min(1, Double(pixels) / Double(min(size.width, size.height)))
+        return downsample(
+            source,
+            maximumPixelDimension: Int(min(1_600, ceil(Double(max(size.width, size.height)) * scale)))
+        )
+    }
+
+    private static func cachedThumbnail(for filename: String, pixels: Int) -> CGImage? {
+        let key = "\(filename)#\(pixels)"
+        while !Task.isCancelled {
+            let cached = thumbnailCache.lookup(key)
+            if let image = cached.image { return image }
+            guard let source = CGImageSourceCreateWithURL(
+                directoryURL.appendingPathComponent(filename) as CFURL,
+                [kCGImageSourceShouldCache: false] as CFDictionary
+            ), let image = squareFillThumbnail(source, pixels: pixels) else { return nil }
+            guard !Task.isCancelled else { return nil }
+            if thumbnailCache.insert(image, key: key, generation: cached.generation) { return image }
+            // A save/remove raced the decode. Read again instead of retaining stale pixels.
+        }
+        return nil
+    }
+
+    private final class ThumbnailCache: @unchecked Sendable {
+        private let lock = NSLock()
+        private let maximumCost = 16 * 1_024 * 1_024
+        private let maximumCount = 32
+        private var images: [String: CGImage] = [:]
+        private var order: [String] = []
+        private var totalCost = 0
+        private var generation: UInt64 = 0
+        private var memoryWarningObserver: NSObjectProtocol?
+
+        init() {
+            memoryWarningObserver = NotificationCenter.default.addObserver(
+                forName: UIApplication.didReceiveMemoryWarningNotification,
+                object: nil,
+                queue: nil
+            ) { [weak self] _ in
+                self?.invalidate()
+            }
+        }
+
+        deinit {
+            if let memoryWarningObserver {
+                NotificationCenter.default.removeObserver(memoryWarningObserver)
+            }
+        }
+
+        func lookup(_ key: String) -> (image: CGImage?, generation: UInt64) {
+            lock.lock()
+            defer { lock.unlock() }
+            if let image = images[key] {
+                order.removeAll { $0 == key }
+                order.append(key)
+                return (image, generation)
+            }
+            return (nil, generation)
+        }
+
+        func insert(_ image: CGImage, key: String, generation expectedGeneration: UInt64) -> Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            guard generation == expectedGeneration else { return false }
+            let cost = image.bytesPerRow * image.height
+            guard cost <= maximumCost else { return true }
+            if let previous = images.removeValue(forKey: key) {
+                totalCost -= previous.bytesPerRow * previous.height
+                order.removeAll { $0 == key }
+            }
+            while totalCost + cost > maximumCost || order.count >= maximumCount {
+                let oldest = order.removeFirst()
+                if let removed = images.removeValue(forKey: oldest) {
+                    totalCost -= removed.bytesPerRow * removed.height
+                }
+            }
+            images[key] = image
+            order.append(key)
+            totalCost += cost
+            return true
+        }
+
+        func invalidate() {
+            lock.lock()
+            defer { lock.unlock() }
+            generation &+= 1
+            images.removeAll()
+            order.removeAll()
+            totalCost = 0
+        }
     }
 
     private static var directoryURL: URL {
@@ -705,19 +871,22 @@ struct DiningDishFeedbackItem: Identifiable, Equatable {
         let imageName: String?
         let imageURLString: String?
         let imageData: Data?
+        let localPhotoFilename: String?
 
         init(
             id: String,
             alt: String,
             imageName: String? = nil,
             imageURLString: String? = nil,
-            imageData: Data? = nil
+            imageData: Data? = nil,
+            localPhotoFilename: String? = nil
         ) {
             self.id = id
             self.alt = alt
             self.imageName = imageName
             self.imageURLString = imageURLString
             self.imageData = imageData
+            self.localPhotoFilename = localPhotoFilename
         }
 
         var imageURL: URL? {
@@ -726,7 +895,8 @@ struct DiningDishFeedbackItem: Identifiable, Equatable {
         }
 
         var isUserFeedbackMedia: Bool {
-            imageData != nil || imageURL != nil || imageName?.hasPrefix("Feedback") == true
+            imageData != nil || localPhotoFilename != nil || imageURL != nil
+                || imageName?.hasPrefix("Feedback") == true
         }
     }
 

@@ -1459,33 +1459,83 @@ private struct DishFeedbackImageRail: View {
     var body: some View {
         if !visibleImages.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                LazyHStack(spacing: 8) {
                     ForEach(visibleImages) { image in
-                        dishImage(image)
+                        DishFeedbackImageTile(image: image)
                     }
                 }
                 .padding(.horizontal, unframed ? TBSpacing.page : TBSpacing.card)
             }
             .contentMargins(.horizontal, 0, for: .scrollContent)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 144)
             .padding(.horizontal, unframed ? -TBSpacing.page : -TBSpacing.card)
             .accessibilityElement(children: .contain)
         }
     }
+}
+
+private struct DishFeedbackImageTile: View {
+    @Environment(\.displayScale) private var displayScale
+    let image: DiningDishFeedbackItem.Image
+    @State private var thumbnail: CGImage?
+    @State private var loadedRequest: Request?
+    @State private var loadGeneration = UUID()
+    @State private var didFinishLoading = false
+    private let tileSize: CGFloat = 144
+
+    private struct Request: Equatable {
+        let filename: String?
+        let data: Data?
+        let pixels: Int
+
+        var hasLocalSource: Bool { filename != nil || data != nil }
+    }
+
+    var body: some View {
+        let request = Request(
+            filename: image.localPhotoFilename,
+            data: image.imageData,
+            pixels: max(1, Int(ceil(tileSize * displayScale)))
+        )
+        imageContent(for: request)
+            .frame(width: tileSize, height: tileSize)
+            .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
+            .clipped()
+            .accessibilityLabel(image.alt)
+            .task(id: request) {
+                let generation = UUID()
+                loadGeneration = generation
+                thumbnail = nil
+                loadedRequest = request
+                didFinishLoading = false
+                guard request.hasLocalSource else { return }
+                let result = await DiningReflectionPhotoStore.thumbnail(
+                    for: request.filename,
+                    data: request.data,
+                    fillingSquareOf: request.pixels
+                )
+                guard !Task.isCancelled, loadGeneration == generation else { return }
+                thumbnail = result
+                didFinishLoading = true
+            }
+            .onDisappear {
+                // Lazy stacks retain row state; release its decoded pixels outside the viewport.
+                loadGeneration = UUID()
+                thumbnail = nil
+                loadedRequest = nil
+                didFinishLoading = false
+            }
+    }
 
     @ViewBuilder
-    private func dishImage(_ image: DiningDishFeedbackItem.Image) -> some View {
-        let tileSize: CGFloat = 144
-
-        if let imageData = image.imageData,
-           let localImage = UIImage(data: imageData) {
-            Image(uiImage: localImage)
+    private func imageContent(for request: Request) -> some View {
+        if loadedRequest == request, let thumbnail {
+            Image(decorative: thumbnail, scale: displayScale, orientation: .up)
                 .resizable()
                 .scaledToFill()
-                .frame(width: tileSize, height: tileSize)
-                .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
-                .clipped()
-                .accessibilityLabel(image.alt)
+        } else if request.hasLocalSource, !(didFinishLoading && loadedRequest == request) {
+            loadingPlaceholder
         } else if let imageURL = image.imageURL {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
@@ -1496,25 +1546,23 @@ private struct DishFeedbackImageRail: View {
                 case .failure:
                     feedbackImagePlaceholder
                 case .empty:
-                    ProgressView()
-                        .tint(TBColor.textHint)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(TBColor.disabledSurface)
+                    loadingPlaceholder
                 @unknown default:
                     feedbackImagePlaceholder
                 }
             }
-            .frame(width: tileSize, height: tileSize)
-            .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
-            .clipped()
-            .accessibilityLabel(image.alt)
         } else if let imageName = image.imageName {
             BundledPNG(name: imageName)
-                .frame(width: tileSize, height: tileSize)
-                .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
-                .clipped()
-                .accessibilityLabel(image.alt)
+        } else if request.hasLocalSource {
+            feedbackImagePlaceholder
         }
+    }
+
+    private var loadingPlaceholder: some View {
+        ProgressView()
+            .tint(TBColor.textHint)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(TBColor.disabledSurface)
     }
 
     private var feedbackImagePlaceholder: some View {

@@ -101,6 +101,8 @@
 		FC19F6D40344BDDF5E78CDC0 /* TasteBuddyAgentFullEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECDD6715FCA659A456151BE /* TasteBuddyAgentFullEngineTests.swift */; };
 		FCE0FF8129A5CE4EADE35F06 /* TasteBuddyAgentFullModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4935BC763775F919421F2554 /* TasteBuddyAgentFullModels.swift */; };
 		FD45CDC8949D95AF57165FB1 /* BackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056EE252D8671B982A6790CB /* BackendIntegrationTests.swift */; };
+		B4477A3D8F63EF548DF74A03 /* DiningFeedRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB66CBEF07E2089536B14391 /* DiningFeedRenderingTests.swift */; };
+		3152D0F0C524ECB23E762751 /* DiningPhotoPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B2D5EB84D5614A8F74A0DA /* DiningPhotoPerformanceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -209,6 +211,8 @@
 		F9BDC6A9C0B316BB4107C906 /* TBDesignColorTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TBDesignColorTokens.swift; sourceTree = "<group>"; };
 		FCB74E266F2F1EF4B4F2EBCB /* DesignSystemPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemPreviewView.swift; sourceTree = "<group>"; };
 		FECDD6715FCA659A456151BE /* TasteBuddyAgentFullEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyAgentFullEngineTests.swift; sourceTree = "<group>"; };
+		BB66CBEF07E2089536B14391 /* DiningFeedRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiningFeedRenderingTests.swift; sourceTree = "<group>"; };
+		33B2D5EB84D5614A8F74A0DA /* DiningPhotoPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiningPhotoPerformanceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -262,6 +266,8 @@
 				059E477763679895089F8762 /* HomeSearchEngineTests.swift */,
 				447EF85B631CE34E2BE90F74 /* HomeSummaryEngineTests.swift */,
 				52CC688ADBDDF2B4A3AA01C5 /* PalateBloomAvatarTests.swift */,
+				BB66CBEF07E2089536B14391 /* DiningFeedRenderingTests.swift */,
+				33B2D5EB84D5614A8F74A0DA /* DiningPhotoPerformanceTests.swift */,
 				8DCCD25AE6830EEF9D5BFA01 /* SystemParityComponentTests.swift */,
 				FECDD6715FCA659A456151BE /* TasteBuddyAgentFullEngineTests.swift */,
 				0C556260CD56CE5508A071FC /* TasteContractGoldenTests.swift */,
@@ -707,6 +713,8 @@
 				C4BB16E19A004BE6A99AC0D8 /* HomeSearchEngineTests.swift in Sources */,
 				468FF2C181020E765E241F6C /* HomeSummaryEngineTests.swift in Sources */,
 				EDFB2D3B3611CE07679581FD /* PalateBloomAvatarTests.swift in Sources */,
+				B4477A3D8F63EF548DF74A03 /* DiningFeedRenderingTests.swift in Sources */,
+				3152D0F0C524ECB23E762751 /* DiningPhotoPerformanceTests.swift in Sources */,
 				2596DF0EA089B585C5879748 /* SystemParityComponentTests.swift in Sources */,
 				FC19F6D40344BDDF5E78CDC0 /* TasteBuddyAgentFullEngineTests.swift in Sources */,
 				144872B135E3BED0A7212EFE /* TasteContractGoldenTests.swift in Sources */,
