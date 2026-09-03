@@ -902,6 +902,7 @@ struct DiningFeedbackSheet: View {
     @State private var isTrackingDirectMenuOutsideTap = false
     @State private var directMenuOutsideTapStartedOpen = false
     @State private var pendingDeletedMenu: PendingDeletedCustomMenu?
+    @StateObject private var deletionToast = TBToastPresenter()
     @State private var selectedKindIDs: Set<String> = []
     @State private var selectedExperienceIDs: [String]
     @State private var focusedExperienceID: String?
@@ -1176,22 +1177,13 @@ struct DiningFeedbackSheet: View {
                                             .font(TBFont.semibold(14))
                                             .foregroundStyle(TBColor.textPrimary)
 
-                                        TextField("예: 정식당", text: $directRestaurantName)
-                                            .focused($isDirectRestaurantInputFocused)
-                                            .font(TBFont.semibold(13))
-                                            .foregroundStyle(TBColor.textPrimary)
-                                            .textInputAutocapitalization(.never)
-                                            .autocorrectionDisabled()
-                                            .submitLabel(.done)
-                                            .padding(.horizontal, 12)
-                                            .frame(height: 44)
-                                            .background(TBColor.focus)
-                                            .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
-                                            .overlay {
-                                                RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
-                                                    .stroke(TBColor.border)
-                                            }
-                                            .onSubmit(continueRestaurantSelection)
+                                        TBTextInput(
+                                            text: $directRestaurantName,
+                                            placeholder: "예: 정식당",
+                                            accessibilityName: "식당명",
+                                            focus: $isDirectRestaurantInputFocused,
+                                            onSubmit: continueRestaurantSelection
+                                        )
                                     }
                                 }
                                 .id(Self.directRestaurantInputScrollID)
@@ -1336,22 +1328,13 @@ struct DiningFeedbackSheet: View {
                                             .foregroundStyle(TBColor.textPrimary)
 
                                         HStack(spacing: 8) {
-                                            TextField("예: 오미자와 배 디저트", text: $directMenuTitle)
-                                                .focused($isDirectMenuInputFocused)
-                                                .font(TBFont.semibold(13))
-                                                .foregroundStyle(TBColor.textPrimary)
-                                                .textInputAutocapitalization(.never)
-                                                .autocorrectionDisabled()
-                                                .submitLabel(.done)
-                                                .padding(.horizontal, 12)
-                                                .frame(height: 44)
-                                                .background(TBColor.focus)
-                                                .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
-                                                .overlay {
-                                                    RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
-                                                        .stroke(TBColor.border)
-                                                }
-                                                .onSubmit(addCustomDish)
+                                            TBTextInput(
+                                                text: $directMenuTitle,
+                                                placeholder: "예: 오미자와 배 디저트",
+                                                accessibilityName: "메뉴명",
+                                                focus: $isDirectMenuInputFocused,
+                                                onSubmit: addCustomDish
+                                            )
 
                                             Button(action: addCustomDish) {
                                                 let isDisabled = directMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -1405,9 +1388,9 @@ struct DiningFeedbackSheet: View {
                                             .foregroundStyle(TBColor.textFaint)
                                     }
 
-                                    DiningFeedbackKindChipWrap(spacing: 8) {
+                                    TBWrapLayout(spacing: 8) {
                                         ForEach(fixture?.dishKindOptions ?? []) { kind in
-                                            DiningFeedbackKindChip(
+                                            TBSelectableChip(
                                                 title: kind.label,
                                                 isSelected: selectedKindIDs.contains(kind.id)
                                             ) {
@@ -1473,15 +1456,12 @@ struct DiningFeedbackSheet: View {
         }
         .simultaneousGesture(directMenuOutsideTapGesture)
         .animation(.spring(response: 0.28, dampingFraction: 0.86), value: feedbackDishes.map(\.id))
-        .task(id: pendingDeletedMenu?.id) {
-            guard let toastID = pendingDeletedMenu?.id else { return }
-
-            try? await Task.sleep(nanoseconds: ToastSurface.defaultDisplayDurationNanoseconds)
-            guard !Task.isCancelled, pendingDeletedMenu?.id == toastID else { return }
-
-            withAnimation(.easeOut(duration: 0.2)) {
-                pendingDeletedMenu = nil
-            }
+        .onChange(of: pendingDeletedMenu?.id) { _, _ in
+            presentMenuDeletionToast()
+        }
+        .onAppear(perform: presentMenuDeletionToast)
+        .onDisappear {
+            deletionToast.cancel()
         }
     }
 
@@ -2731,6 +2711,7 @@ struct DiningFeedbackSheet: View {
 
     private func restoreDeletedCustomDish() {
         guard let pendingDeletedMenu else { return }
+        deletionToast.cancel()
 
         withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
             if let customIndex = pendingDeletedMenu.customIndex,
@@ -2761,6 +2742,18 @@ struct DiningFeedbackSheet: View {
             }
 
             self.pendingDeletedMenu = nil
+        }
+    }
+
+    private func presentMenuDeletionToast() {
+        guard let toastID = pendingDeletedMenu?.id else {
+            deletionToast.cancel()
+            return
+        }
+
+        deletionToast.present(policy: .undo) {
+            guard pendingDeletedMenu?.id == toastID else { return }
+            pendingDeletedMenu = nil
         }
     }
 
@@ -5424,7 +5417,6 @@ private struct DiningFeedbackResultCard: View {
 private enum DiningFeedbackResultLayout {
     static let cardHorizontalPadding: CGFloat = 50
     static let chipGap: CGFloat = 6
-    static let chipHeight: CGFloat = 20
     static let chipRowGap: CGFloat = 6
 }
 
@@ -5454,61 +5446,13 @@ private struct DiningResultDetailTagRow: View {
     let detailTags: [DiningDetailTagMetadata]
 
     var body: some View {
-        GeometryReader { proxy in
-            let visibleCount = visibleCount(for: proxy.size.width)
-            let hiddenCount = max(0, detailTags.count - visibleCount)
-
-            HStack(spacing: DiningFeedbackResultLayout.chipGap) {
-                ForEach(Array(detailTags.prefix(visibleCount))) { tag in
-                    TasteChip(title: tag.label, tone: .neutral)
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .accessibilityLabel("\(tag.label), \(tag.categoryLabel)")
-                }
-
-                if hiddenCount > 0 {
-                    TasteChip(title: "+\(hiddenCount)", tone: .neutral)
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+        TBOverflowTagRow(items: detailTags, spacing: DiningFeedbackResultLayout.chipGap) { tag in
+            TasteChip(title: tag.label, tone: .neutral, size: .xs)
+                .accessibilityLabel("\(tag.label), \(tag.categoryLabel)")
+        } overflow: { count in
+            TasteChip(title: "+\(count)", tone: .neutral, size: .xs)
+                .accessibilityLabel("\(count)개 태그 더 있음")
         }
-        .frame(height: DiningFeedbackResultLayout.chipHeight)
-        .clipped()
-    }
-
-    private func visibleCount(for availableWidth: CGFloat) -> Int {
-        guard availableWidth > 0 else {
-            return detailTags.count
-        }
-
-        let tagWidths = detailTags.map { chipWidth(for: $0.label) }
-        let moreWidth = chipWidth(for: "+\(detailTags.count)")
-
-        for count in stride(from: detailTags.count, through: 0, by: -1) {
-            let hiddenCount = detailTags.count - count
-            let elementCount = count + (hiddenCount > 0 ? 1 : 0)
-            let gapWidth = CGFloat(max(0, elementCount - 1)) * DiningFeedbackResultLayout.chipGap
-            let visibleWidth = tagWidths.prefix(count).reduce(0, +)
-            let requiredWidth = visibleWidth
-                + (hiddenCount > 0 ? moreWidth : 0)
-                + gapWidth
-
-            if requiredWidth <= availableWidth {
-                return count
-            }
-        }
-
-        return 0
-    }
-
-    private func chipWidth(for text: String) -> CGFloat {
-        let font = UIFont(name: "Pretendard-Medium", size: 10)
-            ?? UIFont.systemFont(ofSize: 10, weight: .medium)
-        let textWidth = ceil((text as NSString).size(withAttributes: [.font: font]).width)
-        return textWidth + 16
     }
 }
 
@@ -6143,12 +6087,6 @@ private struct TasteExperienceBubbleView: View {
     }
 }
 
-private enum DiningFeedbackKindChipMetrics {
-    static let height: CGFloat = 36
-    static let horizontalPadding: CGFloat = 12
-    static let gap: CGFloat = 6
-}
-
 private struct DiningFeedbackAddChipButton: View {
     let accessibilityLabel: String
     let action: () -> Void
@@ -6168,122 +6106,8 @@ private struct DiningFeedbackAddChipButton: View {
                 Circle().stroke(TBColor.border)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .accessibilityLabel(accessibilityLabel)
-    }
-}
-
-private struct DiningFeedbackKindChip: View {
-    let title: String
-    var isSelected = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: DiningFeedbackKindChipMetrics.gap) {
-                Text(title)
-                    .font(TBFont.semibold(12))
-                    .lineLimit(1)
-            }
-            .foregroundStyle(isSelected ? TBColor.textInverse : TBColor.textMuted)
-            .padding(.horizontal, DiningFeedbackKindChipMetrics.horizontalPadding)
-            .frame(height: DiningFeedbackKindChipMetrics.height)
-            .background(isSelected ? TBColor.textPrimary : TBColor.mutedSurface)
-            .clipShape(Capsule())
-            .overlay {
-                Capsule()
-                    .strokeBorder(isSelected ? TBColor.textPrimary : TBColor.border)
-            }
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct DiningFeedbackKindChipWrap<Content: View>: View {
-    let spacing: CGFloat
-    private let content: Content
-
-    init(spacing: CGFloat, @ViewBuilder content: () -> Content) {
-        self.spacing = spacing
-        self.content = content()
-    }
-
-    var body: some View {
-        DiningFeedbackKindChipLayout(spacing: spacing) {
-            content
-        }
-    }
-}
-
-private struct DiningFeedbackKindChipLayout: Layout {
-    let spacing: CGFloat
-
-    func sizeThatFits(
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) -> CGSize {
-        let availableWidth = proposal.width ?? .greatestFiniteMagnitude
-        let result = layoutRows(in: availableWidth, subviews: subviews)
-
-        return CGSize(
-            width: proposal.width ?? result.width,
-            height: result.height
-        )
-    }
-
-    func placeSubviews(
-        in bounds: CGRect,
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > bounds.minX && x + size.width > bounds.maxX
-
-            if shouldWrap {
-                x = bounds.minX
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-    }
-
-    private func layoutRows(in availableWidth: CGFloat, subviews: Subviews) -> CGSize {
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        var maxRowWidth: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > 0 && x + size.width > availableWidth
-
-            if shouldWrap {
-                maxRowWidth = max(maxRowWidth, x - spacing)
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-
-        if x > 0 {
-            maxRowWidth = max(maxRowWidth, x - spacing)
-        }
-
-        return CGSize(width: maxRowWidth, height: y + rowHeight)
     }
 }
 

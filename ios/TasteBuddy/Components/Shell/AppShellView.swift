@@ -3346,7 +3346,7 @@ private let appMenuSheetCardCornerRadius: CGFloat = 20
 
 private struct PublicProfileActionsSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var copyToastToken = 0
+    @StateObject private var copyToast = TBToastPresenter()
     let profileID: String
     var onDismissRequest: (() -> Void)? = nil
     var usesNativeSheetChrome = true
@@ -3436,7 +3436,7 @@ private struct PublicProfileActionsSheet: View {
                     .padding(.bottom, TBSpacing.page + 24)
                 }
 
-                if copyToastToken > 0 {
+                if copyToast.isPresented {
                     ToastSurface(
                         title: "프로필 URL을 복사했어요",
                         message: "원하는 곳에 붙여넣어 공유할 수 있어요.",
@@ -3450,23 +3450,8 @@ private struct PublicProfileActionsSheet: View {
                 }
             }
         }
-        .task(id: copyToastToken) {
-            guard copyToastToken > 0 else {
-                return
-            }
-
-            let token = copyToastToken
-            try? await Task.sleep(nanoseconds: ToastSurface.defaultDisplayDurationNanoseconds)
-
-            guard !Task.isCancelled, copyToastToken == token else {
-                return
-            }
-
-            withAnimation(.easeOut(duration: 0.2)) {
-                copyToastToken = 0
-            }
-        }
-        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: copyToastToken)
+        .onDisappear { copyToast.cancel() }
+        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: copyToast.isPresented)
         .presentationDragIndicator(.hidden)
         .presentationBackground(Color.clear)
         .presentationCornerRadius(0)
@@ -3513,7 +3498,7 @@ private struct PublicProfileActionsSheet: View {
         UIPasteboard.general.string = profileURLString
 
         withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
-            copyToastToken += 1
+            copyToast.present(policy: .copyConfirmation)
         }
     }
 

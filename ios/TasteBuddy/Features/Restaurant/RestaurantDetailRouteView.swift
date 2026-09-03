@@ -1537,26 +1537,13 @@ struct RestaurantInfoSuggestionNativeSheet: View {
 
             TBFlowLayout(spacing: 8) {
                 ForEach(infoRows) { row in
-                    Button {
+                    TBSelectableChip(
+                        title: row.id.suggestionLabel,
+                        isSelected: selectedRowIDs.contains(row.id),
+                        variant: .correction
+                    ) {
                         toggle(row)
-                    } label: {
-                        Text(row.id.suggestionLabel)
-                            .font(TBFont.semibold(12))
-                            .foregroundStyle(selectedRowIDs.contains(row.id) ? TBColor.textInverse : TBColor.textMuted)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 9)
-                            .background(selectedRowIDs.contains(row.id) ? TBColor.textPrimary : TBColor.surface)
-                            .clipShape(Capsule())
-                            .overlay {
-                                Capsule()
-                                    .stroke(
-                                        selectedRowIDs.contains(row.id)
-                                            ? TBColor.textPrimary
-                                            : TBColor.borderSubtle
-                                    )
-                            }
                     }
-                    .buttonStyle(.plain)
                 }
             }
 

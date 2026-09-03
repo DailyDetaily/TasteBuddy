@@ -324,6 +324,7 @@ struct RestaurantBookmarkNativeSheet: View {
     @State private var selectedListID = RestaurantBookmarkConstants.defaultListID
     @State private var pendingListID: String?
     @State private var toastList: RestaurantBookmarkList?
+    @StateObject private var bookmarkToast = TBToastPresenter()
     @State private var internalSelectedCoverIconID: BookmarkCoverIconID = .utensils
     @State private var internalSelectedCoverTasteID: TasteAxis = .sweet
     @State private var internalIsCoverEditorOpen = false
@@ -419,7 +420,7 @@ struct RestaurantBookmarkNativeSheet: View {
                     }
                 }
 
-                if let toastList {
+                if bookmarkToast.isPresented, let toastList {
                     ToastSurface(
                         title: "\(toastList.name)에 저장됨",
                         message: "다음 비교 기준으로 다시 볼 수 있어요.",
@@ -446,6 +447,7 @@ struct RestaurantBookmarkNativeSheet: View {
             }
         }
         .onAppear(perform: prepareSheet)
+        .onDisappear { bookmarkToast.cancel() }
     }
 
     private var createPreview: some View {
@@ -767,6 +769,7 @@ struct RestaurantBookmarkNativeSheet: View {
             ?? RestaurantBookmarkConstants.defaultListID
         mode = appModel.bookmarkLists.isEmpty ? .create : .select
         pendingListID = nil
+        bookmarkToast.cancel()
         toastList = nil
         customListName = ""
         selectedCoverIconID.wrappedValue = .utensils
@@ -815,10 +818,9 @@ struct RestaurantBookmarkNativeSheet: View {
     private func showToastAndDismiss(_ list: RestaurantBookmarkList) {
         withAnimation(.easeOut(duration: 0.18)) {
             toastList = list
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-            closeSheet()
+            bookmarkToast.present(policy: .bookmarkSheetClose) {
+                closeSheet()
+            }
         }
     }
 
