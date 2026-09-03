@@ -924,9 +924,99 @@ final class SystemParityComponentTests: XCTestCase {
         )
 
         XCTAssertEqual(data.details.count, 3)
+        XCTAssertFalse(data.hasHistory)
+        XCTAssertTrue(data.details.allSatisfy { $0.currentScore == nil })
         XCTAssertEqual(data.details[1].changeLabel, "+28%")
         XCTAssertEqual(data.details[2].changeLabel, "-22%")
         XCTAssertEqual(TastePointTrend.allCases, [.increase, .decrease, .neutral])
+    }
+
+    func testTasteInsightFirstRecordKeepsCurrentScoresInBothSummaryFactories() {
+        let current = makeInsightProfile(createdAt: 20)
+        let cards = [
+            TasteInsightSummaryCardData.tasteProfile(current),
+            TasteInsightSummaryCardData.specialNote(current)
+        ]
+
+        for card in cards {
+            XCTAssertFalse(card.hasHistory, card.sectionLabel)
+            XCTAssertFalse(card.details.isEmpty, card.sectionLabel)
+            for detail in card.details {
+                XCTAssertTrue(detail.history.isEmpty, card.sectionLabel)
+                XCTAssertEqual(detail.currentScore, current.score(for: detail.axis))
+            }
+            XCTAssertEqual(card.details.first { $0.axis == .sweet }?.currentScore, 76)
+            XCTAssertEqual(card.details.first { $0.axis == .bitter }?.currentScore, 29)
+        }
+    }
+
+    func testTasteInsightCurrentProfileAloneDoesNotCountAsHistory() {
+        let current = makeInsightProfile(createdAt: 20)
+        let cards = [
+            TasteInsightSummaryCardData.tasteProfile(current, history: [current]),
+            TasteInsightSummaryCardData.specialNote(current, history: [current])
+        ]
+
+        for card in cards {
+            XCTAssertFalse(card.hasHistory, card.sectionLabel)
+            XCTAssertTrue(card.details.allSatisfy { $0.history.isEmpty }, card.sectionLabel)
+        }
+    }
+
+    func testTasteInsightOlderProfileEnablesHistoryInBothSummaryFactories() {
+        let current = makeInsightProfile(createdAt: 20)
+        let older = makeInsightProfile(createdAt: 10, sweetScore: 66, bitterScore: 35)
+        let cards = [
+            TasteInsightSummaryCardData.tasteProfile(current, history: [current, older]),
+            TasteInsightSummaryCardData.specialNote(current, history: [current, older])
+        ]
+
+        for card in cards {
+            XCTAssertTrue(card.hasHistory, card.sectionLabel)
+            for detail in card.details {
+                XCTAssertEqual(detail.history, [
+                    Double(older.score(for: detail.axis) - TasteRadarContract.averageScore(for: detail.axis))
+                ])
+                XCTAssertEqual(detail.currentScore, current.score(for: detail.axis))
+            }
+        }
+    }
+
+    func testTasteInsightHistoryRequiresOnlyOnePopulatedDetail() {
+        let card = TasteInsightSummaryCardData(
+            actionLabel: nil,
+            details: [
+                TasteInsightSummaryDetail(axis: .sweet, changeValue: 26, history: [], trend: .increase),
+                TasteInsightSummaryDetail(axis: .bitter, changeValue: -26, history: [-20], trend: .decrease)
+            ],
+            keywords: [],
+            sectionLabel: "특이사항",
+            title: "fixture"
+        )
+
+        XCTAssertTrue(card.hasHistory)
+    }
+
+    private func makeInsightProfile(
+        createdAt: TimeInterval,
+        sweetScore: Int = 76,
+        bitterScore: Int = 29
+    ) -> TasteProfile {
+        TasteProfile(
+            createdAt: Date(timeIntervalSince1970: createdAt),
+            scores: [
+                TasteAxis.sweet.rawValue: sweetScore,
+                TasteAxis.sour.rawValue: 38,
+                TasteAxis.bitter.rawValue: bitterScore,
+                TasteAxis.salty.rawValue: 48,
+                TasteAxis.umami.rawValue: 62,
+                TasteAxis.fat.rawValue: 40
+            ],
+            confidence: "형성 중",
+            summary: "fixture",
+            topAxes: [.sweet],
+            cautionAxis: .bitter
+        )
     }
 
     func testTasteInsightSummaryUsesAtMostSixHistoricalProfiles() throws {
@@ -960,7 +1050,16 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(TasteLineChartMetrics.trackLineWidth, 12)
         XCTAssertEqual(TasteLineChartMetrics.coreLineWidth, 2)
         XCTAssertEqual(TasteLineChartMetrics.currentNodeDiameter, 12)
+        XCTAssertTrue(data.hasHistory)
         XCTAssertEqual(sweet.history, [-8, -7, -6, -5, -4, -3])
+        let specialNote = TasteInsightSummaryCardData.specialNote(current, history: profiles)
+        XCTAssertTrue(specialNote.hasHistory)
+        for detail in specialNote.details {
+            XCTAssertEqual(detail.history.count, 6)
+            XCTAssertEqual(detail.history, profiles.suffix(6).map {
+                Double($0.score(for: detail.axis) - TasteRadarContract.averageScore(for: detail.axis))
+            })
+        }
         XCTAssertEqual(
             TasteLineChartMetrics.visibleValues(Array(0...9).map(Double.init)),
             Array(3...9).map(Double.init)
