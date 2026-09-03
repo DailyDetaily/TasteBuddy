@@ -31,6 +31,9 @@ private struct RootView: View {
     private let showsDesignSystemPreview = ProcessInfo.processInfo.arguments.contains(
         "--design-system-preview"
     )
+    private let showsNativeDesignStatesPreview = ProcessInfo.processInfo.arguments.contains(
+        "--native-design-states-preview"
+    )
     private let showsSplashPreview = ProcessInfo.processInfo.arguments.contains(
         "--splash-preview"
     )
@@ -106,7 +109,9 @@ private struct RootView: View {
 
     var body: some View {
         Group {
-            if showsDesignSystemPreview {
+            if showsNativeDesignStatesPreview {
+                NativeDesignStatesPreview()
+            } else if showsDesignSystemPreview {
                 DesignSystemPreviewView()
             } else if showsShellPreview {
                 AppShellView(

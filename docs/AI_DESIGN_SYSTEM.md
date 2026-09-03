@@ -6,6 +6,8 @@
 
 ## Read Order
 
+네이티브 SwiftUI 작업은 제품 지침과 `DESIGN.md`를 읽은 뒤 [iOS 디자인 시스템](../ios/DESIGN_SYSTEM.md)으로 이동한다. 이 문서의 React/CSS 값과 정적 프리뷰 인벤토리를 현재 네이티브 값·제품 사용 여부로 간주하지 않는다.
+
 1. 제품 경험 기준: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 2. 시각 시스템 설명: [`../DESIGN.md`](../DESIGN.md)
 3. 타입 기반 토큰 원본: [`../src/constants/designTokens.ts`](../src/constants/designTokens.ts)
@@ -39,7 +41,7 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 3. 실제 토큰 값: [`../src/constants/designTokens.ts`](../src/constants/designTokens.ts), [`../src/styles/design-system.css`](../src/styles/design-system.css)
 4. 프리뷰 인벤토리와 감사 메모: [`../src/components/design-system/inventory.ts`](../src/components/design-system/inventory.ts)
 
-토큰 값을 바꿀 때 `DESIGN.md`만 바꾸면 안 되고, 구현 토큰도 함께 바꿔야 한다.
+토큰 값을 바꿀 때 `DESIGN.md`만 바꾸면 안 되고, 해당 플랫폼의 구현 토큰도 함께 바꿔야 한다. iOS의 현재 값은 `ios/TasteBuddy/DesignSystem/TBTheme.swift`, 미각 팔레트는 `ios/TasteBuddy/Models/TasteModels.swift`다. 네이티브만 수정할 때 웹 토큰을 자동으로 변경하지 않는다. 플랫폼별 현재 차이는 [iOS 디자인 시스템](../ios/DESIGN_SYSTEM.md)에 기록한다.
 
 ## Vocabulary
 
@@ -51,9 +53,9 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 | `tintSoft` | 부드러운 inline taste tint 배경 | `TasteChip`, `기준점/절대 좌표` 메타 칩 |
 | `tintSoftBorder` | `tintSoft` 위 경계선 | soft inline chip / meta chip border |
 | `tintSurface` | 부드러운 taste 카드 배경 | `셰프 매칭`, `세부 분석` 같은 해석형 카드 |
-| `tintSurfaceText` | `tintSurface` 위의 메인 텍스트 색 | 카드 타이틀, 강조 라벨 |
+| `tintSurfaceText` | 읽기용 미각 텍스트 색 | 카드 타이틀, 강조 라벨; 네이티브 `tintSoft` 라벨 전용 칩·미각 음식명에도 사용 |
 | `tintSurfaceSubText` | `tintSurface` 위의 보조 텍스트 색 | 레스토랑명, 설명 보조선 |
-| `main` | taste의 대표 시그널 컬러 | 값, 노드, chip, chart signal |
+| `main` | taste의 대표 시그널 컬러 | 값, 노드, 아이콘, chart signal; 작은 읽기용 텍스트와 구분 |
 | `gradient` | taste 기반 그라디언트 | 주로 배지나 강조 패턴 |
 
 중요:
@@ -76,6 +78,8 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 ## Core Tokens
 
 ### Layout
+
+아래 `px` 값은 웹 기본값이다. 네이티브의 `TBSize.topAppBarHeight`는 32pt **내용 행**이며, 위·아래 padding을 합한 바 자체는 48pt다. safe area를 포함한 전체 셸 높이와 구분한다. 바텀시트 공식과 슬롯 값은 [iOS의 현재 치수](../ios/DESIGN_SYSTEM.md#치수와-배치)를 따른다.
 
 - page gutter: `20px`
 - section gap: `20px`
@@ -180,6 +184,14 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 - shape: full pill
 - neutral meta: use `tone="neutral"` for non-taste labels such as `첫 측정` or `4회 예약`; it uses `surface-muted / border-strong / text-tertiary`
 
+위 값은 웹 레시피다. 현재 네이티브 `TasteChip`은 의도된 변형을 구분한다.
+
+- 라벨 전용 미각형: 기존 `tintSoft` 배경 + 읽기용 `axis.tintTextColor` (`tintSurfaceText`) 라벨
+- 숫자 포함 미각형: 중립 primary 라벨 + `mainColor` 숫자 시그널
+- 중립형: 중립 배경·경계·텍스트
+
+라벨 전용을 원색으로 표시하던 과거 네이티브 이식 규칙은 가독성 개선으로 대체했다. 미각 색상 값과 의미는 보존한다.
+
 ### SectionCard
 
 소스: [`../src/components/SectionCard.tsx`](../src/components/SectionCard.tsx)
@@ -214,7 +226,7 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 - 한 블록에 여섯 taste를 동시에 강하게 전개하지 않는다.
 - default UI state는 neutral, success, warning에서 시작하고, destructive는 위험 액션에만 제한한다.
 - taste는 의미가 핵심일 때만 전면에 올린다.
-- 새로운 재사용 패턴이면 `/design-system` 프리뷰에 반영한다.
+- 새로운 웹 재사용 패턴이면 `/design-system` 프리뷰에 반영한다. 네이티브 패턴은 `NativeProductComponentCatalog`와 `--design-system-preview`의 실제 상태 예시에 반영한다.
 
 ## Anti-Patterns
 
@@ -237,4 +249,4 @@ Taste Buddy는 일반 예약 앱이 아니라, 미각 데이터를 해석해서 
 
 ## Machine-Readable Snapshot
 
-구조화된 버전은 [`./design-system.snapshot.json`](./design-system.snapshot.json)에 있다.
+웹 기준의 구조화된 버전은 [`./design-system.snapshot.json`](./design-system.snapshot.json)에 있다. 네이티브 제품 사용 등록부는 `ios/TasteBuddy/Components/DesignSystemFullComponents.swift`의 `NativeProductComponentCatalog`다. 이전 웹 이식 인벤토리 수치와 현재 제품 사용 상태는 서로 다른 계약이다.
