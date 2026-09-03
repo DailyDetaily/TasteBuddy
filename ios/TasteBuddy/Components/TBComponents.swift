@@ -95,6 +95,30 @@ struct TBTokenButtonStyle: ButtonStyle {
     }
 }
 
+enum PrimaryButtonAppearance {
+    case primary
+    case tasteTint(TasteAxis)
+
+    var foreground: Color {
+        switch self {
+        case .primary: TBColor.textInverse
+        case .tasteTint(let axis): axis.tintTextColor
+        }
+    }
+
+    var background: Color {
+        switch self {
+        case .primary: TBColor.textPrimary
+        case .tasteTint(let axis): axis.tintColor
+        }
+    }
+
+    var hasShadow: Bool {
+        if case .primary = self { return true }
+        return false
+    }
+}
+
 struct PrimaryButton: View {
     @Environment(\.isEnabled) private var environmentIsEnabled
 
@@ -103,6 +127,7 @@ struct PrimaryButton: View {
     var visualDisabled = false
     var fullWidth = true
     var size: PrimaryButtonSize = .default
+    var appearance: PrimaryButtonAppearance = .primary
     let action: () -> Void
 
     var body: some View {
@@ -113,11 +138,12 @@ struct PrimaryButton: View {
                 .padding(.vertical, size.verticalPadding)
                 .frame(maxWidth: fullWidth ? .infinity : nil)
                 .frame(minHeight: size.height)
-                .foregroundStyle(appearsDisabled ? TBColor.textDisabled : TBColor.textInverse)
-                .background(appearsDisabled ? TBColor.disabledSurface : TBColor.textPrimary)
+                .foregroundStyle(appearsDisabled ? TBColor.textDisabled : appearance.foreground)
+                .background(appearsDisabled ? TBColor.disabledSurface : appearance.background)
                 .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
                 .shadow(
-                    color: (!appearsDisabled && size == .default) ? Color.black.opacity(0.10) : .clear,
+                    color: (!appearsDisabled && size == .default && appearance.hasShadow)
+                        ? Color.black.opacity(0.10) : .clear,
                     radius: 20,
                     x: 0,
                     y: 8
@@ -760,84 +786,12 @@ struct TasteBubbleRow: View {
     }
 
     var body: some View {
-        DishFeedbackWrapLayout(spacing: DishFeedbackCardMetrics.chipStackGap) {
+        TBWrapLayout(spacing: DishFeedbackCardMetrics.chipStackGap) {
             ForEach(bubbles) { bubble in
                 DishFeedbackTasteBubbleChip(bubble: bubble)
             }
         }
         .accessibilityLabel(bubbles.map(\.label).joined(separator: ", "))
-    }
-}
-
-private struct DishFeedbackWrapLayout: Layout {
-    let spacing: CGFloat
-
-    func sizeThatFits(
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) -> CGSize {
-        let availableWidth = proposal.width ?? .greatestFiniteMagnitude
-        let result = layoutRows(in: availableWidth, subviews: subviews)
-
-        return CGSize(
-            width: proposal.width ?? result.width,
-            height: result.height
-        )
-    }
-
-    func placeSubviews(
-        in bounds: CGRect,
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > bounds.minX && x + size.width > bounds.maxX
-
-            if shouldWrap {
-                x = bounds.minX
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-    }
-
-    private func layoutRows(in availableWidth: CGFloat, subviews: Subviews) -> CGSize {
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        var maxRowWidth: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > 0 && x + size.width > availableWidth
-
-            if shouldWrap {
-                maxRowWidth = max(maxRowWidth, x - spacing)
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-
-        if x > 0 {
-            maxRowWidth = max(maxRowWidth, x - spacing)
-        }
-
-        return CGSize(width: maxRowWidth, height: y + rowHeight)
     }
 }
 
@@ -1406,45 +1360,14 @@ private struct DishFeedbackDetailTagRow: View {
     let tags: [DishFeedbackCardTag]
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            ForEach(Array((0...tags.count).reversed()), id: \.self) { visibleCount in
-                DishFeedbackDetailTagCandidate(
-                    tags: tags,
-                    visibleCount: visibleCount
-                )
-            }
+        TBOverflowTagRow(items: tags) { tag in
+            TasteChip(title: tag.label, tone: .neutral, size: .sm)
+                .accessibilityLabel(tag.title ?? tag.label)
+        } overflow: { hiddenCount in
+            TasteChip(title: "+\(hiddenCount)", tone: .neutral, size: .sm)
+                .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .clipped()
-    }
-}
-
-private struct DishFeedbackDetailTagCandidate: View {
-    let tags: [DishFeedbackCardTag]
-    let visibleCount: Int
-
-    var body: some View {
-        HStack(spacing: 6) {
-            ForEach(visibleTags) { tag in
-                TasteChip(title: tag.label, tone: .neutral, size: .sm)
-                    .lineLimit(1)
-                    .accessibilityLabel(tag.title ?? tag.label)
-            }
-
-            if hiddenCount > 0 {
-                TasteChip(title: "+\(hiddenCount)", tone: .neutral, size: .sm)
-                    .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
-            }
-        }
-        .fixedSize(horizontal: true, vertical: false)
-    }
-
-    private var hiddenCount: Int {
-        max(0, tags.count - visibleCount)
-    }
-
-    private var visibleTags: [DishFeedbackCardTag] {
-        Array(tags.prefix(visibleCount))
     }
 }
 
@@ -1793,6 +1716,21 @@ struct SectionHeading: View {
 }
 
 #if canImport(PreviewsMacros)
+    #Preview("Primary and taste-tinted buttons") {
+        VStack(spacing: TBSpacing.x16) {
+            PrimaryButton(title: "다음으로") {}
+            PrimaryButton(title: "미각 측정 시작", size: .compact, appearance: .tasteTint(.sweet)) {}
+            PrimaryButton(
+                title: "미각 측정 시작",
+                isEnabled: false,
+                size: .compact,
+                appearance: .tasteTint(.sweet)
+            ) {}
+        }
+        .padding(TBSpacing.page)
+        .background(TBColor.page)
+    }
+
     #Preview("CTA Disabled Color Tokens") {
         ZStack {
             LinearGradient(

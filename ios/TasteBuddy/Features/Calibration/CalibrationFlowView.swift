@@ -14,11 +14,15 @@ struct CalibrationFlowView: View {
         Group {
             switch loadState {
             case .loading:
-                CalibrationLoadingView()
+                TBFlowLoadingState(message: "미각 설문을 준비하고 있어요")
             case .loaded(let catalog):
                 TasteSurveyFlowView(catalog: catalog, onExit: onExit)
             case .failed:
-                CalibrationErrorView(retry: loadCatalog)
+                TBFlowRetryState(
+                    title: "미각 설문을 불러오지 못했어요",
+                    message: "잠시 후 다시 시도하면 설문을 다시 준비할게요.",
+                    retry: loadCatalog
+                )
             }
         }
         .task {
@@ -675,7 +679,7 @@ private struct SurveyQuestionView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(item.anchor.label)
                         .font(TBFont.bold(16))
-                        .foregroundStyle(item.tasteId.mainColor)
+                        .foregroundStyle(item.tasteId.tintSurfaceTextColor)
                     Text(item.anchor.description)
                         .font(TBFont.regular(12))
                         .foregroundStyle(TBColor.textSubtle)
@@ -969,37 +973,6 @@ private struct SurveyResultView: View {
             return "탐색 신호"
         }
         return "먼저 읽히는 축"
-    }
-}
-
-private struct CalibrationLoadingView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-            Text("미각 설문을 준비하고 있어요")
-                .font(TBFont.semibold(14))
-                .foregroundStyle(TBColor.textBody)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TBColor.focus)
-        .accessibilityElement(children: .combine)
-    }
-}
-
-private struct CalibrationErrorView: View {
-    let retry: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: TBSpacing.section) {
-            SectionHeading(
-                title: "미각 설문을 불러오지 못했어요",
-                subtitle: "저장된 계약 리소스를 다시 확인한 뒤 설문을 준비할게요."
-            )
-            PrimaryButton(title: "다시 시도", action: retry)
-        }
-        .tbPageContentPadding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TBColor.focus)
     }
 }
 

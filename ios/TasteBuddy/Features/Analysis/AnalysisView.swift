@@ -26,7 +26,7 @@ struct AnalysisView: View {
                             PalateSignatureHeroCard(profile: profile)
 
                             InterpretationCard(
-                                description: profile.chefTranslationCopy,
+                                description: profile.chefTranslationSummary,
                                 eyebrow: "셰프 참고 가이드",
                                 detailLabel: "가이드 보기",
                                 indicatorColors: profile.topAxes.map(\.mainColor),
@@ -147,8 +147,14 @@ private struct InsightDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
+        BottomSheetShell(
+            headerStart: AnyView(BottomSheetCloseButton { dismiss() }),
+            headerCenter: AnyView(Text("인사이트").tbTextStyle(.sheetTitle)),
+            stageMode: .auto(maxHeightRatio: 1),
+            usesNativeSheetChrome: true,
+            surfaceBackground: TBColor.page
+        ) {
+            BottomSheetScrollView {
                 VStack(alignment: .leading, spacing: TBSpacing.section) {
                     SectionCard(background: insight.axis.tintColor.opacity(0.75)) {
                         VStack(alignment: .leading, spacing: 12) {
@@ -214,16 +220,15 @@ private struct InsightDetailSheet: View {
                 }
                 .tbPageContentPadding()
             }
-            .navigationTitle("인사이트")
-            .tbInlineNavigationTitle()
-            .tbPageBackground()
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("닫기") { dismiss() }
-                }
-            }
         }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
     }
+}
+
+#Preview("Insight detail — shared native sheet") {
+    InsightDetailSheet(insight: TasteBuddyNativeContent.insights[0])
 }
 
 private struct RadarComparisonCard: View {

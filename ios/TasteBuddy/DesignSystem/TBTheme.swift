@@ -13,6 +13,8 @@ enum TBColor {
     static let textSecondary = Color(hex: 0x3F3F3F)
     static let textTertiary = Color(hex: 0x535353)
     static let textBody = Color(hex: 0x666666)
+    /// Readable auxiliary actions; disabled controls keep their separate state color.
+    static let textAction = textBody
     static let textHint = Color(hex: 0x888888)
     static let textDisabled = Color(hex: 0xAFAFAF)
     static let textSubtle = Color(hex: 0x0F0F0F, alpha: 0.60)
@@ -219,6 +221,39 @@ enum TBFont {
     }
 }
 
+/// Native text recipes keep the existing base sizes and Pretendard scaling.
+/// Content-specific line limits belong to the component, not the type role.
+enum TBTextStyle {
+    case sectionTitle, subsectionTitle, sheetTitle, body, caption, detailAction
+
+    var font: Font {
+        switch self {
+        case .sectionTitle: TBFont.bold(18)
+        case .subsectionTitle: TBFont.bold(16)
+        case .sheetTitle: TBFont.bold(15)
+        case .body: TBFont.regular(14)
+        case .caption: TBFont.semibold(12)
+        case .detailAction: TBFont.medium(11)
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .sectionTitle, .subsectionTitle, .sheetTitle: TBColor.textPrimary
+        case .body, .caption: TBColor.textBody
+        case .detailAction: TBColor.textAction
+        }
+    }
+
+    var lineSpacing: CGFloat {
+        switch self {
+        case .body: 4
+        case .caption: 3
+        default: 0
+        }
+    }
+}
+
 extension Color {
     init(hex: UInt, alpha: Double = 1) {
         self.init(
@@ -239,6 +274,12 @@ extension Color {
 }
 
 extension View {
+    func tbTextStyle(_ style: TBTextStyle) -> some View {
+        font(style.font)
+            .foregroundStyle(style.color)
+            .lineSpacing(style.lineSpacing)
+    }
+
     func tbPageBackground(_ color: Color = TBColor.page) -> some View {
         background(color.ignoresSafeArea())
     }

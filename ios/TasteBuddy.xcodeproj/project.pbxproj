@@ -103,6 +103,11 @@
 		FD45CDC8949D95AF57165FB1 /* BackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056EE252D8671B982A6790CB /* BackendIntegrationTests.swift */; };
 		B4477A3D8F63EF548DF74A03 /* DiningFeedRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB66CBEF07E2089536B14391 /* DiningFeedRenderingTests.swift */; };
 		3152D0F0C524ECB23E762751 /* DiningPhotoPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B2D5EB84D5614A8F74A0DA /* DiningPhotoPerformanceTests.swift */; };
+		12D1E9C7E19B55BE4127E77A /* NativeFeedbackComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7439573F23AB9E5F4AB0A950 /* NativeFeedbackComponents.swift */; };
+		6444369F19DC403488C9CA04 /* NativeInputComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB37B068589501F2FFB31A2C /* NativeInputComponents.swift */; };
+		483A79E7F901848DAA7C60A7 /* NativeLayoutComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42488AC7B4F12B714E486DA9 /* NativeLayoutComponents.swift */; };
+		9EBB654FCFF6073306F8BC0D /* NativeLayoutComponentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407F56B13B17DC8B50E36C0D /* NativeLayoutComponentsTests.swift */; };
+		329FC633EBF8B15D79AA5CE7 /* NativeToastPresenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA5F4BA8094A87CEF0A70CF /* NativeToastPresenterTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -213,6 +218,11 @@
 		FECDD6715FCA659A456151BE /* TasteBuddyAgentFullEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteBuddyAgentFullEngineTests.swift; sourceTree = "<group>"; };
 		BB66CBEF07E2089536B14391 /* DiningFeedRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiningFeedRenderingTests.swift; sourceTree = "<group>"; };
 		33B2D5EB84D5614A8F74A0DA /* DiningPhotoPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiningPhotoPerformanceTests.swift; sourceTree = "<group>"; };
+		7439573F23AB9E5F4AB0A950 /* NativeFeedbackComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFeedbackComponents.swift; sourceTree = "<group>"; };
+		FB37B068589501F2FFB31A2C /* NativeInputComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeInputComponents.swift; sourceTree = "<group>"; };
+		42488AC7B4F12B714E486DA9 /* NativeLayoutComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLayoutComponents.swift; sourceTree = "<group>"; };
+		407F56B13B17DC8B50E36C0D /* NativeLayoutComponentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLayoutComponentsTests.swift; sourceTree = "<group>"; };
+		8CA5F4BA8094A87CEF0A70CF /* NativeToastPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeToastPresenterTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -269,6 +279,8 @@
 				BB66CBEF07E2089536B14391 /* DiningFeedRenderingTests.swift */,
 				33B2D5EB84D5614A8F74A0DA /* DiningPhotoPerformanceTests.swift */,
 				8DCCD25AE6830EEF9D5BFA01 /* SystemParityComponentTests.swift */,
+				8CA5F4BA8094A87CEF0A70CF /* NativeToastPresenterTests.swift */,
+				407F56B13B17DC8B50E36C0D /* NativeLayoutComponentsTests.swift */,
 				FECDD6715FCA659A456151BE /* TasteBuddyAgentFullEngineTests.swift */,
 				0C556260CD56CE5508A071FC /* TasteContractGoldenTests.swift */,
 			);
@@ -287,6 +299,9 @@
 				6032BAAF406EBAB87F2B9A9B /* SystemParityComponents.swift */,
 				614E1C2DDC73936841A8FD89 /* TasteRadarView.swift */,
 				815E7C1932791B7E998DF0B5 /* TBComponents.swift */,
+				42488AC7B4F12B714E486DA9 /* NativeLayoutComponents.swift */,
+				FB37B068589501F2FFB31A2C /* NativeInputComponents.swift */,
+				7439573F23AB9E5F4AB0A950 /* NativeFeedbackComponents.swift */,
 				367891DCCFAB0DE9D6D9583F /* Shell */,
 			);
 			path = Components;
@@ -716,6 +731,8 @@
 				B4477A3D8F63EF548DF74A03 /* DiningFeedRenderingTests.swift in Sources */,
 				3152D0F0C524ECB23E762751 /* DiningPhotoPerformanceTests.swift in Sources */,
 				2596DF0EA089B585C5879748 /* SystemParityComponentTests.swift in Sources */,
+				329FC633EBF8B15D79AA5CE7 /* NativeToastPresenterTests.swift in Sources */,
+				9EBB654FCFF6073306F8BC0D /* NativeLayoutComponentsTests.swift in Sources */,
 				FC19F6D40344BDDF5E78CDC0 /* TasteBuddyAgentFullEngineTests.swift in Sources */,
 				144872B135E3BED0A7212EFE /* TasteContractGoldenTests.swift in Sources */,
 			);
@@ -770,6 +787,9 @@
 				E26FA3596AAE47F801BDBD1B /* SystemCoreComponents.swift in Sources */,
 				685A10211DCFC0B07D685046 /* SystemParityComponents.swift in Sources */,
 				7D331DECCAD2ADD44E175514 /* TBComponents.swift in Sources */,
+				483A79E7F901848DAA7C60A7 /* NativeLayoutComponents.swift in Sources */,
+				6444369F19DC403488C9CA04 /* NativeInputComponents.swift in Sources */,
+				12D1E9C7E19B55BE4127E77A /* NativeFeedbackComponents.swift in Sources */,
 				39FAB6487B1A8F56FBFB989F /* TBDesignColorTokens.swift in Sources */,
 				A493D282D5653D2575063FA8 /* TBDesignFoundationTokens.swift in Sources */,
 				B4705F9B20C206E6BCF8F358 /* TBTheme.swift in Sources */,

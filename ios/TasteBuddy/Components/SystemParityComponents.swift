@@ -6,8 +6,8 @@ enum TBSectionTitleSize {
 
     var font: Font {
         switch self {
-        case .medium: TBFont.bold(16)
-        case .large: TBFont.bold(18)
+        case .medium: TBTextStyle.subsectionTitle.font
+        case .large: TBTextStyle.sectionTitle.font
         }
     }
 }
@@ -376,7 +376,9 @@ struct TasteChip: View {
         let isNeutral = tone == .neutral
         let resolvedAxis = colorAxis ?? axis
         let signalColor = isNeutral ? TBColor.textTertiary : (resolvedAxis?.mainColor ?? TBColor.textTertiary)
-        let labelColor = isNeutral || value == nil ? signalColor : TBColor.textPrimary
+        let labelColor = isNeutral
+            ? TBColor.textTertiary
+            : (value == nil ? (resolvedAxis?.tintTextColor ?? TBColor.textTertiary) : TBColor.textPrimary)
         let background = isNeutral
             ? TBColor.mutedSurface
             : (resolvedAxis?.tintSoftColor ?? TBColor.mutedSurface)
@@ -433,8 +435,7 @@ struct CardDetailLabel: View {
                 strokeWidth: TBIcon.Stroke.regular
             )
         }
-        .font(TBFont.medium(11))
-        .foregroundStyle(TBColor.textDisabled)
+        .tbTextStyle(.detailAction)
         .fixedSize()
     }
 }
@@ -719,19 +720,13 @@ struct TasteMeasurementMiniCta: View {
     }
 
     private var compactAction: some View {
-        Button(action: onAction) {
-            Text(actionLabel)
-                .font(TBFont.semibold(12))
-                .padding(.horizontal, 16)
-                .frame(
-                    maxWidth: actionFullWidth ? .infinity : nil,
-                    minHeight: 40
-                )
-                .foregroundStyle(accentAxis.tintTextColor)
-                .background(accentAxis.tintColor)
-                .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
-        }
-        .buttonStyle(.plain)
+        PrimaryButton(
+            title: actionLabel,
+            fullWidth: actionFullWidth,
+            size: .compact,
+            appearance: .tasteTint(accentAxis),
+            action: onAction
+        )
     }
 
     @ViewBuilder

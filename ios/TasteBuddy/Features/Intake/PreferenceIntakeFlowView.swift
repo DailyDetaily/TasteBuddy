@@ -15,14 +15,18 @@ struct PreferenceIntakeFlowView: View {
         Group {
             switch loadState {
             case .loading:
-                IntakeLoadingView()
+                TBFlowLoadingState(message: "사전 조사를 준비하고 있어요")
             case .loaded(let fixture):
                 PreferenceIntakeQuestionsView(
                     questions: fixture.questions,
                     onBack: onBack
                 )
             case .failed:
-                IntakeErrorView(retry: loadFixture)
+                TBFlowRetryState(
+                    title: "사전 조사 항목을 불러오지 못했어요",
+                    message: "안전 정보와 첫 추천 기준을 다시 준비할게요.",
+                    retry: loadFixture
+                )
             }
         }
         .task {
@@ -237,36 +241,6 @@ private struct PreferenceIntakeQuestionsView: View {
         withAnimation(.easeInOut(duration: 0.28)) {
             questionIndex -= 1
         }
-    }
-}
-
-private struct IntakeLoadingView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-            Text("사전 조사를 준비하고 있어요")
-                .font(TBFont.semibold(14))
-                .foregroundStyle(TBColor.textBody)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TBColor.focus)
-    }
-}
-
-private struct IntakeErrorView: View {
-    let retry: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: TBSpacing.section) {
-            SectionHeading(
-                title: "사전 조사 항목을 불러오지 못했어요",
-                subtitle: "안전 정보와 첫 추천 기준을 다시 준비할게요."
-            )
-            PrimaryButton(title: "다시 시도", action: retry)
-        }
-        .tbPageContentPadding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TBColor.focus)
     }
 }
 

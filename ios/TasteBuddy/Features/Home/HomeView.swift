@@ -1003,85 +1003,9 @@ private struct SearchSuggestionWrap<Content: View>: View {
     }
 
     var body: some View {
-        SearchSuggestionFlexLayout(spacing: SearchSuggestionMetrics.chipGap) {
+        TBWrapLayout(spacing: SearchSuggestionMetrics.chipGap) {
             content
         }
-    }
-}
-
-private struct SearchSuggestionFlexLayout: Layout {
-    let spacing: CGFloat
-
-    func sizeThatFits(
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) -> CGSize {
-        let availableWidth = proposal.width ?? .greatestFiniteMagnitude
-        let result = layoutRows(in: availableWidth, subviews: subviews)
-
-        return CGSize(
-            width: proposal.width ?? result.width,
-            height: result.height
-        )
-    }
-
-    func placeSubviews(
-        in bounds: CGRect,
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > bounds.minX
-                && x + size.width > bounds.maxX
-
-            if shouldWrap {
-                x = bounds.minX
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            subview.place(
-                at: CGPoint(x: x, y: y),
-                proposal: ProposedViewSize(size)
-            )
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-    }
-
-    private func layoutRows(in availableWidth: CGFloat, subviews: Subviews) -> CGSize {
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        var maxRowWidth: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > 0 && x + size.width > availableWidth
-
-            if shouldWrap {
-                maxRowWidth = max(maxRowWidth, x - spacing)
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-
-        if x > 0 {
-            maxRowWidth = max(maxRowWidth, x - spacing)
-        }
-
-        return CGSize(width: maxRowWidth, height: y + rowHeight)
     }
 }
 

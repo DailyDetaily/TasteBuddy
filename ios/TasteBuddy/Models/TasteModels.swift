@@ -1221,6 +1221,13 @@ extension TasteProfile {
         return "평균"
     }
 
+    /// A complete thought for the two-line guide card; detailed copy stays separate.
+    var chefTranslationSummary: String {
+        let first = topAxes.first ?? strongestAxis
+        let second = topAxes.dropFirst().first ?? weakestAxis
+        return "\(first.label)·\(second.label)의 강도를 나누면 더 편안한 균형을 찾을 수 있어요."
+    }
+
     var chefTranslationCopy: String {
         let first = topAxes.first ?? strongestAxis
         let second = topAxes.dropFirst().first ?? weakestAxis
