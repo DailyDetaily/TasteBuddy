@@ -28,6 +28,7 @@ struct SectionCard<Content: View>: View {
                 if showsBorder && cardBordersVisible {
                     RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
                         .stroke(TBColor.borderCard, lineWidth: 1)
+                        .allowsHitTesting(false)
                 }
             }
     }
@@ -90,8 +91,8 @@ struct TBTokenButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(isEnabled && configuration.isPressed && !reduceMotion ? 0.98 : 1)
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
+            .scaleEffect(isEnabled && configuration.isPressed && !reduceMotion ? TasteBloomMotion.Scale.press : 1)
+            .animation(TasteBloomMotion.animation(.press, reduceMotion: reduceMotion), value: configuration.isPressed)
     }
 }
 
@@ -151,6 +152,7 @@ struct PrimaryButton: View {
         }
         .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
+        .tasteBloomMotion(.feedback, value: appearsDisabled)
     }
 
     private var appearsDisabled: Bool {
@@ -215,7 +217,7 @@ struct TBStepIndicator: View {
                         width: index == currentIndex ? StepIndicatorMetrics.activeWidth : StepIndicatorMetrics.inactiveWidth,
                         height: StepIndicatorMetrics.height
                     )
-                    .animation(.easeInOut(duration: 0.3), value: currentIndex)
+                    .tasteBloomMotion(.content, value: currentIndex)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -315,6 +317,7 @@ struct TBFlowBottomCTA: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea(edges: .bottom)
+            .allowsHitTesting(false)
         )
     }
 
@@ -573,6 +576,7 @@ struct TBSelectionCard: View {
         .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .tasteBloomMotion(.feedback, value: isSelected)
     }
 
     @ViewBuilder
@@ -821,6 +825,10 @@ struct NativeDishFeedbackCard: View {
     var showsOptions = true
     var framed = true
     var noteTrailingPadding: CGFloat = 0
+    var avatarProfile: TasteProfile? = nil
+    var avatarImageData: Data? = nil
+    var avatarImage: UIImage? = nil
+    var avatarShapeSeed: String? = nil
     var onOptionsTap: (() -> Void)? = nil
     var onDetailTap: (() -> Void)? = nil
     var onCommentsTap: (() -> Void)? = nil
@@ -876,6 +884,39 @@ struct NativeDishFeedbackCard: View {
         item.primaryTasteAxis
     }
 
+    private var resolvedAvatarImage: UIImage? {
+        avatarImage ?? avatarImageData.flatMap(UIImage.init(data:))
+    }
+
+    private var isOwnItem: Bool {
+        item.authorName == "나"
+    }
+
+    @ViewBuilder
+    private var avatarView: some View {
+        let seed = avatarShapeSeed ?? (isOwnItem ? "current-user" : item.id)
+        if let avatarProfile {
+            PalateBloomAvatar(
+                size: DishFeedbackCardMetrics.avatarSize,
+                tasteProfile: avatarProfile,
+                shapeSeed: seed,
+                image: resolvedAvatarImage
+            )
+        } else if isOwnItem {
+            PalateBloomAvatar(
+                size: DishFeedbackCardMetrics.avatarSize,
+                seed: seed,
+                image: resolvedAvatarImage
+            )
+        } else {
+            PalateBloomAvatar(
+                size: DishFeedbackCardMetrics.avatarSize,
+                seed: seed,
+                image: resolvedAvatarImage
+            )
+        }
+    }
+
     @ViewBuilder
     private var cardBody: some View {
         if framed {
@@ -898,7 +939,7 @@ struct NativeDishFeedbackCard: View {
     private var cardContent: some View {
         VStack(alignment: .leading, spacing: DishFeedbackCardMetrics.contentGap) {
             HStack(spacing: DishFeedbackCardMetrics.headerGap) {
-                PalateBloomAvatar(size: DishFeedbackCardMetrics.avatarSize, seed: item.id)
+                avatarView
                     .accessibilityLabel("\(item.authorName) 프로필 아바타")
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -976,6 +1017,7 @@ struct NativeDishFeedbackCard: View {
                             strokeWidth: TBIcon.Stroke.regular,
                             filled: isLiked
                         )
+                        .tasteBloomReplace(value: isLiked)
                         .frame(
                             width: DishFeedbackCardMetrics.actionIconFrameWidth,
                             height: DishFeedbackCardMetrics.actionButtonSize
@@ -983,17 +1025,19 @@ struct NativeDishFeedbackCard: View {
                         .foregroundStyle(isLiked ? primaryAxis.mainColor : TBColor.textHint)
 
                         actionCountText(displayedLikeCount)
+                            .contentTransition(.opacity)
                     }
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TBTokenButtonStyle())
+                .tasteBloomMotion(.feedback, value: isLiked)
                 .accessibilityLabel(isLiked ? "좋아요 \(displayedLikeCount)개, 좋아요 취소" : "좋아요 \(displayedLikeCount)개")
 
                 if let onCommentsTap {
                     Button(action: onCommentsTap) {
                         commentActionLabel
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(TBTokenButtonStyle())
                     .accessibilityLabel("댓글 \(item.commentCount)개 보기")
                 } else {
                     commentActionLabel
@@ -1004,7 +1048,7 @@ struct NativeDishFeedbackCard: View {
                 } label: {
                     shareActionLabel
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TBTokenButtonStyle())
                 .accessibilityLabel("공유 \(displayedShareCount)개")
 
                 Spacer()
@@ -1582,6 +1626,7 @@ private struct DiningNotePreview: View {
         }
         .padding(DishFeedbackCardMetrics.notePadding)
         .padding(.trailing, trailingPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(TBColor.mutedSurface)
         .clipShape(RoundedRectangle(cornerRadius: DishFeedbackCardMetrics.noteRadius, style: .continuous))
     }

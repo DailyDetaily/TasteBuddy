@@ -42,6 +42,7 @@ struct CalibrationFlowView: View {
 }
 
 private struct TasteSurveyFlowView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var appModel: AppModel
 
     let catalog: TasteSurveyCatalogContract
@@ -51,6 +52,7 @@ private struct TasteSurveyFlowView: View {
     @State private var contextIndex = 0
     @State private var questionIndex = 0
     @State private var respondentContext = TasteSurveyRespondentContextContract()
+    @State private var didSelectBirthDate = false
     @State private var birthDate = Calendar.current.date(
         from: DateComponents(year: 1990, month: 1, day: 1)
     ) ?? .now
@@ -58,6 +60,29 @@ private struct TasteSurveyFlowView: View {
     @State private var compatibleResult: TasteSurveyCompatibleResultContract?
     @State private var skippedContext = false
     @State private var skippedQuestions = false
+
+    init(catalog: TasteSurveyCatalogContract, onExit: @escaping () -> Void) {
+        self.catalog = catalog
+        self.onExit = onExit
+        #if DEBUG || targetEnvironment(simulator)
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("--survey-fat-question-qa") {
+            _phase = State(initialValue: .questions)
+            _questionIndex = State(initialValue: catalog.items.firstIndex { $0.tasteId == .fat } ?? 0)
+        } else if arguments.contains("--survey-evidence-result-qa") {
+            let sampleResponses: [TasteSurveyResponseContract] = catalog.items.map { item in
+                .init(itemId: item.id, selectedValue: item.tasteId == .fat ? nil : 0,
+                      uncertain: item.tasteId == .fat,
+                      uncertaintyReason: item.tasteId == .fat ? .cannotIsolateTaste : nil)
+            }
+            _phase = State(initialValue: .result)
+            _compatibleResult = State(initialValue: TasteSurveyScoringEngine.makeCompatibleResult(
+                items: catalog.items, responses: sampleResponses, measuredAt: "2026-09-07T00:00:00Z",
+                instrument: catalog.instrument, scale: catalog.likertScale
+            ))
+        }
+        #endif
+    }
 
     private enum Phase: Equatable {
         case intro
@@ -78,13 +103,13 @@ private struct TasteSurveyFlowView: View {
                         leadingSymbol: leadingSymbol,
                         leadingAccessibilityLabel: leadingAccessibilityLabel,
                         showsLeading: true,
-                        showsDivider: phase != .context && !isIntroPhase,
+                        showsDivider: false,
                         backgroundColor: screenBackground,
                         leadingAction: goBack
                     )
                 }
 
-                Group {
+                ZStack(alignment: .top) {
                     switch phase {
                     case .intro:
                         SurveyIntroView(activeStepIndex: 0)
@@ -94,8 +119,10 @@ private struct TasteSurveyFlowView: View {
                             index: contextIndex,
                             total: catalog.contextSteps.count,
                             birthDate: $birthDate,
+                            didSelectBirthDate: $didSelectBirthDate,
                             respondentContext: $respondentContext
                         )
+                        .id(contextIndex)
                     case .questionsIntro:
                         SurveyIntroView(activeStepIndex: 1)
                     case .questions:
@@ -108,6 +135,7 @@ private struct TasteSurveyFlowView: View {
                             onSelectValue: selectValue,
                             onSelectUncertain: selectUncertain
                         )
+                        .id(questionIndex)
                     case .profileIntro:
                         SurveyIntroView(activeStepIndex: 2)
                     case .review:
@@ -124,6 +152,9 @@ private struct TasteSurveyFlowView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .tasteBloomMotion(.content, value: phase)
+                .tasteBloomMotion(.content, value: contextIndex)
+                .tasteBloomMotion(.content, value: questionIndex)
             }
 
             TBFlowStepCTA(
@@ -229,9 +260,9 @@ private struct TasteSurveyFlowView: View {
         case .profileIntro:
             "응답 확인하기"
         case .review:
-            "프로필 해석 보기"
+            "설문 결과 보기"
         case .result:
-            "프로필 저장하고 시작하기"
+            "설문 결과 저장하고 시작하기"
         }
     }
 
@@ -260,7 +291,7 @@ private struct TasteSurveyFlowView: View {
         case .questionsIntro:
             "감각 반응 설문 건너뛰기"
         case .profileIntro:
-            "프로필 확인 건너뛰고 시작하기"
+            "설문 결과 확인 건너뛰고 시작하기"
         default:
             "현재 단계 건너뛰기"
         }
@@ -306,11 +337,7 @@ private struct TasteSurveyFlowView: View {
         case .profileIntro:
             phase = .review
         case .review:
-            compatibleResult = TasteSurveyScoringEngine.makeCompatibleResult(
-                items: catalog.items,
-                responses: catalog.items.compactMap { responses[$0.id] },
-                measuredAt: ISO8601DateFormatter().string(from: .now)
-            )
+            compatibleResult = makeResult()
             phase = .result
         case .result:
             guard let compatibleResult else {
@@ -371,7 +398,7 @@ private struct TasteSurveyFlowView: View {
             phase = .profileIntro
         case .profileIntro:
             appModel.saveProfile(
-                CalibrationEngine.makeProfile(responses: [:])
+                TasteSurveyScoringEngine.makeProfile(from: makeResult())
             )
         default:
             break
@@ -388,14 +415,26 @@ private struct TasteSurveyFlowView: View {
         compatibleResult = nil
     }
 
-    private func selectUncertain() {
+    private func selectUncertain(_ reason: TasteSurveyUncertaintyReasonContract) {
         let itemId = catalog.items[questionIndex].id
         responses[itemId] = TasteSurveyResponseContract(
             itemId: itemId,
             selectedValue: nil,
-            uncertain: true
+            uncertain: true,
+            uncertaintyReason: reason
         )
         compatibleResult = nil
+    }
+
+    private func makeResult() -> TasteSurveyCompatibleResultContract {
+        TasteSurveyScoringEngine.makeCompatibleResult(
+            items: catalog.items,
+            responses: catalog.items.compactMap { responses[$0.id] },
+            measuredAt: ISO8601DateFormatter().string(from: .now),
+            respondentContext: respondentContext,
+            instrument: catalog.instrument,
+            scale: catalog.likertScale
+        )
     }
 
     private func editQuestion(_ index: Int) {
@@ -404,7 +443,7 @@ private struct TasteSurveyFlowView: View {
     }
 
     private func saveBirthDateIfNeeded() {
-        guard catalog.contextSteps[contextIndex].id == "birthDate" else {
+        guard catalog.contextSteps[contextIndex].id == "birthDate", didSelectBirthDate else {
             return
         }
         respondentContext.birthDate = Self.birthDateFormatter.string(from: birthDate)
@@ -429,11 +468,11 @@ private struct SurveyIntroView: View {
         ),
         (
             title: "감각 반응 정리",
-            description: "열두 문항으로 작은 차이와 부담이 생기는 지점을 차분하게 확인합니다."
+            description: "여섯 가지 기준 음식을 떠올리며 맛이 얼마나 강하게 느껴졌는지 기록합니다."
         ),
         (
-            title: "첫 미각 프로필 준비",
-            description: "응답은 다음 식사 개인화와 셰프가 참고할 수 있는 표현으로 정리됩니다."
+            title: "설문 응답 정리",
+            description: "지금 남긴 응답을 설문 범위의 참고 결과로 정리합니다."
         ),
     ]
 
@@ -441,13 +480,13 @@ private struct SurveyIntroView: View {
         ScrollView {
             VStack(spacing: 0) {
                 VStack(spacing: 12) {
-                    Text("지금부터 고객님의 미각을\n정밀하게 준비합니다.")
+                    Text("최근에 느낀 감각을\n차분하게 기록해요.")
                         .font(TBFont.bold(18))
                         .foregroundStyle(TBColor.textPrimary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(2)
 
-                    Text("최근의 감각 반응을 바탕으로 첫 프로필을 차분하게 잡아볼게요.")
+                    Text("최근 3개월의 경험을 떠올려 주세요. 먹어본 적 없거나 기억나지 않으면 따로 표시할 수 있어요.")
                         .font(TBFont.regular(14))
                         .foregroundStyle(TBColor.textBody)
                         .multilineTextAlignment(.center)
@@ -550,6 +589,7 @@ private struct SurveyContextView: View {
     let index: Int
     let total: Int
     @Binding var birthDate: Date
+    @Binding var didSelectBirthDate: Bool
     @Binding var respondentContext: TasteSurveyRespondentContextContract
 
     var body: some View {
@@ -598,6 +638,7 @@ private struct SurveyContextView: View {
                             in: ...Date(),
                             displayedComponents: .date
                         )
+                        .onChange(of: birthDate) { _, _ in didSelectBirthDate = true }
                         .datePickerStyle(.wheel)
                         .labelsHidden()
                         .frame(maxWidth: .infinity)
@@ -662,7 +703,7 @@ private struct SurveyQuestionView: View {
     let scale: TasteSurveyLikertScaleContract
     let response: TasteSurveyResponseContract?
     let onSelectValue: (Int) -> Void
-    let onSelectUncertain: () -> Void
+    let onSelectUncertain: (TasteSurveyUncertaintyReasonContract) -> Void
 
     var body: some View {
         ScrollView {
@@ -699,11 +740,7 @@ private struct SurveyQuestionView: View {
                         .font(TBFont.bold(16))
                         .foregroundStyle(TBColor.textPrimary)
                         .lineSpacing(2)
-                    Text(
-                        item.construct == .salience
-                            ? "작은 차이가 빨리 또렷하게 느껴지는지 확인해요."
-                            : "조금 더 강해졌을 때 쉽게 과하다고 느끼는지 확인해요."
-                    )
+                    Text(item.helper)
                     .font(TBFont.regular(12))
                     .foregroundStyle(TBColor.textMuted)
                     .lineSpacing(4)
@@ -721,45 +758,26 @@ private struct SurveyQuestionView: View {
                         ) {
                             onSelectValue(value)
                         }
+                        .accessibilityIdentifier("survey-\(item.tasteId.rawValue)-intensity-\(value)")
                     }
                 }
 
-                Button(action: onSelectUncertain) {
-                    HStack(spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(scale.uncertainLabel)
-                                .font(TBFont.semibold(13))
-                                .foregroundStyle(TBColor.textPrimary)
-                            Text("최근 기준으로 떠올리기 어렵다면 따로 표시해요.")
-                                .font(TBFont.regular(11))
-                                .foregroundStyle(TBColor.textHint)
+                VStack(spacing: 8) {
+                    ForEach(TasteSurveyUncertaintyReasonContract.allCases.filter {
+                        $0 != .cannotIsolateTaste || item.tasteId == .fat
+                    }, id: \.self) { reason in
+                        TBSelectionCard(
+                            title: reason.label,
+                            indicator: .checkbox,
+                            isSelected: response?.uncertain == true
+                                && (response?.uncertaintyReason ?? .cannotRecall) == reason,
+                            singleLine: false
+                        ) {
+                            onSelectUncertain(reason)
                         }
-                        Spacer()
-                        Text("별도 저장")
-                            .font(TBFont.semibold(11))
-                            .foregroundStyle(TBColor.textFaint)
-                    }
-                    .padding(16)
-                    .background(
-                        response?.uncertain == true
-                            ? TBColor.mutedSurface
-                            : TBColor.surface
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(
-                                response?.uncertain == true
-                                    ? TBColor.textSecondary
-                                    : TBColor.borderStrong,
-                                style: StrokeStyle(lineWidth: 1, dash: [5])
-                            )
+                        .accessibilityIdentifier("survey-\(item.tasteId.rawValue)-\(reason.rawValue)")
                     }
                 }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(
-                    response?.uncertain == true ? .isSelected : []
-                )
             }
             .padding(.horizontal, TBSpacing.page)
             .padding(.top, TBSpacing.pageTop)
@@ -786,7 +804,7 @@ private struct SurveyReviewView: View {
 
                 SectionHeading(
                     title: "응답을 한 번 확인해 주세요",
-                    subtitle: "이 응답은 첫 프로필을 해석하는 출발점으로 쓰입니다. 떠올리기 어려웠던 항목은 그대로 남겨도 됩니다."
+                    subtitle: "설문 응답을 정리한 참고 결과예요. 떠올리기 어려웠던 항목은 그대로 남겨도 됩니다."
                 )
 
                 VStack(spacing: 10) {
@@ -800,7 +818,7 @@ private struct SurveyReviewView: View {
                                         HStack(spacing: 6) {
                                             TasteChip(
                                                 axis: item.tasteId,
-                                                value: item.construct == .salience ? "감지" : "부담"
+                                                value: "느낀 강도"
                                             )
                                             if item.exploratoryMetadata != nil {
                                                 NeutralChip(title: "탐색")
@@ -856,7 +874,7 @@ private struct SurveyReviewView: View {
             return "미응답"
         }
         if response.uncertain {
-            return scale.uncertainLabel
+            return (response.uncertaintyReason ?? .cannotRecall).label
         }
         return response.selectedValue.map { scale.label(for: $0) } ?? "미응답"
     }
@@ -865,97 +883,15 @@ private struct SurveyReviewView: View {
 private struct SurveyResultView: View {
     let result: TasteSurveyCompatibleResultContract
 
-    private var profile: TasteProfile {
-        TasteSurveyScoringEngine.makeProfile(from: result)
-    }
-
-    private var resultAxes: [TasteAxis] {
-        let ordered: [TasteAxis] = [
-            result.starterGuidance.cautionAxis,
-            result.starterGuidance.topAxes.first,
-            result.starterGuidance.topAxes.dropFirst().first,
-            .umami,
-            .fat,
-        ].compactMap { $0 }
-        return ordered.reduce(into: []) { axes, axis in
-            if !axes.contains(axis) {
-                axes.append(axis)
-            }
-        }
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: TBSpacing.section) {
-                VStack(alignment: .leading, spacing: 10) {
-                    OutlineBadge(title: "\(profile.confidence) Profile")
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("첫 미각 프로필이 준비됐어요")
-                            .font(TBFont.bold(18))
-                        LucideIcon(
-                            .circleCheck,
-                            size: TBIcon.Size.medium,
-                            strokeWidth: TBIcon.Stroke.regular,
-                            filled: true
-                        )
-                            .foregroundStyle(TBColor.textPrimary)
-                    }
-                    Text(result.starterGuidance.summaryLine)
-                        .font(TBFont.regular(13))
-                        .foregroundStyle(TBColor.textBody)
-                        .lineSpacing(4)
-                }
-
-                SectionCard(background: TBColor.mutedSurface) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Confidence")
-                            .font(TBFont.semibold(11))
-                            .foregroundStyle(TBColor.textHint)
-                        Text("시작 기준으로는 충분하고, 세부 축은 계속 다듬어집니다")
-                            .font(TBFont.bold(15))
-                        Text(result.starterGuidance.evidence.prefix(2).joined(separator: " "))
-                            .font(TBFont.regular(13))
-                            .foregroundStyle(TBColor.textBody)
-                            .lineSpacing(3)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("먼저 읽히는 포인트")
-                        .font(TBFont.bold(16))
-
-                    HStack(spacing: 10) {
-                        ForEach(result.starterGuidance.topAxes.prefix(2)) { axis in
-                            TasteTintMiniCard(
-                                entry: TasteAxisAnalysis(
-                                    axis: axis,
-                                    score: profile.score(for: axis),
-                                    delta: profile.score(for: axis) - 50
-                                )
-                            )
-                        }
-                    }
-                }
-
-                VStack(spacing: 10) {
-                    ForEach(resultAxes) { axis in
-                        AxisInterpretationCard(
-                            axis: axis,
-                            score: profile.score(for: axis),
-                            label: resultLabel(for: axis)
-                        )
-                    }
-                }
-
-                SectionCard(background: TBColor.mutedSurface) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("조심스럽게 보는 축")
-                            .font(TBFont.bold(14))
-                        Text("감칠맛과 지방감은 재료 상태, 온도, 질감의 영향을 함께 받습니다. 지금은 확정된 판단보다 다음 식사에서 더 잘 맞추기 위한 참고 신호로 둡니다.")
-                            .font(TBFont.regular(13))
-                            .foregroundStyle(TBColor.textBody)
-                            .lineSpacing(4)
-                    }
+                SectionHeading(
+                    title: "기억한 맛을 정리했어요",
+                    subtitle: "기준 음식에서 느낀 강도를 그대로 남겼어요. 좋아하는 정도는 식사 기록에서 따로 살펴봐요."
+                )
+                if let submission = result.snapshot.surveySubmission {
+                    TasteSurveyEvidenceCard(submission: submission)
                 }
             }
             .padding(.horizontal, TBSpacing.page)
@@ -963,16 +899,6 @@ private struct SurveyResultView: View {
             .padding(.bottom, 156)
         }
         .scrollIndicators(.hidden)
-    }
-
-    private func resultLabel(for axis: TasteAxis) -> String {
-        if axis == result.starterGuidance.cautionAxis {
-            return "부담 신호 확인"
-        }
-        if axis == .umami || axis == .fat {
-            return "탐색 신호"
-        }
-        return "먼저 읽히는 축"
     }
 }
 

@@ -54,6 +54,10 @@ struct DiningView: View {
                         DiningFeedbackSheet(entry: entry) { updatedEntry in
                             appModel.updateDiningEntry(updatedEntry)
                         }
+                    case .addToMeal(let draft):
+                        DiningFeedbackSheet(entry: draft) { addedEntry in
+                            appModel.addDiningEntry(addedEntry)
+                        }
                     case .comments(let item):
                         DiningCommentsFocusSheet(item: item)
                     }
@@ -79,7 +83,7 @@ struct DiningView: View {
                                 }
                             } else {
                                 ForEach(appModel.diningEntries) { entry in
-                                    dishFeedbackCard(dishFeedItem(for: entry))
+                                    dishFeedbackCard(dishFeedItem(for: entry), entry: entry)
                                 }
                             }
                         }
@@ -102,80 +106,64 @@ struct DiningView: View {
         )
     }
 
-    private func dishFeedbackCard(_ item: DiningDishFeedbackItem) -> some View {
+    private func dishFeedbackCard(
+        _ item: DiningDishFeedbackItem,
+        entry: DiningEntry? = nil
+    ) -> some View {
         let displayItem = appModel.dishFeedbackItemWithCurrentComments(item)
-        return NativeDishFeedbackCard(
-            item: displayItem,
-            onOptionsTap: onOpenDishOptions.map { handler in
-                { handler(displayItem) }
-            },
-            onDetailTap: { presentation = .comments(displayItem) },
-            onCommentsTap: { presentation = .comments(displayItem) }
-        )
+        let mealRecordCount = entry.map { appModel.diningEntries(mealID: $0.mealID).count } ?? 0
+        return VStack(spacing: TBSpacing.x8) {
+            NativeDishFeedbackCard(
+                item: displayItem,
+                relativeDateLabel: mealRecordCount > 1 ? "같은 식사 · \(mealRecordCount)개 메뉴" : "최근",
+                avatarProfile: appModel.profile,
+                avatarImageData: appModel.profileAvatarImageData,
+                avatarShapeSeed: "current-user",
+                onOptionsTap: onOpenDishOptions.map { handler in
+                    { handler(displayItem) }
+                },
+                onDetailTap: {
+                    if let entry, !entry.hasCompletedTasteFeedback {
+                        presentation = .edit(entry)
+                    } else {
+                        presentation = .comments(displayItem)
+                    }
+                },
+                onCommentsTap: { presentation = .comments(displayItem) }
+            )
+
+            if let entry, entry.hasCompletedTasteFeedback {
+                Button {
+                    if let draft = appModel.additionalMenuDraft(for: entry.id) {
+                        presentation = .addToMeal(draft)
+                    }
+                } label: {
+                    HStack(spacing: TBSpacing.x6) {
+                        LucideIcon(
+                            .plus,
+                            size: TBIcon.Size.xSmall,
+                            strokeWidth: TBIcon.Stroke.medium
+                        )
+                        Text("이 식사에 메뉴 추가")
+                            .font(TBFont.semibold(12))
+                    }
+                    .foregroundStyle(TBColor.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 38)
+                    .background(TBColor.mutedSurface)
+                    .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
+                }
+                .buttonStyle(TBTokenButtonStyle())
+                .accessibilityHint("같은 식사로 묶이는 새 메뉴 기록을 시작합니다")
+            }
+        }
     }
 
     private func dishFeedItem(for entry: DiningEntry) -> DiningDishFeedbackItem {
-        let subject = entry.menu.isEmpty ? "다이닝 기록" : entry.menu
-        let recordedTasteTags = entry.tasteExperienceIDs.compactMap {
-            TasteExperienceCatalog.experienceByID[$0]?.label
-        }
-        let tasteTags = recordedTasteTags.isEmpty
-            ? (appModel.profile?.topAxes ?? [.umami, .sour]).map(\.label)
-            : recordedTasteTags
-        let detailTags = entry.detailTagIDs.isEmpty
-            ? (
-                entry.rating >= 4
-                    ? ["balance-well-balanced", "flow-opens-next", "composition-connected"]
-                    : ["balance-one-note-forward", "flow-finish-piled", "composition-course-fit"]
-            )
-            : entry.detailTagIDs
-        let dishKindTags = entry.dishKindIDs.isEmpty
-            ? TasteBuddyAgent.inferDishKindIds(
-                title: subject,
-                subtitle: entry.restaurant,
-                flavorNotes: tasteTags + detailTags
-            )
-            : entry.dishKindIDs
-        let reviewerProfile = appModel.tbaTasteProfile
-        let tbaInput = TasteBuddyAgentDiningAnalysisInput(
-            detailTags: detailTags,
-            dishKindTags: dishKindTags,
-            id: entry.id.uuidString,
-            ingredients: [],
-            restaurantName: entry.restaurant,
-            reviewSnippet: entry.note.isEmpty
-                ? "전체 만족도 \(entry.rating)점으로 남긴 기록입니다. 다음에는 더 구체적인 미각 단서를 함께 남겨보세요."
-                : entry.note,
-            reviewerProfile: reviewerProfile,
-            subject: subject,
-            tasteTags: tasteTags,
-            techniques: []
-        )
-        let snapshot = entry.tbaAnalysisSnapshot
-            ?? TasteBuddyAgent.buildDiningAnalysisSnapshot(tbaInput)
-        let images = entry.reflectionPhotoFilename.map { filename in
-            [
-                DiningDishFeedbackItem.Image(
-                    id: "\(entry.id.uuidString)-reflection-photo",
-                    alt: "\(subject) 미식 기록 사진",
-                    localPhotoFilename: filename
-                ),
-            ]
-        } ?? []
-
-        return DiningDishFeedbackItem(
-            id: entry.id.uuidString,
-            authorName: "나",
-            restaurantName: entry.restaurant,
-            dishTitle: subject,
-            summary: snapshot.summary,
-            reactionLabel: snapshot.tasteBubbles.first?.label ?? (entry.rating >= 4 ? "편안한 밸런스" : "다음 조절 필요"),
-            images: images,
-            detailTags: snapshot.detailTags.map(DishFeedbackCardTag.fromTBA),
-            tasteBubbles: snapshot.tasteBubbles.map(DishFeedbackTasteBubble.fromTBA),
-            commentCount: 0,
-            liked: entry.rating >= 4,
-            tbaAnalysisSnapshot: snapshot
+        DiningDishFeedbackItem.fromDiningEntry(
+            entry,
+            analysis: appModel.sensoryAnalysisIsUpdating || appModel.sensoryAnalysisError != nil
+                ? nil : appModel.sensoryAnalysis
         )
     }
 
@@ -188,6 +176,7 @@ struct DiningView: View {
 private enum DiningPresentation: Identifiable {
     case newFeedback
     case edit(DiningEntry)
+    case addToMeal(DiningEntry)
     case comments(DiningDishFeedbackItem)
 
     var id: String {
@@ -196,6 +185,8 @@ private enum DiningPresentation: Identifiable {
             "new-feedback"
         case .edit(let entry):
             "edit-\(entry.id.uuidString)"
+        case .addToMeal(let draft):
+            "add-to-meal-\(draft.id.uuidString)"
         case .comments(let item):
             "comments-\(item.id)"
         }
@@ -402,7 +393,7 @@ private struct DishFeedbackFeedCard: View {
     }
 }
 
-private struct DishFeedbackDetailSheet: View {
+struct DishFeedbackDetailSheet: View {
     let item: DiningDishFeedbackItem
     @Environment(\.dismiss) private var dismiss
 
@@ -562,16 +553,26 @@ struct DishActionSheet: View {
         VStack(spacing: 10) {
             ActionSheetRow(
                 icon: "eye",
-                title: "디시 상세 보기",
-                detail: "메인 미각, 짧은 기록, 태그를 확인합니다"
+                title: editableEntry?.hasCompletedTasteFeedback == false
+                    ? "식사 기록 보기"
+                    : "디시 상세 보기",
+                detail: editableEntry?.hasCompletedTasteFeedback == false
+                    ? "먼저 담아둔 사진과 식당을 확인합니다"
+                    : "메인 미각, 짧은 기록, 태그를 확인합니다"
             ) {
                 onShowDetail()
             }
 
             ActionSheetRow(
                 icon: "square-pen",
-                title: "후기 수정",
-                detail: editableEntry == nil ? "샘플 카드는 수정할 수 없습니다" : "레스토랑, 메뉴, 만족도, 노트를 다시 정리합니다",
+                title: editableEntry?.hasCompletedTasteFeedback == false
+                    ? "취향 덧붙이기"
+                    : "후기 수정",
+                detail: editableEntry == nil
+                    ? "샘플 카드는 수정할 수 없습니다"
+                    : editableEntry?.hasCompletedTasteFeedback == false
+                        ? "메뉴를 고르고 미각 인상을 이어서 남깁니다"
+                        : "레스토랑, 메뉴, 만족도, 노트를 다시 정리합니다",
                 isDisabled: editableEntry == nil
             ) {
                 guard let editableEntry else { return }
@@ -696,6 +697,14 @@ private struct ActionSheetRowContent: View {
 enum DiningFeedbackStartMode {
     case menu
     case cameraCapture
+    case overallEvaluation
+    case tasteMap
+    case details
+}
+
+private enum DiningFeedbackResultKind {
+    case quickCapture
+    case tasteFeedback
 }
 
 enum DiningFeedbackDishKindAutoSelection {
@@ -785,10 +794,34 @@ private struct PendingDeletedCustomMenu: Identifiable, Equatable {
 }
 
 enum DiningFeedbackTasteBloomTransitionMetrics {
-    static let duration: TimeInterval = 0.92
-    static let reducedMotionDuration: TimeInterval = 0.16
-    static let fadeOutDuration: TimeInterval = 0.12
-    static let reducedMotionFadeOutDuration: TimeInterval = 0.12
+    static let duration = TasteBloomMotion.duration(.bloom, reduceMotion: false)
+    static let dismissalDuration = TasteBloomMotion.duration(.sheet, reduceMotion: false)
+    static let dismissalFadeStartProgress = 1 - TasteBloomMotion.duration(.press, reduceMotion: false) / dismissalDuration
+    static let reducedMotionDuration: TimeInterval = 0
+    static let fadeOutDuration = TasteBloomMotion.duration(.feedback, reduceMotion: false)
+    static let reducedMotionFadeOutDuration: TimeInterval = 0
+}
+
+private struct DiningFeedbackTasteBloomDismissalModifier: ViewModifier {
+    let isActive: Bool
+    let origin: CGPoint?
+    let progress: Double
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isActive {
+            content
+                .compositingGroup()
+                .mask {
+                    DiningFeedbackTasteBloomCollapseMask(
+                        origin: origin,
+                        progress: progress
+                    )
+                }
+        } else {
+            content
+        }
+    }
 }
 
 private struct TasteMapChromeGlass<ChromeShape: Shape>: ViewModifier {
@@ -809,6 +842,7 @@ struct DiningFeedbackSheet: View {
     private enum Phase: Equatable {
         case menu
         case restaurantSelection
+        case overallEvaluation
         case tasteWords
         case detailTags
         case cameraCapture
@@ -911,6 +945,8 @@ struct DiningFeedbackSheet: View {
     @State private var isTasteSearchPresented = false
     @State private var tasteMapVeilOpacity = 1.0
     @State private var selectedDetailTagIDs: [String]
+    @State private var sensorySelections: [DiningSensorySelection]
+    @State private var overallEvaluation: DiningOverallEvaluation?
     @State private var activeDetailExperienceIndex = 0
     @State private var reflectionNote: String
     @State private var reflectionPhotoData: Data?
@@ -932,7 +968,15 @@ struct DiningFeedbackSheet: View {
     @State private var canDragResultShareSheet = false
     @State private var resultSharePreviewImage: UIImage?
     @State private var resultShareStatusMessage: String?
+    @State private var resultKind: DiningFeedbackResultKind
+    @State private var capturedPhotoPalette: DiningPhotoPalette?
+    @State private var quickSavedEntryID: UUID?
+    @State private var workingEntryDate: Date
+    @State private var didRestoreEntryMenuSelection = false
     @State private var showsLaunchTransitionOverlay: Bool
+    @State private var isRunningTasteBloomDismissal = false
+    @State private var tasteBloomDismissalProgress = 0.0
+    @State private var terminalDismissalOpacity = 1.0
     @StateObject private var cameraModel = DiningFeedbackCameraModel()
     @StateObject private var restaurantResolver = DiningFeedbackRestaurantResolver()
 
@@ -949,9 +993,38 @@ struct DiningFeedbackSheet: View {
         let experiences = loadedFixture?.tasteExperiences ?? []
         let positions = TasteExperienceMapEngine.basePositions(axes: axes)
         let validExperienceIDs = Set(experiences.map(\.id))
-        let restoredExperienceIDs = (entry?.tasteExperienceIDs ?? [])
+        let legacyExperienceIDs = (entry?.tasteExperienceIDs ?? [])
             .filter { validExperienceIDs.contains($0) }
             .prefix(3)
+        let restoredSelections: [DiningSensorySelection]
+        if let storedSelections = entry?.sensorySelections {
+            restoredSelections = storedSelections
+        } else {
+            let bubbleSelections = legacyExperienceIDs.compactMap { id in
+                experiences.first(where: { $0.id == id }).map {
+                    DiningSensorySelection(
+                        id: id,
+                        type: .bubble,
+                        labelSnapshot: $0.label
+                    )
+                }
+            }
+            let detailSelections = (entry?.detailTagIDs ?? []).map { id in
+                DiningSensorySelection(
+                    id: id,
+                    type: .detailTag,
+                    labelSnapshot: DiningDetailTagCatalog.metadata(for: id)?.label ?? id
+                )
+            }
+            restoredSelections = bubbleSelections + detailSelections
+        }
+        let restoredExperienceIDs = restoredSelections
+            .filter { $0.type == .bubble && validExperienceIDs.contains($0.id) }
+            .map(\.id)
+            .prefix(3)
+        let restoredDetailTagIDs = restoredSelections
+            .filter { $0.type == .detailTag }
+            .map(\.id)
 
         self.entry = entry
         fixture = loadedFixture
@@ -967,9 +1040,22 @@ struct DiningFeedbackSheet: View {
         self.launchOrigin = launchOrigin
         self.onClose = onClose
         self.onSave = onSave
-        _phase = State(
-            initialValue: startMode == .cameraCapture ? .cameraCapture : .menu
-        )
+        let initialPhase: Phase
+        switch startMode {
+        case .cameraCapture:
+            initialPhase = .cameraCapture
+        case .details where !restoredExperienceIDs.isEmpty:
+            initialPhase = .detailTags
+        case .tasteMap where DiningSensoryRecommendationPolicy.isSupported(
+            entry?.overallEvaluation
+        ):
+            initialPhase = .tasteWords
+        case .overallEvaluation, .tasteMap:
+            initialPhase = .overallEvaluation
+        case .menu, .details:
+            initialPhase = .menu
+        }
+        _phase = State(initialValue: initialPhase)
         _directRestaurantName = State(initialValue: entry?.restaurant ?? "")
         _confirmedRestaurantName = State(initialValue: entry?.restaurant)
         _directMenuTitle = State(initialValue: entry?.menu ?? "")
@@ -982,7 +1068,9 @@ struct DiningFeedbackSheet: View {
         )
         _selectedExperienceIDs = State(initialValue: Array(restoredExperienceIDs))
         _focusedExperienceID = State(initialValue: restoredExperienceIDs.first)
-        _selectedDetailTagIDs = State(initialValue: entry?.detailTagIDs ?? [])
+        _selectedDetailTagIDs = State(initialValue: restoredDetailTagIDs)
+        _sensorySelections = State(initialValue: restoredSelections)
+        _overallEvaluation = State(initialValue: entry?.overallEvaluation)
         _reflectionNote = State(initialValue: entry?.note ?? "")
         _reflectionPhotoFilename = State(initialValue: entry?.reflectionPhotoFilename)
         _reflectionPhotoData = State(
@@ -990,6 +1078,16 @@ struct DiningFeedbackSheet: View {
                 for: entry?.reflectionPhotoFilename
             )
         )
+        _resultKind = State(
+            initialValue: entry?.feedbackStatus == .captured
+                ? .quickCapture
+                : .tasteFeedback
+        )
+        _capturedPhotoPalette = State(initialValue: entry?.photoPalette)
+        _quickSavedEntryID = State(
+            initialValue: entry?.feedbackStatus == .captured ? entry?.id : nil
+        )
+        _workingEntryDate = State(initialValue: entry?.date ?? .now)
         _showsLaunchTransitionOverlay = State(
             initialValue: showsLaunchTransition && startMode == .cameraCapture
         )
@@ -998,6 +1096,7 @@ struct DiningFeedbackSheet: View {
     var body: some View {
         ZStack {
             phaseView
+                .transition(.opacity)
 
             if showsLaunchTransitionOverlay {
                 DiningFeedbackTasteBloomTransitionOverlay(launchOrigin: launchOrigin)
@@ -1005,10 +1104,26 @@ struct DiningFeedbackSheet: View {
                     .zIndex(20)
             }
         }
+        .tasteBloomMotion(.content, value: phase)
+        .modifier(
+            DiningFeedbackTasteBloomDismissalModifier(
+                isActive: isRunningTasteBloomDismissal && !reduceMotion,
+                origin: launchOrigin,
+                progress: tasteBloomDismissalProgress
+            )
+        )
+        .opacity(terminalDismissalOpacity)
+        .allowsHitTesting(!isRunningTasteBloomDismissal)
         .tbScreenTopChrome(
             isEnabled: phase != .tasteWords && phase != .cameraCapture && phase != .result
         )
+        .background {
+            if phase == .menu || phase == .restaurantSelection {
+                TBColor.page.ignoresSafeArea()
+            }
+        }
         .preferredColorScheme(.light)
+        .presentationBackground(.clear)
         .edgeSwipeBack(
             isEnabled: !isTasteSearchPresented
                 && !isResultShareSheetPresented
@@ -1017,6 +1132,9 @@ struct DiningFeedbackSheet: View {
         )
         .task(id: showsLaunchTransitionOverlay) {
             await dismissLaunchTransitionAfterDelay()
+        }
+        .task(id: isRunningTasteBloomDismissal) {
+            await finishTasteBloomDismissalAfterDelay()
         }
         // Keep one picker consumer alive across the detail/reflection phase transition.
         .onChange(of: photoPickerItem) { _, item in
@@ -1042,6 +1160,15 @@ struct DiningFeedbackSheet: View {
             menuSelectionView
         case .restaurantSelection:
             restaurantSelectionView
+        case .overallEvaluation:
+            DiningOverallEvaluationStepView(
+                evaluation: $overallEvaluation,
+                onBack: { phase = .menu },
+                onContinue: {
+                    prepareTasteMapFocus()
+                    phase = .tasteWords
+                }
+            )
         case .tasteWords:
             tasteWordsView
         case .detailTags:
@@ -1068,13 +1195,7 @@ struct DiningFeedbackSheet: View {
             return
         }
 
-        withAnimation(
-            .easeOut(
-                duration: reduceMotion
-                    ? DiningFeedbackTasteBloomTransitionMetrics.reducedMotionFadeOutDuration
-                    : DiningFeedbackTasteBloomTransitionMetrics.fadeOutDuration
-            )
-        ) {
+        withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)) {
             showsLaunchTransitionOverlay = false
         }
     }
@@ -1082,35 +1203,31 @@ struct DiningFeedbackSheet: View {
     private var restaurantSelectionView: some View {
         ScrollViewReader { scrollProxy in
             restaurantSelectionContent
-                .onChange(of: isDirectRestaurantInputFocused) { _, _ in
-                    revealDirectRestaurantInput(using: scrollProxy)
-                }
-                .onChange(of: menuKeyboard.visibleHeight) { _, _ in
-                    revealDirectRestaurantInput(using: scrollProxy)
-                }
-                .onReceive(
-                    NotificationCenter.default.publisher(
-                        for: UIResponder.keyboardDidChangeFrameNotification
-                    )
-                ) { _ in
+                .onChange(of: menuKeyboard.visibleHeight) { previousHeight, currentHeight in
+                    guard previousHeight <= 0, currentHeight > 0 else { return }
                     revealDirectRestaurantInput(using: scrollProxy)
                 }
         }
     }
 
-    private func revealDirectRestaurantInput(using scrollProxy: ScrollViewProxy) {
-        guard usesRestaurantDirectInput,
-              isDirectRestaurantInputFocused,
-              menuKeyboard.visibleHeight > 0 else { return }
+    private var isEditingDirectRestaurantWithKeyboard: Bool {
+        usesRestaurantDirectInput && isDirectRestaurantInputFocused && menuKeyboard.visibleHeight > 0
+    }
 
-        withAnimation(.easeOut(duration: 0.24)) {
+    private func revealDirectRestaurantInput(using scrollProxy: ScrollViewProxy) {
+        guard isEditingDirectRestaurantWithKeyboard else { return }
+
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             scrollProxy.scrollTo(Self.directRestaurantInputScrollID, anchor: .bottom)
         }
     }
 
     private var restaurantSelectionContent: some View {
-        // Reserve the CTA's height so the input card scrolls above it, not behind it.
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
+            TBColor.page
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+
             VStack(spacing: 0) {
                 TBFlowTopBar(
                     title: "식후 피드백",
@@ -1190,11 +1307,13 @@ struct DiningFeedbackSheet: View {
                             }
                         }
                     }
-                    .tbPageContentPadding(bottom: TBSpacing.page)
+                    .tbPageContentPadding(bottom: TBSpacing.page + 156)
                 }
                 .scrollIndicators(.hidden)
                 .scrollBounceBehavior(.basedOnSize)
+                .scrollClipDisabled()
                 .scrollDismissesKeyboard(.interactively)
+                .padding(.bottom, isEditingDirectRestaurantWithKeyboard ? TBSpacing.x12 : 0)
             }
 
             TBFlowStepCTA(
@@ -1202,29 +1321,21 @@ struct DiningFeedbackSheet: View {
                 currentIndex: 0,
                 total: 1,
                 isEnabled: canContinueRestaurantSelection,
-                backgroundColor: .clear,
+                backgroundColor: TBColor.page,
                 showsIndicator: false,
                 action: continueRestaurantSelection
             )
+            .opacity(isEditingDirectRestaurantWithKeyboard ? 0 : 1)
+            .allowsHitTesting(!isEditingDirectRestaurantWithKeyboard)
+            .accessibilityHidden(isEditingDirectRestaurantWithKeyboard)
         }
-        .background(TBColor.page.ignoresSafeArea())
     }
 
     private var menuSelectionView: some View {
         ScrollViewReader { scrollProxy in
             menuSelectionContent
-                .onChange(of: isDirectMenuInputFocused) { _, _ in
-                    revealDirectMenuInput(using: scrollProxy)
-                }
-                .onChange(of: menuKeyboard.visibleHeight) { _, _ in
-                    revealDirectMenuInput(using: scrollProxy)
-                }
-                .onReceive(
-                    NotificationCenter.default.publisher(
-                        for: UIResponder.keyboardDidChangeFrameNotification
-                    )
-                ) { _ in
-                    // Re-align after the keyboard has resized the scroll viewport.
+                .onChange(of: menuKeyboard.visibleHeight) { previousHeight, currentHeight in
+                    guard previousHeight <= 0, currentHeight > 0 else { return }
                     revealDirectMenuInput(using: scrollProxy)
                 }
         }
@@ -1237,13 +1348,17 @@ struct DiningFeedbackSheet: View {
     private func revealDirectMenuInput(using scrollProxy: ScrollViewProxy) {
         guard isEditingDirectMenuWithKeyboard else { return }
 
-        withAnimation(.easeOut(duration: 0.24)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             scrollProxy.scrollTo(Self.directMenuInputScrollID, anchor: .bottom)
         }
     }
 
     private var menuSelectionContent: some View {
         ZStack(alignment: .bottom) {
+            TBColor.page
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+
             VStack(spacing: 0) {
                 TBFlowTopBar(
                     title: "식후 피드백",
@@ -1258,7 +1373,7 @@ struct DiningFeedbackSheet: View {
                     VStack(alignment: .leading, spacing: 20) {
                         DiningFeedbackIntroHeader(
                             title: "어떤 메뉴를 먼저 기록할까요?",
-                            subtitle: "모든 코스를 한 번에 평가하지 않아도 괜찮아요. 가장 선명하게 기억나는 메뉴부터 선택하면, 그 메뉴의 미각 인상만 차분히 기록할 수 있어요.",
+                            subtitle: "가장 선명하게 기억나는 메뉴부터 선택해 주세요.",
                             contextText: menuContextLabel
                         )
 
@@ -1392,6 +1507,7 @@ struct DiningFeedbackSheet: View {
                                         ForEach(fixture?.dishKindOptions ?? []) { kind in
                                             TBSelectableChip(
                                                 title: kind.label,
+                                                iconName: LucideIcon.dishKindSymbol(for: kind.id),
                                                 isSelected: selectedKindIDs.contains(kind.id)
                                             ) {
                                                 toggleKind(kind.id)
@@ -1416,14 +1532,18 @@ struct DiningFeedbackSheet: View {
             }
 
             TBFlowStepCTA(
-                actionLabel: "선택한 메뉴 기록하기",
+                actionLabel: "취향까지 기록",
                 currentIndex: 0,
                 total: 1,
                 isEnabled: selectedDish != nil,
                 backgroundColor: TBColor.page,
                 showsIndicator: false,
+                secondaryActionLabel: canOfferQuickCapture ? "여기까지만 저장" : nil,
+                secondaryAction: canOfferQuickCapture ? saveQuickCapture : nil,
+                secondaryButtonEnabled: canSaveQuickCapture,
+                secondaryButtonVisualDisabled: !canSaveQuickCapture,
                 action: {
-                    phase = .tasteWords
+                    phase = .overallEvaluation
                 }
             )
             .opacity(isEditingDirectMenuWithKeyboard ? 0 : 1)
@@ -1442,11 +1562,10 @@ struct DiningFeedbackSheet: View {
                 )
                 .padding(.horizontal, TBSpacing.page)
                 .padding(.bottom, 96)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
                 .zIndex(10)
             }
         }
-        .background(TBColor.page.ignoresSafeArea())
         .coordinateSpace(name: Self.menuSelectionCoordinateSpace)
         .onPreferenceChange(DirectMenuInputFramePreferenceKey.self) { frame in
             directMenuInputFrame = frame
@@ -1455,13 +1574,26 @@ struct DiningFeedbackSheet: View {
             directMenuOptionCardsFrame = frame
         }
         .simultaneousGesture(directMenuOutsideTapGesture)
-        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: feedbackDishes.map(\.id))
+        .animation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion), value: feedbackDishes.map(\.id))
         .onChange(of: pendingDeletedMenu?.id) { _, _ in
             presentMenuDeletionToast()
         }
-        .onAppear(perform: presentMenuDeletionToast)
+        .onAppear {
+            presentMenuDeletionToast()
+            restoreEntryMenuSelectionIfNeeded()
+            if phase == .tasteWords, focusedExperienceID == nil {
+                prepareTasteMapFocus()
+            }
+        }
         .onDisappear {
             deletionToast.cancel()
+        }
+        .alert("사진을 저장하지 못했어요", isPresented: photoLoadErrorBinding) {
+            Button("확인", role: .cancel) {
+                photoLoadError = nil
+            }
+        } message: {
+            Text(photoLoadError ?? "")
         }
     }
 
@@ -1517,14 +1649,14 @@ struct DiningFeedbackSheet: View {
                     )
                     .padding(.horizontal, TBSpacing.page)
                     .padding(.bottom, 20)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
             .background(TBColor.focus)
         }
-        .animation(.easeOut(duration: 0.2), value: isTasteMapInteracting)
-        .animation(.easeOut(duration: 0.2), value: focusedExperienceID)
+        .animation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion), value: isTasteMapInteracting)
+        .animation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion), value: focusedExperienceID)
         .sheet(isPresented: $isTasteSearchPresented) {
             TasteExperienceSearchSheet(axes: tasteExperienceAxes) { experience in
                 requestTasteExperienceFocus(experience.id)
@@ -1546,7 +1678,7 @@ struct DiningFeedbackSheet: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: TBSize.topAppBarHeight)
+        .frame(height: TBSize.chromeIconButton)
         .zIndex(20)
     }
 
@@ -1556,44 +1688,62 @@ struct DiningFeedbackSheet: View {
                 .font(TBFont.bold(15))
                 .foregroundStyle(TBColor.textPrimary)
                 .padding(.horizontal, 12)
-                .frame(height: 32)
+                .frame(height: TBSize.chromeIconButton)
                 .modifier(TasteMapChromeGlass(shape: Capsule()))
                 .allowsHitTesting(false)
 
             HStack {
                 Button {
-                    phase = .menu
+                    phase = .overallEvaluation
                 } label: {
                     LucideIcon(
                         .chevronLeft,
                         size: TBIcon.Size.large,
                         strokeWidth: TBIcon.Stroke.regular
                     )
-                    .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
+                    .frame(width: TBSize.chromeIconButton, height: TBSize.chromeIconButton)
                     .foregroundStyle(TBColor.textSecondary)
                     .modifier(TasteMapChromeGlass(shape: Circle(), isInteractive: true))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("메뉴 선택으로 돌아가기")
+                .accessibilityLabel("전체 평가로 돌아가기")
 
                 Spacer()
 
-                Button {
-                    isTasteSearchPresented = true
-                } label: {
-                    LucideIcon(
-                        .search,
-                        size: TBIcon.Size.large,
-                        strokeWidth: TBIcon.Stroke.regular
-                    )
-                    .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
-                    .foregroundStyle(TBColor.textSecondary)
-                    .modifier(TasteMapChromeGlass(shape: Circle(), isInteractive: true))
-                    .contentShape(Rectangle())
+                HStack(spacing: 8) {
+                    if !selectedExperienceIDs.isEmpty {
+                        Button {
+                            activeDetailExperienceIndex = 0
+                            phase = .detailTags
+                        } label: {
+                            Text("다음")
+                                .font(TBFont.semibold(12))
+                                .foregroundStyle(TBColor.textPrimary)
+                                .padding(.horizontal, 14)
+                                .frame(height: TBSize.chromeIconButton)
+                                .modifier(TasteMapChromeGlass(shape: Capsule(), isInteractive: true))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("선택한 미각 인상 평가하기")
+                    }
+
+                    Button {
+                        isTasteSearchPresented = true
+                    } label: {
+                        LucideIcon(
+                            .search,
+                            size: TBIcon.Size.large,
+                            strokeWidth: TBIcon.Stroke.regular
+                        )
+                        .frame(width: TBSize.chromeIconButton, height: TBSize.chromeIconButton)
+                        .foregroundStyle(TBColor.textSecondary)
+                        .modifier(TasteMapChromeGlass(shape: Circle(), isInteractive: true))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("미각 단어 검색")
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("미각 단어 검색")
             }
             .padding(.horizontal, TBSpacing.page)
         }
@@ -1614,6 +1764,22 @@ struct DiningFeedbackSheet: View {
                             onSelectIndex: { activeDetailExperienceIndex = $0 }
                         )
 
+                        if let activeDetailExperience,
+                           let selection = sensorySelectionBinding(
+                               id: activeDetailExperience.id,
+                               type: .bubble
+                           ) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("선택한 미각 평가")
+                                    .font(TBFont.bold(14))
+                                    .foregroundStyle(TBColor.textPrimary)
+                                DiningSensorySelectionEditor(
+                                    selection: selection,
+                                    relatedBubbles: relatedBubbleOptions
+                                )
+                            }
+                        }
+
                         DiningReflectionEntryCard(
                             photoData: reflectionPhotoData,
                             onOpenNote: { phase = .reflection },
@@ -1623,6 +1789,30 @@ struct DiningFeedbackSheet: View {
                         )
 
                         VStack(spacing: 28) {
+                            if let activeDetailExperience {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(spacing: 8) {
+                                        LucideIcon(
+                                            .link,
+                                            size: TBIcon.Size.xSmall,
+                                            strokeWidth: TBIcon.Stroke.regular
+                                        )
+                                        Text("새로 고른 디테일 태그는 ‘\(activeDetailExperience.label)’ 버블에 연결돼요.")
+                                            .font(TBFont.regular(12))
+                                            .lineSpacing(3)
+                                    }
+                                    Text(DiningSensoryRecommendationPolicy.detailPrompt(for: overallEvaluation))
+                                        .font(TBFont.regular(11))
+                                        .foregroundStyle(TBColor.textHint)
+                                        .lineSpacing(3)
+                                }
+                                .foregroundStyle(TBColor.textSecondary)
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(TBColor.mutedSurface)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            }
+
                             ForEach(detailTagCategories) { category in
                                 DiningDetailTagSelector(
                                     category: category,
@@ -1643,6 +1833,30 @@ struct DiningFeedbackSheet: View {
                                     },
                                     onSubmitCustomInput: addCustomDetailTag
                                 )
+                            }
+
+                            if !selectedDetailSelections.isEmpty {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("선택한 디테일 평가")
+                                        .font(TBFont.bold(14))
+                                        .foregroundStyle(TBColor.textPrimary)
+                                    Text("각 태그가 어느 미각과 연결됐는지 확인하고, 필요한 항목만 더 알려주세요.")
+                                        .font(TBFont.regular(12))
+                                        .foregroundStyle(TBColor.textHint)
+                                        .lineSpacing(3)
+
+                                    ForEach(selectedDetailSelections) { item in
+                                        if let selection = sensorySelectionBinding(
+                                            id: item.id,
+                                            type: .detailTag
+                                        ) {
+                                            DiningSensorySelectionEditor(
+                                                selection: selection,
+                                                relatedBubbles: relatedBubbleOptions
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -1686,7 +1900,7 @@ struct DiningFeedbackSheet: View {
                             Text(activeDetailExperience?.label ?? "선택한 미각")
                                 .font(TBFont.bold(18))
                                 .foregroundStyle(activeDetailExperience?.axis.mainColor ?? TBColor.textPrimary)
-                            Text("왜 느꼈는지 알려주세요.")
+                            Text("선택을 보충하고 싶다면 메모를 남겨주세요.")
                                 .font(TBFont.semibold(14))
                                 .foregroundStyle(TBColor.textSubtle)
                         }
@@ -1704,6 +1918,10 @@ struct DiningFeedbackSheet: View {
                                     .stroke(TBColor.border)
                             }
 
+                        Text("추가 메모 · 선택사항")
+                            .font(TBFont.regular(11))
+                            .foregroundStyle(TBColor.textFaint)
+
                         DiningReflectionPhotoEditor(
                             photoData: reflectionPhotoData,
                             photoPickerItem: $photoPickerItem,
@@ -1711,6 +1929,7 @@ struct DiningFeedbackSheet: View {
                                 cancelPhotoLoading()
                                 reflectionPhotoData = nil
                                 reflectionPhotoFilename = nil
+                                capturedPhotoPalette = nil
                             }
                         )
                     }
@@ -1840,7 +2059,7 @@ struct DiningFeedbackSheet: View {
                 .padding(.bottom, DiningFeedbackCameraControlMetrics.bottomPadding)
                 .opacity(showsLaunchTransitionOverlay ? 0 : 1)
                 .allowsHitTesting(!showsLaunchTransitionOverlay)
-                .animation(.easeOut(duration: 0.16), value: showsLaunchTransitionOverlay)
+                .animation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion), value: showsLaunchTransitionOverlay)
             }
         }
         .preferredColorScheme(.dark)
@@ -1889,18 +2108,25 @@ struct DiningFeedbackSheet: View {
                                 + resultShareSheetDragTranslation
                         )
                         .simultaneousGesture(resultShareSheetDragGesture)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .transition(TasteBloomMotion.sheetTransition(reduceMotion: reduceMotion))
                         .zIndex(30)
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .background {
-            DiningFeedbackResultBackground(experiences: selectedExperiences)
+            DiningFeedbackResultBackground(palette: resultVisualPalette)
                 .ignoresSafeArea()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(edges: .horizontal)
+        .alert("사진을 저장하지 못했어요", isPresented: photoLoadErrorBinding) {
+            Button("확인", role: .cancel) {
+                photoLoadError = nil
+            }
+        } message: {
+            Text(photoLoadError ?? "")
+        }
     }
 
     private var resultStageContent: some View {
@@ -1911,12 +2137,11 @@ struct DiningFeedbackSheet: View {
 
             Button(action: showResultChrome) {
                 DiningFeedbackResultCardBloom(
-                    mainAxis: resultMeshAxes.main,
-                    secondaryAxis: resultMeshAxes.secondary,
-                    tertiaryAxis: resultMeshAxes.tertiary,
+                    palette: resultVisualPalette,
                     reduceMotion: reduceMotion
                 ) {
                     DiningFeedbackResultCard(
+                        kind: resultKind,
                         restaurant: selectedRestaurantName,
                         menuTitle: selectedMenuTitle,
                         experiences: selectedExperiences,
@@ -1928,15 +2153,21 @@ struct DiningFeedbackSheet: View {
             }
             .buttonStyle(.plain)
             .padding(.horizontal, DiningFeedbackResultLayout.cardHorizontalPadding)
-            .accessibilityLabel("결과 카드")
-            .accessibilityHint("상단 공유 버튼과 하단 저장 버튼을 표시합니다")
+            .accessibilityLabel(
+                resultKind == .quickCapture ? "빠른 저장 결과 카드" : "미각 결과 카드"
+            )
+            .accessibilityHint(
+                resultKind == .quickCapture
+                    ? "상단 공유 버튼과 하단 취향 덧붙이기 또는 완료 버튼을 표시합니다"
+                    : "상단 공유 버튼과 하단 저장 버튼을 표시합니다"
+            )
 
             if isResultChromeVisible {
                 VStack(spacing: 0) {
                     resultTopBar
                     Spacer(minLength: 0)
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
+                .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
             }
 
             if isResultChromeVisible {
@@ -1944,10 +2175,10 @@ struct DiningFeedbackSheet: View {
                     Spacer(minLength: 0)
                     resultSplitCTA
                 }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
             }
         }
-        .animation(.easeOut(duration: 0.3), value: isResultChromeVisible)
+        .animation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion), value: isResultChromeVisible)
     }
 
     private var resultTopBar: some View {
@@ -1964,7 +2195,11 @@ struct DiningFeedbackSheet: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("디테일 태그로 돌아가기")
+                .accessibilityLabel(
+                    resultKind == .quickCapture
+                        ? "메뉴 선택으로 돌아가기"
+                        : "디테일 태그로 돌아가기"
+                )
 
                 Spacer()
 
@@ -1979,7 +2214,9 @@ struct DiningFeedbackSheet: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("결과 카드 공유")
+                .accessibilityLabel(
+                    resultKind == .quickCapture ? "식사 기록 카드 공유" : "미각 결과 카드 공유"
+                )
             }
             .padding(.horizontal, TBSpacing.page)
         }
@@ -1991,28 +2228,45 @@ struct DiningFeedbackSheet: View {
 
     private var resultSplitCTA: some View {
         HStack(spacing: FlowBottomCtaMetrics.secondaryButtonGap) {
-            Button(action: handleResultAdditionalRecord) {
-                Text("추가 기록")
-                    .font(TBFont.medium(14))
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: TBSize.primaryButtonHeight)
-                    .foregroundStyle(TBColor.textPrimary)
-                    .background(TBColor.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
-                            .stroke(Color.white.opacity(0.8), lineWidth: 1)
-                    }
+            if resultKind == .quickCapture {
+                resultSecondaryButton(
+                    title: "취향 덧붙이기",
+                    action: continueQuickCaptureWithTasteFeedback
+                )
+            } else if entry == nil && quickSavedEntryID == nil {
+                resultSecondaryButton(
+                    title: "추가 기록",
+                    action: handleResultAdditionalRecord
+                )
             }
-            .buttonStyle(.plain)
 
             PrimaryButton(
-                title: "저장",
-                action: saveFeedback
+                title: resultKind == .quickCapture ? "완료" : "저장",
+                action: resultKind == .quickCapture ? closeFeedback : saveFeedback
             )
         }
         .padding(.horizontal, TBSpacing.page)
         .padding(.bottom, FlowBottomCtaMetrics.bottomPadding)
+    }
+
+    private func resultSecondaryButton(
+        title: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(TBFont.medium(14))
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: TBSize.primaryButtonHeight)
+                .foregroundStyle(TBColor.textPrimary)
+                .background(TBColor.surface)
+                .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
+                        .stroke(Color.white.opacity(0.8), lineWidth: 1)
+                }
+        }
+        .buttonStyle(.plain)
     }
 
     private var resultShareSheet: some View {
@@ -2217,7 +2471,7 @@ struct DiningFeedbackSheet: View {
                 if shouldDismiss {
                     hideResultShareSheet()
                 } else {
-                    withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
                         resultShareSheetDragTranslation = 0
                         isDraggingResultShareSheet = false
                     }
@@ -2288,22 +2542,26 @@ struct DiningFeedbackSheet: View {
         let restaurantDishes = selectedRestaurantDishes
         if !restaurantDishes.isEmpty {
             baseDishes = restaurantDishes
-        } else if hasExplicitRestaurantContext,
-                  let entry,
-                  !entry.menu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            baseDishes = [customDish(title: entry.menu, id: "entry-menu")]
         } else if hasExplicitRestaurantContext {
             baseDishes = []
-        } else if scenario.dishes.isEmpty,
-                  let entry,
-                  !entry.menu.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            baseDishes = [customDish(title: entry.menu, id: "entry-menu")]
         } else {
             baseDishes = scenario.dishes
         }
 
-        return baseDishes
-            + rememberedRestaurantDishes(excluding: baseDishes + customDishes)
+        let entryMenu = entry?.menu.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let savedEntryDishes: [DiningFeedbackDishContract]
+        if !entryMenu.isEmpty,
+           !baseDishes.contains(where: {
+               Self.normalizedMenuTitle($0.title) == Self.normalizedMenuTitle(entryMenu)
+           }) {
+            savedEntryDishes = [customDish(title: entryMenu, id: "entry-menu")]
+        } else {
+            savedEntryDishes = []
+        }
+
+        let anchoredDishes = baseDishes + savedEntryDishes
+        return anchoredDishes
+            + rememberedRestaurantDishes(excluding: anchoredDishes + customDishes)
             + customDishes
     }
 
@@ -2411,9 +2669,27 @@ struct DiningFeedbackSheet: View {
     }
 
     private var selectedMenuTitle: String {
-        usesDirectInput
-            ? directMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-            : selectedDish?.title ?? entry?.menu ?? "메뉴"
+        if usesDirectInput {
+            return directMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        if let selectedDish {
+            return selectedDish.title
+        }
+
+        return didRestoreEntryMenuSelection ? "" : entry?.menu ?? ""
+    }
+
+    private var canOfferQuickCapture: Bool {
+        entry?.hasCompletedTasteFeedback != true
+            && reflectionPhotoData != nil
+    }
+
+    private var canSaveQuickCapture: Bool {
+        guard canOfferQuickCapture, let confirmedRestaurantName else { return false }
+        return !confirmedRestaurantName
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty
     }
 
     private var directMenuActionLabel: String {
@@ -2456,15 +2732,22 @@ struct DiningFeedbackSheet: View {
         }
     }
 
-    private var resultMeshAxes: (main: TasteAxis, secondary: TasteAxis, tertiary: TasteAxis) {
-        let mainAxis = selectedExperiences.first?.axis ?? .umami
-        let secondaryAxis = selectedExperiences.dropFirst().first?.axis ?? mainAxis
-        let tertiaryAxis = selectedExperiences.dropFirst(2).first?.axis ?? secondaryAxis
-        return (mainAxis, secondaryAxis, tertiaryAxis)
+    private var resultVisualPalette: DiningFeedbackResultVisualPalette {
+        switch resultKind {
+        case .quickCapture:
+            .photo(capturedPhotoPalette ?? entry?.photoPalette ?? .neutralFallback)
+        case .tasteFeedback:
+            .taste(experiences: selectedExperiences)
+        }
     }
 
     private var resultShareText: String {
-        "\(selectedRestaurantName) \(selectedMenuTitle)의 미각 기록"
+        let trimmedMenu = selectedMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let subject = trimmedMenu.isEmpty
+            ? selectedRestaurantName
+            : "\(selectedRestaurantName) \(trimmedMenu)"
+        let recordType = resultKind == .quickCapture ? "식사 기록" : "미각 기록"
+        return "\(subject)의 \(recordType)"
     }
 
     private var resultShareLink: String {
@@ -2472,10 +2755,14 @@ struct DiningFeedbackSheet: View {
         components.scheme = "tastebuddy"
         components.host = "dining-feedback"
         components.path = "/result"
-        components.queryItems = [
-            URLQueryItem(name: "restaurant", value: selectedRestaurantName),
-            URLQueryItem(name: "menu", value: selectedMenuTitle)
+        var queryItems = [
+            URLQueryItem(name: "restaurant", value: selectedRestaurantName)
         ]
+        let trimmedMenu = selectedMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedMenu.isEmpty {
+            queryItems.append(URLQueryItem(name: "menu", value: trimmedMenu))
+        }
+        components.queryItems = queryItems
 
         return components.url?.absoluteString ?? resultShareText
     }
@@ -2683,7 +2970,7 @@ struct DiningFeedbackSheet: View {
 
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             customDishes.removeAll { $0.id == dish.id }
             appModel.removeRememberedRestaurantMenu(
                 dish.title,
@@ -2713,7 +3000,7 @@ struct DiningFeedbackSheet: View {
         guard let pendingDeletedMenu else { return }
         deletionToast.cancel()
 
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             if let customIndex = pendingDeletedMenu.customIndex,
                !customDishes.contains(where: { $0.id == pendingDeletedMenu.dish.id }) {
                 customDishes.insert(
@@ -2755,6 +3042,24 @@ struct DiningFeedbackSheet: View {
             guard pendingDeletedMenu?.id == toastID else { return }
             pendingDeletedMenu = nil
         }
+    }
+
+    private func restoreEntryMenuSelectionIfNeeded() {
+        guard !didRestoreEntryMenuSelection else { return }
+        didRestoreEntryMenuSelection = true
+
+        guard let entry else { return }
+        let restoredTitle = entry.menu.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !restoredTitle.isEmpty,
+              let index = feedbackDishes.firstIndex(where: {
+                  Self.normalizedMenuTitle($0.title) == Self.normalizedMenuTitle(restoredTitle)
+              }) else {
+            return
+        }
+
+        usesDirectInput = false
+        selectedDishIndex = index
+        selectedKindIDs = Set(initialKindIDs(for: feedbackDishes[index]))
     }
 
     private func initialKindIDs(for dish: DiningFeedbackDishContract) -> [String] {
@@ -2817,14 +3122,43 @@ struct DiningFeedbackSheet: View {
     }
 
     private var recommendedDetailTagIDs: [String] {
-        DiningDetailTagCatalog.recommendedIDs(
+        let baseIDs = DiningDetailTagCatalog.recommendedIDs(
             experiences: selectedExperiences,
-            dishKindIDs: selectedKindIDs
+            dishKindIDs: Set(resolvedSelectedDishKindIDs)
+        )
+        return DiningSensoryRecommendationPolicy.orderedDetailTagIDs(
+            baseIDs: baseIDs,
+            overallEvaluation: overallEvaluation
         )
     }
 
     private var selectedDetailTagMetadata: [DiningDetailTagMetadata] {
-        selectedDetailTagIDs.compactMap(DiningDetailTagCatalog.metadata)
+        selectedDetailTagIDs.compactMap { id in
+            if let metadata = DiningDetailTagCatalog.metadata(for: id) {
+                return metadata
+            }
+            guard let selection = sensorySelections.first(where: {
+                $0.type == .detailTag && $0.id == id
+            }) else {
+                return nil
+            }
+            return DiningDetailTagMetadata(
+                id: id,
+                label: selection.labelSnapshot,
+                categoryID: "preserved",
+                categoryLabel: "기존 선택"
+            )
+        }
+    }
+
+    private var selectedDetailSelections: [DiningSensorySelection] {
+        selectedDetailTagIDs.compactMap { id in
+            sensorySelections.first { $0.type == .detailTag && $0.id == id }
+        }
+    }
+
+    private var relatedBubbleOptions: [DiningSensoryRelatedBubbleOption] {
+        selectedExperiences.map { .init(id: $0.id, label: $0.label) }
     }
 
     private var detailHelperText: String {
@@ -2835,13 +3169,29 @@ struct DiningFeedbackSheet: View {
     }
 
     private var resolvedReflectionNote: String {
-        let trimmedNote = reflectionNote.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedNote.isEmpty else { return trimmedNote }
+        reflectionNote.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
-        let summary = selectedExperiences.enumerated().map { index, experience in
-            "\(index == 0 ? "메인" : "보조") 미각 \(experience.label)"
+    private func sensorySelectionBinding(
+        id: String,
+        type: DiningSensorySelection.Kind
+    ) -> Binding<DiningSensorySelection>? {
+        guard let initial = sensorySelections.first(where: {
+            $0.id == id && $0.type == type
+        }) else {
+            return nil
         }
-        return "\(summary.joined(separator: ", "))으로 기억에 남은 식후 피드백입니다."
+        return Binding(
+            get: {
+                sensorySelections.first(where: { $0.id == id && $0.type == type }) ?? initial
+            },
+            set: { updated in
+                sensorySelections = DiningSensorySelectionEditing.upsert(
+                    updated,
+                    in: sensorySelections
+                )
+            }
+        )
     }
 
     private var photoLoadErrorBinding: Binding<Bool> {
@@ -2888,12 +3238,15 @@ struct DiningFeedbackSheet: View {
             in: selectedExperienceIDs
         )
         selectedExperienceIDs = nextSelection
+        reconcileBubbleSelections()
 
         guard nextSelection.contains(experience.id), nextSelection.count < 3 else {
             return
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + TasteBloomMotion.duration(.press, reduceMotion: reduceMotion)) {
+            guard phase == .tasteWords, focusedExperienceID == experience.id,
+                  selectedExperienceIDs.contains(experience.id) else { return }
             focusNextUnselectedExperience(from: experience.id)
         }
     }
@@ -2914,6 +3267,7 @@ struct DiningFeedbackSheet: View {
                 focusedExperience.id,
                 in: selectedExperienceIDs
             )
+            reconcileBubbleSelections()
         }
     }
 
@@ -2934,6 +3288,17 @@ struct DiningFeedbackSheet: View {
         focusRequest = TasteExperienceMapFocusRequest(experienceID: experienceID)
     }
 
+    private func prepareTasteMapFocus() {
+        guard let id = DiningSensoryRecommendationPolicy.firstBubbleID(
+            experiences: tasteExperiences,
+            dishKindIDs: Set(resolvedSelectedDishKindIDs),
+            preserving: selectedExperienceIDs
+        ) else {
+            return
+        }
+        requestTasteExperienceFocus(id)
+    }
+
     private func customTags(in categoryID: String) -> [DiningFeedbackTagContract] {
         selectedDetailTagIDs.compactMap { id in
             guard let metadata = DiningDetailTagCatalog.metadata(for: id),
@@ -2949,8 +3314,19 @@ struct DiningFeedbackSheet: View {
     private func toggleDetailTag(_ id: String) {
         if selectedDetailTagIDs.contains(id) {
             selectedDetailTagIDs.removeAll { $0 == id }
+            sensorySelections.removeAll { $0.type == .detailTag && $0.id == id }
         } else {
             selectedDetailTagIDs.append(id)
+            let label = DiningDetailTagCatalog.metadata(for: id)?.label ?? id
+            sensorySelections = DiningSensorySelectionEditing.upsert(
+                DiningSensorySelection(
+                    id: id,
+                    type: .detailTag,
+                    labelSnapshot: label,
+                    relatedBubbleID: activeDetailExperience?.id
+                ),
+                in: sensorySelections
+            )
         }
     }
 
@@ -2963,9 +3339,55 @@ struct DiningFeedbackSheet: View {
         let id = "custom:\(categoryID):\(label)"
         if !selectedDetailTagIDs.contains(id) {
             selectedDetailTagIDs.append(id)
+            sensorySelections = DiningSensorySelectionEditing.upsert(
+                DiningSensorySelection(
+                    id: id,
+                    type: .detailTag,
+                    labelSnapshot: label,
+                    relatedBubbleID: activeDetailExperience?.id
+                ),
+                in: sensorySelections
+            )
         }
         customTagCategoryID = nil
         customTagLabel = ""
+    }
+
+    private func reconcileBubbleSelections() {
+        let selectedIDs = Set(selectedExperienceIDs)
+        if selectedIDs.isEmpty {
+            sensorySelections = []
+            selectedDetailTagIDs = []
+            return
+        }
+
+        sensorySelections.removeAll { selection in
+            if selection.type == .bubble {
+                return experienceByID[selection.id] != nil
+                    && !selectedIDs.contains(selection.id)
+            }
+            if let relatedBubbleID = selection.relatedBubbleID {
+                return experienceByID[relatedBubbleID] != nil
+                    && !selectedIDs.contains(relatedBubbleID)
+            }
+            return false
+        }
+
+        for id in selectedExperienceIDs where !sensorySelections.contains(where: {
+            $0.type == .bubble && $0.id == id
+        }) {
+            guard let experience = experienceByID[id] else { continue }
+            sensorySelections.append(
+                DiningSensorySelection(
+                    id: id,
+                    type: .bubble,
+                    labelSnapshot: experience.label
+                )
+            )
+        }
+        selectedDetailTagIDs = sensorySelections
+            .filter { $0.type == .detailTag }
+            .map(\.id)
     }
 
     private var phaseAfterPhotoCapture: Phase {
@@ -3058,7 +3480,9 @@ struct DiningFeedbackSheet: View {
         requestID: UUID,
         selection: PhotosPickerItem? = nil
     ) async -> Bool {
-        let normalizedData = await DiningReflectionPhotoStore.normalizedJPEGDataInBackground(data)
+        async let normalizedPhoto = DiningReflectionPhotoStore.normalizedJPEGDataInBackground(data)
+        async let extractedPalette = DiningPhotoPalette.extractInBackground(from: data)
+        let (normalizedData, photoPalette) = await (normalizedPhoto, extractedPalette)
         guard isCurrentPhotoRequest(requestID, selection: selection) else { return false }
         guard let normalizedData else {
             photoLoadError = "선택한 이미지를 읽을 수 없어요. 다른 사진을 선택해주세요."
@@ -3067,6 +3491,7 @@ struct DiningFeedbackSheet: View {
 
         reflectionPhotoData = normalizedData
         reflectionPhotoFilename = nil
+        capturedPhotoPalette = photoPalette
         photoLoadError = nil
         return true
     }
@@ -3149,68 +3574,189 @@ struct DiningFeedbackSheet: View {
         tasteMapVeilOpacity = reduceMotion ? 0 : 1
         guard !reduceMotion else { return }
 
-        try? await Task.sleep(for: .milliseconds(260))
-        withAnimation(.easeOut(duration: 0.28)) {
+        try? await Task.sleep(for: .seconds(TasteBloomMotion.Role.feedback.duration))
+        guard !Task.isCancelled else { return }
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             tasteMapVeilOpacity = 0
         }
     }
 
-    private func saveFeedback() {
-        guard let primaryExperience = selectedExperienceIDs.first.flatMap({ experienceByID[$0] })
-        else {
+    private func saveQuickCapture() {
+        guard canSaveQuickCapture else { return }
+
+        let entryID = entry?.id ?? quickSavedEntryID ?? UUID()
+        let photoFilename: String
+
+        if let reflectionPhotoData {
+            do {
+                photoFilename = try DiningReflectionPhotoStore.save(
+                    reflectionPhotoData,
+                    entryID: entryID
+                )
+            } catch {
+                photoLoadError = "사진을 기기에 저장하지 못했어요. 잠시 뒤 다시 시도해주세요."
+                return
+            }
+        } else if let existingFilename = reflectionPhotoFilename ?? entry?.reflectionPhotoFilename {
+            photoFilename = existingFilename
+        } else {
             return
         }
-        let entryID = entry?.id ?? UUID()
-        var photoFilename = reflectionPhotoFilename
-        if let reflectionPhotoData {
-            photoFilename = try? DiningReflectionPhotoStore.save(
-                reflectionPhotoData,
-                entryID: entryID
-            )
-        } else if let existingFilename = entry?.reflectionPhotoFilename {
-            DiningReflectionPhotoStore.remove(filename: existingFilename)
-            photoFilename = nil
-        }
-        let selectedTasteTags = selectedExperienceIDs.compactMap {
-            experienceByID[$0]?.label
-        }
-        let dishKindIDs = resolvedSelectedDishKindIDs
-        let reviewerProfile = appModel.tbaTasteProfile
-        let tbaSnapshot = TasteBuddyAgent.buildDiningAnalysisSnapshot(
-            TasteBuddyAgentDiningAnalysisInput(
-                detailTags: selectedDetailTagIDs,
-                dishKindTags: dishKindIDs,
-                id: entryID.uuidString,
-                restaurantName: selectedRestaurantName,
-                reviewSnippet: resolvedReflectionNote,
-                reviewerProfile: reviewerProfile,
-                subject: selectedMenuTitle,
-                tasteTags: selectedTasteTags
-            )
-        )
+
+        let photoPalette = capturedPhotoPalette
+            ?? reflectionPhotoData.map(DiningPhotoPalette.extract(from:))
+            ?? entry?.photoPalette
+            ?? .neutralFallback
+
+        quickSavedEntryID = entryID
+        reflectionPhotoFilename = photoFilename
+        capturedPhotoPalette = photoPalette
 
         onSave(
             DiningEntry(
                 id: entryID,
+                mealID: entry?.mealID ?? entryID,
                 restaurant: selectedRestaurantName,
+                restaurantID: resolvedRestaurantID,
                 menu: selectedMenuTitle,
-                date: entry?.date ?? .now,
-                rating: TasteExperienceMapEngine.mappedRating(for: primaryExperience),
+                menuItemID: resolvedMenuItemID,
+                observedAt: workingEntryDate,
+                savedAt: entry?.savedAt,
+                updatedAt: entry?.updatedAt,
+                rating: 0,
+                note: "",
+                tasteExperienceIDs: [],
+                detailTagIDs: [],
+                overallEvaluation: overallEvaluation,
+                dishKindIDs: [],
+                reflectionPhotoFilename: photoFilename,
+                tbaAnalysisSnapshot: nil,
+                feedbackStatus: .captured,
+                photoPalette: photoPalette
+            )
+        )
+        showResultCard(kind: .quickCapture)
+    }
+
+    private func saveFeedback() {
+        guard selectedExperienceIDs.first.flatMap({ experienceByID[$0] }) != nil else {
+            return
+        }
+        let entryID = entry?.id ?? quickSavedEntryID ?? UUID()
+        var photoFilename = reflectionPhotoFilename
+        if let reflectionPhotoData {
+            do {
+                photoFilename = try DiningReflectionPhotoStore.save(
+                    reflectionPhotoData,
+                    entryID: entryID
+                )
+            } catch {
+                photoLoadError = "사진을 기기에 저장하지 못했어요. 기존 기록은 그대로 유지했어요."
+                return
+            }
+        } else if let existingFilename = entry?.reflectionPhotoFilename {
+            DiningReflectionPhotoStore.remove(filename: existingFilename)
+            photoFilename = nil
+        }
+        let dishKindIDs = resolvedSelectedDishKindIDs
+
+        onSave(
+            DiningEntry(
+                id: entryID,
+                mealID: entry?.mealID ?? entryID,
+                restaurant: selectedRestaurantName,
+                restaurantID: resolvedRestaurantID,
+                menu: selectedMenuTitle,
+                menuItemID: resolvedMenuItemID,
+                observedAt: workingEntryDate,
+                savedAt: entry?.savedAt,
+                updatedAt: entry?.updatedAt,
+                rating: entry?.rating ?? 0,
                 note: resolvedReflectionNote,
                 tasteExperienceIDs: selectedExperienceIDs,
                 detailTagIDs: selectedDetailTagIDs,
+                sensorySelections: sensorySelections,
+                overallEvaluation: overallEvaluation,
                 dishKindIDs: dishKindIDs,
                 reflectionPhotoFilename: photoFilename,
-                tbaAnalysisSnapshot: tbaSnapshot
+                tbaAnalysisSnapshot: nil,
+                feedbackStatus: .completed,
+                photoPalette: capturedPhotoPalette ?? entry?.photoPalette
             )
         )
         closeFeedback()
+    }
+
+    private var resolvedRestaurantID: String? {
+        if let restaurantID = entry?.restaurantID {
+            return restaurantID
+        }
+        if let candidateID = selectedRestaurantCandidate?.id {
+            return candidateID
+        }
+        return selectedRestaurantCatalogSummary?.id
+    }
+
+    private var resolvedMenuItemID: String? {
+        if let menuItemID = entry?.menuItemID,
+           Self.normalizedMenuTitle(entry?.menu ?? "") == Self.normalizedMenuTitle(selectedMenuTitle) {
+            return menuItemID
+        }
+        guard let selectedDish,
+              selectedDish.id.hasPrefix("restaurant-") else {
+            return nil
+        }
+        return selectedDish.id
     }
 
     private func closeFeedback() {
         cancelPhotoLoading()
         restaurantResolutionTask?.cancel()
         restaurantResolutionTask = nil
+
+        guard startsWithLaunchTransition else {
+            performFeedbackDismissal()
+            return
+        }
+        guard !isRunningTasteBloomDismissal else { return }
+
+        isRunningTasteBloomDismissal = true
+
+        if reduceMotion {
+            terminalDismissalOpacity = 0
+            return
+        }
+
+        let dismissalDuration = DiningFeedbackTasteBloomTransitionMetrics
+            .dismissalDuration
+        let fadeStart = DiningFeedbackTasteBloomTransitionMetrics
+            .dismissalFadeStartProgress
+
+        // 마스크 안에서 꽃잎 곡선을 계산하므로, 시간만 등속으로 진행한다.
+        withAnimation(.linear(duration: dismissalDuration)) {
+            tasteBloomDismissalProgress = 1
+        }
+        withAnimation(
+            TasteBloomMotion.animation(.press, reduceMotion: reduceMotion)?
+                .delay(dismissalDuration * fadeStart)
+        ) {
+            terminalDismissalOpacity = 0
+        }
+    }
+
+    private func finishTasteBloomDismissalAfterDelay() async {
+        guard isRunningTasteBloomDismissal else { return }
+
+        let delay = reduceMotion
+            ? DiningFeedbackTasteBloomTransitionMetrics.reducedMotionDuration
+            : DiningFeedbackTasteBloomTransitionMetrics.dismissalDuration
+        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+        guard !Task.isCancelled, isRunningTasteBloomDismissal else { return }
+
+        performFeedbackDismissal()
+    }
+
+    private func performFeedbackDismissal() {
         if let onClose {
             onClose()
         } else {
@@ -3239,8 +3785,10 @@ struct DiningFeedbackSheet: View {
             closeFeedback()
         case .restaurantSelection:
             closeFeedback()
-        case .tasteWords:
+        case .overallEvaluation:
             phase = .menu
+        case .tasteWords:
+            phase = .overallEvaluation
         case .detailTags:
             phase = .tasteWords
         case .cameraCapture:
@@ -3252,7 +3800,8 @@ struct DiningFeedbackSheet: View {
         }
     }
 
-    private func showResultCard() {
+    private func showResultCard(kind: DiningFeedbackResultKind = .tasteFeedback) {
+        resultKind = kind
         isResultChromeVisible = false
         isResultShareSheetPresented = false
         resultShareSheetDragTranslation = 0
@@ -3268,7 +3817,7 @@ struct DiningFeedbackSheet: View {
             return
         }
 
-        withAnimation(.easeOut(duration: 0.3)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             isResultChromeVisible = true
         }
     }
@@ -3281,7 +3830,20 @@ struct DiningFeedbackSheet: View {
         canDragResultShareSheet = false
         resultSharePreviewImage = nil
         resultShareStatusMessage = nil
-        phase = .detailTags
+        phase = resultKind == .quickCapture ? .menu : .detailTags
+    }
+
+    private func continueQuickCaptureWithTasteFeedback() {
+        isResultChromeVisible = false
+        isResultShareSheetPresented = false
+        resultShareSheetDragTranslation = 0
+        isDraggingResultShareSheet = false
+        canDragResultShareSheet = false
+        resultSharePreviewImage = nil
+        resultShareStatusMessage = nil
+        phase = selectedMenuTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? .menu
+            : .tasteWords
     }
 
     private func showResultShareSheet() {
@@ -3290,11 +3852,11 @@ struct DiningFeedbackSheet: View {
         resultShareSheetDragTranslation = 0
         isDraggingResultShareSheet = false
         canDragResultShareSheet = false
-        withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             isResultShareSheetPresented = true
         }
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(700))
+            try? await Task.sleep(for: .seconds(TasteBloomMotion.duration(.sheet, reduceMotion: reduceMotion)))
             if isResultShareSheetPresented {
                 canDragResultShareSheet = true
             }
@@ -3302,7 +3864,7 @@ struct DiningFeedbackSheet: View {
     }
 
     private func hideResultShareSheet() {
-        withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             isResultShareSheetPresented = false
             resultShareSheetDragTranslation = 0
             isDraggingResultShareSheet = false
@@ -3334,12 +3896,14 @@ struct DiningFeedbackSheet: View {
         let canvasSize = resultShareCanvasSize
         let renderer = ImageRenderer(
             content: DiningFeedbackResultShareImage(
+                kind: resultKind,
                 restaurant: selectedRestaurantName,
                 menuTitle: selectedMenuTitle,
                 experiences: selectedExperiences,
                 detailTags: selectedDetailTagMetadata,
                 reflectionNote: resolvedReflectionNote,
                 photoData: reflectionPhotoData,
+                palette: resultVisualPalette,
                 canvasSize: canvasSize
             )
             .frame(width: canvasSize.width, height: canvasSize.height)
@@ -3433,10 +3997,13 @@ struct DiningFeedbackSheet: View {
         isTasteSearchPresented = false
         tasteMapVeilOpacity = 1
         selectedDetailTagIDs = []
+        sensorySelections = []
+        overallEvaluation = nil
         activeDetailExperienceIndex = 0
         reflectionNote = ""
         reflectionPhotoData = nil
         reflectionPhotoFilename = nil
+        capturedPhotoPalette = nil
         photoPickerItem = nil
         photoLoadError = nil
         pendingCaptureLocation = nil
@@ -3472,6 +4039,7 @@ private enum SwipeableCustomMenuCardMetrics {
 }
 
 private struct SwipeableCustomMenuCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let title: String
     let description: String?
     let isSelected: Bool
@@ -3614,7 +4182,7 @@ private struct SwipeableCustomMenuCard: View {
                     ? -SwipeableCustomMenuCardMetrics.revealWidth
                     : 0
 
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+                withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
                     settledOffset = targetOffset
                 }
             }
@@ -3676,7 +4244,7 @@ private struct SwipeableCustomMenuCard: View {
     }
 
     private func closeActions() {
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             settledOffset = 0
         }
     }
@@ -3934,10 +4502,10 @@ private struct DiningReflectionEntryCard: View {
                     .clipped()
             } else {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("짧은 미식 기록 추가")
+                    Text("추가 메모 또는 사진")
                         .font(TBFont.medium(14))
                         .foregroundStyle(TBColor.textPrimary)
-                    Text("사진이나 메모로 왜 그렇게 느꼈는지 남겨보세요.")
+                    Text("선택한 버블과 태그를 보충하고 싶을 때만 남겨주세요.")
                         .font(TBFont.regular(11))
                         .foregroundStyle(TBColor.textMuted)
                         .lineLimit(2)
@@ -3961,7 +4529,7 @@ private struct DiningReflectionEntryCard: View {
                 }
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("짧은 미식 기록 작성")
+            .accessibilityLabel("선택사항인 추가 메모 작성")
 
             Button(action: onOpenCamera) {
                 LucideIcon(
@@ -4963,15 +5531,10 @@ private struct DiningDetailTagSelector: View {
     @FocusState private var isCustomInputFocused: Bool
 
     private var orderedTags: [DiningFeedbackTagContract] {
-        let recommendedSet = Set(recommendedTagIDs)
-        return (category.tags + customTags).enumerated().sorted { left, right in
-            let leftRecommended = recommendedSet.contains(left.element.id)
-            let rightRecommended = recommendedSet.contains(right.element.id)
-            if leftRecommended != rightRecommended {
-                return leftRecommended
-            }
-            return left.offset < right.offset
-        }.map(\.element)
+        DiningSensoryRecommendationPolicy.orderedTags(
+            category.tags + customTags,
+            recommendedIDs: recommendedTagIDs
+        )
     }
 
     private var tagRows: [[DiningFeedbackTagContract]] {
@@ -5105,16 +5668,40 @@ private struct DiningDetailTagSelector: View {
     }
 }
 
-private struct DiningFeedbackResultBackground: View {
-    let experiences: [TasteExperience]
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+private struct DiningFeedbackResultVisualPalette {
+    let background: Color
+    let main: Color
+    let secondary: Color
+    let tertiary: Color
+    let photoAreaProportions: [Double]?
 
-    private var axes: (main: TasteAxis, secondary: TasteAxis, tertiary: TasteAxis) {
+    static func taste(experiences: [TasteExperience]) -> DiningFeedbackResultVisualPalette {
         let mainAxis = experiences.first?.axis ?? .umami
         let secondaryAxis = experiences.dropFirst().first?.axis ?? mainAxis
         let tertiaryAxis = experiences.dropFirst(2).first?.axis ?? secondaryAxis
-        return (mainAxis, secondaryAxis, tertiaryAxis)
+        return DiningFeedbackResultVisualPalette(
+            background: mainAxis.tintColor,
+            main: mainAxis.mainColor,
+            secondary: secondaryAxis.mainColor,
+            tertiary: tertiaryAxis.mainColor,
+            photoAreaProportions: nil
+        )
     }
+
+    static func photo(_ palette: DiningPhotoPalette) -> DiningFeedbackResultVisualPalette {
+        DiningFeedbackResultVisualPalette(
+            background: palette.primary.tintSwiftUIColor,
+            main: palette.primary.swiftUIColor,
+            secondary: palette.secondary.swiftUIColor,
+            tertiary: palette.tertiary.swiftUIColor,
+            photoAreaProportions: palette.colorProportions
+        )
+    }
+}
+
+private struct DiningFeedbackResultBackground: View {
+    let palette: DiningFeedbackResultVisualPalette
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -5122,16 +5709,15 @@ private struct DiningFeedbackResultBackground: View {
                 let elapsed = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate
                 let size = proxy.size
                 let largest = max(size.width, size.height)
+                let primaryAreaScale = areaScale(for: 0, tasteBaseline: 0.56)
+                let secondaryAreaScale = areaScale(for: 1, tasteBaseline: 0.24)
+                let tertiaryAreaScale = areaScale(for: 2, tasteBaseline: 0.20)
 
                 ZStack {
-                    axes.main.tintColor
+                    palette.background
 
                     LinearGradient(
-                        colors: [
-                            axes.secondary.mainColor.opacity(0.10),
-                            axes.main.mainColor.opacity(0.42),
-                            axes.tertiary.mainColor.opacity(0.08)
-                        ],
+                        gradient: backgroundGradient,
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -5139,10 +5725,10 @@ private struct DiningFeedbackResultBackground: View {
                     .scaleEffect(1.16)
 
                     meshBlob(
-                        axis: axes.main,
+                        color: palette.main,
                         opacity: 0.92,
-                        width: largest * 1.56,
-                        height: largest * 1.28,
+                        width: largest * 1.56 * primaryAreaScale,
+                        height: largest * 1.28 * primaryAreaScale,
                         centerX: 0.38,
                         centerY: 0.42,
                         containerSize: size,
@@ -5153,10 +5739,10 @@ private struct DiningFeedbackResultBackground: View {
                     )
 
                     meshBlob(
-                        axis: axes.secondary,
+                        color: palette.secondary,
                         opacity: 0.86,
-                        width: largest * 0.82,
-                        height: largest * 0.66,
+                        width: largest * 0.82 * secondaryAreaScale,
+                        height: largest * 0.66 * secondaryAreaScale,
                         centerX: 0.74,
                         centerY: 0.25,
                         containerSize: size,
@@ -5167,10 +5753,10 @@ private struct DiningFeedbackResultBackground: View {
                     )
 
                     meshBlob(
-                        axis: axes.tertiary,
+                        color: palette.tertiary,
                         opacity: 0.82,
-                        width: largest * 0.88,
-                        height: largest * 0.72,
+                        width: largest * 0.88 * tertiaryAreaScale,
+                        height: largest * 0.72 * tertiaryAreaScale,
                         centerX: 0.40,
                         centerY: 0.78,
                         containerSize: size,
@@ -5188,8 +5774,59 @@ private struct DiningFeedbackResultBackground: View {
         }
     }
 
+    private var backgroundGradient: Gradient {
+        guard let proportions = palette.photoAreaProportions else {
+            return Gradient(colors: [
+                palette.secondary.opacity(0.10),
+                palette.main.opacity(0.42),
+                palette.tertiary.opacity(0.08)
+            ])
+        }
+
+        let colors = [palette.main, palette.secondary, palette.tertiary]
+        let active = zip(colors, proportions)
+            .filter { $0.1 > 0.000_1 }
+            .map { (color: $0.0, proportion: $0.1) }
+        guard let first = active.first else {
+            return Gradient(colors: [palette.main])
+        }
+
+        var stops = [Gradient.Stop(color: first.color.opacity(0.42), location: 0)]
+        var boundary = first.proportion
+        for index in 0..<(active.count - 1) {
+            let current = active[index]
+            let next = active[index + 1]
+            let transition = min(0.045, current.proportion * 0.18, next.proportion * 0.18)
+            stops.append(Gradient.Stop(
+                color: current.color.opacity(0.42),
+                location: min(1, max(0, boundary - transition))
+            ))
+            stops.append(Gradient.Stop(
+                color: next.color.opacity(0.42),
+                location: min(1, max(0, boundary + transition))
+            ))
+            boundary += next.proportion
+        }
+        stops.append(Gradient.Stop(
+            color: active.last?.color.opacity(0.42) ?? first.color.opacity(0.42),
+            location: 1
+        ))
+        return Gradient(stops: stops)
+    }
+
+    private func areaScale(for index: Int, tasteBaseline: Double) -> CGFloat {
+        guard let proportions = palette.photoAreaProportions,
+              proportions.indices.contains(index) else {
+            return 1
+        }
+        guard proportions[index] > 0 else {
+            return 0.001
+        }
+        return CGFloat(sqrt(proportions[index] / tasteBaseline))
+    }
+
     private func meshBlob(
-        axis: TasteAxis,
+        color: Color,
         opacity: Double,
         width: CGFloat,
         height: CGFloat,
@@ -5204,8 +5841,8 @@ private struct DiningFeedbackResultBackground: View {
         RadialGradient(
             colors: [
                 Color.white.opacity(0.24),
-                axis.mainColor.opacity(opacity * 0.70),
-                axis.mainColor.opacity(opacity * 0.34),
+                color.opacity(opacity * 0.70),
+                color.opacity(opacity * 0.34),
                 Color.clear
             ],
             center: .center,
@@ -5224,9 +5861,7 @@ private struct DiningFeedbackResultBackground: View {
 }
 
 private struct DiningFeedbackResultCardBloom<Content: View>: View {
-    let mainAxis: TasteAxis
-    let secondaryAxis: TasteAxis
-    let tertiaryAxis: TasteAxis
+    let palette: DiningFeedbackResultVisualPalette
     let reduceMotion: Bool
     @ViewBuilder let content: () -> Content
 
@@ -5255,13 +5890,13 @@ private struct DiningFeedbackResultCardBloom<Content: View>: View {
                 AngularGradient(
                     colors: [
                         .clear,
-                        mainAxis.mainColor.opacity(0.22),
+                        palette.main.opacity(0.22),
                         .clear,
-                        secondaryAxis.mainColor.opacity(0.18),
+                        palette.secondary.opacity(0.18),
                         .clear,
-                        tertiaryAxis.mainColor.opacity(0.16),
+                        palette.tertiary.opacity(0.16),
                         .clear,
-                        mainAxis.mainColor.opacity(0.18),
+                        palette.main.opacity(0.18),
                         .clear
                     ],
                     center: .center,
@@ -5273,7 +5908,7 @@ private struct DiningFeedbackResultCardBloom<Content: View>: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                mainAxis.mainColor.opacity(0.26),
+                                palette.main.opacity(0.26),
                                 .clear
                             ],
                             center: .center,
@@ -5303,23 +5938,25 @@ private struct DiningFeedbackResultCardBloom<Content: View>: View {
             return
         }
 
-        withAnimation(.timingCurve(0.18, 0.92, 0.2, 1, duration: 0.86).delay(0.12)) {
+        withAnimation(TasteBloomMotion.animation(.bloom, reduceMotion: reduceMotion)?.delay(TasteBloomMotion.Role.press.duration)) {
             isEntered = true
         }
 
-        withAnimation(.timingCurve(0.18, 0.92, 0.2, 1, duration: 0.34).delay(0.08)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)?.delay(TasteBloomMotion.stagger)) {
             isHaloVisible = true
         }
 
-        try? await Task.sleep(for: .milliseconds(620))
+        try? await Task.sleep(for: .seconds(TasteBloomMotion.Role.sheet.duration))
+        guard !Task.isCancelled else { return }
 
-        withAnimation(.timingCurve(0.18, 0.92, 0.2, 1, duration: 0.36)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             isHaloVisible = false
         }
     }
 }
 
 private struct DiningFeedbackResultCard: View {
+    let kind: DiningFeedbackResultKind
     let restaurant: String
     let menuTitle: String
     let experiences: [TasteExperience]
@@ -5332,16 +5969,16 @@ private struct DiningFeedbackResultCard: View {
             resultImage
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(menuTitle)
+                Text(displayTitle)
                     .font(TBFont.bold(14))
                     .foregroundStyle(TBColor.textPrimary)
                     .lineLimit(2)
-                Text(restaurant)
+                Text(displaySubtitle)
                     .font(TBFont.regular(12))
                     .foregroundStyle(TBColor.textMuted)
             }
 
-            if !experiences.isEmpty || !detailTags.isEmpty {
+            if kind == .tasteFeedback && (!experiences.isEmpty || !detailTags.isEmpty) {
                 VStack(alignment: .leading, spacing: DiningFeedbackResultLayout.chipRowGap) {
                     if !experiences.isEmpty {
                         HStack(spacing: DiningFeedbackResultLayout.chipGap) {
@@ -5359,28 +5996,49 @@ private struct DiningFeedbackResultCard: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
+            if kind == .quickCapture {
+                HStack(alignment: .top, spacing: 8) {
                     LucideIcon(
                         .sparkles,
                         size: TBIcon.Size.xSmall,
                         strokeWidth: TBIcon.Stroke.regular
                     )
-                    Text("미식 노트")
-                        .font(TBFont.semibold(13))
+                    .padding(.top, 1)
+
+                    Text("취향은 언제든 덧붙일 수 있어요.")
+                        .font(TBFont.regular(12))
+                        .foregroundStyle(TBColor.textSubtle)
+                        .lineSpacing(3)
                 }
                 .foregroundStyle(TBColor.textPrimary)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(TBColor.mutedSurface)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else if !reflectionNote.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
+                        LucideIcon(
+                            .sparkles,
+                            size: TBIcon.Size.xSmall,
+                            strokeWidth: TBIcon.Stroke.regular
+                        )
+                        Text("미식 노트")
+                            .font(TBFont.semibold(13))
+                    }
+                    .foregroundStyle(TBColor.textPrimary)
 
-                Text(reflectionNote)
-                    .font(TBFont.regular(12))
-                    .foregroundStyle(TBColor.textSubtle)
-                    .lineSpacing(3)
-                    .lineLimit(4)
+                    Text(reflectionNote)
+                        .font(TBFont.regular(12))
+                        .foregroundStyle(TBColor.textSubtle)
+                        .lineSpacing(3)
+                        .lineLimit(4)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(TBColor.mutedSurface)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(TBColor.mutedSurface)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .padding(12)
         .background(TBColor.surface)
@@ -5388,34 +6046,51 @@ private struct DiningFeedbackResultCard: View {
         .shadow(color: Color.black.opacity(0.16), radius: 35, x: 0, y: 24)
     }
 
+    private var trimmedMenuTitle: String {
+        menuTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var displayTitle: String {
+        kind == .quickCapture && trimmedMenuTitle.isEmpty
+            ? restaurant
+            : trimmedMenuTitle
+    }
+
+    private var displaySubtitle: String {
+        kind == .quickCapture && trimmedMenuTitle.isEmpty
+            ? "식사를 담아두었어요"
+            : restaurant
+    }
+
     @ViewBuilder
     private var resultImage: some View {
-        if let photoData, let image = UIImage(data: photoData) {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFill()
-                .aspectRatio(1, contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .clipped()
-        } else {
-            ZStack {
-                TBColor.disabledSurface
-                LucideIcon(
-                    .camera,
-                    size: TBIcon.Size.large,
-                    strokeWidth: TBIcon.Stroke.regular
-                )
-                .foregroundStyle(TBColor.textHint)
+        Color.clear
+            .aspectRatio(DiningFeedbackResultLayout.photoAspectRatio, contentMode: .fit)
+            .overlay {
+                ZStack {
+                    TBColor.disabledSurface
+
+                    if let photoData, let image = UIImage(data: photoData) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                    } else {
+                        LucideIcon(
+                            .camera,
+                            size: TBIcon.Size.large,
+                            strokeWidth: TBIcon.Stroke.regular
+                        )
+                        .foregroundStyle(TBColor.textHint)
+                    }
+                }
             }
-            .aspectRatio(1, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
     }
 }
 
 private enum DiningFeedbackResultLayout {
     static let cardHorizontalPadding: CGFloat = 50
+    static let photoAspectRatio: CGFloat = 4.0 / 5.0
     static let chipGap: CGFloat = 6
     static let chipRowGap: CGFloat = 6
 }
@@ -5457,19 +6132,22 @@ private struct DiningResultDetailTagRow: View {
 }
 
 private struct DiningFeedbackResultShareImage: View {
+    let kind: DiningFeedbackResultKind
     let restaurant: String
     let menuTitle: String
     let experiences: [TasteExperience]
     let detailTags: [DiningDetailTagMetadata]
     let reflectionNote: String
     let photoData: Data?
+    let palette: DiningFeedbackResultVisualPalette
     let canvasSize: CGSize
 
     var body: some View {
         ZStack {
-            DiningFeedbackResultBackground(experiences: experiences)
+            DiningFeedbackResultBackground(palette: palette)
 
             DiningFeedbackResultCard(
+                kind: kind,
                 restaurant: restaurant,
                 menuTitle: menuTitle,
                 experiences: experiences,
@@ -5483,6 +6161,40 @@ private struct DiningFeedbackResultShareImage: View {
         .clipped()
     }
 }
+
+#if DEBUG
+private struct DiningFeedbackQuickCaptureResultPreview: View {
+    private let palette = DiningFeedbackResultVisualPalette(
+        background: Color(red: 0.94, green: 0.89, blue: 0.82),
+        main: Color(red: 0.82, green: 0.43, blue: 0.20),
+        secondary: Color(red: 0.36, green: 0.55, blue: 0.34),
+        tertiary: Color(red: 0.75, green: 0.62, blue: 0.36),
+        photoAreaProportions: [0.58, 0.27, 0.15]
+    )
+
+    var body: some View {
+        ZStack {
+            DiningFeedbackResultBackground(palette: palette)
+
+            DiningFeedbackResultCard(
+                kind: .quickCapture,
+                restaurant: "온지음",
+                menuTitle: "",
+                experiences: [],
+                detailTags: [],
+                reflectionNote: "",
+                photoData: nil
+            )
+            .padding(.horizontal, DiningFeedbackResultLayout.cardHorizontalPadding)
+        }
+        .frame(width: 390, height: 844)
+    }
+}
+
+#Preview("Quick capture completion") {
+    DiningFeedbackQuickCaptureResultPreview()
+}
+#endif
 
 private struct TasteExperienceSearchSheet: View {
     let axes: [TasteExperienceAxisContract]
@@ -5623,6 +6335,7 @@ private struct TasteExperienceMapViewport: UIViewRepresentable {
         _ scrollView: TasteExperienceMapScrollView,
         coordinator: Coordinator
     ) {
+        coordinator.cancelFocusAnimation()
         scrollView.delegate = nil
         scrollView.onLayout = nil
         coordinator.hostingController?.view.removeFromSuperview()
@@ -5647,6 +6360,7 @@ private struct TasteExperienceMapViewport: UIViewRepresentable {
         private var hasInitialized = false
         private var isInitializationScheduled = false
         private var isAnimating = false
+        private var focusAnimator: UIViewPropertyAnimator?
         private var lastFocusRequestID: UUID?
         private var lastReportedExperienceID: String?
         private var snapSuppressedUntil: TimeInterval = 0
@@ -5759,7 +6473,7 @@ private struct TasteExperienceMapViewport: UIViewRepresentable {
         }
 
         func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-            isAnimating = false
+            cancelFocusAnimation()
             parent.onInteractionChange(true)
         }
 
@@ -5785,7 +6499,7 @@ private struct TasteExperienceMapViewport: UIViewRepresentable {
             _ scrollView: UIScrollView,
             with view: UIView?
         ) {
-            isAnimating = false
+            cancelFocusAnimation()
             parent.onInteractionChange(true)
         }
 
@@ -5828,6 +6542,7 @@ private struct TasteExperienceMapViewport: UIViewRepresentable {
             to target: SnapTarget,
             in scrollView: UIScrollView
         ) {
+            cancelFocusAnimation()
             let targetZoom = target.experienceID == nil
                 ? TasteExperienceMapEngine.entryZoom
                 : TasteExperienceMapEngine.selectedZoom
@@ -5839,20 +6554,35 @@ private struct TasteExperienceMapViewport: UIViewRepresentable {
 
             parent.onInteractionChange(true)
             isAnimating = true
-            UIView.animate(
-                withDuration: TasteExperienceMapEngine.zoomTransitionDuration,
-                delay: 0,
-                options: [.allowUserInteraction, .beginFromCurrentState, .curveEaseOut]
-            ) {
+            let updates = {
                 scrollView.zoomScale = targetZoom
                 scrollView.contentOffset = targetOffset
-            } completion: { [weak self] _ in
+            }
+            let completion = { [weak self] in
                 guard let self else { return }
                 self.isAnimating = false
+                self.focusAnimator = nil
                 self.lastReportedExperienceID = target.experienceID
                 self.parent.onFocusedExperienceChange(target.experienceID)
                 self.parent.onInteractionChange(false)
             }
+            guard !parent.reduceMotion else {
+                updates()
+                completion()
+                return
+            }
+            let animator = TasteBloomMotion.animator(.sheet, animations: updates)
+            focusAnimator = animator
+            animator.addCompletion { position in
+                if position == .end { completion() }
+            }
+            animator.startAnimation()
+        }
+
+        func cancelFocusAnimation() {
+            focusAnimator?.stopAnimation(true)
+            focusAnimator = nil
+            isAnimating = false
         }
 
         private func reportClosestTarget(in scrollView: UIScrollView) {
@@ -5935,6 +6665,17 @@ private final class TasteExperienceMapScrollView: UIScrollView {
     }
 }
 
+private enum TasteExperienceBubbleMotion {
+    static let selectionResizeDuration = TasteBloomMotion.duration(.content, reduceMotion: false)
+    static let entranceDuration = TasteBloomMotion.duration(.sheet, reduceMotion: false)
+    static let outlineFadeDuration = TasteBloomMotion.duration(.feedback, reduceMotion: false)
+}
+
+private struct TasteExperienceBubbleOutlineRequest: Equatable {
+    let isSelected: Bool
+    let reduceMotion: Bool
+}
+
 private struct TasteExperienceMapCanvas: View {
     let positions: [TasteExperienceBubblePosition]
     let selectedExperienceIDs: [String]
@@ -5963,7 +6704,12 @@ private struct TasteExperienceMapCanvas: View {
                     selectedExperienceIDs.contains(position.id)
                         || focusedExperienceID == position.id ? 4 : 3
                 )
-                .animation(.easeOut(duration: 0.3), value: position)
+                .animation(
+                    reduceMotion
+                        ? nil
+                        : TasteBloomMotion.animation(.content, reduceMotion: reduceMotion),
+                    value: position
+                )
             }
         }
         .frame(
@@ -5995,6 +6741,8 @@ private struct TasteExperienceBubbleView: View {
     let onTap: () -> Void
 
     @State private var hasEntered = false
+    @State private var showsSelectionOutline = false
+    @State private var entryStartedAt = Date.timeIntervalSinceReferenceDate
 
     var body: some View {
         Button(action: onTap) {
@@ -6002,7 +6750,7 @@ private struct TasteExperienceBubbleView: View {
                 Circle()
                     .fill(position.experience.axis.tintColor.opacity(fillOpacity))
 
-                if isSelected {
+                if showsSelectionOutline {
                     Circle()
                         .stroke(
                             position.experience.axis.tintSoftBorderColor,
@@ -6046,10 +6794,46 @@ private struct TasteExperienceBubbleView: View {
             }
 
             try? await Task.sleep(for: .seconds(introDelay))
-            withAnimation(
-                .spring(response: 0.68, dampingFraction: 0.66, blendDuration: 0.08)
-            ) {
+            guard !Task.isCancelled else { return }
+            withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
                 hasEntered = true
+            }
+        }
+        .task(
+            id: TasteExperienceBubbleOutlineRequest(
+                isSelected: isSelected,
+                reduceMotion: reduceMotion
+            )
+        ) {
+            guard isSelected else {
+                showsSelectionOutline = false
+                return
+            }
+
+            guard !reduceMotion else {
+                showsSelectionOutline = true
+                return
+            }
+
+            let entranceReadyAt = entryStartedAt
+                + introDelay
+                + TasteExperienceBubbleMotion.entranceDuration
+            let remainingEntranceTime = max(
+                entranceReadyAt - Date.timeIntervalSinceReferenceDate,
+                0
+            )
+            let delay = max(
+                TasteExperienceBubbleMotion.selectionResizeDuration,
+                remainingEntranceTime
+            )
+
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(
+                TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)
+            ) {
+                showsSelectionOutline = true
             }
         }
         .accessibilityLabel(position.experience.label)

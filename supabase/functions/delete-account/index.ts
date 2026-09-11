@@ -1,7 +1,9 @@
+import { isDirectAppSessionToken } from '../_shared/direct-app-session.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { deleteR2Prefix } from '../_shared/r2-delete.ts';
 import { purgeAccountMediaCache } from '../_shared/cloudflare-cache.ts';
 import { deleteAccountData } from './cleanup.ts';
+import { deleteNativeAccountPhotos } from './native-photos.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -51,6 +53,9 @@ Deno.serve(async (request) => {
       },
     },
   });
+  if (!isDirectAppSessionToken(accessToken)) {
+    return jsonResponse({ error: 'Direct app session required' }, { status: 401 });
+  }
   const { data: userData, error: userError } = await userClient.auth.getUser(accessToken);
 
   if (userError || !userData.user) {
@@ -79,6 +84,7 @@ Deno.serve(async (request) => {
         return data;
       },
       deleteMediaPrefix: (prefix) => deleteR2Prefix({ accountId, accessKeyId, secretAccessKey, bucket }, prefix),
+      deleteNativePhotos: (userId) => deleteNativeAccountPhotos(userId, adminClient.storage.from('native-dining-photos')),
       purgeMediaCache: (userId) => purgeAccountMediaCache(userId, { zoneId, apiToken, publicMediaBaseUrl }),
       async deleteAuthUser(userId) {
         const { error } = await adminClient.auth.admin.deleteUser(userId);

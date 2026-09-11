@@ -3,6 +3,7 @@ import Foundation
 enum TasteMeasurementSourceContract: String, Codable, Equatable {
     case broadStarter = "broad-starter"
     case measured
+    case recalledIntensity = "recalled-intensity"
 }
 
 enum TasteProfileConfidenceContract: String, Codable, Equatable {

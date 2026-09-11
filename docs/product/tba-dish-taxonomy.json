@@ -1,0 +1,2446 @@
+{
+  "schema_version": "tba-dish-taxonomy-v0.2",
+  "status": "design_candidates_not_deployed",
+  "created_at": "2026-09-05",
+  "facets": [
+    {
+      "id": "dish",
+      "label": "음식 형태를 설명하는 태그",
+      "selection_rule": "복수 선택 가능, 필수 대표 태그 없음",
+      "tag_ids": [
+        "dish.soup",
+        "dish.stew",
+        "dish.grill",
+        "dish.stir_fry",
+        "dish.braise",
+        "dish.raw",
+        "dish.fried",
+        "dish.rice",
+        "dish.rice_bowl",
+        "dish.porridge",
+        "dish.noodle",
+        "dish.pasta",
+        "dish.dumpling",
+        "dish.soy_dish",
+        "dish.salad",
+        "dish.vegetable",
+        "dish.pickle",
+        "dish.bread",
+        "dish.rice_cake",
+        "dish.cake",
+        "dish.chocolate",
+        "dish.frozen",
+        "dish.fruit",
+        "dish.coffee",
+        "dish.tea",
+        "dish.wine",
+        "dish.beer",
+        "dish.rice_wine",
+        "dish.fruit_drink"
+      ]
+    },
+    {
+      "id": "cuisine",
+      "label": "요리 문화 태그",
+      "selection_rule": "음식 형태·조리 특징과 함께 선택 가능",
+      "tag_ids": [
+        "cuisine.korean",
+        "cuisine.chinese",
+        "cuisine.japanese",
+        "cuisine.western",
+        "cuisine.italian",
+        "cuisine.french",
+        "cuisine.thai",
+        "cuisine.vietnamese",
+        "cuisine.indian",
+        "cuisine.mexican",
+        "cuisine.middle_eastern",
+        "cuisine.fusion"
+      ]
+    },
+    {
+      "id": "ingredient",
+      "label": "주재료",
+      "selection_rule": "여러 개 가능, 부재·알레르기 안전을 뜻하지 않음",
+      "tag_ids": [
+        "ingredient.meat",
+        "ingredient.beef",
+        "ingredient.pork",
+        "ingredient.poultry",
+        "ingredient.lamb",
+        "ingredient.fish",
+        "ingredient.salmon",
+        "ingredient.white_fish",
+        "ingredient.oily_fish",
+        "ingredient.shellfish",
+        "ingredient.crustacean",
+        "ingredient.cephalopod",
+        "ingredient.seaweed",
+        "ingredient.leaf_veg",
+        "ingredient.root_veg",
+        "ingredient.fruit_veg",
+        "ingredient.mushroom",
+        "ingredient.soy",
+        "ingredient.rice",
+        "ingredient.wheat",
+        "ingredient.grain",
+        "ingredient.nuts",
+        "ingredient.seeds",
+        "ingredient.milk",
+        "ingredient.cheese",
+        "ingredient.egg",
+        "ingredient.fruit",
+        "ingredient.cacao",
+        "ingredient.coffee",
+        "ingredient.tea",
+        "ingredient.herbs",
+        "ingredient.spices"
+      ]
+    },
+    {
+      "id": "method",
+      "label": "조리 방식",
+      "selection_rule": "재료·부위마다 여러 개 가능",
+      "tag_ids": [
+        "method.grill",
+        "method.charcoal",
+        "method.pan_sear",
+        "method.roast",
+        "method.smoke",
+        "method.deep_fry",
+        "method.stir_fry",
+        "method.steam",
+        "method.braise",
+        "method.boil",
+        "method.simmer",
+        "method.raw",
+        "method.cure",
+        "method.pickle",
+        "method.ferment",
+        "method.age",
+        "method.bake",
+        "method.freeze",
+        "method.blend",
+        "method.brew"
+      ]
+    },
+    {
+      "id": "sauce",
+      "label": "국물·소스·양념",
+      "selection_rule": "구성 정보이며 사용자가 느낀 맛의 확정값이 아님",
+      "tag_ids": [
+        "sauce.clear_broth",
+        "sauce.bone_broth",
+        "sauce.salt",
+        "sauce.soy",
+        "sauce.jang",
+        "sauce.chili",
+        "sauce.cream",
+        "sauce.cheese",
+        "sauce.tomato",
+        "sauce.oil",
+        "sauce.citrus",
+        "sauce.vinegar",
+        "sauce.curry",
+        "sauce.sweet_glaze",
+        "sauce.milk_added",
+        "sauce.none"
+      ]
+    },
+    {
+      "id": "temperature",
+      "label": "제공 온도",
+      "selection_rule": "확인된 경우에만, 차가운 음식과 시원한 맛은 별개",
+      "tag_ids": [
+        "temperature.hot",
+        "temperature.warm",
+        "temperature.room",
+        "temperature.cold",
+        "temperature.frozen"
+      ]
+    },
+    {
+      "id": "component",
+      "label": "기록 대상 부위",
+      "selection_rule": "선택한 표현의 대상을 구체화할 때만 사용",
+      "tag_ids": [
+        "component.whole",
+        "component.main",
+        "component.sauce",
+        "component.broth",
+        "component.surface",
+        "component.inside",
+        "component.topping",
+        "component.side"
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "id": "dish.soup",
+      "label": "국·탕",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.stew",
+      "label": "찌개·전골",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.grill",
+      "label": "구이",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.stir_fry",
+      "label": "볶음",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.braise",
+      "label": "찜·조림",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.raw",
+      "label": "회·생요리",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.fried",
+      "label": "튀김",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.rice",
+      "label": "밥·곡물 요리",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.rice_bowl",
+      "label": "덮밥·볶음밥",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.porridge",
+      "label": "죽",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.noodle",
+      "label": "면",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.pasta",
+      "label": "파스타",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.dumpling",
+      "label": "만두·딤섬",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.soy_dish",
+      "label": "두부·콩 요리",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.salad",
+      "label": "샐러드·생채",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.vegetable",
+      "label": "채소 요리",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.pickle",
+      "label": "절임",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.bread",
+      "label": "빵",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.rice_cake",
+      "label": "떡·한과",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.cake",
+      "label": "케이크·크림 디저트",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.chocolate",
+      "label": "초콜릿·견과 과자",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.frozen",
+      "label": "빙과·아이스크림",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.fruit",
+      "label": "과일",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.coffee",
+      "label": "커피",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.tea",
+      "label": "차",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.wine",
+      "label": "와인",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.beer",
+      "label": "맥주",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.rice_wine",
+      "label": "막걸리·약주",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "dish.fruit_drink",
+      "label": "주스·탄산음료",
+      "facet": "dish",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.korean",
+      "label": "한식",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.chinese",
+      "label": "중식",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.japanese",
+      "label": "일식",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.western",
+      "label": "양식",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.italian",
+      "label": "이탈리안",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.french",
+      "label": "프렌치",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.thai",
+      "label": "태국음식",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.vietnamese",
+      "label": "베트남음식",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.indian",
+      "label": "인도음식",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.mexican",
+      "label": "멕시칸",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.middle_eastern",
+      "label": "중동음식",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "cuisine.fusion",
+      "label": "퓨전",
+      "facet": "cuisine",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.meat",
+      "label": "육류",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.beef",
+      "label": "소고기",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.pork",
+      "label": "돼지고기",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.poultry",
+      "label": "닭·오리",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.lamb",
+      "label": "양고기",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.fish",
+      "label": "생선",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.salmon",
+      "label": "연어",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.white_fish",
+      "label": "흰살생선",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.oily_fish",
+      "label": "등푸른생선",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.shellfish",
+      "label": "조개·굴",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.crustacean",
+      "label": "새우·게",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.cephalopod",
+      "label": "오징어·문어",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.seaweed",
+      "label": "해조류",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.leaf_veg",
+      "label": "잎채소",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.root_veg",
+      "label": "뿌리채소",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.fruit_veg",
+      "label": "열매채소",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.mushroom",
+      "label": "버섯",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.soy",
+      "label": "콩·두부",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.rice",
+      "label": "쌀",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.wheat",
+      "label": "밀·밀가루",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.grain",
+      "label": "잡곡",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.nuts",
+      "label": "견과류",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.seeds",
+      "label": "깨·씨앗",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.milk",
+      "label": "우유·크림",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.cheese",
+      "label": "치즈",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.egg",
+      "label": "달걀",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.fruit",
+      "label": "과일",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.cacao",
+      "label": "카카오",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.coffee",
+      "label": "커피 원두",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.tea",
+      "label": "찻잎",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.herbs",
+      "label": "허브·향채",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "ingredient.spices",
+      "label": "향신료",
+      "facet": "ingredient",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.grill",
+      "label": "굽기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.charcoal",
+      "label": "숯불·직화",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.pan_sear",
+      "label": "팬 굽기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.roast",
+      "label": "오븐 굽기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.smoke",
+      "label": "훈연",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.deep_fry",
+      "label": "튀기기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.stir_fry",
+      "label": "볶기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.steam",
+      "label": "찌기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.braise",
+      "label": "졸이기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.boil",
+      "label": "끓이기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.simmer",
+      "label": "오래 끓이기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.raw",
+      "label": "생으로 내기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.cure",
+      "label": "염지·큐어",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.pickle",
+      "label": "절이기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.ferment",
+      "label": "발효",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.age",
+      "label": "숙성",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.bake",
+      "label": "제빵·굽기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.freeze",
+      "label": "얼리기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.blend",
+      "label": "갈기",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "method.brew",
+      "label": "우리기·추출",
+      "facet": "method",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.clear_broth",
+      "label": "맑은 육수",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.bone_broth",
+      "label": "사골·뼈 육수",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.salt",
+      "label": "소금간",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.soy",
+      "label": "간장 양념",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.jang",
+      "label": "장류 양념",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.chili",
+      "label": "고추 양념",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.cream",
+      "label": "크림소스",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.cheese",
+      "label": "치즈소스",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.tomato",
+      "label": "토마토소스",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.oil",
+      "label": "오일소스",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.citrus",
+      "label": "감귤류 소스",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.vinegar",
+      "label": "식초 소스",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.curry",
+      "label": "카레소스",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.sweet_glaze",
+      "label": "단맛 글레이즈",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.milk_added",
+      "label": "우유 첨가",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "sauce.none",
+      "label": "소스 없음",
+      "facet": "sauce",
+      "status": "design_candidate"
+    },
+    {
+      "id": "temperature.hot",
+      "label": "뜨겁게",
+      "facet": "temperature",
+      "status": "design_candidate"
+    },
+    {
+      "id": "temperature.warm",
+      "label": "따뜻하게",
+      "facet": "temperature",
+      "status": "design_candidate"
+    },
+    {
+      "id": "temperature.room",
+      "label": "실온",
+      "facet": "temperature",
+      "status": "design_candidate"
+    },
+    {
+      "id": "temperature.cold",
+      "label": "차갑게",
+      "facet": "temperature",
+      "status": "design_candidate"
+    },
+    {
+      "id": "temperature.frozen",
+      "label": "얼린 상태",
+      "facet": "temperature",
+      "status": "design_candidate"
+    },
+    {
+      "id": "component.whole",
+      "label": "디시 전체",
+      "facet": "component",
+      "status": "design_candidate"
+    },
+    {
+      "id": "component.main",
+      "label": "주재료",
+      "facet": "component",
+      "status": "design_candidate"
+    },
+    {
+      "id": "component.sauce",
+      "label": "소스·양념",
+      "facet": "component",
+      "status": "design_candidate"
+    },
+    {
+      "id": "component.broth",
+      "label": "국물",
+      "facet": "component",
+      "status": "design_candidate"
+    },
+    {
+      "id": "component.surface",
+      "label": "겉면·껍질",
+      "facet": "component",
+      "status": "design_candidate"
+    },
+    {
+      "id": "component.inside",
+      "label": "속·속살",
+      "facet": "component",
+      "status": "design_candidate"
+    },
+    {
+      "id": "component.topping",
+      "label": "토핑·고명",
+      "facet": "component",
+      "status": "design_candidate"
+    },
+    {
+      "id": "component.side",
+      "label": "곁들임",
+      "facet": "component",
+      "status": "design_candidate"
+    }
+  ],
+  "hierarchy": [
+    {
+      "parent": "ingredient.meat",
+      "children": [
+        "ingredient.beef",
+        "ingredient.pork",
+        "ingredient.poultry",
+        "ingredient.lamb"
+      ]
+    },
+    {
+      "parent": "ingredient.fish",
+      "children": [
+        "ingredient.salmon",
+        "ingredient.white_fish",
+        "ingredient.oily_fish"
+      ]
+    }
+  ],
+  "map_examples": [
+    {
+      "map_id": "noodle_overview",
+      "example_tags": [
+        "dish.noodle"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "noodles",
+        "mixed_noodles",
+        "clear_broth",
+        "sour_sauce"
+      ]
+    },
+    {
+      "map_id": "grill_overview",
+      "example_tags": [
+        "dish.grill"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "meat_grill",
+        "fish_grill",
+        "cooked_veg",
+        "roast_aroma"
+      ]
+    },
+    {
+      "map_id": "chinese_overview",
+      "example_tags": [
+        "cuisine.chinese"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "mixed_noodles",
+        "dumpling",
+        "glazed",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "fermented_overview",
+      "example_tags": [
+        "method.ferment"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "fermented",
+        "ferment_aroma",
+        "soy",
+        "dairy"
+      ]
+    },
+    {
+      "map_id": "korean_overview",
+      "example_tags": [
+        "cuisine.korean"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "clear_broth",
+        "rice",
+        "cooked_veg",
+        "fermented"
+      ]
+    },
+    {
+      "map_id": "japanese_overview",
+      "example_tags": [
+        "cuisine.japanese"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "clear_broth",
+        "raw_seafood",
+        "fried",
+        "soy"
+      ]
+    },
+    {
+      "map_id": "western_overview",
+      "example_tags": [
+        "cuisine.western"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "meat_grill",
+        "cream",
+        "bread",
+        "herbs"
+      ]
+    },
+    {
+      "map_id": "clear_soup",
+      "example_tags": [
+        "dish.soup",
+        "sauce.clear_broth"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "clear_broth",
+        "cooked_veg",
+        "herbs",
+        "soft"
+      ]
+    },
+    {
+      "map_id": "rich_soup",
+      "example_tags": [
+        "dish.soup",
+        "sauce.bone_broth"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "rich_broth",
+        "cooked_veg",
+        "soft",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "stew",
+      "example_tags": [
+        "dish.stew"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "spicy_stew",
+        "fermented",
+        "cooked_veg",
+        "soft",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "grilled_meat",
+      "example_tags": [
+        "dish.grill",
+        "ingredient.meat"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "meat_grill",
+        "chewy",
+        "herbs",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "glazed_meat",
+      "example_tags": [
+        "dish.grill",
+        "ingredient.meat",
+        "sauce.soy"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "meat_grill",
+        "glazed",
+        "chewy",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "braised",
+      "example_tags": [
+        "dish.braise"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "glazed",
+        "soft",
+        "cooked_veg",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "grilled_fish",
+      "example_tags": [
+        "dish.grill",
+        "ingredient.fish"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "fish_grill",
+        "soft",
+        "sour_sauce",
+        "herbs"
+      ]
+    },
+    {
+      "map_id": "raw_seafood",
+      "example_tags": [
+        "dish.raw",
+        "ingredient.fish"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "raw_seafood",
+        "chewy",
+        "sour_sauce",
+        "herbs"
+      ]
+    },
+    {
+      "map_id": "cooked_seafood",
+      "example_tags": [
+        "dish.braise",
+        "ingredient.shellfish"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "cooked_seafood",
+        "soft",
+        "sour_sauce",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "fried",
+      "example_tags": [
+        "dish.fried"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "fried",
+        "crisp",
+        "soft",
+        "sour_sauce"
+      ]
+    },
+    {
+      "map_id": "grain_rice",
+      "example_tags": [
+        "dish.rice"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "rice",
+        "chewy",
+        "soy",
+        "nuts"
+      ]
+    },
+    {
+      "map_id": "rice_cake",
+      "example_tags": [
+        "dish.rice_cake"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "rice_cake",
+        "rice",
+        "chewy",
+        "nuts"
+      ]
+    },
+    {
+      "map_id": "rice_bowl",
+      "example_tags": [
+        "dish.rice_bowl"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "rice",
+        "glazed",
+        "cooked_veg",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "porridge",
+      "example_tags": [
+        "dish.porridge"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "rice",
+        "soft",
+        "soy",
+        "rich_broth"
+      ]
+    },
+    {
+      "map_id": "noodle_soup",
+      "example_tags": [
+        "dish.noodle",
+        "sauce.clear_broth"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "noodles",
+        "clear_broth",
+        "rich_broth",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "mixed_noodles",
+      "example_tags": [
+        "dish.noodle",
+        "sauce.chili"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "noodles",
+        "mixed_noodles",
+        "sour_sauce",
+        "glazed"
+      ]
+    },
+    {
+      "map_id": "cream_pasta",
+      "example_tags": [
+        "dish.pasta",
+        "sauce.cream"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "noodles",
+        "rice",
+        "cream",
+        "dairy"
+      ]
+    },
+    {
+      "map_id": "tomato_pasta",
+      "example_tags": [
+        "dish.pasta",
+        "sauce.tomato"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "noodles",
+        "tomato",
+        "cooked_veg",
+        "herbs"
+      ]
+    },
+    {
+      "map_id": "dumpling",
+      "example_tags": [
+        "dish.dumpling"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "dumpling",
+        "chewy",
+        "soft",
+        "fried"
+      ]
+    },
+    {
+      "map_id": "soy",
+      "example_tags": [
+        "dish.soy_dish"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "soy",
+        "soft",
+        "cooked_veg",
+        "fermented"
+      ]
+    },
+    {
+      "map_id": "salad",
+      "example_tags": [
+        "dish.salad"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "raw_veg",
+        "sour_sauce",
+        "herbs",
+        "nuts"
+      ]
+    },
+    {
+      "map_id": "cooked_veg",
+      "example_tags": [
+        "dish.vegetable",
+        "method.grill"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "cooked_veg",
+        "soft",
+        "herbs",
+        "glazed"
+      ]
+    },
+    {
+      "map_id": "pickled",
+      "example_tags": [
+        "dish.pickle"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "fermented",
+        "raw_veg",
+        "sour_sauce",
+        "spice"
+      ]
+    },
+    {
+      "map_id": "curry",
+      "example_tags": [
+        "ingredient.spices",
+        "sauce.curry"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "curry",
+        "spice",
+        "cooked_veg",
+        "soft"
+      ]
+    },
+    {
+      "map_id": "bread",
+      "example_tags": [
+        "dish.bread"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "bread",
+        "crisp",
+        "chewy",
+        "dairy"
+      ]
+    },
+    {
+      "map_id": "cake",
+      "example_tags": [
+        "dish.cake"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "cake",
+        "soft",
+        "dairy",
+        "fruit_aroma"
+      ]
+    },
+    {
+      "map_id": "chocolate",
+      "example_tags": [
+        "dish.chocolate"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "chocolate",
+        "nuts",
+        "dairy",
+        "crisp"
+      ]
+    },
+    {
+      "map_id": "frozen",
+      "example_tags": [
+        "dish.frozen"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "frozen_fruit",
+        "dairy",
+        "fruit_aroma",
+        "fruit_drink"
+      ]
+    },
+    {
+      "map_id": "fruit",
+      "example_tags": [
+        "dish.fruit"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "fresh_fruit",
+        "fruit_aroma"
+      ]
+    },
+    {
+      "map_id": "coffee",
+      "example_tags": [
+        "dish.coffee"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "coffee",
+        "fruit_aroma",
+        "roast_aroma"
+      ]
+    },
+    {
+      "map_id": "latte",
+      "example_tags": [
+        "dish.coffee",
+        "sauce.milk_added"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "coffee",
+        "dairy",
+        "roast_aroma"
+      ]
+    },
+    {
+      "map_id": "tea",
+      "example_tags": [
+        "dish.tea"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "tea",
+        "herbs",
+        "fruit_aroma",
+        "roast_aroma"
+      ]
+    },
+    {
+      "map_id": "wine",
+      "example_tags": [
+        "dish.wine"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "wine",
+        "fruit_aroma",
+        "herbs",
+        "ferment_aroma"
+      ]
+    },
+    {
+      "map_id": "beer",
+      "example_tags": [
+        "dish.beer"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "beer",
+        "fruit_aroma",
+        "roast_aroma",
+        "ferment_aroma"
+      ]
+    },
+    {
+      "map_id": "rice_wine",
+      "example_tags": [
+        "dish.rice_wine"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "rice_wine",
+        "fruit_aroma",
+        "ferment_aroma"
+      ]
+    },
+    {
+      "map_id": "fruit_drink",
+      "example_tags": [
+        "dish.fruit_drink"
+      ],
+      "kind": "example_combination_not_exhaustive_match_rule",
+      "pack_ids": [
+        "basic",
+        "finish",
+        "fruit_drink",
+        "fruit_aroma",
+        "herbs"
+      ]
+    }
+  ],
+  "legacy_mapping": [
+    {
+      "legacy_id": "seafood",
+      "candidate_tag_ids": [
+        "ingredient.fish",
+        "ingredient.shellfish",
+        "ingredient.crustacean",
+        "ingredient.cephalopod",
+        "ingredient.seaweed"
+      ],
+      "resolution_rule": "해산물 안의 세부 재료를 확인. 모두 선택하지 않음.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "meat",
+      "candidate_tag_ids": [
+        "ingredient.meat"
+      ],
+      "resolution_rule": "하위 재료가 확인되면 소고기·돼지고기 등으로 구체화.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "vegetable_herb",
+      "candidate_tag_ids": [
+        "ingredient.leaf_veg",
+        "ingredient.root_veg",
+        "ingredient.fruit_veg",
+        "ingredient.mushroom",
+        "ingredient.herbs"
+      ],
+      "resolution_rule": "채소와 허브를 구분.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "legume_tofu",
+      "candidate_tag_ids": [
+        "ingredient.soy"
+      ],
+      "resolution_rule": "콩·두부 재료로 이동. 디시 기본 종류는 별도 판단.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "grain_noodle",
+      "candidate_tag_ids": [
+        "dish.rice",
+        "dish.noodle",
+        "dish.pasta",
+        "dish.bread",
+        "ingredient.grain"
+      ],
+      "resolution_rule": "음식 형태를 확인한 뒤 하나 이상의 실제 해당 태그만 선택.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "dumpling_batter",
+      "candidate_tag_ids": [
+        "dish.dumpling",
+        "ingredient.wheat"
+      ],
+      "resolution_rule": "만두와 반죽 재료를 구분. 전은 조리 방식과 재료로 보완.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "broth",
+      "candidate_tag_ids": [
+        "component.broth",
+        "dish.soup"
+      ],
+      "resolution_rule": "디시가 국인지 일부 국물인지 구분.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "sauce_glaze",
+      "candidate_tag_ids": [
+        "component.sauce",
+        "sauce.sweet_glaze"
+      ],
+      "resolution_rule": "소스 부위와 글레이즈 종류를 구분.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "grilled_smoked",
+      "candidate_tag_ids": [
+        "method.grill",
+        "method.smoke"
+      ],
+      "resolution_rule": "굽기와 훈연을 구분. 불향 관찰로 자동 변환하지 않음.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "stir_fried_wok",
+      "candidate_tag_ids": [
+        "method.stir_fry"
+      ],
+      "resolution_rule": "실제 조리법으로 이동. 불향을 확정하지 않음.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "fried_crispy",
+      "candidate_tag_ids": [
+        "method.deep_fry",
+        "dish.fried"
+      ],
+      "resolution_rule": "튀김 조리와 바삭함 관찰을 구분.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "steamed_braised",
+      "candidate_tag_ids": [
+        "method.steam",
+        "method.braise"
+      ],
+      "resolution_rule": "찌기와 졸이기를 문맥에 따라 구분.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "raw_cured",
+      "candidate_tag_ids": [
+        "method.raw",
+        "method.cure",
+        "method.pickle"
+      ],
+      "resolution_rule": "생식·염지·절임을 구분.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "fermented_jang",
+      "candidate_tag_ids": [
+        "method.ferment",
+        "sauce.jang"
+      ],
+      "resolution_rule": "발효 공정과 장류 양념을 구분.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "dairy_cheese",
+      "candidate_tag_ids": [
+        "ingredient.milk",
+        "ingredient.cheese"
+      ],
+      "resolution_rule": "우유·크림과 치즈를 구분.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "spice_heat",
+      "candidate_tag_ids": [
+        "ingredient.spices",
+        "sauce.chili"
+      ],
+      "resolution_rule": "재료·양념만 옮김. 느낀 매운 강도는 관찰로 따로 수집.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "cold",
+      "candidate_tag_ids": [
+        "temperature.cold",
+        "temperature.frozen"
+      ],
+      "resolution_rule": "제공 온도를 확인. 시원한 맛으로 변환하지 않음.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "dessert",
+      "candidate_tag_ids": [
+        "dish.cake",
+        "dish.frozen",
+        "dish.fruit",
+        "dish.chocolate",
+        "dish.rice_cake"
+      ],
+      "resolution_rule": "구체적인 디저트 종류를 확인.",
+      "automatic_all_candidates": false
+    },
+    {
+      "legacy_id": "beverage_pairing",
+      "candidate_tag_ids": [
+        "dish.coffee",
+        "dish.tea",
+        "dish.wine",
+        "dish.beer",
+        "dish.rice_wine",
+        "dish.fruit_drink"
+      ],
+      "resolution_rule": "음료 종류를 확인. 페어링 여부는 식사 맥락에 원본 보존.",
+      "automatic_all_candidates": false
+    }
+  ],
+  "worked_examples": [
+    {
+      "menu_name": "돈가스",
+      "tags": [
+        "dish.fried",
+        "ingredient.pork",
+        "method.deep_fry"
+      ],
+      "map_id": "fried",
+      "add_packs": [],
+      "note": "돈가스는 메뉴명, 튀김은 종류 태그. 돼지고기와 조리법은 확인된 예시이며 이름만으로 모든 구성을 확정하지 않음."
+    },
+    {
+      "tags": [
+        "dish.raw",
+        "ingredient.salmon",
+        "method.raw"
+      ],
+      "map_id": "raw_seafood",
+      "add_packs": [],
+      "note": "연어라는 재료만으로 지방감·호감을 채우지 않음.",
+      "menu_name": "연어회"
+    },
+    {
+      "tags": [
+        "dish.grill",
+        "ingredient.salmon",
+        "method.grill",
+        "sauce.cream"
+      ],
+      "map_id": "grilled_fish",
+      "add_packs": [
+        "cream"
+      ],
+      "note": "생선구이 맵에 크림소스 가지 추가. 모든 국물·디저트 가지를 넣지 않음.",
+      "menu_name": "구운 연어, 크림소스"
+    },
+    {
+      "tags": [
+        "dish.fried",
+        "ingredient.salmon",
+        "method.deep_fry"
+      ],
+      "map_id": "fried",
+      "add_packs": [
+        "cooked_seafood"
+      ],
+      "note": "튀김옷·속살 표현을 구분. 실제 바삭함은 사용자 선택으로 수집.",
+      "menu_name": "연어튀김"
+    },
+    {
+      "tags": [
+        "dish.rice",
+        "ingredient.rice",
+        "sauce.cream"
+      ],
+      "map_id": "cream_pasta",
+      "add_packs": [],
+      "remove_packs": [
+        "noodles"
+      ],
+      "note": "리조또는 메뉴명에 보존. 공유 소스 맵에서 면 가지를 제외하고 밥알 가지 사용.",
+      "menu_name": "크림 리조또"
+    },
+    {
+      "tags": [
+        "dish.pasta",
+        "ingredient.wheat",
+        "sauce.cream"
+      ],
+      "map_id": "cream_pasta",
+      "add_packs": [],
+      "remove_packs": [
+        "rice"
+      ],
+      "note": "공유 소스 맵에서 밥알 가지를 제외하고 면 가지 사용.",
+      "menu_name": "크림 파스타"
+    },
+    {
+      "tags": [],
+      "map_id": null,
+      "add_packs": [
+        "basic",
+        "finish"
+      ],
+      "note": "태그 확정 없이 공통 표현 하나로 기록 가능.",
+      "menu_name": "메뉴 미확인 사진"
+    }
+  ],
+  "classification_policy": {
+    "tags_required_for_save": false,
+    "maximum_initial_visible_tags": null,
+    "visible_count_status": "UX hypothesis not hard schema limit",
+    "origins": [
+      "menu_catalog",
+      "menu_name_rule",
+      "model_inferred",
+      "user"
+    ],
+    "model_inferred_is_confirmed": false,
+    "dish_tags_are_sensory_observations": false,
+    "retain_original_legacy_tags": true,
+    "review_state_is_separate_from_origin": true,
+    "menu_names_are_kind_tags": false,
+    "menu_name_required_for_save": false,
+    "menu_name_storage": {
+      "field": "menu_name",
+      "preserve_raw_label": true,
+      "alias_normalization_overwrites_raw_label": false
+    },
+    "suggested_selected_tag_summary_count": 3
+  },
+  "composition_policy": [
+    "사용자가 고른 여러 디시 종류 태그로 맵을 조합한다. 면·구이처럼 형태가 있으면 해당 맵을 중심으로, 중식·발효음식만 있으면 넓은 탐색 맵으로 시작한다.",
+    "주재료의 별칭·상하위 태그를 중복 버블로 만들지 않는다.",
+    "실제 메뉴와 맞지 않는 부위·재료·조리 가지를 제외한다. 미확인 구성은 접힌 후보로 남긴다.",
+    "부모·이웃·사진에서 감각 응답을 자동 생성하지 않는다.",
+    "예시 조합은 라우팅 구현 전체가 아니다. 모든 혼합 요리의 판정 규칙은 후속 구현 대상이다.",
+    "돈가스·리조또·카레 같은 음식 이름은 menu_name에 보관한다. 세부 맵 이름과 메뉴 예시를 종류 태그로 복사하지 않는다.",
+    "검토된 메뉴명 규칙의 자동 선택 태그로 맵을 준비한다. 사용자 수정·전부 해제·분류 대상 버전을 보존하며 자동 선택을 감각 관찰이나 사용자 확인으로 바꾸지 않는다."
+  ],
+  "summary": {
+    "facets": 7,
+    "tags": 122,
+    "map_examples": 43,
+    "legacy_mappings": 19,
+    "user_facing_entry_tags": 50
+  },
+  "entry_tags": [
+    {
+      "id": "entry.dish.soup",
+      "label": "국·탕",
+      "canonical_tag_ids": [
+        "dish.soup"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.stew",
+      "label": "찌개·전골",
+      "canonical_tag_ids": [
+        "dish.stew"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.grill",
+      "label": "구이",
+      "canonical_tag_ids": [
+        "dish.grill"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.stir_fry",
+      "label": "볶음",
+      "canonical_tag_ids": [
+        "dish.stir_fry"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.braise",
+      "label": "찜·조림",
+      "canonical_tag_ids": [
+        "dish.braise"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.raw",
+      "label": "회·생요리",
+      "canonical_tag_ids": [
+        "dish.raw"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.fried",
+      "label": "튀김",
+      "canonical_tag_ids": [
+        "dish.fried"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.rice",
+      "label": "밥·곡물 요리",
+      "canonical_tag_ids": [
+        "dish.rice"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.rice_bowl",
+      "label": "덮밥·볶음밥",
+      "canonical_tag_ids": [
+        "dish.rice_bowl"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.porridge",
+      "label": "죽",
+      "canonical_tag_ids": [
+        "dish.porridge"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.noodle",
+      "label": "면",
+      "canonical_tag_ids": [
+        "dish.noodle"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.pasta",
+      "label": "파스타",
+      "canonical_tag_ids": [
+        "dish.pasta"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.dumpling",
+      "label": "만두·딤섬",
+      "canonical_tag_ids": [
+        "dish.dumpling"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.soy_dish",
+      "label": "두부·콩 요리",
+      "canonical_tag_ids": [
+        "dish.soy_dish"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.salad",
+      "label": "샐러드·생채",
+      "canonical_tag_ids": [
+        "dish.salad"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.vegetable",
+      "label": "채소 요리",
+      "canonical_tag_ids": [
+        "dish.vegetable"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.pickle",
+      "label": "절임",
+      "canonical_tag_ids": [
+        "dish.pickle"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.bread",
+      "label": "빵",
+      "canonical_tag_ids": [
+        "dish.bread"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.rice_cake",
+      "label": "떡·한과",
+      "canonical_tag_ids": [
+        "dish.rice_cake"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.cake",
+      "label": "케이크·크림 디저트",
+      "canonical_tag_ids": [
+        "dish.cake"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.chocolate",
+      "label": "초콜릿·견과 과자",
+      "canonical_tag_ids": [
+        "dish.chocolate"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.frozen",
+      "label": "빙과·아이스크림",
+      "canonical_tag_ids": [
+        "dish.frozen"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.fruit",
+      "label": "과일",
+      "canonical_tag_ids": [
+        "dish.fruit"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.coffee",
+      "label": "커피",
+      "canonical_tag_ids": [
+        "dish.coffee"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.tea",
+      "label": "차",
+      "canonical_tag_ids": [
+        "dish.tea"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.wine",
+      "label": "와인",
+      "canonical_tag_ids": [
+        "dish.wine"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.beer",
+      "label": "맥주",
+      "canonical_tag_ids": [
+        "dish.beer"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.rice_wine",
+      "label": "막걸리·약주",
+      "canonical_tag_ids": [
+        "dish.rice_wine"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dish.fruit_drink",
+      "label": "주스·탄산음료",
+      "canonical_tag_ids": [
+        "dish.fruit_drink"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.korean",
+      "label": "한식",
+      "canonical_tag_ids": [
+        "cuisine.korean"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.chinese",
+      "label": "중식",
+      "canonical_tag_ids": [
+        "cuisine.chinese"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.japanese",
+      "label": "일식",
+      "canonical_tag_ids": [
+        "cuisine.japanese"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.western",
+      "label": "양식",
+      "canonical_tag_ids": [
+        "cuisine.western"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.italian",
+      "label": "이탈리안",
+      "canonical_tag_ids": [
+        "cuisine.italian"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.french",
+      "label": "프렌치",
+      "canonical_tag_ids": [
+        "cuisine.french"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.thai",
+      "label": "태국음식",
+      "canonical_tag_ids": [
+        "cuisine.thai"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.vietnamese",
+      "label": "베트남음식",
+      "canonical_tag_ids": [
+        "cuisine.vietnamese"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.indian",
+      "label": "인도음식",
+      "canonical_tag_ids": [
+        "cuisine.indian"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.mexican",
+      "label": "멕시칸",
+      "canonical_tag_ids": [
+        "cuisine.mexican"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.middle_eastern",
+      "label": "중동음식",
+      "canonical_tag_ids": [
+        "cuisine.middle_eastern"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.cuisine.fusion",
+      "label": "퓨전",
+      "canonical_tag_ids": [
+        "cuisine.fusion"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.fermented",
+      "label": "발효음식",
+      "canonical_tag_ids": [
+        "method.ferment"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.smoked",
+      "label": "훈연음식",
+      "canonical_tag_ids": [
+        "method.smoke"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.spiced",
+      "label": "향신료 음식",
+      "canonical_tag_ids": [
+        "ingredient.spices"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.meat",
+      "label": "고기",
+      "canonical_tag_ids": [
+        "ingredient.meat"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.fish",
+      "label": "생선",
+      "canonical_tag_ids": [
+        "ingredient.fish"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.vegetable",
+      "label": "채소",
+      "canonical_tag_ids": [
+        "ingredient.leaf_veg",
+        "ingredient.root_veg",
+        "ingredient.fruit_veg"
+      ],
+      "relation": "possible_refinements_not_all_selected"
+    },
+    {
+      "id": "entry.cheese",
+      "label": "치즈",
+      "canonical_tag_ids": [
+        "ingredient.cheese"
+      ],
+      "relation": "same_visible_choice"
+    },
+    {
+      "id": "entry.dessert",
+      "label": "디저트",
+      "canonical_tag_ids": [
+        "dish.cake",
+        "dish.chocolate",
+        "dish.frozen",
+        "dish.fruit",
+        "dish.rice_cake"
+      ],
+      "relation": "possible_refinements_not_all_selected"
+    },
+    {
+      "id": "entry.beverage",
+      "label": "음료",
+      "canonical_tag_ids": [
+        "dish.coffee",
+        "dish.tea",
+        "dish.wine",
+        "dish.beer",
+        "dish.rice_wine",
+        "dish.fruit_drink"
+      ],
+      "relation": "possible_refinements_not_all_selected"
+    }
+  ],
+  "menu_examples": [
+    {
+      "menu_name": "돈가스",
+      "aliases": [
+        "돈까스"
+      ],
+      "candidate_kind_tag_ids": [
+        "dish.fried"
+      ],
+      "context_tag_ids": [],
+      "automatic_application": true,
+      "auto_entry_tag_ids": [
+        "entry.dish.fried"
+      ],
+      "automatic_application_policy_ref": "menu_auto_tagging_policy.auto_selection_gates",
+      "rule_status": "design_candidate_requires_validation_before_deployment"
+    },
+    {
+      "menu_name": "리조또",
+      "aliases": [],
+      "candidate_kind_tag_ids": [
+        "dish.rice"
+      ],
+      "context_tag_ids": [],
+      "automatic_application": true,
+      "auto_entry_tag_ids": [
+        "entry.dish.rice"
+      ],
+      "automatic_application_policy_ref": "menu_auto_tagging_policy.auto_selection_gates",
+      "rule_status": "design_candidate_requires_validation_before_deployment"
+    },
+    {
+      "menu_name": "카레",
+      "aliases": [],
+      "candidate_kind_tag_ids": [],
+      "context_tag_ids": [
+        "sauce.curry",
+        "ingredient.spices"
+      ],
+      "automatic_application": true,
+      "auto_entry_tag_ids": [
+        "entry.spiced"
+      ],
+      "automatic_application_policy_ref": "menu_auto_tagging_policy.auto_selection_gates",
+      "rule_status": "design_candidate_requires_validation_before_deployment"
+    },
+    {
+      "menu_name": "짜장면",
+      "aliases": [],
+      "candidate_kind_tag_ids": [
+        "dish.noodle",
+        "cuisine.chinese"
+      ],
+      "context_tag_ids": [],
+      "automatic_application": true,
+      "auto_entry_tag_ids": [
+        "entry.dish.noodle",
+        "entry.cuisine.chinese"
+      ],
+      "automatic_application_policy_ref": "menu_auto_tagging_policy.auto_selection_gates",
+      "rule_status": "design_candidate_requires_validation_before_deployment"
+    }
+  ],
+  "menu_auto_tagging_policy": {
+    "enabled_in_design": true,
+    "deployed": false,
+    "default_when_menu_known": "auto_select_eligible_tags_and_prepare_map",
+    "separate_confirmation_step": false,
+    "saving_confirms_auto_tags": false,
+    "selection_modes": [
+      "automatic",
+      "user_edited",
+      "user_empty"
+    ],
+    "decision_states": [
+      "auto_select",
+      "suggest",
+      "abstain",
+      "suppressed_by_user"
+    ],
+    "origins": [
+      "menu_catalog",
+      "menu_name_rule",
+      "model_inferred",
+      "user"
+    ],
+    "auto_selection_gates": [
+      "reviewed_source_or_rule",
+      "matched_menu_identity_and_version",
+      "valid_taxonomy_ids",
+      "supported_target_scope",
+      "qualifiers_and_negations_resolved",
+      "no_conflicting_evidence",
+      "current_input_revision",
+      "no_user_override",
+      "feedback_not_started"
+    ],
+    "model_default_decision": "suggest",
+    "model_self_reported_confidence_is_gate": false,
+    "manual_edit_policy": "preserve_effective_selection_set_for_same_subject; later automatic results are suggestions",
+    "explicit_empty_is_valid": true,
+    "restore_empty_with_inference": false,
+    "same_menu_alias_preserves_user_actions": true,
+    "different_menu_subject_reuses_old_actions": false,
+    "late_revision_response_applies": false,
+    "late_auto_result_repositions_active_map": false,
+    "maps_update_after_explicit_user_edit": true,
+    "selected_bubbles_survive_reclassification": true,
+    "auto_tags_create_sensory_observations": false,
+    "auto_tags_update_taste_preferences": false,
+    "entry_with_multiple_refinements_selects_all_children": false,
+    "fallback": "common_map; recording and saving remain available",
+    "design_ref": "./tba-menu-auto-tagging-design.md",
+    "examples_ref": "./tba-menu-auto-tagging-examples.json"
+  },
+  "entry_policy": {
+    "presentation": "면·구이·중식·발효음식을 같은 디시 종류 선택 화면에서 보여준다.",
+    "multiple_selection": true,
+    "required_primary_category": false,
+    "internal_facets_are_required_user_steps": false,
+    "examples": [
+      "중식 + 면 + 볶음",
+      "일식 + 면 + 발효음식",
+      "한식 + 구이 + 발효음식"
+    ],
+    "cuisine_alone_does_not_assert_sensation": true,
+    "auto_select_from_menu_name": true,
+    "separate_confirmation_step": false,
+    "explicit_empty_selection_is_valid": true
+  }
+}

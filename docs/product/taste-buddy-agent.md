@@ -3,9 +3,11 @@
 작성일: 2026-05-29  
 범위: TasteBuddyAgent의 제품 역할, 데이터 구조, 설문/피드백 입력, 미각 버블, 디테일 태그, 소셜 매치 피드 작동 방식
 
-TasteBuddyAgent, 줄여서 TBA는 Taste Buddy 안에서 미각 데이터를 "판정"하지 않고 다이닝 의사결정에 쓸 수 있는 해석으로 바꾸는 deterministic agent layer다. LLM처럼 자유 생성하는 에이전트가 아니라, 측정값, 식후 피드백, 공개 리뷰, 태그, confidence를 정해진 규칙으로 조합해 홈 피드, 프로필, 디시 카드, 다이닝 노트를 만든다.
+제품 목표 갱신: 2026-09-06. 아래 함수·점수·기존 화면 설명은 기존 구현 참고 자료다. 장기 플랫폼의 목표와 신규 데이터 계약은 [플랫폼 아키텍처](./tba-data-platform-architecture.md)와 [분석·해석 모델](./tba-analysis-interpretation-model.md)을 따른다.
 
-TBA의 목적은 social ranking이나 generic recommendation이 아니다. 사용자가 "나와 비슷한 입맛의 사람은 어떤 식사를 좋게 봤는가", "이 기록이 왜 내 다음 다이닝 판단에 참고가 되는가"를 이해하도록 돕는 것이다.
+TasteBuddyAgent, 줄여서 TBA의 최우선 목적은 사용자의 취향을 이해하고 다양한 해석과 인사이트로 제공하는 것이다. 원문과 출처를 보존해 정제한 근거를 경험 요약·감각 프로필·조건 차이·예외·미확정 정보 등에 재사용한다. 이후 비슷한 입맛 그룹을 연결하고, 그 그룹의 추천·평가를 근거로 식당·메뉴 추천을 추가한다.
+
+기존 구현은 측정값, 식후 피드백, 공개 리뷰, 태그, confidence를 정해진 규칙으로 조합해 홈 피드, 프로필, 디시 카드, 다이닝 노트를 만드는 deterministic agent layer다. 이 구현 설명은 새로운 제품 우선순위나 정제 계약이 앱에 모두 반영됐다는 뜻이 아니다.
 
 ---
 
@@ -13,10 +15,10 @@ TBA의 목적은 social ranking이나 generic recommendation이 아니다. 사�
 
 | 항목 | 설명 |
 | --- | --- |
-| 제품 역할 | 미각 프로필, 피드백, 공개 리뷰를 해석해 taste identity와 match feed를 만든다 |
+| 제품 역할 | 개인 취향 이해와 다양한 해석·인사이트를 먼저 제공하고, 이후 그룹 연결과 그룹 기반 추천으로 확장 |
 | 구현 성격 | deterministic TypeScript logic, Supabase optional hydration, local fallback 가능 |
 | 핵심 가치 | raw measurement보다 해석 가능한 taste signal을 먼저 보여준다 |
-| 사용자 경험 | 나를 평가하지 않고, 다음 다이닝 선택을 더 정교하게 돕는다 |
+| 사용자 경험 | 내 취향의 의미·조건·예외를 이해하고, 기록을 통해 새로운 관점의 인사이트를 얻는다 |
 | 소셜 원칙 | follower/status 경쟁이 아니라 "참고 가능한 미각 유사성"을 설명한다 |
 
 TBA가 생성하는 주요 결과:

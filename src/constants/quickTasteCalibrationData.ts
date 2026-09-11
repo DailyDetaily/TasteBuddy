@@ -14,8 +14,8 @@ export type StarterAxisVector = Record<TasteId, number>;
 export type AbsoluteTasteVector = Record<TasteId, number>;
 
 export interface StarterDiningContext {
-  baselineReference: 'popular-k-fnb';
-  calibrationMode: 'digital-anchoring';
+  baselineReference: 'popular-k-fnb' | 'reference-food-recall-v2';
+  calibrationMode: 'digital-anchoring' | 'recalled-intensity';
 }
 
 export interface RestaurantReadyGuidance {
@@ -574,6 +574,16 @@ export function buildRestaurantReadyGuidanceFromSnapshot(
   context: StarterDiningContext = DEFAULT_STARTER_CONTEXT,
   confidence: RestaurantReadyGuidance['confidence'] = 'Starter',
 ) {
+  if (snapshot.source === 'recalled-intensity') {
+    return {
+      cautionAxis: 'fat', cautionLabel: '추가 확인', confidence: 'Starter',
+      context: { baselineReference: 'reference-food-recall-v2', calibrationMode: 'recalled-intensity' },
+      evidence: ['기준 음식에서 기억한 강도이며, 민감도나 좋아하는 정도로 해석하지 않아요.'],
+      goalPhrase: '기준 음식에서 기억한 맛의 강도',
+      summaryLine: '기준 음식에서 기억한 응답을 남겼어요. 이후의 식사 기록과 함께 살펴봐요.',
+      surfaceLabel: '기준 음식 회상 기록', topAxes: [], topLabels: [],
+    } satisfies RestaurantReadyGuidance;
+  }
   const vector = TASTE_IDS.reduce<StarterAxisVector>((accumulator, tasteId) => {
     accumulator[tasteId] = resolveTasteMeasurementValue(snapshot, tasteId);
     return accumulator;

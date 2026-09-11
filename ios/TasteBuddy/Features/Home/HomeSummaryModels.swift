@@ -1,5 +1,250 @@
 import Foundation
 
+/// 홈 카드의 표시 자료. 원본 기록과 TBA 근거 ID를 함께 보존한다.
+struct HomeArchiveCard: Identifiable, Equatable {
+    enum Kind: String, CaseIterable {
+        case record = "기록", repeated = "반복", experience = "경험"
+        case liking = "호감", sensation = "감각", fit = "알맞음"
+        case condition = "조건", difference = "차이", change = "변화"
+    }
+
+    let kind: Kind
+    let value: String
+    let detail: String
+    let explanation: String
+    let entryIDs: Set<UUID>
+    let evidenceIDs: Set<String>
+    var id: String { kind.rawValue }
+    var isEmpty: Bool { entryIDs.isEmpty }
+
+    static func empty(_ kind: Kind) -> Self {
+        let value: String
+        let detail: String
+        switch kind {
+        case .record: (value, detail) = ("기록 없음", "첫 기록을 남겨요")
+        case .repeated: (value, detail) = ("반복 없음", "메뉴·식당 기록")
+        case .experience: (value, detail) = ("경험 없음", "메뉴 기록을 남겨요")
+        case .liking: (value, detail) = ("호감 기록 없음", "음식 전체 평가")
+        case .sensation: (value, detail) = ("감각 기록 없음", "감각별 평가")
+        case .fit: (value, detail) = ("응답 없음", "알맞음 응답")
+        case .condition: (value, detail) = ("데이터 대기 중", "조건별 평가")
+        case .difference: (value, detail) = ("데이터 대기 중", "전체·감각 비교")
+        case .change: (value, detail) = ("데이터 대기 중", "기간별 기록 비교")
+        }
+        return .init(kind: kind, value: value, detail: detail, explanation: "", entryIDs: [], evidenceIDs: [])
+    }
+}
+
+/// 관련 식사에서 확인된 미각의 구성. 강도·호감 점수가 아니며 식사/축마다 한 번 센다.
+struct HomeInsightTasteDistribution: Equatable {
+    let counts: [Int] // TasteAxis.allCases 순서
+    var total: Int { counts.reduce(0, +) }
+    static let empty = Self(counts: Array(repeating: 0, count: 6))
+
+    static func make(card: HomeArchiveCard, entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot,
+                     referenceDate: Date = .now) -> Self {
+        let eligible = entries.filter {
+            card.entryIDs.contains($0.id) && $0.hasCompletedTasteFeedback && $0.observedAt <= referenceDate
+        }
+        let meals = Dictionary(eligible.map { ($0.id, $0.mealID) }, uniquingKeysWith: { first, _ in first })
+        let excluded = Set(snapshot.personalModel?.excludedEvidence.map(\.id) ?? [])
+        let attributes = ["taste.sweet", "taste.sour", "taste.bitter", "taste.salty", "taste.umami", "mouthfeel.fatty"]
+        var axisMeals = Array(repeating: Set<UUID>(), count: attributes.count)
+        for observation in snapshot.observations {
+            guard let meal = meals[observation.experienceID], !excluded.contains(observation.id),
+                  observation.kind == "sensory_presence", observation.value == .flag(true),
+                  let attribute = observation.attribute, let axis = attributes.firstIndex(of: attribute) else { continue }
+            axisMeals[axis].insert(meal)
+        }
+        return Self(counts: axisMeals.map(\.count))
+    }
+
+    /// 최대 나머지 방식으로 126개 점에 배분한다. 관찰이 없는 축에는 점을 만들지 않는다.
+    var dotColorIndices: [Int] {
+        guard total > 0 else { return Array(repeating: 0, count: 126) }
+        let quotas = counts.map { Double($0) / Double(total) * 126 }
+        var allocated = quotas.map { Int($0.rounded(.down)) }
+        let order = counts.indices.sorted {
+            let left = quotas[$0] - Double(allocated[$0]), right = quotas[$1] - Double(allocated[$1])
+            return left == right ? $0 < $1 : left > right
+        }
+        for axis in order.prefix(126 - allocated.reduce(0, +)) { allocated[axis] += 1 }
+        let sortedColors = allocated.enumerated().flatMap { Array(repeating: $0.offset, count: $0.element) }
+        // 눌렀을 때의 각도 순서에 맞춰 색을 배정하여 비율대로 모이게 한다.
+        return (0..<126).map { sortedColors[($0 % 6) * 21 + $0 / 6] }
+    }
+
+    var accessibilitySummary: String {
+        guard total > 0 else { return "확인된 미각 근거 없음" }
+        let values = TasteAxis.allCases.indices.filter { counts[$0] > 0 }.map {
+            "\(TasteAxis.allCases[$0].label) \(counts[$0])회"
+        }.joined(separator: ", ")
+        return "관련 식사의 미각 관찰 구성, \(values). 같은 식사의 같은 미각은 한 번씩 집계"
+    }
+}
+
+enum HomeArchiveSummaryEngine {
+    static func cards(
+        entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot,
+        referenceDate: Date = .now, calendar: Calendar = .current
+    ) -> [HomeArchiveCard] {
+        var seen = Set<UUID>()
+        let entries = entries.filter { $0.observedAt <= referenceDate && seen.insert($0.id).inserted }
+            .sorted { $0.observedAt == $1.observedAt ? $0.id.uuidString < $1.id.uuidString : $0.observedAt > $1.observedAt }
+        let completedIDs = Set(entries.filter(\.hasCompletedTasteFeedback).map(\.id))
+        let excludedIDs = Set(snapshot.personalModel?.excludedEvidence.map(\.id) ?? [])
+        let observations = snapshot.observations.filter { completedIDs.contains($0.experienceID) && !excludedIDs.contains($0.id) }
+        let evidenceByID = Dictionary(observations.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+
+        func card(
+            _ kind: HomeArchiveCard.Kind, _ value: String, _ detail: String,
+            records: [DiningEntry] = [], evidence: [SensoryObservation] = [], explanation: String = ""
+        ) -> HomeArchiveCard {
+            .init(kind: kind, value: value, detail: detail, explanation: explanation,
+                  entryIDs: Set(records.map(\.id)).union(evidence.map(\.experienceID)),
+                  evidenceIDs: Set(evidence.map(\.id)))
+        }
+
+        // 전체 아카이브는 미완료 기록도 포함한다. 취향 해석은 완료된 직접 관찰만 사용한다.
+        var cards = [card(.record, "\(entries.count)개 기록", "\(Set(entries.map(\.mealID)).count)번의 식사", records: entries)]
+        let menus = Dictionary(grouping: entries.filter { !normalized($0.menu).isEmpty }, by: menuKey)
+        let restaurants = Dictionary(grouping: entries.filter { !normalized($0.restaurant).isEmpty }, by: restaurantKey)
+        let repeats = menus.map { (key: "menu:" + $0.key, name: $0.value[0].menu, entries: $0.value) }
+            + restaurants.map { (key: "restaurant:" + $0.key, name: $0.value[0].restaurant, entries: $0.value) }
+        if let repeated = repeats.filter({ Set($0.entries.map(\.mealID)).count > 1 }).sorted(by: {
+            let left = Set($0.entries.map(\.mealID)).count, right = Set($1.entries.map(\.mealID)).count
+            return left == right ? $0.key < $1.key : left > right
+        }).first {
+            cards.append(card(.repeated, repeated.name, "\(Set(repeated.entries.map(\.mealID)).count)회 기록",
+                              records: repeated.entries, explanation: "전체 기록에서 다시 등장했어요."))
+        }
+        if !menus.isEmpty {
+            cards.append(card(.experience, "\(menus.count)개 메뉴", "\(restaurants.count)곳의 식당", records: entries))
+        }
+
+        let overalls = Dictionary(grouping: observations.filter {
+            $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1"
+        }, by: \.experienceID)
+        if let liked = entries.first(where: { entry in
+            guard let ratings = overalls[entry.id], !ratings.isEmpty else { return false }
+            return ratings.allSatisfy { ["positive", "very_positive"].contains($0.value.text) }
+        }) {
+            cards.append(card(.liking, liked.menu, "전체 평가 · 호감", evidence: overalls[liked.id] ?? [],
+                              explanation: "좋았다고 남긴 가장 최근 음식이에요."))
+        }
+
+        if let model = snapshot.personalModel {
+            // 기존 모델의 판단을 표시한다. 화면에서 호감 방향이나 알맞음을 새로 추론하지 않는다.
+            let candidates = model.candidates.filter { !$0.evidenceIDs.isEmpty && $0.evidenceIDs.allSatisfy { evidenceByID[$0] != nil } }
+                .sorted {
+                    if ($0.direction != nil) != ($1.direction != nil) { return $0.direction != nil }
+                    return $0.distribution.mealCount == $1.distribution.mealCount
+                        ? $0.id < $1.id : $0.distribution.mealCount > $1.distribution.mealCount
+                }
+            if let candidate = candidates.first(where: { $0.conditions.isEmpty }) {
+                let assessment = candidate.direction.map(likingLabel)
+                    ?? (candidate.status == "mixed" ? "평가가 나뉘어요" : "첫 단서")
+                cards.append(card(.sensation, candidate.label, assessment,
+                                  evidence: candidate.evidenceIDs.compactMap { evidenceByID[$0] },
+                                  explanation: "\(candidate.distribution.mealCount)번의 식사\n\(candidate.body)"))
+            }
+            let fits = model.fitPatterns.filter {
+                $0.conditions.isEmpty && !$0.evidenceIDs.isEmpty && $0.evidenceIDs.allSatisfy { evidenceByID[$0] != nil }
+            }.sorted {
+                if ($0.repeatedValue != nil) != ($1.repeatedValue != nil) { return $0.repeatedValue != nil }
+                return $0.mealIDs.count == $1.mealIDs.count ? $0.id < $1.id : $0.mealIDs.count > $1.mealIDs.count
+            }
+            if let fit = fits.first {
+                cards.append(card(.fit, fit.label, fit.repeatedValue.map(PersonalTasteInsightPresentation.fitLabel)
+                                  ?? (fit.status == "mixed_fit" ? "응답이 나뉘어요" : "첫 단서"),
+                                  evidence: fit.evidenceIDs.compactMap { evidenceByID[$0] },
+                                  explanation: PersonalTasteInsightPresentation.fitSummary(fit)))
+            }
+            if let candidate = candidates.first(where: { !$0.conditions.isEmpty && $0.direction != nil }),
+               let direction = candidate.direction,
+               let assessment = ["positive": "호감", "neutral": "중립", "negative": "아쉬움"][direction] {
+                let conditions = PersonalTasteInsightPresentation.conditionText(candidate.conditions)
+                cards.append(card(.condition, "\(candidate.label) · \(assessment)", conditions,
+                                  evidence: candidate.evidenceIDs.compactMap { evidenceByID[$0] },
+                                  explanation: "\(conditions) · \(likingLabel(direction))\n\(candidate.body)"))
+            }
+            let differences = model.overallPatterns.filter { $0.conditions.isEmpty }.flatMap { pattern in
+                pattern.cells.filter { cell in
+                    let positiveOverall = ["positive", "very_positive"].contains(cell.overallValue)
+                    let negativeOverall = ["negative", "very_negative"].contains(cell.overallValue)
+                    return ((positiveOverall && cell.attributeValue == "negative") || (negativeOverall && cell.attributeValue == "positive"))
+                        && !cell.evidenceIDs.isEmpty && cell.evidenceIDs.allSatisfy { evidenceByID[$0] != nil }
+                }.map { (pattern: pattern, cell: $0) }
+            }.sorted {
+                if $0.cell.mealIDs.count != $1.cell.mealIDs.count { return $0.cell.mealIDs.count > $1.cell.mealIDs.count }
+                return $0.pattern.id + $0.cell.overallValue < $1.pattern.id + $1.cell.overallValue
+            }
+            if let difference = differences.first {
+                let overall = PersonalTasteInsightPresentation.overallLabel(difference.cell.overallValue)
+                let attribute = likingLabel(difference.cell.attributeValue)
+                let overallMood = ["positive", "very_positive"].contains(difference.cell.overallValue) ? "호감" : "아쉬움"
+                let attributeMood = difference.cell.attributeValue == "positive" ? "호감" : "아쉬움"
+                cards.append(card(.difference, "음식 · \(overallMood)", "\(difference.pattern.label) · \(attributeMood)",
+                                  evidence: difference.cell.evidenceIDs.compactMap { evidenceByID[$0] },
+                                  explanation: "음식 전체 · \(overall)\n\(difference.pattern.label) · \(attribute)\n\(difference.cell.mealIDs.count)번의 식사에서 함께 남겼어요."))
+            }
+        }
+
+        // 취향 변화가 아닌, 현재 보존된 감각 기록의 기간별 비중만 비교한다.
+        let day = calendar.startOfDay(for: referenceDate)
+        if let recentStart = calendar.date(byAdding: .day, value: -89, to: day),
+           let previousStart = calendar.date(byAdding: .day, value: -179, to: day) {
+            let presence = observations.filter {
+                $0.kind == "sensory_presence" && $0.value == .flag(true) && $0.attribute != nil
+                    && $0.attribute?.hasSuffix(".unspecified") != true && $0.recordedAt >= previousStart
+            }
+            let recent = presence.filter { $0.recordedAt >= recentStart }
+            let previous = presence.filter { $0.recordedAt < recentStart }
+            let recentCount = Set(recent.map(\.independentMealID)).count
+            let previousCount = Set(previous.map(\.independentMealID)).count
+            let minimum = snapshot.personalModel?.policy.minMeals ?? 3
+            if recentCount >= minimum && previousCount >= minimum {
+                let changes = Dictionary(grouping: presence) { [$0.attribute ?? "", $0.reference ?? ""].joined(separator: "|") }
+                    .map { key, rows in
+                        let before = Set(rows.filter { $0.recordedAt < recentStart }.map(\.independentMealID)).count
+                        let after = Set(rows.filter { $0.recordedAt >= recentStart }.map(\.independentMealID)).count
+                        let from = Int((Double(before) / Double(previousCount) * 100).rounded())
+                        let to = Int((Double(after) / Double(recentCount) * 100).rounded())
+                        return (key: key, rows: rows, before: before, after: after, from: from, to: to)
+                    }.filter { $0.from != $0.to }.sorted {
+                        let left = abs($0.to - $0.from), right = abs($1.to - $1.from)
+                        return left == right ? $0.key < $1.key : left > right
+                    }
+                if let change = changes.first {
+                    let periodEntryIDs = Set(presence.map(\.experienceID))
+                    cards.append(card(.change, change.rows[0].attributeLabel, "기록 \(change.from)% → \(change.to)%",
+                                      records: entries.filter { periodEntryIDs.contains($0.id) }, evidence: change.rows,
+                                      explanation: "직전 90일 · \(change.before)/\(previousCount)번의 식사\n최근 90일 · \(change.after)/\(recentCount)번의 식사\n현재 남아 있는 감각 기록의 비중이에요."))
+                }
+            }
+        }
+        return HomeArchiveCard.Kind.allCases.map { kind in
+            cards.first { $0.kind == kind && !$0.isEmpty } ?? .empty(kind)
+        }
+    }
+
+    private static func likingLabel(_ value: String) -> String {
+        PersonalTasteInsightPresentation.likingLabel(value)
+    }
+
+    private static func normalized(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines).folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+    }
+
+    private static func menuKey(_ entry: DiningEntry) -> String {
+        entry.menuItemID.map { "id:" + $0 } ?? "name:" + normalized(entry.menu)
+    }
+
+    private static func restaurantKey(_ entry: DiningEntry) -> String {
+        entry.restaurantID.map { "id:" + $0 } ?? "name:" + normalized(entry.restaurant)
+    }
+}
+
 /// The small set of summary cards that can be rendered on the home screen.
 enum HomeSummaryMetricKind: String, CaseIterable, Equatable, Identifiable {
     case record
@@ -888,5 +1133,107 @@ enum HomePeriodInsightEngine {
     private static func percent(_ numerator: Int, of denominator: Int) -> Int {
         guard denominator > 0 else { return 0 }
         return Int((Double(numerator) / Double(denominator) * 100).rounded())
+    }
+}
+
+// MARK: - Cumulative archive metrics
+
+struct HomeArchiveMetric: Identifiable, Equatable {
+    let id: String
+    let label: String
+    let data: HomePeriodInsightCardData
+    let entryIDs: Set<UUID>
+    let evidenceIDs: Set<String>
+}
+
+struct HomeArchiveMetricSection: Identifiable, Equatable {
+    let id: String
+    let title: String
+    let cards: [HomeArchiveMetric]
+}
+
+/// 하단은 관찰 분포를 표시하고, 취향 방향에 대한 해석은 상단 TBA에 맡긴다.
+enum HomeArchiveMetricsEngine {
+    static func sections(
+        entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot,
+        referenceDate: Date = .now
+    ) -> [HomeArchiveMetricSection] {
+        var seen = Set<UUID>()
+        let entries = entries.filter { $0.observedAt <= referenceDate && seen.insert($0.id).inserted }
+            .sorted {
+                $0.observedAt == $1.observedAt ? $0.id.uuidString < $1.id.uuidString : $0.observedAt > $1.observedAt
+            }
+        let completed = entries.filter(\.hasCompletedTasteFeedback)
+        let completedIDs = Set(completed.map(\.id))
+        let excludedIDs = Set(snapshot.personalModel?.excludedEvidence.map(\.id) ?? [])
+        var seenEvidence = Set<String>()
+        let observations = snapshot.observations.filter {
+            completedIDs.contains($0.experienceID) && !excludedIDs.contains($0.id)
+                && ($0.observedAt ?? $0.recordedAt) <= referenceDate
+                && ($0.knownAt ?? $0.recordedAt) <= referenceDate
+                && seenEvidence.insert($0.id).inserted
+        }
+        let meals = Dictionary(entries.map { ($0.id, $0.mealID) }, uniquingKeysWith: { first, _ in first })
+        let menus = Dictionary(grouping: entries.filter { !normalized($0.menu).isEmpty }, by: {
+            $0.menuItemID.map { "id:" + $0 } ?? "name:" + normalized($0.menu)
+        })
+        let restaurants = Dictionary(grouping: entries.filter { !normalized($0.restaurant).isEmpty }, by: {
+            $0.restaurantID.map { "id:" + $0 } ?? "name:" + normalized($0.restaurant)
+        })
+
+        func metric(_ id: String, _ label: String, _ title: String, _ detail: String,
+                    kind: HomePeriodInsightKind = .recordFlow, axis: TasteAxis? = nil,
+                    records: [DiningEntry] = [], evidence: [SensoryObservation] = []) -> HomeArchiveMetric {
+            .init(id: id, label: label,
+                  data: .init(kind: kind, title: title, detail: detail, supportingText: nil,
+                              stats: [], chartValues: [], accentAxis: axis,
+                              state: records.isEmpty && evidence.isEmpty ? .empty : .populated),
+                  entryIDs: Set(records.map(\.id)).union(evidence.map(\.experienceID)),
+                  evidenceIDs: Set(evidence.map(\.id)))
+        }
+
+        let repeatedMenuCount = menus.values.count { Set($0.map(\.mealID)).count >= 2 }
+        let revisitedRestaurantCount = restaurants.values.count { Set($0.map(\.mealID)).count >= 2 }
+        let recordCards = [
+            metric("meals", "식사", "\(Set(entries.map(\.mealID)).count)회",
+                   "전체 기록 · 피드백을 남긴 식사 \(Set(completed.map(\.mealID)).count)회", records: entries),
+            metric("menus", "메뉴", "\(menus.count)가지",
+                   "다시 먹은 메뉴 \(repeatedMenuCount)가지 · 전체 기간",
+                   kind: .experienceBreadth, records: entries),
+            metric("restaurants", "식당", "\(restaurants.count)곳",
+                   "다시 방문한 식당 \(revisitedRestaurantCount)곳 · 전체 기간", kind: .experienceBreadth, records: entries),
+        ]
+
+        // 같은 식사의 서로 다른 응답은 하나를 임의 선택하지 않고 '평가 나뉨'으로 보존한다.
+        func distribution(_ rows: [SensoryObservation], values: [(String, String)]) -> String {
+            guard !rows.isEmpty else { return "응답 없음" }
+            let byMeal = Dictionary(grouping: rows, by: { meals[$0.experienceID] ?? $0.independentMealID })
+            let votes = byMeal.values.map { Set($0.map { $0.value.text }) }
+            var parts = values.map { value, label in
+                "\(label) \(votes.count { $0 == Set([value]) })"
+            }
+            let mixed = votes.count { $0.count > 1 }
+            if mixed > 0 { parts.append("평가 나뉨 \(mixed)") }
+            return parts.joined(separator: " · ") + " / \(byMeal.count)회"
+        }
+
+        let overallValues = [("very_positive", "매우 좋음"), ("positive", "좋음"), ("neutral", "보통"),
+                             ("negative", "별로"), ("very_negative", "매우 별로")]
+        let overall = observations.filter { row in
+            row.kind == "overall_liking" && row.scale == "overall-five-category-v1"
+                && overallValues.contains { $0.0 == row.value.text }
+        }
+        let overallCard = metric("overall", "전체 만족도",
+                                 overall.isEmpty ? "응답 없음" : "\(Set(overall.map { meals[$0.experienceID] ?? $0.independentMealID }).count)회의 평가",
+                                 overall.isEmpty ? "음식 전체에 남긴 평가" : distribution(overall, values: overallValues),
+                                 kind: .tasteClue, evidence: overall)
+        return [
+            .init(id: "archive", title: "아카이브", cards: recordCards + [overallCard]),
+        ]
+    }
+
+    private static func normalized(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines)
+            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
     }
 }

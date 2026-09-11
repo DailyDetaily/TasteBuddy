@@ -4,6 +4,360 @@ import UIKit
 @testable import TasteBuddy
 
 final class SystemParityComponentTests: XCTestCase {
+    func testTasteRotationAlignsBeforeMorphingIntoFeedbackRings() {
+        for rayCount in TasteRotationRayCount.allCases {
+            for divisions in TasteRotationDivisions.allCases {
+                for requestedAt in [0.0, 0.4, 1.1, 1.99, 2, 2.8] {
+                    let alignedAt = TasteMotionGeometry.rotationAlignedTime(requestedAt)
+                    let entry = TasteMotionGeometry.feedbackEntry(rotationTime: requestedAt, time: alignedAt - requestedAt, divisions: divisions, rayCount: rayCount)
+                    XCTAssertTrue((0..<2).contains(entry.delay))
+                    XCTAssertEqual(entry.time, 0)
+                    let rotating = TasteMotionGeometry.points(style: .rotatingLayers, time: alignedAt, divisions: divisions, rayCount: rayCount)
+                    let paths = TasteMotionGeometry.feedbackPaths(time: 0, rayCount: rayCount, angle: entry.angle)
+                    let count = rayCount.rawValue
+                    for layer in 0..<3 {
+                        for ray in 0..<count {
+                            let path = paths[layer * count + ray]
+                            let start = rotating[(layer * divisions.rawValue / 3 * count + ray) * 2]
+                            let end = rotating[(((layer + 1) * divisions.rawValue / 3 - 1) * count + ray) * 2 + 1]
+                            XCTAssertEqual(hypot(path[0].x - start.x, path[0].y - start.y), 0, accuracy: 1e-9)
+                            XCTAssertEqual(hypot(path[24].x - end.x, path[24].y - end.y), 0, accuracy: 1e-9)
+                        }
+                    }
+                }
+            }
+            let paths = TasteMotionGeometry.feedbackPaths(time: TasteMotionGeometry.feedbackTransitionDuration, rayCount: rayCount)
+            for layer in 0..<3 {
+                for ray in 0..<rayCount.rawValue {
+                    let path = paths[layer * rayCount.rawValue + ray]
+                    let next = paths[layer * rayCount.rawValue + (ray + 1) % rayCount.rawValue]
+                    XCTAssertEqual(hypot(path[0].x - next[24].x, path[0].y - next[24].y), 0, accuracy: 1e-9)
+                }
+            }
+        }
+        for frame in 0...51 {
+            let time = Double(frame) / 30
+            let morph = TasteMotionGeometry.feedbackMorph(time: time)
+            XCTAssertTrue((-.pi / 2...0).contains(morph.rotation))
+            for path in TasteMotionGeometry.feedbackPaths(time: time) {
+                for point in path { XCTAssertTrue((0...640).contains(point.x) && (0...640).contains(point.y)) }
+            }
+        }
+    }
+
+    func testTasteFeedbackLoopsWithoutOverlapAndContractsOnlyAtCompletion() {
+        let initial = TasteMotionGeometry.feedbackRings(time: TasteMotionGeometry.feedbackTransitionDuration)
+        for (index, ring) in initial.enumerated() {
+            XCTAssertEqual(ring.radius, [118.5, 197.5, 276.5][index], accuracy: 1e-9)
+            XCTAssertEqual(ring.opacity, 1)
+        }
+        for frame in 0..<360 {
+            let time = 4.51 + Double(frame) / 30
+            let rings = TasteMotionGeometry.feedbackRings(time: time)
+            let loop = TasteMotionGeometry.feedbackRings(time: time + 3)
+            for (ring, next) in zip(rings, loop) {
+                XCTAssertTrue((79...316).contains(ring.radius) && (0...1).contains(ring.opacity))
+                XCTAssertEqual(ring.radius, next.radius, accuracy: 1e-9)
+                XCTAssertEqual(ring.opacity, next.opacity, accuracy: 1e-9)
+            }
+            let ordered = rings.sorted { $0.radius < $1.radius }
+            XCTAssertEqual(ordered[1].radius - ordered[0].radius, 79, accuracy: 1e-9)
+            XCTAssertEqual(ordered[2].radius - ordered[1].radius, 79, accuracy: 1e-9)
+        }
+        for requestedAt in [0.0, 0.2, 1.7, 4.3, 9.1] {
+            let end = max(TasteMotionGeometry.feedbackTransitionDuration, requestedAt)
+            let before = TasteMotionGeometry.feedbackRings(time: end).sorted { $0.radius < $1.radius }
+            XCTAssertEqual(TasteMotionGeometry.feedbackRings(time: end, endingAt: requestedAt), before)
+            var previous = before
+            for frame in 1...42 {
+                let rings = TasteMotionGeometry.feedbackRings(time: end + Double(frame) / 30, endingAt: requestedAt)
+                for (ring, old) in zip(rings, previous) { XCTAssertLessThanOrEqual(ring.radius, old.radius + 1e-9) }
+                let visible = rings.filter { $0.opacity > 0.001 }
+                for (a, b) in zip(visible, visible.dropFirst()) { XCTAssertGreaterThan(b.radius - a.radius, 4) }
+                previous = rings
+            }
+            for ring in TasteMotionGeometry.feedbackRings(time: end + TasteMotionGeometry.feedbackEndDuration + 0.01, endingAt: requestedAt) {
+                XCTAssertEqual(ring.radius, 0)
+                XCTAssertEqual(ring.opacity, 0)
+            }
+        }
+    }
+
+    func testTasteAnalysisCentersBeforeRotationWithoutJump() {
+        for rayCount in TasteRotationRayCount.allCases {
+            let from = TasteMotionGeometry.analysisCircle(time: 4)
+            let circle = TasteMotionGeometry.centeredAnalysisCircle(from: from, time: TasteMotionGeometry.rotationTransitionDuration, rayCount: rayCount)
+            let before = TasteMotionGeometry.analysisPoints(circle: circle, collapseFromDensity: from.lineDensity)
+            let visible = (0..<48).filter { TasteMotionGeometry.analysisLineOpacity(index: $0, density: circle.lineDensity) > 0 }
+            XCTAssertEqual(visible.count, rayCount.rawValue)
+            for divisions in TasteRotationDivisions.allCases {
+                let after = TasteMotionGeometry.points(style: .rotatingLayers, time: 0, divisions: divisions, rayCount: rayCount)
+                XCTAssertEqual(after.count, divisions.rawValue * rayCount.rawValue * 2)
+                for index in 0..<rayCount.rawValue {
+                    let inner = before[index * 48 / rayCount.rawValue * 2], outer = before[index * 48 / rayCount.rawValue * 2 + 1]
+                    let start = after[index * 2], end = after[((divisions.rawValue - 1) * rayCount.rawValue + index) * 2 + 1]
+                    XCTAssertEqual(hypot(inner.x - start.x, inner.y - start.y), 0, accuracy: 1e-9)
+                    XCTAssertEqual(hypot(outer.x - end.x, outer.y - end.y), 0, accuracy: 1e-9)
+                }
+                let loop = divisions.loopDuration * Double(rayCount.rawValue) / 12
+                XCTAssertEqual(after, TasteMotionGeometry.points(style: .rotatingLayers, time: loop, divisions: divisions, rayCount: rayCount))
+                let tail = TasteMotionGeometry.points(style: .rotatingLayers, time: loop - 1.0 / 300, divisions: divisions, rayCount: rayCount)
+                for (a, b) in zip(after, tail) { XCTAssertLessThan(hypot(a.x - b.x, a.y - b.y), 8) }
+                for frame in 0...60 {
+                    let points = TasteMotionGeometry.points(style: .rotatingLayers, time: Double(frame) / 30, divisions: divisions, rayCount: rayCount)
+                    for layer in 0..<(divisions.rawValue - 1) {
+                        let a = points[layer * rayCount.rawValue * 2], b = points[(layer + 1) * rayCount.rawValue * 2]
+                        let difference = atan2(b.y - 320, b.x - 320) - atan2(a.y - 320, a.x - 320)
+                        let gap = abs(atan2(sin(difference), cos(difference)))
+                        XCTAssertLessThanOrEqual(gap, .pi / Double(rayCount.rawValue) + 1e-9, "이웃 색상 선으로 넘어가지 않아야 한다")
+                    }
+                }
+                for time in [0.5, 1, 1.5, 2] {
+                    let points = TasteMotionGeometry.points(style: .rotatingLayers, time: time, divisions: divisions, rayCount: rayCount)
+                    for index in stride(from: 0, to: points.count, by: 2) {
+                        let a = points[index], b = points[index + 1]
+                        XCTAssertEqual(hypot(b.x - a.x, b.y - a.y), 237 / Double(divisions.rawValue), accuracy: 1e-9)
+                    }
+                }
+            }
+        }
+        for time in [0.0, 0.5, 3, 4.1] {
+            let from = TasteMotionGeometry.analysisCircle(time: time)
+            let first = TasteMotionGeometry.centeredAnalysisCircle(from: from, time: 0)
+            XCTAssertEqual(first.center, from.center)
+            XCTAssertEqual(first.radius, from.radius)
+            XCTAssertEqual(first.lineDensity, from.lineDensity)
+            var previousDistance = hypot(from.center.x - 320, from.center.y - 320)
+            var previousLengths = (0..<48).map { TasteMotionGeometry.analysisLineOpacity(index: $0, density: from.lineDensity) > 0 ? 1.0 : 0.0 }
+            for frame in 1...Int(TasteMotionGeometry.rotationTransitionDuration * 30) {
+                let circle = TasteMotionGeometry.centeredAnalysisCircle(from: from, time: Double(frame) / 30)
+                let distance = hypot(circle.center.x - 320, circle.center.y - 320)
+                XCTAssertLessThanOrEqual(distance, previousDistance + 1e-9)
+                XCTAssertLessThan(distance + circle.radius, 316)
+                let full = TasteMotionGeometry.analysisPoints(circle: circle)
+                let shrinking = TasteMotionGeometry.analysisPoints(circle: circle, collapseFromDensity: from.lineDensity)
+                for index in 0..<48 {
+                    let inner = shrinking[index * 2], end = shrinking[index * 2 + 1], outer = full[index * 2 + 1]
+                    let length = hypot(end.x - inner.x, end.y - inner.y) / hypot(outer.x - inner.x, outer.y - inner.y)
+                    XCTAssertEqual(inner, full[index * 2])
+                    XCTAssertLessThanOrEqual(length, previousLengths[index] + 1e-9)
+                    if index % 4 == 0 { XCTAssertEqual(length, 1, accuracy: 1e-9) }
+                    previousLengths[index] = length
+                }
+                previousDistance = distance
+            }
+            let centered = TasteMotionGeometry.centeredAnalysisCircle(from: from, time: TasteMotionGeometry.rotationTransitionDuration)
+            XCTAssertEqual(centered.center, CGPoint(x: 320, y: 320))
+            XCTAssertEqual(centered.radius, 79)
+            XCTAssertEqual(centered.lineDensity, 0)
+            let before = TasteMotionGeometry.analysisPoints(circle: centered, collapseFromDensity: from.lineDensity)
+            for index in 0..<48 where index % 4 != 0 {
+                XCTAssertEqual(before[index * 2], before[index * 2 + 1])
+            }
+            let after = TasteMotionGeometry.points(style: .rotatingLayers, time: 0)
+            for index in 0..<12 {
+                XCTAssertEqual(hypot(before[index * 8].x - after[index * 2].x, before[index * 8].y - after[index * 2].y), 0, accuracy: 1e-9)
+                XCTAssertEqual(hypot(before[index * 8 + 1].x - after[265 + index * 2].x, before[index * 8 + 1].y - after[265 + index * 2].y), 0, accuracy: 1e-9)
+            }
+        }
+    }
+
+    func testTasteRotatingLayersSubdivideAndRejoinClockwise() {
+        func angle(_ point: CGPoint) -> Double { atan2(point.y - 320, point.x - 320) }
+        let modes: [(TasteRotationDivisions, Double, Double, Double)] = [(.three, 30, 103, 59), (.six, 37.5, 235, 125), (.twelve, 41.25, 499, 257)]
+        for (mode, advance, cycleLength, splitAt) in modes {
+            let start = TasteMotionGeometry.points(style: .rotatingLayers, time: 0, divisions: mode)
+            XCTAssertEqual(start.count, mode.rawValue * 24)
+            XCTAssertEqual(start, TasteMotionGeometry.points(style: .rotatingLayers, time: mode.loopDuration, divisions: mode))
+            let split = TasteMotionGeometry.points(style: .rotatingLayers, time: splitAt / cycleLength * 2, divisions: mode)
+            let splitAngles = (0..<mode.rawValue).map { Int((angle(split[$0 * 24]) * 1_000_000).rounded()) }
+            XCTAssertEqual(Set(splitAngles).count, mode.rawValue)
+            for frame in 0...60 {
+                let points = TasteMotionGeometry.points(style: .rotatingLayers, time: Double(frame) / 30, divisions: mode)
+                for index in stride(from: 0, to: points.count, by: 2) {
+                    let a = points[index], b = points[index + 1]
+                    XCTAssertEqual(hypot(b.x - a.x, b.y - a.y), 237 / Double(mode.rawValue), accuracy: 1e-9)
+                }
+            }
+            let joined = TasteMotionGeometry.points(style: .rotatingLayers, time: 2, divisions: mode)
+            for layer in 0..<mode.rawValue {
+                XCTAssertEqual(angle(joined[layer * 24]), advance * .pi / 180, accuracy: 1e-9)
+            }
+        }
+        var previous = TasteMotionGeometry.points(style: .rotatingLayers, time: 0)
+        for frame in 1...Int(TasteMotionStyle.rotatingLayers.duration * 30) {
+            let points = TasteMotionGeometry.points(style: .rotatingLayers, time: Double(frame) / 30)
+            XCTAssertEqual(points.count, 288)
+            for index in 0..<144 {
+                let start = points[index * 2], end = points[index * 2 + 1]
+                let layer = index / 12
+                XCTAssertEqual(hypot(start.x - 320, start.y - 320), 79 + 19.75 * Double(layer), accuracy: 1e-9)
+                XCTAssertEqual(hypot(end.x - start.x, end.y - start.y), 19.75, accuracy: 1e-9)
+                let difference = angle(start) - angle(previous[index * 2])
+                let delta = atan2(sin(difference), cos(difference))
+                XCTAssertGreaterThanOrEqual(delta, -1e-9)
+                XCTAssertLessThanOrEqual(delta, .pi / 12 + 1e-9)
+            }
+            previous = points
+        }
+        let settling = [0.3, 0.5, 0.7, 0.9].map { t in
+            angle(TasteMotionGeometry.points(style: .rotatingLayers, time: (23 + 14 * t) / 499 * 2)[264])
+        }
+        XCTAssertGreaterThan(settling[1] - settling[0], settling[2] - settling[1])
+        XCTAssertGreaterThan(settling[2] - settling[1], settling[3] - settling[2])
+        func pairs(_ values: [Double]) -> [Double] { values.flatMap { [$0, $0] } }
+        let milestones: [(Double, [Double])] = [
+            (0, Array(repeating: 0, count: 12)), (59, pairs([0, 0, 15, 15, 30, 30])),
+            (125, pairs([0, 7.5, 15, 22.5, 30, 37.5])),
+            (147, [0, 0, 7.5, 7.5, 15, 15, 22.5, 22.5, 30, 30, 37.5, 41.25]),
+            (169, [0, 0, 7.5, 7.5, 15, 15, 22.5, 22.5, 30, 33.75, 37.5, 41.25]),
+            (257, (0..<12).map { Double($0) * 3.75 }),
+            (389, pairs([3.75, 11.25, 18.75, 26.25, 33.75, 41.25])),
+            (455, pairs([11.25, 11.25, 26.25, 26.25, 41.25, 41.25])),
+            (499, Array(repeating: 41.25, count: 12)),
+        ]
+        for (frame, angles) in milestones {
+            let time = frame / 499 * 2
+            let points = TasteMotionGeometry.points(style: .rotatingLayers, time: time)
+            for layer in 0..<12 {
+                XCTAssertEqual(angle(points[layer * 24]), angles[layer] * .pi / 180, accuracy: 1e-9)
+                if layer < 11 && angles[layer] == angles[layer + 1] {
+                    let end = points[layer * 24 + 1], next = points[(layer + 1) * 24]
+                    XCTAssertEqual(hypot(end.x - next.x, end.y - next.y), 0, accuracy: 1e-9)
+                }
+            }
+            let hold = (frame.truncatingRemainder(dividingBy: 499) == 0 ? 23.0 : 8.0) / 499 * 2
+            XCTAssertEqual(TasteMotionGeometry.points(style: .rotatingLayers, time: time + hold * 0.2), TasteMotionGeometry.points(style: .rotatingLayers, time: time + hold * 0.8))
+            XCTAssertNotEqual(TasteMotionGeometry.points(style: .rotatingLayers, time: time + hold * 0.2), TasteMotionGeometry.points(style: .rotatingLayers, time: time + hold + 0.03))
+        }
+    }
+
+    func testOnboardingInnerCircleRemainsRoundInsideOuterCircle() {
+        XCTAssertEqual(TasteMotionGeometry.analysisCircle(time: 0).radius, 316.0 / 4)
+        var radii: [CGFloat] = []
+        var centers: [CGPoint] = []
+        for frame in 0...Int(TasteMotionStyle.analysis.duration * 30) {
+            let points = TasteMotionGeometry.points(style: .analysis, time: Double(frame) / 30)
+            let density = TasteMotionGeometry.analysisCircle(time: Double(frame) / 30).lineDensity
+            var colors = Set<Int>()
+            var visibleCount = 0
+            for index in 0..<(points.count / 2) {
+                let opacity = TasteMotionGeometry.analysisLineOpacity(index: index, density: density)
+                let color = TasteMotionGeometry.analysisLineColorIndex(index: index, density: density)
+                XCTAssertTrue((0...1).contains(opacity))
+                XCTAssertEqual(opacity, TasteMotionGeometry.analysisLineOpacity(index: (index + 24) % 48, density: density))
+                XCTAssertEqual(color, TasteMotionGeometry.analysisLineColorIndex(index: (index + 24) % 48, density: density))
+                if opacity > 0 {
+                    XCTAssertEqual(color, visibleCount % 6)
+                    visibleCount += 1
+                    colors.insert(color)
+                }
+            }
+            XCTAssertEqual(colors.count, 6)
+            let inner = stride(from: 0, to: points.count, by: 2).map { points[$0] }
+            let center = inner.reduce(CGPoint.zero) { CGPoint(x: $0.x + $1.x / CGFloat(inner.count), y: $0.y + $1.y / CGFloat(inner.count)) }
+            let radius = hypot(inner[0].x - center.x, inner[0].y - center.y)
+            for point in inner {
+                XCTAssertEqual(hypot(point.x - center.x, point.y - center.y), radius, accuracy: 1e-9)
+            }
+            XCTAssertLessThan(hypot(center.x - 320, center.y - 320) + radius, 316)
+            for index in stride(from: 1, to: points.count, by: 2) {
+                XCTAssertEqual(hypot(points[index].x - 320, points[index].y - 320), 316, accuracy: 1e-9)
+            }
+            radii.append(radius)
+            centers.append(center)
+        }
+        XCTAssertGreaterThan((radii.max() ?? 0) - (radii.min() ?? 0), 24)
+        XCTAssertTrue(centers.contains { hypot($0.x - centers[0].x, $0.y - centers[0].y) > 120 })
+    }
+
+    func testOnboardingCircleContractsBeforeArrivalAndKeepsBeating() {
+        var destinations: [CGPoint] = []
+        var intervals: [Double] = []
+        var travels: [Double] = []
+        for step in 0..<8 {
+            let t = TasteMotionGeometry.analysisMoveStarts[step]
+            let travel = TasteMotionGeometry.analysisTravelDuration(step: step)
+            let scale = TasteMotionGeometry.analysisTimeScale
+            intervals.append(TasteMotionGeometry.analysisMoveStarts[step + 1] - t)
+            travels.append(travel)
+            let start = TasteMotionGeometry.analysisCircle(time: t * scale)
+            let expanded = TasteMotionGeometry.analysisCircle(time: (t + travel * 0.5) * scale)
+            let contracted = TasteMotionGeometry.analysisCircle(time: (t + travel * 0.94) * scale)
+            let arrived = TasteMotionGeometry.analysisCircle(time: (t + travel) * scale)
+            let lineCount: (Double) -> Int = { density in
+                (0..<48).filter { TasteMotionGeometry.analysisLineOpacity(index: $0, density: density) > 0 }.count
+            }
+            XCTAssertEqual(lineCount(start.lineDensity), 48)
+            XCTAssertEqual(lineCount(expanded.lineDensity), 12)
+            XCTAssertEqual(lineCount(contracted.lineDensity), 48)
+            let transition = TasteMotionGeometry.analysisCircle(time: (t + travel * 0.2) * scale)
+            XCTAssertTrue((13..<48).contains(lineCount(transition.lineDensity)))
+            XCTAssertTrue((0..<48).contains { index in
+                let opacity = TasteMotionGeometry.analysisLineOpacity(index: index, density: transition.lineDensity)
+                return opacity > 0 && opacity < 1
+            })
+            XCTAssertGreaterThan(expanded.radius, start.radius + 10)
+            XCTAssertLessThan(contracted.radius, expanded.radius - 15)
+            XCTAssertGreaterThan(hypot(contracted.center.x - arrived.center.x, contracted.center.y - arrived.center.y), 0.001)
+            XCTAssertLessThan(abs(contracted.radius - arrived.radius), 5)
+            let holdStep = min(0.045, (TasteMotionGeometry.analysisMoveStarts[step + 1] - t - travel - 0.04) / 8)
+            let hold = (0..<9).map { index in
+                TasteMotionGeometry.analysisCircle(time: (t + travel + 0.02 + Double(index) * holdStep) * scale)
+            }
+            for circle in hold {
+                XCTAssertEqual(circle.center.x, arrived.center.x, accuracy: 1e-9)
+                XCTAssertEqual(circle.center.y, arrived.center.y, accuracy: 1e-9)
+            }
+            let pulseRange = (hold.map(\.radius).max() ?? 0) - (hold.map(\.radius).min() ?? 0)
+            XCTAssertGreaterThan(pulseRange, 1)
+            XCTAssertLessThan(pulseRange, 8)
+            XCTAssertTrue((0.9...1.35).contains(travel * scale))
+            XCTAssertFalse(destinations.contains(arrived.center))
+            destinations.append(arrived.center)
+        }
+        XCTAssertGreaterThan(Set(intervals.map { Int(($0 * 1000).rounded()) }).count, 4)
+        XCTAssertGreaterThan(Set(travels.map { Int(($0 * 1000).rounded()) }).count, 4)
+    }
+
+    func testOnboardingMotionStaysInBoundsAndLoops() {
+        for (density, spacing) in [(0.0, 4), (0.5, 2), (1.0, 1)] {
+            let visible = (0..<48).filter { TasteMotionGeometry.analysisLineOpacity(index: $0, density: density) == 1 }
+            XCTAssertEqual(visible, Array(stride(from: 0, to: 48, by: spacing)))
+        }
+        for density in [0.25, 0.75] {
+            let fading = (0..<48).filter {
+                let opacity = TasteMotionGeometry.analysisLineOpacity(index: $0, density: density)
+                return opacity > 0 && opacity < 1
+            }
+            XCTAssertEqual(fading.count, density < 0.5 ? 12 : 24)
+            for index in fading {
+                XCTAssertEqual(TasteMotionGeometry.analysisLineOpacity(index: index, density: density), 0.5)
+            }
+        }
+        for style in TasteMotionStyle.allCases where style != .feedbackRings {
+            let first = TasteMotionGeometry.points(style: style, time: 0)
+            XCTAssertEqual(first, TasteMotionGeometry.points(style: style, time: style.duration))
+            XCTAssertNotEqual(first, TasteMotionGeometry.points(style: style, time: style.duration / 4))
+            for sample in 0...16 {
+                let points = TasteMotionGeometry.points(style: style, time: style.duration * Double(sample) / 16)
+                for point in points {
+                    XCTAssertTrue(point.x.isFinite && point.y.isFinite)
+                    XCTAssertTrue((0...640).contains(point.x) && (0...640).contains(point.y))
+                }
+            }
+            let last = TasteMotionGeometry.points(style: style, time: style.duration - 1.0 / (style == .rotatingLayers ? 300 : 30))
+            for (a, b) in zip(first, last) {
+                XCTAssertLessThan(hypot(a.x - b.x, a.y - b.y), 8)
+            }
+        }
+        for index in 0..<126 {
+            let opacity = TasteMotionGeometry.dotOpacity(index: index, time: 0)
+            XCTAssertTrue((0...1).contains(opacity))
+            XCTAssertEqual(opacity, TasteMotionGeometry.dotOpacity(index: index, time: TasteMotionStyle.insightRing.duration))
+        }
+    }
+
     func testChipContractKeepsReactVariantMatrix() {
         XCTAssertEqual(ChipSize.allCases.count, 3)
         XCTAssertEqual(ChipTone.allCases.count, 4)
@@ -270,7 +624,7 @@ final class SystemParityComponentTests: XCTestCase {
             BottomSheetShellMetrics.stageHeight(screenHeight: 800, safeAreaTop: 47),
             725
         )
-        XCTAssertEqual(StagedBottomSheetBackgroundMetrics.animationDuration, 0.62)
+        XCTAssertEqual(StagedBottomSheetBackgroundMetrics.animationDuration, TasteBloomMotion.duration(.sheet, reduceMotion: false))
         XCTAssertEqual(BottomSheetShellMetrics.topRadius, 32)
         XCTAssertTrue(BottomSheetShellMetrics.clipsOnlyTopCorners)
         XCTAssertTrue(BottomSheetShellMetrics.usesCustomGrabber)
@@ -554,50 +908,675 @@ final class SystemParityComponentTests: XCTestCase {
     }
 
     @MainActor
-    func testAnalysisMainScrollDoesNotOverflowHorizontally() {
+    func testInsightAndMenuBottomContentRemainsVisible() async throws {
+        let viewport = CGRect(x: 0, y: 0, width: 402, height: 874)
+        let meals = (0..<8).map { index in
+            DiningEntry(restaurant: "검증 식당", menu: "기록 \(index + 1)",
+                        date: .now.addingTimeInterval(-Double(index + 1) * 86_400),
+                        rating: 0, note: "마지막 기록까지 확인합니다.")
+        }
+        let model = AppModel.preview(authEntryComplete: true, onboardingComplete: true, diningEntries: meals)
+        let screens: [(String, AnyView)] = [
+            ("인사이트", AnyView(AppShellView(initialRoute: .homeInsight(.record)).environmentObject(model).environment(\.scenePhase, .active))),
+            ("인사이트 기록 1개", AnyView(AppShellView(initialRoute: .homeInsight(.record))
+                .environmentObject(AppModel.preview(authEntryComplete: true, onboardingComplete: true, diningEntries: [meals[0]]))
+                .environment(\.scenePhase, .active))),
+            ("인사이트 빈 상태", AnyView(AppShellView(initialRoute: .homeInsight(.record))
+                .environmentObject(AppModel.preview(authEntryComplete: true, onboardingComplete: true, diningEntries: []))
+                .environment(\.scenePhase, .active))),
+            ("메뉴 선택", AnyView(DiningFeedbackSheet(entry: .sample, startMode: .menu) { _ in }.environmentObject(model))),
+        ]
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        window.frame = viewport
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+            previousWindow?.makeKey()
+        }
+        func descendants(_ view: UIView) -> [UIView] { [view] + view.subviews.flatMap(descendants) }
+
+        for (name, screen) in screens {
+            let isInsight = name.hasPrefix("인사이트")
+            let host = UIHostingController(rootView: screen)
+            window.rootViewController = host
+            window.makeKeyAndVisible()
+            try await Task.sleep(for: .milliseconds(300))
+            if name == "인사이트" { try await Task.sleep(for: .seconds(5)) }
+            window.layoutIfNeeded()
+            host.view.layoutIfNeeded()
+            let scroll = try XCTUnwrap(descendants(host.view).compactMap { $0 as? UIScrollView }
+                .filter { $0.window === window }
+                .max { $0.bounds.height < $1.bounds.height }, name)
+            XCTAssertLessThanOrEqual(scroll.contentSize.width, scroll.bounds.width + 1,
+                                     "점 링과 기록 행이 화면 가로폭을 벗어나지 않아야 한다.")
+            if isInsight {
+                XCTAssertEqual(scroll.convert(scroll.bounds, to: window).maxY, window.bounds.maxY, accuracy: 1,
+                               "인사이트 스크롤은 하단 안전영역 위에서 잘리지 않아야 한다.")
+            }
+            let end = max(-scroll.adjustedContentInset.top,
+                          scroll.contentSize.height + scroll.adjustedContentInset.bottom - scroll.bounds.height)
+            XCTAssertGreaterThan(end, -scroll.adjustedContentInset.top, "마지막 항목까지 스크롤할 수 있는 기록으로 검사한다.")
+            let start = -scroll.adjustedContentInset.top
+            if isInsight {
+                XCTAssertGreaterThanOrEqual(end - start, 348 - 1, "기록이 적거나 없어도 링을 완전히 접고 틴트 전환을 끝낼 수 있어야 한다.")
+            }
+            // 402pt 화면의 링은 340pt 높이, 위 여백은 8pt다. 중간 두 위치의 혼합색도 검사한다.
+            let positions = isInsight
+                ? [("처음", start, 0.0), ("링 일부 가림", start + 80, 0), ("전환 직전", start + 232, 0),
+                   ("40퍼센트 혼합", start + 280, 0.4), ("약 75퍼센트 혼합", start + 320, 0.75),
+                   ("링 완전히 가림", min(start + 400, end), 1), ("끝", end, 1), ("다시 처음", start, 0)]
+                : [("처음", start, 0.0), ("끝", end, 0)]
+            for (position, offset, tintFraction) in positions {
+                scroll.setContentOffset(CGPoint(x: 0, y: offset), animated: false)
+                try await Task.sleep(for: .milliseconds(400))
+                host.view.layoutIfNeeded()
+                XCTAssertEqual(scroll.contentOffset.y, offset, accuracy: 1)
+                let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                    window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                }
+                if isInsight {
+                    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+                    UIColor(TBColor.page).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+                    var tintRed: CGFloat = 0, tintGreen: CGFloat = 0, tintBlue: CGFloat = 0
+                    UIColor(TasteAxis.umami.tintSurfaceColor).getRed(&tintRed, green: &tintGreen, blue: &tintBlue, alpha: &alpha)
+                    let expectedChannels = zip([red, green, blue], [tintRed, tintGreen, tintBlue])
+                        .map { base, tint in base * (1 - tintFraction) + tint * tintFraction }
+                    for point in [CGPoint(x: 4, y: 8), CGPoint(x: 4, y: window.bounds.height - 8)] {
+                        let crop = try XCTUnwrap(image.cgImage?.cropping(to: CGRect(x: point.x * image.scale, y: point.y * image.scale, width: 1, height: 1)))
+                        var pixel = [UInt8](repeating: 0, count: 4)
+                        try pixel.withUnsafeMutableBytes { buffer in
+                            let context = try XCTUnwrap(CGContext(data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                                                                space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                            context.draw(crop, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+                        }
+                        // 상태바는 투명 블러로 인접한 콘텐츠 색이 조금 섞인다.
+                        let tolerance = point.y < 10 ? 6.0 / 255 : 2.0 / 255
+                        for (actual, expected) in zip(pixel.prefix(3), expectedChannels) {
+                            XCTAssertEqual(Double(actual) / 255, Double(expected), accuracy: tolerance,
+                                           "\(position): 상태바와 화면 배경이 링의 가림 여부에 따라 배경색을 따라야 한다.")
+                        }
+                    }
+                }
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "\(name) 하단 · \(position)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+
+        let clip = TopOverflowRoundedRectangle(cornerRadius: 0, topOverflowInset: 59, bottomOverflowInset: 34)
+            .path(in: viewport)
+        XCTAssertTrue(clip.contains(CGPoint(x: viewport.midX, y: viewport.maxY + 33)),
+                      "메뉴 선택의 하단 버튼 배경이 안전영역까지 이어져야 한다.")
+        XCTAssertFalse(clip.contains(CGPoint(x: -1, y: viewport.midY)), "가로 잘림 경계는 유지한다.")
+    }
+
+    func testInsightRingFillsFromSixSeedsThenExpands() {
+        XCTAssertEqual(TasteMotionGeometry.insightFrame(time: 0).dots.filter { $0.opacity > 0 }.count, 6)
+        let orange = TasteMotionGeometry.insightFrame(time: 0).dots[0]
+        XCTAssertEqual(orange.colorIndex, 0)
+        XCTAssertLessThan(orange.point.x, 320)
+        XCTAssertLessThan(orange.point.y, 320)
+        let full = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightFillEnd)
+        for layer in 2...6 {
+            let offset = layer * (layer - 1) / 2 * 6
+            let start = 0.1 + Double(offset / 6 - 1) * 0.025
+            let interval = Double(layer) * 0.025 / ceil(Double(layer) / 2)
+            let order = (0..<layer).map { offset + $0 * 6 }.sorted {
+                atan2(full.dots[$0].point.y - 320, full.dots[$0].point.x - 320) < atan2(full.dots[$1].point.y - 320, full.dots[$1].point.x - 320)
+            }
+            for group in 0..<Int(ceil(Double(layer) / 2)) {
+                let frame = TasteMotionGeometry.insightFrame(time: start + (Double(group) + 0.5) * interval)
+                XCTAssertEqual(frame.bridges.count, layer % 2 == 1 && group == 0 ? 6 : 12)
+                for index in 0..<layer {
+                    XCTAssertEqual(frame.dots[order[index]].progress, frame.dots[order[layer - 1 - index]].progress)
+                }
+                for index in 1...(layer / 2) {
+                    XCTAssertGreaterThanOrEqual(frame.dots[order[index]].progress, frame.dots[order[index - 1]].progress)
+                }
+                for bridge in frame.bridges {
+                    XCTAssertLessThan(bridge.parent, bridge.child)
+                    XCTAssertEqual(frame.dots[bridge.parent].progress, 1)
+                    XCTAssertEqual(bridge.colorIndex, bridge.parent % 6)
+                    XCTAssertTrue(bridge.points.allSatisfy { $0.x.isFinite && $0.y.isFinite })
+                }
+            }
+            let complete = TasteMotionGeometry.insightFrame(time: start + Double(layer) * 0.025)
+            XCTAssertEqual(complete.dots.filter { $0.progress > 1e-8 }.count, layer * (layer + 1) / 2 * 6)
+            for dot in complete.dots {
+                XCTAssertLessThanOrEqual(hypot(dot.point.x - 320, dot.point.y - 320) + dot.radius, 79 + 1e-8)
+            }
+        }
+        XCTAssertEqual(TasteMotionGeometry.insightFillEnd, 0.6)
+        XCTAssertTrue(full.dots.allSatisfy { $0.progress == 1 })
+        let held = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightFillEnd + 0.19)
+        XCTAssertEqual(full.dots.map(\.point), held.dots.map(\.point))
+        var offset = 0
+        for ring in 1...6 {
+            let count = ring * 6
+            let points = full.dots[offset..<(offset + count)].map(\.point).sorted {
+                atan2($0.y - 320, $0.x - 320) < atan2($1.y - 320, $1.x - 320)
+            }
+            let expected = 2 * (79 - 4.8) * Double(ring) / 6 * sin(.pi / Double(count))
+            for index in 0..<count {
+                let next = points[(index + 1) % count]
+                let distance = hypot(points[index].x - next.x, points[index].y - next.y)
+                XCTAssertEqual(distance, expected, accuracy: 1e-8)
+                XCTAssertTrue((12.36...12.94).contains(distance))
+            }
+            offset += count
+        }
+        let expanded = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightIntroDuration)
+        XCTAssertEqual(expanded.expansion, 1)
+        XCTAssertTrue(expanded.bridges.isEmpty)
+        XCTAssertEqual(expanded.dots.map(\.point), TasteMotionGeometry.insightFrame(time: 0, settled: true).dots.map(\.point))
+        XCTAssertNotEqual(expanded.dots.map(\.point), TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightIntroDuration + 1).dots.map(\.point))
+        for sample in 0...100 {
+            let state = TasteMotionGeometry.insightFrame(time: Double(sample) / 10)
+            for dot in state.dots {
+                XCTAssertTrue(dot.point.x.isFinite && dot.point.y.isFinite)
+                XCTAssertTrue((0...9.5).contains(dot.radius))
+                XCTAssertTrue((0...1).contains(dot.opacity))
+                XCTAssertTrue((dot.radius...(640 - dot.radius)).contains(dot.point.x))
+                XCTAssertTrue((dot.radius...(640 - dot.radius)).contains(dot.point.y))
+            }
+            for bridge in state.bridges {
+                for (endpoint, control, index) in [(0, 1, bridge.parent), (7, 6, bridge.parent), (3, 2, bridge.child), (4, 5, bridge.child)] {
+                    let point = bridge.points[endpoint], handle = bridge.points[control], circle = state.dots[index]
+                    let rx = point.x - circle.point.x, ry = point.y - circle.point.y
+                    XCTAssertEqual(hypot(rx, ry), circle.radius, accuracy: 1e-8)
+                    XCTAssertEqual(rx * (handle.x - point.x) + ry * (handle.y - point.y), 0, accuracy: 1e-8)
+                }
+            }
+        }
+    }
+
+    func testInsightRingColorDepthAndPressAlignment() {
+        let packed = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightFillEnd).dots
+        var offset = 0, previousOpacity = 1.01
+        for ring in 1...6 {
+            let dots = packed[offset..<(offset + ring * 6)]
+            let opacity = dots.first!.opacity
+            XCTAssertLessThan(opacity, previousOpacity)
+            for dot in dots { XCTAssertEqual(dot.opacity, opacity, accuracy: 1e-8) }
+            previousOpacity = opacity
+            offset += ring * 6
+        }
+        let mixed = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightIntroDuration)
+        let grouped = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightIntroDuration, alignment: 1)
+        func colorChanges(_ dots: ArraySlice<TasteMotionGeometry.InsightDot>) -> Int {
+            let sorted = dots.sorted { atan2($0.point.y - 320, $0.point.x - 320) < atan2($1.point.y - 320, $1.point.x - 320) }
+            return sorted.indices.filter { sorted[$0].colorIndex != sorted[($0 + 1) % sorted.count].colorIndex }.count
+        }
+        XCTAssertGreaterThanOrEqual(colorChanges(mixed.dots[...]), 90)
+        XCTAssertEqual(colorChanges(grouped.dots[...]), 6)
+        for sector in 0..<6 {
+            let radialBands = Set(grouped.dots.filter { $0.colorIndex == sector }.map { Int((hypot($0.point.x - 320, $0.point.y - 320) / 5).rounded()) })
+            XCTAssertGreaterThanOrEqual(radialBands.count, 8)
+        }
+        let movedGroup = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightIntroDuration + 1, alignment: 1).dots
+        let groupedMovement = grouped.dots.indices.map { index in
+            hypot(grouped.dots[index].point.x - movedGroup[index].point.x, grouped.dots[index].point.y - movedGroup[index].point.y)
+        }.max() ?? 0
+        XCTAssertGreaterThan(groupedMovement, 0.3)
+        XCTAssertLessThan(groupedMovement, 3)
+        var interaction = TasteMotionGeometry.InsightInteraction()
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        interaction.setPressed(true, at: start)
+        XCTAssertEqual(interaction.value(at: start), 0)
+        XCTAssertEqual(interaction.value(at: start.addingTimeInterval(0.5)), 1)
+        interaction.setPressed(false, at: start.addingTimeInterval(0.5))
+        XCTAssertEqual(interaction.value(at: start.addingTimeInterval(1)), 0)
+        interaction.setPressed(true, at: start, immediate: true)
+        XCTAssertEqual(interaction.value(at: start), 1)
+        for sample in 0...12 {
+            for (from, to) in [(0.0, 1.0), (1.0, 0.0)] {
+                let time = TasteMotionGeometry.insightIntroDuration + TasteMotionStyle.insightRing.duration * Double(sample) / 12
+                var transition = TasteMotionGeometry.InsightInteraction()
+                transition.setPressed(from == 1, at: start, immediate: true)
+                transition.setPressed(to == 1, at: start)
+                var previous = TasteMotionGeometry.insightFrame(time: time, alignment: from).dots
+                for frame in 1...30 {
+                    let elapsed = Double(frame) / 60
+                    let date = start.addingTimeInterval(elapsed)
+                    let dots = TasteMotionGeometry.insightFrame(time: time + elapsed, alignment: transition.value(at: date), alignmentElapsed: transition.anchorElapsed(at: date)).dots
+                    for index in dots.indices {
+                        XCTAssertLessThan(hypot(dots[index].point.x - previous[index].point.x, dots[index].point.y - previous[index].point.y), 80)
+                    }
+                    previous = dots
+                }
+            }
+        }
+        XCTAssertEqual(TasteMotionStyle.insightRing.duration, 50.2)
+        for sample in 0...60 {
+            let held = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightIntroDuration + TasteMotionStyle.insightRing.duration * Double(sample) / 60, alignment: 1)
+            XCTAssertEqual(colorChanges(held.dots[...]), 6)
+            for sector in 0..<72 {
+                let angle = Double(sector) / 72 * .pi * 2
+                let radii = held.dots.filter {
+                    let delta = atan2($0.point.y - 320, $0.point.x - 320) - angle
+                    return abs(atan2(sin(delta), cos(delta))) < .pi / 18
+                }.map { hypot($0.point.x - 320, $0.point.y - 320) }
+                XCTAssertLessThanOrEqual(radii.min() ?? .infinity, 256)
+                XCTAssertGreaterThanOrEqual(radii.max() ?? 0, 288)
+            }
+            let points = TasteMotionGeometry.points(style: .insightRing, time: TasteMotionStyle.insightRing.duration * Double(sample) / 60)
+            let next = TasteMotionGeometry.points(style: .insightRing, time: TasteMotionStyle.insightRing.duration * Double(sample + 1) / 60)
+            let advances = points.indices.map { index in
+                let angle = atan2(next[index].y - 320, next[index].x - 320) - atan2(points[index].y - 320, points[index].x - 320)
+                return atan2(sin(angle), cos(angle))
+            }
+            let expected = Double.pi * 2 / 60
+            XCTAssertTrue(advances.allSatisfy { $0 > expected * 0.93 && $0 < expected * 1.07 })
+            XCTAssertGreaterThan((advances.max() ?? 0) - (advances.min() ?? 0), expected * 0.1)
+            for index in points.indices {
+                for other in stride(from: index + 6, to: points.count, by: 6) {
+                    XCTAssertGreaterThanOrEqual(hypot(points[index].x - points[other].x, points[index].y - points[other].y), 42)
+                }
+            }
+            for sector in 0..<42 {
+                let angle = Double(sector) / 42 * .pi * 2
+                let radii = points.filter {
+                    let delta = atan2($0.y - 320, $0.x - 320) - angle
+                    return abs(atan2(sin(delta), cos(delta))) < .pi * 2 / 21
+                }.map { hypot($0.x - 320, $0.y - 320) }
+                XCTAssertLessThanOrEqual(radii.min() ?? .infinity, 259)
+                XCTAssertGreaterThanOrEqual(radii.max() ?? 0, 287)
+            }
+        }
+    }
+
+    func testInsightRingDragRotation() {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        var rotation = TasteMotionGeometry.InsightRotation()
+        rotation.size = CGSize(width: 640, height: 640)
+        rotation.drag(to: CGPoint(x: 620, y: 320), at: start)
+        rotation.drag(to: CGPoint(x: 320, y: 620), at: start.addingTimeInterval(0.25))
+        XCTAssertEqual(rotation.value(at: start.addingTimeInterval(0.25)), .pi / 2, accuracy: 1e-8)
+        rotation.end(at: start.addingTimeInterval(0.25))
+        XCTAssertGreaterThan(rotation.value(at: start.addingTimeInterval(0.35)), .pi / 2)
+        XCTAssertEqual(rotation.value(at: start.addingTimeInterval(3)), rotation.value(at: start.addingTimeInterval(4)))
+        let caught = rotation.value(at: start.addingTimeInterval(0.5))
+        rotation.drag(to: CGPoint(x: 620, y: 320), at: start.addingTimeInterval(0.5))
+        XCTAssertEqual(rotation.value(at: start.addingTimeInterval(0.5)), caught)
+        rotation.end(at: start.addingTimeInterval(0.8))
+        XCTAssertEqual(rotation.value(at: start.addingTimeInterval(3)), caught)
+        rotation.drag(to: CGPoint(x: 620, y: 320), at: start.addingTimeInterval(4))
+        rotation.drag(to: CGPoint(x: 320, y: 620), at: start.addingTimeInterval(4.25))
+        rotation.end(at: start.addingTimeInterval(4.25), immediate: true)
+        XCTAssertEqual(rotation.value(at: start.addingTimeInterval(4.25)), rotation.value(at: start.addingTimeInterval(6)))
+        XCTAssertEqual(TasteMotionGeometry.insightDragDelta(from: .zero, to: CGPoint(x: 300, y: 0)), 0)
+        func point(_ degrees: Double) -> CGPoint { CGPoint(x: 300 * cos(degrees * .pi / 180), y: 300 * sin(degrees * .pi / 180)) }
+        XCTAssertEqual(TasteMotionGeometry.insightDragDelta(from: point(179), to: point(-179)), .pi / 90, accuracy: 1e-8)
+        XCTAssertGreaterThan(TasteMotionGeometry.insightInertia(velocity: 4, elapsed: 3), TasteMotionGeometry.insightInertia(velocity: 1, elapsed: 3))
+        for alignment in [0.0, 1.0] {
+            let base = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightIntroDuration + 3, alignment: alignment).dots
+            let turned = TasteMotionGeometry.insightFrame(time: TasteMotionGeometry.insightIntroDuration + 3, alignment: alignment, rotation: .pi / 2).dots
+            for index in turned.indices {
+                XCTAssertEqual(turned[index].point.x, 640 - base[index].point.y, accuracy: 1e-8)
+                XCTAssertEqual(turned[index].point.y, base[index].point.x, accuracy: 1e-8)
+            }
+        }
+    }
+
+    @MainActor
+    func testInsightMetaballAppliesColorOnce() throws {
+        let frame = TasteMotionGeometry.insightFrame(time: 0.475)
+        let renderer = ImageRenderer(content: Canvas { context, _ in
+            TasteMotionView.drawInsight(context: &context, frame: frame, palette: Array(repeating: .black, count: 6))
+        }.frame(width: 640, height: 640).background(.white))
+        renderer.scale = 1
+        let image = try XCTUnwrap(renderer.cgImage)
+        XCTAssertFalse(frame.bridges.isEmpty)
+        for bridge in frame.bridges {
+            let parent = frame.dots[bridge.parent], child = frame.dots[bridge.child]
+            let x = floor((parent.point.x + child.point.x) / 2)
+            let y = floor((parent.point.y + child.point.y) / 2)
+            let crop = try XCTUnwrap(image.cropping(to: CGRect(x: x, y: y, width: 1, height: 1)))
+            var pixel = [UInt8](repeating: 0, count: 4)
+            try pixel.withUnsafeMutableBytes { buffer in
+                let context = try XCTUnwrap(CGContext(data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                                                    space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                context.draw(crop, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+            }
+            let radius = hypot(x + 0.5 - 320, y + 0.5 - 320)
+            let opacity = 1 - 0.65 * min(1, max(0, (radius - 74.2 / 6) / (74.2 - 74.2 / 6)))
+            for channel in pixel.prefix(3) {
+                XCTAssertEqual(Double(channel), 255 * (1 - opacity), accuracy: 6, "점과 메타볼이 겹쳐도 농도는 한 번만 적용한다.")
+            }
+        }
+    }
+
+    @MainActor
+    func testInsightRingMovesAndRespectsReduceMotion() async throws {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        defer { window.isHidden = true; window.rootViewController = nil; previousWindow?.makeKey() }
+
+        for reduceMotion in [false, true] {
+            let host = UIHostingController(rootView: HomeInsightDotRing(kind: .record, mealCount: 1, reduceMotion: reduceMotion,
+                                                                                       tasteDistribution: .init(counts: [1, 2, 0, 0, 7, 0]))
+                .frame(width: 340, height: 340)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .background(TBColor.page)
+                .environment(\.scenePhase, .active))
+            window.rootViewController = host
+            window.makeKeyAndVisible()
+            try await Task.sleep(for: .milliseconds(300))
+            window.layoutIfNeeded()
+            func ringImage() -> UIImage {
+                // 상단 링 영역만 비교해 다른 화면 상태나 시계 변화의 영향을 피한다.
+                UIGraphicsImageRenderer(size: CGSize(width: 360, height: 350)).image { context in
+                    context.cgContext.translateBy(x: -20, y: -window.safeAreaInsets.top)
+                    window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                }
+            }
+            let before = ringImage()
+            try await Task.sleep(for: .milliseconds(500))
+            let after = ringImage()
+            if reduceMotion {
+                XCTAssertEqual(before.pngData(), after.pngData(), "동작 줄이기에서는 점 링이 정지해야 한다.")
+            } else {
+                XCTAssertNotEqual(before.pngData(), after.pngData(), "기록이 있으면 점 링이 움직여야 한다.")
+            }
+            let attachment = XCTAttachment(image: after)
+            attachment.name = reduceMotion ? "인사이트 점 링 · 동작 줄이기" : "인사이트 점 링 · 애니메이션"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+    }
+
+    @MainActor
+    func testCollapsingHeaderKeepsStatusBarInsetAndDissolvesDuringScroll() throws {
+        var observedInset: CGFloat?
+        var observedProgress: CGFloat = -1
+        let controller = StagedSheetScreenController(rootView: AnyView(
+            VStack(spacing: 0) {
+                Color.clear.frame(height: 59)
+                TBCollapsingTopChromeScrollView(topChrome: AnyView(
+                    TopAppBar(appearance: .transparent, title: "미각 변화", showBack: true)
+                        .overlay {
+                            TopChromeEnvironmentProbe { inset, progress in
+                                observedInset = inset
+                                observedProgress = progress
+                            }
+                        }
+                )) {
+                    TBCapsuleTabs(options: [1, 3, 6, 12, 0], selection: .constant(0)) {
+                        $0 == 0 ? "전부" : $0 == 12 ? "1년" : "\($0)개월"
+                    }
+                } content: {
+                    Color.white.frame(height: 2_000)
+                }
+                .tbScreenTopChrome()
+            }
+            .background(TBColor.page)
+            .environment(\.tbTopChromeInset, 59)
+        ))
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+        func settle() {
+            controller.view.layoutIfNeeded()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.15))
+            controller.view.layoutIfNeeded()
+        }
+        func descendants(_ view: UIView) -> [UIView] { [view] + view.subviews.flatMap(descendants) }
+        settle()
+        XCTAssertEqual(observedInset, 59, "안전영역을 비운 UIKit 호스트에서도 실제 상태바 높이를 유지해야 한다.")
+        XCTAssertEqual(observedProgress, 0, accuracy: 0.01)
+        let scroll = try XCTUnwrap(descendants(controller.view).compactMap { $0 as? UIScrollView }.first)
+        for offset in [CGFloat(28), 80, 0] {
+            scroll.setContentOffset(CGPoint(x: 0, y: offset), animated: false)
+            settle()
+            if offset == 28 {
+                XCTAssertGreaterThan(observedProgress, 0)
+                XCTAssertLessThan(observedProgress, 1)
+            } else {
+                XCTAssertEqual(observedProgress, offset == 0 ? 0 : 1, accuracy: 0.01)
+            }
+            let image = UIGraphicsImageRenderer(bounds: controller.view.bounds).image { _ in
+                controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+            }
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "미각 변화 헤더 스크롤 \(Int(offset))pt"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+    }
+
+    @MainActor
+    func testStagedScreenMovesHeaderWithCardAndPreservesScrollPosition() throws {
+        func screen() -> AnyView {
+            AnyView(
+                NavigationStack {
+                    MainTabChromeScrollView(
+                        topChrome: AnyView(StagedHeaderMarker().frame(height: 52))
+                    ) {
+                        // 홈 데이터의 양과 무관하게 실제 공통 헤더·스크롤 구조를 검증한다.
+                        Color.clear.frame(height: 2_000)
+                    }
+                    .toolbar(.hidden, for: .navigationBar)
+                }
+                .ignoresSafeArea(.container, edges: .top)
+                .environment(\.mainTabStatusBarHeight, 54)
+            )
+        }
+        let controller = StagedSheetScreenController(rootView: screen())
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+
+        func settle() {
+            controller.view.setNeedsLayout()
+            controller.view.layoutIfNeeded()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            controller.view.layoutIfNeeded()
+        }
+        func descendants(_ view: UIView) -> [UIView] {
+            [view] + view.subviews.flatMap(descendants)
+        }
+        controller.updatePresentation(progress: 0, dimOpacity: 0, openOffsetY: 64, animates: false)
+        settle()
+        let header = try XCTUnwrap(descendants(controller.view).first { $0.accessibilityIdentifier == "staged-header-marker" })
+        let scroll = try XCTUnwrap(descendants(controller.view).compactMap { $0 as? UIScrollView }.first {
+            $0.contentSize.height > $0.bounds.height
+        })
+        scroll.setContentOffset(CGPoint(x: 0, y: 180), animated: false)
+        settle()
+        let originalHeader = header.convert(header.bounds, to: controller.view)
+        let originalOffset = scroll.contentOffset
+        let originalBounds = scroll.bounds.size
+        let originalInset = scroll.adjustedContentInset
+        let originalContentSize = scroll.contentSize
+
+        // 열기·드래그·닫기 전 과정에서 내부 배치와 스크롤 위치를 유지한다.
+        for progress in [CGFloat(0.2), 0.6, 1, 0.8, 0.4, 0] {
+            controller.hostingController.rootView = screen()
+            controller.updatePresentation(progress: progress, dimOpacity: 0.6 * progress, openOffsetY: 64, animates: false)
+            settle()
+            let currentHeader = header.convert(header.bounds, to: controller.view)
+            let scale = 1 - (1 - StagedBottomSheetBackgroundMetrics.openScale) * progress
+            XCTAssertEqual(currentHeader.minY, originalHeader.minY * scale + 64 * progress, accuracy: 0.5)
+            XCTAssertEqual(currentHeader.height, originalHeader.height * scale, accuracy: 0.5)
+            XCTAssertTrue(descendants(controller.view).contains { $0 === scroll })
+            XCTAssertEqual(scroll.contentOffset.y, originalOffset.y, accuracy: 0.5)
+            XCTAssertEqual(scroll.bounds.size, originalBounds)
+            XCTAssertEqual(scroll.adjustedContentInset, originalInset)
+            XCTAssertEqual(scroll.contentSize, originalContentSize)
+        }
+    }
+
+    @MainActor
+    func testAnalysisMainScrollDoesNotOverflowHorizontally() async throws {
         let viewport = CGRect(x: 0, y: 0, width: 390, height: 844)
-        let model = AppModel.preview(profile: .sample)
+        let notes = ["단맛이 좋았습니다.", "바삭함이 좋았습니다.", "감칠맛이 좋았습니다.", "신맛이 싫었습니다."]
+        let meals = notes.enumerated().map { index, note in
+            DiningEntry(restaurant: "기록한 식당", menu: "음식 \(index + 1)", rating: 3, note: note, feedbackStatus: .completed)
+        }
+        let model = AppModel.preview(profile: .sample, diningEntries: meals)
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: .seconds(10))
+        while model.sensoryAnalysisIsUpdating && clock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        XCTAssertFalse(model.sensoryAnalysisIsUpdating, "실제 식사 기록의 분석이 제한 시간 내에 완료되어야 한다")
+        XCTAssertNil(model.sensoryAnalysisError)
+        XCTAssertGreaterThanOrEqual(model.sensoryAnalysis.insights.count, 4, "스크롤 검사는 실제 기록에서 생성한 인사이트가 충분한 상태로 수행한다")
         let view = AnalysisView(
             systemTopChrome: AnyView(Color.clear.frame(height: 104))
         )
         .environmentObject(model)
         .environment(\.mainTabStatusBarHeight, 59)
         let host = UIHostingController(rootView: view)
-        let window = UIWindow(frame: viewport)
-        window.rootViewController = host
+        let container = UIViewController()
+        let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+        let previousKeyWindow = scene?.windows.first { $0.isKeyWindow }
+        let window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow(frame: viewport)
+        window.frame = viewport
+        window.rootViewController = container
+        container.loadViewIfNeeded()
+        container.view.frame = viewport
+        container.addChild(host)
+        host.loadViewIfNeeded()
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        container.view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.topAnchor.constraint(equalTo: container.view.topAnchor),
+            host.view.leadingAnchor.constraint(equalTo: container.view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: container.view.trailingAnchor),
+            host.view.bottomAnchor.constraint(equalTo: container.view.bottomAnchor),
+        ])
+        host.didMove(toParent: container)
         window.makeKeyAndVisible()
-        host.view.frame = viewport
-        host.view.setNeedsLayout()
-        host.view.layoutIfNeeded()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        host.view.layoutIfNeeded()
-
-        func scrollViews(in view: UIView) -> [UIScrollView] {
-            let current = (view as? UIScrollView).map { [$0] } ?? []
-            return current + view.subviews.flatMap(scrollViews(in:))
+        defer {
+            host.willMove(toParent: nil)
+            host.view.removeFromSuperview()
+            host.removeFromParent()
+            window.isHidden = true
+            window.rootViewController = nil
+            previousKeyWindow?.makeKey()
         }
 
-        let verticalScrollViews = scrollViews(in: host.view).filter {
-            $0.contentSize.height > $0.bounds.height
+        func descendants(_ view: UIView) -> [UIView] {
+            [view] + view.subviews.flatMap(descendants)
         }
-        XCTAssertFalse(verticalScrollViews.isEmpty)
-        let mainScrollView = verticalScrollViews.first { scrollView in
-            scrollView.convert(scrollView.bounds, to: host.view).minY <= 1
+        func controllerViews(_ controller: UIViewController) -> [UIView] {
+            (controller.viewIfLoaded.map { [$0] } ?? [])
+                + controller.children.flatMap(controllerViews)
+                + (controller.presentedViewController.map(controllerViews) ?? [])
         }
+        func rawScrollViews() -> [UIScrollView] {
+            var seen = Set<ObjectIdentifier>()
+            return ([window] + controllerViews(container)).flatMap(descendants)
+                .compactMap { $0 as? UIScrollView }
+                .filter { seen.insert(ObjectIdentifier($0)).inserted }
+        }
+        func displayedScrollViews() -> [UIScrollView] {
+            rawScrollViews().filter { scroll in
+                guard scroll.window === window else { return false }
+                var current: UIView? = scroll
+                while let item = current {
+                    if item.isHidden || item.alpha == 0 { return false }
+                    current = item.superview
+                }
+                return true
+            }
+        }
+        // 헤더는 contentSize가 아니라 adjustedContentInset에 포함된다.
+        // 실제 진단값 756.333 + 163 + 4 - 844 = 79.333pt는 세로 이동이 가능하다.
+        func verticalTravel(_ scroll: UIScrollView) -> CGFloat {
+            scroll.contentSize.height + scroll.adjustedContentInset.top
+                + scroll.adjustedContentInset.bottom - scroll.bounds.height
+        }
+        func path(of view: UIView) -> String {
+            var names: [String] = []
+            var current: UIView? = view
+            while let item = current {
+                names.append(String(describing: type(of: item)))
+                current = item.superview
+            }
+            return names.reversed().joined(separator: "/")
+        }
+        func diagnostic() -> String {
+            let raw = rawScrollViews()
+            let header = "window=\(window.frame), container=\(container.view.frame), host=\(host.view.frame), hostAttached=\(host.view.window === window), rawScrollCount=\(raw.count), displayedScrollCount=\(displayedScrollViews().count), insights=\(model.sensoryAnalysis.insights.count)"
+            let rows = raw.map { scroll in
+                "\(path(of: scroll)) frame=\(scroll.frame) bounds=\(scroll.bounds) contentSize=\(scroll.contentSize) windowFrame=\(scroll.convert(scroll.bounds, to: window)) insets=\(scroll.adjustedContentInset) clips=\(scroll.clipsToBounds) attached=\(scroll.window === window) hidden=\(scroll.isHidden)"
+            }
+            let tree = raw.isEmpty ? descendants(window).prefix(80).map { "\(path(of: $0)) frame=\($0.frame)" } : []
+            return ([header] + rows + tree).joined(separator: "\n")
+        }
+
+        // 실제 앱처럼 UIKit 컨테이너에 포함한 호스트를 제약으로 고정한다.
+        // 탐색 단계는 contentSize > bounds 조건을 적용하지 않아, 없는 뷰와
+        // 아직 크기가 계산되지 않은 뷰를 별도의 실패 정보로 구분한다.
+        let renderingDeadline = clock.now.advanced(by: .seconds(10))
+        repeat {
+            try await Task.sleep(for: .milliseconds(20))
+            window.setNeedsLayout()
+            window.layoutIfNeeded()
+            container.view.layoutIfNeeded()
+            host.view.setNeedsLayout()
+            host.view.layoutIfNeeded()
+            if displayedScrollViews().contains(where: {
+                $0.bounds.height > 0 && verticalTravel($0) > 0
+            }) {
+                break
+            }
+        } while clock.now < renderingDeadline
+
+        let details = diagnostic()
+        XCTAssertTrue(host.view.window === window, "호스트는 표시 창에 연결되어야 한다.\n\(details)")
+        XCTAssertGreaterThan(host.view.bounds.height, 0, details)
+        XCTAssertGreaterThan(host.view.bounds.width, 0, details)
+        let displayed = displayedScrollViews()
+        XCTAssertFalse(displayed.isEmpty, "실제 표시 계층에서 UIScrollView를 찾아야 한다.\n\(details)")
+        let verticalScrollViews = displayed.filter { verticalTravel($0) > 0 }
+        XCTAssertFalse(verticalScrollViews.isEmpty, "충분한 실제 인사이트 카드가 세로로 스크롤되어야 한다.\n\(details)")
+        let mainScrollView = displayed
+            .filter { scrollView in
+                let frame = scrollView.convert(scrollView.bounds, to: host.view)
+                return frame.minY <= 1 && frame.width >= host.view.bounds.width - 1
+                    && frame.height >= host.view.bounds.height / 2
+            }
+            .max { $0.bounds.width * $0.bounds.height < $1.bounds.width * $1.bounds.height }
         XCTAssertNotNil(
             mainScrollView,
-            "The main scroll view must extend behind the status bar"
+            "The main scroll view must extend behind the status bar.\n\(details)"
         )
+        if let mainScrollView {
+            let travel = verticalTravel(mainScrollView)
+            XCTAssertGreaterThan(travel, 0, "헤더 inset을 포함한 주 스크롤의 실제 세로 이동 범위가 있어야 한다.\n\(details)")
+            if travel > 0 {
+                let originalOffset = mainScrollView.contentOffset
+                let startY = -mainScrollView.adjustedContentInset.top
+                let targetY = startY + min(20, travel / 2)
+                mainScrollView.setContentOffset(CGPoint(x: originalOffset.x, y: startY), animated: false)
+                mainScrollView.setContentOffset(CGPoint(x: originalOffset.x, y: targetY), animated: false)
+                try await Task.sleep(for: .milliseconds(20))
+                XCTAssertGreaterThan(mainScrollView.contentOffset.y, startY, "실제 스크롤을 이동하면 offset이 변해야 한다.\n\(details)")
+                XCTAssertEqual(mainScrollView.contentOffset.y, targetY, accuracy: 1, "계산한 이동 범위 안에서 실제 콘텐츠가 이동해야 한다.\n\(details)")
+                mainScrollView.setContentOffset(originalOffset, animated: false)
+            }
+        }
         XCTAssertEqual(
             mainScrollView?.clipsToBounds,
             false,
-            "The main scroll content must remain visible behind the status bar"
+            "The main scroll content must remain visible behind the status bar.\n\(details)"
         )
         for scrollView in verticalScrollViews {
             XCTAssertLessThanOrEqual(
                 scrollView.contentSize.width,
                 scrollView.bounds.width + 1,
-                "Vertical scroll content width must stay inside its viewport"
+                "Vertical scroll content width must stay inside its viewport.\n\(details)"
             )
         }
     }
@@ -672,70 +1651,99 @@ final class SystemParityComponentTests: XCTestCase {
         )
     }
 
-    func testDishFeedbackTasteBubblesKeepReactCardViewModelContract() {
-        let firstFollowingItem = TasteBuddyNativeContent.followingDishFeedbackItems[0]
-        let firstBubble = firstFollowingItem.tasteBubbles[0]
-
-        XCTAssertEqual(firstBubble.label, "맑은 감칠맛")
-        XCTAssertEqual(firstBubble.colorTaste, "감칠맛")
-        XCTAssertEqual(firstBubble.resolvedAxis, .umami)
-        XCTAssertTrue(
-            firstFollowingItem.tasteBubbles.allSatisfy { !$0.id.isEmpty && !$0.label.isEmpty },
-            "React DishFeedbackCard tasteBubbles keep id, label, title/colorTaste metadata."
+    func testDishFeedbackTasteBubblesKeepExplicitMetadataWithoutInferringFixtureEvidence() throws {
+        let explicitBubble = DishFeedbackTasteBubble(
+            id: "explicit-umami", label: "직접 선택한 감칠맛", title: "선택한 감각",
+            colorTaste: "감칠맛", axis: .umami
         )
+        XCTAssertEqual(explicitBubble.id, "explicit-umami")
+        XCTAssertEqual(explicitBubble.label, "직접 선택한 감칠맛")
+        XCTAssertEqual(explicitBubble.title, "선택한 감각")
+        XCTAssertEqual(explicitBubble.colorTaste, "감칠맛")
+        XCTAssertEqual(explicitBubble.resolvedAxis, .umami)
+        let example = try XCTUnwrap(TasteBuddyNativeContent.followingDishFeedbackItems.first)
+        XCTAssertEqual(example.reactionLabel, "예시 기록")
+        XCTAssertNil(example.tbaAnalysisSnapshot)
+        XCTAssertTrue(example.tasteBubbles.isEmpty, "예시의 메뉴 이름이나 구 TBA 추론으로 감각을 생성하지 않는다")
+        let noMeals = try SensoryAnalysisEngine.analyze(entries: [])
+        XCTAssertTrue(noMeals.observations.isEmpty)
+        XCTAssertTrue(noMeals.insights.isEmpty)
+        XCTAssertNil(noMeals.mainWing.main)
     }
 
-    func testDishFeedbackDetailTagsKeepReactCardViewModelContract() {
-        let firstFollowingItem = TasteBuddyNativeContent.followingDishFeedbackItems[0]
-        let firstTag = firstFollowingItem.detailTags[0]
-
-        XCTAssertEqual(firstTag.id, "following-mina-broth-lexicon-detail-note-broth-aroma")
-        XCTAssertEqual(firstTag.label, "육수 향")
-        XCTAssertEqual(firstTag.title, "향 신호")
-        XCTAssertEqual(
-            firstFollowingItem.tbaAnalysisSnapshot?.source,
-            "TasteBuddyAgent"
-        )
-        XCTAssertTrue(
-            firstFollowingItem.detailTags.allSatisfy { !$0.id.isEmpty && !$0.label.isEmpty },
-            "React DishFeedbackCard detailTags keep id, label, and optional title metadata."
-        )
+    func testDishFeedbackDetailTagsPreserveCurrentSensorySourceAndExperience() throws {
+        let meal = DiningEntry(restaurant: "기록한 식당", menu: "기록한 음식", rating: 5, note: "단맛이 좋았습니다.")
+        let other = DiningEntry(restaurant: "다른 식당", menu: "다른 음식", rating: 1, note: "바삭함이 싫었습니다.")
+        let analysis = try SensoryAnalysisEngine.analyze(entries: [meal, other])
+        let card = DiningDishFeedbackItem.fromDiningEntry(meal, analysis: analysis)
+        let tag = try XCTUnwrap(card.detailTags.first)
+        let observation = try XCTUnwrap(analysis.observations.first { $0.id == tag.id })
+        XCTAssertEqual(observation.experienceID, meal.id)
+        XCTAssertEqual(tag.label, meal.note)
+        XCTAssertEqual(tag.title, meal.note)
+        XCTAssertEqual(observation.phrase, meal.note)
+        let span = try XCTUnwrap(observation.sourceSpans.first)
+        XCTAssertEqual(span.start, 0)
+        XCTAssertEqual(span.end, meal.note.utf16.count)
+        XCTAssertEqual(span.quote, meal.note)
+        XCTAssertEqual((meal.note as NSString).substring(with: NSRange(location: span.start, length: span.end - span.start)), span.quote)
+        XCTAssertEqual(card.detailTags.count, 1, "하나의 원문에서 나온 여러 원자를 중복 태그로 부풀리지 않는다")
+        XCTAssertFalse(card.detailTags.contains { $0.label == other.note })
+        XCTAssertNil(card.tbaAnalysisSnapshot)
+        XCTAssertEqual(analysis.actualApiCalls, 0)
     }
 
-    func testSocialDishFeedbackCardWrapperBuildsNativeTBAViewModel() {
-        let feedItem = TasteBuddyNativeContent.tasteMatchFeed[0]
+    func testSocialDishFeedbackCardWrapperKeepsExampleIdentityWithoutNativeTBAInference() throws {
+        let feedItem = try XCTUnwrap(TasteBuddyNativeContent.tasteMatchFeed.first)
+        let sourceReason = feedItem.reason
+        let sourceTags = feedItem.tasteTags
         let card = DiningDishFeedbackItem.fromTasteMatchFeedItem(
             feedItem,
             commentCount: 3,
             liked: true
         )
-
         XCTAssertEqual(card.id, feedItem.id)
         XCTAssertEqual(card.authorName, feedItem.reviewerName)
         XCTAssertEqual(card.restaurantName, feedItem.restaurantName)
         XCTAssertEqual(card.dishTitle, feedItem.dishTitle)
         XCTAssertEqual(card.commentCount, 3)
-        XCTAssertTrue(card.liked)
-        XCTAssertEqual(card.tbaAnalysisSnapshot?.source, "TasteBuddyAgent")
-        XCTAssertFalse(card.tasteBubbles.isEmpty)
-        XCTAssertFalse(card.detailTags.isEmpty)
-        XCTAssertFalse(
-            card.images.first?.isUserFeedbackMedia ?? true,
-            "SocialDishFeedbackCard mirrors React's alt-only image view model; no placeholder chef photo may render."
-        )
+        XCTAssertTrue(card.liked, "명시된 카드 좋아요 상태는 입맛 추론과 별도로 보존한다")
+        XCTAssertNil(card.tbaAnalysisSnapshot)
+        XCTAssertEqual(card.reactionLabel, "예시 기록")
+        XCTAssertTrue(card.summary.contains("개인 입맛 해석에는 사용하지 않아요"))
+        XCTAssertTrue(card.tasteBubbles.isEmpty)
+        XCTAssertTrue(card.detailTags.isEmpty)
+        XCTAssertFalse(sourceReason.isEmpty)
+        XCTAssertFalse(sourceTags.isEmpty)
+        XCTAssertEqual(TasteBuddyNativeContent.tasteMatchFeed.first?.reason, sourceReason)
+        XCTAssertEqual(TasteBuddyNativeContent.tasteMatchFeed.first?.tasteTags, sourceTags)
+        let image = try XCTUnwrap(card.images.first)
+        XCTAssertEqual(image.alt, "\(feedItem.dishTitle) 메뉴 사진")
+        XCTAssertFalse(image.isUserFeedbackMedia, "예시 이미지 설명을 사용자 업로드 사진으로 표시하지 않는다")
     }
 
-    func testFixtureDishFeedbackFeedHydratesTasteMatchItemsThroughSocialCardContract() async throws {
+    func testFixtureDishFeedbackFeedHydratesExamplesWithoutPersonalSensoryEvidence() async throws {
         let phase = try await FixtureDishFeedbackFeedRepository().followingFeed()
-
         guard case .populated(let items) = phase else {
-            return XCTFail("Fixture repository should hydrate populated social dish cards.")
+            return XCTFail("예시 저장소는 표시 가능한 소셜 카드 목록을 반환해야 한다")
         }
-
-        XCTAssertEqual(items.count, TasteBuddyNativeContent.tasteMatchFeed.count)
-        XCTAssertEqual(items.first?.id, TasteBuddyNativeContent.tasteMatchFeed.first?.id)
-        XCTAssertEqual(items.first?.tbaAnalysisSnapshot?.source, "TasteBuddyAgent")
-        XCTAssertFalse(items.first?.tasteBubbles.isEmpty ?? true)
+        let sources = TasteBuddyNativeContent.tasteMatchFeed
+        XCTAssertEqual(items.count, sources.count)
+        XCTAssertEqual(items.map(\.id), sources.map(\.id))
+        XCTAssertEqual(items.map(\.authorName), sources.map(\.reviewerName))
+        XCTAssertEqual(items.map(\.dishTitle), sources.map(\.dishTitle))
+        for item in items {
+            XCTAssertNil(item.tbaAnalysisSnapshot)
+            XCTAssertEqual(item.reactionLabel, "예시 기록")
+            XCTAssertTrue(item.tasteBubbles.isEmpty)
+            XCTAssertTrue(item.detailTags.isEmpty)
+            XCTAssertFalse(item.images.first?.isUserFeedbackMedia ?? true)
+        }
+        let analysis = try SensoryAnalysisEngine.analyze(entries: [])
+        XCTAssertEqual(analysis.sourceExperienceCount, 0)
+        XCTAssertTrue(analysis.observations.isEmpty)
+        XCTAssertTrue(analysis.insights.isEmpty)
+        XCTAssertEqual(analysis.actualApiCalls, 0)
     }
 
     func testNativeDishFeedbackCardMetricsMirrorReactDishFeedbackCard() {
@@ -852,7 +1860,7 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(snapshot.entries[2].score, 50)
     }
 
-    func testRadarAnimationUsesReactTimingCurveBounds() {
+    func testRadarAnimationKeepsRecordedValuesWithinBounds() {
         XCTAssertEqual(TasteRadarContract.animationProgress(-1), 0)
         XCTAssertEqual(TasteRadarContract.animationProgress(0), 0)
         XCTAssertEqual(TasteRadarContract.animationProgress(1), 1)
@@ -1142,4 +2150,21 @@ final class SystemParityComponentTests: XCTestCase {
             0.5
         )
     }
+}
+
+private struct StagedHeaderMarker: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.accessibilityIdentifier = "staged-header-marker"
+        return view
+    }
+    func updateUIView(_ view: UIView, context: Context) {}
+}
+
+private struct TopChromeEnvironmentProbe: UIViewRepresentable {
+    @Environment(\.tbTopChromeInset) private var inset
+    @Environment(\.tbTopChromeCollapseProgress) private var progress
+    let observe: (CGFloat?, CGFloat) -> Void
+    func makeUIView(context: Context) -> UIView { UIView() }
+    func updateUIView(_ view: UIView, context: Context) { observe(inset, progress) }
 }

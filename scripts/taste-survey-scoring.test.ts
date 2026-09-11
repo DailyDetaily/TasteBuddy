@@ -29,7 +29,9 @@ import {
 import {
   buildTasteSurveyMeasurementRawPayload,
   sanitizeTasteSurveyRespondentContext,
+  restoreTasteSurveyMeasurementSnapshot,
 } from '../src/lib/tasteSurveyPersistence';
+import { normalizeTasteSurveyResponses, readTasteSurveySubmission, tasteSurveyResponseLabel } from '../src/lib/tasteSurveyEvidence';
 import type { TbaKnowledgeSurface } from '../src/types/tasteBuddyKnowledge';
 import type { TasteSurveyRespondentContext, TasteSurveyResponse } from '../src/types/tasteSurvey';
 
@@ -61,132 +63,77 @@ function assertClose(actual: number, expected: number, message: string) {
   );
 }
 
+const fixedTime = '2026-09-07T00:00:00.000Z';
+const sweetItem = TASTE_SURVEY_ITEMS.find((item) => item.tasteId === 'sweet')!;
+const fatItem = TASTE_SURVEY_ITEMS.find((item) => item.tasteId === 'fat')!;
 {
-  const low = scoreTasteSurveyResponses(responsesForTaste('sweet', 1));
-  const high = scoreTasteSurveyResponses(responsesForTaste('sweet', 7));
-
+  assert.equal(TASTE_SURVEY_ITEMS.length, 6);
+  assert.equal(new Set(TASTE_SURVEY_ITEMS.map((item) => item.tasteId)).size, 6);
+  assert.ok(TASTE_SURVEY_ITEMS.every((item) => item.construct === 'recalled_intensity' && item.anchor.conditions.length > 0));
+  const low = scoreTasteSurveyResponses(responsesForTaste('sweet', 0));
+  const high = scoreTasteSurveyResponses(responsesForTaste('sweet', 4));
   assert.equal(low.snapshot.results.sweet, 0);
   assert.equal(high.snapshot.results.sweet, 10);
+  assert.equal(low.snapshot.surveySubmission!.responses[0].selectedValue, 0);
+  assert.equal(tasteSurveyResponseLabel(low.snapshot.surveySubmission!.responses[0]), '전혀 느끼지 않음');
+  assert.equal(low.snapshot.results.fat, null);
+  assert.equal(low.tasteScores.sweet.confidence, 0);
 }
-
 {
-  const sweetItems = TASTE_SURVEY_ITEMS.filter((item) => item.tasteId === 'sweet');
-  const scored = scoreTasteSurveyResponses([
-    response(sweetItems[0].id, 7),
-    response(sweetItems[1].id, null, true),
-  ]);
-
-  assert.equal(scored.snapshot.results.sweet, 10);
-  assert.equal(scored.tasteScores.sweet.excludedItemCount, 1);
-  assert.equal(scored.tasteScores.sweet.respondedItemCount, 1);
-}
-
-{
-  const bitter = scoreTasteSurveyResponses(responsesForTaste('bitter', 7));
-  const umami = scoreTasteSurveyResponses(responsesForTaste('umami', 7));
-  const fat = scoreTasteSurveyResponses(responsesForTaste('fat', 7));
-
-  assert.ok(umami.tasteScores.umami.confidence < bitter.tasteScores.bitter.confidence);
-  assert.ok(fat.tasteScores.fat.confidence < bitter.tasteScores.bitter.confidence);
-}
-
-{
-  const sweetItems = TASTE_SURVEY_ITEMS.filter((item) => item.tasteId === 'sweet');
-  const scored = scoreTasteSurveyResponses([
-    response(sweetItems.find((item) => item.construct === 'salience')!.id, 1),
-    response(sweetItems.find((item) => item.construct === 'overload')!.id, 7),
-  ]);
-
-  assertClose(scored.tasteScores.sweet.baseVectorScore ?? -1, 0.42, 'weighted score');
-  assert.equal(scored.snapshot.results.sweet, 4.2);
-}
-
-{
-  const result = buildTasteSurveyCompatibleResult(
-    TASTE_SURVEY_ITEMS.map((item) => response(item.id, 4)),
-  );
-
-  assert.equal(result.snapshot.source, 'broad-starter');
-  assert.equal(typeof result.snapshot.measuredAt, 'string');
-
-  for (const tasteId of TASTE_IDS) {
-    assert.equal(typeof result.snapshot.results[tasteId], 'number');
+  const invalidValues = [-1, 5, 7, 1.5, NaN, '2', null];
+  for (const selectedValue of invalidValues) {
+    assert.deepEqual(normalizeTasteSurveyResponses([{ itemId: sweetItem.id, selectedValue, uncertain: false }]), []);
   }
-
-  assert.ok(Array.isArray(result.starterGuidance.topAxes));
-  assert.ok(result.starterGuidance.topAxes.length > 0);
-  assert.equal(typeof result.starterGuidance.summaryLine, 'string');
-  assert.equal(typeof result.starterGuidance.goalPhrase, 'string');
-  assert.equal(typeof result.starterGuidance.cautionAxis, 'string');
-  assert.equal(typeof result.starterGuidance.cautionLabel, 'string');
-  assert.ok(Array.isArray(result.starterGuidance.evidence));
-  assert.ok(result.starterGuidance.evidence.length > 0);
+  assert.deepEqual(normalizeTasteSurveyResponses([
+    response(sweetItem.id, 4), { itemId: sweetItem.id, selectedValue: 7, uncertain: false },
+    { itemId: 'sweet-salience', selectedValue: 4, uncertain: false },
+  ]), []);
+  assert.equal(normalizeTasteSurveyResponses([response(sweetItem.id, 4), response(sweetItem.id, 0)])[0].selectedValue, 0);
 }
-
 {
-  const scored = scoreTasteSurveyResponses([]);
-
-  for (const tasteId of TASTE_IDS) {
-    assert.equal(scored.snapshot.results[tasteId], null);
+  for (const uncertaintyReason of ['never_tried', 'cannot_recall', 'cannot_isolate_taste'] as const) {
+    const normalized = normalizeTasteSurveyResponses([{ itemId: fatItem.id, selectedValue: 4, uncertain: true, uncertaintyReason }]);
+    assert.equal(normalized[0].selectedValue, null);
+    assert.equal(normalized[0].uncertaintyReason, uncertaintyReason);
+    assert.equal(scoreTasteSurveyResponses(normalized).snapshot.results.fat, null);
   }
+  assert.equal(normalizeTasteSurveyResponses([{ itemId: sweetItem.id, selectedValue: null, uncertain: true, uncertaintyReason: 'cannot_isolate_taste' }])[0].uncertaintyReason, 'cannot_recall');
 }
-
 {
-  assert.equal(TASTE_SURVEY_CONTEXT_STEPS.length, 3);
-  assert.equal(TASTE_SURVEY_CONTEXT_STEPS[0].options.length, 0);
-  assert.deepEqual(
-    TASTE_SURVEY_CONTEXT_STEPS.map((step) => step.id),
-    ['birthDate', 'sexContext', 'smokingStatus'],
-  );
+  const result = buildTasteSurveyCompatibleResult(TASTE_SURVEY_ITEMS.map((item) => response(item.id, 2)), { measuredAt: fixedTime });
+  assert.equal(result.snapshot.source, 'recalled-intensity');
+  assert.deepEqual(result.starterGuidance.topAxes, []);
+  assert.deepEqual(result.starterGuidance.topLabels, []);
+  assert.ok(result.starterGuidance.evidence.length === 7);
+  assert.throws(() => buildTasteIdentity({ userId: 'recall-only', measurementSnapshot: result.snapshot }), /recall|회상/i);
+  for (const tasteId of TASTE_IDS) assert.equal(scoreTasteSurveyResponses([]).snapshot.results[tasteId], null);
 }
-
 {
-  const respondentContext: TasteSurveyRespondentContext = {
-    birthDate: '1996-07-10',
-    sexContext: 'prefer_not_to_say',
-    smokingStatus: 'current',
-  };
-  const responses = TASTE_SURVEY_ITEMS.map((item) => response(item.id, 4));
-  const result = buildTasteSurveyCompatibleResult(responses);
-  const rawPayload = buildTasteSurveyMeasurementRawPayload({
-    compatibleResult: result,
-    respondentContext,
-    responses,
-  });
-
-  assert.equal(rawPayload.measurement_flow, 'taste_survey');
-  assert.equal(rawPayload.respondent_context.birth_date, '1996-07-10');
-  assert.equal(rawPayload.respondent_context.sex_context, 'prefer_not_to_say');
-  assert.equal(rawPayload.respondent_context.smoking_status, 'current');
-  assert.equal(rawPayload.response_count, responses.length);
-}
-
-{
-  const responses = TASTE_SURVEY_ITEMS.map((item) => response(item.id, 4));
-  const result = buildTasteSurveyCompatibleResult(responses);
-  const rawPayload = buildTasteSurveyMeasurementRawPayload({
-    compatibleResult: result,
-    respondentContext: {},
-    responses,
-  });
-
-  assert.equal(rawPayload.respondent_context.birth_date, null);
-  assert.equal(rawPayload.respondent_context.sex_context, null);
-  assert.equal(rawPayload.respondent_context.smoking_status, null);
-  assert.equal(rawPayload.response_count, responses.length);
-}
-
-{
-  const sanitized = sanitizeTasteSurveyRespondentContext({
-    birthDate: '1990-03-14',
-    sexContext: 'unknown',
-    smokingStatus: 'former',
-  });
-
-  assert.deepEqual(sanitized, {
-    birthDate: '1990-03-14',
-    smokingStatus: 'former',
-  });
+  assert.deepEqual(TASTE_SURVEY_CONTEXT_STEPS.map((step) => step.id), ['birthDate', 'sexContext', 'smokingStatus']);
+  const respondentContext: TasteSurveyRespondentContext = { birthDate: '1996-07-10', sexContext: 'prefer_not_to_say', smokingStatus: 'current' };
+  const responses: TasteSurveyResponse[] = [response(sweetItem.id, 0), { itemId: fatItem.id, selectedValue: null, uncertain: true, uncertaintyReason: 'cannot_isolate_taste' }];
+  const result = buildTasteSurveyCompatibleResult(responses, { measuredAt: fixedTime, respondentContext });
+  const raw = buildTasteSurveyMeasurementRawPayload({ compatibleResult: result, respondentContext, responses });
+  assert.equal(raw.instrument_version, '2.0.0');
+  assert.equal(raw.response_count, 2);
+  assert.equal(raw.respondent_context.birth_date, '1996-07-10');
+  assert.deepEqual(restoreTasteSurveyMeasurementSnapshot(JSON.parse(JSON.stringify(raw))), result.snapshot);
+  const historical = JSON.parse(JSON.stringify(raw));
+  historical.survey_submission.items[0].anchor.conditions[0] = '저장 당시의 기준 조건';
+  historical.survey_submission.items[0].prompt = '저장 당시의 질문';
+  const restored = restoreTasteSurveyMeasurementSnapshot(historical)!;
+  assert.equal(restored.surveySubmission!.items[0].anchor.conditions[0], '저장 당시의 기준 조건');
+  assert.equal(restored.surveySubmission!.items[0].prompt, '저장 당시의 질문');
+  assert.notEqual(TASTE_SURVEY_ITEMS[0].prompt, '저장 당시의 질문');
+  assert.equal(restored.results.fat, null);
+  assert.equal(restored.surveySubmission!.responses[1].uncertaintyReason, 'cannot_isolate_taste');
+  const invalid = JSON.parse(JSON.stringify(raw.survey_submission)); invalid.scale.min = 1;
+  assert.equal(readTasteSurveySubmission(invalid), null);
+  invalid.scale.min = 0; invalid.items[1].tasteId = invalid.items[0].tasteId;
+  assert.equal(readTasteSurveySubmission(invalid), null);
+  assert.equal(restoreTasteSurveyMeasurementSnapshot({ instrument_version: '1.0.0', survey_responses: [] }), null);
+  assert.deepEqual(sanitizeTasteSurveyRespondentContext({ birthDate: '1990-03-14', sexContext: 'unknown', smokingStatus: 'former' }), { birthDate: '1990-03-14', smokingStatus: 'former' });
+  assert.deepEqual(buildTasteSurveyCompatibleResult([]).snapshot.surveySubmission!.respondentContext, {});
 }
 
 {

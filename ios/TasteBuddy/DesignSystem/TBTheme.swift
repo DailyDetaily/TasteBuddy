@@ -140,33 +140,7 @@ struct ShadowToken {
     let y: CGFloat
 }
 
-enum TBMotion {
-    enum Duration {
-        static let fast: Double = 0.18
-        static let normal: Double = 0.30
-        static let medium: Double = 0.50
-        static let slow: Double = 0.62
-        static let slowest: Double = 0.72
-        static let loopPulse: Double = 1.60
-        static let splash: Double = 2.50
-    }
-
-    enum Scale {
-        static let press: CGFloat = 0.98
-        static let tabHover: CGFloat = 1.05
-        static let tabActive: CGFloat = 1.10
-        static let loopNodePulse: CGFloat = 1.28
-        static let loopLabelPulse: CGFloat = 1.06
-    }
-
-    enum Distance {
-        static let xSmall: CGFloat = 8
-        static let small: CGFloat = 12
-        static let medium: CGFloat = 20
-        static let large: CGFloat = 40
-        static let onboardingSwipe: CGFloat = 100
-    }
-}
+typealias TBMotion = TasteBloomMotion
 
 enum TBDataViz {
     enum Progress {

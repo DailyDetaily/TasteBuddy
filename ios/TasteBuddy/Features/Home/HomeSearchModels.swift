@@ -202,7 +202,7 @@ struct FixtureHomeSearchRepository: HomeSearchRepository {
             kind: .friend,
             title: "김민아",
             subtitle: "@맑은끝민아",
-            detail: "취향 적합도 92%",
+            detail: "검증용 예시 프로필 · 취향 비교 미계산",
             symbol: "person.crop.circle",
             axis: .umami,
             route: .publicProfile(id: "mina"),
@@ -215,7 +215,7 @@ struct FixtureHomeSearchRepository: HomeSearchRepository {
             kind: .friend,
             title: "정서윤",
             subtitle: "@산미탐험서윤",
-            detail: "취향 적합도 88%",
+            detail: "검증용 예시 프로필 · 취향 비교 미계산",
             symbol: "person.crop.circle",
             axis: .sour,
             route: .publicProfile(id: "jae"),
@@ -228,7 +228,7 @@ struct FixtureHomeSearchRepository: HomeSearchRepository {
             kind: .friend,
             title: "최도윤",
             subtitle: "@불향도윤",
-            detail: "취향 적합도 84%",
+            detail: "검증용 예시 프로필 · 취향 비교 미계산",
             symbol: "person.crop.circle",
             axis: .bitter,
             route: .publicProfile(id: "hyeon"),
@@ -241,7 +241,6 @@ struct FixtureHomeSearchRepository: HomeSearchRepository {
 
 struct LiveHomeSearchRepository: HomeSearchRepository {
     var placeClient = RestaurantPlaceAPIClient()
-    var fallbackRepository = FixtureHomeSearchRepository()
     var publicProfileRepository: any BackendPublicProfileRepository = BackendPublicProfileRepositoryFactory.makeDefault()
 
     func kakaoRestaurantResults(matching query: String) async throws -> [HomeSearchResultItem] {
@@ -268,22 +267,13 @@ struct LiveHomeSearchRepository: HomeSearchRepository {
             return []
         }
 
-        do {
-            let identities = try await publicProfileRepository.searchProfileIdentities(matching: query)
-            await PublicProfileSnapshotStore.shared.store(identities)
-
-            if identities.isEmpty {
-                return []
-            }
-
-            return Array(
-                identities
-                    .map(Self.searchResult(from:))
-                    .prefix(HomeSearchEngine.maxGroupResults)
-            )
-        } catch {
-            return try await fallbackRepository.friendResults(matching: query)
-        }
+        let identities = try await publicProfileRepository.searchProfileIdentities(matching: query)
+        await PublicProfileSnapshotStore.shared.store(identities)
+        return Array(
+            identities
+                .map(Self.searchResult(from:))
+                .prefix(HomeSearchEngine.maxGroupResults)
+        )
     }
 
     private static func searchResult(from place: KakaoRestaurantPlace) -> HomeSearchResultItem? {
@@ -528,31 +518,8 @@ enum HomeSearchEngine {
         HomeSearchResultSection(
             id: "friends",
             title: "버디",
-            subtitle: "비슷한 미각 기준을 가진 후기 흐름입니다.",
-            items: [
-                HomeSearchResultItem(
-                    id: "friend-mina",
-                    kind: .friend,
-                    title: "김민아",
-                    subtitle: "@맑은끝민아",
-                    detail: "취향 적합도 92%",
-                    symbol: "person.crop.circle",
-                    axis: .umami,
-                    route: .publicProfile(id: "mina"),
-                    searchText: "김민아 맑은끝민아 taste-dev-mina 감칠맛 버디 후기"
-                ),
-                HomeSearchResultItem(
-                    id: "friend-jae",
-                    kind: .friend,
-                    title: "정서윤",
-                    subtitle: "@산미탐험서윤",
-                    detail: "취향 적합도 88%",
-                    symbol: "person.crop.circle",
-                    axis: .sour,
-                    route: .publicProfile(id: "jae"),
-                    searchText: "정서윤 산미탐험서윤 taste-dev-seoyoon 산미 버디 후기"
-                )
-            ]
+            subtitle: "검색한 공개 프로필입니다.",
+            items: []
         ),
         HomeSearchResultSection(
             id: "menus",

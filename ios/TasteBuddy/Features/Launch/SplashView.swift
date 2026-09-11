@@ -1,5 +1,10 @@
 import SwiftUI
 
+private enum SplashMotionSchedule {
+    static let wordmarkDelay = TasteBloomMotion.duration(.bloom, reduceMotion: false) + TasteBloomMotion.stagger
+    static let duration = wordmarkDelay + TasteBloomMotion.duration(.sheet, reduceMotion: false) + TasteBloomMotion.duration(.feedback, reduceMotion: false)
+}
+
 struct SplashView: View {
     var autoplays = true
     var onComplete: () -> Void
@@ -27,8 +32,8 @@ struct SplashView: View {
         .ignoresSafeArea(edges: [.horizontal, .bottom])
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Taste Buddy 시작 화면")
-        .onAppear {
-            scheduleCompletionIfNeeded()
+        .task {
+            await scheduleCompletionIfNeeded()
         }
     }
 
@@ -41,15 +46,15 @@ struct SplashView: View {
             .bottom ?? 0
     }
 
-    private func scheduleCompletionIfNeeded() {
+    private func scheduleCompletionIfNeeded() async {
         guard autoplays, !hasScheduledCompletion else {
             return
         }
 
         hasScheduledCompletion = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + (reduceMotion ? 1.2 : 2.8)) {
-            onComplete()
-        }
+        try? await Task.sleep(for: .seconds(reduceMotion ? 0 : SplashMotionSchedule.duration))
+        guard !Task.isCancelled else { return }
+        onComplete()
     }
 }
 
@@ -87,10 +92,10 @@ private struct TasteBuddySplashLogo: View {
         .opacity(logoOpacity)
         .scaleEffect(logoScale)
         .accessibilityHidden(true)
-        .onAppear(perform: startAnimation)
+        .task { await startAnimation() }
     }
 
-    private func startAnimation() {
+    private func startAnimation() async {
         guard autoplays, !reduceMotion else {
             logoOpacity = 1
             logoScale = 1
@@ -100,23 +105,23 @@ private struct TasteBuddySplashLogo: View {
             return
         }
 
-        withAnimation(.easeOut(duration: 1.0)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             logoOpacity = 1
             logoScale = 1
         }
 
-        withAnimation(.timingCurve(0.25, 1, 0.5, 1, duration: 0.75)) {
+        withAnimation(TasteBloomMotion.animation(.bloom, reduceMotion: reduceMotion)) {
             symbolScale = 1
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.375) {
-            withAnimation(.timingCurve(0.25, 1, 0.5, 1, duration: 1.125)) {
-                symbolOffsetX = 0
-            }
+        try? await Task.sleep(for: .seconds(SplashMotionSchedule.wordmarkDelay))
+        guard !Task.isCancelled else { return }
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+            symbolOffsetX = 0
+        }
 
-            withAnimation(.easeOut(duration: 1.125)) {
-                wordmarkOpacity = 1
-            }
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
+            wordmarkOpacity = 1
         }
     }
 }

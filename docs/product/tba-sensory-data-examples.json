@@ -1,0 +1,1851 @@
+{
+  "schema_version": "tba-sensory-design-examples-v0.1",
+  "status": "illustrative_expected_outputs_not_runtime_results",
+  "language": "ko",
+  "note": "현재 구현을 실행한 결과가 아닌 설계 검토용 가상 입력과 기대 결과입니다. 사진 참조도 가상 식별자입니다. 각 수명주기 사례는 initial_case_refs에서 독립적으로 시작합니다.",
+  "cases": [
+    {
+      "case_id": "E01",
+      "title": "사진만 남긴 식사",
+      "experience_refs": [
+        "example-experience-E01"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E01",
+          "client_mutation_id": "mutation-E01",
+          "experience_refs": [
+            "example-experience-E01"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "photo",
+              "kind": "media",
+              "prompt_text": "식사 사진",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E01"
+              },
+              "response": {
+                "media_ref": "illustrative-photo-01"
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "감각",
+          "전체 호감",
+          "특정 감각의 호감",
+          "재선택 의향"
+        ],
+        "forbidden_inferences": [
+          "사진만 보고 사용자가 감칠맛을 느꼈다고 저장",
+          "사진의 음식 종류를 사용자 선호로 확정"
+        ]
+      }
+    },
+    {
+      "case_id": "E02",
+      "title": "전체 호감만 남김",
+      "experience_refs": [
+        "example-experience-E02"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E02",
+          "client_mutation_id": "mutation-E02",
+          "experience_refs": [
+            "example-experience-E02"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "overall",
+              "kind": "choice",
+              "prompt_text": "이 음식의 맛은 어땠어요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E02"
+              },
+              "shown_options": [
+                {
+                  "id": "overall-positive",
+                  "label": "좋았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "positive"
+                  }
+                },
+                {
+                  "id": "overall-neutral",
+                  "label": "괜찮았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "neutral"
+                  }
+                },
+                {
+                  "id": "overall-negative",
+                  "label": "아쉬웠어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "negative"
+                  }
+                },
+                {
+                  "id": "overall-unknown",
+                  "label": "잘 모르겠어요",
+                  "meaning": {
+                    "missing_reason": "unsure"
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "overall-positive"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E02-O1",
+            "experience_refs": [
+              "example-experience-E02"
+            ],
+            "kind": "overall_liking",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E02"
+            },
+            "attribute": null,
+            "value": {
+              "category": "positive"
+            },
+            "phase": "overall",
+            "source_refs": [
+              {
+                "event_id": "event-E02",
+                "answer_id": "overall",
+                "option_id": "overall-positive"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "좋았던 감각",
+          "좋았던 이유",
+          "재선택 의향"
+        ],
+        "forbidden_inferences": [
+          "선택하지 않은 감각을 생성",
+          "전체 호감을 모든 재료의 호감으로 복제"
+        ]
+      }
+    },
+    {
+      "case_id": "E03",
+      "title": "감각 버블만 남김",
+      "experience_refs": [
+        "example-experience-E03"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E03",
+          "client_mutation_id": "mutation-E03",
+          "experience_refs": [
+            "example-experience-E03"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "sensory",
+              "kind": "multi_choice",
+              "prompt_text": "기억에 남는 느낌이 있다면 골라주세요.",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E03"
+              },
+              "shown_options": [
+                {
+                  "id": "strong-umami",
+                  "label": "진한 감칠맛",
+                  "meaning": {
+                    "attribute": "taste.umami",
+                    "perceived_intensity": "strong",
+                    "basis": "user_relative_language"
+                  }
+                },
+                {
+                  "id": "smoky",
+                  "label": "훈연향",
+                  "meaning": {
+                    "attribute": "aroma.smoky",
+                    "present": true
+                  }
+                },
+                {
+                  "id": "crisp",
+                  "label": "바삭함",
+                  "meaning": {
+                    "attribute": "texture.crisp",
+                    "present": true
+                  }
+                },
+                {
+                  "id": "moist",
+                  "label": "촉촉함",
+                  "meaning": {
+                    "attribute": "texture.moist",
+                    "present": true
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "strong-umami"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E03-O1",
+            "experience_refs": [
+              "example-experience-E03"
+            ],
+            "kind": "sensory_presence",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E03"
+            },
+            "attribute": "taste.umami",
+            "value": {
+              "present": true
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E03",
+                "answer_id": "sensory",
+                "option_id": "strong-umami"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          },
+          {
+            "observation_id": "E03-O2",
+            "experience_refs": [
+              "example-experience-E03"
+            ],
+            "kind": "perceived_intensity",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E03"
+            },
+            "attribute": "taste.umami",
+            "value": {
+              "category": "strong",
+              "basis": "user_relative_language"
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E03",
+                "answer_id": "sensory",
+                "option_id": "strong-umami"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "전체 호감",
+          "감칠맛의 호감",
+          "객관적 강도"
+        ],
+        "forbidden_inferences": [
+          "진한 맛이므로 낮은 만족도 저장",
+          "다른 사용자의 강도 수치와 직접 동일시"
+        ]
+      }
+    },
+    {
+      "case_id": "E04",
+      "title": "전체 아쉬움과 진한 감칠맛의 공동 관찰",
+      "experience_refs": [
+        "example-experience-E04"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E04",
+          "client_mutation_id": "mutation-E04",
+          "experience_refs": [
+            "example-experience-E04"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "overall",
+              "kind": "choice",
+              "prompt_text": "이 음식의 맛은 어땠어요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E04"
+              },
+              "shown_options": [
+                {
+                  "id": "overall-positive",
+                  "label": "좋았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "positive"
+                  }
+                },
+                {
+                  "id": "overall-neutral",
+                  "label": "괜찮았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "neutral"
+                  }
+                },
+                {
+                  "id": "overall-negative",
+                  "label": "아쉬웠어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "negative"
+                  }
+                },
+                {
+                  "id": "overall-unknown",
+                  "label": "잘 모르겠어요",
+                  "meaning": {
+                    "missing_reason": "unsure"
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "overall-negative"
+                ]
+              }
+            },
+            {
+              "answer_id": "sensory",
+              "kind": "multi_choice",
+              "prompt_text": "기억에 남는 느낌이 있다면 골라주세요.",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E04"
+              },
+              "shown_options": [
+                {
+                  "id": "strong-umami",
+                  "label": "진한 감칠맛",
+                  "meaning": {
+                    "attribute": "taste.umami",
+                    "perceived_intensity": "strong",
+                    "basis": "user_relative_language"
+                  }
+                },
+                {
+                  "id": "smoky",
+                  "label": "훈연향",
+                  "meaning": {
+                    "attribute": "aroma.smoky",
+                    "present": true
+                  }
+                },
+                {
+                  "id": "crisp",
+                  "label": "바삭함",
+                  "meaning": {
+                    "attribute": "texture.crisp",
+                    "present": true
+                  }
+                },
+                {
+                  "id": "moist",
+                  "label": "촉촉함",
+                  "meaning": {
+                    "attribute": "texture.moist",
+                    "present": true
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "strong-umami"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E04-O1",
+            "experience_refs": [
+              "example-experience-E04"
+            ],
+            "kind": "overall_liking",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E04"
+            },
+            "attribute": null,
+            "value": {
+              "category": "negative"
+            },
+            "phase": "overall",
+            "source_refs": [
+              {
+                "event_id": "event-E04",
+                "answer_id": "overall",
+                "option_id": "overall-negative"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          },
+          {
+            "observation_id": "E04-O2",
+            "experience_refs": [
+              "example-experience-E04"
+            ],
+            "kind": "sensory_presence",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E04"
+            },
+            "attribute": "taste.umami",
+            "value": {
+              "present": true
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E04",
+                "answer_id": "sensory",
+                "option_id": "strong-umami"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          },
+          {
+            "observation_id": "E04-O3",
+            "experience_refs": [
+              "example-experience-E04"
+            ],
+            "kind": "perceived_intensity",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E04"
+            },
+            "attribute": "taste.umami",
+            "value": {
+              "category": "strong",
+              "basis": "user_relative_language"
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E04",
+                "answer_id": "sensory",
+                "option_id": "strong-umami"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [
+          {
+            "hypothesis_id": "E04-H1",
+            "claim": "이 음식에서는 감칠맛의 강도가 부담스러웠을 가능성",
+            "conditions": {
+              "experience_ref": "example-experience-E04",
+              "attribute": "taste.umami"
+            },
+            "support_refs": [
+              "E04-O1",
+              "E04-O2",
+              "E04-O3"
+            ],
+            "counter_refs": [],
+            "basis": "co_occurrence_only",
+            "alternatives": [
+              "E04-H2"
+            ],
+            "state": "candidate",
+            "model_version": "design-example-only"
+          },
+          {
+            "hypothesis_id": "E04-H2",
+            "claim": "감칠맛과 별개의 감각 또는 조합이 아쉬웠을 가능성",
+            "conditions": {
+              "experience_ref": "example-experience-E04"
+            },
+            "support_refs": [
+              "E04-O1"
+            ],
+            "counter_refs": [],
+            "basis": "unconfirmed_explanation",
+            "alternatives": [
+              "E04-H1"
+            ],
+            "state": "candidate",
+            "model_version": "design-example-only"
+          }
+        ],
+        "unknowns": [
+          "전체 아쉬움의 원인",
+          "감칠맛 자체의 호감",
+          "다른 음식에서의 감칠맛 선호"
+        ],
+        "forbidden_inferences": [
+          "감칠맛 회피 프로필 확정",
+          "버블을 고른 순서에서 평가 원인 결정"
+        ],
+        "optional_question": {
+          "text": "그 감칠맛 자체는 어땠어요?",
+          "target": {
+            "scope": "attribute",
+            "parent_ref": "example-experience-E04",
+            "attribute": "taste.umami"
+          },
+          "can_skip": true,
+          "distinguishes_hypotheses": [
+            "E04-H1",
+            "E04-H2"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "E05",
+      "title": "전체 긍정과 선호 수준 초과가 공존",
+      "experience_refs": [
+        "example-experience-E05"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E05",
+          "client_mutation_id": "mutation-E05",
+          "experience_refs": [
+            "example-experience-E05"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "overall",
+              "kind": "choice",
+              "prompt_text": "이 음식의 맛은 어땠어요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E05"
+              },
+              "shown_options": [
+                {
+                  "id": "overall-positive",
+                  "label": "좋았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "positive"
+                  }
+                },
+                {
+                  "id": "overall-neutral",
+                  "label": "괜찮았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "neutral"
+                  }
+                },
+                {
+                  "id": "overall-negative",
+                  "label": "아쉬웠어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "negative"
+                  }
+                },
+                {
+                  "id": "overall-unknown",
+                  "label": "잘 모르겠어요",
+                  "meaning": {
+                    "missing_reason": "unsure"
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "overall-positive"
+                ]
+              }
+            },
+            {
+              "answer_id": "detail",
+              "kind": "choice",
+              "prompt_text": "단맛에 대해 더 남길 점이 있나요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E05"
+              },
+              "shown_options": [
+                {
+                  "id": "sweet-above-preferred",
+                  "label": "단맛이 과했어요",
+                  "meaning": {
+                    "attribute": "taste.sweet",
+                    "preference_fit": "above_preferred"
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "sweet-above-preferred"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E05-O1",
+            "experience_refs": [
+              "example-experience-E05"
+            ],
+            "kind": "overall_liking",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E05"
+            },
+            "attribute": null,
+            "value": {
+              "category": "positive"
+            },
+            "phase": "overall",
+            "source_refs": [
+              {
+                "event_id": "event-E05",
+                "answer_id": "overall",
+                "option_id": "overall-positive"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          },
+          {
+            "observation_id": "E05-O2",
+            "experience_refs": [
+              "example-experience-E05"
+            ],
+            "kind": "preference_fit",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E05"
+            },
+            "attribute": "taste.sweet",
+            "value": {
+              "relation": "above_preferred",
+              "reference": "user_preferred_level"
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E05",
+                "answer_id": "detail",
+                "option_id": "sweet-above-preferred"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "객관적인 단맛 강도",
+          "단맛 자체의 호감",
+          "다른 요리에서 원하는 단맛 수준"
+        ],
+        "forbidden_inferences": [
+          "전체 긍정과 부분 아쉬움을 모순으로 삭제",
+          "단맛의 강도를 숫자로 생성",
+          "단맛이 과했다는 말만으로 전체 만족도를 낮춤"
+        ]
+      }
+    },
+    {
+      "case_id": "E06",
+      "title": "시간과 구성 요소가 있는 자유문장",
+      "experience_refs": [
+        "example-experience-E06"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E06",
+          "client_mutation_id": "mutation-E06",
+          "experience_refs": [
+            "example-experience-E06"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "note",
+              "kind": "text",
+              "prompt_text": "더 남기고 싶은 이야기가 있나요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E06"
+              },
+              "response": {
+                "text": "첫입의 훈연향은 좋았는데, 먹을수록 소스가 너무 달아서 물렸어. 전체적으로는 맛있었어."
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E06-O1",
+            "experience_refs": [
+              "example-experience-E06"
+            ],
+            "kind": "sensory_presence",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E06"
+            },
+            "attribute": "aroma.smoky",
+            "value": {
+              "present": true
+            },
+            "phase": "first_bite",
+            "source_refs": [
+              {
+                "event_id": "event-E06",
+                "answer_id": "note",
+                "quote": "첫입의 훈연향은 좋았는데"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "grounded",
+            "scale_ref": "raw_user_language"
+          },
+          {
+            "observation_id": "E06-O2",
+            "experience_refs": [
+              "example-experience-E06"
+            ],
+            "kind": "attribute_liking",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E06"
+            },
+            "attribute": "aroma.smoky",
+            "value": {
+              "category": "positive"
+            },
+            "phase": "first_bite",
+            "source_refs": [
+              {
+                "event_id": "event-E06",
+                "answer_id": "note",
+                "quote": "첫입의 훈연향은 좋았는데"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "grounded",
+            "scale_ref": "raw_user_language"
+          },
+          {
+            "observation_id": "E06-O3",
+            "experience_refs": [
+              "example-experience-E06"
+            ],
+            "kind": "preference_fit",
+            "target": {
+              "scope": "component",
+              "label": "소스",
+              "parent_ref": "example-experience-E06"
+            },
+            "attribute": "taste.sweet",
+            "value": {
+              "relation": "above_preferred",
+              "reference": "user_preferred_level"
+            },
+            "phase": "later_in_meal",
+            "source_refs": [
+              {
+                "event_id": "event-E06",
+                "answer_id": "note",
+                "quote": "먹을수록 소스가 너무 달아서 물렸어"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "grounded",
+            "scale_ref": "raw_user_language"
+          },
+          {
+            "observation_id": "E06-O4",
+            "experience_refs": [
+              "example-experience-E06"
+            ],
+            "kind": "attribute_liking",
+            "target": {
+              "scope": "component",
+              "label": "소스",
+              "parent_ref": "example-experience-E06"
+            },
+            "attribute": "taste.sweet",
+            "value": {
+              "category": "negative"
+            },
+            "phase": "later_in_meal",
+            "source_refs": [
+              {
+                "event_id": "event-E06",
+                "answer_id": "note",
+                "quote": "먹을수록 소스가 너무 달아서 물렸어"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "grounded",
+            "scale_ref": "raw_user_language"
+          },
+          {
+            "observation_id": "E06-O5",
+            "experience_refs": [
+              "example-experience-E06"
+            ],
+            "kind": "overall_liking",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E06"
+            },
+            "attribute": null,
+            "value": {
+              "category": "positive"
+            },
+            "phase": "overall",
+            "source_refs": [
+              {
+                "event_id": "event-E06",
+                "answer_id": "note",
+                "quote": "전체적으로는 맛있었어"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "grounded",
+            "scale_ref": "raw_user_language"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "향의 절대 강도",
+          "당도",
+          "재선택 의향"
+        ],
+        "forbidden_inferences": [
+          "5개 관찰을 5번의 식사로 집계",
+          "첫입과 후반을 평균으로 지움",
+          "물렸다는 표현을 생리적 포만감 측정으로 변환"
+        ]
+      }
+    },
+    {
+      "case_id": "E07",
+      "title": "뜻이 모호한 감각 표현",
+      "experience_refs": [
+        "example-experience-E07"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E07",
+          "client_mutation_id": "mutation-E07",
+          "experience_refs": [
+            "example-experience-E07"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "note",
+              "kind": "text",
+              "prompt_text": "더 남기고 싶은 이야기가 있나요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E07"
+              },
+              "response": {
+                "text": "깔끔했어요."
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E07-O1",
+            "experience_refs": [
+              "example-experience-E07"
+            ],
+            "kind": "unresolved_descriptor",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E07"
+            },
+            "attribute": null,
+            "value": {
+              "raw_descriptor": "깔끔했어요"
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E07",
+                "answer_id": "note",
+                "quote": "깔끔했어요"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "unresolved",
+            "scale_ref": "raw_user_language"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "깔끔함의 감각적 의미",
+          "전체 호감",
+          "감각 강도"
+        ],
+        "forbidden_inferences": [
+          "깔끔함을 지방감이 낮음으로 확정",
+          "깔끔함을 높은 산미로 확정",
+          "긍정적 어감만으로 전체 호감 생성"
+        ]
+      }
+    },
+    {
+      "case_id": "E08",
+      "title": "보여준 다른 버블은 미선택",
+      "experience_refs": [
+        "example-experience-E08"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E08",
+          "client_mutation_id": "mutation-E08",
+          "experience_refs": [
+            "example-experience-E08"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "sensory",
+              "kind": "multi_choice",
+              "prompt_text": "기억에 남는 느낌이 있다면 골라주세요.",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E08"
+              },
+              "shown_options": [
+                {
+                  "id": "strong-umami",
+                  "label": "진한 감칠맛",
+                  "meaning": {
+                    "attribute": "taste.umami",
+                    "perceived_intensity": "strong",
+                    "basis": "user_relative_language"
+                  }
+                },
+                {
+                  "id": "smoky",
+                  "label": "훈연향",
+                  "meaning": {
+                    "attribute": "aroma.smoky",
+                    "present": true
+                  }
+                },
+                {
+                  "id": "crisp",
+                  "label": "바삭함",
+                  "meaning": {
+                    "attribute": "texture.crisp",
+                    "present": true
+                  }
+                },
+                {
+                  "id": "moist",
+                  "label": "촉촉함",
+                  "meaning": {
+                    "attribute": "texture.moist",
+                    "present": true
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "smoky"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E08-O1",
+            "experience_refs": [
+              "example-experience-E08"
+            ],
+            "kind": "sensory_presence",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E08"
+            },
+            "attribute": "aroma.smoky",
+            "value": {
+              "present": true
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E08",
+                "answer_id": "sensory",
+                "option_id": "smoky"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "바삭함의 존재",
+          "촉촉함의 존재",
+          "감칠맛의 존재",
+          "훈연향의 호감"
+        ],
+        "forbidden_inferences": [
+          "선택하지 않은 바삭함을 false로 저장",
+          "미선택을 싫어함으로 저장",
+          "제시한 모든 옵션을 감각 관찰로 저장"
+        ]
+      }
+    },
+    {
+      "case_id": "E09",
+      "title": "모름을 직접 선택",
+      "experience_refs": [
+        "example-experience-E09"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E09",
+          "client_mutation_id": "mutation-E09",
+          "experience_refs": [
+            "example-experience-E09"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "overall",
+              "kind": "choice",
+              "prompt_text": "이 음식의 맛은 어땠어요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E09"
+              },
+              "shown_options": [
+                {
+                  "id": "overall-positive",
+                  "label": "좋았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "positive"
+                  }
+                },
+                {
+                  "id": "overall-neutral",
+                  "label": "괜찮았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "neutral"
+                  }
+                },
+                {
+                  "id": "overall-negative",
+                  "label": "아쉬웠어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "negative"
+                  }
+                },
+                {
+                  "id": "overall-unknown",
+                  "label": "잘 모르겠어요",
+                  "meaning": {
+                    "missing_reason": "unsure"
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "overall-unknown"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [],
+        "missing_answers": [
+          {
+            "answer_id": "overall",
+            "reason": "unsure",
+            "source_ref": {
+              "event_id": "event-E09",
+              "answer_id": "overall",
+              "option_id": "overall-unknown"
+            }
+          }
+        ],
+        "hypotheses": [],
+        "unknowns": [
+          "전체 호감"
+        ],
+        "forbidden_inferences": [
+          "잘 모르겠어요를 neutral로 저장",
+          "미응답을 낮은 신뢰도의 부정 평가로 저장"
+        ]
+      }
+    },
+    {
+      "case_id": "E10",
+      "title": "추가 확인은 특정 감각에만 붙임",
+      "experience_refs": [
+        "example-experience-E04"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E10",
+          "client_mutation_id": "mutation-E10",
+          "experience_refs": [
+            "example-experience-E04"
+          ],
+          "revision": 2,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "attribute-appraisal",
+              "kind": "choice",
+              "prompt_text": "그 감칠맛 자체는 어땠어요?",
+              "target": {
+                "scope": "attribute",
+                "parent_ref": "example-experience-E04",
+                "attribute": "taste.umami"
+              },
+              "shown_options": [
+                {
+                  "id": "attribute-positive",
+                  "label": "좋았어요",
+                  "meaning": {
+                    "kind": "attribute_liking",
+                    "category": "positive"
+                  }
+                },
+                {
+                  "id": "attribute-negative",
+                  "label": "아쉬웠어요",
+                  "meaning": {
+                    "kind": "attribute_liking",
+                    "category": "negative"
+                  }
+                },
+                {
+                  "id": "attribute-unknown",
+                  "label": "잘 모르겠어요",
+                  "meaning": {
+                    "missing_reason": "unsure"
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "attribute-positive"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E10-O1",
+            "experience_refs": [
+              "example-experience-E04"
+            ],
+            "kind": "attribute_liking",
+            "target": {
+              "scope": "attribute",
+              "parent_ref": "example-experience-E04",
+              "attribute": "taste.umami"
+            },
+            "attribute": "taste.umami",
+            "value": {
+              "category": "positive"
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E10",
+                "answer_id": "attribute-appraisal",
+                "option_id": "attribute-positive"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "user_clarification",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "음식 전체가 아쉬웠던 구체적인 원인",
+          "다른 음식의 진한 감칠맛 선호"
+        ],
+        "forbidden_inferences": [
+          "전체 음식 평가를 positive로 덮어씀",
+          "추가 답변을 새 식사 경험으로 집계"
+        ],
+        "preserved_observation_refs": [
+          "E04-O1",
+          "E04-O2",
+          "E04-O3"
+        ],
+        "hypothesis_updates": [
+          {
+            "hypothesis_id": "E04-H1",
+            "add_counter_refs": [
+              "E10-O1"
+            ],
+            "state": "contested",
+            "reason": "이 경험의 감칠맛 자체는 좋았다는 직접 확인"
+          }
+        ]
+      },
+      "prior_case_refs": [
+        "E04"
+      ]
+    },
+    {
+      "case_id": "E11",
+      "title": "맛 호감과 가격 및 방문 의향을 분리",
+      "experience_refs": [
+        "example-experience-E11"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E11",
+          "client_mutation_id": "mutation-E11",
+          "experience_refs": [
+            "example-experience-E11"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "note",
+              "kind": "text",
+              "prompt_text": "더 남기고 싶은 이야기가 있나요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E11"
+              },
+              "response": {
+                "text": "맛은 좋았는데 가격이 비싸서 다시 안 갈 것 같아요."
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E11-O1",
+            "experience_refs": [
+              "example-experience-E11"
+            ],
+            "kind": "overall_liking",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E11"
+            },
+            "attribute": null,
+            "value": {
+              "category": "positive"
+            },
+            "phase": "overall",
+            "source_refs": [
+              {
+                "event_id": "event-E11",
+                "answer_id": "note",
+                "quote": "맛은 좋았는데"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "grounded",
+            "scale_ref": "raw_user_language"
+          },
+          {
+            "observation_id": "E11-O2",
+            "experience_refs": [
+              "example-experience-E11"
+            ],
+            "kind": "context",
+            "target": {
+              "scope": "restaurant",
+              "ref": "illustrative-restaurant-E11"
+            },
+            "attribute": "context.price_appraisal",
+            "value": {
+              "judgment": "expensive_for_user"
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E11",
+                "answer_id": "note",
+                "quote": "가격이 비싸서"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "grounded",
+            "scale_ref": "raw_user_language"
+          },
+          {
+            "observation_id": "E11-O3",
+            "experience_refs": [
+              "example-experience-E11"
+            ],
+            "kind": "choice_intent",
+            "target": {
+              "scope": "restaurant",
+              "ref": "illustrative-restaurant-E11"
+            },
+            "attribute": null,
+            "value": {
+              "category": "unlikely",
+              "action": "revisit"
+            },
+            "phase": "unspecified",
+            "source_refs": [
+              {
+                "event_id": "event-E11",
+                "answer_id": "note",
+                "quote": "다시 안 갈 것 같아요"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "grounded",
+            "scale_ref": "raw_user_language"
+          }
+        ],
+        "missing_answers": [],
+        "hypotheses": [],
+        "unknowns": [
+          "객관적인 가격",
+          "같은 맛을 다른 가격에 제공했을 때 선택",
+          "구체적으로 좋았던 감각"
+        ],
+        "forbidden_inferences": [
+          "방문 의향이 낮으므로 맛 호감을 negative로 저장",
+          "비싸다는 판단에서 실제 결제 금액 생성"
+        ]
+      }
+    },
+    {
+      "case_id": "E12",
+      "title": "부정 완화와 명시적 미확인",
+      "experience_refs": [
+        "example-experience-E12"
+      ],
+      "input_events": [
+        {
+          "event_id": "event-E12",
+          "client_mutation_id": "mutation-E12",
+          "experience_refs": [
+            "example-experience-E12"
+          ],
+          "revision": 1,
+          "operation": "add_answers",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "note",
+              "kind": "text",
+              "prompt_text": "더 남기고 싶은 이야기가 있나요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E12"
+              },
+              "response": {
+                "text": "맛없진 않았어요. 다시 먹을지는 모르겠어요."
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "observations": [
+          {
+            "observation_id": "E12-O1",
+            "experience_refs": [
+              "example-experience-E12"
+            ],
+            "kind": "unresolved_descriptor",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E12"
+            },
+            "attribute": null,
+            "value": {
+              "raw_descriptor": "맛없진 않았어요",
+              "overall_liking_category": null
+            },
+            "phase": "overall",
+            "source_refs": [
+              {
+                "event_id": "event-E12",
+                "answer_id": "note",
+                "quote": "맛없진 않았어요"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "text_extraction",
+            "resolution": "needs_disambiguation",
+            "scale_ref": "raw_user_language"
+          }
+        ],
+        "missing_answers": [
+          {
+            "answer_id": "note",
+            "field": "choice_intent",
+            "reason": "unsure",
+            "source_ref": {
+              "event_id": "event-E12",
+              "answer_id": "note",
+              "quote": "다시 먹을지는 모르겠어요"
+            }
+          }
+        ],
+        "hypotheses": [],
+        "unknowns": [
+          "전체 호감의 정확한 범주",
+          "재선택 의향"
+        ],
+        "forbidden_inferences": [
+          "부정 완화 표현을 positive로 확정",
+          "다시 먹을지 모름을 negative로 저장"
+        ]
+      }
+    }
+  ],
+  "lifecycle_scenarios": [
+    {
+      "scenario_id": "L01",
+      "title": "전송 재시도",
+      "initial_case_refs": [
+        "E02"
+      ],
+      "operations": [
+        {
+          "operation": "retry_delivery",
+          "event_ref": "event-E02",
+          "client_mutation_id": "mutation-E02"
+        }
+      ],
+      "expected": {
+        "active_observation_refs": [
+          "E02-O1"
+        ],
+        "independent_experience_count": 1,
+        "new_observation_count": 0,
+        "new_evidence_from_retry": false
+      }
+    },
+    {
+      "scenario_id": "L02",
+      "title": "의미가 같은 답변 재저장",
+      "initial_case_refs": [
+        "E02"
+      ],
+      "operations": [
+        {
+          "operation": "save_unchanged_answer",
+          "source_answer_ref": {
+            "event_id": "event-E02",
+            "answer_id": "overall"
+          },
+          "new_client_mutation_id": "mutation-L02"
+        }
+      ],
+      "expected": {
+        "active_observation_refs": [
+          "E02-O1"
+        ],
+        "independent_experience_count": 1,
+        "new_observation_count": 0,
+        "new_evidence_from_resave": false
+      }
+    },
+    {
+      "scenario_id": "L03",
+      "title": "전체 평가 수정",
+      "initial_case_refs": [
+        "E02"
+      ],
+      "operations": [
+        {
+          "event_id": "event-L03",
+          "client_mutation_id": "mutation-L03",
+          "experience_refs": [
+            "example-experience-E02"
+          ],
+          "revision": 2,
+          "operation": "replace_answer",
+          "recorded_at": "2026-09-05T10:00:00+09:00",
+          "presentation": {
+            "surface": "quick_record_proposal",
+            "definition_version": "sensory-proposal-v0.1",
+            "automatic_selection": false
+          },
+          "answers": [
+            {
+              "answer_id": "overall",
+              "kind": "choice",
+              "prompt_text": "이 음식의 맛은 어땠어요?",
+              "target": {
+                "scope": "dish",
+                "ref": "example-experience-E02"
+              },
+              "shown_options": [
+                {
+                  "id": "overall-positive",
+                  "label": "좋았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "positive"
+                  }
+                },
+                {
+                  "id": "overall-neutral",
+                  "label": "괜찮았어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "neutral"
+                  }
+                },
+                {
+                  "id": "overall-negative",
+                  "label": "아쉬웠어요",
+                  "meaning": {
+                    "kind": "overall_liking",
+                    "category": "negative"
+                  }
+                },
+                {
+                  "id": "overall-unknown",
+                  "label": "잘 모르겠어요",
+                  "meaning": {
+                    "missing_reason": "unsure"
+                  }
+                }
+              ],
+              "response": {
+                "selected_option_ids": [
+                  "overall-negative"
+                ]
+              }
+            }
+          ],
+          "replaces": {
+            "event_id": "event-E02",
+            "answer_id": "overall"
+          }
+        }
+      ],
+      "expected": {
+        "new_observations": [
+          {
+            "observation_id": "L03-O1",
+            "experience_refs": [
+              "example-experience-E02"
+            ],
+            "kind": "overall_liking",
+            "target": {
+              "scope": "dish",
+              "ref": "example-experience-E02"
+            },
+            "attribute": null,
+            "value": {
+              "category": "negative"
+            },
+            "phase": "overall",
+            "source_refs": [
+              {
+                "event_id": "event-L03",
+                "answer_id": "overall",
+                "option_id": "overall-negative"
+              }
+            ],
+            "assertion_origin": "user_explicit",
+            "extraction_method": "choice_mapping",
+            "resolution": "grounded",
+            "scale_ref": "sensory-proposal-v0.1"
+          }
+        ],
+        "inactive_observation_refs": [
+          "E02-O1"
+        ],
+        "active_observation_refs": [
+          "L03-O1"
+        ],
+        "independent_experience_count": 1,
+        "recompute_dependent_hypotheses": true
+      }
+    },
+    {
+      "scenario_id": "L04",
+      "title": "버블 응답만 취소",
+      "initial_case_refs": [
+        "E04"
+      ],
+      "operations": [
+        {
+          "operation": "withdraw_answer",
+          "experience_refs": [
+            "example-experience-E04"
+          ],
+          "answer_ref": {
+            "event_id": "event-E04",
+            "answer_id": "sensory"
+          }
+        }
+      ],
+      "expected": {
+        "inactive_observation_refs": [
+          "E04-O2",
+          "E04-O3"
+        ],
+        "active_observation_refs": [
+          "E04-O1"
+        ],
+        "independent_experience_count": 1,
+        "reevaluate_hypothesis_refs": [
+          "E04-H1",
+          "E04-H2"
+        ],
+        "create_negative_preference": false
+      }
+    },
+    {
+      "scenario_id": "L05",
+      "title": "식사 경험 삭제",
+      "initial_case_refs": [
+        "E04"
+      ],
+      "operations": [
+        {
+          "operation": "delete_experience",
+          "experience_refs": [
+            "example-experience-E04"
+          ]
+        }
+      ],
+      "expected": {
+        "active_observation_refs": [],
+        "independent_experience_count": 0,
+        "delete_observation_refs": [
+          "E04-O1",
+          "E04-O2",
+          "E04-O3"
+        ],
+        "delete_source_event_refs": [
+          "event-E04"
+        ],
+        "invalidate_hypothesis_refs": [
+          "E04-H1",
+          "E04-H2"
+        ],
+        "recompute_derived_views": true,
+        "track_model_removal_work": true
+      }
+    },
+    {
+      "scenario_id": "L06",
+      "title": "같은 원문의 새 추출 버전 적용",
+      "initial_case_refs": [
+        "E03"
+      ],
+      "operations": [
+        {
+          "operation": "reextract",
+          "source_event_ref": "event-E03",
+          "pipeline_version": "illustrative-extractor-v2"
+        }
+      ],
+      "expected": {
+        "independent_experience_count": 1,
+        "new_independent_evidence_count": 0,
+        "previous_extraction_becomes_inactive": true,
+        "preserve_original_input": true,
+        "no_user_confirmation_inferred": true
+      }
+    }
+  ]
+}

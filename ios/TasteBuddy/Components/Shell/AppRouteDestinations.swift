@@ -9,6 +9,7 @@ struct AppRouteDestinationView: View {
     var onOpenMenuSuggestionSheet: ((String) -> Void)? = nil
     var collapsingTopChrome: AnyView? = nil
     var contentOffset: CGFloat = 0
+    var bottomContentInset: CGFloat = 0
 
     var body: some View {
         switch route {
@@ -50,8 +51,10 @@ struct AppRouteDestinationView: View {
                 topChrome: collapsingTopChrome,
                 contentOffset: contentOffset
             )
+        case .homeInsight(let kind):
+            HomeArchiveDetailView(kind: kind, bottomContentInset: bottomContentInset)
         case .savedRestaurants:
-            SavedRestaurantListView { restaurantID in
+            SavedRestaurantListView(topChrome: collapsingTopChrome, contentOffset: contentOffset) { restaurantID in
                 navigate(.restaurant(id: restaurantID))
             }
         case .connectionList(let kind):
@@ -316,6 +319,7 @@ private enum BookmarkSheetMode {
 }
 
 struct RestaurantBookmarkNativeSheet: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
     @StateObject private var keyboard = BottomComposerKeyboardObserver()
@@ -405,19 +409,26 @@ struct RestaurantBookmarkNativeSheet: View {
         ) {
             ZStack(alignment: .bottom) {
                 BottomSheetScrollView {
-                    VStack(spacing: 0) {
+                    ZStack(alignment: .top) {
                         if isCreating {
-                            createPreview
-                            Divider()
-                                .padding(.horizontal, TBSpacing.page)
-                            createBody
+                            VStack(spacing: 0) {
+                                createPreview
+                                Divider()
+                                    .padding(.horizontal, TBSpacing.page)
+                                createBody
+                            }
+                            .transition(.opacity)
                         } else {
-                            currentSavedSection
-                            Divider()
-                                .padding(.horizontal, TBSpacing.page)
-                            listSelectionBody
+                            VStack(spacing: 0) {
+                                currentSavedSection
+                                Divider()
+                                    .padding(.horizontal, TBSpacing.page)
+                                listSelectionBody
+                            }
+                            .transition(.opacity)
                         }
                     }
+                    .tasteBloomMotion(.content, value: isCreating)
                 }
 
                 if bookmarkToast.isPresented, let toastList {
@@ -429,7 +440,7 @@ struct RestaurantBookmarkNativeSheet: View {
                     )
                     .padding(.horizontal, TBSpacing.page)
                     .padding(.bottom, 12)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
                 }
             }
         }
@@ -816,7 +827,7 @@ struct RestaurantBookmarkNativeSheet: View {
     }
 
     private func showToastAndDismiss(_ list: RestaurantBookmarkList) {
-        withAnimation(.easeOut(duration: 0.18)) {
+        withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)) {
             toastList = list
             bookmarkToast.present(policy: .bookmarkSheetClose) {
                 closeSheet()
@@ -883,8 +894,9 @@ struct BookmarkCoverEditorOverlay: View {
                                     }
                                 }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(TBTokenButtonStyle())
                         .accessibilityLabel("\(axis.rawValue) 배경 선택")
+                        .accessibilityAddTraits(selectedCoverTasteID == axis ? .isSelected : [])
                     }
                 }
 
@@ -917,11 +929,14 @@ struct BookmarkCoverEditorOverlay: View {
                                 }
                                 .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(TBTokenButtonStyle())
                         .accessibilityLabel("\(iconID.rawValue) 아이콘 선택")
+                        .accessibilityAddTraits(selectedCoverIconID == iconID ? .isSelected : [])
                     }
                 }
             }
+            .tasteBloomMotion(.feedback, value: selectedCoverTasteID)
+            .tasteBloomMotion(.feedback, value: selectedCoverIconID)
         }
     }
 
@@ -955,6 +970,7 @@ private struct BookmarkListThumbnail: View {
             size: iconSize,
             strokeWidth: TBIcon.Stroke.regular
         )
+        .tasteBloomReplace(value: iconOverride ?? list.coverIconID.icon)
         .frame(width: size, height: size)
         .foregroundStyle(list.coverTasteID.mainColor)
         .background(list.coverTasteID.tintColor)
@@ -987,7 +1003,7 @@ private struct BookmarkListSelectionRow: View {
                     }
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TBTokenButtonStyle())
             .disabled(isSelected || isPending)
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -997,10 +1013,12 @@ private struct BookmarkListSelectionRow: View {
                     size: TBIcon.Size.large,
                     strokeWidth: TBIcon.Stroke.regular
                 )
+                .tasteBloomReplace(value: isSelected || isPending)
                 .frame(width: 40, height: 40)
                 .foregroundStyle(isSelected || isPending ? TBColor.textSecondary : TBColor.textHint)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TBTokenButtonStyle())
+            .tasteBloomMotion(.feedback, value: isSelected || isPending)
             .accessibilityLabel(isSelected ? "\(list.name)에서 제거" : "\(list.name)에 추가")
         }
     }
@@ -1008,88 +1026,56 @@ private struct BookmarkListSelectionRow: View {
 
 private struct SavedRestaurantListView: View {
     @EnvironmentObject private var appModel: AppModel
+    let topChrome: AnyView?
+    let contentOffset: CGFloat
     let onOpenRestaurant: (String) -> Void
     @State private var selectedCategory = "전체"
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 24) {
-                ForEach(["전체", "파인다이닝", "한식", "디저트"], id: \.self) { category in
-                    Button {
-                        selectedCategory = category
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(category)
-                            Text("1")
-                        }
-                        .font(TBFont.semibold(12))
-                        .foregroundStyle(
-                            selectedCategory == category
-                                ? Color(hex: 0x86A51E)
-                                : TBColor.textSecondary
+        TBCollapsingTopChromeScrollView(topChrome: topChrome, contentOffset: contentOffset) {
+            TBCapsuleTabs(options: ["전체", "파인다이닝", "한식", "디저트"], selection: $selectedCategory,
+                          selectedForeground: TasteAxis.bitter.tintSurfaceTextColor,
+                          selectedBackground: TasteAxis.bitter.tintColor,
+                          selectedBorder: TasteAxis.bitter.tintSoftBorderColor) { "\($0) 1" }
+        } content: {
+            Button {
+                let restaurantID = appModel.savedRestaurantIDs.first ?? "mingles"
+                onOpenRestaurant(restaurantID)
+            } label: {
+                SectionCard {
+                    HStack(spacing: 12) {
+                        LucideIcon(
+                            .archive,
+                            size: TBIcon.Size.medium,
+                            strokeWidth: TBIcon.Stroke.regular
                         )
-                        .padding(.horizontal, selectedCategory == category ? 12 : 0)
-                        .padding(.vertical, 7)
-                        .background(
-                            selectedCategory == category
-                                ? Color(hex: 0xF1F7C8)
-                                : Color.clear
-                        )
-                        .clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, TBSpacing.page)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(TBColor.page)
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .fill(TBColor.borderSubtle)
-                    .frame(height: 1)
-            }
+                            .frame(width: 38, height: 38)
+                            .foregroundStyle(Color(hex: 0x86A51E))
+                            .background(Color(hex: 0xF1F7C8))
+                            .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
 
-            ScrollView {
-                Button {
-                    let restaurantID = appModel.savedRestaurantIDs.first ?? "mingles"
-                    onOpenRestaurant(restaurantID)
-                } label: {
-                    SectionCard {
-                        HStack(spacing: 12) {
-                            LucideIcon(
-                                .archive,
-                                size: TBIcon.Size.medium,
-                                strokeWidth: TBIcon.Stroke.regular
-                            )
-                                .frame(width: 38, height: 38)
-                                .foregroundStyle(Color(hex: 0x86A51E))
-                                .background(Color(hex: 0xF1F7C8))
-                                .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(appModel.profileIdentity.displayName)
-                                    .font(TBFont.bold(15))
-                                    .foregroundStyle(TBColor.textPrimary)
-                                Text("공개 리스트 · 1")
-                                    .font(TBFont.regular(11))
-                                    .foregroundStyle(TBColor.textHint)
-                            }
-
-                            Spacer()
-
-                            LucideIcon(
-                                .chevronRight,
-                                size: TBIcon.Size.small,
-                                strokeWidth: TBIcon.Stroke.regular
-                            )
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(appModel.profileIdentity.displayName)
+                                .font(TBFont.bold(15))
+                                .foregroundStyle(TBColor.textPrimary)
+                            Text("공개 리스트 · 1")
+                                .font(TBFont.regular(11))
                                 .foregroundStyle(TBColor.textHint)
                         }
+
+                        Spacer()
+
+                        LucideIcon(
+                            .chevronRight,
+                            size: TBIcon.Size.small,
+                            strokeWidth: TBIcon.Stroke.regular
+                        )
+                            .foregroundStyle(TBColor.textHint)
                     }
                 }
-                .buttonStyle(.plain)
-                .tbPageContentPadding()
             }
+            .buttonStyle(.plain)
+            .tbPageContentPadding()
         }
         .background(TBColor.page.ignoresSafeArea())
     }
@@ -1139,46 +1125,18 @@ private struct SavedRestaurantRow: View {
 private struct ConnectionListView: View {
     let kind: ProfileConnectionKind
     let onOpenProfile: (String) -> Void
-    @State private var followedProfileIDs: Set<String> = ["mina"]
-
-    private var profiles: [BuddyProfile] {
-        BuddyProfile.samples
-    }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 12) {
-                ForEach(profiles) { profile in
-                    BuddyProfileRow(
-                        profile: profile,
-                        isFollowing: followedProfileIDs.contains(profile.id),
-                        onOpen: { onOpenProfile(profile.id) },
-                        onToggleFollow: {
-                            if followedProfileIDs.contains(profile.id) {
-                                followedProfileIDs.remove(profile.id)
-                            } else {
-                                followedProfileIDs.insert(profile.id)
-                            }
-                        }
-                    )
-                }
-
-                if profiles.isEmpty {
-                    SectionCard {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text("\(kind.title) 목록이 비어 있어요")
-                                .font(TBFont.bold(14))
-                                .foregroundStyle(TBColor.textPrimary)
-                            Text(
-                                kind == .followers
-                                    ? "아직 나를 팔로우한 다이닝 친구가 없습니다."
-                                    : "아직 내가 팔로우한 다이닝 친구가 없습니다."
-                            )
-                            .font(TBFont.regular(12))
-                            .foregroundStyle(TBColor.textSubtle)
-                            .lineSpacing(3)
-                        }
-                    }
+            SectionCard {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("\(kind.title) 목록을 아직 불러올 수 없어요")
+                        .font(TBFont.bold(14))
+                        .foregroundStyle(TBColor.textPrimary)
+                    Text("관계 데이터가 연결되면 여기에 표시됩니다.")
+                        .font(TBFont.regular(12))
+                        .foregroundStyle(TBColor.textSubtle)
+                        .lineSpacing(3)
                 }
             }
             .tbPageContentPadding()
@@ -1190,31 +1148,19 @@ private struct ConnectionListView: View {
 
 private struct PublicProfileView: View {
     let profileID: String
-    @State private var isFollowing = true
+    @State private var isFollowing = false
     @State private var publicIdentity: BackendPublicProfileIdentity?
 
-    private var sampleProfile: BuddyProfile? {
-        BuddyProfile.samples.first { $0.id == profileID }
-    }
-
     private var displayName: String {
-        publicIdentity?.title ?? sampleProfile?.name ?? "공개 프로필"
+        publicIdentity?.title ?? "공개 프로필"
     }
 
     private var displayHandle: String {
-        publicIdentity?.displayNickname ?? sampleProfile?.handle ?? "@tastebuddy"
-    }
-
-    private var displayAxis: TasteAxis {
-        sampleProfile?.axis ?? .umami
+        publicIdentity?.displayNickname ?? "@tastebuddy"
     }
 
     private var avatarSeed: String {
-        publicIdentity?.id ?? sampleProfile?.id ?? profileID
-    }
-
-    private var activityMetrics: [ProfileActivityMetric] {
-        sampleProfile?.activityMetrics ?? BuddyProfile.placeholderActivityMetrics
+        publicIdentity?.id ?? profileID
     }
 
     var body: some View {
@@ -1223,10 +1169,14 @@ private struct PublicProfileView: View {
                 ProfileHeroCard(
                     title: displayName,
                     handle: displayHandle,
-                    followerCount: sampleProfile?.followerCount ?? 0,
-                    followingCount: sampleProfile?.followingCount ?? 0
+                    followerCount: nil,
+                    followingCount: nil
                 ) {
-                    PalateBloomAvatar(size: 64, seed: avatarSeed)
+                    PalateBloomAvatar(
+                        size: 64,
+                        bloomProfile: .fallback(seed: avatarSeed),
+                        shapeSeed: avatarSeed
+                    )
                 } headerAction: {
                     EmptyView()
                 } footerAction: {
@@ -1234,36 +1184,33 @@ private struct PublicProfileView: View {
                         isFollowing.toggle()
                     } label: {
                         Text(isFollowing ? "팔로잉" : "팔로우")
+                            .contentTransition(.opacity)
                             .font(TBFont.semibold(12))
-                            .foregroundStyle(
-                                isFollowing ? TBColor.textPrimary : displayAxis.tintTextColor
-                            )
+                            .foregroundStyle(TBColor.textPrimary)
                             .padding(.horizontal, 14)
                             .frame(height: 36)
-                            .background(
-                                isFollowing ? TBColor.surface : displayAxis.tintColor
-                            )
+                            .background(TBColor.surface)
                             .clipShape(Capsule())
                             .overlay {
-                                if isFollowing {
-                                    Capsule().stroke(TBColor.border, lineWidth: 1)
-                                }
+                                Capsule().stroke(TBColor.border, lineWidth: 1)
                             }
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(TBTokenButtonStyle())
+                    .tasteBloomMotion(.feedback, value: isFollowing)
                 }
 
                 TBPageSection(title: "활동 요약") {
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: 12),
-                            GridItem(.flexible(), spacing: 12)
-                        ],
-                        spacing: 12
-                    ) {
-                        ForEach(activityMetrics) { metric in
-                            SummaryMetricCard(metric: metric)
+                    SectionCard {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("활동 통계 미제공")
+                                .font(TBFont.bold(14))
+                                .foregroundStyle(TBColor.textPrimary)
+                            Text("이 프로필에서 공개한 기록 통계가 없습니다.")
+                                .font(TBFont.regular(12))
+                                .foregroundStyle(TBColor.textSubtle)
+                                .lineSpacing(3)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
             }
@@ -1277,174 +1224,6 @@ private struct PublicProfileView: View {
                 isFollowing = publicIdentity.isFriend
             }
         }
-    }
-}
-
-private struct BuddyProfile: Identifiable {
-    let id: String
-    let name: String
-    let handle: String
-    let summary: String
-    let axis: TasteAxis
-    let feedItem: DiningDishFeedbackItem
-    let followerCount: Int
-    let followingCount: Int
-
-    var initial: String { String(name.prefix(1)).uppercased() }
-    var axes: [TasteAxis] { [axis, .umami, .sour] }
-    var activityMetrics: [ProfileActivityMetric] {
-        [
-            ProfileActivityMetric(
-                id: "measurements",
-                label: "미각 기록",
-                value: "3회",
-                symbol: "trophy",
-                color: TasteAxis.sweet.mainColor
-            ),
-            ProfileActivityMetric(
-                id: "feedback",
-                label: "다이닝 리뷰",
-                value: "8건",
-                symbol: "checkmark.circle",
-                color: TasteAxis.umami.mainColor
-            ),
-            ProfileActivityMetric(
-                id: "saved",
-                label: "테이스트 리스트",
-                value: "2개",
-                symbol: "bookmark",
-                color: TasteAxis.salty.mainColor
-            ),
-            ProfileActivityMetric(
-                id: "rating",
-                label: "평균 만족도",
-                value: "4.6",
-                symbol: "star",
-                color: TasteAxis.sour.mainColor
-            ),
-        ]
-    }
-
-    static let placeholderActivityMetrics: [ProfileActivityMetric] = [
-        ProfileActivityMetric(
-            id: "measurements",
-            label: "미각 기록",
-            value: "-",
-            symbol: "trophy",
-            color: TasteAxis.sweet.mainColor
-        ),
-        ProfileActivityMetric(
-            id: "feedback",
-            label: "다이닝 리뷰",
-            value: "-",
-            symbol: "checkmark.circle",
-            color: TasteAxis.umami.mainColor
-        ),
-        ProfileActivityMetric(
-            id: "saved",
-            label: "테이스트 리스트",
-            value: "-",
-            symbol: "bookmark",
-            color: TasteAxis.salty.mainColor
-        ),
-        ProfileActivityMetric(
-            id: "rating",
-            label: "평균 만족도",
-            value: "-",
-            symbol: "star",
-            color: TasteAxis.sour.mainColor
-        ),
-    ]
-
-    static let samples: [BuddyProfile] = [
-        BuddyProfile(
-            id: "mina",
-            name: "김민아",
-            handle: "@맑은끝민아",
-            summary: "맑은 감칠맛과 가벼운 피니시를 자주 기록하는 버디입니다.",
-            axis: .umami,
-            feedItem: TasteBuddyNativeContent.followingDishFeedbackItems[0],
-            followerCount: 18,
-            followingCount: 12
-        ),
-        BuddyProfile(
-            id: "jae",
-            name: "정서윤",
-            handle: "@산미탐험서윤",
-            summary: "밝은 산미와 절제된 단맛의 균형을 세밀하게 남깁니다.",
-            axis: .sour,
-            feedItem: TasteBuddyNativeContent.followingDishFeedbackItems[1],
-            followerCount: 11,
-            followingCount: 8
-        ),
-        BuddyProfile(
-            id: "hyeon",
-            name: "최도윤",
-            handle: "@불향도윤",
-            summary: "쌉싸름한 여운과 불향의 깊이를 편안하게 기록하는 버디입니다.",
-            axis: .bitter,
-            feedItem: DiningDishFeedbackItem.fromTasteMatchFeedItem(
-                TasteBuddyNativeContent.tasteMatchFeed[2],
-                commentCount: 0,
-                liked: false
-            ),
-            followerCount: 10,
-            followingCount: 7
-        )
-    ]
-}
-
-private struct BuddyProfileRow: View {
-    let profile: BuddyProfile
-    let isFollowing: Bool
-    let onOpen: () -> Void
-    let onToggleFollow: () -> Void
-
-    var body: some View {
-        ZStack {
-            Button(action: onOpen) {
-                Color.clear
-                    .contentShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
-            }
-            .buttonStyle(.plain)
-
-            HStack(spacing: 12) {
-                PalateBloomAvatar(size: 40, seed: profile.id)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(profile.name)
-                        .font(TBFont.bold(14))
-                        .foregroundStyle(TBColor.textPrimary)
-                    Text(profile.handle)
-                        .font(TBFont.semibold(12))
-                        .foregroundStyle(TBColor.textHint)
-                }
-                Spacer()
-
-                Button(action: onToggleFollow) {
-                    Text(isFollowing ? "팔로잉" : "팔로우")
-                        .font(TBFont.semibold(11))
-                        .foregroundStyle(
-                            isFollowing ? TBColor.textPrimary : profile.axis.tintTextColor
-                        )
-                        .padding(.horizontal, 12)
-                        .frame(height: 36)
-                        .background(
-                            isFollowing ? TBColor.surface : profile.axis.tintColor
-                        )
-                        .clipShape(Capsule())
-                        .overlay {
-                            if isFollowing {
-                                Capsule().stroke(TBColor.border, lineWidth: 1)
-                            }
-                        }
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(12)
-        }
-        .frame(height: 64)
-        .background(TBColor.surface)
-        .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
     }
 }
 
@@ -1503,6 +1282,9 @@ struct DishFeedbackCommentFocusView: View {
                         relativeDateLabel: "최근",
                         showsOptions: false,
                         framed: false,
+                        avatarProfile: item.authorName == "나" ? appModel.profile : nil,
+                        avatarImageData: item.authorName == "나" ? appModel.profileAvatarImageData : nil,
+                        avatarShapeSeed: item.authorName == "나" ? "current-user" : nil,
                         onCommentsTap: {
                             isComposerFocused = true
                         }
@@ -1529,8 +1311,7 @@ struct DishFeedbackCommentFocusView: View {
                         }
                     }
                 }
-                .padding(.horizontal, TBSpacing.page)
-                .padding(.bottom, 24)
+                .tbPageContentPadding(bottom: 24)
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -1544,7 +1325,7 @@ struct DishFeedbackCommentFocusView: View {
 
     private var commentComposer: some View {
         HStack(spacing: 12) {
-            PalateBloomAvatar(size: 40, seed: "current-user")
+            composerAvatarView
 
             TextField("댓글을 남겨보세요", text: $commentDraft)
                 .font(TBFont.medium(13))
@@ -1575,6 +1356,25 @@ struct DishFeedbackCommentFocusView: View {
             Rectangle()
                 .fill(TBColor.borderSubtle)
                 .frame(height: 1)
+        }
+    }
+
+    @ViewBuilder
+    private var composerAvatarView: some View {
+        let image = appModel.profileAvatarImageData.flatMap(UIImage.init(data:))
+        if let profile = appModel.profile {
+            PalateBloomAvatar(
+                size: 40,
+                tasteProfile: profile,
+                shapeSeed: "current-user",
+                image: image
+            )
+        } else {
+            PalateBloomAvatar(
+                size: 40,
+                seed: "current-user",
+                image: image
+            )
         }
     }
 
@@ -1642,166 +1442,126 @@ private struct DishFeedbackCommentRow: View {
     }
 }
 
-private struct TasteChangeFocusView: View {
+struct TasteChangeFocusView: View {
+    @EnvironmentObject private var appModel: AppModel
     let topChrome: AnyView?
     let contentOffset: CGFloat
-
-    @State private var selectedRange = "3개월"
-    @State private var selectedTasteIndex = 2
-
-    private let ranges = ["1개월", "3개월", "6개월", "1년"]
+    var seriesOverride: [TasteChangeSeries]? = nil
+    @State private var selectedMonths = 0
+    @State private var periodOffset = 0
+    @State private var selectedTasteIndex = 0
+    @State private var selectedSeriesID: String?
+    @State private var selectedEntry: DiningEntry?
     private let tastes = TasteAxis.allCases
-
-    private var selectedTaste: TasteAxis {
-        tastes[selectedTasteIndex]
+    private var allSeries: [TasteChangeSeries] {
+        seriesOverride ?? TasteChangeSeries.build(perception: appModel.sensoryAnalysis.perception,
+            survey: SurveyPerception.points(submissions: ([appModel.profile].compactMap { $0 } + appModel.profileHistory).compactMap(\.surveySubmission)))
     }
-
-    private var previousTaste: TasteAxis {
-        tastes[(selectedTasteIndex - 1 + tastes.count) % tastes.count]
+    private var axis: TasteAxis { tastes[selectedTasteIndex] }
+    private var choices: [TasteChangeSeries] { allSeries.filter { $0.axis == axis } }
+    private var selected: TasteChangeSeries? { choices.first { $0.id == selectedSeriesID } ?? choices.first }
+    private var bounds: (start: Date, end: Date) {
+        let points = selected?.points ?? []
+        let latest = points.map(\.date).max() ?? .now
+        if selectedMonths == 0 { return (points.map(\.start).min() ?? latest, latest) }
+        let end = Calendar.current.date(byAdding: .month, value: periodOffset * selectedMonths, to: latest) ?? latest
+        return (Calendar.current.date(byAdding: .month, value: -selectedMonths, to: end) ?? end, end)
     }
-
-    private var nextTaste: TasteAxis {
-        tastes[(selectedTasteIndex + 1) % tastes.count]
+    private var visible: [TasteChangeSeries.Point] {
+        (selected?.points ?? []).filter { $0.date >= bounds.start && $0.date <= bounds.end }
     }
-
+    private var canGoBack: Bool {
+        selectedMonths > 0 && (selected?.points.map(\.date).min() ?? .now) < bounds.start
+    }
+    private func dateLabel(_ value: Date) -> String {
+        value.formatted(.dateTime.year().month(.twoDigits).day(.twoDigits).locale(Locale(identifier: "ko_KR")))
+    }
     var body: some View {
-        TBCollapsingTopChromeScrollView(
-            topChrome: topChrome,
-            contentOffset: contentOffset
-        ) {
-            periodTabs
+        TBCollapsingTopChromeScrollView(topChrome: topChrome, contentOffset: contentOffset) {
+            TBCapsuleTabs(options: [1, 3, 6, 12, 0], selection: $selectedMonths,
+                          selectedForeground: axis.tintSurfaceTextColor,
+                          selectedBackground: axis.tintColor,
+                          selectedBorder: axis.tintSoftBorderColor) { months in
+                months == 0 ? "전부" : months == 12 ? "1년" : "\(months)개월"
+            }
+            .onChange(of: selectedMonths) { _, _ in periodOffset = 0 }
         } content: {
             VStack(spacing: 16) {
                 HStack {
-                    CircleNavigationButton(
-                        symbol: "chevron.left",
-                        isEnabled: false,
-                        action: {}
-                    )
-
+                    CircleNavigationButton(symbol: "chevron.left", isEnabled: canGoBack) { periodOffset -= 1 }
+                        .accessibilityLabel("이전 기간 보기")
                     Spacer()
-
-                    Text("2026. 3. 5 - 2026. 6. 5")
-                        .font(TBFont.semibold(15))
-                        .foregroundStyle(TBColor.textPrimary)
-
+                    Text(selected == nil ? "기록 대기" : "\(dateLabel(bounds.start)) – \(dateLabel(bounds.end))")
+                        .font(TBFont.semibold(15)).multilineTextAlignment(.center).foregroundStyle(TBColor.textPrimary)
                     Spacer()
-
-                    CircleNavigationButton(
-                        symbol: "chevron.right",
-                        isEnabled: true,
-                        action: {}
-                    )
+                    CircleNavigationButton(symbol: "chevron.right", isEnabled: periodOffset < 0) { periodOffset += 1 }
+                        .accessibilityLabel("다음 기간 보기")
                 }
-
                 HStack {
-                    TasteSelectorButton(axis: previousTaste, isMuted: true) {
-                        moveTaste(-1)
-                    }
-
+                    TasteSelectorButton(axis: tastes[(selectedTasteIndex + 5) % 6], isMuted: true) { moveTaste(-1) }
                     Spacer()
-
                     HStack(spacing: 8) {
-                        LucideIcon(
-                            systemName: selectedTaste.symbol,
-                            size: TBIcon.Size.base,
-                            strokeWidth: TBIcon.Stroke.regular
-                        )
-                            .foregroundStyle(selectedTaste.mainColor)
+                        LucideIcon(systemName: axis.symbol, size: TBIcon.Size.base, strokeWidth: TBIcon.Stroke.regular).foregroundStyle(axis.mainColor)
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(selectedTaste.label)
-                                .font(TBFont.semibold(14))
-                                .foregroundStyle(TBColor.textPrimary)
-                            Text("\(TasteProfile.sample.score(for: selectedTaste))점")
-                                .font(TBFont.medium(11))
-                                .foregroundStyle(TBColor.textSecondary)
+                            Text(axis.label).font(TBFont.semibold(14)).foregroundStyle(TBColor.textPrimary)
+                            Text(visible.last?.label ?? "기록 없음").font(TBFont.medium(11)).foregroundStyle(TBColor.textSecondary)
                         }
-                    }
-                    .padding(12)
-                    .background(TBColor.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(TBColor.border, lineWidth: 1)
-                    }
-
+                    }.padding(12).background(TBColor.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(TBColor.border, lineWidth: 1))
                     Spacer()
-
-                    TasteSelectorButton(axis: nextTaste, isMuted: true) {
-                        moveTaste(1)
+                    TasteSelectorButton(axis: tastes[(selectedTasteIndex + 1) % 6], isMuted: true) { moveTaste(1) }
+                }
+                if let selected {
+                    Menu {
+                        ForEach(choices) { series in
+                            Button("\(series.source) · \(series.condition)") { selectedSeriesID = series.id; periodOffset = 0 }
+                        }
+                    } label: {
+                        Label("\(selected.source) · \(selected.condition)", systemImage: "chevron.down")
+                            .font(TBFont.medium(12)).foregroundStyle(TBColor.textBody).frame(minHeight: 44)
+                    }.accessibilityLabel("비교할 음식과 기록 출처 선택")
+                }
+                TasteTrendChart(axis: axis, points: visible, maximum: selected?.maximum ?? 4, start: bounds.start, end: bounds.end)
+                    .frame(height: 280).padding(.horizontal, -12)
+                HStack(spacing: 8) {
+                    TrendMetric(label: "이전", value: visible.first { $0.id == "이전" }?.label ?? "기록 없음")
+                    TrendMetric(label: "최근", value: visible.first { $0.id == "최근" }?.label ?? "기록 없음")
+                    TrendMetric(label: "변화", value: TasteChangeSeries.changeLabel(visible), accent: axis.mainColor, labelColor: axis.mainColor, background: axis.tintColor)
+                }
+                VStack(spacing: 8) {
+                    TrendMeaningRow(title: "지금 읽히는 변화", detail: visible.count == 2
+                        ? "같은 음식·조건에서 \(TasteChangeSeries.changeLabel(visible)) 남겼어요."
+                        : "아직 변화없음 · 이 기간에 비교할 기록이 더 필요해요.")
+                    ForEach(selected?.details ?? ["같은 음식·조건에서 직접 느낀 강도를 남기면 이전과 최근을 비교할 수 있어요."], id: \.self) { detail in
+                        TrendMeaningRow(title: "적용 조건", detail: detail)
                     }
                 }
-
-                TasteTrendChart(axis: selectedTaste)
-                    .frame(height: 280)
-                    .padding(.horizontal, -12)
-
-                HStack(spacing: 8) {
-                    TrendMetric(label: "첫 기록", value: "62점")
-                    TrendMetric(label: "현재", value: "\(TasteProfile.sample.score(for: selectedTaste))점")
-                    TrendMetric(
-                        label: "변화",
-                        value: "+8",
-                        accent: selectedTaste.mainColor,
-                        labelColor: selectedTaste.mainColor,
-                        background: selectedTaste.tintColor
-                    )
+                ForEach(visible) { point in
+                    SectionCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("\(point.id) · \(dateLabel(point.start)) – \(dateLabel(point.date))").font(TBFont.semibold(12))
+                            Text("\(point.label) · \(selected?.source == "식사 기록" ? "식사 \(point.count)회" : "회상 응답 \(point.count)개")").font(TBFont.regular(12))
+                            ForEach(appModel.diningEntries.filter { point.experienceIDs.contains($0.id) }) { entry in
+                                Button { selectedEntry = entry } label: {
+                                    Label("\(entry.menu) 원본 기록 보기", systemImage: "arrow.up.right").font(TBFont.medium(12)).frame(minHeight: 44)
+                                }.tint(TBColor.textSecondary)
+                            }
+                        }.frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
-
-                VStack(spacing: 8) {
-                    TrendMeaningRow(
-                        title: "지금 읽히는 변화",
-                        detail: "\(selectedTaste.label) 반응이 이전보다 조금 더 또렷하게 읽히고 있습니다."
-                    )
-                    TrendMeaningRow(
-                        title: "다이닝에서의 의미",
-                        detail: "재료의 강도보다 코스 안에서 언제 나타나는지 함께 보면 더 정확한 기준이 됩니다."
-                    )
-                    TrendMeaningRow(
-                        title: "다음 반영 방식",
-                        detail: "다음 식후 피드백에서 같은 축의 편안함과 여운을 다시 확인합니다."
-                    )
-                }
-            }
-            .tbPageContentPadding()
-            .background(TBColor.surface)
+            }.tbPageContentPadding().background(TBColor.surface)
         }
-        .tbPageBackground()
-    }
-
-    private var periodTabs: some View {
-        HStack(spacing: 8) {
-            ForEach(ranges, id: \.self) { range in
-                Button {
-                    selectedRange = range
-                } label: {
-                    Text(range)
-                        .font(TBFont.semibold(13))
-                        .foregroundStyle(
-                            selectedRange == range
-                                ? selectedTaste.mainColor
-                                : TBColor.textTertiary
-                        )
-                        .padding(.horizontal, 14)
-                        .frame(height: 32)
-                        .background(
-                            selectedRange == range
-                                ? selectedTaste.tintColor
-                                : Color.clear
-                        )
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(selectedRange == range ? .isSelected : [])
-            }
+        .tbPageBackground().accessibilityIdentifier("taste-change-screen")
+        .onAppear {
+            if let first = allSeries.first(where: { TasteChangeSeries.changeLabel($0.points) != "비교 부족" && TasteChangeSeries.changeLabel($0.points) != "같은 강도" }) ?? allSeries.first,
+               let index = tastes.firstIndex(of: first.axis) { selectedTasteIndex = index; selectedSeriesID = first.id }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, TBSpacing.page)
-        .padding(.bottom, 16)
+        .sheet(item: $selectedEntry) { DishFeedbackDetailSheet(item: .fromDiningEntry($0, analysis: nil)) }
     }
-
     private func moveTaste(_ direction: Int) {
         selectedTasteIndex = (selectedTasteIndex + direction + tastes.count) % tastes.count
+        selectedSeriesID = nil; periodOffset = 0
     }
 }
 
@@ -1818,6 +1578,7 @@ private struct TasteChangeFocusView: View {
         ),
         contentOffset: 0
     )
+    .environmentObject(AppModel.preview(onboardingComplete: true))
     .tbScreenTopChrome()
 }
 
@@ -1834,13 +1595,13 @@ private struct CircleNavigationButton: View {
                 strokeWidth: TBIcon.Stroke.regular
             )
                 .frame(width: 40, height: 40)
-                .foregroundStyle(isEnabled ? TBColor.textPrimary : TBColor.textDisabled)
-                .background(isEnabled ? TBColor.surface : TBColor.disabledSurface)
+                .foregroundStyle(isEnabled ? TBColor.textPrimary : TBColor.borderDisabled)
+                .background(TBColor.surface)
                 .clipShape(Circle())
                 .overlay {
                     Circle()
                         .stroke(
-                            isEnabled ? TBColor.border : TBColor.borderDisabled,
+                            isEnabled ? TBColor.border : TBColor.borderSubtle,
                             lineWidth: 1
                         )
                 }
@@ -1880,62 +1641,40 @@ private struct TasteSelectorButton: View {
 
 private struct TasteTrendChart: View {
     let axis: TasteAxis
-
-    private let values: [CGFloat] = [0.34, 0.42, 0.39, 0.55, 0.61, 0.68]
-
+    let points: [TasteChangeSeries.Point]
+    let maximum: Int
+    let start: Date
+    let end: Date
     var body: some View {
         GeometryReader { proxy in
-            let plot = CGRect(
-                x: 24,
-                y: 20,
-                width: max(1, proxy.size.width - 48),
-                height: max(1, proxy.size.height - 54)
-            )
-
+            let plot = CGRect(x: 24, y: 20, width: max(1, proxy.size.width - 48), height: max(1, proxy.size.height - 54))
+            let positions = points.map { point in
+                CGPoint(x: plot.minX + plot.width * (end == start ? 0.5 : point.date.timeIntervalSince(start) / end.timeIntervalSince(start)),
+                        y: plot.maxY - plot.height * CGFloat(point.value) / CGFloat(maximum))
+            }
             Canvas { context, _ in
                 for index in 0..<5 {
                     let y = plot.minY + plot.height * CGFloat(index) / 4
-                    var grid = Path()
-                    grid.move(to: CGPoint(x: plot.minX, y: y))
-                    grid.addLine(to: CGPoint(x: plot.maxX, y: y))
-                    context.stroke(
-                        grid,
-                        with: .color(TBColor.borderSubtle),
-                        style: StrokeStyle(lineWidth: 1, dash: [3, 4])
-                    )
+                    var grid = Path(); grid.move(to: CGPoint(x: plot.minX, y: y)); grid.addLine(to: CGPoint(x: plot.maxX, y: y))
+                    context.stroke(grid, with: .color(TBColor.borderSubtle), style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
                 }
-
                 var line = Path()
-                for (index, value) in values.enumerated() {
-                    let x = plot.minX + plot.width * CGFloat(index) / CGFloat(values.count - 1)
-                    let y = plot.maxY - plot.height * value
-                    let point = CGPoint(x: x, y: y)
-
-                    if index == 0 {
-                        line.move(to: point)
-                    } else {
-                        line.addLine(to: point)
-                    }
+                for (index, point) in positions.enumerated() {
+                    if index == 0 { line.move(to: point) } else { line.addLine(to: point) }
                 }
-
-                context.stroke(
-                    line,
-                    with: .color(axis.mainColor),
-                    style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round)
-                )
-
-                for (index, value) in values.enumerated() {
-                    let x = plot.minX + plot.width * CGFloat(index) / CGFloat(values.count - 1)
-                    let y = plot.maxY - plot.height * value
-                    let point = CGPoint(x: x, y: y)
-                    context.fill(
-                        Path(ellipseIn: CGRect(x: point.x - 4, y: point.y - 4, width: 8, height: 8)),
-                        with: .color(axis.mainColor)
-                    )
+                context.stroke(line, with: .color(axis.mainColor), style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
+                for (index, point) in positions.enumerated() {
+                    context.fill(Path(ellipseIn: CGRect(x: point.x - 4, y: point.y - 4, width: 8, height: 8)), with: .color(axis.mainColor))
+                    context.draw(Text(points[index].id).font(TBFont.regular(11)).foregroundColor(TBColor.textHint), at: CGPoint(x: point.x, y: plot.maxY + 16))
+                }
+                if points.isEmpty {
+                    context.draw(Text("비교할 기록이 더 필요해요").font(TBFont.regular(13)).foregroundColor(TBColor.textHint), at: CGPoint(x: plot.midX, y: plot.midY))
                 }
             }
         }
-        .accessibilityLabel("\(axis.label) 미각 변화 그래프")
+        .tasteBloomChartReveal()
+        .accessibilityElement(children: .ignore).accessibilityLabel("\(axis.label) 미각 변화 그래프")
+        .accessibilityValue(points.map { "\($0.id) \($0.label)" }.joined(separator: ", "))
     }
 }
 

@@ -468,8 +468,7 @@ export const COMPONENT_STYLE_SPECS: ComponentStyleSpec[] = [
     ],
     values: [
       { label: "min-height", value: "60px", note: "`var(--tb-size-bottom-tab-bar-height)`" },
-      { label: "background-color", value: "var(--tb-color-bg-page) / 85%", note: "`bg-[var(--tb-color-bg-page)]/85`" },
-      { label: "backdrop blur", value: "12px", note: "`backdrop-blur-md`" },
+      { label: "background-color", value: "var(--tb-color-bg-page)", note: "`bg-[var(--tb-color-bg-page)]`" },
       { label: "border-top", value: "1px solid var(--tb-color-border-default)" },
       { label: "tab padding", value: "6px 16px" },
       { label: "tab gap", value: "2px" },

@@ -74,7 +74,7 @@ export default function BottomTabBar({ activeTab, onCenterAction, onTabChange }:
 
   return (
     <div
-      className="relative min-h-[var(--tb-size-bottom-tab-bar-height)] w-full shrink-0 overflow-visible border-t border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-page)]/70"
+      className="relative min-h-[var(--tb-size-bottom-tab-bar-height)] w-full shrink-0 overflow-visible border-t border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]"
       style={{ paddingBottom: 'var(--tb-safe-area-bottom)' }}
     >
       <div className="grid grid-cols-5 items-center px-2 py-1">

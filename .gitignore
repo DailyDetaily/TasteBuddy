@@ -5,6 +5,7 @@ build/
 .vite/
 tmp/
 .tmp-playwright/
+.playwright-cli/
 test-results/
 dev-dist/
 data/foodon/
@@ -13,6 +14,7 @@ data/foodon/
 .env.*.local
 .gstack/
 scratch/SourcePackages/
+scratch/module-cache/
 supabase/.temp/
 
 # Xcode local state
@@ -21,3 +23,6 @@ DerivedData*/
 *.xcuserstate
 xcuserdata/
 ios/Config/Secrets.local.xcconfig
+
+# Generated public OAuth discovery metadata (contains no secrets).
+public/.well-known/oauth-protected-resource/mcp

@@ -1,0 +1,110 @@
+{
+  "app/src/main/assets/tba/dining-sensory-selection-catalog.json": {
+    "source": "ios/TasteBuddy/Resources/TBA/dining-sensory-selection-catalog.json",
+    "sha256": "e546c02d01be48adad5f6a4cc978c6abff3a1621863a9e3acd05dfc17883510a"
+  },
+  "app/src/main/assets/tba/personal-taste-model-contract.json": {
+    "source": "ios/TasteBuddy/Resources/TBA/personal-taste-model-contract.json",
+    "sha256": "56691559d10bd8993c7639b5c3d9f8a06d96e341ca8ca96501e163baefcfe196"
+  },
+  "app/src/main/assets/tba/tba-food-knowledge-full.json": {
+    "source": "ios/TasteBuddy/Resources/TBA/tba-food-knowledge-full.json",
+    "sha256": "4fe909b3d568009566fe70dbe655f3f708d1f2901a66c4527c3db517ed656609"
+  },
+  "app/src/main/assets/tba/tba-native-runtime.json": {
+    "source": "ios/TasteBuddy/Resources/TBA/tba-native-runtime.json",
+    "sha256": "2900ead8f9b7a41225a5688982c355624fa42387c44d4978e84dfc79fc0f5093"
+  },
+  "app/src/main/assets/tba/tba-sensory-contract.json": {
+    "source": "ios/TasteBuddy/Resources/TBA/tba-sensory-contract.json",
+    "sha256": "ceaae888def2ac32d618ba8fd2b78d16a4d9f0e52cbfd46b7771f104434e5c7b"
+  },
+  "app/src/main/assets/fixtures/dining-feedback-scenario.json": {
+    "source": "ios/TasteBuddy/Resources/Fixtures/dining-feedback-scenario.json",
+    "sha256": "b751d804bd5041fadaa3a7cd2c10936198c40ec546e2e3cf84d29a4e1f8b2dd0"
+  },
+  "app/src/main/assets/fixtures/preference-intake.json": {
+    "source": "ios/TasteBuddy/Resources/Fixtures/preference-intake.json",
+    "sha256": "00cb8f2b829746028e3c44559f6b6bc8d2b4057fb0f6548b64e74321df47b532"
+  },
+  "app/src/main/assets/fixtures/quick-calibration-golden.json": {
+    "source": "ios/TasteBuddy/Resources/Fixtures/quick-calibration-golden.json",
+    "sha256": "f3d96328a9ad103d2545d7b3f41c369a5695a3d8ae10f4f0fe91f33599a8ecaf"
+  },
+  "app/src/main/assets/fixtures/taste-survey-golden.json": {
+    "source": "ios/TasteBuddy/Resources/Fixtures/taste-survey-golden.json",
+    "sha256": "23ac76bf91bddeeae23420f0d4f71756befbc6733a6ede0868beaf1cb86a5be3"
+  },
+  "app/src/main/assets/fixtures/tba-dining-analysis-golden.json": {
+    "source": "ios/TasteBuddy/Resources/Fixtures/tba-dining-analysis-golden.json",
+    "sha256": "86fd73eb3c1031a00c48980b561d4a9dee9bed01eb8efcb56bd3503b56b25c90"
+  },
+  "app/src/main/assets/fixtures/tba-full-engine-golden.json": {
+    "source": "ios/TasteBuddy/Resources/Fixtures/tba-full-engine-golden.json",
+    "sha256": "3be9248f2e99b83d801914080cb63fb42779e6788ff50fee3c0610f9cee889d4"
+  },
+  "app/src/main/assets/images/KangMingoo.png": {
+    "source": "ios/TasteBuddy/Resources/Images/KangMingoo.png",
+    "sha256": "2abb82b5c019f6d73044122bf7b54e4ae1c2388752bf3f804facb1192326f6d2"
+  },
+  "app/src/main/assets/images/LeeEunji.png": {
+    "source": "ios/TasteBuddy/Resources/Images/LeeEunji.png",
+    "sha256": "bb169d8ef2c7b19f08b69570c36f4f5c4e268bc9224ce78798fbd7519b574ac2"
+  },
+  "app/src/main/assets/images/LimJeongsik.png": {
+    "source": "ios/TasteBuddy/Resources/Images/LimJeongsik.png",
+    "sha256": "1c7cf09418978f67cc2f3b224851169e346c5a11f67f2ff681fa782753f20fb5"
+  },
+  "app/src/main/assets/images/OnjiumChefs.png": {
+    "source": "ios/TasteBuddy/Resources/Images/OnjiumChefs.png",
+    "sha256": "7bd841e2e3eee79b8098f9252ea40d0c442826bef79a7f8b8fccc31c4eaece55"
+  },
+  "app/src/main/assets/images/onboarding_render_1.png": {
+    "source": "ios/TasteBuddy/Resources/Images/onboarding_render_1.png",
+    "sha256": "b64603a24b4b1aa4c085c6049dbe5b0ade529f79b298c1d9d8ae54949441c19e"
+  },
+  "app/src/main/assets/images/onboarding_render_2.png": {
+    "source": "ios/TasteBuddy/Resources/Images/onboarding_render_2.png",
+    "sha256": "184f5352997d7d246a714eb948cacc3613c0ceb547d1855a2923cc7e6ecd27de"
+  },
+  "app/src/main/assets/images/onboarding_render_3.png": {
+    "source": "ios/TasteBuddy/Resources/Images/onboarding_render_3.png",
+    "sha256": "fc9db7537b81a51bac0033274eeb597c6124f4adfed7cf977ebec986b626e45d"
+  },
+  "app/src/main/assets/images/onboarding_render_4.png": {
+    "source": "ios/TasteBuddy/Resources/Images/onboarding_render_4.png",
+    "sha256": "06501434b724d392acc7c221d10dc00dc3f87eaf56ee073edcf9a22936d44360"
+  },
+  "app/src/main/res/font/pretendard_bold.otf": {
+    "source": "ios/TasteBuddy/Resources/Pretendard-Bold.otf",
+    "sha256": "2e91915fab54df71cc9598ebf608b2bdb54c6fe3c066ac61dff0bc44fca71cc7"
+  },
+  "app/src/main/res/font/pretendard_medium.otf": {
+    "source": "ios/TasteBuddy/Resources/Pretendard-Medium.otf",
+    "sha256": "d39e50e4bb52b4993b6a4eeb821a171254745bd824446af01e1f616b89fface0"
+  },
+  "app/src/main/res/font/pretendard_regular.otf": {
+    "source": "ios/TasteBuddy/Resources/Pretendard-Regular.otf",
+    "sha256": "3ffbacde6ab8411f1d2db54bb9b1f0b3ee2a738932033722cf0388c06aed1c93"
+  },
+  "app/src/main/res/font/pretendard_semibold.otf": {
+    "source": "ios/TasteBuddy/Resources/Pretendard-SemiBold.otf",
+    "sha256": "c89bc43027dc7cde5726e96223376f8eec09302b2fc1f8147fd5b57cfc376118"
+  },
+  "app/src/main/assets/images/SplashSymbol.svg": {
+    "source": "ios/TasteBuddy/Resources/Assets.xcassets/SplashSymbol.imageset/SplashSymbol.svg",
+    "sha256": "6f09d2f2c37fbb5a031fd6cd51bf5aa8bba84843861a05f7160331fa5c46275f"
+  },
+  "app/src/main/assets/images/SplashWordmark.svg": {
+    "source": "ios/TasteBuddy/Resources/Assets.xcassets/SplashWordmark.imageset/SplashWordmark.svg",
+    "sha256": "31c987a13665204cd3a61fa7068a70a655f387fcc98bc279b3326cc4d9e5bdbc"
+  },
+  "app/src/main/res/drawable-nodpi/app_icon.png": {
+    "source": "ios/TasteBuddy/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+    "sha256": "dc7357f34248e2eba12d7341884d867532eab02a6340e03b1d82f3951c7ca36a"
+  },
+  "app/src/main/assets/tba/taste-perception-fixtures.json": {
+    "source": "ios/TasteBuddy/Resources/TBA/taste-perception-fixtures.json",
+    "sha256": "df4a6471b396e0e2717e7921d96cd30ebebbc3c778d09351e689b6eb7dc9974d"
+  }
+}

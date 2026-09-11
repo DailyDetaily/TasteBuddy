@@ -3,8 +3,8 @@ import SwiftUI
 struct ProfileHeroCard<Avatar: View, HeaderAction: View, FooterAction: View>: View {
     let title: String
     let handle: String
-    let followerCount: Int
-    let followingCount: Int
+    let followerCount: Int?
+    let followingCount: Int?
     var onOpenFollowers: (() -> Void)?
     var onOpenFollowing: (() -> Void)?
 
@@ -15,8 +15,8 @@ struct ProfileHeroCard<Avatar: View, HeaderAction: View, FooterAction: View>: Vi
     init(
         title: String,
         handle: String,
-        followerCount: Int,
-        followingCount: Int,
+        followerCount: Int?,
+        followingCount: Int?,
         onOpenFollowers: (() -> Void)? = nil,
         onOpenFollowing: (() -> Void)? = nil,
         @ViewBuilder avatar: () -> Avatar,
@@ -81,7 +81,7 @@ struct ProfileHeroCard<Avatar: View, HeaderAction: View, FooterAction: View>: Vi
 }
 
 private struct ProfileHeroSocialCount: View {
-    let value: Int
+    let value: Int?
     let label: String
     var action: (() -> Void)?
 
@@ -100,7 +100,7 @@ private struct ProfileHeroSocialCount: View {
 
     private var content: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("\(value)")
+            Text(value.map(String.init) ?? "—")
                 .font(TBFont.semibold(14))
                 .foregroundStyle(TBColor.textPrimary)
 

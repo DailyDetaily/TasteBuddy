@@ -1,6 +1,6 @@
 # Taste Buddy app
 
-Taste Buddy is a premium dining personalization app.
+Taste Buddy helps people understand their palate through varied, evidence-backed interpretations and insights. Later extensions connect similar-palate groups and recommend restaurants and menus from those groups' dining evidence.
 
 This repo contains three big things in one place:
 
@@ -137,6 +137,7 @@ Not every important doc lives in `docs/`.
 - AI design guide: [`docs/AI_DESIGN_SYSTEM.md`](./docs/AI_DESIGN_SYSTEM.md)
 - Design snapshot: [`docs/design-system.snapshot.json`](./docs/design-system.snapshot.json)
 - Docs index: [`docs/README.md`](./docs/README.md)
+- TBA 미식 데이터 플랫폼·분석 설계: [`docs/product/tba-data-platform-architecture.md`](./docs/product/tba-data-platform-architecture.md)
 - Scripts index: [`scripts/README.md`](./scripts/README.md)
 - Supabase index: [`supabase/README.md`](./supabase/README.md)
 - Account and feedback release order: [`docs/operations/premerge-data-safety-release.md`](./docs/operations/premerge-data-safety-release.md)

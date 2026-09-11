@@ -1133,6 +1133,8 @@ export default function HomeUnifiedSearch({
   const lastCloseTriggerRef = useRef(closeTrigger);
   const lastOpenTriggerRef = useRef(openTrigger);
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
   const [query, setQuery] = useState('');
   const [selectedResult, setSelectedResult] = useState<HomeSearchResult | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>(loadRecentSearches);
@@ -1220,15 +1222,55 @@ export default function HomeUnifiedSearch({
     result.source === 'kakao' ? query.trim() || result.label : result.label
   );
 
-  const handleClose = () => {
-    setIsOpen(false);
-    setQuery('');
-    setSelectedResult(null);
+  const dismissKeyboard = () => {
+    inputRef.current?.blur();
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
+
+  const handleClose = (immediate = false) => {
+    dismissKeyboard();
+
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+
+    if (immediate) {
+      setIsClosing(false);
+      setIsOpen(false);
+      setQuery('');
+      setSelectedResult(null);
+      return;
+    }
+
+    setIsClosing(true);
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsClosing(false);
+      setIsOpen(false);
+      setQuery('');
+      setSelectedResult(null);
+      closeTimerRef.current = null;
+    }, 200);
   };
 
   const handleOpen = () => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setIsClosing(false);
     setIsOpen(true);
   };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!shouldSearchKakao) {
@@ -1322,7 +1364,7 @@ export default function HomeUnifiedSearch({
   const handleResultSelect = (result: HomeSearchResult) => {
     updateRecentSearches(getRecentSearchValueForResult(result));
     if (onOpenRestaurantDetail) {
-      handleClose();
+      handleClose(true);
       onOpenRestaurantDetail(result);
       return;
     }
@@ -1361,7 +1403,7 @@ export default function HomeUnifiedSearch({
     }
 
     updateRecentSearches(query.trim() || friend.displayName || `@${friend.nickname}`);
-    handleClose();
+    handleClose(true);
     onOpenTasteBuddyProfile(friend);
   };
 
@@ -1390,7 +1432,7 @@ export default function HomeUnifiedSearch({
     setRecordedResultIds((current) =>
       current.includes(result.id) ? current : [...current, result.id],
     );
-    handleClose();
+    handleClose(true);
     onStartDiningFeedback(result);
   };
 
@@ -1430,16 +1472,16 @@ export default function HomeUnifiedSearch({
     }
 
     lastCloseTriggerRef.current = closeTrigger;
-    handleClose();
+    handleClose(true);
   }, [closeTrigger]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || isClosing) {
       return;
     }
 
     requestAnimationFrame(() => inputRef.current?.focus());
-  }, [isOpen]);
+  }, [isOpen, isClosing]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -1516,8 +1558,9 @@ export default function HomeUnifiedSearch({
         <SearchOverlayShell
           ariaLabel="통합 검색"
           inputRef={inputRef}
+          isClosing={isClosing}
           onClearQuery={handleClearQuery}
-          onClose={handleClose}
+          onClose={() => handleClose()}
           onQueryChange={setQuery}
           onSubmit={handleSubmit}
           placeholder="레스토랑, 메뉴, 셰프, 버디 검색"

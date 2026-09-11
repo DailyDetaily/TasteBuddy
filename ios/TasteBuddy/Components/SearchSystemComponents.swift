@@ -80,7 +80,7 @@ struct SearchOverlayShell<Content: View>: View {
                     Circle().stroke(TBColor.border)
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TBTokenButtonStyle())
             .accessibilityLabel("검색 실행")
 
             Button("취소", action: onClose)
@@ -88,7 +88,7 @@ struct SearchOverlayShell<Content: View>: View {
                 .foregroundStyle(TBColor.textBody)
                 .frame(height: SearchOverlayShellMetrics.iconButtonSize)
                 .contentShape(Rectangle())
-                .buttonStyle(.plain)
+                .buttonStyle(TBTokenButtonStyle())
         }
         .padding(.horizontal, SearchOverlayShellMetrics.headerHorizontalPadding)
         .padding(.top, SearchOverlayShellMetrics.headerTopPadding)
@@ -195,6 +195,7 @@ struct CompactCard<Media: View, Actions: View>: View {
         .clipShape(RoundedRectangle(cornerRadius: CompactCardMetrics.radius, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: CompactCardMetrics.radius, style: .continuous))
         .accessibilityElement(children: action == nil ? .combine : .contain)
+        .tasteBloomMotion(.feedback, value: isSelected)
     }
 
     private var mainContent: some View {
@@ -261,6 +262,7 @@ struct CompactCardIconActionButton: View {
                 strokeWidth: TBIcon.Stroke.regular,
                 filled: filled || isActive
             )
+            .tasteBloomReplace(value: filled || isActive)
             .frame(
                 width: actionButtonSize,
                 height: actionButtonSize
@@ -268,7 +270,7 @@ struct CompactCardIconActionButton: View {
             .foregroundStyle(TBColor.textSecondary)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .accessibilityLabel(accessibilityLabel)
     }
 }

@@ -1,0 +1,19 @@
+{
+  "updatedAt": "2026-09-07",
+  "scope": "식사 선호 7문항의 자기 보고 계약, 원문 및 수정 이력 저장, 분석 화면의 조회와 편집, 신규 사용자 진입만 반영. 기존 ios-source-baseline.json과 다른 기능의 기준은 유지한다.",
+  "contractVersion": "tba-preference-intake/1",
+  "instrumentVersion": "1.0.0",
+  "sources": {
+    "ios/TasteBuddy/Domain/Models/PreferenceIntakeContractModels.swift": "49a409d924d873f27aa770540f4a391b71d653303fd0baee6a341fcbacb664e3",
+    "ios/TasteBuddy/Domain/UseCases/PreferenceIntakeContractEngine.swift": "061852226984e40aea4c9bd2926cc546eba4ebd0d58f81ca4347c347373789e5",
+    "ios/TasteBuddy/Features/Intake/PreferenceIntakeFlowView.swift": "bb69a5693b625310582680c4511ac60aeda01188772a9f60abdf6696cc739d0f",
+    "ios/TasteBuddy/Resources/Fixtures/preference-intake.json": "7f34edd01cce7028633d22129a1dfaa03ba4eb4f13e282f8162f3914f50e38e7"
+  },
+  "integrationScope": {
+    "ios/TasteBuddy/App/AppModel.swift": "선호 저장 후 분석 갱신과 preferenceSubmissions 전달",
+    "ios/TasteBuddy/App/AppPhase.swift": "기존 미각 프로필 보유자 제외, 신규 사용자 선호 질문 진입",
+    "ios/TasteBuddy/Domain/Models/SensoryAnalysisModels.swift": "statedPreferences 필드",
+    "ios/TasteBuddy/Domain/UseCases/SensoryAnalysisEngine.swift": "독립 자기 보고 채널 반환",
+    "ios/TasteBuddy/Features/Analysis/AnalysisView.swift": "선호 카드와 편집 시트"
+  }
+}

@@ -2287,7 +2287,7 @@ function DiningDishResultCard({
       <div className="flex w-full flex-col gap-[10px]">
         <ImageBox
           alt={`${dish.title} 메뉴 사진`}
-          className="aspect-square w-full rounded-[var(--tb-radius-12)]"
+          className="aspect-[4/5] w-full rounded-[var(--tb-radius-12)]"
           fallbackIconSize={ICON_TOKENS.size.xl}
           imageSrc={photoPreviewUrl}
           kind="menu"

@@ -72,6 +72,7 @@ struct BackendAuthResult: Equatable {
 
 protocol BackendAuthRepository {
     var hasCurrentSession: Bool { get }
+    var currentUser: BackendAuthUserSummary? { get }
     func ensureAnonymousSession() async -> BackendAuthResult
     func continueWithGoogle(redirectTo: URL?) async -> BackendAuthResult
     func sendEmailOTP(
@@ -91,9 +92,14 @@ protocol BackendAuthRepository {
     func deleteCurrentAccount() async -> BackendAuthResult
 }
 
+extension BackendAuthRepository {
+    var currentUser: BackendAuthUserSummary? { nil }
+}
+
 struct FixtureBackendAuthRepository: BackendAuthRepository {
     var result: BackendAuthResult
     var hasCurrentSession: Bool { result.user != nil }
+    var currentUser: BackendAuthUserSummary? { result.user }
 
     init(result: BackendAuthResult = .success("fixture auth ok")) {
         self.result = result
@@ -189,6 +195,7 @@ struct MissingConfigurationAuthRepository: BackendAuthRepository {
 struct SupabaseAuthRepository: BackendAuthRepository {
     let client: SupabaseClient
     var hasCurrentSession: Bool { client.auth.currentSession != nil }
+    var currentUser: BackendAuthUserSummary? { client.auth.currentSession.map { BackendAuthUserSummary($0.user) } }
 
     func ensureAnonymousSession() async -> BackendAuthResult {
         do {

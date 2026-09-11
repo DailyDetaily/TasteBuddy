@@ -1,0 +1,12 @@
+{
+  "updatedAt": "2026-09-07",
+  "scope": "기준 음식 회상 설문 v2만 갱신. 기존 ios-source-baseline.json의 전체 이식 기준은 유지.",
+  "instrumentVersion": "2.0.0",
+  "sources": {
+    "ios/TasteBuddy/Resources/Fixtures/taste-survey-golden.json": "23ac76bf91bddeeae23420f0d4f71756befbc6733a6ede0868beaf1cb86a5be3",
+    "ios/TasteBuddy/Domain/Models/TasteSurveyContractModels.swift": "3feee215a279338ccb0693d8d95879d01e984855c3c691f2fcf48ab789c1161b",
+    "ios/TasteBuddy/Domain/UseCases/TasteSurveyScoringEngine.swift": "2184403a0b9de807f6b3f48f88a0d48a11e33df5c895c90bcebcc6513358afaf",
+    "ios/TasteBuddy/Features/Calibration/CalibrationFlowView.swift": "b5936c9f472c9766a4d84c8a3fc09b0cd553c2df5f6b95827018d54f77ee4ff8",
+    "ios/TasteBuddy/Features/Calibration/TasteSurveyEvidenceCard.swift": "c073920a2ae0920090a5bb1fee0f7fba6c1776801d662ab8d9f8ed3dcbc84129"
+  }
+}

@@ -3,6 +3,8 @@
 작성일: 2026-06-01  
 범위: TasteBuddyAgent(TBA)의 음식 지식 RAG, Core Taste Lexicon, FART/ART Mapper, 사용자 피드백 기반 선호 학습 설계
 
+2026-09-06 기준: 이 문서는 기존 Mapper·RAG·confidence 설계의 참고 자료다. 현재 제품 우선순위는 개인 취향 이해와 다양한 해석·인사이트, 추후 비슷한 입맛 그룹 연결, 이후 그룹 기반 식당·메뉴 추천이다. 신규 데이터 정제·재해석·모델 판단에는 [플랫폼 아키텍처](./tba-data-platform-architecture.md), [수집·정제 계약](./tba-sensory-data-design.md), [분석·해석 모델](./tba-analysis-interpretation-model.md)이 우선한다. 아래의 고정 축·신뢰도 수치·추천 gate를 새 플랫폼의 원본 데이터 계약으로 승계하지 않는다.
+
 TBA는 하나의 LLM이 아니라 다음 세 층을 조합한 미각 해석 시스템이다.
 
 ```text

@@ -1,0 +1,3259 @@
+{
+  "version": "tba-engine-evaluation/1",
+  "fixtureVersion": "tba-engine-review-cases/1",
+  "fixtureHash": "5e516f0c4dcbad3815928234932313712de2fbcda1c2c872300bedd940801162",
+  "evidenceClass": "synthetic_fixture",
+  "mode": "offline_contract_evaluation",
+  "passed": true,
+  "actualApiCalls": 0,
+  "summary": {
+    "scenarios": 12,
+    "passedScenarios": 12,
+    "failedScenarios": 0,
+    "pendingAIRecords": 2,
+    "manualReviewsCompleted": 0
+  },
+  "modelQuality": {
+    "status": "not_run_api_deferred",
+    "extractionAccuracy": null,
+    "narrativeQuality": null,
+    "userProfileFit": null
+  },
+  "limitations": [
+    "수작업으로 추가한 공개 가상 사례의 계약 검사이며 미공개 홀드아웃이나 실사용자 정확도 평가가 아니다.",
+    "유보 상태 보존의 통과는 미해석 내용의 추출 성공을 뜻하지 않는다.",
+    "개인별 자료와 근거 요약의 차이를 검사하며 모델 설명의 의미·자연스러움을 평가하지 않는다."
+  ],
+  "comparisons": [
+    {
+      "cases": [
+        "V08",
+        "V09"
+      ],
+      "sameProfile": true,
+      "differentEvidenceAttributes": true,
+      "differentSourceSummaries": true
+    }
+  ],
+  "cases": [
+    {
+      "id": "V01",
+      "title": "강한 감각과 음식 전체 호감을 분리한다",
+      "input": [
+        {
+          "text": "감칠맛이 강했어요. 전체적으로 좋았어요."
+        },
+        {
+          "text": "감칠맛이 강했어요. 전체적으로 좋았어요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "required": [
+          {
+            "record": 0,
+            "kind": "sensory_intensity",
+            "attribute": "taste.umami",
+            "value": "strong"
+          },
+          {
+            "record": 0,
+            "kind": "overall_liking",
+            "value": "positive"
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "attribute_liking",
+            "value": "positive"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "required-0",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "sensory_intensity",
+            "attribute": "taste.umami",
+            "value": "strong"
+          },
+          "actual": [
+            "V01-experience-0:r1:g0:o1"
+          ]
+        },
+        {
+          "name": "required-1",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "overall_liking",
+            "value": "positive"
+          },
+          "actual": [
+            "V01-experience-0:r1:g0:o2"
+          ]
+        },
+        {
+          "name": "forbidden-0",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "kind": "attribute_liking",
+              "value": "positive"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 6,
+          "unresolvedSignals": 0,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [
+          {
+            "observationId": "V01-experience-0:r1:g0:o0",
+            "experienceId": "V01-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.umami",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "감칠맛이 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V01-experience-0:r1:g0:o1",
+            "experienceId": "V01-experience-0",
+            "kind": "sensory_intensity",
+            "attribute": "taste.umami",
+            "value": "strong",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "감칠맛이 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V01-experience-0:r1:g0:o2",
+            "experienceId": "V01-experience-0",
+            "kind": "overall_liking",
+            "attribute": null,
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "전체적으로 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V01-experience-1:r1:g0:o0",
+            "experienceId": "V01-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.umami",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "감칠맛이 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V01-experience-1:r1:g0:o1",
+            "experienceId": "V01-experience-1",
+            "kind": "sensory_intensity",
+            "attribute": "taste.umami",
+            "value": "strong",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "감칠맛이 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V01-experience-1:r1:g0:o2",
+            "experienceId": "V01-experience-1",
+            "kind": "overall_liking",
+            "attribute": null,
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "전체적으로 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "e15b842bcf43e7706d894846ef466914fad385fd15e8b56e888eb167f96687ab",
+          "paragraphs": [],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "e15b842bcf43e7706d894846ef466914fad385fd15e8b56e888eb167f96687ab",
+          "findings": []
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "감칠맛이 강했다고 느낀 기록을 감칠맛 선호 또는 강렬형으로 설명하지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V02",
+      "title": "싫지 않음을 좋아함으로 바꾸지 않는다",
+      "input": [
+        {
+          "text": "단맛이 싫지 않았어요."
+        },
+        {
+          "text": "단맛이 싫지 않았어요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "forbidden": [
+          {
+            "kind": "attribute_liking",
+            "value": "positive"
+          },
+          {
+            "kind": "attribute_liking",
+            "value": "negative"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "forbidden-0",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "kind": "attribute_liking",
+              "value": "positive"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "forbidden-1",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "kind": "attribute_liking",
+              "value": "negative"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 1,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 1,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 2,
+          "unresolvedSignals": 2,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [
+          {
+            "observationId": "V02-experience-0:r1:g0:o0",
+            "experienceId": "V02-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 싫지 않았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V02-experience-1:r1:g0:o0",
+            "experienceId": "V02-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 싫지 않았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "2af53aebda5b98dc40ee12d5378bfbdf55b0030c99094a68948204f3e0762e91",
+          "paragraphs": [],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "2af53aebda5b98dc40ee12d5378bfbdf55b0030c99094a68948204f3e0762e91",
+          "findings": []
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "명시적 호감이나 혐오로 확정하지 않는다. 중립 기록 또는 미확정 상태를 유지한다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V03",
+      "title": "타인의 평가를 내 취향에 합치지 않는다",
+      "input": [
+        {
+          "text": "친구는 구운 향이 좋았다고 했어요."
+        },
+        {
+          "text": "친구는 구운 향이 좋았다고 했어요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "forbidden": [
+          {
+            "kind": "attribute_liking"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "forbidden-0",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "kind": "attribute_liking"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 1,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 1,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 0,
+          "unresolvedSignals": 2,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "d190971d8f0fab060fd6f12d5455a49e56b39808cadc553b83297fce81752c96",
+          "paragraphs": [],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "d190971d8f0fab060fd6f12d5455a49e56b39808cadc553b83297fce81752c96",
+          "findings": []
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "친구의 호감을 사용자의 직접 평가로 제시하지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V04",
+      "title": "음식 이름에서 취향을 만들지 않는다",
+      "input": [
+        {
+          "food": "달콤한 꿀 케이크",
+          "text": "기억이 잘 안 나요."
+        },
+        {
+          "food": "고소한 견과 쿠키",
+          "text": "기억이 잘 안 나요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "forbidden": [
+          {
+            "kind": "attribute_liking"
+          },
+          {
+            "kind": "sensory_presence"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "forbidden-0",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "kind": "attribute_liking"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "forbidden-1",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "kind": "sensory_presence"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 1,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 1,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 0,
+          "unresolvedSignals": 2,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "9c52c6b214fd9de70268fffce4c86c0168de774a7bdfb9902c96b61efde87e38",
+          "paragraphs": [],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "9c52c6b214fd9de70268fffce4c86c0168de774a7bdfb9902c96b61efde87e38",
+          "findings": []
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "음식명에 적힌 감각을 사용자가 느끼거나 좋아한 것으로 바꾸지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V05",
+      "title": "같은 음식의 소스와 튀김옷을 구분한다",
+      "input": [
+        {
+          "text": "소스의 단맛이 좋았어요. 튀김옷의 단맛이 싫었어요."
+        },
+        {
+          "text": "소스의 단맛이 좋았어요. 튀김옷의 단맛이 싫었어요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "required": [
+          {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "target": "sauce",
+            "value": "positive"
+          },
+          {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "target": "coating",
+            "value": "negative"
+          }
+        ],
+        "forbidden": [
+          {
+            "kind": "attribute_liking",
+            "target": "whole_dish"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "required-0",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "target": "sauce",
+            "value": "positive"
+          },
+          "actual": [
+            "V05-experience-0:r1:g0:o1"
+          ]
+        },
+        {
+          "name": "required-1",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "target": "coating",
+            "value": "negative"
+          },
+          "actual": [
+            "V05-experience-0:r1:g0:o3"
+          ]
+        },
+        {
+          "name": "forbidden-0",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "kind": "attribute_liking",
+              "target": "whole_dish"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 8,
+          "unresolvedSignals": 0,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [
+          {
+            "observationId": "V05-experience-0:r1:g0:o0",
+            "experienceId": "V05-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "sauce",
+            "phase": "unspecified",
+            "phrase": "소스의 단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V05-experience-0:r1:g0:o1",
+            "experienceId": "V05-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "sauce",
+            "phase": "unspecified",
+            "phrase": "소스의 단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V05-experience-0:r1:g0:o2",
+            "experienceId": "V05-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "coating",
+            "phase": "unspecified",
+            "phrase": "튀김옷의 단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V05-experience-0:r1:g0:o3",
+            "experienceId": "V05-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "negative",
+            "target": "coating",
+            "phase": "unspecified",
+            "phrase": "튀김옷의 단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V05-experience-1:r1:g0:o0",
+            "experienceId": "V05-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "sauce",
+            "phase": "unspecified",
+            "phrase": "소스의 단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V05-experience-1:r1:g0:o1",
+            "experienceId": "V05-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "sauce",
+            "phase": "unspecified",
+            "phrase": "소스의 단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V05-experience-1:r1:g0:o2",
+            "experienceId": "V05-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "coating",
+            "phase": "unspecified",
+            "phrase": "튀김옷의 단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V05-experience-1:r1:g0:o3",
+            "experienceId": "V05-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "negative",
+            "target": "coating",
+            "phase": "unspecified",
+            "phrase": "튀김옷의 단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "516715fa10e3320ba7d5ba6e4bd338a94586de2325777353d1b7c0e32fcfe2d9",
+          "paragraphs": [
+            {
+              "text": "가상 검증 음식 1, 가상 검증 음식 2에서는 “소스의 단맛이 좋았어요.”, 가상 검증 음식 1, 가상 검증 음식 2에서는 “튀김옷의 단맛이 싫었어요.”라고 남겼어요.",
+              "findingIds": [
+                "finding:9de5921a0781e27844a8"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V05-experience-0:r1:g0:o1",
+                  "quote": "소스의 단맛이 좋았어요."
+                },
+                {
+                  "observationId": "V05-experience-0:r1:g0:o3",
+                  "quote": "튀김옷의 단맛이 싫었어요."
+                },
+                {
+                  "observationId": "V05-experience-1:r1:g0:o1",
+                  "quote": "소스의 단맛이 좋았어요."
+                },
+                {
+                  "observationId": "V05-experience-1:r1:g0:o3",
+                  "quote": "튀김옷의 단맛이 싫었어요."
+                }
+              ]
+            }
+          ],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "516715fa10e3320ba7d5ba6e4bd338a94586de2325777353d1b7c0e32fcfe2d9",
+          "findings": [
+            {
+              "id": "finding:9de5921a0781e27844a8",
+              "kind": "contextual_preference",
+              "title": "단맛, 즐거웠던 경우와 아쉬웠던 경우",
+              "allowedClaim": "보고된 평가의 차이만 설명한다. 음식·부위·시점 차이를 원인으로 확정하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V05-food-0",
+                  "V05-food-1"
+                ],
+                "experienceIds": [
+                  "V05-experience-0",
+                  "V05-experience-1"
+                ],
+                "mealIds": [
+                  "V05-meal-0",
+                  "V05-meal-1"
+                ],
+                "targets": [
+                  "coating",
+                  "sauce"
+                ],
+                "phases": [
+                  "unspecified"
+                ]
+              },
+              "coverage": {
+                "experiences": 2,
+                "meals": 2,
+                "observations": 4,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V05-experience-0:r1:g0:o1",
+                "V05-experience-0:r1:g0:o3",
+                "V05-experience-1:r1:g0:o1",
+                "V05-experience-1:r1:g0:o3"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V05-experience-0:r1:g0:o1",
+                  "foodName": "가상 검증 음식 1",
+                  "quote": "소스의 단맛이 좋았어요.",
+                  "target": "sauce",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V05-experience-0:r1:g0:o3",
+                  "foodName": "가상 검증 음식 1",
+                  "quote": "튀김옷의 단맛이 싫었어요.",
+                  "target": "coating",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "negative"
+                },
+                {
+                  "observationId": "V05-experience-1:r1:g0:o1",
+                  "foodName": "가상 검증 음식 2",
+                  "quote": "소스의 단맛이 좋았어요.",
+                  "target": "sauce",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V05-experience-1:r1:g0:o3",
+                  "foodName": "가상 검증 음식 2",
+                  "quote": "튀김옷의 단맛이 싫었어요.",
+                  "target": "coating",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "negative"
+                }
+              ],
+              "positiveRefs": [
+                "V05-experience-0:r1:g0:o1",
+                "V05-experience-1:r1:g0:o1"
+              ],
+              "negativeRefs": [
+                "V05-experience-0:r1:g0:o3",
+                "V05-experience-1:r1:g0:o3"
+              ]
+            }
+          ]
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "부위별 반응 차이를 보존한다. 음식 전체의 단맛 선호 또는 부위가 차이의 원인이라는 단정은 금지한다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V06",
+      "title": "식사 초반과 나중의 반응을 구분한다",
+      "input": [
+        {
+          "text": "처음엔 단맛이 좋았어요. 나중에는 단맛이 싫었어요."
+        },
+        {
+          "text": "처음엔 단맛이 좋았어요. 나중에는 단맛이 싫었어요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "required": [
+          {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "phase": "early_meal",
+            "value": "positive"
+          },
+          {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "phase": "late_meal",
+            "value": "negative"
+          }
+        ],
+        "forbidden": [
+          {
+            "phase": "first_bite"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "required-0",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "phase": "early_meal",
+            "value": "positive"
+          },
+          "actual": [
+            "V06-experience-0:r1:g0:o1"
+          ]
+        },
+        {
+          "name": "required-1",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "phase": "late_meal",
+            "value": "negative"
+          },
+          "actual": [
+            "V06-experience-0:r1:g0:o3"
+          ]
+        },
+        {
+          "name": "forbidden-0",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "phase": "first_bite"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 8,
+          "unresolvedSignals": 0,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [
+          {
+            "observationId": "V06-experience-0:r1:g0:o0",
+            "experienceId": "V06-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "early_meal",
+            "phrase": "처음엔 단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V06-experience-0:r1:g0:o1",
+            "experienceId": "V06-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "early_meal",
+            "phrase": "처음엔 단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V06-experience-0:r1:g0:o2",
+            "experienceId": "V06-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "late_meal",
+            "phrase": "나중에는 단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V06-experience-0:r1:g0:o3",
+            "experienceId": "V06-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "negative",
+            "target": "whole_dish",
+            "phase": "late_meal",
+            "phrase": "나중에는 단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V06-experience-1:r1:g0:o0",
+            "experienceId": "V06-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "early_meal",
+            "phrase": "처음엔 단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V06-experience-1:r1:g0:o1",
+            "experienceId": "V06-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "early_meal",
+            "phrase": "처음엔 단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V06-experience-1:r1:g0:o2",
+            "experienceId": "V06-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "late_meal",
+            "phrase": "나중에는 단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V06-experience-1:r1:g0:o3",
+            "experienceId": "V06-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "negative",
+            "target": "whole_dish",
+            "phase": "late_meal",
+            "phrase": "나중에는 단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "60d02667d78083700ebd86fc841a88ce615da15db7fd11eae4d2c09d97e0caa4",
+          "paragraphs": [
+            {
+              "text": "초반에는 “처음엔 단맛이 좋았어요.” / 나중에는 “나중에는 단맛이 싫었어요.”",
+              "findingIds": [
+                "finding:a3b71564e5238c387bad"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V06-experience-1:r1:g0:o1",
+                  "quote": "처음엔 단맛이 좋았어요."
+                },
+                {
+                  "observationId": "V06-experience-1:r1:g0:o3",
+                  "quote": "나중에는 단맛이 싫었어요."
+                }
+              ]
+            }
+          ],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "60d02667d78083700ebd86fc841a88ce615da15db7fd11eae4d2c09d97e0caa4",
+          "findings": [
+            {
+              "id": "finding:a3b71564e5238c387bad",
+              "kind": "within_meal_difference",
+              "title": "단맛, 먹는 동안 달라진 평가",
+              "allowedClaim": "한 경험의 명시된 시점별 평가다. 초반을 첫입으로 바꾸거나 장기 취향 변화로 해석하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V06-food-1"
+                ],
+                "experienceIds": [
+                  "V06-experience-1"
+                ],
+                "mealIds": [
+                  "V06-meal-1"
+                ],
+                "targets": [
+                  "whole_dish"
+                ],
+                "phases": [
+                  "early_meal",
+                  "late_meal"
+                ]
+              },
+              "coverage": {
+                "experiences": 1,
+                "meals": 1,
+                "observations": 2,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V06-experience-1:r1:g0:o1",
+                "V06-experience-1:r1:g0:o3"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V06-experience-1:r1:g0:o1",
+                  "foodName": "가상 검증 음식 2",
+                  "quote": "처음엔 단맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "early_meal",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V06-experience-1:r1:g0:o3",
+                  "foodName": "가상 검증 음식 2",
+                  "quote": "나중에는 단맛이 싫었어요.",
+                  "target": "whole_dish",
+                  "phase": "late_meal",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "negative"
+                }
+              ],
+              "positiveRefs": [],
+              "negativeRefs": []
+            }
+          ]
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "초반을 첫입으로 좁히지 않는다. 식사 안의 변화를 장기간 취향 변화로 설명하지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V07",
+      "title": "한 식사에 접시가 많아도 반복 식사가 아니다",
+      "input": [
+        {
+          "text": "바삭함이 좋았어요.",
+          "meal": "shared"
+        },
+        {
+          "text": "바삭함이 좋았어요.",
+          "meal": "shared"
+        },
+        {
+          "text": "바삭함이 좋았어요.",
+          "meal": "shared"
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "meals": 1,
+        "required": [
+          {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "texture.crisp",
+            "value": "positive"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "required-0",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "texture.crisp",
+            "value": "positive"
+          },
+          "actual": [
+            "V07-experience-0:r1:g0:o1"
+          ]
+        },
+        {
+          "name": "meal-count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 2,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 3,
+          "meals": 1,
+          "observations": 6,
+          "unresolvedSignals": 0,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [
+          {
+            "observationId": "V07-experience-0:r1:g0:o0",
+            "experienceId": "V07-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "texture.crisp",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "바삭함이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V07-experience-0:r1:g0:o1",
+            "experienceId": "V07-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "texture.crisp",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "바삭함이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V07-experience-1:r1:g0:o0",
+            "experienceId": "V07-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "texture.crisp",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "바삭함이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V07-experience-1:r1:g0:o1",
+            "experienceId": "V07-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "texture.crisp",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "바삭함이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V07-experience-2:r1:g0:o0",
+            "experienceId": "V07-experience-2",
+            "kind": "sensory_presence",
+            "attribute": "texture.crisp",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "바삭함이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V07-experience-2:r1:g0:o1",
+            "experienceId": "V07-experience-2",
+            "kind": "attribute_liking",
+            "attribute": "texture.crisp",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "바삭함이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "28aae686c29e2466c463839e157baddfd816ceb58ba4abf515c6a09388062e72",
+          "paragraphs": [
+            {
+              "text": "가상 검증 음식 1에서 “바삭함이 좋았어요.”라고 남겼어요.",
+              "findingIds": [
+                "finding:f82e6a171ba3caf35cfd"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V07-experience-0:r1:g0:o1",
+                  "quote": "바삭함이 좋았어요."
+                },
+                {
+                  "observationId": "V07-experience-1:r1:g0:o1",
+                  "quote": "바삭함이 좋았어요."
+                },
+                {
+                  "observationId": "V07-experience-2:r1:g0:o1",
+                  "quote": "바삭함이 좋았어요."
+                }
+              ]
+            }
+          ],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "28aae686c29e2466c463839e157baddfd816ceb58ba4abf515c6a09388062e72",
+          "findings": [
+            {
+              "id": "finding:f82e6a171ba3caf35cfd",
+              "kind": "scoped_preference",
+              "title": "바삭함에서 찾은 즐거움",
+              "allowedClaim": "기록한 음식과 조건에서 반복된 평가다. 먹어보지 않은 음식의 취향을 예측하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V07-food-0",
+                  "V07-food-1",
+                  "V07-food-2"
+                ],
+                "experienceIds": [
+                  "V07-experience-0",
+                  "V07-experience-1",
+                  "V07-experience-2"
+                ],
+                "mealIds": [
+                  "V07-meal-shared"
+                ],
+                "targets": [
+                  "whole_dish"
+                ],
+                "phases": [
+                  "unspecified"
+                ]
+              },
+              "coverage": {
+                "experiences": 3,
+                "meals": 1,
+                "observations": 3,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V07-experience-0:r1:g0:o1",
+                "V07-experience-1:r1:g0:o1",
+                "V07-experience-2:r1:g0:o1"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V07-experience-0:r1:g0:o1",
+                  "foodName": "가상 검증 음식 1",
+                  "quote": "바삭함이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "texture.crisp",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V07-experience-1:r1:g0:o1",
+                  "foodName": "가상 검증 음식 2",
+                  "quote": "바삭함이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "texture.crisp",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V07-experience-2:r1:g0:o1",
+                  "foodName": "가상 검증 음식 3",
+                  "quote": "바삭함이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "texture.crisp",
+                  "value": "positive"
+                }
+              ],
+              "positiveRefs": [
+                "V07-experience-0:r1:g0:o1",
+                "V07-experience-1:r1:g0:o1",
+                "V07-experience-2:r1:g0:o1"
+              ],
+              "negativeRefs": []
+            }
+          ]
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "세 접시를 서로 다른 식사 세 번의 호감으로 소개하지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V08",
+      "title": "같은 타입 조합이라도 구운 향을 즐긴 기록을 설명한다",
+      "input": [
+        {
+          "food": "가상 타르트",
+          "text": "단맛이 좋았어요. 구운 향이 좋았어요."
+        },
+        {
+          "food": "가상 비스킷",
+          "text": "단맛이 좋았어요. 구운 향이 좋았어요."
+        },
+        {
+          "food": "가상 젤리",
+          "text": "단맛이 좋았어요."
+        }
+      ],
+      "expected": {
+        "main": "romantic",
+        "wing": "roaster",
+        "required": [
+          {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "aroma.roasted",
+            "value": "positive"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": "romantic",
+          "actual": "romantic"
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": "roaster",
+          "actual": "roaster"
+        },
+        {
+          "name": "required-0",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "aroma.roasted",
+            "value": "positive"
+          },
+          "actual": [
+            "V08-experience-0:r1:g0:o3"
+          ]
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 2,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 3,
+          "meals": 3,
+          "observations": 10,
+          "unresolvedSignals": 0,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": "romantic",
+          "wing": "roaster",
+          "status": "provisional_profile"
+        },
+        "observations": [
+          {
+            "observationId": "V08-experience-0:r1:g0:o0",
+            "experienceId": "V08-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-0:r1:g0:o1",
+            "experienceId": "V08-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-0:r1:g0:o2",
+            "experienceId": "V08-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "aroma.roasted",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "구운 향이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-0:r1:g0:o3",
+            "experienceId": "V08-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "aroma.roasted",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "구운 향이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-1:r1:g0:o0",
+            "experienceId": "V08-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-1:r1:g0:o1",
+            "experienceId": "V08-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-1:r1:g0:o2",
+            "experienceId": "V08-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "aroma.roasted",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "구운 향이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-1:r1:g0:o3",
+            "experienceId": "V08-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "aroma.roasted",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "구운 향이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-2:r1:g0:o0",
+            "experienceId": "V08-experience-2",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V08-experience-2:r1:g0:o1",
+            "experienceId": "V08-experience-2",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "456bc29916814a836063671ca5eefe0cbf37a8400eb9b7e6e7692db8dcb0a106",
+          "paragraphs": [
+            {
+              "text": "가상 비스킷, 가상 젤리, 가상 타르트의 기록에 단맛에 대한 호감이 반복돼요.",
+              "findingIds": [
+                "finding:6179bf5b4a6b67f173e8"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V08-experience-0:r1:g0:o1",
+                  "quote": "단맛이 좋았어요."
+                },
+                {
+                  "observationId": "V08-experience-1:r1:g0:o1",
+                  "quote": "단맛이 좋았어요."
+                },
+                {
+                  "observationId": "V08-experience-2:r1:g0:o1",
+                  "quote": "단맛이 좋았어요."
+                }
+              ]
+            },
+            {
+              "text": "가상 비스킷, 가상 타르트의 기록에 구운 향에 대한 호감이 반복돼요.",
+              "findingIds": [
+                "finding:696b2009f6d985552f8b"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V08-experience-0:r1:g0:o3",
+                  "quote": "구운 향이 좋았어요."
+                },
+                {
+                  "observationId": "V08-experience-1:r1:g0:o3",
+                  "quote": "구운 향이 좋았어요."
+                }
+              ]
+            }
+          ],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "456bc29916814a836063671ca5eefe0cbf37a8400eb9b7e6e7692db8dcb0a106",
+          "findings": [
+            {
+              "id": "finding:6179bf5b4a6b67f173e8",
+              "kind": "repeated_preference",
+              "title": "단맛에서 찾은 즐거움",
+              "allowedClaim": "기록한 음식과 조건에서 반복된 평가다. 먹어보지 않은 음식의 취향을 예측하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V08-food-0",
+                  "V08-food-1",
+                  "V08-food-2"
+                ],
+                "experienceIds": [
+                  "V08-experience-0",
+                  "V08-experience-1",
+                  "V08-experience-2"
+                ],
+                "mealIds": [
+                  "V08-meal-0",
+                  "V08-meal-1",
+                  "V08-meal-2"
+                ],
+                "targets": [
+                  "whole_dish"
+                ],
+                "phases": [
+                  "unspecified"
+                ]
+              },
+              "coverage": {
+                "experiences": 3,
+                "meals": 3,
+                "observations": 3,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V08-experience-0:r1:g0:o1",
+                "V08-experience-1:r1:g0:o1",
+                "V08-experience-2:r1:g0:o1"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V08-experience-0:r1:g0:o1",
+                  "foodName": "가상 타르트",
+                  "quote": "단맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V08-experience-1:r1:g0:o1",
+                  "foodName": "가상 비스킷",
+                  "quote": "단맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V08-experience-2:r1:g0:o1",
+                  "foodName": "가상 젤리",
+                  "quote": "단맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                }
+              ],
+              "positiveRefs": [
+                "V08-experience-0:r1:g0:o1",
+                "V08-experience-1:r1:g0:o1",
+                "V08-experience-2:r1:g0:o1"
+              ],
+              "negativeRefs": []
+            },
+            {
+              "id": "finding:696b2009f6d985552f8b",
+              "kind": "repeated_preference",
+              "title": "구운 향에서 찾은 즐거움",
+              "allowedClaim": "기록한 음식과 조건에서 반복된 평가다. 먹어보지 않은 음식의 취향을 예측하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V08-food-0",
+                  "V08-food-1"
+                ],
+                "experienceIds": [
+                  "V08-experience-0",
+                  "V08-experience-1"
+                ],
+                "mealIds": [
+                  "V08-meal-0",
+                  "V08-meal-1"
+                ],
+                "targets": [
+                  "whole_dish"
+                ],
+                "phases": [
+                  "unspecified"
+                ]
+              },
+              "coverage": {
+                "experiences": 2,
+                "meals": 2,
+                "observations": 2,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V08-experience-0:r1:g0:o3",
+                "V08-experience-1:r1:g0:o3"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V08-experience-0:r1:g0:o3",
+                  "foodName": "가상 타르트",
+                  "quote": "구운 향이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "aroma.roasted",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V08-experience-1:r1:g0:o3",
+                  "foodName": "가상 비스킷",
+                  "quote": "구운 향이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "aroma.roasted",
+                  "value": "positive"
+                }
+              ],
+              "positiveRefs": [
+                "V08-experience-0:r1:g0:o3",
+                "V08-experience-1:r1:g0:o3"
+              ],
+              "negativeRefs": []
+            }
+          ]
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "구운 향에 대한 반복 호감을 인용한다. 단맛과 구운 향을 함께 먹어서 좋아했다는 조합 인과를 만들지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V09",
+      "title": "같은 타입 조합이라도 구수한 맛을 즐긴 기록을 설명한다",
+      "input": [
+        {
+          "food": "가상 곡물 푸딩",
+          "text": "단맛이 좋았어요. 구수한 맛이 좋았어요."
+        },
+        {
+          "food": "가상 곡물 음료",
+          "text": "단맛이 좋았어요. 구수한 맛이 좋았어요."
+        },
+        {
+          "food": "가상 과일 디저트",
+          "text": "단맛이 좋았어요."
+        }
+      ],
+      "expected": {
+        "main": "romantic",
+        "wing": "roaster",
+        "required": [
+          {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "flavor.cereal_savory",
+            "value": "positive"
+          }
+        ],
+        "forbidden": [
+          {
+            "attribute": "aroma.roasted"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": "romantic",
+          "actual": "romantic"
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": "roaster",
+          "actual": "roaster"
+        },
+        {
+          "name": "required-0",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "attribute_liking",
+            "attribute": "flavor.cereal_savory",
+            "value": "positive"
+          },
+          "actual": [
+            "V09-experience-0:r1:g0:o3"
+          ]
+        },
+        {
+          "name": "forbidden-0",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "attribute": "aroma.roasted"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 2,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 3,
+          "meals": 3,
+          "observations": 10,
+          "unresolvedSignals": 0,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": "romantic",
+          "wing": "roaster",
+          "status": "provisional_profile"
+        },
+        "observations": [
+          {
+            "observationId": "V09-experience-0:r1:g0:o0",
+            "experienceId": "V09-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-0:r1:g0:o1",
+            "experienceId": "V09-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-0:r1:g0:o2",
+            "experienceId": "V09-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "flavor.cereal_savory",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "구수한 맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-0:r1:g0:o3",
+            "experienceId": "V09-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "flavor.cereal_savory",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "구수한 맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-1:r1:g0:o0",
+            "experienceId": "V09-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-1:r1:g0:o1",
+            "experienceId": "V09-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-1:r1:g0:o2",
+            "experienceId": "V09-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "flavor.cereal_savory",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "구수한 맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-1:r1:g0:o3",
+            "experienceId": "V09-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "flavor.cereal_savory",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "구수한 맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-2:r1:g0:o0",
+            "experienceId": "V09-experience-2",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V09-experience-2:r1:g0:o1",
+            "experienceId": "V09-experience-2",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "627feb4135b702020be310f9b55ea674059a5acabf49b77fffff854394dbf04a",
+          "paragraphs": [
+            {
+              "text": "가상 곡물 음료, 가상 곡물 푸딩, 가상 과일 디저트의 기록에 단맛에 대한 호감이 반복돼요.",
+              "findingIds": [
+                "finding:298cc396d1ab5301babc"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V09-experience-0:r1:g0:o1",
+                  "quote": "단맛이 좋았어요."
+                },
+                {
+                  "observationId": "V09-experience-1:r1:g0:o1",
+                  "quote": "단맛이 좋았어요."
+                },
+                {
+                  "observationId": "V09-experience-2:r1:g0:o1",
+                  "quote": "단맛이 좋았어요."
+                }
+              ]
+            },
+            {
+              "text": "가상 곡물 음료, 가상 곡물 푸딩의 기록에 구수함에 대한 호감이 반복돼요.",
+              "findingIds": [
+                "finding:f7c192128a69380455f9"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V09-experience-0:r1:g0:o3",
+                  "quote": "구수한 맛이 좋았어요."
+                },
+                {
+                  "observationId": "V09-experience-1:r1:g0:o3",
+                  "quote": "구수한 맛이 좋았어요."
+                }
+              ]
+            }
+          ],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "627feb4135b702020be310f9b55ea674059a5acabf49b77fffff854394dbf04a",
+          "findings": [
+            {
+              "id": "finding:298cc396d1ab5301babc",
+              "kind": "repeated_preference",
+              "title": "단맛에서 찾은 즐거움",
+              "allowedClaim": "기록한 음식과 조건에서 반복된 평가다. 먹어보지 않은 음식의 취향을 예측하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V09-food-0",
+                  "V09-food-1",
+                  "V09-food-2"
+                ],
+                "experienceIds": [
+                  "V09-experience-0",
+                  "V09-experience-1",
+                  "V09-experience-2"
+                ],
+                "mealIds": [
+                  "V09-meal-0",
+                  "V09-meal-1",
+                  "V09-meal-2"
+                ],
+                "targets": [
+                  "whole_dish"
+                ],
+                "phases": [
+                  "unspecified"
+                ]
+              },
+              "coverage": {
+                "experiences": 3,
+                "meals": 3,
+                "observations": 3,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V09-experience-0:r1:g0:o1",
+                "V09-experience-1:r1:g0:o1",
+                "V09-experience-2:r1:g0:o1"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V09-experience-0:r1:g0:o1",
+                  "foodName": "가상 곡물 푸딩",
+                  "quote": "단맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V09-experience-1:r1:g0:o1",
+                  "foodName": "가상 곡물 음료",
+                  "quote": "단맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V09-experience-2:r1:g0:o1",
+                  "foodName": "가상 과일 디저트",
+                  "quote": "단맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                }
+              ],
+              "positiveRefs": [
+                "V09-experience-0:r1:g0:o1",
+                "V09-experience-1:r1:g0:o1",
+                "V09-experience-2:r1:g0:o1"
+              ],
+              "negativeRefs": []
+            },
+            {
+              "id": "finding:f7c192128a69380455f9",
+              "kind": "repeated_preference",
+              "title": "구수함에서 찾은 즐거움",
+              "allowedClaim": "기록한 음식과 조건에서 반복된 평가다. 먹어보지 않은 음식의 취향을 예측하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V09-food-0",
+                  "V09-food-1"
+                ],
+                "experienceIds": [
+                  "V09-experience-0",
+                  "V09-experience-1"
+                ],
+                "mealIds": [
+                  "V09-meal-0",
+                  "V09-meal-1"
+                ],
+                "targets": [
+                  "whole_dish"
+                ],
+                "phases": [
+                  "unspecified"
+                ]
+              },
+              "coverage": {
+                "experiences": 2,
+                "meals": 2,
+                "observations": 2,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V09-experience-0:r1:g0:o3",
+                "V09-experience-1:r1:g0:o3"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V09-experience-0:r1:g0:o3",
+                  "foodName": "가상 곡물 푸딩",
+                  "quote": "구수한 맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "flavor.cereal_savory",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V09-experience-1:r1:g0:o3",
+                  "foodName": "가상 곡물 음료",
+                  "quote": "구수한 맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "flavor.cereal_savory",
+                  "value": "positive"
+                }
+              ],
+              "positiveRefs": [
+                "V09-experience-0:r1:g0:o3",
+                "V09-experience-1:r1:g0:o3"
+              ],
+              "negativeRefs": []
+            }
+          ]
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "구수함을 구운 향이나 실제 곡물 성분의 검증 결과로 바꾸지 않는다. V08과 동일한 타입 소개문을 재사용하지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V10",
+      "title": "강도 보고가 충돌하면 강렬형을 유보한다",
+      "input": [
+        {
+          "text": "매운맛이 강했어요. 매운맛이 약했어요. 매운맛이 좋았어요."
+        },
+        {
+          "text": "매운맛이 강했어요. 매운맛이 약했어요. 매운맛이 좋았어요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "required": [
+          {
+            "record": 0,
+            "kind": "sensory_intensity",
+            "value": "strong"
+          },
+          {
+            "record": 0,
+            "kind": "sensory_intensity",
+            "value": "weak"
+          },
+          {
+            "record": 0,
+            "kind": "attribute_liking",
+            "value": "positive"
+          }
+        ],
+        "unsupportedStyles": [
+          "maximalist"
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "required-0",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "sensory_intensity",
+            "value": "strong"
+          },
+          "actual": [
+            "V10-experience-0:r1:g0:o1"
+          ]
+        },
+        {
+          "name": "required-1",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "sensory_intensity",
+            "value": "weak"
+          },
+          "actual": [
+            "V10-experience-0:r1:g0:o2"
+          ]
+        },
+        {
+          "name": "required-2",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "attribute_liking",
+            "value": "positive"
+          },
+          "actual": [
+            "V10-experience-0:r1:g0:o3"
+          ]
+        },
+        {
+          "name": "no-support-maximalist",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 8,
+          "unresolvedSignals": 0,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [
+          {
+            "observationId": "V10-experience-0:r1:g0:o0",
+            "experienceId": "V10-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "trigeminal.spicy",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "매운맛이 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V10-experience-0:r1:g0:o1",
+            "experienceId": "V10-experience-0",
+            "kind": "sensory_intensity",
+            "attribute": "trigeminal.spicy",
+            "value": "strong",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "매운맛이 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V10-experience-0:r1:g0:o2",
+            "experienceId": "V10-experience-0",
+            "kind": "sensory_intensity",
+            "attribute": "trigeminal.spicy",
+            "value": "weak",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "매운맛이 약했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V10-experience-0:r1:g0:o3",
+            "experienceId": "V10-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "trigeminal.spicy",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "매운맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V10-experience-1:r1:g0:o0",
+            "experienceId": "V10-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "trigeminal.spicy",
+            "value": true,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "매운맛이 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V10-experience-1:r1:g0:o1",
+            "experienceId": "V10-experience-1",
+            "kind": "sensory_intensity",
+            "attribute": "trigeminal.spicy",
+            "value": "strong",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "매운맛이 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V10-experience-1:r1:g0:o2",
+            "experienceId": "V10-experience-1",
+            "kind": "sensory_intensity",
+            "attribute": "trigeminal.spicy",
+            "value": "weak",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "매운맛이 약했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V10-experience-1:r1:g0:o3",
+            "experienceId": "V10-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "trigeminal.spicy",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "매운맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "7f3a528dc3d2f9d9d307426d92f248bcfa3a5d10900d9589ef4bc37ccacce077",
+          "paragraphs": [
+            {
+              "text": "가상 검증 음식 1, 가상 검증 음식 2의 기록에 매운 자극에 대한 호감이 반복돼요.",
+              "findingIds": [
+                "finding:e66434d181694390f658"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V10-experience-0:r1:g0:o3",
+                  "quote": "매운맛이 좋았어요."
+                },
+                {
+                  "observationId": "V10-experience-1:r1:g0:o3",
+                  "quote": "매운맛이 좋았어요."
+                }
+              ]
+            }
+          ],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "7f3a528dc3d2f9d9d307426d92f248bcfa3a5d10900d9589ef4bc37ccacce077",
+          "findings": [
+            {
+              "id": "finding:e66434d181694390f658",
+              "kind": "repeated_preference",
+              "title": "매운 자극에서 찾은 즐거움",
+              "allowedClaim": "기록한 음식과 조건에서 반복된 평가다. 먹어보지 않은 음식의 취향을 예측하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V10-food-0",
+                  "V10-food-1"
+                ],
+                "experienceIds": [
+                  "V10-experience-0",
+                  "V10-experience-1"
+                ],
+                "mealIds": [
+                  "V10-meal-0",
+                  "V10-meal-1"
+                ],
+                "targets": [
+                  "whole_dish"
+                ],
+                "phases": [
+                  "unspecified"
+                ]
+              },
+              "coverage": {
+                "experiences": 2,
+                "meals": 2,
+                "observations": 2,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V10-experience-0:r1:g0:o3",
+                "V10-experience-1:r1:g0:o3"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V10-experience-0:r1:g0:o3",
+                  "foodName": "가상 검증 음식 1",
+                  "quote": "매운맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "trigeminal.spicy",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V10-experience-1:r1:g0:o3",
+                  "foodName": "가상 검증 음식 2",
+                  "quote": "매운맛이 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "trigeminal.spicy",
+                  "value": "positive"
+                }
+              ],
+              "positiveRefs": [
+                "V10-experience-0:r1:g0:o3",
+                "V10-experience-1:r1:g0:o3"
+              ],
+              "negativeRefs": []
+            }
+          ]
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "같은 범위에 강함과 약함이 함께 있다. 매운맛의 호감은 보존하되 강한 자극을 좋아한다는 설명은 유보한다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V11",
+      "title": "감각이 없어서 좋다는 조건을 보존한다",
+      "input": [
+        {
+          "text": "안 달아서 좋았어요."
+        },
+        {
+          "text": "안 달아서 좋았어요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "required": [
+          {
+            "record": 0,
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": false
+          }
+        ],
+        "unsupportedStyles": [
+          "romantic"
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "required-0",
+          "passed": true,
+          "expected": {
+            "record": 0,
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": false
+          },
+          "actual": [
+            "V11-experience-0:r1:g0:o0"
+          ]
+        },
+        {
+          "name": "no-support-romantic",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": false,
+          "unresolvedCount": 0,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 4,
+          "unresolvedSignals": 0,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [
+          {
+            "observationId": "V11-experience-0:r1:g0:o0",
+            "experienceId": "V11-experience-0",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": false,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "안 달아서 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V11-experience-0:r1:g0:o1",
+            "experienceId": "V11-experience-0",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "안 달아서 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V11-experience-1:r1:g0:o0",
+            "experienceId": "V11-experience-1",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": false,
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "안 달아서 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          },
+          {
+            "observationId": "V11-experience-1:r1:g0:o1",
+            "experienceId": "V11-experience-1",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "phrase": "안 달아서 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "3742fd9dbabbe56758cb5bce26acd828ab2c61b8a6b92dc39868469caa6348e0",
+          "paragraphs": [
+            {
+              "text": "가상 검증 음식 1: “안 달아서 좋았어요.”",
+              "findingIds": [
+                "finding:7cc03197653192ecc8e8"
+              ],
+              "quotes": [
+                {
+                  "observationId": "V11-experience-0:r1:g0:o1",
+                  "quote": "안 달아서 좋았어요."
+                },
+                {
+                  "observationId": "V11-experience-0:r1:g0:o0",
+                  "quote": "안 달아서 좋았어요."
+                }
+              ]
+            }
+          ],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "3742fd9dbabbe56758cb5bce26acd828ab2c61b8a6b92dc39868469caa6348e0",
+          "findings": [
+            {
+              "id": "finding:7cc03197653192ecc8e8",
+              "kind": "qualified_preference",
+              "title": "감각이 없었던 경험의 평가",
+              "allowedClaim": "감각 부재가 포함된 평가다. 그 감각 자체를 좋아하거나 싫어한다고 분리하지 않는다.",
+              "scope": {
+                "foodIds": [
+                  "V11-food-0"
+                ],
+                "experienceIds": [
+                  "V11-experience-0"
+                ],
+                "mealIds": [
+                  "V11-meal-0"
+                ],
+                "targets": [
+                  "whole_dish"
+                ],
+                "phases": [
+                  "unspecified"
+                ]
+              },
+              "coverage": {
+                "experiences": 1,
+                "meals": 1,
+                "observations": 2,
+                "independentSamples": null
+              },
+              "observationRefs": [
+                "V11-experience-0:r1:g0:o0",
+                "V11-experience-0:r1:g0:o1"
+              ],
+              "evidence": [
+                {
+                  "observationId": "V11-experience-0:r1:g0:o1",
+                  "foodName": "가상 검증 음식 1",
+                  "quote": "안 달아서 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "attribute_liking",
+                  "attribute": "taste.sweet",
+                  "value": "positive"
+                },
+                {
+                  "observationId": "V11-experience-0:r1:g0:o0",
+                  "foodName": "가상 검증 음식 1",
+                  "quote": "안 달아서 좋았어요.",
+                  "target": "whole_dish",
+                  "phase": "unspecified",
+                  "kind": "sensory_presence",
+                  "attribute": "taste.sweet",
+                  "value": false
+                }
+              ],
+              "positiveRefs": [],
+              "negativeRefs": []
+            }
+          ]
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "단맛이 없었던 경험의 호감을 단맛 자체의 호감이나 모든 단 음식의 혐오로 바꾸지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    },
+    {
+      "id": "V12",
+      "title": "문맥 연결이 필요한 조합은 확인 전까지 남긴다",
+      "input": [
+        {
+          "text": "소스의 단맛과 튀김옷의 바삭함이 함께 먹으니 좋았어요."
+        },
+        {
+          "text": "소스의 단맛과 튀김옷의 바삭함이 함께 먹으니 좋았어요."
+        }
+      ],
+      "expected": {
+        "main": null,
+        "wing": null,
+        "unresolvedMinimum": 1,
+        "forbidden": [
+          {
+            "kind": "attribute_liking",
+            "value": "positive"
+          }
+        ]
+      },
+      "passed": true,
+      "checks": [
+        {
+          "name": "main",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "wing",
+          "passed": true,
+          "expected": null,
+          "actual": null
+        },
+        {
+          "name": "forbidden-0",
+          "passed": true,
+          "expected": {
+            "absent": {
+              "kind": "attribute_liking",
+              "value": "positive"
+            }
+          },
+          "actual": []
+        },
+        {
+          "name": "unresolved-retained",
+          "passed": true,
+          "expected": 1,
+          "actual": 2
+        },
+        {
+          "name": "zero-api-calls",
+          "passed": true,
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "name": "no-model-confirmation",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        }
+      ],
+      "routing": [
+        {
+          "record": 0,
+          "needsAI": true,
+          "unresolvedCount": 1,
+          "actualModelEvaluated": false
+        },
+        {
+          "record": 1,
+          "needsAI": true,
+          "unresolvedCount": 1,
+          "actualModelEvaluated": false
+        }
+      ],
+      "actual": {
+        "coverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 0,
+          "unresolvedSignals": 2,
+          "independentSamples": null
+        },
+        "profile": {
+          "main": null,
+          "wing": null,
+          "status": "learning"
+        },
+        "observations": [],
+        "narrative": {
+          "version": "tba-personal-narrative/1",
+          "status": "source_summary",
+          "source": "evidence_summary",
+          "evidenceSetHash": "0bd4b63aaf572c6e4afc368de441c6d8279bdf93bb3fdd22269ef19fd189df9b",
+          "paragraphs": [],
+          "generation": {
+            "actualApiCalls": 0,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0
+            },
+            "semanticValidation": "scoped_rule_output",
+            "model": null
+          }
+        },
+        "narrativePacket": {
+          "version": "tba-personal-narrative/1",
+          "evidenceSetHash": "0bd4b63aaf572c6e4afc368de441c6d8279bdf93bb3fdd22269ef19fd189df9b",
+          "findings": []
+        }
+      },
+      "manualReview": {
+        "status": "pending",
+        "focus": "각 감각의 개별 호감을 만들지 않는다. API 미연결 상태의 문맥 해석 누락을 성공으로 집계하지 않는다.",
+        "meaningFaithful": null,
+        "useful": null,
+        "natural": null,
+        "respectsScope": null,
+        "notes": null
+      }
+    }
+  ]
+}

@@ -20,20 +20,17 @@
 
 ### What This Product Is
 
-Taste Buddy는 일반적인 예약 앱이 아니다.
-
-이 제품의 핵심은 사용자의 미각 프로필을 해석해서 셰프가 실제로 활용할 수 있는 형태로 번역하는 것이다.
+이 제품의 최우선 가치는 사용자의 취향을 이해하고, 근거가 있는 다양한 해석과 인사이트로 제공하는 것이다.
 
 이 제품은 다음의 서비스 루프를 전제로 한다.
 
-1. Quick Taste Calibration
-2. Taste Profile Creation
-3. Reservation Personalization
-4. Chef Calibration Guidance
-5. Dining Experience
-6. Post-Dining Feedback
-7. Profile Refinement
-8. Optional Precision Calibration
+1. 가벼운 시작과 식사 기록
+2. 원문·출처·감각·호감·조건을 보존한 데이터 정제
+3. 개인 취향 이해
+4. 다양한 해석·인사이트 제공
+5. 선택적 확인·정정과 추가 경험을 통한 해석 갱신
+
+이후 비슷한 입맛 그룹을 연결하고, 그 그룹의 추천·평가를 근거로 식당·메뉴 추천을 추가한다. 예약·셰프 가이드·하드웨어는 확장 기능이다. 정제한 근거는 여러 출력에 재사용하되 화면에서는 의미와 위계에 맞게 보여주며, 카드 수나 숫자를 늘리는 것만으로 다양성을 표현하지 않는다.
 
 ### What This Product Is Not
 
@@ -44,9 +41,9 @@ Taste Buddy는 일반적인 예약 앱이 아니다.
 
 ### 현재 제품 포지셔닝
 
-Taste Buddy는 프리미엄 다이닝 개인화 서비스다.
+Taste Buddy는 취향 이해와 인사이트를 중심으로 하는 프리미엄 미식 서비스다.
 
-사용자에게는 "내 입맛이 이해되고 있다"는 감각을 주고, 셰프에게는 "이 손님에게 어떤 식으로 경험을 전달해야 하는지"를 더 정확하게 읽게 해줘야 한다.
+사용자는 무엇을 어떤 조건에서 좋아하는지, 기록에서 어떤 차이·예외·미확정 지점이 드러나는지 이해할 수 있어야 한다. 그룹 비교와 추천은 그 이해를 확장하고, 셰프 가이드가 있는 화면에서는 원래 근거 범위를 존중한다.
 
 그래서 UI는 세 가지를 동시에 만족해야 한다.
 
@@ -216,7 +213,8 @@ Quiet Hospitality Intelligence
 
 - what we know
 - what it means
-- what happens next
+- what is still uncertain
+- optional clarification or exploration
 
 ### 2. Confidence Visibility
 
@@ -228,15 +226,17 @@ Quiet Hospitality Intelligence
 - Building
 - Refined
 
-### 3. Chef Translation
+### 3. 다양한 근거 중심 해석
 
-Taste Buddy만의 고유 패턴이다.
+같은 정제 관찰에서 경험 요약·감각별 프로필·조건 차이·예외·미확정 지점을 각각 설명할 수 있어야 한다.
 
-미각 데이터를 그대로 보여주는 대신 아래 구조로 번역해야 한다.
+해석에는 다음 구조를 보존한다.
 
-- likely sensitivity
-- dining implication
-- chef-usable hint
+- 어떤 기록을 근거로 하는가
+- 음식·감각·대상·시점·조건 안에서 어떤 의미가 있는가
+- 반대 근거나 미확정 지점은 무엇인가
+
+셰프 가이드는 이 해석을 재사용하는 확장 화면이다. 해당 화면에서만 셰프가 참고할 의미와 원래 근거 범위를 설명한다.
 
 ### 4. Empty State With Momentum
 
@@ -250,7 +250,7 @@ Taste Buddy만의 고유 패턴이다.
 
 피드백은 설문 제출처럼 보여서는 안 된다.
 
-다음 식사를 더 잘 맞추기 위한 투자처럼 보여야 한다.
+적은 노력으로 자신의 취향을 이해하고 새로운 해석·인사이트를 얻는 경험이어야 한다.
 
 ---
 

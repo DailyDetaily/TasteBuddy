@@ -342,6 +342,7 @@ struct TasteProfile: Codable, Equatable {
     let summary: String
     let topAxes: [TasteAxis]
     let cautionAxis: TasteAxis
+    var surveySubmission: TasteSurveySubmissionContract? = nil
 
     func score(for axis: TasteAxis) -> Int {
         scores[axis.rawValue] ?? 50
@@ -363,71 +364,136 @@ enum TasteProfileHistoryContract {
     static let maximumStoredProfiles = 6
 }
 
+enum DiningEntryFeedbackStatus: String, Codable, Equatable {
+    case captured
+    case completed
+}
+
 struct DiningEntry: Identifiable, Codable, Equatable {
+    /// 저장 레코드 식별자. 같은 식사의 다른 메뉴는 별도 id를 가진다.
     let id: UUID
+    /// 실제 같은 식사에서 나온 레코드를 묶는다. 레거시는 복구 규칙으로 id를 사용한다.
+    let mealID: UUID
     let restaurant: String
+    let restaurantID: String?
     let menu: String
+    let menuItemID: String?
+    /// 기존 호출부와 저장 자료의 호환 필드. observedAt과 같은 값으로 기록한다.
     let date: Date
+    /// 현재 입력 흐름이 알고 있는 경험 시각이다. 정확한 섭취 시각보다 정밀하게 해석하지 않는다.
+    let observedAt: Date
+    /// 레거시에 없던 시각은 nil로 두어 당시 값을 아는 것처럼 만들지 않는다.
+    let savedAt: Date?
+    let updatedAt: Date?
     let rating: Int
     let note: String
     let tasteExperienceIDs: [String]
     let detailTagIDs: [String]
+    /// nil은 이전 ID 기록, 빈 배열은 새 선택을 모두 해제한 기록이다.
+    let sensorySelections: [DiningSensorySelection]?
+    let overallEvaluation: DiningOverallEvaluation?
     let dishKindIDs: [String]
     let reflectionPhotoFilename: String?
     let tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot?
+    let feedbackStatus: DiningEntryFeedbackStatus
+    let photoPalette: DiningPhotoPalette?
+
+    var hasCompletedTasteFeedback: Bool {
+        feedbackStatus == .completed
+    }
 
     init(
         id: UUID = UUID(),
+        mealID: UUID? = nil,
         restaurant: String,
+        restaurantID: String? = nil,
         menu: String,
+        menuItemID: String? = nil,
         date: Date = .now,
+        observedAt: Date? = nil,
+        savedAt: Date? = nil,
+        updatedAt: Date? = nil,
         rating: Int,
         note: String,
         tasteExperienceIDs: [String] = [],
         detailTagIDs: [String] = [],
+        sensorySelections: [DiningSensorySelection]? = nil,
+        overallEvaluation: DiningOverallEvaluation? = nil,
         dishKindIDs: [String] = [],
         reflectionPhotoFilename: String? = nil,
-        tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot? = nil
+        tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot? = nil,
+        feedbackStatus: DiningEntryFeedbackStatus = .completed,
+        photoPalette: DiningPhotoPalette? = nil
     ) {
+        let resolvedObservedAt = observedAt ?? date
         self.id = id
+        self.mealID = mealID ?? id
         self.restaurant = restaurant
+        self.restaurantID = restaurantID
         self.menu = menu
-        self.date = date
+        self.menuItemID = menuItemID
+        self.date = resolvedObservedAt
+        self.observedAt = resolvedObservedAt
+        self.savedAt = savedAt
+        self.updatedAt = updatedAt
         self.rating = rating
         self.note = note
         self.tasteExperienceIDs = Array(tasteExperienceIDs.prefix(3))
         self.detailTagIDs = detailTagIDs
+        self.sensorySelections = sensorySelections
+        self.overallEvaluation = overallEvaluation
         self.dishKindIDs = dishKindIDs
         self.reflectionPhotoFilename = reflectionPhotoFilename
         self.tbaAnalysisSnapshot = tbaAnalysisSnapshot
+        self.feedbackStatus = feedbackStatus
+        self.photoPalette = photoPalette
     }
 
     private enum CodingKeys: String, CodingKey {
         case id
+        case mealID
         case restaurant
+        case restaurantID
         case menu
+        case menuItemID
         case date
+        case observedAt
+        case savedAt
+        case updatedAt
         case rating
         case note
         case tasteExperienceIDs
         case detailTagIDs
+        case sensorySelections
+        case overallEvaluation
         case dishKindIDs
         case reflectionPhotoFilename
         case tbaAnalysisSnapshot
+        case feedbackStatus
+        case photoPalette
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
+        mealID = try container.decodeIfPresent(UUID.self, forKey: .mealID) ?? id
         restaurant = try container.decode(String.self, forKey: .restaurant)
+        restaurantID = try container.decodeIfPresent(String.self, forKey: .restaurantID)
         menu = try container.decode(String.self, forKey: .menu)
-        date = try container.decode(Date.self, forKey: .date)
+        menuItemID = try container.decodeIfPresent(String.self, forKey: .menuItemID)
+        let legacyDate = try container.decode(Date.self, forKey: .date)
+        observedAt = try container.decodeIfPresent(Date.self, forKey: .observedAt) ?? legacyDate
+        date = observedAt
+        savedAt = try container.decodeIfPresent(Date.self, forKey: .savedAt)
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt)
         rating = try container.decode(Int.self, forKey: .rating)
         note = try container.decode(String.self, forKey: .note)
         tasteExperienceIDs = Array(
             try container.decodeIfPresent([String].self, forKey: .tasteExperienceIDs) ?? []
         ).prefix(3).map(\.self)
         detailTagIDs = try container.decodeIfPresent([String].self, forKey: .detailTagIDs) ?? []
+        sensorySelections = try container.decodeIfPresent([DiningSensorySelection].self, forKey: .sensorySelections)
+        overallEvaluation = try container.decodeIfPresent(DiningOverallEvaluation.self, forKey: .overallEvaluation)
         dishKindIDs = try container.decodeIfPresent([String].self, forKey: .dishKindIDs) ?? []
         reflectionPhotoFilename = try container.decodeIfPresent(
             String.self,
@@ -437,24 +503,105 @@ struct DiningEntry: Identifiable, Codable, Equatable {
             TasteBuddyAgentDiningAnalysisSnapshot.self,
             forKey: .tbaAnalysisSnapshot
         )
+        feedbackStatus = try container.decodeIfPresent(
+            DiningEntryFeedbackStatus.self,
+            forKey: .feedbackStatus
+        ) ?? .completed
+        photoPalette = try container.decodeIfPresent(
+            DiningPhotoPalette.self,
+            forKey: .photoPalette
+        )
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
+        try container.encode(mealID, forKey: .mealID)
         try container.encode(restaurant, forKey: .restaurant)
+        try container.encodeIfPresent(restaurantID, forKey: .restaurantID)
         try container.encode(menu, forKey: .menu)
-        try container.encode(date, forKey: .date)
+        try container.encodeIfPresent(menuItemID, forKey: .menuItemID)
+        try container.encode(observedAt, forKey: .date)
+        try container.encode(observedAt, forKey: .observedAt)
+        try container.encodeIfPresent(savedAt, forKey: .savedAt)
+        try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
         try container.encode(rating, forKey: .rating)
         try container.encode(note, forKey: .note)
         try container.encode(tasteExperienceIDs, forKey: .tasteExperienceIDs)
         try container.encode(detailTagIDs, forKey: .detailTagIDs)
+        try container.encodeIfPresent(sensorySelections, forKey: .sensorySelections)
+        try container.encodeIfPresent(overallEvaluation, forKey: .overallEvaluation)
         try container.encode(dishKindIDs, forKey: .dishKindIDs)
         try container.encodeIfPresent(
             reflectionPhotoFilename,
             forKey: .reflectionPhotoFilename
         )
         try container.encodeIfPresent(tbaAnalysisSnapshot, forKey: .tbaAnalysisSnapshot)
+        try container.encode(feedbackStatus, forKey: .feedbackStatus)
+        try container.encodeIfPresent(photoPalette, forKey: .photoPalette)
+    }
+
+    func preparedForInitialSave(at savedAt: Date) -> DiningEntry {
+        replacingStorageContext(
+            mealID: mealID,
+            savedAt: self.savedAt ?? savedAt,
+            updatedAt: updatedAt
+        )
+    }
+
+    func preparedForUpdate(previous: DiningEntry, at updatedAt: Date) -> DiningEntry {
+        replacingStorageContext(
+            mealID: previous.mealID,
+            savedAt: previous.savedAt,
+            updatedAt: updatedAt
+        )
+    }
+
+    func additionalMenuDraft(id: UUID = UUID()) -> DiningEntry {
+        DiningEntry(
+            id: id,
+            mealID: mealID,
+            restaurant: restaurant,
+            restaurantID: restaurantID,
+            menu: "",
+            menuItemID: nil,
+            observedAt: observedAt,
+            savedAt: nil,
+            updatedAt: nil,
+            rating: 0,
+            note: "",
+            sensorySelections: [],
+            feedbackStatus: .captured
+        )
+    }
+
+    private func replacingStorageContext(
+        mealID: UUID,
+        savedAt: Date?,
+        updatedAt: Date?
+    ) -> DiningEntry {
+        DiningEntry(
+            id: id,
+            mealID: mealID,
+            restaurant: restaurant,
+            restaurantID: restaurantID,
+            menu: menu,
+            menuItemID: menuItemID,
+            observedAt: observedAt,
+            savedAt: savedAt,
+            updatedAt: updatedAt,
+            rating: rating,
+            note: note,
+            tasteExperienceIDs: tasteExperienceIDs,
+            detailTagIDs: detailTagIDs,
+            sensorySelections: sensorySelections,
+            overallEvaluation: overallEvaluation,
+            dishKindIDs: dishKindIDs,
+            reflectionPhotoFilename: reflectionPhotoFilename,
+            tbaAnalysisSnapshot: tbaAnalysisSnapshot,
+            feedbackStatus: feedbackStatus,
+            photoPalette: photoPalette
+        )
     }
 
     static let sample = DiningEntry(
@@ -468,6 +615,69 @@ struct DiningEntry: Identifiable, Codable, Equatable {
 enum DiningReflectionPhotoStore {
     private static let directoryName = "DiningFeedbackPhotos"
     private static let thumbnailCache = ThumbnailCache()
+    // ponytail: 사진 변경을 직렬화한다. 대량 병렬 복원이 필요하면 파일별 잠금으로 분리한다.
+    private static let fileMutationLock = NSLock()
+    static let maximumOriginalByteCount = 6 * 1_024 * 1_024
+
+    enum PhotoError: LocalizedError, Equatable {
+        case invalidFilename, missingOriginal, invalidImage, imageTooLarge, conflictingOriginal
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidFilename: "사진 파일명이 올바르지 않아 백업을 멈췄습니다."
+            case .missingOriginal: "원본 사진을 찾을 수 없어 계정 백업을 완료하지 못했습니다."
+            case .invalidImage: "사진 원본을 읽을 수 없어 백업 또는 복원을 멈췄습니다."
+            case .imageTooLarge: "사진 원본이 6MB를 초과해 백업 또는 복원을 멈췄습니다."
+            case .conflictingOriginal: "같은 파일명의 다른 사진이 있어 기존 원본을 보존했습니다."
+            }
+        }
+    }
+
+    static func isValidFilename(_ filename: String) -> Bool {
+        guard filename.hasSuffix(".jpg"), filename.utf8.count <= 255 else { return false }
+        let basename = filename.dropLast(4)
+        return !basename.isEmpty && basename.utf8.allSatisfy {
+            (48...57).contains($0) || (65...90).contains($0) || (97...122).contains($0) || $0 == 45 || $0 == 95
+        }
+    }
+
+    /// 백업 원본을 그대로 읽는다. 누락과 손상은 구분하며 파일 경로를 외부로 확장하지 않는다.
+    static func originalData(for filename: String) throws -> Data? {
+        guard isValidFilename(filename) else { throw PhotoError.invalidFilename }
+        let url = directoryURL.appendingPathComponent(filename)
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+        guard values.isRegularFile == true, values.isSymbolicLink != true else { throw PhotoError.invalidImage }
+        guard (values.fileSize ?? 0) <= maximumOriginalByteCount else { throw PhotoError.imageTooLarge }
+        let data = try Data(contentsOf: url)
+        try validateOriginal(data)
+        return data
+    }
+
+    /// 원본 파일명을 유지하며 검증을 통과한 바이트만 원자적으로 복원한다.
+    static func restore(_ data: Data, filename: String) throws {
+        guard isValidFilename(filename) else { throw PhotoError.invalidFilename }
+        try validateOriginal(data)
+        fileMutationLock.lock()
+        defer { fileMutationLock.unlock() }
+        let url = directoryURL.appendingPathComponent(filename)
+        if FileManager.default.fileExists(atPath: url.path) {
+            guard try originalData(for: filename) == data else { throw PhotoError.conflictingOriginal }
+            return
+        }
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        try data.write(to: url, options: .atomic)
+        thumbnailCache.invalidate()
+    }
+
+    private static func validateOriginal(_ data: Data) throws {
+        guard data.count <= maximumOriginalByteCount else { throw PhotoError.imageTooLarge }
+        guard let source = imageSource(data: data),
+              CGImageSourceGetType(source) as String? == UTType.jpeg.identifier,
+              CGImageSourceGetCount(source) == 1,
+              CGImageSourceGetStatus(source) == .statusComplete,
+              downsample(source, maximumPixelDimension: 64) != nil else { throw PhotoError.invalidImage }
+    }
 
     static func normalizedJPEGData(_ data: Data) -> Data? {
         guard let source = imageSource(data: data),
@@ -524,6 +734,8 @@ enum DiningReflectionPhotoStore {
     }
 
     static func save(_ data: Data, entryID: UUID) throws -> String {
+        fileMutationLock.lock()
+        defer { fileMutationLock.unlock() }
         // A replacement must also change the SwiftUI image task's identity.
         let filename = "\(entryID.uuidString.lowercased())-\(UUID().uuidString.lowercased()).jpg"
         try FileManager.default.createDirectory(
@@ -536,14 +748,22 @@ enum DiningReflectionPhotoStore {
     }
 
     static func data(for filename: String?) -> Data? {
-        guard let filename else { return nil }
-        return try? Data(contentsOf: directoryURL.appendingPathComponent(filename))
+        guard let filename, isValidFilename(filename) else { return nil }
+        let url = directoryURL.appendingPathComponent(filename)
+        guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]),
+              values.isRegularFile == true, values.isSymbolicLink != true else { return nil }
+        return try? Data(contentsOf: url)
     }
 
     static func remove(filename: String?) {
-        guard let filename else { return }
+        guard let filename, isValidFilename(filename) else { return }
+        fileMutationLock.lock()
+        defer { fileMutationLock.unlock() }
+        let url = directoryURL.appendingPathComponent(filename)
+        guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]),
+              values.isRegularFile == true, values.isSymbolicLink != true else { return }
         try? FileManager.default.removeItem(
-            at: directoryURL.appendingPathComponent(filename)
+            at: url
         )
         thumbnailCache.invalidate()
     }
@@ -586,12 +806,16 @@ enum DiningReflectionPhotoStore {
     }
 
     private static func cachedThumbnail(for filename: String, pixels: Int) -> CGImage? {
+        guard isValidFilename(filename) else { return nil }
+        let url = directoryURL.appendingPathComponent(filename)
+        guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]),
+              values.isRegularFile == true, values.isSymbolicLink != true else { return nil }
         let key = "\(filename)#\(pixels)"
         while !Task.isCancelled {
             let cached = thumbnailCache.lookup(key)
             if let image = cached.image { return image }
             guard let source = CGImageSourceCreateWithURL(
-                directoryURL.appendingPathComponent(filename) as CFURL,
+                url as CFURL,
                 [kCGImageSourceShouldCache: false] as CFDictionary
             ), let image = squareFillThumbnail(source, pixels: pixels) else { return nil }
             guard !Task.isCancelled else { return nil }
@@ -945,51 +1169,87 @@ struct DiningDishFeedbackItem: Identifiable, Equatable {
         tasteBubbles.compactMap(\.resolvedAxis).first ?? .umami
     }
 
+    /// 저장한 원문과 현재 감각 분석으로만 피드 표시를 구성한다.
+    /// 과거 분석, 보정 점수, 환산 평점은 감각 근거로 사용하지 않는다.
+    static func fromDiningEntry(
+        _ entry: DiningEntry,
+        analysis: SensoryAnalysisSnapshot?
+    ) -> DiningDishFeedbackItem {
+        let trimmedMenu = entry.menu.trimmingCharacters(in: .whitespacesAndNewlines)
+        let subject = trimmedMenu.isEmpty ? entry.restaurant : trimmedMenu
+        let images = entry.reflectionPhotoFilename.map { filename in
+            [Image(id: "\(entry.id.uuidString)-reflection-photo", alt: "\(subject) 식사 기록 사진", localPhotoFilename: filename)]
+        } ?? []
+        let observations = entry.hasCompletedTasteFeedback
+            ? analysis?.observations.filter { $0.experienceID == entry.id } ?? [] : []
+        let pending = entry.hasCompletedTasteFeedback
+            ? analysis?.unresolved.filter { $0.experienceID == entry.id } ?? [] : []
+        let insight = entry.hasCompletedTasteFeedback
+            ? analysis?.insights.first { $0.experienceIDs.contains(entry.id) } : nil
+        let summary: String
+        let reaction: String
+        if !entry.hasCompletedTasteFeedback {
+            summary = "사진과 식당을 먼저 저장했어요. 취향은 언제든 덧붙일 수 있어요."
+            reaction = "취향 기록 전"
+        } else if analysis == nil {
+            summary = "식사 기록을 보관했어요. 감각 표현의 해석을 준비하고 있어요."
+            reaction = "해석 준비 중"
+        } else if let insight {
+            summary = insight.body
+            reaction = "기록에서 읽은 입맛"
+        } else if let observation = observations.first(where: { !$0.isUnclassifiedDetail }) {
+            summary = "이 식사에서 “\(observation.phrase)”라고 남겼어요."
+            reaction = "기록한 감각"
+        } else if !pending.isEmpty || !observations.isEmpty {
+            summary = "남긴 표현을 원문으로 보관했어요. 뜻을 확인한 뒤 입맛 해석에 반영해요."
+            reaction = "표현 확인 중"
+        } else {
+            summary = "식사 기록을 보관했어요. 아직 해석할 감각 표현이 없어요."
+            reaction = "감각 단서 기다리는 중"
+        }
+        var phrases = Set<String>()
+        let tags = observations.filter { !$0.isUnclassifiedDetail && phrases.insert($0.phrase).inserted }
+            .prefix(3).map { DishFeedbackCardTag(id: $0.id, label: $0.phrase, title: $0.phrase) }
+        return DiningDishFeedbackItem(
+            id: entry.id.uuidString,
+            authorName: "나",
+            restaurantName: entry.restaurant,
+            dishTitle: subject,
+            summary: summary,
+            reactionLabel: reaction,
+            images: images,
+            detailTags: tags,
+            tasteBubbles: [],
+            commentCount: 0,
+            liked: false,
+            tbaAnalysisSnapshot: nil
+        )
+    }
+
     static func fromTasteMatchFeedItem(
         _ item: TasteMatchFeedItem,
         commentCount: Int = 0,
         liked: Bool = false,
         images: [Image]? = nil
     ) -> DiningDishFeedbackItem {
-        let dishKindTags = TasteBuddyAgent.inferDishKindIds(
-            title: item.dishTitle,
-            subtitle: item.restaurantName,
-            flavorNotes: item.tasteTags + item.supportingSignals
-        )
-        let input = TasteBuddyAgentDiningAnalysisInput(
-            detailTags: item.supportingSignals,
-            dishKindTags: dishKindTags,
-            id: item.id,
-            ingredients: [],
-            restaurantName: item.restaurantName,
-            reviewSnippet: item.reason,
-            subject: item.dishTitle,
-            tasteTags: item.tasteTags,
-            techniques: []
-        )
-        let snapshot = TasteBuddyAgent.buildDiningAnalysisSnapshot(
-            input,
-            generatedAt: TasteBuddyAgent.fixedFixtureGeneratedAt
-        )
-
         return DiningDishFeedbackItem(
             id: item.id,
             authorName: item.reviewerName,
             restaurantName: item.restaurantName,
             dishTitle: item.dishTitle,
-            summary: snapshot.summary,
-            reactionLabel: snapshot.tasteBubbles.first?.label ?? "미각 기록",
+            summary: "예시 식사 기록이에요. 개인 입맛 해석에는 사용하지 않아요.",
+            reactionLabel: "예시 기록",
             images: images ?? [
                 DiningDishFeedbackItem.Image(
                     id: "\(item.id)-menu-photo",
                     alt: "\(item.dishTitle) 메뉴 사진"
                 )
             ],
-            detailTags: snapshot.detailTags.map(DishFeedbackCardTag.fromTBA),
-            tasteBubbles: snapshot.tasteBubbles.map(DishFeedbackTasteBubble.fromTBA),
+            detailTags: [],
+            tasteBubbles: [],
             commentCount: commentCount,
             liked: liked,
-            tbaAnalysisSnapshot: snapshot
+            tbaAnalysisSnapshot: nil
         )
     }
 }
@@ -1254,24 +1514,19 @@ enum TasteBuddyNativeContent {
         commentCount: Int,
         liked: Bool
     ) -> DiningDishFeedbackItem {
-        let snapshot = TasteBuddyAgent.buildDiningAnalysisSnapshot(
-            tbaInput,
-            generatedAt: TasteBuddyAgent.fixedFixtureGeneratedAt
-        )
-
         return DiningDishFeedbackItem(
             id: id,
             authorName: authorName,
             restaurantName: restaurantName,
             dishTitle: dishTitle,
-            summary: snapshot.summary,
-            reactionLabel: snapshot.tasteBubbles.first?.label ?? "미각 기록",
+            summary: "예시 식사 기록이에요. 개인 입맛 해석에는 사용하지 않아요.",
+            reactionLabel: "예시 기록",
             images: images,
-            detailTags: snapshot.detailTags.map(DishFeedbackCardTag.fromTBA),
-            tasteBubbles: snapshot.tasteBubbles.map(DishFeedbackTasteBubble.fromTBA),
+            detailTags: [],
+            tasteBubbles: [],
             commentCount: commentCount,
             liked: liked,
-            tbaAnalysisSnapshot: snapshot
+            tbaAnalysisSnapshot: nil
         )
     }
 

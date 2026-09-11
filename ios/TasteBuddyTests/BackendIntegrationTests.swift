@@ -417,7 +417,7 @@ final class BackendIntegrationTests: XCTestCase {
     }
 
     @MainActor
-    func testAccountDeletionPreservesLocalDataOnFailureAndClearsItAfterRetry() async {
+    func testAccountDeletionPreservesLocalDataOnFailureAndClearsItAfterRetry() async throws {
         let suiteName = "tastebuddy.backend.tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defer { defaults.removePersistentDomain(forName: suiteName) }
@@ -425,17 +425,24 @@ final class BackendIntegrationTests: XCTestCase {
             .failure("계정 삭제에 실패했습니다."),
             .success("계정이 삭제되었습니다.")
         ])
-        let model = AppModel(defaults: defaults, authRepository: repository)
+        let savedAt = Date(timeIntervalSince1970: 1_800_000_000)
+        let model = AppModel(defaults: defaults, authRepository: repository, now: { savedAt })
         model.completeVerifiedEmailAuthEntry()
         model.completeOnboarding()
         model.saveProfile(.sample)
-        model.addDiningEntry(.sample)
+        let original = DiningEntry.sample
+        model.addDiningEntry(original)
+        let savedEntry = try XCTUnwrap(model.diningEntries.first)
+        XCTAssertEqual(savedEntry.savedAt, savedAt)
+        XCTAssertNil(savedEntry.updatedAt)
+        try assertDiningSourceUnchangedByStorage(savedEntry, original: original)
 
         let failure = await model.deleteCurrentAccount()
 
         XCTAssertFalse(failure.ok)
         XCTAssertNotNil(model.profile)
-        XCTAssertEqual(model.diningEntries, [.sample])
+        XCTAssertEqual(model.diningEntries, [savedEntry])
+        XCTAssertEqual(AppModel(defaults: defaults).diningEntries, [savedEntry])
         XCTAssertTrue(model.hasSeenOnboarding)
         XCTAssertEqual(model.backendSessionStatus, .authenticated)
         XCTAssertNotNil(AppModel(defaults: defaults).profile)

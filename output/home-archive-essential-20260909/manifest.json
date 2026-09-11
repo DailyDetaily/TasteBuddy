@@ -1,0 +1,44 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "F5D54921-8578-4F32-96A0-D0FCBBE69189",
+        "deviceName" : "iPhone 17 Pro",
+        "exportedFileName" : "44452908-AA0B-4AD6-965D-AC2895C49F32.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-archive-populated-402-1_0_5A231F24-0E04-498B-B9A9-45A4D4EEE418.png",
+        "timestamp" : 1788941803.373
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "F5D54921-8578-4F32-96A0-D0FCBBE69189",
+        "deviceName" : "iPhone 17 Pro",
+        "exportedFileName" : "DC5CF5DE-C582-4DDA-8F43-AF4E186C62FF.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-archive-populated-402-0_0_70F05B85-BAC8-4994-AB8C-0BE5DA110F0E.png",
+        "timestamp" : 1788941802.095
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "F5D54921-8578-4F32-96A0-D0FCBBE69189",
+        "deviceName" : "iPhone 17 Pro",
+        "exportedFileName" : "424ACBD8-AC46-4C2B-A3F4-1BAB47B2FA99.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-archive-empty-320-1_0_1419E950-0AA2-43F4-AEC8-46B6B047F603.png",
+        "timestamp" : 1788941800.25
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "F5D54921-8578-4F32-96A0-D0FCBBE69189",
+        "deviceName" : "iPhone 17 Pro",
+        "exportedFileName" : "62D48ECB-3451-4C36-A62A-6B8AB9715EAE.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-archive-empty-320-0_0_569EB1AA-4866-4BC4-9EAF-887789F57A75.png",
+        "timestamp" : 1788941799.344
+      }
+    ],
+    "testIdentifier" : "HomeArchiveMetricsEngineTests/testHomeMetricsFitCompactViewportAndRemainReachableByScrolling()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyTests/HomeArchiveMetricsEngineTests/testHomeMetricsFitCompactViewportAndRemainReachableByScrolling"
+  }
+]

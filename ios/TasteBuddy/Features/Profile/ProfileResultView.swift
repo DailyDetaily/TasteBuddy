@@ -4,6 +4,18 @@ struct ProfileResultView: View {
     let profile: TasteProfile
 
     var body: some View {
+        if let submission = profile.surveySubmission {
+            ScrollView {
+                TasteSurveyEvidenceCard(submission: submission)
+                    .padding(TBSpacing.page)
+            }
+            .background(TBColor.page)
+        } else {
+            legacyResult
+        }
+    }
+
+    private var legacyResult: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: TBSpacing.section) {
                 VStack(alignment: .leading, spacing: 10) {
@@ -100,6 +112,7 @@ struct AxisInterpretationCard: View {
     let axis: TasteAxis
     let score: Int
     let label: String
+    var displayDescription: String? = nil
 
     var body: some View {
         SectionCard(background: axis.tintColor.opacity(0.65)) {
@@ -123,7 +136,7 @@ struct AxisInterpretationCard: View {
                             .font(TBFont.medium(10))
                             .foregroundStyle(axis.tintTextColor.opacity(0.8))
                     }
-                    Text(CalibrationEngine.interpretation(for: axis, score: score))
+                    Text(displayDescription ?? CalibrationEngine.interpretation(for: axis, score: score))
                         .font(TBFont.regular(12))
                         .foregroundStyle(axis.tintTextColor)
                         .lineSpacing(3)

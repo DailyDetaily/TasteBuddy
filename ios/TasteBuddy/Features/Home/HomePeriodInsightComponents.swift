@@ -18,12 +18,14 @@ struct HomeJournalEmptyState: View {
 struct HomePeriodInsightCard: View {
     let data: HomePeriodInsightCardData
     var onTap: (() -> Void)? = nil
+    var labelOverride: String? = nil
+    var detailLineLimit: Int? = 2
 
     var body: some View {
         TasteInsightSummaryCardLayout(
             indicatorColors: [indicatorAxis.mainColor],
             indicatorIcon: data.kind.cardIcon,
-            sectionLabel: data.kind.label,
+            sectionLabel: labelOverride ?? data.kind.label,
             actionLabel: onTap == nil ? nil : "자세히보기",
             title: data.title,
             titleContentSpacing: TBSpacing.x4,
@@ -48,7 +50,7 @@ struct HomePeriodInsightCard: View {
                     .font(TBFont.regular(TBTypography.FontSize.x12))
                     .foregroundStyle(TBColor.textHint)
                     .lineSpacing(3)
-                    .lineLimit(2)
+                    .lineLimit(detailLineLimit)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .layoutPriority(1)
@@ -69,7 +71,7 @@ struct HomePeriodInsightCard: View {
 
     private var accessibilityLabel: String {
         return [
-            data.kind.label,
+            labelOverride ?? data.kind.label,
             data.title,
             data.detail,
         ]
@@ -127,6 +129,7 @@ private struct HomePeriodInsightSparkBars: View {
             .padding(.horizontal, TBSpacing.x2)
         }
         .frame(height: 32)
+        .tasteBloomChartReveal(from: .bottom)
         .accessibilityHidden(true)
     }
 
@@ -230,3 +233,25 @@ private extension HomePeriodInsightKind {
             .tbCardBordersVisible(false)
     }
 #endif
+
+/// 기존 기간 카드의 레이아웃을 그대로 사용하는 누적 지표 영역.
+struct HomeArchiveMetricsSection: View {
+    let sections: [HomeArchiveMetricSection]
+
+    var body: some View {
+        ForEach(sections) { section in
+            TBPageSection(title: section.title) {
+                VStack(spacing: TBSpacing.x12) {
+                    ForEach(section.cards) { card in
+                        HomePeriodInsightCard(
+                            data: card.data,
+                            labelOverride: card.label,
+                            detailLineLimit: nil
+                        )
+                        .accessibilityIdentifier("home-archive-metric-\(card.id)")
+                    }
+                }
+            }
+        }
+    }
+}

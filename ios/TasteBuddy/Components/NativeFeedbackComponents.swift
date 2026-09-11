@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Timing belongs to the action's product contract, not the toast's appearance.
 enum TBToastPolicy: CaseIterable {
@@ -65,7 +66,7 @@ final class TBToastPresenter: ObservableObject {
         guard isPresented else { return }
         let completion = dismissal
         cancel()
-        withAnimation(.easeOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: UIAccessibility.isReduceMotionEnabled)) {
             completion?()
         }
     }
@@ -77,7 +78,7 @@ final class TBToastPresenter: ObservableObject {
         timeoutTask?.cancel()
         timeoutTask = nil
         dismissal = nil
-        withAnimation(.easeOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: UIAccessibility.isReduceMotionEnabled)) {
             isPresented = false
         }
     }

@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct TasteBuddyApp: App {
-    @StateObject private var appModel = AppModel()
+    @StateObject private var appModel = BrandVideoCaptureRuntime.makeAppModel()
 
     var body: some Scene {
         WindowGroup {
@@ -15,8 +15,12 @@ struct TasteBuddyApp: App {
 }
 
 private struct RootView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var appModel: AppModel
-    @StateObject private var shellPreviewModel = AppModel.preview(
+    @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var shellPreviewModel = BrandVideoCaptureRuntime.isEnabled
+        ? BrandVideoCaptureRuntime.makeAppModel()
+        : AppModel.preview(
         onboardingComplete: true,
         profile: .sample,
         profileHistory: TasteProfile.shellPreviewHistory,
@@ -107,9 +111,57 @@ private struct RootView: View {
     @State private var usesAuthEntryDarkStatusBar = false
     @State private var usesStagedSheetDarkStatusBar = false
 
+    private var sensoryRuntimePreview: AnyView? {
+        #if DEBUG || targetEnvironment(simulator)
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("--taste-perception-qa") {
+            return AnyView(TastePerceptionRuntimePreview())
+        }
+        if arguments.contains("--sensory-insights-qa") {
+            return AnyView(PersonalTasteInsightsRuntimePreview())
+        }
+        if arguments.contains("--sensory-insights-home-qa") {
+            return AnyView(PersonalTasteInsightsRuntimePreview(initialTab: .home))
+        }
+        if arguments.contains("--sensory-fit-detail-qa") {
+            return AnyView(PersonalTasteInsightsRuntimePreview(detailKind: .fit))
+        }
+        if arguments.contains("--sensory-overall-detail-qa") {
+            return AnyView(PersonalTasteInsightsRuntimePreview(detailKind: .overall))
+        }
+        if arguments.contains("--sensory-collection-qa") {
+            return AnyView(SensoryCollectionRuntimePreview(startMode: .details))
+        }
+        if arguments.contains("--sensory-overall-qa") {
+            return AnyView(SensoryCollectionRuntimePreview(startMode: .overallEvaluation))
+        }
+        if arguments.contains("--sensory-map-qa") {
+            return AnyView(SensoryCollectionRuntimePreview(startMode: .tasteMap))
+        }
+        if arguments.contains("--sensory-advanced-qa") {
+            return AnyView(SensoryAdvancedRuntimePreview())
+        }
+        if arguments.contains("--sensory-advanced-home-qa") {
+            return AnyView(SensoryAdvancedRuntimePreview(initialTab: .home))
+        }
+        if arguments.contains("--sensory-advanced-detail-qa") {
+            return AnyView(SensoryAdvancedDetailRuntimePreview())
+        }
+        guard arguments.contains("--sensory-home-qa") || arguments.contains("--sensory-analysis-qa") else { return nil }
+        return AnyView(SensoryRuntimePreview())
+        #else
+        return nil
+        #endif
+    }
+
     var body: some View {
         Group {
-            if showsNativeDesignStatesPreview {
+            if BrandVideoCaptureRuntime.isEnabled {
+                BrandVideoRuntimePreview()
+                    .environmentObject(appModel)
+            } else if let sensoryRuntimePreview {
+                sensoryRuntimePreview
+            } else if showsNativeDesignStatesPreview {
                 NativeDesignStatesPreview()
             } else if showsDesignSystemPreview {
                 DesignSystemPreviewView()
@@ -217,10 +269,16 @@ private struct RootView: View {
         .preferredColorScheme(usesDarkStatusBar ? .dark : .light)
         .onAppear(perform: applyLaunchResetIfNeeded)
         .onOpenURL { url in
+            guard !BrandVideoCaptureRuntime.isEnabled else { return }
             BackendAuthRepositoryFactory.handleRedirectURL(url)
         }
         .task {
+            guard !BrandVideoCaptureRuntime.isEnabled else { return }
             await appModel.restoreBackendSessionIfNeeded()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active, !BrandVideoCaptureRuntime.isEnabled else { return }
+            Task { await appModel.syncAccountData() }
         }
     }
 
@@ -229,26 +287,26 @@ private struct RootView: View {
         switch currentPhase {
         case .splash:
             SplashView {
-                withAnimation(.easeInOut(duration: 0.28)) {
+                withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
                     hasCompletedSplash = true
                 }
             }
         case .authEntry:
             AuthEntryGateView(
                 onContinueAsGuest: completeAuthEntry,
-                onVerifiedEmailLogin: { _ in completeVerifiedEmailAuthEntry(publishCurrentProfile: false) },
+                onVerifiedEmailLogin: { result in completeVerifiedEmailAuthEntry(publishCurrentProfile: false, user: result.user) },
                 onLinkedCurrentProfile: { completeVerifiedEmailAuthEntry(publishCurrentProfile: true) },
                 onSheetPresentationChange: setAuthEntrySheetPresentation
             )
         case .onboarding:
             OnboardingView {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
                     appModel.completeOnboarding()
                 }
             }
         case .preferenceIntake:
             PreferenceIntakeFlowView {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
                     appModel.returnToOnboarding()
                 }
             }
@@ -285,7 +343,7 @@ private struct RootView: View {
     }
 
     private func completeAuthEntry() {
-        withAnimation(.easeInOut(duration: 0.3)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             appModel.completeAuthEntry()
         }
     }
@@ -298,12 +356,13 @@ private struct RootView: View {
         }
     }
 
-    private func completeVerifiedEmailAuthEntry(publishCurrentProfile: Bool) {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            appModel.completeVerifiedEmailAuthEntry()
+    private func completeVerifiedEmailAuthEntry(publishCurrentProfile: Bool, user: BackendAuthUserSummary? = nil) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
+            appModel.completeVerifiedEmailAuthEntry(user: user, importingGuest: publishCurrentProfile)
         }
 
         Task {
+            await appModel.syncAccountData()
             if publishCurrentProfile {
                 _ = await appModel.publishCurrentProfileIdentity()
             } else {
@@ -322,6 +381,7 @@ private struct RootView: View {
 }
 
 private struct AuthEntryGateView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isSheetPresented = false
     @State private var sheetDragTranslation: CGFloat = 0
     @State private var isDraggingSheet = false
@@ -340,7 +400,7 @@ private struct AuthEntryGateView: View {
                 }
                 .ignoresSafeArea()
                 .animation(
-                    isDraggingSheet ? nil : StagedBottomSheetBackgroundMetrics.animation,
+                    isDraggingSheet ? nil : TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion),
                     value: sheetProgress
                 )
 
@@ -368,7 +428,7 @@ private struct AuthEntryGateView: View {
                         y: proxy.size.height - sheetHeight / 2 + sheetDragTranslation
                     )
                     .simultaneousGesture(sheetDragGesture)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(TasteBloomMotion.sheetTransition(reduceMotion: reduceMotion))
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
@@ -427,7 +487,7 @@ private struct AuthEntryGateView: View {
                 if shouldDismiss {
                     dismissAuthSheetFromDrag()
                 } else {
-                    withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
                         sheetDragTranslation = 0
                         isDraggingSheet = false
                     }
@@ -448,7 +508,7 @@ private struct AuthEntryGateView: View {
             return
         }
 
-        withAnimation(.easeOut(duration: 0.24)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             sheetDragTranslation = 0
             isDraggingSheet = false
             isSheetPresented = true
@@ -457,7 +517,7 @@ private struct AuthEntryGateView: View {
     }
 
     private func dismissAuthSheet() {
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             isSheetPresented = false
             sheetDragTranslation = 0
             isDraggingSheet = false
@@ -466,14 +526,16 @@ private struct AuthEntryGateView: View {
     }
 
     private func dismissAuthSheetFromDrag() {
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             sheetDragTranslation = sheetHeight
             isSheetPresented = false
             isDraggingSheet = false
             onSheetPresentationChange(false)
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + TasteBloomMotion.duration(.sheet, reduceMotion: reduceMotion)
+        ) {
             guard !isSheetPresented else {
                 return
             }
@@ -537,6 +599,7 @@ private struct DiningFeedbackPreviewHost: View {
 }
 
 private struct HomeSearchPreviewHost: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showsSearch = true
     let initialQuery: String
 
@@ -552,7 +615,7 @@ private struct HomeSearchPreviewHost: View {
                 HomeSearchSheet(
                     initialQuery: initialQuery,
                     onCloseRequest: {
-                        withAnimation(.easeInOut(duration: 0.18)) {
+                        withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)) {
                             showsSearch = false
                         }
                     }
@@ -662,4 +725,273 @@ private extension TasteProfile {
         RootView()
             .environmentObject(AppModel.preview())
     }
+#endif
+
+#if DEBUG || targetEnvironment(simulator)
+private enum SensorySelectionRuntimeFixtures {
+    static let entries: [DiningEntry] = [
+        DiningEntry(
+            restaurant: "가상 기록", menu: "첫 디저트", rating: 0, note: "",
+            tasteExperienceIDs: ["sweet-soft"], detailTagIDs: ["texture-crisp"],
+            sensorySelections: [
+                .init(id: "sweet-soft", type: .bubble, labelSnapshot: "부드러운 단맛", liking: .liked, intensity: .medium, preferenceFit: .justRight),
+                .init(id: "texture-crisp", type: .detailTag, labelSnapshot: "바삭함", liking: .liked, target: .surface, relatedBubbleID: "sweet-soft"),
+            ],
+            overallEvaluation: .init(response: .veryLiked)
+        ),
+        DiningEntry(
+            restaurant: "가상 기록", menu: "두 번째 디저트", rating: 0, note: "",
+            tasteExperienceIDs: ["sweet-round"], detailTagIDs: ["texture-crisp"],
+            sensorySelections: [
+                .init(id: "sweet-round", type: .bubble, labelSnapshot: "둥근 단맛", liking: .liked),
+                .init(id: "texture-crisp", type: .detailTag, labelSnapshot: "바삭함", liking: .liked, target: .surface, relatedBubbleID: "sweet-round"),
+            ],
+            overallEvaluation: .init(response: .liked)
+        ),
+        DiningEntry(
+            restaurant: "가상 기록", menu: "세 번째 디저트", rating: 0, note: "",
+            tasteExperienceIDs: ["sweet-front"],
+            sensorySelections: [
+                .init(id: "sweet-front", type: .bubble, labelSnapshot: "먼저 올라온 단맛", liking: .liked),
+            ],
+            overallEvaluation: .init(response: .neutral)
+        ),
+        DiningEntry(
+            restaurant: "가상 기록", menu: "소스 요리", rating: 0, note: "",
+            tasteExperienceIDs: ["sweet-dense"],
+            sensorySelections: [
+                .init(id: "sweet-dense", type: .bubble, labelSnapshot: "밀도 있는 단맛", liking: .disliked, intensity: .strong, preferenceFit: .tooStrong, target: .sauce),
+            ],
+            overallEvaluation: .init(response: .disliked)
+        ),
+        DiningEntry(
+            restaurant: "가상 기록", menu: "구운 채소", rating: 0, note: "",
+            tasteExperienceIDs: ["bitter-roasted"],
+            sensorySelections: [
+                .init(id: "bitter-roasted", type: .bubble, labelSnapshot: "구운 향"),
+            ],
+            overallEvaluation: .init(response: .veryDisliked)
+        ),
+    ]
+}
+
+private enum SensoryAdvancedRuntimeFixtures {
+    private static let sameMealID = UUID(uuidString: "A0000000-0000-0000-0000-000000000001")!
+    private static let baseDate = Date(timeIntervalSince1970: 1_782_300_000)
+
+    static let entries: [DiningEntry] = [
+        entry(
+            record: "B0000000-0000-0000-0000-000000000001",
+            mealID: sameMealID,
+            dayOffset: 0,
+            menu: "강한 산미 소스",
+            liking: .disliked,
+            intensity: .strong,
+            overall: .disliked
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000002",
+            mealID: sameMealID,
+            dayOffset: 0,
+            menu: "산미 드레싱",
+            liking: .disliked,
+            intensity: .strong,
+            overall: .neutral
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000003",
+            dayOffset: -4,
+            menu: "라임 소스 생선",
+            liking: .disliked,
+            intensity: .strong,
+            overall: .disliked
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000004",
+            dayOffset: -8,
+            menu: "초절임 소스",
+            liking: .disliked,
+            intensity: .strong,
+            overall: .veryDisliked
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000005",
+            dayOffset: -12,
+            menu: "은은한 유자 소스",
+            liking: .liked,
+            intensity: .light,
+            overall: .veryLiked
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000006",
+            dayOffset: -16,
+            menu: "가벼운 레몬 소스",
+            liking: .liked,
+            intensity: .light,
+            overall: .liked
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000007",
+            dayOffset: -20,
+            menu: "매실 소스",
+            liking: .liked,
+            intensity: .light,
+            overall: .liked
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000008",
+            dayOffset: -24,
+            menu: "산뜻한 식초 소스",
+            liking: .disliked,
+            intensity: .light,
+            overall: .neutral
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000009",
+            dayOffset: -28,
+            menu: "중간 산미 소스",
+            liking: .neutral,
+            intensity: .medium,
+            overall: .neutral
+        ),
+        entry(
+            record: "B0000000-0000-0000-0000-000000000010",
+            dayOffset: -32,
+            menu: "산미가 느껴진 한 접시",
+            liking: nil,
+            intensity: nil,
+            overall: .liked
+        ),
+    ]
+
+    private static func entry(
+        record: String,
+        mealID: UUID? = nil,
+        dayOffset: Int,
+        menu: String,
+        liking: DiningSensorySelection.Liking?,
+        intensity: DiningSensorySelection.Intensity?,
+        overall: DiningOverallEvaluation.Response
+    ) -> DiningEntry {
+        let recordID = UUID(uuidString: record)!
+        let observedAt = Calendar(identifier: .gregorian).date(
+            byAdding: .day,
+            value: dayOffset,
+            to: baseDate
+        )!
+        return DiningEntry(
+            id: recordID,
+            mealID: mealID ?? recordID,
+            restaurant: "고도화 검증 식당",
+            restaurantID: "qa-advanced-restaurant",
+            menu: menu,
+            menuItemID: "qa-\(record)",
+            observedAt: observedAt,
+            savedAt: observedAt.addingTimeInterval(900),
+            rating: 0,
+            note: "",
+            tasteExperienceIDs: ["sour-fresh"],
+            sensorySelections: [
+                .init(
+                    id: "sour-fresh",
+                    type: .bubble,
+                    labelSnapshot: "산뜻한 산미",
+                    liking: liking,
+                    intensity: intensity,
+                    target: .sauce,
+                    phase: .lateMeal
+                ),
+            ],
+            overallEvaluation: .init(response: overall),
+            dishKindIDs: ["sauce_glaze"]
+        )
+    }
+}
+
+/// 시뮬레이터 검증 전용. 별도 UserDefaults를 사용하며 실제 계정 기록에는 저장하지 않는다.
+private struct SensoryRuntimePreview: View {
+    @StateObject private var model = AppModel.preview(
+        authEntryComplete: true,
+        onboardingComplete: true,
+        diningEntries: SensorySelectionRuntimeFixtures.entries
+    )
+
+    var body: some View {
+        AppShellView(initialTab: ProcessInfo.processInfo.arguments.contains("--sensory-analysis-qa") ? .analysis : .home)
+            .environmentObject(model)
+            .overlay(alignment: .top) {
+                Text("검증용 선택 입력 · 메모 없음")
+                    .font(TBFont.semibold(10))
+                    .foregroundStyle(TBColor.textHint)
+                    .allowsHitTesting(false)
+            }
+    }
+}
+
+private struct SensoryAdvancedRuntimePreview: View {
+    var initialTab: MainTab = .analysis
+    @StateObject private var model = AppModel.preview(
+        authEntryComplete: true,
+        onboardingComplete: true,
+        diningEntries: SensoryAdvancedRuntimeFixtures.entries
+    )
+
+    var body: some View {
+        AppShellView(initialTab: initialTab)
+            .environmentObject(model)
+            .overlay(alignment: .top) {
+                Text("검증용 · 실제 식사 묶음과 조건 반전")
+                    .font(TBFont.semibold(10))
+                    .foregroundStyle(TBColor.textHint)
+                    .allowsHitTesting(false)
+            }
+    }
+}
+
+private struct SensoryAdvancedDetailRuntimePreview: View {
+    @StateObject private var model = AppModel.preview(
+        authEntryComplete: true,
+        onboardingComplete: true,
+        diningEntries: SensoryAdvancedRuntimeFixtures.entries
+    )
+
+    var body: some View {
+        Group {
+            if let personalModel = model.sensoryAnalysis.personalModel,
+               let group = PersonalTasteCandidatePresentation.groups(personalModel.candidates).first {
+                PersonalTasteCandidateDetailSheet(
+                    group: group,
+                    observations: model.sensoryAnalysis.observations,
+                    entries: model.diningEntries,
+                    limits: personalModel.limits + model.sensoryAnalysis.limits
+                )
+            } else {
+                ProgressView()
+            }
+        }
+        .environmentObject(model)
+    }
+}
+
+private struct SensoryCollectionRuntimePreview: View {
+    let startMode: DiningFeedbackStartMode
+    @StateObject private var model = AppModel.preview(
+        authEntryComplete: true,
+        onboardingComplete: true,
+        diningEntries: SensorySelectionRuntimeFixtures.entries
+    )
+
+    var body: some View {
+        DiningFeedbackSheet(entry: SensorySelectionRuntimeFixtures.entries[0], startMode: startMode) {
+            model.updateDiningEntry($0)
+        }
+        .environmentObject(model)
+        .overlay(alignment: .top) {
+            Text("검증용 선택 입력 · 메모 없음")
+                .font(TBFont.semibold(10))
+                .foregroundStyle(TBColor.textHint)
+                .allowsHitTesting(false)
+        }
+    }
+}
 #endif

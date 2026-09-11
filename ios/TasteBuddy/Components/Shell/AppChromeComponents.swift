@@ -20,8 +20,8 @@ enum EdgeSwipeBackMetrics {
     static let minimumDistance: CGFloat = 10
     static let horizontalDominance: CGFloat = 1.2
     static let completionProgress: CGFloat = 0.32
-    static let completionDuration: TimeInterval = 0.22
-    static let cancellationDuration: TimeInterval = 0.22
+    static let completionDuration = TasteBloomMotion.Role.feedback.duration
+    static let cancellationDuration = TasteBloomMotion.Role.feedback.duration
     static let previousScreenParallax: CGFloat = 0.22
     static let previousScreenDimOpacity: CGFloat = 0.08
     static let previousScreenBlurRadius: CGFloat = 10
@@ -73,14 +73,14 @@ enum EdgeSwipeBackMetrics {
 }
 
 enum TopAppBarBloomMetrics {
-    static let rightActionStagger: TimeInterval = 0.08
-    static let unfurlDuration: TimeInterval = 0.26
-    static let openingDuration: TimeInterval = 0.16
-    static let settlingDuration: TimeInterval = 0.22
-    static let reducedMotionDuration: TimeInterval = 0.24
+    static let rightActionStagger = TasteBloomMotion.stagger
+    static let unfurlDuration = TasteBloomMotion.Role.content.duration
+    static let openingDuration = TasteBloomMotion.Role.feedback.duration
+    static let settlingDuration = TasteBloomMotion.Role.feedback.duration
+    static let reducedMotionDuration: TimeInterval = 0
     static let initialScale: CGFloat = 0.72
     static let unfurlScale: CGFloat = 0.99
-    static let openingScale: CGFloat = 1.045
+    static let openingScale = TasteBloomMotion.Scale.budPeak
     static let settledScale: CGFloat = 1
     static let initialOpacity: CGFloat = 0.52
     static let unfurlOpacity: CGFloat = 0.9
@@ -168,7 +168,7 @@ private struct EdgeSwipeBackModifier: ViewModifier {
         }
 
         isSettling = true
-        withAnimation(.easeOut(duration: EdgeSwipeBackMetrics.completionDuration)) {
+        withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)) {
             updateTranslation(containerWidth)
         }
 
@@ -187,7 +187,7 @@ private struct EdgeSwipeBackModifier: ViewModifier {
         }
 
         isSettling = true
-        withAnimation(.easeOut(duration: EdgeSwipeBackMetrics.cancellationDuration)) {
+        withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)) {
             updateTranslation(0)
         }
 
@@ -312,19 +312,22 @@ private struct TBTopChromeDissolveModifier: ViewModifier {
 }
 
 private struct TBScreenTopChromeModifier: ViewModifier {
+    @Environment(\.tbTopChromeInset) private var inheritedTopInset
     var isEnabled: Bool
 
     @ViewBuilder
     func body(content: Content) -> some View {
         if isEnabled {
             GeometryReader { geometry in
+                let topInset = max(geometry.safeAreaInsets.top, inheritedTopInset ?? 0)
                 content
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .environment(\.tbTopChromeInset, geometry.safeAreaInsets.top)
+                    .environment(\.tbTopChromeInset, topInset)
                     .scrollClipDisabled()
                     .clipShape(TopOverflowRoundedRectangle(
                         cornerRadius: 0,
-                        topOverflowInset: geometry.safeAreaInsets.top
+                        topOverflowInset: topInset,
+                        bottomOverflowInset: geometry.safeAreaInsets.bottom
                     ))
             }
         } else {
@@ -476,6 +479,7 @@ struct TBCollapsingTopChromeScrollView<PinnedHeader: View, Content: View>: View 
                 // Keep the backdrop between the scroll body and all foreground controls.
                 // A full-header modifier here would also bring its elevated z-index.
                 TBTopChromeBackdrop(fallback: TBColor.page)
+                    .opacity(TBTopChromeCollapseMetrics.progress(travel: travel, headerHeight: TBSpacing.x8))
                     .frame(height: visibleChromeHeight)
                     .offset(x: -contentOffset)
                     .zIndex(1)
@@ -559,6 +563,7 @@ struct MainTabChromeScrollView<Content: View>: View {
     @ViewBuilder
     var body: some View {
         if let topChrome {
+            // 시트 전환 중에도 같은 헤더·블러·스크롤을 유지한다.
             StickyBlurHeader(
                 maxBlurRadius: TBTopChromeBlurMetrics.maxBlurRadius,
                 fadeExtension: TBTopChromeBlurMetrics.fadeExtension,
@@ -566,15 +571,14 @@ struct MainTabChromeScrollView<Content: View>: View {
                 tintOpacityMiddle: TBTopChromeBlurMetrics.tintOpacityMiddle
             ) {
                 VStack(spacing: 0) {
-                    Color.clear
-                        .frame(height: statusBarHeight)
-
+                    Color.clear.frame(height: statusBarHeight)
                     topChrome
                 }
             } content: {
                 content()
                     .frame(maxWidth: .infinity, alignment: .topLeading)
             }
+            .environment(\.colorScheme, .light)
             .scrollClipDisabled()
             .ignoresSafeArea(.container, edges: .top)
         } else {
@@ -670,6 +674,7 @@ struct TopAppBar: View {
     var showSearchAction = false
     var showsDefaultActions = true
     var profile: TasteProfile? = nil
+    var avatarImageData: Data? = nil
     var hasUnreadNotifications = false
     var bloomToken = 0
     var rightActions: [TopAppBarAction] = []
@@ -760,14 +765,20 @@ struct TopAppBar: View {
             Button {
                 onOpenProfile?()
             } label: {
+                let image = avatarImageData.flatMap(UIImage.init(data:))
                 if let profile {
                     PalateBloomAvatar(
                         size: AppChromeMetrics.avatarSize,
                         tasteProfile: profile,
-                        shapeSeed: "current-user"
+                        shapeSeed: "current-user",
+                        image: image
                     )
                 } else {
-                    PalateBloomAvatar(size: AppChromeMetrics.avatarSize, seed: "current-user")
+                    PalateBloomAvatar(
+                        size: AppChromeMetrics.avatarSize,
+                        seed: "current-user",
+                        image: image
+                    )
                 }
             }
             .buttonStyle(.plain)
@@ -929,6 +940,10 @@ private struct TopAppBarBloomModifier: ViewModifier {
         }
 
         runningToken = newToken
+        guard !reduceMotion else {
+            phase = .settled
+            return
+        }
 
         var seedTransaction = Transaction(animation: nil)
         seedTransaction.disablesAnimations = true
@@ -946,7 +961,7 @@ private struct TopAppBarBloomModifier: ViewModifier {
                 return
             }
 
-            withAnimation(.smooth(duration: unfurlDuration)) {
+            withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
                 phase = reduceMotion ? .opening : .unfurling
             }
         }
@@ -956,7 +971,7 @@ private struct TopAppBarBloomModifier: ViewModifier {
                 return
             }
 
-            withAnimation(.smooth(duration: TopAppBarBloomMetrics.openingDuration)) {
+            withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)) {
                 phase = .opening
             }
         }
@@ -971,7 +986,7 @@ private struct TopAppBarBloomModifier: ViewModifier {
                 return
             }
 
-            withAnimation(.smooth(duration: TopAppBarBloomMetrics.settlingDuration)) {
+            withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)) {
                 phase = .settled
             }
         }
@@ -985,6 +1000,7 @@ private extension View {
 }
 
 struct BottomTabBar: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var activeTab: MainTab
     var onCreateDishMemory: () -> Void = {}
     @State private var isCenterButtonPressing = false
@@ -1024,16 +1040,13 @@ struct BottomTabBar: View {
         }
         .frame(minHeight: TBSize.bottomTabBarHeight)
         .padding(.horizontal, 8)
-        .background {
-            TBColor.page.opacity(0.85)
-                .background(.ultraThinMaterial)
-        }
+        .background(TBColor.page)
         .overlay(alignment: .top) {
             Rectangle()
                 .fill(TBColor.border)
                 .frame(height: 1)
                 .opacity(isCenterButtonPressing ? 0 : 1)
-                .animation(.easeOut(duration: 0.12), value: isCenterButtonPressing)
+                .animation(TasteBloomMotion.animation(.press, reduceMotion: reduceMotion), value: isCenterButtonPressing)
         }
     }
 }
@@ -1078,8 +1091,9 @@ private struct BottomTabButton: View {
             .padding(.vertical, 6)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TBTokenButtonStyle())
         .accessibilityLabel(tab.title)
+        .tasteBloomMotion(.feedback, value: isActive)
         .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 }

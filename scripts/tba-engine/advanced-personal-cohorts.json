@@ -1,0 +1,3563 @@
+{
+  "version": "advanced-personal-cohorts/1",
+  "createdBeforeProductionRead": true,
+  "type": "handmade_synthetic_development_evaluation",
+  "attribute": "taste.sour",
+  "baseline": {
+    "name": "attribute_meal_majority/1",
+    "minimumMeals": 3,
+    "direction": "unique plurality of positive/neutral/negative meal votes; exact ties abstain; conflicting votes within one meal abstain",
+    "usesConditions": false
+  },
+  "evaluationPolicy": {
+    "retrainBeforeEveryHeldoutMeal": true,
+    "oneMealNeverInTrainAndTest": true,
+    "observedAtAndKnownAtNotAfterQuery": true,
+    "excludeOtherUsers": true,
+    "qualityMetrics": [
+      "accuracyAmongPredictions",
+      "predictionCoverage",
+      "wrongPredictions",
+      "wrongRepeatedDirectionPredictions"
+    ],
+    "probabilityMetrics": false,
+    "unknownFutureMealOutcomeNotInQuery": true
+  },
+  "interpretation": {
+    "conditional_reversal": "호감은 소스일 때 긍정, 음식 전체일 때 부정. 동일 속성만 세면 이 차이를 잃는다.",
+    "unconditional_stable": "모든 관찰 조건에서 긍정. 조건 분리가 도움을 주지 않아도 된다.",
+    "no_signal": "각 대상 조건 안에서 긍정·부정이 균형 있게 반복된다. 확정 방향보다 유보가 적절하다.",
+    "sparse": "학습 식사 두 건 뒤 한 건 평가. 확정 방향의 근거가 부족하다.",
+    "confounded": "학습 초기에는 대상과 강도가 함께 바뀐다. 미관찰 조합에서 원인을 분리할 수 없다. 이후 실제 조합 결과가 알려지면 순차적으로 사용한다."
+  },
+  "cohorts": [
+    {
+      "id": "conditional_reversal",
+      "warmupMealCount": 24,
+      "meals": [
+        {
+          "mealID": "conditional_reversal-meal-00",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-01T12:00:00Z",
+          "knownAt": "2026-01-01T13:00:00Z",
+          "queryAt": "2026-01-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-01",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-02T12:00:00Z",
+          "knownAt": "2026-01-02T13:00:00Z",
+          "queryAt": "2026-01-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-02",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-03T12:00:00Z",
+          "knownAt": "2026-01-03T13:00:00Z",
+          "queryAt": "2026-01-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-03",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-04T12:00:00Z",
+          "knownAt": "2026-01-04T13:00:00Z",
+          "queryAt": "2026-01-04T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-04",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-05T12:00:00Z",
+          "knownAt": "2026-01-05T13:00:00Z",
+          "queryAt": "2026-01-05T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-05",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-06T12:00:00Z",
+          "knownAt": "2026-01-06T13:00:00Z",
+          "queryAt": "2026-01-06T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-06",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-07T12:00:00Z",
+          "knownAt": "2026-01-07T13:00:00Z",
+          "queryAt": "2026-01-07T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-07",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-08T12:00:00Z",
+          "knownAt": "2026-01-08T13:00:00Z",
+          "queryAt": "2026-01-08T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-08",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-09T12:00:00Z",
+          "knownAt": "2026-01-09T13:00:00Z",
+          "queryAt": "2026-01-09T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-09",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-10T12:00:00Z",
+          "knownAt": "2026-01-10T13:00:00Z",
+          "queryAt": "2026-01-10T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-10",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-11T12:00:00Z",
+          "knownAt": "2026-01-11T13:00:00Z",
+          "queryAt": "2026-01-11T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-11",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-12T12:00:00Z",
+          "knownAt": "2026-01-12T13:00:00Z",
+          "queryAt": "2026-01-12T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-12",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-13T12:00:00Z",
+          "knownAt": "2026-01-13T13:00:00Z",
+          "queryAt": "2026-01-13T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-13",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-14T12:00:00Z",
+          "knownAt": "2026-01-14T13:00:00Z",
+          "queryAt": "2026-01-14T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-14",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-15T12:00:00Z",
+          "knownAt": "2026-01-15T13:00:00Z",
+          "queryAt": "2026-01-15T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-15",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-16T12:00:00Z",
+          "knownAt": "2026-01-16T13:00:00Z",
+          "queryAt": "2026-01-16T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-16",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-17T12:00:00Z",
+          "knownAt": "2026-01-17T13:00:00Z",
+          "queryAt": "2026-01-17T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-17",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-18T12:00:00Z",
+          "knownAt": "2026-01-18T13:00:00Z",
+          "queryAt": "2026-01-18T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-18",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-19T12:00:00Z",
+          "knownAt": "2026-01-19T13:00:00Z",
+          "queryAt": "2026-01-19T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-19",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-20T12:00:00Z",
+          "knownAt": "2026-01-20T13:00:00Z",
+          "queryAt": "2026-01-20T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-20",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-21T12:00:00Z",
+          "knownAt": "2026-01-21T13:00:00Z",
+          "queryAt": "2026-01-21T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-21",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-22T12:00:00Z",
+          "knownAt": "2026-01-22T13:00:00Z",
+          "queryAt": "2026-01-22T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-22",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-23T12:00:00Z",
+          "knownAt": "2026-01-23T13:00:00Z",
+          "queryAt": "2026-01-23T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-23",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-24T12:00:00Z",
+          "knownAt": "2026-01-24T13:00:00Z",
+          "queryAt": "2026-01-24T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "conditional_reversal-meal-24",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-25T12:00:00Z",
+          "knownAt": "2026-01-25T13:00:00Z",
+          "queryAt": "2026-01-25T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-25",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-26T12:00:00Z",
+          "knownAt": "2026-01-26T13:00:00Z",
+          "queryAt": "2026-01-26T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-26",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-27T12:00:00Z",
+          "knownAt": "2026-01-27T13:00:00Z",
+          "queryAt": "2026-01-27T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-27",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-28T12:00:00Z",
+          "knownAt": "2026-01-28T13:00:00Z",
+          "queryAt": "2026-01-28T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-28",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-29T12:00:00Z",
+          "knownAt": "2026-01-29T13:00:00Z",
+          "queryAt": "2026-01-29T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-29",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-30T12:00:00Z",
+          "knownAt": "2026-01-30T13:00:00Z",
+          "queryAt": "2026-01-30T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-30",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-01-31T12:00:00Z",
+          "knownAt": "2026-01-31T13:00:00Z",
+          "queryAt": "2026-01-31T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-31",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-01T12:00:00Z",
+          "knownAt": "2026-02-01T13:00:00Z",
+          "queryAt": "2026-02-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-32",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-02T12:00:00Z",
+          "knownAt": "2026-02-02T13:00:00Z",
+          "queryAt": "2026-02-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-33",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-03T12:00:00Z",
+          "knownAt": "2026-02-03T13:00:00Z",
+          "queryAt": "2026-02-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-34",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-04T12:00:00Z",
+          "knownAt": "2026-02-04T13:00:00Z",
+          "queryAt": "2026-02-04T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-35",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-05T12:00:00Z",
+          "knownAt": "2026-02-05T13:00:00Z",
+          "queryAt": "2026-02-05T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-36",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-06T12:00:00Z",
+          "knownAt": "2026-02-06T13:00:00Z",
+          "queryAt": "2026-02-06T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-37",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-07T12:00:00Z",
+          "knownAt": "2026-02-07T13:00:00Z",
+          "queryAt": "2026-02-07T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-38",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-08T12:00:00Z",
+          "knownAt": "2026-02-08T13:00:00Z",
+          "queryAt": "2026-02-08T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "conditional_reversal-meal-39",
+          "userID": "synthetic-conditional_reversal",
+          "observedAt": "2026-02-09T12:00:00Z",
+          "knownAt": "2026-02-09T13:00:00Z",
+          "queryAt": "2026-02-09T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        }
+      ]
+    },
+    {
+      "id": "unconditional_stable",
+      "warmupMealCount": 24,
+      "meals": [
+        {
+          "mealID": "unconditional_stable-meal-00",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-01T12:00:00Z",
+          "knownAt": "2026-01-01T13:00:00Z",
+          "queryAt": "2026-01-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-01",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-02T12:00:00Z",
+          "knownAt": "2026-01-02T13:00:00Z",
+          "queryAt": "2026-01-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-02",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-03T12:00:00Z",
+          "knownAt": "2026-01-03T13:00:00Z",
+          "queryAt": "2026-01-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-03",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-04T12:00:00Z",
+          "knownAt": "2026-01-04T13:00:00Z",
+          "queryAt": "2026-01-04T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-04",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-05T12:00:00Z",
+          "knownAt": "2026-01-05T13:00:00Z",
+          "queryAt": "2026-01-05T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-05",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-06T12:00:00Z",
+          "knownAt": "2026-01-06T13:00:00Z",
+          "queryAt": "2026-01-06T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-06",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-07T12:00:00Z",
+          "knownAt": "2026-01-07T13:00:00Z",
+          "queryAt": "2026-01-07T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-07",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-08T12:00:00Z",
+          "knownAt": "2026-01-08T13:00:00Z",
+          "queryAt": "2026-01-08T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-08",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-09T12:00:00Z",
+          "knownAt": "2026-01-09T13:00:00Z",
+          "queryAt": "2026-01-09T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-09",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-10T12:00:00Z",
+          "knownAt": "2026-01-10T13:00:00Z",
+          "queryAt": "2026-01-10T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-10",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-11T12:00:00Z",
+          "knownAt": "2026-01-11T13:00:00Z",
+          "queryAt": "2026-01-11T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-11",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-12T12:00:00Z",
+          "knownAt": "2026-01-12T13:00:00Z",
+          "queryAt": "2026-01-12T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-12",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-13T12:00:00Z",
+          "knownAt": "2026-01-13T13:00:00Z",
+          "queryAt": "2026-01-13T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-13",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-14T12:00:00Z",
+          "knownAt": "2026-01-14T13:00:00Z",
+          "queryAt": "2026-01-14T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-14",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-15T12:00:00Z",
+          "knownAt": "2026-01-15T13:00:00Z",
+          "queryAt": "2026-01-15T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-15",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-16T12:00:00Z",
+          "knownAt": "2026-01-16T13:00:00Z",
+          "queryAt": "2026-01-16T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-16",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-17T12:00:00Z",
+          "knownAt": "2026-01-17T13:00:00Z",
+          "queryAt": "2026-01-17T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-17",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-18T12:00:00Z",
+          "knownAt": "2026-01-18T13:00:00Z",
+          "queryAt": "2026-01-18T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-18",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-19T12:00:00Z",
+          "knownAt": "2026-01-19T13:00:00Z",
+          "queryAt": "2026-01-19T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-19",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-20T12:00:00Z",
+          "knownAt": "2026-01-20T13:00:00Z",
+          "queryAt": "2026-01-20T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-20",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-21T12:00:00Z",
+          "knownAt": "2026-01-21T13:00:00Z",
+          "queryAt": "2026-01-21T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-21",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-22T12:00:00Z",
+          "knownAt": "2026-01-22T13:00:00Z",
+          "queryAt": "2026-01-22T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-22",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-23T12:00:00Z",
+          "knownAt": "2026-01-23T13:00:00Z",
+          "queryAt": "2026-01-23T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-23",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-24T12:00:00Z",
+          "knownAt": "2026-01-24T13:00:00Z",
+          "queryAt": "2026-01-24T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "unconditional_stable-meal-24",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-25T12:00:00Z",
+          "knownAt": "2026-01-25T13:00:00Z",
+          "queryAt": "2026-01-25T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-25",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-26T12:00:00Z",
+          "knownAt": "2026-01-26T13:00:00Z",
+          "queryAt": "2026-01-26T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-26",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-27T12:00:00Z",
+          "knownAt": "2026-01-27T13:00:00Z",
+          "queryAt": "2026-01-27T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-27",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-28T12:00:00Z",
+          "knownAt": "2026-01-28T13:00:00Z",
+          "queryAt": "2026-01-28T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-28",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-29T12:00:00Z",
+          "knownAt": "2026-01-29T13:00:00Z",
+          "queryAt": "2026-01-29T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-29",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-30T12:00:00Z",
+          "knownAt": "2026-01-30T13:00:00Z",
+          "queryAt": "2026-01-30T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-30",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-01-31T12:00:00Z",
+          "knownAt": "2026-01-31T13:00:00Z",
+          "queryAt": "2026-01-31T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-31",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-01T12:00:00Z",
+          "knownAt": "2026-02-01T13:00:00Z",
+          "queryAt": "2026-02-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-32",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-02T12:00:00Z",
+          "knownAt": "2026-02-02T13:00:00Z",
+          "queryAt": "2026-02-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-33",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-03T12:00:00Z",
+          "knownAt": "2026-02-03T13:00:00Z",
+          "queryAt": "2026-02-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-34",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-04T12:00:00Z",
+          "knownAt": "2026-02-04T13:00:00Z",
+          "queryAt": "2026-02-04T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-35",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-05T12:00:00Z",
+          "knownAt": "2026-02-05T13:00:00Z",
+          "queryAt": "2026-02-05T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-36",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-06T12:00:00Z",
+          "knownAt": "2026-02-06T13:00:00Z",
+          "queryAt": "2026-02-06T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-37",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-07T12:00:00Z",
+          "knownAt": "2026-02-07T13:00:00Z",
+          "queryAt": "2026-02-07T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-38",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-08T12:00:00Z",
+          "knownAt": "2026-02-08T13:00:00Z",
+          "queryAt": "2026-02-08T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "unconditional_stable-meal-39",
+          "userID": "synthetic-unconditional_stable",
+          "observedAt": "2026-02-09T12:00:00Z",
+          "knownAt": "2026-02-09T13:00:00Z",
+          "queryAt": "2026-02-09T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        }
+      ]
+    },
+    {
+      "id": "no_signal",
+      "warmupMealCount": 24,
+      "meals": [
+        {
+          "mealID": "no_signal-meal-00",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-01T12:00:00Z",
+          "knownAt": "2026-01-01T13:00:00Z",
+          "queryAt": "2026-01-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-01",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-02T12:00:00Z",
+          "knownAt": "2026-01-02T13:00:00Z",
+          "queryAt": "2026-01-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-02",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-03T12:00:00Z",
+          "knownAt": "2026-01-03T13:00:00Z",
+          "queryAt": "2026-01-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-03",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-04T12:00:00Z",
+          "knownAt": "2026-01-04T13:00:00Z",
+          "queryAt": "2026-01-04T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-04",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-05T12:00:00Z",
+          "knownAt": "2026-01-05T13:00:00Z",
+          "queryAt": "2026-01-05T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-05",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-06T12:00:00Z",
+          "knownAt": "2026-01-06T13:00:00Z",
+          "queryAt": "2026-01-06T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-06",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-07T12:00:00Z",
+          "knownAt": "2026-01-07T13:00:00Z",
+          "queryAt": "2026-01-07T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-07",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-08T12:00:00Z",
+          "knownAt": "2026-01-08T13:00:00Z",
+          "queryAt": "2026-01-08T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-08",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-09T12:00:00Z",
+          "knownAt": "2026-01-09T13:00:00Z",
+          "queryAt": "2026-01-09T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-09",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-10T12:00:00Z",
+          "knownAt": "2026-01-10T13:00:00Z",
+          "queryAt": "2026-01-10T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-10",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-11T12:00:00Z",
+          "knownAt": "2026-01-11T13:00:00Z",
+          "queryAt": "2026-01-11T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-11",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-12T12:00:00Z",
+          "knownAt": "2026-01-12T13:00:00Z",
+          "queryAt": "2026-01-12T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-12",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-13T12:00:00Z",
+          "knownAt": "2026-01-13T13:00:00Z",
+          "queryAt": "2026-01-13T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-13",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-14T12:00:00Z",
+          "knownAt": "2026-01-14T13:00:00Z",
+          "queryAt": "2026-01-14T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-14",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-15T12:00:00Z",
+          "knownAt": "2026-01-15T13:00:00Z",
+          "queryAt": "2026-01-15T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-15",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-16T12:00:00Z",
+          "knownAt": "2026-01-16T13:00:00Z",
+          "queryAt": "2026-01-16T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-16",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-17T12:00:00Z",
+          "knownAt": "2026-01-17T13:00:00Z",
+          "queryAt": "2026-01-17T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-17",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-18T12:00:00Z",
+          "knownAt": "2026-01-18T13:00:00Z",
+          "queryAt": "2026-01-18T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-18",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-19T12:00:00Z",
+          "knownAt": "2026-01-19T13:00:00Z",
+          "queryAt": "2026-01-19T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-19",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-20T12:00:00Z",
+          "knownAt": "2026-01-20T13:00:00Z",
+          "queryAt": "2026-01-20T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-20",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-21T12:00:00Z",
+          "knownAt": "2026-01-21T13:00:00Z",
+          "queryAt": "2026-01-21T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-21",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-22T12:00:00Z",
+          "knownAt": "2026-01-22T13:00:00Z",
+          "queryAt": "2026-01-22T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-22",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-23T12:00:00Z",
+          "knownAt": "2026-01-23T13:00:00Z",
+          "queryAt": "2026-01-23T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-23",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-24T12:00:00Z",
+          "knownAt": "2026-01-24T13:00:00Z",
+          "queryAt": "2026-01-24T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "no_signal-meal-24",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-25T12:00:00Z",
+          "knownAt": "2026-01-25T13:00:00Z",
+          "queryAt": "2026-01-25T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-25",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-26T12:00:00Z",
+          "knownAt": "2026-01-26T13:00:00Z",
+          "queryAt": "2026-01-26T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-26",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-27T12:00:00Z",
+          "knownAt": "2026-01-27T13:00:00Z",
+          "queryAt": "2026-01-27T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-27",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-28T12:00:00Z",
+          "knownAt": "2026-01-28T13:00:00Z",
+          "queryAt": "2026-01-28T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-28",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-29T12:00:00Z",
+          "knownAt": "2026-01-29T13:00:00Z",
+          "queryAt": "2026-01-29T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-29",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-30T12:00:00Z",
+          "knownAt": "2026-01-30T13:00:00Z",
+          "queryAt": "2026-01-30T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-30",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-01-31T12:00:00Z",
+          "knownAt": "2026-01-31T13:00:00Z",
+          "queryAt": "2026-01-31T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-31",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-01T12:00:00Z",
+          "knownAt": "2026-02-01T13:00:00Z",
+          "queryAt": "2026-02-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-32",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-02T12:00:00Z",
+          "knownAt": "2026-02-02T13:00:00Z",
+          "queryAt": "2026-02-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-33",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-03T12:00:00Z",
+          "knownAt": "2026-02-03T13:00:00Z",
+          "queryAt": "2026-02-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-34",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-04T12:00:00Z",
+          "knownAt": "2026-02-04T13:00:00Z",
+          "queryAt": "2026-02-04T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-35",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-05T12:00:00Z",
+          "knownAt": "2026-02-05T13:00:00Z",
+          "queryAt": "2026-02-05T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-36",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-06T12:00:00Z",
+          "knownAt": "2026-02-06T13:00:00Z",
+          "queryAt": "2026-02-06T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-37",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-07T12:00:00Z",
+          "knownAt": "2026-02-07T13:00:00Z",
+          "queryAt": "2026-02-07T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-38",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-08T12:00:00Z",
+          "knownAt": "2026-02-08T13:00:00Z",
+          "queryAt": "2026-02-08T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "no_signal-meal-39",
+          "userID": "synthetic-no_signal",
+          "observedAt": "2026-02-09T12:00:00Z",
+          "knownAt": "2026-02-09T13:00:00Z",
+          "queryAt": "2026-02-09T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "medium",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        }
+      ]
+    },
+    {
+      "id": "sparse",
+      "warmupMealCount": 2,
+      "meals": [
+        {
+          "mealID": "sparse-meal-00",
+          "userID": "synthetic-sparse",
+          "observedAt": "2026-01-01T12:00:00Z",
+          "knownAt": "2026-01-01T13:00:00Z",
+          "queryAt": "2026-01-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "sparse-meal-01",
+          "userID": "synthetic-sparse",
+          "observedAt": "2026-01-02T12:00:00Z",
+          "knownAt": "2026-01-02T13:00:00Z",
+          "queryAt": "2026-01-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "sparse-meal-02",
+          "userID": "synthetic-sparse",
+          "observedAt": "2026-01-03T12:00:00Z",
+          "knownAt": "2026-01-03T13:00:00Z",
+          "queryAt": "2026-01-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "medium",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        }
+      ]
+    },
+    {
+      "id": "confounded",
+      "warmupMealCount": 24,
+      "meals": [
+        {
+          "mealID": "confounded-meal-00",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-01T12:00:00Z",
+          "knownAt": "2026-01-01T13:00:00Z",
+          "queryAt": "2026-01-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-01",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-02T12:00:00Z",
+          "knownAt": "2026-01-02T13:00:00Z",
+          "queryAt": "2026-01-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-02",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-03T12:00:00Z",
+          "knownAt": "2026-01-03T13:00:00Z",
+          "queryAt": "2026-01-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-03",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-04T12:00:00Z",
+          "knownAt": "2026-01-04T13:00:00Z",
+          "queryAt": "2026-01-04T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-04",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-05T12:00:00Z",
+          "knownAt": "2026-01-05T13:00:00Z",
+          "queryAt": "2026-01-05T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-05",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-06T12:00:00Z",
+          "knownAt": "2026-01-06T13:00:00Z",
+          "queryAt": "2026-01-06T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-06",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-07T12:00:00Z",
+          "knownAt": "2026-01-07T13:00:00Z",
+          "queryAt": "2026-01-07T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-07",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-08T12:00:00Z",
+          "knownAt": "2026-01-08T13:00:00Z",
+          "queryAt": "2026-01-08T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-08",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-09T12:00:00Z",
+          "knownAt": "2026-01-09T13:00:00Z",
+          "queryAt": "2026-01-09T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-09",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-10T12:00:00Z",
+          "knownAt": "2026-01-10T13:00:00Z",
+          "queryAt": "2026-01-10T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-10",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-11T12:00:00Z",
+          "knownAt": "2026-01-11T13:00:00Z",
+          "queryAt": "2026-01-11T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-11",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-12T12:00:00Z",
+          "knownAt": "2026-01-12T13:00:00Z",
+          "queryAt": "2026-01-12T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-12",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-13T12:00:00Z",
+          "knownAt": "2026-01-13T13:00:00Z",
+          "queryAt": "2026-01-13T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-13",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-14T12:00:00Z",
+          "knownAt": "2026-01-14T13:00:00Z",
+          "queryAt": "2026-01-14T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-14",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-15T12:00:00Z",
+          "knownAt": "2026-01-15T13:00:00Z",
+          "queryAt": "2026-01-15T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-15",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-16T12:00:00Z",
+          "knownAt": "2026-01-16T13:00:00Z",
+          "queryAt": "2026-01-16T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-16",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-17T12:00:00Z",
+          "knownAt": "2026-01-17T13:00:00Z",
+          "queryAt": "2026-01-17T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-17",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-18T12:00:00Z",
+          "knownAt": "2026-01-18T13:00:00Z",
+          "queryAt": "2026-01-18T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-18",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-19T12:00:00Z",
+          "knownAt": "2026-01-19T13:00:00Z",
+          "queryAt": "2026-01-19T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-19",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-20T12:00:00Z",
+          "knownAt": "2026-01-20T13:00:00Z",
+          "queryAt": "2026-01-20T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-20",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-21T12:00:00Z",
+          "knownAt": "2026-01-21T13:00:00Z",
+          "queryAt": "2026-01-21T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-21",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-22T12:00:00Z",
+          "knownAt": "2026-01-22T13:00:00Z",
+          "queryAt": "2026-01-22T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-22",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-23T12:00:00Z",
+          "knownAt": "2026-01-23T13:00:00Z",
+          "queryAt": "2026-01-23T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-23",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-24T12:00:00Z",
+          "knownAt": "2026-01-24T13:00:00Z",
+          "queryAt": "2026-01-24T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": false
+        },
+        {
+          "mealID": "confounded-meal-24",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-25T12:00:00Z",
+          "knownAt": "2026-01-25T13:00:00Z",
+          "queryAt": "2026-01-25T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-25",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-26T12:00:00Z",
+          "knownAt": "2026-01-26T13:00:00Z",
+          "queryAt": "2026-01-26T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-26",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-27T12:00:00Z",
+          "knownAt": "2026-01-27T13:00:00Z",
+          "queryAt": "2026-01-27T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-27",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-28T12:00:00Z",
+          "knownAt": "2026-01-28T13:00:00Z",
+          "queryAt": "2026-01-28T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-28",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-29T12:00:00Z",
+          "knownAt": "2026-01-29T13:00:00Z",
+          "queryAt": "2026-01-29T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-29",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-30T12:00:00Z",
+          "knownAt": "2026-01-30T13:00:00Z",
+          "queryAt": "2026-01-30T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-30",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-01-31T12:00:00Z",
+          "knownAt": "2026-01-31T13:00:00Z",
+          "queryAt": "2026-01-31T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-31",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-02-01T12:00:00Z",
+          "knownAt": "2026-02-01T13:00:00Z",
+          "queryAt": "2026-02-01T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-32",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-02-02T12:00:00Z",
+          "knownAt": "2026-02-02T13:00:00Z",
+          "queryAt": "2026-02-02T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-33",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-02-03T12:00:00Z",
+          "knownAt": "2026-02-03T13:00:00Z",
+          "queryAt": "2026-02-03T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-34",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-02-04T12:00:00Z",
+          "knownAt": "2026-02-04T13:00:00Z",
+          "queryAt": "2026-02-04T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "disliked",
+            "intensity": "strong",
+            "target": "sauce",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "negative"
+          },
+          "holdout": true
+        },
+        {
+          "mealID": "confounded-meal-35",
+          "userID": "synthetic-confounded",
+          "observedAt": "2026-02-05T12:00:00Z",
+          "knownAt": "2026-02-05T13:00:00Z",
+          "queryAt": "2026-02-05T11:59:00Z",
+          "selection": {
+            "id": "sour-fresh",
+            "type": "bubble",
+            "catalogVersion": "dining-sensory-selection/1",
+            "labelSnapshot": "산뜻한 산미",
+            "liking": "liked",
+            "intensity": "light",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "dishKindIDs": [],
+          "groundTruth": {
+            "direction": "positive"
+          },
+          "holdout": true
+        }
+      ]
+    }
+  ]
+}

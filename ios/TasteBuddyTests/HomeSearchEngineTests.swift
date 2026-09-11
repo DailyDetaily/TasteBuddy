@@ -128,7 +128,7 @@ final class HomeSearchEngineTests: XCTestCase {
         XCTAssertTrue(restaurantItems.first?.supportsBookmarkAction ?? false)
     }
 
-    func testFriendRepositoryMergesIdentityResultsWithoutDuplicateLocalBuddy() async throws {
+    func testFriendRepositoryMergesRemoteIdentityWithoutInjectingLocalSamples() async throws {
         let repository = FixtureHomeSearchRepository()
         let query = "김민아"
         let localSections = HomeSearchEngine.sections(matching: query)
@@ -142,7 +142,8 @@ final class HomeSearchEngineTests: XCTestCase {
         let friendItems = sections.first { $0.id == "friends" }?.items ?? []
 
         XCTAssertEqual(friendItems.filter { $0.title == "김민아" }.count, 1)
-        XCTAssertEqual(friendItems.first { $0.title == "김민아" }?.source, .local)
+        XCTAssertEqual(friendItems.first { $0.title == "김민아" }?.source, .profileSearch)
+        XCTAssertTrue(localSections.allSatisfy { $0.id != "friends" })
     }
 
     func testFriendRepositoryFindsRemoteOnlyBuddyIdentityQuery() async throws {
@@ -189,6 +190,46 @@ final class HomeSearchEngineTests: XCTestCase {
         XCTAssertEqual(storedIdentity?.displayName, "박혜린")
     }
 
+    func testLiveFriendFailurePropagatesWithoutSampleBuddyResults() async {
+        let repository = LiveHomeSearchRepository(publicProfileRepository: FailingPublicProfileSearchRepository())
+        do {
+            _ = try await repository.friendResults(matching: "김민아")
+            XCTFail("실패한 실제 검색을 샘플 친구 결과로 바꾸면 안 됩니다.")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .notConnectedToInternet)
+        }
+    }
+
+    func testRestaurantDestinationDoesNotTreatCatalogMatchRateAsMeasuredEvidence() {
+        for restaurant in RestaurantCatalog.restaurants {
+            let detail = RestaurantDetailModel(summary: restaurant)
+            XCTAssertNil(detail.scores.personalMatchRate)
+            XCTAssertNil(detail.scores.palateFriendsAverageScore)
+            XCTAssertNil(detail.scores.overallScore)
+            XCTAssertEqual(detail.confidenceLabel, "미계산")
+            XCTAssertEqual(detail.name, restaurant.name)
+            XCTAssertEqual(detail.memorableDishes, restaurant.memorableDishes)
+        }
+        XCTAssertEqual(RestaurantDetailModel.confidenceLabel(from: 100), "미계산")
+    }
+
+    func testMenuDestinationPreservesFoodInformationWithoutInventingPersonalHistory() throws {
+        let restaurant = try XCTUnwrap(RestaurantCatalog.restaurants.first)
+        let detail = RestaurantDetailModel(summary: restaurant)
+        for (index, dish) in restaurant.memorableDishes.enumerated() {
+            let menu = detail.menuDetail(for: dish, index: index)
+            XCTAssertEqual(menu.title, dish.title)
+            XCTAssertEqual(menu.summaryLine, dish.summary)
+            XCTAssertEqual(menu.tasteTags.map(\.label), dish.tags)
+            XCTAssertEqual(menu.fitBand, "미계산")
+            XCTAssertEqual(menu.confidenceLabel, "미계산")
+            XCTAssertNil(menu.pastExperienceComparison)
+            XCTAssertEqual(menu.similarPalateSignal, "비슷한 입맛 그룹의 평가를 아직 계산하지 않았어요.")
+            XCTAssertEqual(menu.chefIntent, "셰프의 직접 설명이 아직 연결되지 않았어요.")
+            XCTAssertEqual(menu.expectedTasteFlow, dish.tags.joined(separator: " · "))
+        }
+    }
+
     func testRemoteSearchPhaseCarriesReactLoadingAndFailureMessages() {
         let loading = HomeSearchAsyncPhase.loading("외부 장소 검색 중")
         let failed = HomeSearchAsyncPhase.failed("장소 검색을 다시 시도해 주세요")
@@ -198,4 +239,10 @@ final class HomeSearchEngineTests: XCTestCase {
         XCTAssertFalse(failed.isLoading)
         XCTAssertEqual(failed.message, "장소 검색을 다시 시도해 주세요")
     }
+}
+
+private struct FailingPublicProfileSearchRepository: BackendPublicProfileRepository {
+    func updateCurrentProfileIdentity(_ identity: UserProfileIdentity) async -> BackendProfileIdentityMutationResult { .failure("검증용 실패") }
+    func currentProfileIdentity() async -> BackendPublicProfileIdentity? { nil }
+    func searchProfileIdentities(matching query: String) async throws -> [BackendPublicProfileIdentity] { throw URLError(.notConnectedToInternet) }
 }

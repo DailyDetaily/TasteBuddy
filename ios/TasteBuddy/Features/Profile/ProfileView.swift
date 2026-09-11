@@ -12,34 +12,33 @@ struct ProfileView: View {
         NavigationStack {
             MainTabChromeScrollView(topChrome: systemTopChrome) {
                 VStack(alignment: .leading, spacing: TBSpacing.section) {
-                    if let profile = appModel.profile {
-                        ProfileIdentityCard(
-                            identity: appModel.profileIdentity,
-                            profile: profile,
-                            followerCount: 3,
-                            followingCount: 2,
-                            onOpenConnection: onOpenConnection,
-                            onFindBuddy: onFindBuddy,
-                            onOpenProfileSettings: onOpenProfileSettings
-                        )
+                    ProfileIdentityCard(
+                        identity: appModel.profileIdentity,
+                        profile: appModel.profile,
+                        avatarImageData: appModel.profileAvatarImageData,
+                        followerCount: nil,
+                        followingCount: nil,
+                        onOpenConnection: onOpenConnection,
+                        onFindBuddy: onFindBuddy,
+                        onOpenProfileSettings: onOpenProfileSettings
+                    )
 
-                        TBPageSection(title: "활동 요약") {
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: 12),
-                                    GridItem(.flexible(), spacing: 12)
-                                ],
-                                spacing: 12
-                            ) {
-                                ForEach(activityMetrics(for: profile)) { metric in
-                                    if metric.id == "taste-list", let onOpenSavedList {
-                                        Button(action: onOpenSavedList) {
-                                            SummaryMetricCard(metric: metric)
-                                        }
-                                        .buttonStyle(.plain)
-                                    } else {
+                    TBPageSection(title: "활동 요약") {
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12)
+                            ],
+                            spacing: 12
+                        ) {
+                            ForEach(activityMetrics) { metric in
+                                if metric.id == "taste-list", let onOpenSavedList {
+                                    Button(action: onOpenSavedList) {
                                         SummaryMetricCard(metric: metric)
                                     }
+                                    .buttonStyle(TBTokenButtonStyle())
+                                } else {
+                                    SummaryMetricCard(metric: metric)
                                 }
                             }
                         }
@@ -57,40 +56,37 @@ struct ProfileView: View {
         .ignoresSafeArea(.container, edges: systemTopChrome == nil ? [] : .top)
     }
 
-    private func activityMetrics(for profile: TasteProfile) -> [ProfileActivityMetric] {
-        let ratings = appModel.diningEntries.map(\.rating)
-        let averageRating = ratings.isEmpty
-            ? "-"
-            : String(format: "%.1f", Double(ratings.reduce(0, +)) / Double(ratings.count))
+    private var activityMetrics: [ProfileActivityMetric] {
+        let completedEntries = appModel.diningEntries.filter(\.hasCompletedTasteFeedback)
 
         return [
             ProfileActivityMetric(
-                id: "measurements",
-                label: "미각 기록",
-                value: "1회",
+                id: "evidence",
+                label: "근거 기록",
+                value: "\(appModel.sensoryAnalysis.sourceExperienceCount)개",
                 symbol: "trophy",
-                color: profile.strongestAxis.mainColor
+                color: TBColor.textSecondary
             ),
             ProfileActivityMetric(
                 id: "feedback",
                 label: "다이닝 리뷰",
-                value: "\(appModel.diningEntries.count)건",
+                value: "\(completedEntries.count)건",
                 symbol: "checkmark.circle",
-                color: TasteAxis.umami.mainColor
+                color: TBColor.textSecondary
             ),
             ProfileActivityMetric(
                 id: "taste-list",
                 label: "테이스트 리스트",
                 value: "\(appModel.savedRestaurantIDs.count)개",
                 symbol: "bookmark",
-                color: TasteAxis.salty.mainColor
+                color: TBColor.textSecondary
             ),
             ProfileActivityMetric(
-                id: "rating",
-                label: "평균 만족도",
-                value: averageRating,
-                symbol: "star",
-                color: TasteAxis.sour.mainColor
+                id: "insights",
+                label: "현재 인사이트",
+                value: "\(appModel.sensoryAnalysis.insights.count)개",
+                symbol: "sparkles",
+                color: TBColor.textSecondary
             )
         ]
     }
@@ -98,9 +94,10 @@ struct ProfileView: View {
 
 private struct ProfileIdentityCard: View {
     let identity: UserProfileIdentity
-    let profile: TasteProfile
-    let followerCount: Int
-    let followingCount: Int
+    var profile: TasteProfile? = nil
+    var avatarImageData: Data? = nil
+    let followerCount: Int?
+    let followingCount: Int?
     var onOpenConnection: ((ProfileConnectionKind) -> Void)? = nil
     var onFindBuddy: (() -> Void)? = nil
     var onOpenProfileSettings: (() -> Void)? = nil
@@ -117,7 +114,8 @@ private struct ProfileIdentityCard: View {
             PalateBloomAvatar(
                 size: 64,
                 tasteProfile: profile,
-                shapeSeed: "current-user"
+                shapeSeed: "current-user",
+                image: avatarImageData.flatMap(UIImage.init(data:))
             )
         } headerAction: {
             Button {
@@ -135,7 +133,7 @@ private struct ProfileIdentityCard: View {
                 .foregroundStyle(TBColor.iconPrimary)
                 .contentShape(Circle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TBTokenButtonStyle())
             .accessibilityLabel("프로필 설정 열기")
         } footerAction: {
             Button {
@@ -143,7 +141,7 @@ private struct ProfileIdentityCard: View {
             } label: {
                 ProfileFindBuddyButtonContent()
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TBTokenButtonStyle())
         }
     }
 }

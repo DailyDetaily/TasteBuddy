@@ -21,6 +21,8 @@ import {
   type PreferenceIntakeResponses,
 } from '../constants/preferenceIntakeData';
 import { cn } from '../components/ui/utils';
+import { createPreferenceIntakeSubmission } from '../lib/preferenceIntakeEvidence.mjs';
+import type { PreferenceIntakeSubmission } from '../types/preferenceIntakeEvidence';
 
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...props }: any) => (
   <Icon
@@ -40,6 +42,7 @@ const HEADER_SURFACE_CLASS =
 
 interface PreferenceIntakeScreenProps {
   initialProfile?: PreferenceIntakeProfile | null;
+  userID?: string;
   onBack: () => void;
   onComplete: (profile: PreferenceIntakeProfile) => void;
 }
@@ -56,13 +59,15 @@ function getSelectionCount(question: PreferenceIntakeQuestion, responses: Prefer
 
 export default function PreferenceIntakeScreen({
   initialProfile = null,
+  userID = 'local-owner',
   onBack,
   onComplete,
 }: PreferenceIntakeScreenProps) {
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [responses, setResponses] = useState<PreferenceIntakeResponses>(() =>
-    createPreferenceIntakeResponsesFromProfile(initialProfile),
+    createPreferenceIntakeResponsesFromProfile(initialProfile, userID),
   );
 
   const currentQuestion = PREFERENCE_INTAKE_QUESTIONS[questionIndex];
@@ -80,7 +85,7 @@ export default function PreferenceIntakeScreen({
       return `${selectionCount}/${currentQuestion.maxSelections} 선택`;
     }
 
-    return '이 답변은 나중에 프로필에서 다시 바꿀 수 있어요';
+    return '나의 입맛 화면에서 다시 바꿀 수 있어요';
   }, [canContinue, currentQuestion, selectionCount]);
 
   const handleBack = () => {
@@ -99,7 +104,14 @@ export default function PreferenceIntakeScreen({
     }
 
     if (isLastQuestion) {
-      onComplete(buildPreferenceIntakeProfile(responses));
+      try {
+        if (!PREFERENCE_INTAKE_QUESTIONS.every(question => isPreferenceQuestionAnswered(question, responses))) throw new Error('INCOMPLETE_PREFERENCE_INTAKE');
+        const submission = createPreferenceIntakeSubmission(responses, { userID }) as PreferenceIntakeSubmission;
+        onComplete({ ...buildPreferenceIntakeProfile(responses), submissions: [...(initialProfile?.submissions ?? []), submission] });
+        setSaveError(null);
+      } catch {
+        setSaveError('응답을 저장하지 못했어요. 선택은 유지되어 있으니 다시 시도해 주세요.');
+      }
       return;
     }
 
@@ -180,6 +192,7 @@ export default function PreferenceIntakeScreen({
             style={{ paddingBottom: CONTENT_BOTTOM_PADDING }}
           >
             <div className="tb-section-stack">
+              {saveError && <p role="alert" className="text-[13px] text-[var(--tb-color-text-body)]">{saveError}</p>}
               <FlowHeaderBlock
                 description={currentQuestion.description}
                 title={currentQuestion.title}
@@ -224,7 +237,7 @@ export default function PreferenceIntakeScreen({
 
       <FlowStepCta
         actionDisabled={!canContinue}
-        actionLabel={isLastQuestion ? '미각 질문으로 이어가기' : '다음 질문'}
+        actionLabel={isLastQuestion ? '선호 저장' : '다음 질문'}
         currentIndex={questionIndex}
         helperText={helperText}
         onAction={handleNext}

@@ -124,7 +124,7 @@ enum TasteExperienceMapEngine {
     static let selectedZoom: CGFloat = 1
     static let minimumZoom: CGFloat = 0.72
     static let maximumZoom: CGFloat = 1.42
-    static let zoomTransitionDuration: TimeInterval = 0.46
+    static let zoomTransitionDuration = TasteBloomMotion.duration(.sheet, reduceMotion: false)
     static let pinchSnapSuppressionDuration: TimeInterval = 0.36
 
     private static let gridSearchRange = 12
@@ -344,14 +344,15 @@ enum TasteExperienceMapEngine {
                 return atan2(leftDeltaY, leftDeltaX) < atan2(rightDeltaY, rightDeltaX)
             }
         var delays = Dictionary(uniqueKeysWithValues: primaryIDs.enumerated().map { index, id in
-            (id, 0.44 + Double(index) * 0.076)
+            (id, TasteBloomMotion.Role.feedback.duration + Double(index) * TasteBloomMotion.stagger)
         })
 
         for (index, position) in outerPositions.enumerated() {
             let progress = outerPositions.count <= 1
                 ? 1
                 : Double(index) / Double(outerPositions.count - 1)
-            delays[position.id] = 0.9 + pow(progress, 0.62) * 1.26
+            delays[position.id] = TasteBloomMotion.Role.sheet.duration
+                + progress * TasteBloomMotion.Role.content.duration
         }
 
         return delays

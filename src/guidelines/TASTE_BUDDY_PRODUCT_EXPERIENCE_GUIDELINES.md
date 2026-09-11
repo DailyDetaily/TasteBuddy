@@ -1,6 +1,7 @@
 # Taste Buddy Product Experience Guidelines
 
-Version: 1.0  
+Version: 1.1 · Product priorities updated: 2026-09-06
+
 Status: Working Source of Truth  
 Purpose: This document defines the product concept, experience principles, UX writing rules, product logic, and implementation constraints for Taste Buddy. Codex should use this document as the primary reference when generating, modifying, or reviewing product UX and product-facing content.
 
@@ -10,16 +11,15 @@ Purpose: This document defines the product concept, experience principles, UX wr
 
 ## 1.1 What Taste Buddy Is
 
-Taste Buddy is a personalized dining service that helps translate a guest's taste profile into chef-usable guidance, so dining experiences can be better matched to the guest.
+Taste Buddy is a premium service whose first priority is to understand each user's palate and return varied, evidence-backed interpretations and insights about their preferences.
 
-Taste Buddy connects:
+Product priorities, in order:
 
-- pre-dining taste calibration
-- guest profile generation
-- reservation personalization
-- chef-facing calibration guidance
-- post-dining feedback
-- profile refinement over time
+1. Understand the individual through lightweight records and provide meaningful interpretations and insights.
+2. Later, connect the user with groups whose palate evidence shows relevant similarities, including where their preferences differ.
+3. Add restaurant and menu recommendations grounded in those groups' recommendations, reviews, and explicit preferences.
+
+The initial product must deliver personal insight value before group matching and recommendations are available. Reservation personalization, chef guidance, and hardware are extension capabilities. This priority update does not assert that the planned capabilities are already implemented.
 
 ## 1.2 What Taste Buddy Is Not
 
@@ -35,7 +35,7 @@ Taste Buddy is **not**:
 
 Taste Buddy should be positioned as:
 
-> A premium personalized dining experience service that helps guests feel understood and helps chefs deliver their intended culinary experience more precisely.
+> A premium palate insight service that helps people understand their preferences, then connect with similar palates and discover the restaurants and dishes those groups recommend.
 
 ## 1.4 Hardware Positioning
 
@@ -60,9 +60,11 @@ Hardware must never dominate the product narrative.
 For guests, Taste Buddy should communicate these values:
 
 - "My palate is understood."
-- "My dining experience can be better matched to me."
-- "My feedback improves future dining."
-- "This service becomes more accurate over time."
+- "I can understand patterns, differences, and exceptions in what I enjoy."
+- "One simple record can contribute to several useful insights."
+- "My interpretation evolves as I add or correct experiences."
+
+Later, group connection should help users understand what they share with other palates. Group-based restaurant and menu recommendations add discovery value after that foundation is established.
 
 ## 2.2 Chef / Restaurant Value
 
@@ -77,9 +79,9 @@ For chefs and restaurants, Taste Buddy should communicate:
 
 The product is strongest when it is understood as:
 
-- a taste-to-chef translation layer
-- a personalization engine for dining
-- a learning loop, not a one-time measurement
+- a personal palate understanding and interpretation service
+- a reusable evidence foundation for varied insights
+- an evolving connection between individual preferences and similar-palate groups
 
 ---
 
@@ -87,16 +89,15 @@ The product is strongest when it is understood as:
 
 Codex must preserve and reinforce this service loop:
 
-1. Quick Taste Calibration
-2. Taste Profile Creation
-3. Reservation Personalization
-4. Chef Calibration Guidance
-5. Dining Experience
-6. Post-Dining Feedback
-7. Profile Refinement
-8. Optional Precision Calibration (hardware, later)
+1. Lightweight Entry and Taste Context
+2. Dining Experience and Simple Feedback
+3. Evidence Refinement with Source and Context Preserved
+4. Personal Taste Understanding
+5. Varied Interpretations and Insights
+6. Optional Clarification, Correction, and Further Experience
+7. Profile and Insight Refinement
 
-The product should always feel like it is moving the user forward through this loop.
+Later extensions build on this loop: similar-palate group connection, followed by group-based restaurant and menu recommendations. Hardware and chef guidance remain optional extensions. The core loop must remain useful when no recommendation or social connection is shown.
 
 ---
 
@@ -106,7 +107,7 @@ The product should always feel like it is moving the user forward through this l
 
 ### Guest / Diner
 
-A user who wants a dining experience better matched to their taste preferences and sensitivities.
+A user who wants to understand what they enjoy, how preferences differ across foods and situations, and what their own dining records reveal.
 
 ## 4.2 Secondary User
 
@@ -131,10 +132,10 @@ These are the highest-level product rules. Codex should follow them before makin
 
 ## Principle 1
 
-**Experience improvement comes before technical explanation.**
+**Personal taste understanding and insight come first.**
 
 Never lead with hardware, measurement mechanics, or technical complexity.  
-Lead with the value of a better-matched dining experience.
+Lead with what the user can learn about their palate. Treat group connection and group-based recommendations as later product layers.
 
 ## Principle 2
 
@@ -176,39 +177,50 @@ No critical product value should depend entirely on physical device connection.
 
 The UX must present value in this order:
 
-1. Why this improves dining
-2. What profile is being formed
-3. How the chef can use it
-4. How future dining becomes better
-5. Optional precision upgrades later
+1. What the user can understand about their own preferences
+2. Which records support the interpretation and what remains uncertain
+3. How patterns differ across foods, components, situations, and time
+4. Later, which palate groups share relevant similarities and differences
+5. Group-based restaurant and menu recommendations and optional service extensions
 
 ## 6.2 Calibration First, Not Survey First
 
 The user should never feel they are filling out a generic form.  
 Calibration should feel lightweight, guided, and meaningful.
 
-## 6.3 Result Means Action
+## 6.3 Results Provide Understanding
 
-Profile results should always connect to:
+Profile results should provide:
 
-- reservation personalization
-- chef-ready guidance
-- next-step usefulness
+- clear interpretations grounded in the user's records
+- useful patterns, contrasts, exceptions, and appropriately supported changes
+- visible evidence scope and meaningful unknowns
+- optional clarification or correction when it improves understanding
 
-### 6.3.1 Special Notes Must Be Translation, Not Trivia
+A result does not need a booking, recommendation, or chef handoff to provide value.
+
+### 6.3.1 Refine Evidence for Multiple Outputs
+
+- Preserve raw input and provenance while normalizing meaning into reusable observations.
+- Keep sensation, intensity, liking, target, phase, food, and context distinct; preserve unknown values.
+- Generate multiple views from the same valid evidence: experience summaries, sensory profiles, conditional insights, supported changes, and group-comparison features.
+- Store output-specific wording, aggregation, and display vectors as derived views with evidence references and rule versions.
+- New interpretations must not rewrite source observations or count as additional experiences. Corrections and deletions must propagate to dependent views.
+- Expand useful perspectives when evidence allows. Output quantity alone is not evidence quality or product success.
+
+### 6.3.2 Special Notes Explain Supported Patterns
 
 When the product shows a "Special Note" or an equivalent refined signal:
 
-- it should represent a repeatable pattern in detailed taste elements, not a decorative side fact
-- it should translate that pattern into chef-usable guidance for the next dining experience
-- it should preserve chef autonomy by framing the signal as calibration support, not a recipe command
-- it should show confidence or evidence level when the signal is still evolving
-- it should clearly indicate how the signal is being used in reservation personalization or chef-facing delivery
+- it should explain a supported preference pattern, contrast, exception, or unresolved question
+- it should show the relevant food, component, situation, or time scope
+- it should identify evidence and uncertainty without assigning unvalidated confidence scores
+- if reused in a later chef-facing feature, it should preserve chef autonomy and identify the original evidence scope
 
 ## 6.4 Feedback Must Feel Valuable
 
 Post-dining feedback must never feel like an admin task.  
-It should feel like an investment in a better next experience.
+It should help users learn something meaningful about their own preferences with little effort.
 
 ## 6.5 Confidence Should Be Visible
 
@@ -254,6 +266,9 @@ Use language such as:
 
 - taste profile
 - palate profile
+- taste interpretation
+- personal palate insights
+- similar-palate groups
 - calibration
 - current profile
 - refined profile
@@ -282,7 +297,8 @@ Preferred:
 - "Your current profile suggests..."
 - "Based on your responses..."
 - "This profile becomes more accurate over time."
-- "This can help shape a better-matched dining experience."
+- "Here is a pattern in how you described these meals."
+- "This preference appears in these foods; other contexts are still unclear."
 
 Avoid:
 
@@ -297,10 +313,11 @@ Avoid:
 ## 8.1 Recommended Primary Navigation
 
 - Home
-- Profile
-- Reservations
-- History
+- Taste Insights / Profile
+- Dining Records / History
 - Settings (optional or secondary)
+
+Similar-palate groups and group-based recommendations are later layers. Existing platform navigation is governed by its implementation scope; this document does not require placeholder tabs or an immediate UI rearrangement.
 
 ## 8.2 Core MVP Screens
 
@@ -310,12 +327,12 @@ These are the most important screens in the experience:
 2. Onboarding
 3. Quick Taste Calibration
 4. Taste Profile Result
-5. Chef-ready Calibration Summary
-6. Reservation Personalization
-7. Reservation Confirmation
-8. Post-Dining Feedback
-9. Profile Updated
-10. Improve Accuracy (optional hardware upgrade path)
+5. Personal Taste Interpretations and Insights
+6. Dining Record and Post-Dining Feedback
+7. Insight Evidence and Optional Clarification
+8. Profile Updated
+
+Similar-palate groups, group-based recommendations, chef guidance, reservation flows, and hardware belong to later or platform-specific scopes.
 
 ## 8.3 Screen Priority
 
@@ -323,15 +340,15 @@ These are the most important screens in the experience:
 
 - Onboarding
 - Calibration
-- Profile Result
-- Reservation + Chef Guidance
-- Feedback
+- Taste Profile and Insights
+- Lightweight Feedback and Records
+- Evidence, Unknowns, and Corrections
 
 ### Medium Priority
 
-- History
-- confidence progression
-- profile updates over time
+- supported preference changes over time
+- similar-palate group connection when the core insight experience is established
+- group-based restaurant and menu discovery after group connection
 
 ### Lower Priority
 
@@ -372,7 +389,7 @@ They should support trust, not create friction.
 - "Your profile is still being refined."
 - "No dining history yet."
 - "Add one dining experience to improve your profile."
-- "Not enough data for a refined recommendation yet."
+- "These records do not yet clarify this preference."
 
 ---
 
@@ -414,9 +431,12 @@ Translate profile data into understandable guidance.
 
 - interpretation first
 - practical meaning second
-- next action third
+- evidence scope and meaningful unknowns
+- optional clarification or exploration when useful
 
 ## 10.3 Chef Calibration Card
+
+This is an extension component for the platform scopes that include chef guidance.
 
 ### Purpose
 
@@ -441,6 +461,8 @@ Translate guest profile into chef-usable guidance.
 
 ## 10.4 Reservation Personalization Card
 
+This is an extension component for the platform scopes that include reservations.
+
 ### Purpose
 
 Link profile to booking decisions.
@@ -460,7 +482,7 @@ Capture high-value reflection with minimal burden.
 
 - brief
 - meaningful
-- framed as future improvement
+- framed as understanding one's palate and gaining useful interpretations
 - never framed as admin work
 - separate private learning signals from public review/social signals when the UI exposes both
 - reflection photos should feel like memory aids for the dish card, not social proof or lifestyle content
@@ -479,11 +501,14 @@ When post-dining feedback uses a bubble map for taste impressions:
 
 ### Purpose
 
-Use social dining evidence to help the user discover restaurants and dishes through people with interpretable taste similarity.
+After the personal insight experience is established, connect users with similar-palate groups and explain relevant similarities and differences. Restaurant and dish discovery through those groups is an additional layer.
 
 ### Rules
 
 - public profile must be opt-in and should expose interpreted taste identity before raw measurements
+- group comparison must preserve evidence scope, missing information, and differences within a group
+- group membership is revisable and must not replace the individual's own preference evidence
+- group-based recommendations must distinguish explicit member recommendations, positive reviews, and inferred candidates
 - match feed should explain why a review is relevant to the user's palate, not imply objective quality ranking
 - similarity labels should be confidence-aware and respectful; avoid competitive follower/status framing
 - saved restaurants should support future dining decisions and comparison, not behave like a generic booking wishlist
@@ -564,7 +589,7 @@ When user data is minimal:
 
 - generate a starter profile
 - communicate evolving confidence
-- connect output to likely dining guidance
+- provide useful interpretations within the available evidence and show meaningful unknowns
 - avoid overclaiming
 
 ## 12.4 Learning Model Principle
@@ -695,6 +720,8 @@ Codex must:
 All generated UI, content, or logic must preserve:
 
 - profile-first framing
+- personal understanding and varied insights before group matching and recommendations
+- reusable refined evidence with traceable derived outputs
 - hospitality-centered tone
 - optional hardware
 - chef-respectful language
@@ -703,11 +730,11 @@ All generated UI, content, or logic must preserve:
 
 When improving the app, prioritize:
 
-1. onboarding
-2. calibration
-3. profile interpretation
-4. reservation personalization
-5. feedback loop
+1. profile interpretation and personal insights
+2. lightweight dining records, feedback, and correction
+3. onboarding and optional clarification
+4. similar-palate group connection in a later phase
+5. group-based restaurant and menu recommendations afterward
 
 ## 15.5 Do Not Drift Into These Directions
 
@@ -726,7 +753,7 @@ Codex must:
 - use calm, premium, precise language
 - avoid overclaiming scientific certainty
 - make value tangible in dining terms
-- explain how the next dining experience changes
+- explain what the user can understand about their preferences and which experiences support it
 
 ---
 
@@ -734,11 +761,11 @@ Codex must:
 
 ## Do
 
-- prioritize experience improvement over technical explanation
+- prioritize personal taste understanding and useful insights
 - show profile interpretation before raw data
 - support chef intention
 - communicate evolving confidence
-- connect profile to concrete dining outcomes
+- support multiple grounded interpretations from reusable refined evidence
 - make post-dining feedback feel useful and rewarding
 
 ## Don't
@@ -759,11 +786,18 @@ Taste Buddy should be considered aligned when:
 
 ## User Understanding
 
-- the user understands the service as a personalized dining experience, not only a taste measurement app
+- the user can understand the interpretation, identify the experiences supporting it, and distinguish facts from tentative patterns
 
 ## Product Value
 
-- the user can quickly see how the service may improve their next meal
+- users gain useful, varied insights about preferences, conditions, and exceptions with little recording effort
+- interpretations remain faithful to evidence and can be corrected when the user's meaning was misunderstood
+- raw output count, booking conversion, and future meal satisfaction do not replace these primary criteria
+
+## Later Group and Recommendation Value
+
+- group connections explain useful palate similarities and differences within the available evidence
+- restaurant and menu recommendations clearly identify their group evidence and are evaluated separately for discovery usefulness and dining satisfaction
 
 ## Chef Value
 
@@ -775,7 +809,7 @@ Taste Buddy should be considered aligned when:
 
 ## Learning Loop
 
-- the service clearly communicates that it gets better through dining feedback over time
+- added, corrected, and deleted feedback updates the relevant interpretations and insights consistently
 
 ## Hardware Strategy
 
@@ -788,7 +822,7 @@ Taste Buddy should be considered aligned when:
 
 Use this as the default internal summary:
 
-> Taste Buddy is a premium personalized dining service that learns a guest's taste profile over time and helps chefs deliver a better-matched culinary experience.
+> Taste Buddy is a premium service that understands each user's palate and returns varied, evidence-backed interpretations and insights, with similar-palate groups and group-based restaurant and menu recommendations as later extensions.
 
 ---
 
@@ -796,4 +830,4 @@ Use this as the default internal summary:
 
 Use this when a concise product explanation is needed:
 
-> Taste Buddy helps guests and chefs meet in the middle by translating taste preferences into a more personalized dining experience.
+> Taste Buddy helps people understand their palate through meaningful interpretations and insights drawn from their dining experiences.

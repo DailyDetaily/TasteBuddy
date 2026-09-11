@@ -1,5 +1,57 @@
 import SwiftUI
 
+/// 필터 의미는 화면이 소유하고, 선택 표시와 터치 영역은 공통으로 유지한다.
+struct TBCapsuleTabs<Selection: Hashable>: View {
+    @Namespace private var selectionNamespace
+    let options: [Selection]
+    @Binding var selection: Selection
+    var selectedForeground = TBColor.textPrimary
+    var selectedBackground = TBColor.surface
+    var selectedBorder = TBColor.border
+    let title: (Selection) -> String
+
+    var body: some View {
+        HStack(spacing: TBSpacing.x8) {
+            ForEach(options, id: \.self) { option in
+                Button { selection = option } label: {
+                    Text(title(option))
+                        .font(selection == option ? TBFont.bold(13) : TBFont.medium(13))
+                        .foregroundStyle(selection == option ? selectedForeground : TBColor.textTertiary)
+                        .padding(.horizontal, 14)
+                        .frame(height: 32)
+                        .background {
+                            if selection == option {
+                                Capsule()
+                                    .fill(selectedBackground)
+                                    .overlay { Capsule().strokeBorder(selectedBorder, lineWidth: 1) }
+                                    .matchedGeometryEffect(id: "selection", in: selectionNamespace)
+                            }
+                        }
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(TBTokenButtonStyle())
+                .accessibilityAddTraits(selection == option ? .isSelected : [])
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, TBSpacing.x16)
+        .tasteBloomMotion(.feedback, value: selection)
+    }
+}
+
+#Preview("캡슐 필터 탭") {
+    @Previewable @State var selectedMonths = 0
+    TBCapsuleTabs(options: [1, 3, 6, 12, 0], selection: $selectedMonths,
+                  selectedForeground: TasteAxis.salty.tintSurfaceTextColor,
+                  selectedBackground: TasteAxis.salty.tintColor,
+                  selectedBorder: TasteAxis.salty.tintSoftBorderColor) {
+        $0 == 0 ? "전부" : $0 == 12 ? "1년" : "\($0)개월"
+    }
+    .padding(.top, TBSpacing.x16)
+    .background(TBColor.page)
+}
+
 enum TBSectionTitleSize {
     case medium
     case large
@@ -409,16 +461,16 @@ struct TasteChip: View {
 }
 
 struct CardDetailLabel: View {
-    enum Direction {
+    enum Direction: Equatable {
         case down
         case right
         case up
 
-        var symbol: String {
+        var angle: Double {
             switch self {
-            case .down: "chevron.down"
-            case .right: "chevron.right"
-            case .up: "chevron.up"
+            case .down: 90
+            case .right: 0
+            case .up: -90
             }
         }
     }
@@ -429,14 +481,17 @@ struct CardDetailLabel: View {
     var body: some View {
         HStack(spacing: 2) {
             Text(label)
+                .contentTransition(.opacity)
             LucideIcon(
-                systemName: direction.symbol,
+                .chevronRight,
                 size: TBIcon.Size.small,
                 strokeWidth: TBIcon.Stroke.regular
             )
+            .rotationEffect(.degrees(direction.angle))
         }
         .tbTextStyle(.detailAction)
         .fixedSize()
+        .tasteBloomMotion(.feedback, value: direction)
     }
 }
 
@@ -903,14 +958,14 @@ struct TasteInsightSummaryCardData: Equatable {
 }
 
 struct TastePointArrowBox: View {
-    let axis: TasteAxis
+    var axis: TasteAxis? = nil
     let trend: TastePointTrend
     var size: CGFloat = 18
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 2 / 9, style: .continuous)
-                .fill(axis.mainColor)
+                .fill(axis?.mainColor ?? TBColor.textHint)
 
             LucideIcon(
                 systemName: trend.symbol,
@@ -922,6 +977,41 @@ struct TastePointArrowBox: View {
         .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
+}
+
+struct TasteChangeEmptySummary: View {
+    var body: some View {
+        VStack(spacing: TasteLineChartMetrics.rowSpacing) {
+            ForEach(["상승 변화", "하강 변화"], id: \.self) { label in
+                HStack(spacing: TBSpacing.x16) {
+                    HStack(spacing: 8) {
+                        TastePointArrowBox(trend: .neutral)
+                        Text(label).font(TBFont.medium(14)).foregroundStyle(TBColor.textHint)
+                    }.frame(maxWidth: .infinity, alignment: .leading)
+                    Canvas { context, size in
+                        // Decorative empty state, independent of recorded values.
+                        let radius = TasteLineChartMetrics.currentNodeDiameter / 2
+                        let start = CGPoint(x: radius, y: size.height / 2)
+                        let end = CGPoint(x: size.width - radius, y: start.y)
+                        var path = Path()
+                        path.move(to: start)
+                        path.addLine(to: end)
+                        context.stroke(path, with: .color(TBColor.textHint.opacity(0.12)),
+                                       style: StrokeStyle(lineWidth: TasteLineChartMetrics.trackLineWidth, lineCap: .round))
+                        context.stroke(path, with: .linearGradient(Gradient(colors: [TBColor.textHint.opacity(0.25), TBColor.textHint]), startPoint: start, endPoint: end),
+                                       style: StrokeStyle(lineWidth: TasteLineChartMetrics.coreLineWidth, lineCap: .round))
+                        context.fill(Path(ellipseIn: CGRect(x: end.x - radius, y: start.y - radius, width: radius * 2, height: radius * 2)), with: .color(TBColor.textHint))
+                    }.frame(width: 132, height: TasteLineChartMetrics.rowHeight)
+                }.frame(height: TasteLineChartMetrics.rowHeight)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("상승 변화와 하강 변화 모두 비교 기록 없음")
+    }
+}
+
+#Preview("미각변화 빈 기록") {
+    TasteChangeEmptySummary().padding()
 }
 
 struct TasteLineChartEntry: Identifiable, Equatable {
@@ -999,6 +1089,7 @@ struct TasteLineChart: View {
                 .frame(height: TasteLineChartMetrics.rowHeight)
             }
         }
+        .tasteBloomChartReveal()
         .accessibilityHidden(true)
     }
 
@@ -1654,13 +1745,14 @@ struct TasteTintCard: View {
 
 struct TasteTintMiniCard: View {
     let entry: TasteAxisAnalysis
+    var subtitleOverride: String? = nil
     var onTap: (() -> Void)? = nil
 
     var body: some View {
         RecommendationMiniCardLayout(
             axis: entry.axis,
             title: entry.axis.label,
-            subtitle: entry.deltaSummary,
+            subtitle: subtitleOverride ?? entry.deltaSummary,
             detail: entry.detail,
             onTap: onTap
         ) {

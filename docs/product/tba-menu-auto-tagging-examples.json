@@ -1,0 +1,1007 @@
+{
+  "schema_version": "tba-menu-auto-tagging-design-v0.1",
+  "status": "authored_expected_outputs_not_classifier_results",
+  "example_assumptions": [
+    "각 정상 사례는 해당 음식 이름·수식 관계의 규칙이 검토된 배포 사전에 등록됐다는 조건의 기대 출력이다. 현재 초안 규칙이 승인·배포됐다는 뜻이 아니다.",
+    "별도 명시가 없으면 이름 식별이 명확하고 근거 충돌과 사용자 수정이 없는 첫 분류를 가정한다.",
+    "메뉴·대상 범위의 해석 정확도를 실행 검증한 자료가 아니다."
+  ],
+  "selection_policy": {
+    "enabled_in_design": true,
+    "deployed": false,
+    "default_when_menu_known": "auto_select_eligible_tags_and_prepare_map",
+    "separate_confirmation_step": false,
+    "saving_confirms_auto_tags": false,
+    "selection_modes": [
+      "automatic",
+      "user_edited",
+      "user_empty"
+    ],
+    "decision_states": [
+      "auto_select",
+      "suggest",
+      "abstain",
+      "suppressed_by_user"
+    ],
+    "origins": [
+      "menu_catalog",
+      "menu_name_rule",
+      "model_inferred",
+      "user"
+    ],
+    "auto_selection_gates": [
+      "reviewed_source_or_rule",
+      "matched_menu_identity_and_version",
+      "valid_taxonomy_ids",
+      "supported_target_scope",
+      "qualifiers_and_negations_resolved",
+      "no_conflicting_evidence",
+      "current_input_revision",
+      "no_user_override",
+      "feedback_not_started"
+    ],
+    "model_default_decision": "suggest",
+    "model_self_reported_confidence_is_gate": false,
+    "manual_edit_policy": "preserve_effective_selection_set_for_same_subject; later automatic results are suggestions",
+    "explicit_empty_is_valid": true,
+    "restore_empty_with_inference": false,
+    "same_menu_alias_preserves_user_actions": true,
+    "different_menu_subject_reuses_old_actions": false,
+    "late_revision_response_applies": false,
+    "late_auto_result_repositions_active_map": false,
+    "maps_update_after_explicit_user_edit": true,
+    "selected_bubbles_survive_reclassification": true,
+    "auto_tags_create_sensory_observations": false,
+    "auto_tags_update_taste_preferences": false,
+    "entry_with_multiple_refinements_selects_all_children": false,
+    "fallback": "common_map; recording and saving remain available",
+    "design_ref": "./tba-menu-auto-tagging-design.md",
+    "examples_ref": "./tba-menu-auto-tagging-examples.json"
+  },
+  "classification_cases": [
+    {
+      "id": "name_donkatsu",
+      "input": {
+        "menu_name_raw": "돈까스",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.cuisine.japanese"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": "fried",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "돈까스는 검색용 별칭으로 돈가스에 연결. 요리 문화는 이 규칙에서 자동 확정하지 않음."
+    },
+    {
+      "id": "name_cheese_donkatsu",
+      "input": {
+        "menu_name_raw": "치즈돈까스",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.fried",
+          "entry.cheese"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [],
+        "context_assertions": [
+          {
+            "canonical_tag_id": "ingredient.cheese",
+            "target": "filling",
+            "evidence_kind": "menu_name_token",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          }
+        ],
+        "map_plan": {
+          "base_map_id": "fried",
+          "fallback_common_map": false,
+          "add_pack_ids": [
+            "cream"
+          ],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "치즈 부분에만 치즈 표현 후보를 연결. 유제품 원료나 호감은 확정하지 않음."
+    },
+    {
+      "id": "name_jajang",
+      "input": {
+        "menu_name_raw": "짜장면",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.noodle",
+          "entry.cuisine.chinese"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": "noodle_overview",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "검토된 음식 이름 규칙으로 면과 중식 연결. 불향·단맛은 사용자 응답으로 생성하지 않음."
+    },
+    {
+      "id": "name_cream_pasta",
+      "input": {
+        "menu_name_raw": "크림 파스타",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.noodle"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.rice"
+        ],
+        "context_assertions": [
+          {
+            "canonical_tag_id": "dish.pasta",
+            "target": "whole",
+            "evidence_kind": "reviewed_menu_concept",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          },
+          {
+            "canonical_tag_id": "sauce.cream",
+            "target": "sauce",
+            "evidence_kind": "menu_name_token",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          }
+        ],
+        "map_plan": {
+          "base_map_id": "cream_pasta",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": [
+            "rice"
+          ]
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "면 입구와 내부 파스타·크림 문맥으로 구성."
+    },
+    {
+      "id": "name_cream_risotto",
+      "input": {
+        "menu_name_raw": "크림 리조또",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.rice"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.noodle"
+        ],
+        "context_assertions": [
+          {
+            "canonical_tag_id": "ingredient.rice",
+            "target": "whole",
+            "evidence_kind": "reviewed_menu_concept",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          },
+          {
+            "canonical_tag_id": "sauce.cream",
+            "target": "sauce",
+            "evidence_kind": "menu_name_token",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          }
+        ],
+        "map_plan": {
+          "base_map_id": "cream_pasta",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": [
+            "noodles"
+          ]
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "리조또는 음식 이름에 남기고 밥 종류와 크림 문맥으로 구성."
+    },
+    {
+      "id": "name_salmon",
+      "input": {
+        "menu_name_raw": "연어",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.fish"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.raw",
+          "entry.dish.grill"
+        ],
+        "context_assertions": [
+          {
+            "canonical_tag_id": "ingredient.salmon",
+            "target": "whole",
+            "evidence_kind": "menu_name_token",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          }
+        ],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "생선까지만 자동 선택. 조리법 미확정이므로 공통 맵부터 시작."
+    },
+    {
+      "id": "name_grilled_salmon",
+      "input": {
+        "menu_name_raw": "연어구이",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.grill",
+          "entry.fish"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.raw"
+        ],
+        "context_assertions": [
+          {
+            "canonical_tag_id": "ingredient.salmon",
+            "target": "whole",
+            "evidence_kind": "menu_name_token",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          },
+          {
+            "canonical_tag_id": "method.grill",
+            "target": "whole",
+            "evidence_kind": "menu_name_token",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          }
+        ],
+        "map_plan": {
+          "base_map_id": "grilled_fish",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "연어와 구이의 대상 연결을 확인하는 구성 규칙."
+    },
+    {
+      "id": "name_kimchi",
+      "input": {
+        "menu_name_raw": "김치",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.cuisine.korean",
+          "entry.fermented"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": "fermented_overview",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "예외 수식어가 없는 김치의 검토된 음식 개념 규칙."
+    },
+    {
+      "id": "name_kimchi_stew",
+      "input": {
+        "menu_name_raw": "김치찌개",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.stew",
+          "entry.cuisine.korean"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.fermented"
+        ],
+        "context_assertions": [
+          {
+            "canonical_tag_id": "method.ferment",
+            "target": "component:kimchi",
+            "evidence_kind": "reviewed_menu_concept",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          }
+        ],
+        "map_plan": {
+          "base_map_id": "stew",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "발효 문맥은 김치 구성 요소에 보관하고 찌개 전체의 발효 공정으로 확대하지 않음."
+    },
+    {
+      "id": "name_curry",
+      "input": {
+        "menu_name_raw": "카레",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.spiced"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.cuisine.indian",
+          "entry.cuisine.japanese"
+        ],
+        "context_assertions": [
+          {
+            "canonical_tag_id": "sauce.curry",
+            "target": "sauce",
+            "evidence_kind": "reviewed_menu_concept",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          },
+          {
+            "canonical_tag_id": "ingredient.spices",
+            "target": "sauce",
+            "evidence_kind": "reviewed_menu_concept",
+            "status": "inferred_for_navigation_not_user_confirmed"
+          }
+        ],
+        "map_plan": {
+          "base_map_id": "curry",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "향신료 음식 입구와 소스 문맥. 국가·매운 강도는 미확정."
+    },
+    {
+      "id": "name_donkatsu_bowl",
+      "input": {
+        "menu_name_raw": "돈까스 덮밥",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.rice_bowl",
+          "entry.dish.fried"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": "rice_bowl",
+          "fallback_common_map": false,
+          "add_pack_ids": [
+            "fried",
+            "crisp"
+          ],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "튀김 가지는 돈까스 구성 요소에 적용. 밥을 튀긴 것으로 해석하지 않음."
+    },
+    {
+      "id": "name_donkatsu_sauce",
+      "input": {
+        "menu_name_raw": "돈까스 소스",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "주된 대상이 소스이므로 돈까스 음식 규칙의 자동 선택을 막음."
+    },
+    {
+      "id": "name_vegan_donkatsu",
+      "input": {
+        "menu_name_raw": "비건 돈까스",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.meat"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": "fried",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": [],
+        "must_not_assert_context_tag_ids": [
+          "ingredient.pork",
+          "ingredient.milk"
+        ]
+      },
+      "reason": "대체 재료 수식어를 유지. 돼지고기·우유 원료를 이름 관습만으로 채우지 않음."
+    },
+    {
+      "id": "name_no_cheese",
+      "input": {
+        "menu_name_raw": "치즈돈까스 (치즈 제외)",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.cheese"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": "fried",
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": [],
+        "must_not_assert_context_tag_ids": [
+          "ingredient.cheese"
+        ]
+      },
+      "reason": "제외 수식어가 치즈 자동 선택을 억제. 실제 재료 부재의 확인으로 확대하지 않음."
+    },
+    {
+      "id": "name_flavoured_snack",
+      "input": {
+        "menu_name_raw": "돈까스맛 과자",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.fried",
+          "entry.dish.chocolate"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "현재 종류 사전에 일반 과자 분류가 없으므로 억지 분류하지 않음."
+    },
+    {
+      "id": "name_special",
+      "input": {
+        "menu_name_raw": "오늘의 스페셜",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "이름만으로 음식 종류를 알 수 없음. 확인 질문 없이 공통 맵으로 기록."
+    },
+    {
+      "id": "name_crispy_chicken",
+      "input": {
+        "menu_name_raw": "바삭한 치킨",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.meat"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": [],
+        "must_not_assert_context_tag_ids": [
+          "method.deep_fry"
+        ]
+      },
+      "reason": "바삭한은 메뉴 설명. 실제 튀기기나 바삭함 관찰로 변환하지 않음."
+    },
+    {
+      "id": "name_company_set",
+      "input": {
+        "menu_name_raw": "회식 세트",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.raw"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "회라는 한 글자의 포함 여부로 생요리를 추정하지 않음."
+    },
+    {
+      "id": "name_set",
+      "input": {
+        "menu_name_raw": "돈까스 + 우동 세트",
+        "source": "user_entered_name",
+        "input_revision": 1
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.dish.fried",
+          "entry.dish.noodle"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": false,
+          "add_pack_ids": [],
+          "remove_pack_ids": [],
+          "component_plans": [
+            {
+              "component_id": "donkatsu",
+              "map_id": "fried"
+            },
+            {
+              "component_id": "udon",
+              "map_id": "noodle_overview"
+            }
+          ]
+        },
+        "sensory_observations": [],
+        "preference_updates": [],
+        "new_experience_count": 0
+      },
+      "reason": "구성별 맵을 합성. 별도 음식 경험·감각 관찰은 자동 생성하지 않음."
+    },
+    {
+      "id": "catalog_beverage",
+      "input": {
+        "menu_name_raw": "계절 음료",
+        "source": "selected_menu_catalog",
+        "input_revision": 1,
+        "menu_id": "example-seasonal-drink",
+        "catalog_revision": 2,
+        "reviewed_entry_tag_ids": [
+          "entry.beverage"
+        ]
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.beverage"
+        ],
+        "suggested_entry_tag_ids": [],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.coffee",
+          "entry.dish.tea",
+          "entry.dish.wine",
+          "entry.dish.beer"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "해당 메뉴 ID에 검토된 음료 분류가 있음. 하위 종류를 모두 선택하지 않음."
+    },
+    {
+      "id": "conflicting_catalog",
+      "input": {
+        "menu_name_raw": "연어구이",
+        "source": "user_entered_name",
+        "input_revision": 1,
+        "catalog_entry_tag_ids": [
+          "entry.dish.raw",
+          "entry.fish"
+        ]
+      },
+      "expected": {
+        "auto_entry_tag_ids": [
+          "entry.fish"
+        ],
+        "suggested_entry_tag_ids": [
+          "entry.dish.grill",
+          "entry.dish.raw"
+        ],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.grill",
+          "entry.dish.raw"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "메뉴판 분류는 회, 새 이름은 구이로 충돌. 생선만 자동 선택하고 조리법은 제안."
+    },
+    {
+      "id": "uncertain_ocr",
+      "input": {
+        "menu_name_raw": "돈까스",
+        "source": "ocr_unconfirmed",
+        "input_revision": 1,
+        "identity_resolved": false
+      },
+      "expected": {
+        "auto_entry_tag_ids": [],
+        "suggested_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "must_not_auto_select_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "context_assertions": [],
+        "map_plan": {
+          "base_map_id": null,
+          "fallback_common_map": true,
+          "add_pack_ids": [],
+          "remove_pack_ids": []
+        },
+        "sensory_observations": [],
+        "preference_updates": []
+      },
+      "reason": "OCR가 읽은 이름 자체가 불확실하고 사용자가 고른 이름이 아니므로 제안만 유지."
+    }
+  ],
+  "lifecycle_cases": [
+    {
+      "id": "save_auto",
+      "before": {
+        "selection_mode": "automatic",
+        "effective_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "review_state": "unreviewed"
+      },
+      "event": {
+        "type": "save_without_tag_edit"
+      },
+      "expected": {
+        "selection_mode": "automatic",
+        "effective_entry_tag_ids": [
+          "entry.dish.fried"
+        ],
+        "review_state": "unreviewed",
+        "origin_preserved": true
+      }
+    },
+    {
+      "id": "remove_one_then_reinfer",
+      "before": {
+        "selection_mode": "automatic",
+        "effective_entry_tag_ids": [
+          "entry.dish.noodle",
+          "entry.cuisine.chinese"
+        ]
+      },
+      "events": [
+        {
+          "type": "remove_tag",
+          "entry_tag_id": "entry.cuisine.chinese"
+        },
+        {
+          "type": "reinfer_same_subject",
+          "auto_entry_tag_ids": [
+            "entry.dish.noodle",
+            "entry.cuisine.chinese"
+          ]
+        }
+      ],
+      "expected": {
+        "selection_mode": "user_edited",
+        "effective_entry_tag_ids": [
+          "entry.dish.noodle"
+        ],
+        "suppressed_entry_tag_ids": [
+          "entry.cuisine.chinese"
+        ],
+        "remaining_auto_tag_confirmed": false
+      }
+    },
+    {
+      "id": "clear_all_and_reopen",
+      "before": {
+        "selection_mode": "automatic",
+        "effective_entry_tag_ids": [
+          "entry.dish.fried"
+        ]
+      },
+      "events": [
+        {
+          "type": "clear_all"
+        },
+        {
+          "type": "save"
+        },
+        {
+          "type": "reopen_record"
+        },
+        {
+          "type": "reinfer_same_subject",
+          "auto_entry_tag_ids": [
+            "entry.dish.fried"
+          ]
+        }
+      ],
+      "expected": {
+        "selection_mode": "user_empty",
+        "effective_entry_tag_ids": [],
+        "fallback_common_map": true
+      }
+    },
+    {
+      "id": "manual_add_then_new_result",
+      "before": {
+        "selection_mode": "automatic",
+        "effective_entry_tag_ids": [
+          "entry.fish"
+        ]
+      },
+      "events": [
+        {
+          "type": "add_tag",
+          "entry_tag_id": "entry.dish.grill"
+        },
+        {
+          "type": "reinfer_same_subject",
+          "auto_entry_tag_ids": [
+            "entry.fish",
+            "entry.dish.raw"
+          ]
+        }
+      ],
+      "expected": {
+        "selection_mode": "user_edited",
+        "effective_entry_tag_ids": [
+          "entry.fish",
+          "entry.dish.grill"
+        ],
+        "user_selected_entry_tag_ids": [
+          "entry.dish.grill"
+        ],
+        "suggested_entry_tag_ids": [
+          "entry.dish.raw"
+        ],
+        "remaining_auto_tag_confirmed": false
+      }
+    },
+    {
+      "id": "alias_edit",
+      "before": {
+        "menu_name_raw": "돈까스",
+        "selection_mode": "user_empty",
+        "effective_entry_tag_ids": [],
+        "subject_revision": 1
+      },
+      "event": {
+        "type": "edit_name",
+        "menu_name_raw": "돈가스",
+        "same_menu_concept": true
+      },
+      "expected": {
+        "selection_mode": "user_empty",
+        "effective_entry_tag_ids": [],
+        "subject_revision": 1,
+        "user_actions_preserved": true
+      }
+    },
+    {
+      "id": "food_identity_correction",
+      "before": {
+        "menu_name_raw": "돈까스",
+        "selection_mode": "user_empty",
+        "effective_entry_tag_ids": [],
+        "subject_revision": 1
+      },
+      "event": {
+        "type": "correct_food_identity",
+        "menu_name_raw": "연어회",
+        "next_subject_revision": 2
+      },
+      "expected": {
+        "selection_mode": "automatic",
+        "effective_entry_tag_ids": [
+          "entry.dish.raw",
+          "entry.fish"
+        ],
+        "subject_revision": 2,
+        "old_user_actions_active": false,
+        "history_preserved": true,
+        "selected_bubbles_preserved": true,
+        "old_specific_targets_require_review": true,
+        "new_experience_count": 0
+      }
+    },
+    {
+      "id": "stale_result",
+      "before": {
+        "current_input_revision": 2,
+        "effective_entry_tag_ids": [
+          "entry.fish"
+        ]
+      },
+      "event": {
+        "type": "automatic_result",
+        "input_revision": 1,
+        "auto_entry_tag_ids": [
+          "entry.dish.fried"
+        ]
+      },
+      "expected": {
+        "effective_entry_tag_ids": [
+          "entry.fish"
+        ],
+        "result_applied": false
+      }
+    },
+    {
+      "id": "feedback_started",
+      "before": {
+        "feedback_started": true,
+        "effective_entry_tag_ids": [
+          "entry.fish"
+        ]
+      },
+      "event": {
+        "type": "automatic_result",
+        "auto_entry_tag_ids": [
+          "entry.fish",
+          "entry.dish.grill"
+        ]
+      },
+      "expected": {
+        "effective_entry_tag_ids": [
+          "entry.fish"
+        ],
+        "suggested_entry_tag_ids": [
+          "entry.dish.grill"
+        ],
+        "map_repositioned": false,
+        "selected_bubbles_preserved": true
+      }
+    },
+    {
+      "id": "dictionary_upgrade",
+      "before": {
+        "saved_taxonomy_version": "v1",
+        "effective_entry_tag_ids": [
+          "entry.dish.noodle"
+        ]
+      },
+      "event": {
+        "type": "dictionary_upgrade",
+        "next_taxonomy_version": "v2"
+      },
+      "expected": {
+        "original_snapshot_overwritten": false,
+        "user_confirmation_added": false,
+        "new_sensory_observations": 0
+      }
+    }
+  ],
+  "summary": {
+    "classification_cases": 22,
+    "lifecycle_cases": 9
+  }
+}

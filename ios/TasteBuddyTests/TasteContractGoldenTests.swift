@@ -37,8 +37,8 @@ final class TasteContractGoldenTests: XCTestCase {
             named: "taste-survey-golden"
         )
 
-        XCTAssertEqual(fixture.schemaVersion, 1)
-        XCTAssertEqual(fixture.items.count, 12)
+        XCTAssertEqual(fixture.schemaVersion, 2)
+        XCTAssertEqual(fixture.items.count, 6)
         XCTAssertEqual(fixture.contextSteps.count, 3)
 
         for testCase in fixture.cases {
@@ -241,12 +241,12 @@ final class TasteContractGoldenTests: XCTestCase {
         }
 
         XCTAssertEqual(delays.count, 72)
-        XCTAssertEqual(delays[primaryIDs[0]] ?? -1, 0.44, accuracy: 0.0001)
-        XCTAssertEqual(delays[primaryIDs[1]] ?? -1, 0.516, accuracy: 0.0001)
+        XCTAssertEqual(delays[primaryIDs[0]] ?? -1, 0.18, accuracy: 0.0001)
+        XCTAssertEqual(delays[primaryIDs[1]] ?? -1, 0.24, accuracy: 0.0001)
         XCTAssertTrue(
             positions
                 .filter { !primaryIDs.contains($0.id) }
-                .allSatisfy { (delays[$0.id] ?? 0) >= 0.9 }
+                .allSatisfy { (delays[$0.id] ?? 0) >= 0.5 }
         )
     }
 
@@ -319,6 +319,28 @@ final class TasteContractGoldenTests: XCTestCase {
         )
     }
 
+    func testPreferenceEvidenceMatchesSharedCasesWithoutChangingDiningAnalysis() throws {
+        let fixture: PreferenceEvidenceGoldenFixture = try decodeFixture(named: "preference-intake")
+        XCTAssertEqual(fixture.evidenceCases.count, 15)
+        for testCase in fixture.evidenceCases {
+            let baseline = try SensoryAnalysisEngine.analyze(entries: [], userID: "fixture-user",
+                asOf: testCase.asOf.flatMap(PersonalTasteModelBuilder.date))
+            let result = PreferenceIntakeContractEngine.evidence(submissions: testCase.submissions, userID: "fixture-user",
+                asOf: testCase.asOf.flatMap(PersonalTasteModelBuilder.date), questions: fixture.questions)
+            XCTAssertEqual(result.submissionID, testCase.expected.submissionID, testCase.id)
+            XCTAssertEqual(result.answeredQuestionCount, testCase.expected.answeredQuestionCount, testCase.id)
+            XCTAssertEqual(result.excludedSubmissions, testCase.expected.excludedSubmissions, testCase.id)
+            XCTAssertEqual(result.records.map { PreferenceEvidenceGoldenFixture.Row(questionID: $0.response.questionID,
+                kind: $0.kind, state: $0.state, summary: $0.summary, selectedIDs: $0.response.selectedOptions.map(\.id)) },
+                testCase.expected.records, testCase.id)
+            var snapshot = try SensoryAnalysisEngine.analyze(entries: [], userID: "fixture-user",
+                asOf: testCase.asOf.flatMap(PersonalTasteModelBuilder.date), preferenceSubmissions: testCase.submissions)
+            XCTAssertEqual(snapshot.statedPreferences, result, testCase.id)
+            snapshot.statedPreferences = .empty
+            XCTAssertEqual(snapshot, baseline, testCase.id)
+        }
+    }
+
     private func decodeFixture<Fixture: Decodable>(named name: String) throws -> Fixture {
         let testBundle = Bundle(for: Self.self)
         let url = try XCTUnwrap(
@@ -328,6 +350,30 @@ final class TasteContractGoldenTests: XCTestCase {
                 ?? testBundle.url(forResource: name, withExtension: "json")
         )
         return try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
+    }
+}
+
+private struct PreferenceEvidenceGoldenFixture: Decodable {
+    let questions: [PreferenceIntakeQuestionContract]
+    let evidenceCases: [Case]
+    struct Case: Decodable {
+        let id: String
+        let submissions: [PreferenceIntakeSubmission]
+        let asOf: String?
+        let expected: Expected
+    }
+    struct Expected: Decodable {
+        let submissionID: String?
+        let answeredQuestionCount: Int
+        let records: [Row]
+        let excludedSubmissions: [PersonalTasteExcludedEvidence]
+    }
+    struct Row: Decodable, Equatable {
+        let questionID: String
+        let kind: String
+        let state: String
+        let summary: String
+        let selectedIDs: [String]
     }
 }
 

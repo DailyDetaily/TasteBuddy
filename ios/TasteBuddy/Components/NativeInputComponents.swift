@@ -40,6 +40,23 @@ struct TBTextInput: View {
         return isFocused ? TBColor.textSecondary : TBColor.border
     }
 
+    @ViewBuilder
+    private var focusedTextField: some View {
+        if let focus {
+            baseTextField.focused(focus)
+        } else {
+            baseTextField.focused($internalFocus)
+        }
+    }
+
+    private var baseTextField: some View {
+        TextField(
+            "",
+            text: $text,
+            prompt: Text(placeholder).foregroundStyle(TBColor.textHint)
+        )
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: TBSpacing.x8) {
             if let label {
@@ -49,15 +66,10 @@ struct TBTextInput: View {
                     .accessibilityHidden(true)
             }
 
-            TextField(
-                "",
-                text: $text,
-                prompt: Text(placeholder).foregroundStyle(TBColor.textHint)
-            )
+            focusedTextField
             .font(variant.font)
             .foregroundStyle(isEffectivelyEnabled ? TBColor.textPrimary : TBColor.textDisabled)
             .tint(TBColor.textPrimary)
-            .focused(focus ?? $internalFocus)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
             .keyboardType(keyboardType)
@@ -71,6 +83,7 @@ struct TBTextInput: View {
             .overlay {
                 RoundedRectangle(cornerRadius: variant.cornerRadius, style: .continuous)
                     .stroke(borderColor, lineWidth: 1)
+                    .allowsHitTesting(false)
             }
             .disabled(!isEnabled)
             .onSubmit(onSubmit)
@@ -101,6 +114,7 @@ struct TBSelectableChip: View {
     @Environment(\.isEnabled) private var environmentIsEnabled
 
     let title: String
+    var iconName: String? = nil
     var isSelected = false
     var variant: TBSelectableChipVariant = .dining
     var isEnabled = true
@@ -125,24 +139,34 @@ struct TBSelectableChip: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(ChipSize.medium.font)
-                .lineLimit(variant == .dining ? 1 : nil)
-                .fixedSize(horizontal: variant == .dining, vertical: true)
-                .foregroundStyle(style.foreground)
-                .padding(.horizontal, ChipSize.medium.horizontalPadding)
-                .padding(.vertical, variant == .correction ? 9 : 8)
-                .frame(minHeight: variant == .dining ? 36 : nil)
-                .background(style.background)
-                .clipShape(Capsule())
-                .overlay {
-                    Capsule().strokeBorder(style.border, lineWidth: 1)
+            HStack(spacing: 6) {
+                if let iconName {
+                    LucideIcon(
+                        systemName: iconName,
+                        size: 14,
+                        strokeWidth: 1.8
+                    )
                 }
+                Text(title)
+                    .font(ChipSize.medium.font)
+                    .lineLimit(variant == .dining ? 1 : nil)
+                    .fixedSize(horizontal: variant == .dining, vertical: true)
+            }
+            .foregroundStyle(style.foreground)
+            .padding(.horizontal, ChipSize.medium.horizontalPadding)
+            .padding(.vertical, variant == .correction ? 9 : 8)
+            .frame(minHeight: variant == .dining ? 36 : nil)
+            .background(style.background)
+            .clipShape(Capsule())
+            .overlay {
+                Capsule().strokeBorder(style.border, lineWidth: 1)
+            }
         }
         .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
         .accessibilityLabel(title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .tasteBloomMotion(.feedback, value: isSelected)
     }
 }
 

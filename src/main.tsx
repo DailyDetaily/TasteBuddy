@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { registerSW } from "virtual:pwa-register";
 
 import App from "./App.tsx";
+import ChatGPTConsentPage from "./pages/ChatGPTConsentPage";
 import "./index.css";
 
 async function resetLocalDevPwaState() {
@@ -57,7 +58,9 @@ async function bootstrap() {
     registerSW({ immediate: true });
   }
 
-  createRoot(document.getElementById("root")!).render(<App />);
+  createRoot(document.getElementById("root")!).render(
+    window.location.pathname === "/oauth/chatgpt" ? <ChatGPTConsentPage /> : <App />,
+  );
 }
 
 void bootstrap();

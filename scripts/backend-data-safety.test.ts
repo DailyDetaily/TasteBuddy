@@ -15,7 +15,7 @@ const cache = { zoneId: 'a'.repeat(32), apiToken: 'test-token', publicMediaBaseU
 
 await test('account deletion preserves Auth on storage/cache failure and retries both prefixes before success', async () => {
   const calls: string[] = [];
-  let failure: 'storage' | 'cache' | null = 'storage';
+  let failure: 'storage' | 'native' | 'cache' | null = 'storage';
   const dependencies = {
     async prepare() { calls.push('prepare'); return 0; },
     async deleteMediaPrefix(prefix: string) {
@@ -23,9 +23,14 @@ await test('account deletion preserves Auth on storage/cache failure and retries
       if (failure === 'storage' && prefix.startsWith('feedback-reflections')) throw new Error('storage unavailable');
     },
     async purgeMediaCache() { calls.push('purge'); if (failure === 'cache') throw new Error('cache unavailable'); },
+    async deleteNativePhotos() { calls.push('native'); if (failure === 'native') throw new Error('native storage unavailable'); },
     async deleteAuthUser() { calls.push('auth'); },
   };
   await assert.rejects(deleteAccountData(userId, dependencies), /storage unavailable/);
+  assert.equal(calls.includes('auth'), false);
+  calls.length = 0;
+  failure = 'native';
+  await assert.rejects(deleteAccountData(userId, dependencies), /native storage unavailable/);
   assert.equal(calls.includes('auth'), false);
   calls.length = 0;
   failure = 'cache';
@@ -34,12 +39,12 @@ await test('account deletion preserves Auth on storage/cache failure and retries
   calls.length = 0;
   failure = null;
   assert.deepEqual(await deleteAccountData(userId, dependencies), { deleted: true, pendingUploads: false });
-  assert.deepEqual(calls, ['prepare', `user-avatars/${userId}/`, `feedback-reflections/${userId}/`, 'purge', 'auth']);
+  assert.deepEqual(calls, ['prepare', `user-avatars/${userId}/`, `feedback-reflections/${userId}/`, 'native', 'purge', 'auth']);
 });
 
 await test('active uploads and invalid preparation never start destructive cleanup', async () => {
   const unexpected = async () => { throw new Error('cleanup must not start'); };
-  const dependencies = { deleteMediaPrefix: unexpected, purgeMediaCache: unexpected, deleteAuthUser: unexpected };
+  const dependencies = { deleteMediaPrefix: unexpected, deleteNativePhotos: unexpected, purgeMediaCache: unexpected, deleteAuthUser: unexpected };
   assert.deepEqual(await deleteAccountData(userId, { ...dependencies, prepare: async () => 1 }), { deleted: false, pendingUploads: true });
   await assert.rejects(deleteAccountData(userId, { ...dependencies, prepare: async () => null as unknown as number }), /Invalid account deletion state/);
   await assert.rejects(deleteAccountData(userId, { ...dependencies, prepare: async () => { throw new Error('database unavailable'); } }), /database unavailable/);
@@ -49,6 +54,7 @@ await test('failed Auth deletion remains an error after storage cleanup', async 
   await assert.rejects(deleteAccountData(userId, {
     prepare: async () => 0,
     deleteMediaPrefix: async () => {},
+    deleteNativePhotos: async () => {},
     purgeMediaCache: async () => {},
     deleteAuthUser: async () => { throw new Error('Auth unavailable'); },
   }), /Auth unavailable/);

@@ -899,67 +899,211 @@ enum StagedBottomSheetBackgroundMetrics {
     static let openScale: CGFloat = 0.9
     static let openOffsetY: CGFloat = 10
     static let openRadius: CGFloat = 20
-    static let shadowY: CGFloat = 20
-    static let shadowBlur: CGFloat = 60
-    static let shadowOpacity: CGFloat = 0.24
-    static let animationDuration: TimeInterval = 0.62
-    static let animation = Animation.timingCurve(
-        0.22,
-        1,
-        0.36,
-        1,
-        duration: animationDuration
-    )
+    static let shadowY: CGFloat = 0
+    static let shadowBlur: CGFloat = 0
+    static let shadowOpacity: CGFloat = 0
+    static let animationDuration = TasteBloomMotion.duration(.sheet, reduceMotion: false)
+}
+
+// 내부 레이아웃 크기는 고정하고 카드의 표시 레이어만 변환한다.
+struct StagedSheetScreen<Content: View>: UIViewControllerRepresentable {
+    let progress: CGFloat
+    let dimOpacity: CGFloat
+    let animates: Bool
+    let openOffsetY: CGFloat
+    @ViewBuilder var content: () -> Content
+
+    func makeUIViewController(context: Context) -> StagedSheetScreenController {
+        StagedSheetScreenController(rootView: AnyView(content().environment(\.self, context.environment)))
+    }
+
+    func updateUIViewController(_ controller: StagedSheetScreenController, context: Context) {
+        controller.hostingController.rootView = AnyView(content().environment(\.self, context.environment))
+        let reduceMotion = context.environment.accessibilityReduceMotion
+        controller.updatePresentation(
+            progress: reduceMotion ? 0 : progress,
+            dimOpacity: dimOpacity,
+            openOffsetY: openOffsetY,
+            animates: animates && !reduceMotion
+        )
+    }
+}
+
+@MainActor
+final class StagedSheetScreenController: UIViewController {
+    let hostingController: UIHostingController<AnyView>
+    private let canvas = UIView()
+    private let dimLayer = CALayer()
+    private var lastProgress: CGFloat?
+    private var lastDimOpacity: CGFloat = 0
+    private var lastOpenOffsetY: CGFloat = 0
+
+    init(rootView: AnyView) {
+        hostingController = UIHostingController(rootView: rootView)
+        // 변환된 위치로 안전영역을 다시 계산하지 않는다. 여백은 SwiftUI에서 한 번만 확보한다.
+        hostingController.safeAreaRegions = []
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .clear
+        canvas.backgroundColor = .clear
+        canvas.layer.anchorPoint = CGPoint(x: 0.5, y: 0)
+        canvas.layer.masksToBounds = true
+        canvas.layer.cornerCurve = .continuous
+        view.addSubview(canvas)
+        addChild(hostingController)
+        hostingController.view.backgroundColor = .clear
+        canvas.addSubview(hostingController.view)
+        hostingController.didMove(toParent: self)
+        dimLayer.backgroundColor = UIColor.black.cgColor
+        dimLayer.opacity = 0
+        canvas.layer.addSublayer(dimLayer)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        canvas.bounds = CGRect(origin: .zero, size: view.bounds.size)
+        canvas.layer.position = CGPoint(x: view.bounds.midX, y: view.bounds.minY)
+        hostingController.view.frame = canvas.bounds
+        dimLayer.frame = canvas.bounds
+        CATransaction.commit()
+    }
+
+    func updatePresentation(progress: CGFloat, dimOpacity: CGFloat, openOffsetY: CGFloat, animates: Bool) {
+        loadViewIfNeeded()
+        let progress = min(max(progress, 0), 1)
+        let dimOpacity = min(max(dimOpacity, 0), 1)
+        guard lastProgress != progress || lastDimOpacity != dimOpacity || lastOpenOffsetY != openOffsetY else { return }
+        let shouldAnimate = animates && lastProgress != nil && view.window != nil
+        lastProgress = progress
+        lastDimOpacity = dimOpacity
+        lastOpenOffsetY = openOffsetY
+
+        let scale = 1 - (1 - StagedBottomSheetBackgroundMetrics.openScale) * progress
+        let transform = CATransform3DScale(
+            CATransform3DMakeTranslation(0, openOffsetY * progress, 0), scale, scale, 1
+        )
+        animate(layer: canvas.layer, key: "transform", to: NSValue(caTransform3D: transform), enabled: shouldAnimate)
+        animate(layer: canvas.layer, key: "cornerRadius", to: StagedBottomSheetBackgroundMetrics.openRadius * progress, enabled: shouldAnimate)
+        animate(layer: dimLayer, key: "opacity", to: Float(dimOpacity), enabled: shouldAnimate)
+    }
+
+    private func animate(layer: CALayer, key: String, to value: Any, enabled: Bool) {
+        let previous = (layer.presentation() ?? layer).value(forKeyPath: key)
+        layer.removeAnimation(forKey: key)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        layer.setValue(value, forKeyPath: key)
+        CATransaction.commit()
+        guard enabled else { return }
+        let animation = TasteBloomMotion.layerAnimation(.sheet, keyPath: key)
+        animation.fromValue = previous
+        animation.toValue = value
+        layer.add(animation, forKey: key)
+    }
+}
+
+#Preview("배경 카드 · 상단 여백 유지") {
+    StagedSheetScreenPreview()
+}
+
+private struct StagedSheetScreenPreview: View {
+    @State private var progress: CGFloat = 0
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            Color.black.ignoresSafeArea()
+            StagedSheetScreen(progress: progress, dimOpacity: 0.3 * progress, animates: true, openOffsetY: 64) {
+                VStack(spacing: 0) {
+                    Color.clear.frame(height: 54)
+                    Text("Taste Buddy").font(.headline).frame(height: 52)
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            ForEach(0..<20) { index in
+                                Text("나의 취향 기록 \(index + 1)")
+                                    .frame(maxWidth: .infinity, minHeight: 72)
+                            }
+                        }
+                    }
+                }
+                .background(TBColor.page)
+            }
+            Button(progress == 0 ? "배경 카드 열기" : "배경 카드 닫기") {
+                progress = progress == 0 ? 1 : 0
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.bottom, 40)
+        }
+        .ignoresSafeArea()
+    }
 }
 
 struct StagedBottomSheetBackground: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let progress: CGFloat
     var dimOpacity: CGFloat = 0
     var animates = true
     var topOverflowInset: CGFloat = 0
+    var openOffsetY: CGFloat = StagedBottomSheetBackgroundMetrics.openOffsetY
 
     private var clampedProgress: CGFloat {
-        min(max(progress, 0), 1)
+        reduceMotion ? 0 : min(max(progress, 0), 1)
     }
 
     private var clampedDimOpacity: CGFloat {
         min(max(dimOpacity, 0), 1)
     }
 
+    @ViewBuilder
     func body(content: Content) -> some View {
         let scale = 1 - (1 - StagedBottomSheetBackgroundMetrics.openScale) * clampedProgress
-        let offsetY = StagedBottomSheetBackgroundMetrics.openOffsetY * clampedProgress
+        let offsetY = openOffsetY * clampedProgress
         let radius = StagedBottomSheetBackgroundMetrics.openRadius * clampedProgress
         let shadowY = StagedBottomSheetBackgroundMetrics.shadowY * clampedProgress
         let shadowBlur = StagedBottomSheetBackgroundMetrics.shadowBlur * clampedProgress
         let shadowOpacity = StagedBottomSheetBackgroundMetrics.shadowOpacity * clampedProgress
 
-        content
+        let clipped = content
             .overlay(Color.black.opacity(clampedDimOpacity))
             .clipShape(
                 TopOverflowRoundedRectangle(
                     cornerRadius: radius,
-                    topOverflowInset: topOverflowInset * (1 - clampedProgress)
+                    topOverflowInset: topOverflowInset
                 )
             )
-            .shadow(
-                color: Color.black.opacity(shadowOpacity),
-                radius: shadowBlur,
-                x: 0,
-                y: shadowY
-            )
-            .scaleEffect(scale, anchor: .top)
-            .offset(y: offsetY)
-            .animation(
-                animates ? StagedBottomSheetBackgroundMetrics.animation : nil,
-                value: clampedProgress
-            )
+
+        Group {
+            if shadowOpacity > 0.001 && shadowBlur > 0 {
+                clipped
+                    .shadow(
+                        color: Color.black.opacity(shadowOpacity),
+                        radius: shadowBlur,
+                        x: 0,
+                        y: shadowY
+                    )
+            } else {
+                clipped
+            }
+        }
+        .scaleEffect(scale, anchor: .top)
+        .offset(y: offsetY)
+        .animation(
+            animates ? TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion) : nil,
+            value: clampedProgress
+        )
     }
 }
 
 struct TopOverflowRoundedRectangle: Shape {
     var cornerRadius: CGFloat
     var topOverflowInset: CGFloat
+    var bottomOverflowInset: CGFloat = 0
 
     var animatableData: AnimatablePair<CGFloat, CGFloat> {
         get { AnimatablePair(cornerRadius, topOverflowInset) }
@@ -970,16 +1114,21 @@ struct TopOverflowRoundedRectangle: Shape {
     }
 
     func path(in rect: CGRect) -> Path {
-        // Reveal the status-bar overflow without moving the content or bottom tab bar.
-        let overflow = max(topOverflowInset, 0)
-        let bounds = CGRect(
-            x: rect.minX,
-            y: rect.minY - overflow,
-            width: rect.width,
-            height: rect.height + overflow
-        )
-        return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .path(in: bounds)
+        if cornerRadius <= 0.001 {
+            // Reveal the status-bar overflow without moving the content or bottom tab bar.
+            let overflow = max(topOverflowInset, 0)
+            let bounds = CGRect(
+                x: rect.minX,
+                y: rect.minY - overflow,
+                width: rect.width,
+                height: rect.height + overflow + max(bottomOverflowInset, 0)
+            )
+            return Path(bounds)
+        } else {
+            // Anchor corner rounding to the visible card boundary throughout the transition.
+            return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .path(in: rect)
+        }
     }
 }
 
