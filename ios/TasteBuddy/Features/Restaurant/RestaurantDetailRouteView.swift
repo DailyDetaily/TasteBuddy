@@ -65,7 +65,10 @@ struct RestaurantDetailRouteView: View {
                         index: highlightedDishContext.index
                     ),
                     onRecordDishMemory: {
-                        feedbackEntry = feedbackEntryForMenu(highlightedDishContext.dish.title)
+                        feedbackEntry = feedbackEntryForMenu(
+                            highlightedDishContext.dish.title,
+                            menuItemID: highlightedDishContext.dish.id
+                        )
                     },
                     onCompareLater: {
                         onBack()
@@ -82,7 +85,13 @@ struct RestaurantDetailRouteView: View {
                     onBookmarkTap: presentBookmarkSheet,
                     onVisitedTap: detail.memorableDishes.isEmpty && !isExternalPlaceDetail
                         ? nil
-                        : { feedbackEntry = feedbackEntryForMenu(detail.memorableDishes.first?.title ?? detail.name) },
+                        : {
+                            let dish = detail.memorableDishes.first
+                            feedbackEntry = feedbackEntryForMenu(
+                                dish?.title ?? detail.name,
+                                menuItemID: dish?.id
+                            )
+                        },
                     onSelectDish: { dish, _ in
                         navigate(.restaurantMenu(restaurantID: detail.id, menuID: dish.id))
                     },
@@ -116,12 +125,19 @@ struct RestaurantDetailRouteView: View {
         }
     }
 
-    private func feedbackEntryForMenu(_ menuTitle: String) -> DiningEntry {
+    private func feedbackEntryForMenu(
+        _ menuTitle: String,
+        menuItemID: String?
+    ) -> DiningEntry {
         DiningEntry(
             restaurant: detail.name,
+            restaurantID: detail.id,
             menu: menuTitle,
-            rating: 5,
-            note: "이 메뉴가 내 기준에서 어떻게 기억되는지 확인하기 위한 식후 피드백입니다."
+            menuItemID: menuItemID,
+            rating: 0,
+            note: "",
+            sensorySelections: [],
+            feedbackStatus: .captured
         )
     }
 
@@ -443,7 +459,7 @@ private struct RestaurantHeroNativeDetailCard: View {
                                     .foregroundStyle(TBColor.textSecondary)
                                     .contentShape(Rectangle())
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(TBTokenButtonStyle())
                                 .accessibilityLabel("먹어본 식당 피드백 남기기")
                             }
 
@@ -454,11 +470,13 @@ private struct RestaurantHeroNativeDetailCard: View {
                                     strokeWidth: TBIcon.Stroke.regular,
                                     filled: isBookmarked
                                 )
+                                .tasteBloomReplace(value: isBookmarked)
                                 .frame(width: 32, height: 32)
                                 .foregroundStyle(isBookmarked ? TBColor.textPrimary : TBColor.textSecondary)
                                 .contentShape(Rectangle())
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(TBTokenButtonStyle())
+                            .tasteBloomMotion(.feedback, value: isBookmarked)
                             .accessibilityLabel(isBookmarked ? "북마크 편집" : "북마크")
                         }
                     }
@@ -518,9 +536,9 @@ private struct RestaurantHeroNativeDetailCard: View {
                 }
 
                 HStack(spacing: 0) {
-                    RestaurantMetric(value: "\(detail.scores.personalMatchRate)%", label: "나와의 매칭률")
-                    RestaurantMetric(value: "\(detail.scores.palateFriendsAverageScore)점", label: "비슷한 미각 기준")
-                    RestaurantMetric(value: String(format: "%.1f / 5", detail.scores.overallScore), label: "전체 평판")
+                    RestaurantMetric(value: detail.scores.personalMatchRate.map { "\($0)%" } ?? "미계산", label: "나와의 매칭률")
+                    RestaurantMetric(value: detail.scores.palateFriendsAverageScore.map { "\($0)점" } ?? "미계산", label: "비슷한 미각 기준")
+                    RestaurantMetric(value: detail.scores.overallScore.map { String(format: "%.1f / 5", $0) } ?? "정보 없음", label: "전체 평판")
                 }
             }
         }
@@ -781,6 +799,7 @@ private struct RestaurantQuickInfoItem: Identifiable {
 }
 
 private struct RestaurantQuickInfoRow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let item: RestaurantQuickInfoItem
     let isExpanded: Bool
     let onCopy: (() -> Void)?
@@ -797,15 +816,17 @@ private struct RestaurantQuickInfoRow: View {
             .foregroundStyle(TBColor.iconMuted)
             .padding(.top, isExpanded ? 2 : 0)
 
-            Group {
+            ZStack(alignment: .topLeading) {
                 if isExpanded, let allValues = item.allValues {
                     VStack(alignment: .leading, spacing: 2) {
                         ForEach(allValues, id: \.self) { value in
                             Text(value)
                         }
                     }
+                    .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
                 } else {
                     Text(item.value)
+                        .transition(.opacity)
                 }
             }
             .font(TBFont.medium(11))
@@ -817,23 +838,26 @@ private struct RestaurantQuickInfoRow: View {
                 Button("복사", action: onCopy)
                     .font(TBFont.semibold(11))
                     .foregroundStyle(accentColor)
-                    .buttonStyle(.plain)
+                    .buttonStyle(TBTokenButtonStyle())
             }
 
             if let onToggleHours {
                 Button(action: onToggleHours) {
                     LucideIcon(
-                        isExpanded ? .chevronUp : .chevronDown,
+                        .chevronDown,
                         size: TBIcon.Size.small,
                         strokeWidth: TBIcon.Stroke.regular
                     )
+                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                    .tasteBloomMotion(.feedback, value: isExpanded)
                     .frame(width: 24, height: 24)
                     .foregroundStyle(TBColor.iconMuted)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TBTokenButtonStyle())
                 .accessibilityLabel(isExpanded ? "전체 영업시간 접기" : "전체 영업시간 펼치기")
             }
         }
+        .tasteBloomMotion(.content, value: isExpanded)
     }
 }
 
@@ -901,6 +925,7 @@ private struct RestaurantMetric: View {
 }
 
 private struct RestaurantMemorableDishNativeCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let dishes: [RestaurantSummary.Dish]
     let onSelectDish: (RestaurantSummary.Dish, Int) -> Void
     @State private var isExpanded = false
@@ -931,7 +956,7 @@ private struct RestaurantMemorableDishNativeCard: View {
                             direction: isExpanded ? .up : .down
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(TBTokenButtonStyle())
                 }
             }
 
@@ -941,6 +966,7 @@ private struct RestaurantMemorableDishNativeCard: View {
                         RestaurantMemorableDishRow(dish: dish) {
                             onSelectDish(dish, index)
                         }
+                        .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
 
                         if index < visibleDishes.count - 1 {
                             Rectangle()
@@ -962,12 +988,13 @@ private struct RestaurantMemorableDishNativeCard: View {
                             .frame(height: 12)
                             .foregroundStyle(TBColor.iconMuted)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(TBTokenButtonStyle())
                         .accessibilityLabel(isExpanded ? "메뉴 접기" : "전체 메뉴 보기")
                     }
                 }
             }
         }
+        .tasteBloomMotion(.content, value: isExpanded)
     }
 }
 
@@ -1125,7 +1152,7 @@ private struct RestaurantMenuDetailNativeView: View {
         [
             ("내 기준 Fit", menu.fitBand),
             ("근거 신뢰도", menu.confidenceLabel),
-            ("예상되는 감각 흐름", menu.expectedTasteFlow),
+            ("메뉴에 기록된 감각", menu.expectedTasteFlow),
             ("주의해서 볼 지점", menu.mainRisk)
         ]
     }
@@ -1172,7 +1199,7 @@ private struct RestaurantMenuDetailNativeView: View {
                     }
                 }
 
-                TBPageSection(title: "메뉴 Fit 요약", titleSize: .medium) {
+                TBPageSection(title: "메뉴 정보와 비교 상태", titleSize: .medium) {
                     LazyVGrid(
                         columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
                         spacing: 12
@@ -1193,7 +1220,7 @@ private struct RestaurantMenuDetailNativeView: View {
                     }
                 }
 
-                TBPageSection(title: "관련 미각 축", titleSize: .medium) {
+                TBPageSection(title: "메뉴에 기록된 감각", titleSize: .medium) {
                     SectionCard {
                         VStack(alignment: .leading, spacing: 14) {
                             TBFlowLayout(spacing: 8) {
@@ -1208,7 +1235,7 @@ private struct RestaurantMenuDetailNativeView: View {
                                 }
                             }
 
-                            Text("이 축들은 점수표가 아니라, 메뉴가 내 기준에서 어떤 방식으로 기억될지 읽기 위한 단서예요.")
+                            Text("메뉴 정보에 포함된 표현이에요. 나의 감각 경험이나 호감으로 해석하지 않아요.")
                                 .font(TBFont.regular(13))
                                 .foregroundStyle(TBColor.textMuted)
                                 .lineSpacing(4)
@@ -1537,26 +1564,13 @@ struct RestaurantInfoSuggestionNativeSheet: View {
 
             TBFlowLayout(spacing: 8) {
                 ForEach(infoRows) { row in
-                    Button {
+                    TBSelectableChip(
+                        title: row.id.suggestionLabel,
+                        isSelected: selectedRowIDs.contains(row.id),
+                        variant: .correction
+                    ) {
                         toggle(row)
-                    } label: {
-                        Text(row.id.suggestionLabel)
-                            .font(TBFont.semibold(12))
-                            .foregroundStyle(selectedRowIDs.contains(row.id) ? TBColor.textInverse : TBColor.textMuted)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 9)
-                            .background(selectedRowIDs.contains(row.id) ? TBColor.textPrimary : TBColor.surface)
-                            .clipShape(Capsule())
-                            .overlay {
-                                Capsule()
-                                    .stroke(
-                                        selectedRowIDs.contains(row.id)
-                                            ? TBColor.textPrimary
-                                            : TBColor.borderSubtle
-                                    )
-                            }
                     }
-                    .buttonStyle(.plain)
                 }
             }
 

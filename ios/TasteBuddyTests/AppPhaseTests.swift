@@ -44,7 +44,7 @@ final class AppPhaseTests: XCTestCase {
         )
     }
 
-    func testLaunchFlowTemporarilySkipsPreferenceIntake() {
+    func testLaunchFlowIncludesPreferenceIntakeBeforeCalibration() {
         XCTAssertEqual(
             AppPhase.resolve(
                 hasCompletedSplash: true,
@@ -65,7 +65,7 @@ final class AppPhaseTests: XCTestCase {
                 hasPreferenceProfile: false,
                 hasTasteProfile: false
             ),
-            .calibration
+            .preferenceIntake
         )
         XCTAssertEqual(
             AppPhase.resolve(
@@ -91,7 +91,7 @@ final class AppPhaseTests: XCTestCase {
         )
     }
 
-    func testPreferenceIntakeCanBeRestoredWithFeatureFlag() {
+    func testExistingTasteProfileDoesNotRepeatPreferenceOnboarding() {
         XCTAssertEqual(
             AppPhase.resolve(
                 hasCompletedSplash: true,
@@ -99,10 +99,10 @@ final class AppPhaseTests: XCTestCase {
                 backendSessionStatus: .signedOut,
                 hasSeenOnboarding: true,
                 hasPreferenceProfile: false,
-                hasTasteProfile: false,
+                hasTasteProfile: true,
                 isPreferenceIntakeEnabled: true
             ),
-            .preferenceIntake
+            .main
         )
     }
 }

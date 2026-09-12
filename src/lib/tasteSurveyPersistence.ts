@@ -1,4 +1,5 @@
 import { TASTE_SURVEY_INSTRUMENT } from '../constants/tasteSurveyConfig';
+import { createTasteSurveySubmission, normalizeTasteSurveyResponses, readTasteSurveySubmission, snapshotFromTasteSurveySubmission } from './tasteSurveyEvidence';
 import type {
   TasteSurveyCompatibleResult,
   TasteSurveyRespondentContext,
@@ -73,14 +74,29 @@ export function buildTasteSurveyMeasurementRawPayload({
   respondentContext: TasteSurveyRespondentContext;
   responses: readonly TasteSurveyResponse[];
 }) {
+  const preserved = readTasteSurveySubmission(compatibleResult.snapshot.surveySubmission);
+  const normalizedResponses = preserved?.responses ?? normalizeTasteSurveyResponses(responses);
+  const context = preserved?.respondentContext ?? sanitizeTasteSurveyRespondentContext(respondentContext);
+  const submission = preserved ?? createTasteSurveySubmission(
+    normalizedResponses,
+    compatibleResult.snapshot.measuredAt,
+    sanitizeTasteSurveyRespondentContext(respondentContext),
+  );
   return {
-    derived_snapshot_source: compatibleResult.snapshot.source ?? 'broad-starter',
+    derived_snapshot_source: 'recalled-intensity',
     instrument_id: TASTE_SURVEY_INSTRUMENT.id,
     instrument_version: TASTE_SURVEY_INSTRUMENT.version,
     measurement_flow: 'taste_survey',
-    respondent_context: serializeTasteSurveyRespondentContext(respondentContext),
-    response_count: responses.length,
-    survey_responses: responses,
-    uncertain_response_count: responses.filter((response) => response.uncertain).length,
+    respondent_context: serializeTasteSurveyRespondentContext(context),
+    response_count: normalizedResponses.length,
+    survey_responses: normalizedResponses,
+    survey_submission: submission,
+    uncertain_response_count: normalizedResponses.filter((response) => response.uncertain).length,
   };
+}
+
+export function restoreTasteSurveyMeasurementSnapshot(rawPayload: unknown) {
+  if (!rawPayload || typeof rawPayload !== 'object' || Array.isArray(rawPayload)) return null;
+  const submission = readTasteSurveySubmission((rawPayload as Record<string, unknown>).survey_submission);
+  return submission ? snapshotFromTasteSurveySubmission(submission) : null;
 }

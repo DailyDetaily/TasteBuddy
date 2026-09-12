@@ -1,0 +1,18 @@
+{
+  "updatedAt": "2026-09-07",
+  "scope": "맛을 느끼는 경향과 기준 음식 회상, 미각변화 전체 화면 연결만 갱신. AppRouteDestinations.swift는 TasteChangeFocusView와 TasteTrendChart 범위만 반영. 최초 ios-source-baseline.json과 다른 작업의 기준은 유지. 빈 미각변화 카드의 중립 박스와 그래프 표시를 반영. SystemParityComponents.swift는 TastePointArrowBox와 TasteChangeEmptySummary 범위만 기록.",
+  "contractVersion": "taste-perception/1",
+  "sources": {
+    "ios/TasteBuddy/Domain/Models/TastePerception.swift": "a1c8e9aa653ddc8a672022bcc7847d403a84e6bb93732ac792a0a0bd2c445ee6",
+    "ios/TasteBuddy/Domain/Models/SensoryAnalysisModels.swift": "fa8145e85377ba6944879ae604128a07e9d2aa6135c4f2e02a17ece30a1e3283",
+    "ios/TasteBuddy/Domain/UseCases/SensoryAnalysisEngine.swift": "f5a5ba76a4605614f725a549fec70966bcae3ac5a53a7a60504198ec589d6136",
+    "ios/TasteBuddy/Features/Analysis/TastePerceptionCards.swift": "fda640cc580126247b85be15b6270f61d1ec5812b7e2d80900a960e1d60443dc",
+    "ios/TasteBuddy/Features/Analysis/AnalysisView.swift": "d230d1378a39d4fcd29cc0f87a41a00ced149c38345a77b1404cf5d9a1868039",
+    "ios/TasteBuddy/Components/TasteRadarView.swift": "7db4e0b4ec9fb88cd78aa7138658d9f879611a27c034f15a818291241056ef71",
+    "ios/TasteBuddy/Resources/TBA/taste-perception-fixtures.json": "df4a6471b396e0e2717e7921d96cd30ebebbc3c778d09351e689b6eb7dc9974d",
+    "ios/TasteBuddy/Components/Shell/AppRouteDestinations.swift": "a089a1c22d055c2bcb1731a3af6b48178fb440082a107fc4aab737d9aa7f674f"
+  },
+  "scopedSources": {
+    "ios/TasteBuddy/Components/SystemParityComponents.swift: TastePointArrowBox + TasteChangeEmptySummary": "afbb1636bec2d35e6ede77f7b2612af2d92f64d93e80f3eead1dcff96b86a217"
+  }
+}

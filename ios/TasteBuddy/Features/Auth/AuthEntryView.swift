@@ -770,38 +770,16 @@ private struct AuthEntryForm: View {
     }
 
     private var emailField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("이메일")
-                .font(TBFont.semibold(12))
-                .foregroundStyle(TBColor.textMuted)
-
-            ZStack(alignment: .leading) {
-                if model.email.isEmpty {
-                    Text("이메일을 입력해주세요")
-                        .font(TBFont.regular(14))
-                        .foregroundStyle(TBColor.textHint)
-                        .padding(.horizontal, 12)
-                        .allowsHitTesting(false)
-                }
-
-                TextField("", text: $model.email)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .keyboardType(.emailAddress)
-                    .textContentType(.emailAddress)
-                    .font(TBFont.regular(14))
-                    .foregroundStyle(TBColor.textPrimary)
-                    .padding(.horizontal, 12)
-            }
-            .frame(height: 48)
-            .background(TBColor.surface)
-            .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-                    .stroke(TBColor.border, lineWidth: 1)
-            }
-            .disabled(model.isSubmitting)
-        }
+        TBTextInput(
+            text: $model.email,
+            placeholder: "이메일을 입력해주세요",
+            label: "이메일",
+            variant: .auth,
+            isEnabled: !model.isSubmitting,
+            keyboardType: .emailAddress,
+            textContentType: .emailAddress,
+            submitLabel: .return
+        )
     }
 
     private var codeStep: some View {

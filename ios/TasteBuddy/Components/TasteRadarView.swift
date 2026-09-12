@@ -85,69 +85,19 @@ enum TasteRadarContract {
     }
 
     static func animationProgress(_ progress: CGFloat) -> CGFloat {
-        let clampedProgress = min(max(progress, 0), 1)
-        guard clampedProgress > 0, clampedProgress < 1 else {
-            return clampedProgress
-        }
-
-        let x1: CGFloat = 0.3
-        let y1: CGFloat = 0
-        let x2: CGFloat = 0.1
-        let y2: CGFloat = 1
-        let cx = 3 * x1
-        let bx = 3 * (x2 - x1) - cx
-        let ax = 1 - cx - bx
-        let cy = 3 * y1
-        let by = 3 * (y2 - y1) - cy
-        let ay = 1 - cy - by
-        let sampleX: (CGFloat) -> CGFloat = { t in
-            ((ax * t + bx) * t + cx) * t
-        }
-        let sampleY: (CGFloat) -> CGFloat = { t in
-            ((ay * t + by) * t + cy) * t
-        }
-        let derivativeX: (CGFloat) -> CGFloat = { t in
-            (3 * ax * t + 2 * bx) * t + cx
-        }
-
-        var time = clampedProgress
-        for _ in 0..<5 {
-            let currentX = sampleX(time) - clampedProgress
-            let slope = derivativeX(time)
-            guard abs(currentX) >= 0.0001, abs(slope) >= 0.000001 else {
-                break
-            }
-            time -= currentX / slope
-        }
-
-        var lowerBound: CGFloat = 0
-        var upperBound: CGFloat = 1
-        time = min(max(time, 0), 1)
-        for _ in 0..<8 {
-            let currentX = sampleX(time)
-            guard abs(currentX - clampedProgress) >= 0.00001 else {
-                break
-            }
-            if currentX > clampedProgress {
-                upperBound = time
-            } else {
-                lowerBound = time
-            }
-            time = (lowerBound + upperBound) / 2
-        }
-
-        return sampleY(time)
+        // 그래프는 실제 기록값을 넘지 않는다. 끝의 텐션은 UI 표면에만 적용한다.
+        min(CGFloat(TasteBloomMotion.progress(Double(progress), role: .content)), 1)
     }
+
 }
 
 /// SwiftUI-native counterpart of the React `HexRadarChart.tsx` component.
 struct HexRadarChart: View {
     private let entries: [RadarTasteEntry]
+    private var reportedValues: [TasteAxis: Double]? = nil
+    private var referenceValues: [TasteAxis: Double] = [:]
+    private var reportedMaximum: Double = 4
     var shouldAnimate = true
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var animationStart = Date.distantPast
-    @State private var isAnimating = false
 
     init(myTasteData: [RadarTasteEntry], shouldAnimate: Bool = true) {
         self.entries = TasteRadarContract.normalizedEntries(myTasteData)
@@ -156,6 +106,16 @@ struct HexRadarChart: View {
 
     init(entries: [RadarTasteEntry], shouldAnimate: Bool = true) {
         self.init(myTasteData: entries, shouldAnimate: shouldAnimate)
+    }
+
+    init(reportedValues: [TasteAxis: Double], maximum: Double, referenceValues: [TasteAxis: Double] = [:]) {
+        self.entries = TasteAxis.allCases.map { axis in
+            let value = reportedValues[axis].flatMap { $0.isFinite && $0 >= 0 && $0 <= maximum ? $0 : nil } ?? 0
+            return RadarTasteEntry(axis: axis, score: maximum > 0 ? Int(value / maximum * 100) : 0, averageScore: 0)
+        }
+        self.referenceValues = referenceValues.filter { $0.value.isFinite && $0.value >= 0 && $0.value <= maximum }
+        self.reportedValues = reportedValues.filter { $0.value.isFinite && $0.value >= 0 && $0.value <= maximum }
+        self.reportedMaximum = maximum
     }
 
     init(profile: TasteProfile, shouldAnimate: Bool = true) {
@@ -168,18 +128,8 @@ struct HexRadarChart: View {
     }
 
     var body: some View {
-        TimelineView(
-            .animation(minimumInterval: 1 / 60, paused: !isAnimating)
-        ) { timeline in
-            Canvas(opaque: false, colorMode: .nonLinear, rendersAsynchronously: false) {
-                context,
-                size in
-                drawChart(
-                    context: &context,
-                    size: size,
-                    profileProgress: animationProgress(at: timeline.date)
-                )
-            }
+        Canvas(opaque: false, colorMode: .nonLinear, rendersAsynchronously: false) { context, size in
+            drawChart(context: &context, size: size, profileProgress: 1)
         }
         .aspectRatio(
             TasteRadarContract.canvasSize.width / TasteRadarContract.canvasSize.height,
@@ -188,37 +138,18 @@ struct HexRadarChart: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("여섯 가지 미각 축을 보여주는 미각 반응 차트")
         .accessibilityValue(accessibilitySummary)
-        .onAppear(perform: restartAnimation)
-        .onChange(of: entries) {
-            restartAnimation()
-        }
+        .tasteBloomChartReveal(from: .center, enabled: shouldAnimate)
     }
 
     private var accessibilitySummary: String {
-        entries
+        if let reportedValues {
+            return TasteAxis.allCases.map { axis in
+                reportedValues[axis].map { "\(axis.label) 강도 \($0), \(reportedMaximum)단계 척도" } ?? "\(axis.label) 기록 없음"
+            }.joined(separator: ", ")
+        }
+        return entries
             .map { "\($0.axis.label) \($0.score)점, 기준 \($0.averageScore)점" }
             .joined(separator: ", ")
-    }
-
-    private func restartAnimation() {
-        guard shouldAnimate, !reduceMotion else {
-            isAnimating = false
-            return
-        }
-
-        animationStart = .now
-        isAnimating = true
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1))
-            isAnimating = false
-        }
-    }
-
-    private func animationProgress(at date: Date) -> CGFloat {
-        guard shouldAnimate, !reduceMotion else { return 1 }
-        guard isAnimating else { return 1 }
-        let rawProgress = min(max(date.timeIntervalSince(animationStart), 0), 1)
-        return TasteRadarContract.animationProgress(CGFloat(rawProgress))
     }
 
     private func drawChart(
@@ -253,17 +184,14 @@ struct HexRadarChart: View {
             )
         }
 
-        let averagePoints = entries.enumerated().map { index, entry in
-            geometry.point(index: index, value: CGFloat(entry.averageScore) / 100)
+        if reportedValues == nil || referenceValues.count == TasteAxis.allCases.count {
+            let averagePoints = entries.enumerated().map { index, entry in
+                geometry.point(index: index, value: reportedValues == nil ? CGFloat(entry.averageScore) / 100
+                    : CGFloat(referenceValues[entry.axis] ?? 0) / CGFloat(reportedMaximum))
+            }
+            context.stroke(RadarGeometry.roundedClosedPath(points: averagePoints, cornerRadius: geometry.scaled(8)),
+                           with: .color(Color(hex: 0xD0D0D0)), lineWidth: geometry.scaled(1.5))
         }
-        context.stroke(
-            RadarGeometry.roundedClosedPath(
-                points: averagePoints,
-                cornerRadius: geometry.scaled(8)
-            ),
-            with: .color(Color(hex: 0xD0D0D0)),
-            lineWidth: geometry.scaled(1.5)
-        )
 
         let profilePoints = entries.enumerated().map { index, entry in
             geometry.point(
@@ -300,7 +228,15 @@ struct HexRadarChart: View {
             )
         }
 
-        for (index, nodePoint) in nodePoints.enumerated() {
+        // 표시 최소 길이만 적용한다. 미응답을 강도 값으로 저장하거나 계산에 넣지 않는다.
+        let displayedNodePoints = nodePoints.enumerated().map { index, point in
+            guard reportedValues != nil else { return point }
+            let minimum = geometry.scaled(TasteRadarContract.centerMaskRadius + TasteRadarContract.nodeRadius)
+            return hypot(point.x - geometry.center.x, point.y - geometry.center.y) < minimum
+                ? geometry.point(index: index, radius: TasteRadarContract.centerMaskRadius + TasteRadarContract.nodeRadius) : point
+        }
+
+        for (index, nodePoint) in displayedNodePoints.enumerated() {
             var spoke = Path()
             spoke.move(to: geometry.center)
             spoke.addLine(to: nodePoint)
@@ -323,7 +259,7 @@ struct HexRadarChart: View {
         )
 
         let segments = RadarGeometry.profileSegments(
-            centers: nodePoints,
+            centers: displayedNodePoints,
             radius: geometry.scaled(TasteRadarContract.profileOutlineRadius),
             fallbackPoints: outerPoints,
             center: geometry.center
@@ -348,7 +284,7 @@ struct HexRadarChart: View {
             )
         }
 
-        for (index, point) in nodePoints.enumerated() {
+        for (index, point) in displayedNodePoints.enumerated() {
             let radius = geometry.scaled(TasteRadarContract.nodeRadius)
             context.fill(
                 Path(
@@ -397,6 +333,10 @@ struct TasteRadarView: View {
 
     init(profile: TasteProfile, shouldAnimate: Bool = true) {
         chart = HexRadarChart(profile: profile, shouldAnimate: shouldAnimate)
+    }
+
+    init(reportedValues: [TasteAxis: Double], maximum: Double, referenceValues: [TasteAxis: Double] = [:]) {
+        chart = HexRadarChart(reportedValues: reportedValues, maximum: maximum, referenceValues: referenceValues)
     }
 
     var body: some View {

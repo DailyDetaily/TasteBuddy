@@ -27,6 +27,8 @@ enum AppPhase: Equatable {
             return .onboarding
         }
 
+        if hasTasteProfile { return .main }
+
         guard !isPreferenceIntakeEnabled || hasPreferenceProfile else {
             return .preferenceIntake
         }
@@ -40,5 +42,5 @@ enum AppPhase: Equatable {
 }
 
 enum AppFlowFeatures {
-    static let isPreferenceIntakeEnabled = false
+    static let isPreferenceIntakeEnabled = true
 }

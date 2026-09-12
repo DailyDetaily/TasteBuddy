@@ -8,16 +8,20 @@
 
 React 컴포넌트를 SwiftUI로 옮기는 순서와 실제 TSX 사용 그래프는 [`REACT_COMPONENT_PORTING_REGISTER.md`](./REACT_COMPONENT_PORTING_REGISTER.md)를 기준으로 관리한다. 화면 구현은 가능한 한 이 등록표의 컴포넌트를 먼저 이식하고, 그 컴포넌트들로 화면을 조립하는 방식으로 진행한다.
 
+현재 네이티브 토큰·글자 역할·컴포넌트 선택·시트 치수·상태 계약의 진입점은 [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)다. 아래 Phase별 이식 기록과 reference screenshot은 당시의 근거를 보존한 것이며, 현재 구현에 명시적으로 반영된 변경보다 우선하지 않는다.
+
 ## 1. 재구현 원칙
 
 ### 1.1 제품 원칙
 
-- Taste Buddy는 일반 예약 앱이 아니라 premium dining personalization 서비스다.
-- raw taste data보다 해석과 다음 행동을 먼저 보여준다.
-- 핵심 가치는 사용자의 취향을 셰프가 활용할 수 있는 언어로 번역하는 것이다.
+- Taste Buddy의 최우선 가치는 개인 취향 이해와 다양한 해석·인사이트 제공이다.
+- raw taste data보다 취향의 의미·조건·예외를 먼저 보여준다. 정제한 근거는 여러 출력에 재사용하고 출처와 원래 의미를 보존한다.
+- 추후 비슷한 입맛 그룹을 연결하고, 그 그룹의 추천·평가에 기반한 식당·메뉴 추천을 추가한다.
 - 프로필은 완료 여부가 아니라 점진적으로 높아지는 confidence로 표현한다.
 - 하드웨어는 optional precision layer다.
 - 셰프 가이드는 명령이 아니라 respectful하고 operationally realistic한 참고 정보여야 한다.
+
+이 제품 우선순위는 2026-09-06 기준이다. 아래 이식 단계·구현 범위·참조 화면은 기술적 이식 기록이며 제품 가치의 우선순위를 대신하지 않는다. 현재 네이티브에서 제외한 예약·Tastick 기능을 다시 노출하라는 지시가 아니다.
 
 ### 1.2 구현 원칙
 
@@ -146,7 +150,7 @@ intro
 - 하단 탭 순서는 `홈`, `나의 입맛`, `다이닝`, `프로필`이다.
 - 검색, 댓글 focus, 레스토랑 상세, 저장 목록과 같은 집중 화면에서는 메인 chrome을 숨긴다.
 - sheet나 drawer가 열릴 때 배경 화면은 단순 정지가 아니라 축소·이동·모서리·그림자 표현을 사용한다.
-- safe area를 포함한 web 기준 상단 높이는 56pt, 하단 탭 최소 높이는 60pt에 대응한다.
+- web 기준 상단 높이는 56pt, 하단 탭 최소 높이는 60pt에 대응한다. 현재 native `TBSize.topAppBarHeight` 32pt는 내용 행이고 위·아래 8pt padding을 더한 바 자체는 48pt다. 상태 영역과 safe area는 셸이 별도로 반영한다.
 
 현재 [`TasteBuddy/Features/Main/MainTabView.swift`](./TasteBuddy/Features/Main/MainTabView.swift)의 기본 `TabView`는 임시 구현이다. 최종 구현은 웹의 정보 위계와 action 위치를 보존하는 custom shell이어야 한다.
 
@@ -533,7 +537,7 @@ backend adapter는 기능 구현 마지막에 한꺼번에 추가하지 않는�
 - card radius: 20pt
 - control radius: 10pt
 - 기본 button 높이: 48pt
-- top app bar: 56pt
+- top app bar: web 기준 56pt; 현재 native 내용 행 32pt + 위·아래 8pt, safe area 별도
 - bottom tab bar: 최소 60pt
 - 추천·taste tint card: 132 x 132pt
 
@@ -729,7 +733,12 @@ backend adapter는 기능 구현 마지막에 한꺼번에 추가하지 않는�
 - 최근 검색 persistence와 검색 그룹 필터링은 unit test로 검증됐다.
 - React `SearchOverlayShell.tsx`를 native `SearchOverlayShell`로 이식해 44pt search field, 44pt search action, 20pt horizontal padding, 12pt header gap, clear button, cancel action, body scroll padding을 contract test로 고정했다.
 - React `CompactCard.tsx`를 native `CompactCard`로 이식해 20pt radius, 12pt padding/gap, 40pt media slot, 32pt action button, 24pt action icon을 고정했다. Home search results는 더 이상 임시 `SectionCard` row가 아니라 `CompactCard` media/content/actions slot으로 렌더하며, 기록 추가와 bookmark action을 React 구조처럼 별도 action slot으로 노출한다.
-- React system component batch를 native `SystemCoreComponents.swift`로 이식했다. 이번 배치는 `SectionTitle`, `TokenBox`, `ImageBox`, `ChefAvatar`, `StatusChip`, `EmptyState`, `ActionOverlayCard`, `BottomSheetShell`, `BottomSheetCloseButton`, `BottomSheetIconButton`을 포함하며, React TSX/CSS의 32/40/48pt media box, 8pt image radius, 6pt status chip radius, 48x24pt empty-state padding, 320pt overlay card, 95vh bottom sheet shell, 40pt header slot을 contract test로 고정했다.
+- React system component batch를 native `SystemCoreComponents.swift`로 이식했다. 이번 배치는 `SectionTitle`, `TokenBox`, `ImageBox`, `ChefAvatar`, `StatusChip`, `EmptyState`, `ActionOverlayCard`, `BottomSheetShell`, `BottomSheetCloseButton`, `BottomSheetIconButton`을 포함한다. 32/40/48pt media box, 8pt image radius, 6pt status chip radius, 48×24pt empty-state padding, 320pt overlay card를 유지한다. 초기 이식의 95vh·40pt header slot 기록은 현재 계약이 아니다. 현재 fixed stage는 `screenHeight × 0.98 − safeAreaTop − 12`, grabber는 36×5pt(위 5pt), header slot과 icon button은 32pt다. auto stage는 용도별 최대 비율을 받는다.
+- `TBTextInput`과 `TBSelectableChip`이 다이닝·인증 입력의 실제 binding, focus, helper/error, disabled, 선택 접근성을 공유한다. 기존 44pt 다이닝과 48pt 인증 높이, correction 시각 변형은 variant로 보존한다.
+- `TBWrapLayout`과 `TBOverflowTagRow`가 자연스러운 칩 줄바꿈과 실제 `+N` 폭을 포함한 태그 넘침 계산을 공유한다. Home/Dining의 기존 태그 순서와 칩 크기는 호출부가 유지한다.
+- `TBFlowLoadingState`와 `TBFlowRetryState`가 Calibration과 Preference Intake의 로딩·오류 레이아웃을 공유한다. 화면 모델이 실제 retry와 문구를 계속 소유한다.
+- `TBToastPresenter`는 `ToastSurface`의 외형과 분리해 교체·취소·만료를 관리한다. 복사·되돌리기는 기존 3.5초, 북마크 저장 후 시트 닫기는 기존 0.7초 정책을 유지한다. 화면이 문구, 삭제 데이터, 복원과 닫기 동작을 소유한다.
+- `NativeProductComponentCatalog`는 Swift 타입·소스 파일을 제품 사용, 시각 참고, 이식 참고, 현재 범위 밖으로 분리한다. 기존 React 이식 인벤토리의 고정 수치는 별도 역사 계약으로 유지한다. `--native-design-states-preview`는 실제 입력·선택·오류·비활성·로딩·재시도·토스트와 글자 확대 fixture를 별도로 확인한다.
 - 기존 `SearchEmptyState` 임시 구현은 제거하고 Home search no-result state가 공용 `EmptyState`를 사용하도록 연결했다. 기존 `TBFlowStepCTA`, `TBSelectionCard`, `TBStepIndicator`도 React metrics enum과 unit test를 추가해 현재 구현 범위를 명확히 했다.
 - React `/design-system` 전체 인벤토리를 native `DesignSystemFullComponents.swift`와 `NativeDesignSystemInventory`로 확장했다. 이 배치는 design-system architecture group의 59개 컴포넌트 이름, `filePreviewRegistry.tsx`의 52개 파일 프리뷰, `componentStyleSpecs.ts`의 30개 style spec, `UNUSED_UI_PRIMITIVES`의 20개 generic primitive를 Swift 테스트로 고정한다.
 - `TBTheme.swift`는 `designTokens.ts`/`design-system.css`의 색상, 타이포그래피, spacing, radius, icon, shadow, motion, layout, data-viz, taste-loop 계열 토큰을 native 상수로 확장했다. 제품 UI의 18pt clamp는 기존 `TBFont`에 유지하면서 React의 20/22/24/28 token도 18pt로 mirror한다.
@@ -856,7 +865,7 @@ backend adapter는 기능 구현 마지막에 한꺼번에 추가하지 않는�
 현재 상태:
 
 - React `AuthEntryScreen.tsx`의 `AuthEntryForm`, `src/components/system/BottomSheetShell.tsx`, `App.tsx`의 AuthEntry sheet usage를 기준으로 native `AuthEntrySheet`/`AuthEntryModel`을 추가했다. 이메일 입력, 6자리 OTP code step, message success/error surface, `옵션보기` action overlay, resend, cancel confirmation, dev bypass, sheet footer CTA labels를 SwiftUI로 재구현했다.
-- React AuthEntry bottom sheet의 `h-auto max-h-[72vh]` email step과 `95vh - safe-area-top - 12px` code step stage를 native `BottomSheetStageMode`와 AuthEntry 전용 presentation detent로 맞췄다.
+- React AuthEntry bottom sheet의 `h-auto max-h-[72vh]` email step을 native `.auto(maxHeightRatio: 0.72)`로 맞췄다. code step은 현재 공용 fixed stage 공식 `screenHeight × 0.98 − safeAreaTop − 12`를 사용한다. 과거 95vh 기록은 현재 구현 값이 아니다.
 - React `App.tsx`의 email submit/code submit 상태 전환을 native model에 반영했다. anonymous user의 `start-with-email` 요청이 missing-account 계열 오류로 실패하면 `link-current-profile` intent로 전환한 뒤 code step으로 넘어간다.
 - React `supabase.ts`의 `sendSupabaseEmailOtp`/`verifySupabaseEmailOtp` contract는 `BackendAuthRepository`를 통해 호출되며, SwiftUI view는 Supabase SDK를 직접 import하지 않는다.
 - Profile summary의 account-link CTA가 native auth entry sheet를 연다. `--auth-entry-preview` launch argument와 `Reference/Native/60-auth-entry-sheet-email-parity-368x800.jpg`, `Reference/Native/61-auth-entry-sheet-code-parity-368x800.jpg`로 simulator 확인을 남겼다.

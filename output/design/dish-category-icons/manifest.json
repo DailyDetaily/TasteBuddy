@@ -1,0 +1,320 @@
+{
+  "version": 1,
+  "palette": {
+    "orange": "#FFA826",
+    "yellow": "#FCC94D",
+    "lime": "#A5D126",
+    "blue": "#87A8FF",
+    "mauve": "#BE87BF",
+    "taupe": "#A5988E",
+    "cream": "#FFF7CC",
+    "neutral": "#EAE7E4",
+    "blueTint": "#E3EBFF"
+  },
+  "icons": [
+    {
+      "id": "seafood",
+      "label": "해산물",
+      "subject": "생선 한 마리",
+      "svg": "svg/seafood.svg",
+      "png": "png/seafood.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        28,
+        69,
+        216,
+        170
+      ]
+    },
+    {
+      "id": "meat",
+      "label": "육류",
+      "subject": "지방과 뼈가 보이는 고기 한 조각",
+      "svg": "svg/meat.svg",
+      "png": "png/meat.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        37,
+        47,
+        213,
+        210
+      ]
+    },
+    {
+      "id": "vegetable_herb",
+      "label": "채소/허브",
+      "subject": "잎이 달린 당근 한 개",
+      "svg": "svg/vegetable_herb.svg",
+      "png": "png/vegetable_herb.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        75,
+        28,
+        182,
+        225
+      ]
+    },
+    {
+      "id": "legume_tofu",
+      "label": "두부/콩",
+      "subject": "콩알이 보이는 꼬투리 한 개",
+      "svg": "svg/legume_tofu.svg",
+      "png": "png/legume_tofu.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        63,
+        26,
+        190,
+        223
+      ]
+    },
+    {
+      "id": "grain_noodle",
+      "label": "면/밥/곡물",
+      "subject": "수북한 밥 한 공기",
+      "svg": "svg/grain_noodle.svg",
+      "png": "png/grain_noodle.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        40,
+        58,
+        215,
+        207
+      ]
+    },
+    {
+      "id": "dumpling_batter",
+      "label": "만두/전/반죽",
+      "subject": "주름 잡힌 만두 한 개",
+      "svg": "svg/dumpling_batter.svg",
+      "png": "png/dumpling_batter.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        32,
+        64,
+        223,
+        201
+      ]
+    },
+    {
+      "id": "broth",
+      "label": "국물/브로스",
+      "subject": "맑은 국물이 담긴 그릇 한 개",
+      "svg": "svg/broth.svg",
+      "png": "png/broth.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        40,
+        26,
+        215,
+        207
+      ]
+    },
+    {
+      "id": "sauce_glaze",
+      "label": "소스/글레이즈",
+      "subject": "소스 보트 한 개",
+      "svg": "svg/sauce_glaze.svg",
+      "png": "png/sauce_glaze.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        30,
+        77,
+        232,
+        195
+      ]
+    },
+    {
+      "id": "grilled_smoked",
+      "label": "구이/훈연",
+      "subject": "그릴 자국이 있는 구운 음식 한 조각",
+      "svg": "svg/grilled_smoked.svg",
+      "png": "png/grilled_smoked.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        40,
+        20,
+        213,
+        196
+      ]
+    },
+    {
+      "id": "stir_fried_wok",
+      "label": "볶음/웍",
+      "subject": "볶음이 담긴 웍 한 개",
+      "svg": "svg/stir_fried_wok.svg",
+      "png": "png/stir_fried_wok.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        18,
+        80,
+        233,
+        197
+      ]
+    },
+    {
+      "id": "fried_crispy",
+      "label": "튀김/크리스피",
+      "subject": "튀김옷을 입힌 닭다리 한 개",
+      "svg": "svg/fried_crispy.svg",
+      "png": "png/fried_crispy.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        53,
+        37,
+        200,
+        226
+      ]
+    },
+    {
+      "id": "steamed_braised",
+      "label": "찜/브레이즈",
+      "subject": "대나무 찜기 한 개",
+      "svg": "svg/steamed_braised.svg",
+      "png": "png/steamed_braised.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        46,
+        66,
+        209,
+        201
+      ]
+    },
+    {
+      "id": "raw_cured",
+      "label": "생/절임/큐어",
+      "subject": "결이 드러난 생연어 한 조각",
+      "svg": "svg/raw_cured.svg",
+      "png": "png/raw_cured.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        44,
+        69,
+        211,
+        186
+      ]
+    },
+    {
+      "id": "fermented_jang",
+      "label": "발효/장",
+      "subject": "뚜껑 덮인 옹기 한 개",
+      "svg": "svg/fermented_jang.svg",
+      "png": "png/fermented_jang.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        51,
+        38,
+        204,
+        213
+      ]
+    },
+    {
+      "id": "dairy_cheese",
+      "label": "유제품/치즈",
+      "subject": "치즈 한 조각",
+      "svg": "svg/dairy_cheese.svg",
+      "png": "png/dairy_cheese.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        38,
+        65,
+        215,
+        197
+      ]
+    },
+    {
+      "id": "spice_heat",
+      "label": "향신료/매운맛",
+      "subject": "굽은 고추 한 개",
+      "svg": "svg/spice_heat.svg",
+      "png": "png/spice_heat.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        54,
+        32,
+        189,
+        220
+      ]
+    },
+    {
+      "id": "cold",
+      "label": "차가운 요리",
+      "subject": "얼음이 보이는 냉요리 한 그릇",
+      "svg": "svg/cold.svg",
+      "png": "png/cold.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        40,
+        64,
+        215,
+        197
+      ]
+    },
+    {
+      "id": "dessert",
+      "label": "디저트",
+      "subject": "과일을 올린 케이크 한 조각",
+      "svg": "svg/dessert.svg",
+      "png": "png/dessert.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        52,
+        28,
+        203,
+        201
+      ]
+    },
+    {
+      "id": "beverage_pairing",
+      "label": "음료/페어링",
+      "subject": "음료가 담긴 와인 잔 한 개",
+      "svg": "svg/beverage_pairing.svg",
+      "png": "png/beverage_pairing.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "bounds": [
+        59,
+        34,
+        196,
+        221
+      ]
+    }
+  ]
+}

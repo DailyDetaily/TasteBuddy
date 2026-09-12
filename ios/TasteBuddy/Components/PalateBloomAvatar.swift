@@ -412,27 +412,41 @@ struct PalateBloomAvatar: View {
 
     init(
         size: CGFloat = 40,
-        tasteProfile: TasteProfile,
+        tasteProfile: TasteProfile?,
         shapeSeed: String? = nil,
+        image: UIImage? = nil,
         showFrame: Bool = true
     ) {
-        self.init(
-            size: size,
-            bloomProfile: PalateBloomProfile(profile: tasteProfile),
-            shapeSeed: shapeSeed,
-            showFrame: showFrame
-        )
+        if let tasteProfile {
+            self.init(
+                size: size,
+                bloomProfile: PalateBloomProfile(profile: tasteProfile),
+                shapeSeed: shapeSeed,
+                image: image,
+                showFrame: showFrame
+            )
+        } else {
+            self.init(
+                size: size,
+                bloomProfile: .fallback(seed: shapeSeed),
+                shapeSeed: shapeSeed,
+                image: image,
+                showFrame: showFrame
+            )
+        }
     }
 
     init(
         size: CGFloat = 40,
         seed: String? = nil,
+        image: UIImage? = nil,
         showFrame: Bool = true
     ) {
         self.init(
             size: size,
             bloomProfile: .fallback(seed: seed),
             shapeSeed: seed,
+            image: image,
             showFrame: showFrame
         )
     }

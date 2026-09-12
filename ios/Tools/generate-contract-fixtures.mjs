@@ -45,7 +45,11 @@ const outputs = [
   ['tba-full-engine-golden.json', fixtures.tbaFullEngine],
 ];
 
-for (const [filename, payload] of outputs) {
+const only = process.argv.find((argument) => argument.startsWith('--only='))?.slice(7);
+const selectedOutputs = only ? outputs.filter(([filename]) => filename === only) : outputs;
+if (only && selectedOutputs.length === 0) throw new Error(`Unknown fixture: ${only}`);
+
+for (const [filename, payload] of selectedOutputs) {
   await writeFile(
     path.join(outputDirectory, filename),
     `${JSON.stringify(payload, null, 2)}\n`,
@@ -55,4 +59,4 @@ for (const [filename, payload] of outputs) {
 
 await rm(temporaryDirectory, { recursive: true, force: true });
 
-console.log(`Generated ${outputs.length} contract fixtures in ${outputDirectory}`);
+console.log(`Generated ${selectedOutputs.length} contract fixtures in ${outputDirectory}`);

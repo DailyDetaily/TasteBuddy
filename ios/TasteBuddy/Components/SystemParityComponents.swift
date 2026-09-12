@@ -1,13 +1,65 @@
 import SwiftUI
 
+/// 필터 의미는 화면이 소유하고, 선택 표시와 터치 영역은 공통으로 유지한다.
+struct TBCapsuleTabs<Selection: Hashable>: View {
+    @Namespace private var selectionNamespace
+    let options: [Selection]
+    @Binding var selection: Selection
+    var selectedForeground = TBColor.textPrimary
+    var selectedBackground = TBColor.surface
+    var selectedBorder = TBColor.border
+    let title: (Selection) -> String
+
+    var body: some View {
+        HStack(spacing: TBSpacing.x8) {
+            ForEach(options, id: \.self) { option in
+                Button { selection = option } label: {
+                    Text(title(option))
+                        .font(selection == option ? TBFont.bold(13) : TBFont.medium(13))
+                        .foregroundStyle(selection == option ? selectedForeground : TBColor.textTertiary)
+                        .padding(.horizontal, 14)
+                        .frame(height: 32)
+                        .background {
+                            if selection == option {
+                                Capsule()
+                                    .fill(selectedBackground)
+                                    .overlay { Capsule().strokeBorder(selectedBorder, lineWidth: 1) }
+                                    .matchedGeometryEffect(id: "selection", in: selectionNamespace)
+                            }
+                        }
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(TBTokenButtonStyle())
+                .accessibilityAddTraits(selection == option ? .isSelected : [])
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, TBSpacing.x16)
+        .tasteBloomMotion(.feedback, value: selection)
+    }
+}
+
+#Preview("캡슐 필터 탭") {
+    @Previewable @State var selectedMonths = 0
+    TBCapsuleTabs(options: [1, 3, 6, 12, 0], selection: $selectedMonths,
+                  selectedForeground: TasteAxis.salty.tintSurfaceTextColor,
+                  selectedBackground: TasteAxis.salty.tintColor,
+                  selectedBorder: TasteAxis.salty.tintSoftBorderColor) {
+        $0 == 0 ? "전부" : $0 == 12 ? "1년" : "\($0)개월"
+    }
+    .padding(.top, TBSpacing.x16)
+    .background(TBColor.page)
+}
+
 enum TBSectionTitleSize {
     case medium
     case large
 
     var font: Font {
         switch self {
-        case .medium: TBFont.bold(16)
-        case .large: TBFont.bold(18)
+        case .medium: TBTextStyle.subsectionTitle.font
+        case .large: TBTextStyle.sectionTitle.font
         }
     }
 }
@@ -376,7 +428,9 @@ struct TasteChip: View {
         let isNeutral = tone == .neutral
         let resolvedAxis = colorAxis ?? axis
         let signalColor = isNeutral ? TBColor.textTertiary : (resolvedAxis?.mainColor ?? TBColor.textTertiary)
-        let labelColor = isNeutral || value == nil ? signalColor : TBColor.textPrimary
+        let labelColor = isNeutral
+            ? TBColor.textTertiary
+            : (value == nil ? (resolvedAxis?.tintTextColor ?? TBColor.textTertiary) : TBColor.textPrimary)
         let background = isNeutral
             ? TBColor.mutedSurface
             : (resolvedAxis?.tintSoftColor ?? TBColor.mutedSurface)
@@ -407,16 +461,16 @@ struct TasteChip: View {
 }
 
 struct CardDetailLabel: View {
-    enum Direction {
+    enum Direction: Equatable {
         case down
         case right
         case up
 
-        var symbol: String {
+        var angle: Double {
             switch self {
-            case .down: "chevron.down"
-            case .right: "chevron.right"
-            case .up: "chevron.up"
+            case .down: 90
+            case .right: 0
+            case .up: -90
             }
         }
     }
@@ -427,15 +481,17 @@ struct CardDetailLabel: View {
     var body: some View {
         HStack(spacing: 2) {
             Text(label)
+                .contentTransition(.opacity)
             LucideIcon(
-                systemName: direction.symbol,
+                .chevronRight,
                 size: TBIcon.Size.small,
                 strokeWidth: TBIcon.Stroke.regular
             )
+            .rotationEffect(.degrees(direction.angle))
         }
-        .font(TBFont.medium(11))
-        .foregroundStyle(TBColor.textDisabled)
+        .tbTextStyle(.detailAction)
         .fixedSize()
+        .tasteBloomMotion(.feedback, value: direction)
     }
 }
 
@@ -719,19 +775,13 @@ struct TasteMeasurementMiniCta: View {
     }
 
     private var compactAction: some View {
-        Button(action: onAction) {
-            Text(actionLabel)
-                .font(TBFont.semibold(12))
-                .padding(.horizontal, 16)
-                .frame(
-                    maxWidth: actionFullWidth ? .infinity : nil,
-                    minHeight: 40
-                )
-                .foregroundStyle(accentAxis.tintTextColor)
-                .background(accentAxis.tintColor)
-                .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
-        }
-        .buttonStyle(.plain)
+        PrimaryButton(
+            title: actionLabel,
+            fullWidth: actionFullWidth,
+            size: .compact,
+            appearance: .tasteTint(accentAxis),
+            action: onAction
+        )
     }
 
     @ViewBuilder
@@ -775,8 +825,17 @@ struct TasteInsightSummaryDetail: Identifiable, Equatable {
     let changeValue: Double
     let history: [Double]
     let trend: TastePointTrend
+    var currentScore: Int? = nil
 
     var id: TasteAxis.ID { axis.id }
+
+    var currentValueLabel: String {
+        if let currentScore {
+            return "\(currentScore)점"
+        }
+        // Keep manually supplied benchmark values distinct from actual scores.
+        return "기준 대비 \(changeLabel)"
+    }
 
     var changeLabel: String {
         let rounded = changeValue.rounded()
@@ -794,6 +853,10 @@ struct TasteInsightSummaryCardData: Equatable {
     let sectionLabel: String
     let title: String
 
+    var hasHistory: Bool {
+        details.contains { !$0.history.isEmpty }
+    }
+
     static func tasteProfile(
         _ profile: TasteProfile,
         history: [TasteProfile] = []
@@ -809,7 +872,8 @@ struct TasteInsightSummaryCardData: Equatable {
                         profiles: history,
                         excluding: profile
                     ),
-                    trend: trend(for: change)
+                    trend: trend(for: change),
+                    currentScore: entry.score
                 )
             }
             .sorted { abs($0.changeValue) > abs($1.changeValue) }
@@ -850,7 +914,8 @@ struct TasteInsightSummaryCardData: Equatable {
                     profiles: history,
                     excluding: profile
                 ),
-                trend: trend(for: change)
+                trend: trend(for: change),
+                currentScore: entry.score
             )
         }
 
@@ -893,14 +958,14 @@ struct TasteInsightSummaryCardData: Equatable {
 }
 
 struct TastePointArrowBox: View {
-    let axis: TasteAxis
+    var axis: TasteAxis? = nil
     let trend: TastePointTrend
     var size: CGFloat = 18
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 2 / 9, style: .continuous)
-                .fill(axis.mainColor)
+                .fill(axis?.mainColor ?? TBColor.textHint)
 
             LucideIcon(
                 systemName: trend.symbol,
@@ -912,6 +977,41 @@ struct TastePointArrowBox: View {
         .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
+}
+
+struct TasteChangeEmptySummary: View {
+    var body: some View {
+        VStack(spacing: TasteLineChartMetrics.rowSpacing) {
+            ForEach(["상승 변화", "하강 변화"], id: \.self) { label in
+                HStack(spacing: TBSpacing.x16) {
+                    HStack(spacing: 8) {
+                        TastePointArrowBox(trend: .neutral)
+                        Text(label).font(TBFont.medium(14)).foregroundStyle(TBColor.textHint)
+                    }.frame(maxWidth: .infinity, alignment: .leading)
+                    Canvas { context, size in
+                        // Decorative empty state, independent of recorded values.
+                        let radius = TasteLineChartMetrics.currentNodeDiameter / 2
+                        let start = CGPoint(x: radius, y: size.height / 2)
+                        let end = CGPoint(x: size.width - radius, y: start.y)
+                        var path = Path()
+                        path.move(to: start)
+                        path.addLine(to: end)
+                        context.stroke(path, with: .color(TBColor.textHint.opacity(0.12)),
+                                       style: StrokeStyle(lineWidth: TasteLineChartMetrics.trackLineWidth, lineCap: .round))
+                        context.stroke(path, with: .linearGradient(Gradient(colors: [TBColor.textHint.opacity(0.25), TBColor.textHint]), startPoint: start, endPoint: end),
+                                       style: StrokeStyle(lineWidth: TasteLineChartMetrics.coreLineWidth, lineCap: .round))
+                        context.fill(Path(ellipseIn: CGRect(x: end.x - radius, y: start.y - radius, width: radius * 2, height: radius * 2)), with: .color(TBColor.textHint))
+                    }.frame(width: 132, height: TasteLineChartMetrics.rowHeight)
+                }.frame(height: TasteLineChartMetrics.rowHeight)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("상승 변화와 하강 변화 모두 비교 기록 없음")
+    }
+}
+
+#Preview("미각변화 빈 기록") {
+    TasteChangeEmptySummary().padding()
 }
 
 struct TasteLineChartEntry: Identifiable, Equatable {
@@ -938,6 +1038,7 @@ enum TasteLineChartMetrics {
 struct TasteLineChart: View {
     let entries: [TasteLineChartEntry]
     var maxPointGap: CGFloat = 36
+    var showsPendingHistory = false
 
     private var domain: ClosedRange<Double> {
         let values = entries.flatMap { TasteLineChartMetrics.visibleValues($0.values) }
@@ -957,6 +1058,7 @@ struct TasteLineChart: View {
             ForEach(entries) { entry in
                 GeometryReader { proxy in
                     let values = TasteLineChartMetrics.visibleValues(entry.values)
+                    let drawsPendingTrack = showsPendingHistory && values.count == 1
                     let intervalCount = max(values.count - 1, 0)
                     let availableWidth = max(
                         proxy.size.width - TasteLineChartMetrics.currentNodeDiameter,
@@ -965,8 +1067,9 @@ struct TasteLineChart: View {
                     let pointGap = intervalCount > 0
                         ? min(maxPointGap, availableWidth / CGFloat(intervalCount))
                         : 0
-                    let graphWidth = TasteLineChartMetrics.currentNodeDiameter
-                        + CGFloat(intervalCount) * pointGap
+                    let graphWidth = drawsPendingTrack
+                        ? max(proxy.size.width, 0)
+                        : TasteLineChartMetrics.currentNodeDiameter + CGFloat(intervalCount) * pointGap
 
                     HStack(spacing: 0) {
                         Spacer(minLength: 0)
@@ -976,7 +1079,8 @@ struct TasteLineChart: View {
                                 size: size,
                                 axis: entry.axis,
                                 values: values,
-                                pointGap: pointGap
+                                pointGap: pointGap,
+                                drawsPendingTrack: drawsPendingTrack
                             )
                         }
                         .frame(width: graphWidth, height: TasteLineChartMetrics.rowHeight)
@@ -985,6 +1089,7 @@ struct TasteLineChart: View {
                 .frame(height: TasteLineChartMetrics.rowHeight)
             }
         }
+        .tasteBloomChartReveal()
         .accessibilityHidden(true)
     }
 
@@ -993,7 +1098,8 @@ struct TasteLineChart: View {
         size: CGSize,
         axis: TasteAxis,
         values: [Double],
-        pointGap: CGFloat
+        pointGap: CGFloat,
+        drawsPendingTrack: Bool
     ) {
         guard !values.isEmpty else { return }
         let nodeRadius = TasteLineChartMetrics.currentNodeDiameter / 2
@@ -1009,7 +1115,9 @@ struct TasteLineChart: View {
         path.move(to: points[0])
         points.dropFirst().forEach { path.addLine(to: $0) }
 
-        if points.count > 1 {
+        if drawsPendingTrack, let current = points.first {
+            drawPendingTrack(context: &context, size: size, axis: axis, current: current)
+        } else if points.count > 1 {
             context.stroke(
                 path,
                 with: .color(axis.tintSoftBorderColor),
@@ -1047,6 +1155,51 @@ struct TasteLineChart: View {
                 with: .color(axis.mainColor)
             )
         }
+    }
+
+    private func drawPendingTrack(
+        context: inout GraphicsContext,
+        size: CGSize,
+        axis: TasteAxis,
+        current: CGPoint
+    ) {
+        let end = CGPoint(
+            x: size.width - TasteLineChartMetrics.currentNodeDiameter / 2,
+            y: current.y
+        )
+        guard end.x > current.x else { return }
+
+        // Decorative waiting space, not invented past samples or a forecast.
+        var track = Path()
+        track.move(to: current)
+        track.addLine(to: end)
+
+        context.stroke(
+            track,
+            with: .linearGradient(
+                Gradient(stops: [
+                    .init(color: axis.tintSoftBorderColor, location: 0),
+                    .init(color: axis.tintSoftBorderColor, location: 0.45),
+                    .init(color: .clear, location: 1)
+                ]),
+                startPoint: current,
+                endPoint: end
+            ),
+            style: StrokeStyle(lineWidth: TasteLineChartMetrics.trackLineWidth, lineCap: .round)
+        )
+        context.stroke(
+            track,
+            with: .linearGradient(
+                Gradient(stops: [
+                    .init(color: axis.mainColor, location: 0),
+                    .init(color: axis.tintSoftBorderColor, location: 0.6),
+                    .init(color: .clear, location: 1)
+                ]),
+                startPoint: current,
+                endPoint: end
+            ),
+            style: StrokeStyle(lineWidth: TasteLineChartMetrics.coreLineWidth, lineCap: .round)
+        )
     }
 }
 
@@ -1196,6 +1349,7 @@ struct TasteInsightSummaryCard: View {
             sectionLabel: data.sectionLabel,
             actionLabel: data.actionLabel ?? "자세히보기",
             title: data.title,
+            accessibilityLabel: data.hasHistory ? nil : firstRecordAccessibilityLabel,
             onTap: onTap
         ) {
             detailsContent
@@ -1204,21 +1358,32 @@ struct TasteInsightSummaryCard: View {
 
     private var detailsContent: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .center, spacing: TBSpacing.x16) {
+            HStack(alignment: .top, spacing: TBSpacing.x16) {
                 VStack(alignment: .leading, spacing: TasteLineChartMetrics.rowSpacing) {
                     ForEach(summaryDetails) { detail in
                         HStack(spacing: 8) {
-                            TastePointArrowBox(
-                                axis: detail.axis,
-                                trend: detail.trend
-                            )
+                            if data.hasHistory {
+                                TastePointArrowBox(
+                                    axis: detail.axis,
+                                    trend: detail.trend
+                                )
+                            } else {
+                                LucideIcon(
+                                    systemName: detail.axis.symbol,
+                                    size: TBIcon.Size.base,
+                                    strokeWidth: TBIcon.Stroke.regular
+                                )
+                                .foregroundStyle(detail.axis.mainColor)
+                                .frame(width: 18, height: 18)
+                                .accessibilityHidden(true)
+                            }
 
                             HStack(spacing: 6) {
                                 Text(detail.axis.label)
                                     .font(TBFont.medium(14))
                                     .foregroundStyle(TBColor.textSecondary)
                                     .lineLimit(1)
-                                Text(detail.changeLabel)
+                                Text(data.hasHistory ? detail.changeLabel : detail.currentValueLabel)
                                     .font(TBFont.semibold(12))
                                     .foregroundStyle(detail.axis.mainColor)
                             }
@@ -1228,15 +1393,24 @@ struct TasteInsightSummaryCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                TasteLineChart(
-                    entries: summaryDetails.map {
-                        TasteLineChartEntry(
-                            axis: $0.axis,
-                            values: $0.history + [$0.changeValue]
-                        )
+                VStack(alignment: .leading, spacing: TBSpacing.x4) {
+                    TasteLineChart(
+                        entries: summaryDetails.map {
+                            TasteLineChartEntry(
+                                axis: $0.axis,
+                                values: $0.history + [$0.changeValue]
+                            )
+                        },
+                        showsPendingHistory: !data.hasHistory
+                    )
+
+                    if !data.hasHistory {
+                        Text("기록 대기")
+                            .font(TBFont.regular(11))
+                            .foregroundStyle(TBColor.textSecondary)
                     }
-                )
-                .frame(width: 132)
+                }
+                .frame(width: 132, alignment: .leading)
             }
 
             HStack(spacing: 6) {
@@ -1245,6 +1419,13 @@ struct TasteInsightSummaryCard: View {
                 }
             }
         }
+    }
+
+    private var firstRecordAccessibilityLabel: String {
+        let currentValues = summaryDetails.map {
+            "\($0.axis.label) \($0.currentValueLabel)"
+        }.joined(separator: ", ")
+        return "\(data.sectionLabel), \(data.title), 첫 기록, \(currentValues). 기록 대기. 오른쪽 선은 추이가 아닌 다음 기록을 위한 표시예요."
     }
 
     @ViewBuilder
@@ -1258,6 +1439,17 @@ struct TasteInsightSummaryCard: View {
             TasteChip(title: keyword, size: .sm)
         }
     }
+}
+
+#Preview("Insight Summary First Record Waiting Track") {
+    ScrollView {
+        VStack(spacing: TBSpacing.x12) {
+            TasteInsightSummaryCard(data: .tasteProfile(.sample)) {}
+            TasteInsightSummaryCard(data: .specialNote(.sample)) {}
+        }
+        .padding(TBSpacing.page)
+    }
+    .tbPageBackground()
 }
 
 struct InterpretationCard: View {
@@ -1553,13 +1745,14 @@ struct TasteTintCard: View {
 
 struct TasteTintMiniCard: View {
     let entry: TasteAxisAnalysis
+    var subtitleOverride: String? = nil
     var onTap: (() -> Void)? = nil
 
     var body: some View {
         RecommendationMiniCardLayout(
             axis: entry.axis,
             title: entry.axis.label,
-            subtitle: entry.deltaSummary,
+            subtitle: subtitleOverride ?? entry.deltaSummary,
             detail: entry.detail,
             onTap: onTap
         ) {

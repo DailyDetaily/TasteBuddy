@@ -1,0 +1,215 @@
+{
+  "schema_version": "0.1",
+  "artifact_type": "design_contract_examples",
+  "data_origin": "fictional",
+  "engine_executed": false,
+  "model_trained": false,
+  "description": "설계의 입력 의미·가설·수정·삭제·예측 시점 계약을 검토하는 가상 자료. 엔진 출력이나 성능 평가 자료가 아님.",
+  "experiences": [
+    { "id": "exp-photo", "meal_id": "meal-photo", "dish_status": "unknown" },
+    { "id": "exp-overall", "meal_id": "meal-overall", "dish_name": "돈가스" },
+    { "id": "exp-a", "meal_id": "meal-a", "dish_name": "국물면 A", "experienced_at": "2026-08-01T12:00:00+09:00" },
+    { "id": "exp-b", "meal_id": "meal-b", "dish_name": "국물면 B", "experienced_at": "2026-08-03T12:00:00+09:00" },
+    { "id": "exp-price", "meal_id": "meal-price", "dish_name": "구이" },
+    { "id": "exp-ambiguous", "meal_id": "meal-ambiguous", "dish_name": "오늘의 메뉴" },
+    { "id": "exp-chemistry", "meal_id": "meal-chemistry", "dish_name": "육수", "dish_status": "unresolved" }
+  ],
+  "events": [
+    {
+      "id": "event-photo", "experience_id": "exp-photo", "client_mutation_id": "mutation-photo",
+      "answers": [{ "id": "answer-photo", "kind": "media_reference", "value": "fictional-photo-reference" }]
+    },
+    {
+      "id": "event-overall", "experience_id": "exp-overall", "client_mutation_id": "mutation-overall",
+      "answers": [{ "id": "answer-overall", "question": "이 음식의 맛은 어땠어요?", "value": "좋았어요", "scale_ref": "overall-liking-ko-v1" }]
+    },
+    {
+      "id": "event-a", "experience_id": "exp-a", "client_mutation_id": "mutation-a",
+      "recorded_at": "2026-08-01T12:30:00+09:00",
+      "answers": [
+        { "id": "answer-a-overall", "question": "이 음식의 맛은 어땠어요?", "value": "아쉬웠어요", "scale_ref": "overall-liking-ko-v1" },
+        { "id": "answer-a-bubble", "question": "기억에 남는 느낌이 있다면", "selected": ["진한 감칠맛"], "presented": ["진한 감칠맛", "바삭한", "촉촉한"], "definition_version": "fictional-descriptor-v1" }
+      ]
+    },
+    {
+      "id": "event-a-clarification", "experience_id": "exp-a", "client_mutation_id": "mutation-a-clarification",
+      "recorded_at": "2026-08-01T12:35:00+09:00",
+      "answers": [{ "id": "answer-a-attribute", "question": "그 감칠맛 자체는 어땠어요?", "value": "좋았어요", "scale_ref": "attribute-liking-ko-v1" }]
+    },
+    {
+      "id": "event-b", "experience_id": "exp-b", "client_mutation_id": "mutation-b",
+      "recorded_at": "2026-08-03T12:30:00+09:00",
+      "answers": [
+        { "id": "answer-b-overall", "question": "이 음식의 맛은 어땠어요?", "value": "좋았어요", "scale_ref": "overall-liking-ko-v1" },
+        { "id": "answer-b-bubble", "question": "기억에 남는 느낌이 있다면", "selected": ["진한 감칠맛"], "definition_version": "fictional-descriptor-v1" },
+        { "id": "answer-b-attribute", "question": "그 감칠맛 자체는 어땠어요?", "value": "좋았어요", "scale_ref": "attribute-liking-ko-v1" }
+      ]
+    },
+    {
+      "id": "event-b-revised", "experience_id": "exp-b", "client_mutation_id": "mutation-b-revised",
+      "operation": "replace_answer", "replaces_answer_ref": "event-b/answer-b-overall",
+      "answers": [{ "id": "answer-b-overall-revised", "question": "이 음식의 맛은 어땠어요?", "value": "아쉬웠어요", "scale_ref": "overall-liking-ko-v1" }]
+    },
+    {
+      "id": "event-price", "experience_id": "exp-price", "client_mutation_id": "mutation-price",
+      "answers": [{ "id": "answer-price", "kind": "text", "value": "맛있었지만 비싸서 다시 안 갈 것 같아요." }]
+    },
+    {
+      "id": "event-ambiguous", "experience_id": "exp-ambiguous", "client_mutation_id": "mutation-ambiguous",
+      "answers": [{ "id": "answer-ambiguous", "kind": "text", "value": "깔끔했어요." }]
+    }
+  ],
+  "observation_contracts": [
+    { "id": "obs-overall", "experience_id": "exp-overall", "source_ref": "event-overall/answer-overall", "kind": "overall_liking", "target": "dish", "value": "positive" },
+    { "id": "obs-a-overall", "experience_id": "exp-a", "source_ref": "event-a/answer-a-overall", "kind": "overall_liking", "target": "dish", "value": "negative" },
+    { "id": "obs-a-presence", "experience_id": "exp-a", "source_ref": "event-a/answer-a-bubble", "kind": "sensory_presence", "target": "dish", "attribute": "taste.umami", "value": "present" },
+    { "id": "obs-a-intensity", "experience_id": "exp-a", "source_ref": "event-a/answer-a-bubble", "kind": "perceived_intensity", "target": "dish", "attribute": "taste.umami", "value": "strong", "scale_ref": "fictional-descriptor-v1" },
+    { "id": "obs-a-attribute", "experience_id": "exp-a", "source_ref": "event-a-clarification/answer-a-attribute", "kind": "attribute_liking", "target": "attribute", "attribute": "taste.umami", "value": "positive" },
+    { "id": "obs-b-overall", "experience_id": "exp-b", "source_ref": "event-b/answer-b-overall", "kind": "overall_liking", "target": "dish", "value": "positive" },
+    { "id": "obs-b-presence", "experience_id": "exp-b", "source_ref": "event-b/answer-b-bubble", "kind": "sensory_presence", "target": "dish", "attribute": "taste.umami", "value": "present" },
+    { "id": "obs-b-intensity", "experience_id": "exp-b", "source_ref": "event-b/answer-b-bubble", "kind": "perceived_intensity", "target": "dish", "attribute": "taste.umami", "value": "strong", "scale_ref": "fictional-descriptor-v1" },
+    { "id": "obs-b-attribute", "experience_id": "exp-b", "source_ref": "event-b/answer-b-attribute", "kind": "attribute_liking", "target": "attribute", "attribute": "taste.umami", "value": "positive" },
+    { "id": "obs-b-overall-revised", "experience_id": "exp-b", "source_ref": "event-b-revised/answer-b-overall-revised", "kind": "overall_liking", "target": "dish", "value": "negative" },
+    { "id": "obs-price-liking", "experience_id": "exp-price", "source_ref": "event-price/answer-price", "source_quote": "맛있었지만", "kind": "overall_liking", "target": "dish", "value": "positive" },
+    { "id": "obs-price-context", "experience_id": "exp-price", "source_ref": "event-price/answer-price", "source_quote": "비싸서", "kind": "context", "target": "meal", "attribute": "perceived_price", "value": "expensive" },
+    { "id": "obs-price-choice", "experience_id": "exp-price", "source_ref": "event-price/answer-price", "source_quote": "다시 안 갈 것 같아요", "kind": "choice_intent", "target": "restaurant", "value": "negative", "modality": "tentative", "condition_refs": ["obs-price-context"] },
+    { "id": "obs-ambiguous", "experience_id": "exp-ambiguous", "source_ref": "event-ambiguous/answer-ambiguous", "source_quote": "깔끔했어요", "kind": "unresolved_descriptor", "target": "unresolved", "value": "깔끔했어요", "resolution": "unresolved" }
+  ],
+  "cases": [
+    {
+      "id": "C01", "name": "사진만 저장",
+      "input_event_ids": ["event-photo"],
+      "expected": {
+        "active_experience_ids": ["exp-photo"], "active_observation_ids": [], "experience_count": 1, "meal_count": 1,
+        "allowed_updates": ["food_context_candidates"], "liking_prediction": null,
+        "forbidden_inferences": ["사용자가 지방감을 느꼈음", "사용자가 이 음식을 좋아함"]
+      }
+    },
+    {
+      "id": "C02", "name": "전체 반응 하나만 저장",
+      "input_event_ids": ["event-overall"],
+      "expected": {
+        "active_experience_ids": ["exp-overall"], "active_observation_ids": ["obs-overall"], "experience_count": 1, "meal_count": 1,
+        "allowed_updates": ["M3_overall_liking"], "liking_prediction": null,
+        "observed_text": "이번 돈가스를 좋게 기록했어요.",
+        "forbidden_inferences": ["바삭해서 좋아함", "모든 튀김을 선호함"]
+      }
+    },
+    {
+      "id": "C03", "name": "감각과 전체 아쉬움의 동시 관찰",
+      "input_event_ids": ["event-a"],
+      "expected": {
+        "active_experience_ids": ["exp-a"], "active_observation_ids": ["obs-a-overall", "obs-a-presence", "obs-a-intensity"], "experience_count": 1, "meal_count": 1,
+        "hypothesis": {
+          "id": "h-umami-avoid", "claim": "이 음식에서는 진한 감칠맛이 부담스러웠을 가능성", "state": "candidate",
+          "direct_support_refs": [], "cooccurrence_refs": ["obs-a-overall", "obs-a-intensity"], "counter_refs": [],
+          "alternatives": ["감칠맛은 좋았으나 다른 요소가 아쉬웠을 가능성", "조합이나 상황의 영향"],
+          "allowed_uses": ["internal_review", "optional_question_candidate"], "probability": null
+        },
+        "forbidden_inferences": ["감칠맛을 싫어함", "바삭함이 없었음", "촉촉함을 싫어함"]
+      }
+    },
+    {
+      "id": "C04", "name": "확인 응답은 기존 경험을 보완",
+      "input_event_ids": ["event-a", "event-a-clarification"],
+      "expected": {
+        "active_experience_ids": ["exp-a"], "active_observation_ids": ["obs-a-overall", "obs-a-presence", "obs-a-intensity", "obs-a-attribute"], "experience_count": 1, "meal_count": 1,
+        "unchanged_overall_ref": "obs-a-overall",
+        "hypothesis": {
+          "id": "h-umami-avoid", "state": "contested", "direct_support_refs": [],
+          "cooccurrence_refs": ["obs-a-overall", "obs-a-intensity"], "counter_refs": ["obs-a-attribute"],
+          "allowed_uses": ["internal_review"], "probability": null
+        },
+        "observed_text": "전체적으로 아쉬웠지만 감칠맛 자체는 좋게 느꼈어요.",
+        "forbidden_inferences": ["전체 평가도 긍정으로 변경", "경험 수를 2로 증가"]
+      }
+    },
+    {
+      "id": "C05", "name": "다른 날의 기록이 추가됨",
+      "input_event_ids": ["event-a", "event-a-clarification", "event-b"],
+      "expected": {
+        "active_experience_ids": ["exp-a", "exp-b"],
+        "active_observation_ids": ["obs-a-overall", "obs-a-presence", "obs-a-intensity", "obs-a-attribute", "obs-b-overall", "obs-b-presence", "obs-b-intensity", "obs-b-attribute"],
+        "experience_count": 2, "meal_count": 2,
+        "observed_text": "두 번의 국물면 기록에서 감칠맛 자체는 좋게 느꼈어요. 음식 전체 평가는 달랐어요.",
+        "generalized_preference_state": "candidate", "promotion_policy_validated": false, "liking_prediction": null,
+        "forbidden_inferences": ["관찰 8개를 식사 8번으로 계산", "두 번 기록만으로 모든 감칠맛 선호 확정"]
+      }
+    },
+    {
+      "id": "C06", "name": "같은 변경 ID의 전송 재시도",
+      "input_event_ids": ["event-b", "event-b"], "operation": "idempotent_retry",
+      "expected": {
+        "active_experience_ids": ["exp-b"], "active_observation_ids": ["obs-b-overall", "obs-b-presence", "obs-b-intensity", "obs-b-attribute"], "experience_count": 1, "meal_count": 1,
+        "accepted_mutation_ids": ["mutation-b"], "new_evidence_from_retry": 0,
+        "forbidden_inferences": ["재전송을 추가 긍정 증거로 계산"]
+      }
+    },
+    {
+      "id": "C07", "name": "전체 평가 수정은 이전 평가를 교체",
+      "input_event_ids": ["event-b", "event-b-revised"],
+      "expected": {
+        "active_experience_ids": ["exp-b"], "active_observation_ids": ["obs-b-overall-revised", "obs-b-presence", "obs-b-intensity", "obs-b-attribute"], "experience_count": 1, "meal_count": 1,
+        "inactive_observation_ids": ["obs-b-overall"], "new_experiences_from_revision": 0,
+        "forbidden_inferences": ["수정 전후 평가를 두 식사로 계산", "감칠맛의 직접 긍정도 자동으로 부정으로 수정"]
+      }
+    },
+    {
+      "id": "C08", "name": "두 번째 경험 삭제",
+      "input_event_ids": ["event-a", "event-a-clarification", "event-b"], "delete_experience_ids": ["exp-b"],
+      "expected": {
+        "active_experience_ids": ["exp-a"], "active_observation_ids": ["obs-a-overall", "obs-a-presence", "obs-a-intensity", "obs-a-attribute"], "experience_count": 1, "meal_count": 1,
+        "invalidated_views": ["C05_observed_text"], "personal_model_recompute_required": true,
+        "shared_model_deletion_status": "not_applicable_no_model_trained",
+        "forbidden_inferences": ["삭제 후에도 두 번의 긍정 경험이라고 설명", "삭제를 부정 선호 라벨로 학습"]
+      }
+    },
+    {
+      "id": "C09", "name": "맛 호감과 방문 의향의 분리",
+      "input_event_ids": ["event-price"],
+      "expected": {
+        "active_experience_ids": ["exp-price"], "active_observation_ids": ["obs-price-liking", "obs-price-context", "obs-price-choice"], "experience_count": 1, "meal_count": 1,
+        "allowed_updates": ["M3_overall_liking", "M5_explicit_choice_intent"],
+        "forbidden_inferences": ["방문 의향이 낮으므로 맛 호감도 낮음", "관측된 실제 재방문 거절 행동으로 저장"]
+      }
+    },
+    {
+      "id": "C10", "name": "모호한 표현 보존",
+      "input_event_ids": ["event-ambiguous"],
+      "expected": {
+        "active_experience_ids": ["exp-ambiguous"], "active_observation_ids": ["obs-ambiguous"], "experience_count": 1, "meal_count": 1,
+        "allowed_updates": ["recall", "optional_disambiguation_candidate"],
+        "forbidden_inferences": ["지방감이 낮았음", "여운이 짧았음", "전체 호감이 긍정임"]
+      }
+    },
+    {
+      "id": "C11", "name": "물질 지식은 사용자 관찰이 아님",
+      "input_event_ids": [],
+      "existing_experience_ids": ["exp-chemistry"],
+      "setup": "기존에 사용자가 저장한 부분 경험의 음식 맥락에 외부 연구 후보를 연결한다. 외부 자료가 경험을 새로 만들지 않는다.",
+      "context_claims": [
+        { "id": "claim-chemical-study", "origin": "external_study_reference", "subject": "연구 시료", "claim": "일정 실험 조건에서 물질 혼합의 감각 효과를 보고한 연구가 있음", "applies_to_current_serving": "unknown" }
+      ],
+      "expected": {
+        "active_experience_ids": ["exp-chemistry"], "active_observation_ids": [], "experience_count": 1, "meal_count": 1,
+        "new_experiences_from_external_knowledge": 0,
+        "current_serving_compound_concentration": null, "user_umami_liking": null,
+        "forbidden_inferences": ["이 육수의 글루탐산 함량 확정", "사용자가 감칠맛을 강하게 느꼈음", "물질 데이터가 개인 선호 증거 1건"]
+      }
+    },
+    {
+      "id": "C12", "name": "다음 식사 예측에서 식후 정보 제외",
+      "input_event_ids": ["event-a", "event-a-clarification"],
+      "prediction_request": {
+        "target_experience_id": "exp-b", "as_of": "2026-08-03T11:00:00+09:00",
+        "candidate_feature_sources": ["당시 알려진 메뉴 정보", "event-a", "event-a-clarification", "event-b"]
+      },
+      "expected": {
+        "active_experience_ids": ["exp-a"], "active_observation_ids": ["obs-a-overall", "obs-a-presence", "obs-a-intensity", "obs-a-attribute"], "experience_count": 1, "meal_count": 1,
+        "allowed_history_event_ids": ["event-a", "event-a-clarification"], "rejected_feature_event_ids": ["event-b"],
+        "liking_prediction": null, "prediction_status": "not_computed_design_fixture",
+        "forbidden_inferences": ["exp-b의 식후 버블로 exp-b의 식전 추천 성능 계산"]
+      }
+    }
+  ]
+}

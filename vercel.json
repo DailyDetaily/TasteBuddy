@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm ci && npm --prefix integrations/chatgpt ci --ignore-scripts",
+  "buildCommand": "node integrations/chatgpt/write-discovery.mjs && npm run build",
+  "functions": { "api/chatgpt.mjs": { "maxDuration": 30 } },
+  "rewrites": [
+    { "source": "/mcp", "destination": "/api/chatgpt" },
+    { "source": "/oauth/chatgpt", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/.well-known/oauth-protected-resource/mcp",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PreferenceIntakeFlowView: View {
     let onBack: () -> Void
+    var onComplete: () -> Void = {}
 
     @State private var loadState: LoadState = .loading
 
@@ -15,14 +16,19 @@ struct PreferenceIntakeFlowView: View {
         Group {
             switch loadState {
             case .loading:
-                IntakeLoadingView()
+                TBFlowLoadingState(message: "사전 조사를 준비하고 있어요")
             case .loaded(let fixture):
                 PreferenceIntakeQuestionsView(
                     questions: fixture.questions,
-                    onBack: onBack
+                    onBack: onBack,
+                    onComplete: onComplete
                 )
             case .failed:
-                IntakeErrorView(retry: loadFixture)
+                TBFlowRetryState(
+                    title: "사전 조사 항목을 불러오지 못했어요",
+                    message: "안전 정보와 첫 추천 기준을 다시 준비할게요.",
+                    retry: loadFixture
+                )
             }
         }
         .task {
@@ -42,20 +48,25 @@ struct PreferenceIntakeFlowView: View {
 }
 
 private struct PreferenceIntakeQuestionsView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var appModel: AppModel
 
     let questions: [PreferenceIntakeQuestionContract]
     let onBack: () -> Void
+    let onComplete: () -> Void
 
     @State private var questionIndex = 0
     @State private var responses: PreferenceIntakeResponsesContract
+    @State private var saveError: String?
 
     init(
         questions: [PreferenceIntakeQuestionContract],
-        onBack: @escaping () -> Void
+        onBack: @escaping () -> Void,
+        onComplete: @escaping () -> Void
     ) {
         self.questions = questions
         self.onBack = onBack
+        self.onComplete = onComplete
         _responses = State(initialValue: PreferenceIntakeResponsesContract())
     }
 
@@ -63,7 +74,7 @@ private struct PreferenceIntakeQuestionsView: View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
                 TBFlowTopBar(
-                    title: "사전 조사",
+                    title: "식사 선호",
                     leadingAccessibilityLabel: questionIndex == 0
                         ? "서비스 설명으로 돌아가기"
                         : "이전 질문으로 돌아가기",
@@ -72,39 +83,48 @@ private struct PreferenceIntakeQuestionsView: View {
                 )
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: TBSpacing.section) {
-                        TBFlowHeaderBlock(
-                            title: currentQuestion.title,
-                            description: currentQuestion.description,
-                            topLeft: currentQuestion.eyebrow,
-                            currentIndex: questionIndex,
-                            total: questions.count
-                        )
+                    ZStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: TBSpacing.section) {
+                            TBFlowHeaderBlock(
+                                title: currentQuestion.title,
+                                description: currentQuestion.description,
+                                topLeft: currentQuestion.eyebrow,
+                                currentIndex: questionIndex,
+                                total: questions.count
+                            )
 
-                        VStack(spacing: 12) {
-                            ForEach(currentQuestion.options) { option in
-                                TBSelectionCard(
-                                    title: option.label,
-                                    description: option.description,
-                                    indicator: .checkbox,
-                                    isSelected: isSelected(option.id),
-                                    trailing: optionTrailingSlot(option.id)
-                                ) {
-                                    select(option.id)
+                            if let saveError {
+                                Text(saveError).font(TBFont.regular(13)).foregroundStyle(TBColor.textBody)
+                            }
+
+                            VStack(spacing: 12) {
+                                ForEach(currentQuestion.options) { option in
+                                    TBSelectionCard(
+                                        title: option.label,
+                                        description: option.description,
+                                        indicator: .checkbox,
+                                        isSelected: isSelected(option.id),
+                                        trailing: optionTrailingSlot(option.id)
+                                    ) {
+                                        select(option.id)
+                                    }
                                 }
                             }
                         }
+                        .padding(.horizontal, TBSpacing.page)
+                        .padding(.top, TBSpacing.pageTop)
+                        .padding(.bottom, 188)
+                        .id(currentQuestion.id)
+                        .transition(.opacity)
                     }
-                    .padding(.horizontal, TBSpacing.page)
-                    .padding(.top, TBSpacing.pageTop)
-                    .padding(.bottom, 188)
+                    .tasteBloomMotion(.content, value: questionIndex)
                 }
                 .scrollIndicators(.hidden)
             }
 
             TBFlowStepCTA(
                 actionLabel: isLastQuestion
-                    ? "미각 질문으로 이어가기"
+                    ? "선호 저장"
                     : "다음 질문",
                 currentIndex: questionIndex,
                 total: questions.count,
@@ -119,6 +139,8 @@ private struct PreferenceIntakeQuestionsView: View {
         .onAppear {
             if let draft = appModel.preferenceIntakeDraft {
                 responses = draft
+            } else if let profile = appModel.preferenceProfile {
+                responses = PreferenceIntakeContractEngine.responsesFromProfile(profile)
             }
         }
     }
@@ -159,7 +181,7 @@ private struct PreferenceIntakeQuestionsView: View {
             return "\(selectionCount)/\(maximum) 선택"
         }
 
-        return "이 답변은 나중에 프로필에서 다시 바꿀 수 있어요"
+        return "나의 입맛 화면에서 다시 바꿀 수 있어요"
     }
 
     private func isSelected(_ optionId: String) -> Bool {
@@ -214,16 +236,22 @@ private struct PreferenceIntakeQuestionsView: View {
         }
 
         if isLastQuestion {
-            appModel.completePreferenceIntake(
-                PreferenceIntakeContractEngine.buildProfile(
+            do {
+                guard questions.allSatisfy({ PreferenceIntakeContractEngine.isAnswered(question: $0, responses: responses) }) else { throw CocoaError(.coderInvalidValue) }
+                let profile = try PreferenceIntakeContractEngine.completeProfile(
                     questions: questions,
-                    responses: responses
+                    responses: responses,
+                    previous: appModel.preferenceProfile ?? appModel.preferenceIntakeDraft
                 )
-            )
+                guard appModel.completePreferenceIntake(profile) else { throw CocoaError(.fileWriteUnknown) }
+                onComplete()
+            } catch {
+                saveError = "응답을 저장하지 못했어요. 선택은 유지되어 있으니 다시 시도해 주세요."
+            }
             return
         }
 
-        withAnimation(.easeInOut(duration: 0.28)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             questionIndex += 1
         }
     }
@@ -234,43 +262,65 @@ private struct PreferenceIntakeQuestionsView: View {
             return
         }
 
-        withAnimation(.easeInOut(duration: 0.28)) {
+        withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
             questionIndex -= 1
         }
     }
 }
 
-private struct IntakeLoadingView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-            Text("사전 조사를 준비하고 있어요")
-                .font(TBFont.semibold(14))
-                .foregroundStyle(TBColor.textBody)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TBColor.focus)
-    }
-}
-
-private struct IntakeErrorView: View {
-    let retry: () -> Void
+struct PreferenceIntakeEvidenceCard: View {
+    let evidence: PreferenceIntakeEvidenceSnapshot
+    var hasLegacyProfile = false
+    let onEdit: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: TBSpacing.section) {
-            SectionHeading(
-                title: "사전 조사 항목을 불러오지 못했어요",
-                subtitle: "안전 정보와 첫 추천 기준을 다시 준비할게요."
-            )
-            PrimaryButton(title: "다시 시도", action: retry)
+        SectionCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(evidence.submissionID == nil ? "식사 선호를 알려주세요" : "직접 알려준 식사 선호")
+                    .font(TBFont.bold(16)).foregroundStyle(TBColor.textPrimary)
+                if let recordedAt = evidence.recordedAt, let date = PersonalTasteModelBuilder.date(recordedAt) {
+                    Text("\(date.formatted(date: .abbreviated, time: .omitted)) · 응답 \(evidence.answeredQuestionCount)개")
+                        .font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
+                }
+                if evidence.submissionID == nil {
+                    Text(hasLegacyProfile ? "기존 선택은 보관 중이에요. 다시 저장하면 질문과 응답 시점을 함께 남겨요." : "피해야 할 재료와 편안하게 즐기는 음식부터 입맛을 알아가요.")
+                        .font(TBFont.regular(13)).foregroundStyle(TBColor.textBody)
+                }
+                ForEach(evidence.records) { record in
+                    DisclosureGroup {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(record.response.questionText)
+                            Text(record.response.questionDescription)
+                            ForEach(record.response.selectedOptions) { option in Text("\(option.label) · \(option.description)") }
+                        }.font(TBFont.regular(12)).foregroundStyle(TBColor.textBody).padding(.vertical, 8)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(record.label).font(TBFont.medium(13))
+                            Text(record.summary).font(TBFont.regular(13)).foregroundStyle(TBColor.textBody)
+                        }
+                    }.tint(TBColor.textSecondary)
+                }
+                Text("직접 알려준 선호는 실제 식사에서 확인한 반응과 구분해요.")
+                    .font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
+                if evidence.records.contains(where: { $0.kind == "sharing_preference" && $0.state != "unanswered" }) {
+                    Text("공유 선호를 저장해도 정보가 전송되지는 않아요.").font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
+                }
+                if !evidence.excludedSubmissions.isEmpty {
+                    Text("일부 응답의 출처를 확인하지 못했어요. 선호를 다시 확인해 주세요.").font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
+                }
+                Button(evidence.submissionID == nil ? "선호 기록하기" : "선호 수정하기", action: onEdit)
+                    .font(TBFont.semibold(14)).foregroundStyle(TBColor.textPrimary).frame(minHeight: 44)
+            }
         }
-        .tbPageContentPadding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TBColor.focus)
     }
 }
 
 #if canImport(PreviewsMacros)
+    #Preview("Preference Evidence") {
+        PreferenceIntakeEvidenceCard(evidence: .empty, hasLegacyProfile: false, onEdit: {})
+            .padding(20)
+    }
+
     #Preview("Preference Intake") {
         PreferenceIntakeFlowView(onBack: {})
             .environmentObject(AppModel.preview(onboardingComplete: true))

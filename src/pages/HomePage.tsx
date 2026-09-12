@@ -19,6 +19,7 @@ import {
   type RestaurantContentCatalog,
 } from '../lib/tasteBuddySupabase';
 import TasteMatchFeed from '../components/social/TasteMatchFeed';
+import TasteSurveyEvidencePanel from '../components/measurement/TasteSurveyEvidencePanel';
 import { TBA } from '../lib/tasteBuddyAgent';
 import {
   createDiningFriendProfileFromPublicTasteProfile,
@@ -191,7 +192,7 @@ export default function HomePage({
   const visibleReservations = reservations.length > 0 ? reservations : RESERVATION_CATALOG;
   const tasteIdentity = useMemo(
     () =>
-      TBA.buildTasteIdentity({
+      effectiveMeasurementSnapshot.source === 'recalled-intensity' ? null : TBA.buildTasteIdentity({
         feedbackCount: userLearnedCalibration?.supportCount ?? 0,
         measurementSnapshot: effectiveMeasurementSnapshot,
         reviewCount: userLearnedCalibration?.supportCount ?? 0,
@@ -200,7 +201,7 @@ export default function HomePage({
   );
   const tasteMatchFeed = useMemo(
     () =>
-      TBA.generateTasteMatchFeed({
+      !tasteIdentity ? [] : TBA.generateTasteMatchFeed({
         candidateProfiles: tasteSocialGraph.profiles,
         limit: 12,
         reviews: tasteSocialGraph.reviews,
@@ -321,7 +322,10 @@ export default function HomePage({
       </header>
       <section className="flex-1 overflow-y-auto no-scrollbar" aria-label="홈 콘텐츠">
         <div className="flex flex-col gap-3 px-5 pb-20 animate-fadeIn">
-          <TasteMatchFeed
+          {measurementSnapshot?.surveySubmission && (
+            <TasteSurveyEvidencePanel submission={measurementSnapshot.surveySubmission} />
+          )}
+          {tasteIdentity && <TasteMatchFeed
             commentCountsByItemId={commentCountsByTasteMatchItemId}
             fallbackBuddyProfiles={tasteSocialGraph.profiles}
             feedItems={tasteMatchFeed}
@@ -330,7 +334,7 @@ export default function HomePage({
             onOpenBuddyProfile={openTasteMatchBuddyProfile}
             onOpenRestaurantDetail={openTasteMatchRestaurant}
             viewerProfile={tasteIdentity}
-          />
+          />}
           <div className="h-6" />
         </div>
       </section>

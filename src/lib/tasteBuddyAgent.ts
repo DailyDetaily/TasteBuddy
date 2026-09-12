@@ -909,6 +909,9 @@ export function buildTasteIdentity({
   reviewCount?: number;
   userId?: string;
 }): TasteProfileSnapshot {
+  if (measurementSnapshot.source === 'recalled-intensity') {
+    throw new TypeError('기준 음식 회상 강도를 선호·민감도 프로필로 변환할 수 없습니다.');
+  }
   const tasteVector = createTasteVectorFromMeasurement(measurementSnapshot);
   const perceptualVector = inferPerceptualVector(tasteVector);
   const sensitivityVector = inferSensitivityVector(tasteVector);

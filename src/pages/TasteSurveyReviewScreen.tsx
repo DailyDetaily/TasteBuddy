@@ -6,7 +6,7 @@ import OutlineBadge from '../components/system/OutlineBadge';
 import SectionTitle from '../components/system/SectionTitle';
 import TasteChip from '../components/system/TasteChip';
 import { ICON_TOKENS, TASTE_TOKENS } from '../constants/designTokens';
-import { TASTE_SURVEY_LIKERT_SCALE } from '../constants/tasteSurveyConfig';
+import { tasteSurveyResponseLabel } from '../lib/tasteSurveyEvidence';
 import type { TasteSurveyItem, TasteSurveyResponse } from '../types/tasteSurvey';
 
 interface TasteSurveyReviewScreenProps {
@@ -15,20 +15,6 @@ interface TasteSurveyReviewScreenProps {
   onEditItem: (index: number) => void;
   onSubmit: () => void;
   responses: Record<string, TasteSurveyResponse | undefined>;
-}
-
-function getResponseLabel(response: TasteSurveyResponse | undefined) {
-  if (!response) {
-    return '미응답';
-  }
-
-  if (response.uncertain) {
-    return TASTE_SURVEY_LIKERT_SCALE.uncertainLabel;
-  }
-
-  return response.selectedValue
-    ? TASTE_SURVEY_LIKERT_SCALE.labels[response.selectedValue]
-    : '미응답';
 }
 
 export default function TasteSurveyReviewScreen({
@@ -40,14 +26,14 @@ export default function TasteSurveyReviewScreen({
 }: TasteSurveyReviewScreenProps) {
   const completedCount = items.filter((item) => {
     const response = responses[item.id];
-    return Boolean(response?.uncertain || response?.selectedValue);
+    return Boolean(response && (response.uncertain || response.selectedValue !== null));
   }).length;
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-focus)] font-sans">
-      <header className="z-20 flex w-full shrink-0 justify-center">
+      <header className="absolute inset-x-0 top-0 z-20 flex w-full justify-center">
         <div
-          className="w-full max-w-[1440px] border-b border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-overlay)] backdrop-blur-md"
+          className="w-full max-w-[1440px] bg-[var(--tb-color-bg-focus)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-focus)]/70"
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
           <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">
@@ -77,7 +63,7 @@ export default function TasteSurveyReviewScreen({
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-5 pt-4 no-scrollbar">
+      <main className="flex-1 overflow-y-auto px-5 pt-[calc(var(--tb-safe-area-top)+var(--tb-size-top-app-bar-height)+16px)] no-scrollbar">
         <div className="tb-section-stack pb-[calc(156px+var(--tb-safe-area-bottom))]">
           <div className="tb-card-stack">
             <div className="flex items-center justify-between gap-3">
@@ -113,7 +99,7 @@ export default function TasteSurveyReviewScreen({
                     <div className="flex w-full items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <TasteChip taste={taste.label} value={item.construct === 'salience' ? '감지' : '부담'} />
+                          <TasteChip taste={taste.label} value="느낀 강도" />
                           {item.exploratoryMetadata ? (
                             <TasteChip taste="탐색" tone="neutral" />
                           ) : null}
@@ -130,7 +116,7 @@ export default function TasteSurveyReviewScreen({
                           응답
                         </p>
                         <p className="mt-1 max-w-[104px] text-[12px] font-semibold leading-snug text-[var(--tb-color-text-primary)]">
-                          {getResponseLabel(response)}
+                          {tasteSurveyResponseLabel(response)}
                         </p>
                       </div>
                     </div>
@@ -143,7 +129,7 @@ export default function TasteSurveyReviewScreen({
       </main>
 
       <FlowBottomCta
-        actionLabel="프로필 해석 보기"
+        actionLabel="응답 정리 보기"
         fadeClassName="bg-[linear-gradient(to_top,var(--tb-color-bg-focus)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]"
         onAction={onSubmit}
       />

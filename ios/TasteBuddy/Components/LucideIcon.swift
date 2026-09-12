@@ -107,19 +107,34 @@ enum LucideIconName: String, CaseIterable {
     case zap
     case zapOff
 
+    // Dish Icons (Lucide Style)
+    case dishNoodle
+    case dishDumpling
+    case dishSauce
+    case dishGrill
+    case dishWok
+    case dishCrispy
+    case dishRaw
+    case dishFerment
+    case dishCheese
+    case dishSpice
+    case dishCold
+    case dishTofu
+    case dishRice
+
     init(systemName: String) {
         switch systemName {
         case "archivebox":
             self = .archive
-        case "arrow.down.right":
+        case "arrow.down.right", "arrow.down.right.circle.fill", "arrow.down.right.fill":
             self = .arrowDownRight
-        case "arrow.up.right":
+        case "arrow.up.right", "arrow.up.right.circle.fill", "arrow.up.right.fill":
             self = .arrowUpRight
         case "bell":
             self = .bell
         case "bookmark", "bookmark.fill":
             self = .bookmark
-        case "calendar.badge.checkmark":
+        case "calendar.badge.checkmark", "calendar.badge.checkmark.fill", "calendar.fill":
             self = .calendarCheck
         case "camera":
             self = .camera
@@ -153,11 +168,11 @@ enum LucideIconName: String, CaseIterable {
             self = .eye
         case "eye-off", "eyeOff", "eye.slash":
             self = .eyeOff
-        case "globe":
+        case "globe", "globe.fill", "globe.americas.fill":
             self = .globe
         case "envelope":
             self = .mail
-        case "fork.knife", "fork.knife.circle":
+        case "fork.knife", "fork.knife.circle", "fork.knife.fill":
             self = .utensils
         case "utensils-crossed", "utensilsCrossed":
             self = .utensilsCrossed
@@ -203,7 +218,7 @@ enum LucideIconName: String, CaseIterable {
             self = .logOut
         case "shield.checkered":
             self = .shieldCheck
-        case "sparkles":
+        case "sparkles", "sparkles.fill":
             self = .sparkles
         case "square.and.arrow.up":
             self = .share
@@ -211,7 +226,7 @@ enum LucideIconName: String, CaseIterable {
             self = .squarePen
         case "star", "star.fill":
             self = .star
-        case "storefront":
+        case "storefront", "storefront.fill":
             self = .store
         case "sun.max.fill":
             self = .sun
@@ -231,6 +246,49 @@ enum LucideIconName: String, CaseIterable {
             self = .zap
         case "zap-off", "zapOff", "bolt.slash":
             self = .zapOff
+
+        // Dish Symbols (Lucide Style)
+        case "dish.seafood", "seafood", "해산물":
+            self = .fish
+        case "dish.meat", "meat", "육류":
+            self = .beef
+        case "dish.vegetable", "vegetable", "vegetable_herb", "채소":
+            self = .salad
+        case "dish.tofu", "tofu", "legume_tofu", "두부":
+            self = .dishTofu
+        case "dish.noodle", "noodle", "grain_noodle", "면":
+            self = .dishNoodle
+        case "dish.dumpling", "dumpling", "dumpling_batter", "만두":
+            self = .dishDumpling
+        case "dish.broth", "dish.soup", "broth", "soup", "국물", "국·탕":
+            self = .soup
+        case "dish.sauce", "sauce", "sauce_glaze", "소스":
+            self = .dishSauce
+        case "dish.grill", "grill", "grilled_smoked", "구이":
+            self = .dishGrill
+        case "dish.wok", "wok", "stir_fried_wok", "볶음":
+            self = .dishWok
+        case "dish.crispy", "crispy", "fried_crispy", "튀김":
+            self = .dishCrispy
+        case "dish.steam", "steam", "steamed_braised", "찜·조림":
+            self = .cookingPot
+        case "dish.raw", "raw", "raw_cured", "회·생요리":
+            self = .dishRaw
+        case "dish.ferment", "ferment", "fermented_jang", "발효음식":
+            self = .dishFerment
+        case "dish.cheese", "cheese", "dairy_cheese", "치즈":
+            self = .dishCheese
+        case "dish.spice", "spice", "spice_heat", "향신료 음식":
+            self = .dishSpice
+        case "dish.cold", "cold", "차가운 요리":
+            self = .dishCold
+        case "dish.dessert", "dessert", "디저트":
+            self = .cakeSlice
+        case "dish.beverage", "beverage", "beverage_pairing", "음료":
+            self = .wine
+        case "dish.rice", "rice", "밥":
+            self = .dishRice
+
         default:
             self = .circleDot
         }
@@ -258,13 +316,14 @@ struct LucideIcon: View {
     init(
         systemName: String,
         size: CGFloat = TBIcon.Size.large,
-        strokeWidth: CGFloat = TBIcon.Stroke.regular
+        strokeWidth: CGFloat = TBIcon.Stroke.regular,
+        filled: Bool? = nil
     ) {
         self.init(
             LucideIconName(systemName: systemName),
             size: size,
             strokeWidth: strokeWidth,
-            filled: systemName.hasSuffix(".fill")
+            filled: filled ?? systemName.hasSuffix(".fill")
         )
     }
 
@@ -462,11 +521,37 @@ struct LucideIcon: View {
             strokePath(box)
             line(10, 12, 14, 12)
         case .arrowDownRight:
-            line(7, 7, 17, 17)
-            polyline([CGPoint(x: 17, y: 7), CGPoint(x: 17, y: 17), CGPoint(x: 7, y: 17)])
+            if filled {
+                filledCircle(12, 12, 10)
+                var path = Path()
+                path.move(to: CGPoint(x: 15, y: 9))
+                path.addLine(to: CGPoint(x: 15, y: 15))
+                path.addLine(to: CGPoint(x: 9, y: 15))
+                context.stroke(path, with: .color(.white), style: stroke)
+                var diag = Path()
+                diag.move(to: CGPoint(x: 9, y: 9))
+                diag.addLine(to: CGPoint(x: 15, y: 15))
+                context.stroke(diag, with: .color(.white), style: stroke)
+            } else {
+                line(7, 7, 17, 17)
+                polyline([CGPoint(x: 17, y: 7), CGPoint(x: 17, y: 17), CGPoint(x: 7, y: 17)])
+            }
         case .arrowUpRight:
-            polyline([CGPoint(x: 7, y: 7), CGPoint(x: 17, y: 7), CGPoint(x: 17, y: 17)])
-            line(7, 17, 17, 7)
+            if filled {
+                filledCircle(12, 12, 10)
+                var path = Path()
+                path.move(to: CGPoint(x: 9, y: 9))
+                path.addLine(to: CGPoint(x: 15, y: 9))
+                path.addLine(to: CGPoint(x: 15, y: 15))
+                context.stroke(path, with: .color(.white), style: stroke)
+                var diag = Path()
+                diag.move(to: CGPoint(x: 9, y: 15))
+                diag.addLine(to: CGPoint(x: 15, y: 9))
+                context.stroke(diag, with: .color(.white), style: stroke)
+            } else {
+                polyline([CGPoint(x: 7, y: 7), CGPoint(x: 17, y: 7), CGPoint(x: 17, y: 17)])
+                line(7, 17, 17, 7)
+            }
         case .beef:
             var steak = Path()
             steak.move(to: CGPoint(x: 16.4, y: 13.7))
@@ -1117,11 +1202,33 @@ struct LucideIcon: View {
             path.closeSubpath()
             fillThenStroke(path)
         case .calendarCheck:
-            line(8, 2, 8, 6)
-            line(16, 2, 16, 6)
-            rect(3, 4, 18, 18, 2)
-            line(3, 10, 21, 10)
-            polyline([CGPoint(x: 9, y: 16), CGPoint(x: 11, y: 18), CGPoint(x: 15, y: 14)])
+            if filled {
+                line(8, 2, 8, 6)
+                line(16, 2, 16, 6)
+                let calendarRect = Path(roundedRect: CGRect(x: 3, y: 4, width: 18, height: 18), cornerRadius: 2)
+                context.fill(calendarRect, with: .foreground)
+                context.stroke(calendarRect, with: .foreground, style: stroke)
+
+                let outerRect = Path(roundedRect: CGRect(x: 2, y: 3, width: 20, height: 20), cornerRadius: 3)
+                context.clip(to: outerRect)
+
+                var headerLine = Path()
+                headerLine.move(to: CGPoint(x: 1, y: 10))
+                headerLine.addLine(to: CGPoint(x: 23, y: 10))
+                context.stroke(headerLine, with: .color(.white), style: StrokeStyle(lineWidth: strokeWidth, lineCap: .butt))
+
+                var check = Path()
+                check.move(to: CGPoint(x: 9, y: 16))
+                check.addLine(to: CGPoint(x: 11, y: 18))
+                check.addLine(to: CGPoint(x: 15, y: 14))
+                context.stroke(check, with: .color(.white), style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round, lineJoin: .round))
+            } else {
+                line(8, 2, 8, 6)
+                line(16, 2, 16, 6)
+                rect(3, 4, 18, 18, 2)
+                line(3, 10, 21, 10)
+                polyline([CGPoint(x: 9, y: 16), CGPoint(x: 11, y: 18), CGPoint(x: 15, y: 14)])
+            }
         case .camera:
             var path = Path()
             path.move(to: CGPoint(x: 14.5, y: 4))
@@ -1322,24 +1429,57 @@ struct LucideIcon: View {
             strokePath(pupil)
             line(3, 3, 21, 21)
         case .globe:
-            circle(12, 12, 10)
-            line(2, 12, 22, 12)
-            var vertical = Path()
-            vertical.move(to: CGPoint(x: 12, y: 2))
-            vertical.addCurve(
-                to: CGPoint(x: 12, y: 22),
-                control1: CGPoint(x: 7.5, y: 6),
-                control2: CGPoint(x: 7.5, y: 18)
-            )
-            vertical.move(to: CGPoint(x: 12, y: 2))
-            vertical.addCurve(
-                to: CGPoint(x: 12, y: 22),
-                control1: CGPoint(x: 16.5, y: 6),
-                control2: CGPoint(x: 16.5, y: 18)
-            )
-            strokePath(vertical)
-            line(4, 7, 20, 7)
-            line(4, 17, 20, 17)
+            if filled {
+                let circlePath = Path(ellipseIn: CGRect(x: 2, y: 2, width: 20, height: 20))
+                context.fill(circlePath, with: .foreground)
+                context.stroke(circlePath, with: .foreground, style: stroke)
+
+                let outerClip = Path(ellipseIn: CGRect(x: 1, y: 1, width: 22, height: 22))
+                context.clip(to: outerClip)
+
+                var vertical = Path()
+                vertical.move(to: CGPoint(x: 12, y: 0))
+                vertical.addCurve(
+                    to: CGPoint(x: 12, y: 24),
+                    control1: CGPoint(x: 7.5, y: 6),
+                    control2: CGPoint(x: 7.5, y: 18)
+                )
+                vertical.move(to: CGPoint(x: 12, y: 0))
+                vertical.addCurve(
+                    to: CGPoint(x: 12, y: 24),
+                    control1: CGPoint(x: 16.5, y: 6),
+                    control2: CGPoint(x: 16.5, y: 18)
+                )
+                context.stroke(vertical, with: .color(.white), style: stroke)
+
+                var hLines = Path()
+                hLines.move(to: CGPoint(x: 0, y: 12))
+                hLines.addLine(to: CGPoint(x: 24, y: 12))
+                hLines.move(to: CGPoint(x: 0, y: 7))
+                hLines.addLine(to: CGPoint(x: 24, y: 7))
+                hLines.move(to: CGPoint(x: 0, y: 17))
+                hLines.addLine(to: CGPoint(x: 24, y: 17))
+                context.stroke(hLines, with: .color(.white), style: stroke)
+            } else {
+                circle(12, 12, 10)
+                line(2, 12, 22, 12)
+                var vertical = Path()
+                vertical.move(to: CGPoint(x: 12, y: 2))
+                vertical.addCurve(
+                    to: CGPoint(x: 12, y: 22),
+                    control1: CGPoint(x: 7.5, y: 6),
+                    control2: CGPoint(x: 7.5, y: 18)
+                )
+                vertical.move(to: CGPoint(x: 12, y: 2))
+                vertical.addCurve(
+                    to: CGPoint(x: 12, y: 22),
+                    control1: CGPoint(x: 16.5, y: 6),
+                    control2: CGPoint(x: 16.5, y: 18)
+                )
+                strokePath(vertical)
+                line(4, 7, 20, 7)
+                line(4, 17, 20, 17)
+            }
         case .heart:
             var path = Path()
             path.move(to: CGPoint(x: 19, y: 14))
@@ -1661,10 +1801,33 @@ struct LucideIcon: View {
                 CGPoint(x: 2, y: 12),
                 CGPoint(x: 9, y: 9)
             ], closed: true)
-            line(20, 3, 20, 7)
-            line(22, 5, 18, 5)
-            line(4, 17, 4, 19)
-            line(5, 18, 3, 18)
+            if filled {
+                polyline([
+                    CGPoint(x: 20, y: 3),
+                    CGPoint(x: 20.8, y: 5),
+                    CGPoint(x: 22, y: 5),
+                    CGPoint(x: 20.8, y: 5.5),
+                    CGPoint(x: 20, y: 7),
+                    CGPoint(x: 19.2, y: 5.5),
+                    CGPoint(x: 18, y: 5),
+                    CGPoint(x: 19.2, y: 5)
+                ], closed: true)
+                polyline([
+                    CGPoint(x: 4, y: 17),
+                    CGPoint(x: 4.5, y: 18),
+                    CGPoint(x: 5, y: 18),
+                    CGPoint(x: 4.5, y: 18.5),
+                    CGPoint(x: 4, y: 19),
+                    CGPoint(x: 3.5, y: 18.5),
+                    CGPoint(x: 3, y: 18),
+                    CGPoint(x: 3.5, y: 18)
+                ], closed: true)
+            } else {
+                line(20, 3, 20, 7)
+                line(22, 5, 18, 5)
+                line(4, 17, 4, 19)
+                line(5, 18, 3, 18)
+            }
         case .squarePen:
             var square = Path()
             let squareStart = CGPoint(x: 12, y: 3)
@@ -1766,17 +1929,46 @@ struct LucideIcon: View {
                 CGPoint(x: 9.2, y: 8.1)
             ], closed: true)
         case .store:
-            polyline([CGPoint(x: 2, y: 7), CGPoint(x: 6.4, y: 2.6), CGPoint(x: 17.6, y: 2.6), CGPoint(x: 22, y: 7)])
-            line(2, 7, 22, 7)
-            var base = Path()
-            base.move(to: CGPoint(x: 4, y: 12))
-            base.addLine(to: CGPoint(x: 4, y: 20))
-            base.addQuadCurve(to: CGPoint(x: 6, y: 22), control: CGPoint(x: 4, y: 22))
-            base.addLine(to: CGPoint(x: 18, y: 22))
-            base.addQuadCurve(to: CGPoint(x: 20, y: 20), control: CGPoint(x: 20, y: 22))
-            base.addLine(to: CGPoint(x: 20, y: 12))
-            strokePath(base)
-            polyline([CGPoint(x: 9, y: 22), CGPoint(x: 9, y: 18), CGPoint(x: 15, y: 18), CGPoint(x: 15, y: 22)])
+            if filled {
+                var roof = Path()
+                roof.move(to: CGPoint(x: 2, y: 7))
+                roof.addLine(to: CGPoint(x: 6.4, y: 2.6))
+                roof.addLine(to: CGPoint(x: 17.6, y: 2.6))
+                roof.addLine(to: CGPoint(x: 22, y: 7))
+                roof.closeSubpath()
+                context.fill(roof, with: .foreground)
+                context.stroke(roof, with: .foreground, style: stroke)
+
+                var base = Path()
+                base.move(to: CGPoint(x: 4, y: 7))
+                base.addLine(to: CGPoint(x: 4, y: 20))
+                base.addQuadCurve(to: CGPoint(x: 6, y: 22), control: CGPoint(x: 4, y: 22))
+                base.addLine(to: CGPoint(x: 18, y: 22))
+                base.addQuadCurve(to: CGPoint(x: 20, y: 20), control: CGPoint(x: 20, y: 22))
+                base.addLine(to: CGPoint(x: 20, y: 7))
+                base.closeSubpath()
+                context.fill(base, with: .foreground)
+                context.stroke(base, with: .foreground, style: stroke)
+
+                var door = Path()
+                door.move(to: CGPoint(x: 9, y: 22))
+                door.addLine(to: CGPoint(x: 9, y: 16))
+                door.addLine(to: CGPoint(x: 15, y: 16))
+                door.addLine(to: CGPoint(x: 15, y: 22))
+                context.stroke(door, with: .color(.white), style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round, lineJoin: .round))
+            } else {
+                polyline([CGPoint(x: 2, y: 7), CGPoint(x: 6.4, y: 2.6), CGPoint(x: 17.6, y: 2.6), CGPoint(x: 22, y: 7)])
+                line(2, 7, 22, 7)
+                var base = Path()
+                base.move(to: CGPoint(x: 4, y: 12))
+                base.addLine(to: CGPoint(x: 4, y: 20))
+                base.addQuadCurve(to: CGPoint(x: 6, y: 22), control: CGPoint(x: 4, y: 22))
+                base.addLine(to: CGPoint(x: 18, y: 22))
+                base.addQuadCurve(to: CGPoint(x: 20, y: 20), control: CGPoint(x: 20, y: 22))
+                base.addLine(to: CGPoint(x: 20, y: 12))
+                strokePath(base)
+                polyline([CGPoint(x: 9, y: 22), CGPoint(x: 9, y: 18), CGPoint(x: 15, y: 18), CGPoint(x: 15, y: 22)])
+            }
         case .sun:
             circle(12, 12, 4)
             line(12, 2, 12, 4)
@@ -1830,17 +2022,41 @@ struct LucideIcon: View {
             polyline([CGPoint(x: 10, y: 15), CGPoint(x: 10, y: 18), CGPoint(x: 7, y: 22)])
             polyline([CGPoint(x: 14, y: 15), CGPoint(x: 14, y: 18), CGPoint(x: 17, y: 22)])
         case .utensils:
-            polyline([CGPoint(x: 3, y: 2), CGPoint(x: 3, y: 9), CGPoint(x: 5, y: 11), CGPoint(x: 9, y: 11), CGPoint(x: 11, y: 9), CGPoint(x: 11, y: 2)])
-            line(7, 2, 7, 22)
-            var knife = Path()
-            knife.move(to: CGPoint(x: 21, y: 15))
-            knife.addLine(to: CGPoint(x: 21, y: 2))
-            knife.addCurve(to: CGPoint(x: 16, y: 7), control1: CGPoint(x: 17, y: 2), control2: CGPoint(x: 16, y: 5))
-            knife.addLine(to: CGPoint(x: 16, y: 13))
-            knife.addQuadCurve(to: CGPoint(x: 18, y: 15), control: CGPoint(x: 16, y: 15))
-            knife.addLine(to: CGPoint(x: 21, y: 15))
-            strokePath(knife)
-            line(21, 15, 21, 22)
+            if filled {
+                var fork = Path()
+                fork.move(to: CGPoint(x: 3, y: 2))
+                fork.addLine(to: CGPoint(x: 3, y: 9))
+                fork.addLine(to: CGPoint(x: 5, y: 11))
+                fork.addLine(to: CGPoint(x: 9, y: 11))
+                fork.addLine(to: CGPoint(x: 11, y: 9))
+                fork.addLine(to: CGPoint(x: 11, y: 2))
+                strokePath(fork)
+                line(7, 2, 7, 22)
+
+                var knife = Path()
+                knife.move(to: CGPoint(x: 21, y: 15))
+                knife.addLine(to: CGPoint(x: 21, y: 2))
+                knife.addCurve(to: CGPoint(x: 16, y: 7), control1: CGPoint(x: 17, y: 2), control2: CGPoint(x: 16, y: 5))
+                knife.addLine(to: CGPoint(x: 16, y: 13))
+                knife.addQuadCurve(to: CGPoint(x: 18, y: 15), control: CGPoint(x: 16, y: 15))
+                knife.addLine(to: CGPoint(x: 21, y: 15))
+                knife.closeSubpath()
+                context.fill(knife, with: .foreground)
+                context.stroke(knife, with: .foreground, style: stroke)
+                line(21, 15, 21, 22)
+            } else {
+                polyline([CGPoint(x: 3, y: 2), CGPoint(x: 3, y: 9), CGPoint(x: 5, y: 11), CGPoint(x: 9, y: 11), CGPoint(x: 11, y: 9), CGPoint(x: 11, y: 2)])
+                line(7, 2, 7, 22)
+                var knife = Path()
+                knife.move(to: CGPoint(x: 21, y: 15))
+                knife.addLine(to: CGPoint(x: 21, y: 2))
+                knife.addCurve(to: CGPoint(x: 16, y: 7), control1: CGPoint(x: 17, y: 2), control2: CGPoint(x: 16, y: 5))
+                knife.addLine(to: CGPoint(x: 16, y: 13))
+                knife.addQuadCurve(to: CGPoint(x: 18, y: 15), control: CGPoint(x: 16, y: 15))
+                knife.addLine(to: CGPoint(x: 21, y: 15))
+                strokePath(knife)
+                line(21, 15, 21, 22)
+            }
         case .utensilsCrossed:
             var upperKnife = Path()
             upperKnife.move(to: CGPoint(x: 16, y: 2))
@@ -1980,11 +2196,254 @@ struct LucideIcon: View {
                 CGPoint(x: 7.727, y: 7.727)
             ])
             line(2, 2, 22, 22)
+
+        // MARK: - Dish Icons (Lucide Style)
+        case .dishNoodle:
+            var bowl = Path()
+            bowl.move(to: CGPoint(x: 3, y: 12))
+            bowl.addCurve(to: CGPoint(x: 12, y: 21), control1: CGPoint(x: 3, y: 17), control2: CGPoint(x: 7, y: 21))
+            bowl.addCurve(to: CGPoint(x: 21, y: 12), control1: CGPoint(x: 17, y: 21), control2: CGPoint(x: 21, y: 17))
+            strokePath(bowl)
+            line(2, 12, 22, 12)
+            line(8, 5, 20, 2)
+            line(9, 7, 21, 4)
+            var noodles = Path()
+            noodles.move(to: CGPoint(x: 11, y: 5))
+            noodles.addCurve(to: CGPoint(x: 10, y: 12), control1: CGPoint(x: 9, y: 7.5), control2: CGPoint(x: 12, y: 9.5))
+            noodles.move(to: CGPoint(x: 14, y: 4.5))
+            noodles.addCurve(to: CGPoint(x: 14, y: 12), control1: CGPoint(x: 12.5, y: 7), control2: CGPoint(x: 15.5, y: 9.5))
+            strokePath(noodles)
+
+        case .dishDumpling:
+            var dumpling = Path()
+            dumpling.move(to: CGPoint(x: 3, y: 15))
+            dumpling.addCurve(to: CGPoint(x: 21, y: 15), control1: CGPoint(x: 5, y: 21), control2: CGPoint(x: 19, y: 21))
+            dumpling.addCurve(to: CGPoint(x: 3, y: 15), control1: CGPoint(x: 19, y: 7), control2: CGPoint(x: 5, y: 7))
+            dumpling.closeSubpath()
+            strokePath(dumpling)
+            line(12, 7, 12, 11)
+            line(8, 8.5, 9.5, 12)
+            line(16, 8.5, 14.5, 12)
+
+        case .dishSauce:
+            var spoon = Path()
+            spoon.move(to: CGPoint(x: 6, y: 6))
+            spoon.addCurve(to: CGPoint(x: 14, y: 14), control1: CGPoint(x: 15, y: 6), control2: CGPoint(x: 17, y: 11))
+            spoon.addCurve(to: CGPoint(x: 6, y: 6), control1: CGPoint(x: 11, y: 17), control2: CGPoint(x: 6, y: 15))
+            strokePath(spoon)
+            line(13.5, 13.5, 21, 21)
+            var drop = Path()
+            drop.move(to: CGPoint(x: 7, y: 16))
+            drop.addQuadCurve(to: CGPoint(x: 9, y: 20), control: CGPoint(x: 9, y: 17))
+            drop.addQuadCurve(to: CGPoint(x: 5, y: 20), control: CGPoint(x: 9, y: 22))
+            drop.addQuadCurve(to: CGPoint(x: 7, y: 16), control: CGPoint(x: 5, y: 17))
+            strokePath(drop)
+
+        case .dishGrill:
+            rect(3, 8, 18, 12, 2)
+            line(7.5, 8, 7.5, 20)
+            line(12, 8, 12, 20)
+            line(16.5, 8, 16.5, 20)
+            var smoke = Path()
+            smoke.move(to: CGPoint(x: 8, y: 5))
+            smoke.addCurve(to: CGPoint(x: 9, y: 2), control1: CGPoint(x: 7, y: 3.5), control2: CGPoint(x: 10, y: 3.5))
+            smoke.move(to: CGPoint(x: 14, y: 5))
+            smoke.addCurve(to: CGPoint(x: 15, y: 2), control1: CGPoint(x: 13, y: 3.5), control2: CGPoint(x: 16, y: 3.5))
+            strokePath(smoke)
+
+        case .dishWok:
+            var wok = Path()
+            wok.move(to: CGPoint(x: 4, y: 12))
+            wok.addCurve(to: CGPoint(x: 18, y: 12), control1: CGPoint(x: 5, y: 21), control2: CGPoint(x: 17, y: 21))
+            strokePath(wok)
+            line(3, 12, 19, 12)
+            line(19, 12, 22, 9)
+            var stirMotion = Path()
+            stirMotion.move(to: CGPoint(x: 9, y: 8))
+            stirMotion.addCurve(to: CGPoint(x: 13, y: 5), control1: CGPoint(x: 9, y: 6), control2: CGPoint(x: 11, y: 5))
+            strokePath(stirMotion)
+            circle(14.5, 6.5, 0.8)
+
+        case .dishCrispy:
+            var drumstick = Path()
+            drumstick.move(to: CGPoint(x: 6, y: 8))
+            drumstick.addCurve(to: CGPoint(x: 13, y: 15), control1: CGPoint(x: 3, y: 11), control2: CGPoint(x: 6, y: 18))
+            drumstick.addLine(to: CGPoint(x: 17, y: 19))
+            drumstick.addCurve(to: CGPoint(x: 19, y: 17), control1: CGPoint(x: 18.5, y: 20.5), control2: CGPoint(x: 20.5, y: 18.5))
+            drumstick.addLine(to: CGPoint(x: 15, y: 13))
+            drumstick.addCurve(to: CGPoint(x: 6, y: 8), control1: CGPoint(x: 18, y: 6), control2: CGPoint(x: 11, y: 3))
+            drumstick.closeSubpath()
+            strokePath(drumstick)
+            line(18, 4, 18, 8)
+            line(16, 6, 20, 6)
+
+        case .dishRaw:
+            var slice1 = Path()
+            slice1.move(to: CGPoint(x: 10, y: 5))
+            slice1.addCurve(to: CGPoint(x: 20, y: 15), control1: CGPoint(x: 17, y: 6), control2: CGPoint(x: 21, y: 11))
+            slice1.addCurve(to: CGPoint(x: 10, y: 5), control1: CGPoint(x: 15, y: 17), control2: CGPoint(x: 8, y: 11))
+            strokePath(slice1)
+            var slice2 = Path()
+            slice2.move(to: CGPoint(x: 5, y: 10))
+            slice2.addCurve(to: CGPoint(x: 15, y: 20), control1: CGPoint(x: 12, y: 11), control2: CGPoint(x: 16, y: 16))
+            slice2.addCurve(to: CGPoint(x: 5, y: 10), control1: CGPoint(x: 10, y: 22), control2: CGPoint(x: 3, y: 16))
+            strokePath(slice2)
+            line(8, 14, 12, 18)
+
+        case .dishFerment:
+            var pot = Path()
+            pot.move(to: CGPoint(x: 5, y: 9))
+            pot.addCurve(to: CGPoint(x: 12, y: 21), control1: CGPoint(x: 3, y: 14), control2: CGPoint(x: 6, y: 21))
+            pot.addCurve(to: CGPoint(x: 19, y: 9), control1: CGPoint(x: 18, y: 21), control2: CGPoint(x: 21, y: 14))
+            strokePath(pot)
+            line(4, 9, 20, 9)
+            var lid = Path()
+            lid.move(to: CGPoint(x: 6, y: 9))
+            lid.addQuadCurve(to: CGPoint(x: 18, y: 9), control: CGPoint(x: 12, y: 5))
+            strokePath(lid)
+            line(11, 5, 13, 5)
+
+        case .dishCheese:
+            var cheese = Path()
+            cheese.move(to: CGPoint(x: 4, y: 17))
+            cheese.addLine(to: CGPoint(x: 20, y: 7))
+            cheese.addLine(to: CGPoint(x: 18, y: 17))
+            cheese.closeSubpath()
+            strokePath(cheese)
+            circle(9, 14.5, 1.5)
+            circle(14.5, 12.5, 1.2)
+
+        case .dishSpice:
+            var pepper = Path()
+            pepper.move(to: CGPoint(x: 15, y: 6))
+            pepper.addCurve(to: CGPoint(x: 6, y: 18), control1: CGPoint(x: 10, y: 7), control2: CGPoint(x: 5, y: 12))
+            pepper.addCurve(to: CGPoint(x: 17, y: 8), control1: CGPoint(x: 9, y: 18), control2: CGPoint(x: 15, y: 14))
+            pepper.closeSubpath()
+            strokePath(pepper)
+            var stem = Path()
+            stem.move(to: CGPoint(x: 16, y: 7))
+            stem.addQuadCurve(to: CGPoint(x: 19, y: 3), control: CGPoint(x: 18, y: 5))
+            strokePath(stem)
+
+        case .dishCold:
+            line(12, 2, 12, 22)
+            line(3.34, 7, 20.66, 17)
+            line(3.34, 17, 20.66, 7)
+            line(10, 5, 12, 3)
+            line(14, 5, 12, 3)
+            line(10, 19, 12, 21)
+            line(14, 19, 12, 21)
+            circle(12, 12, 1.5)
+
+        case .dishTofu:
+            polyline([CGPoint(x: 12, y: 3), CGPoint(x: 20, y: 7.5), CGPoint(x: 12, y: 12), CGPoint(x: 4, y: 7.5)], closed: true)
+            line(4, 7.5, 4, 16.5)
+            line(12, 12, 12, 21)
+            line(20, 7.5, 20, 16.5)
+            line(4, 16.5, 12, 21)
+            line(20, 16.5, 12, 21)
+
+        case .dishRice:
+            var bowl = Path()
+            bowl.move(to: CGPoint(x: 4, y: 11))
+            bowl.addCurve(to: CGPoint(x: 12, y: 20), control1: CGPoint(x: 4, y: 16), control2: CGPoint(x: 7, y: 20))
+            bowl.addCurve(to: CGPoint(x: 20, y: 11), control1: CGPoint(x: 17, y: 20), control2: CGPoint(x: 20, y: 16))
+            strokePath(bowl)
+            line(3, 11, 21, 11)
+            var rice = Path()
+            rice.move(to: CGPoint(x: 6, y: 11))
+            rice.addQuadCurve(to: CGPoint(x: 18, y: 11), control: CGPoint(x: 12, y: 5))
+            strokePath(rice)
+            circle(12, 7.5, 0.8)
+        }
+    }
+}
+
+extension LucideIcon {
+    /// 디시 종류(DishKind ID 또는 한글명)에 대응하는 LucideIcon 심볼명을 반환합니다.
+    static func dishKindSymbol(for kindId: String) -> String {
+        switch kindId {
+        case "seafood", "해산물": return "dish.seafood"
+        case "meat", "육류": return "dish.meat"
+        case "vegetable_herb", "vegetable", "채소": return "dish.vegetable"
+        case "legume_tofu", "tofu", "두부": return "dish.tofu"
+        case "grain_noodle", "noodle", "면": return "dish.noodle"
+        case "dumpling_batter", "dumpling", "만두": return "dish.dumpling"
+        case "broth", "soup", "국물", "국·탕": return "dish.broth"
+        case "sauce_glaze", "sauce", "소스": return "dish.sauce"
+        case "grilled_smoked", "grill", "구이": return "dish.grill"
+        case "stir_fried_wok", "wok", "볶음": return "dish.wok"
+        case "fried_crispy", "crispy", "튀김": return "dish.crispy"
+        case "steamed_braised", "steam", "찜·조림": return "dish.steam"
+        case "raw_cured", "raw", "회·생요리": return "dish.raw"
+        case "fermented_jang", "ferment", "발효음식": return "dish.ferment"
+        case "dairy_cheese", "cheese", "치즈": return "dish.cheese"
+        case "spice_heat", "spice", "향신료 음식": return "dish.spice"
+        case "cold", "차가운 요리": return "dish.cold"
+        case "dessert", "디저트": return "dish.dessert"
+        case "beverage_pairing", "beverage", "음료": return "dish.beverage"
+        case "rice", "밥": return "dish.rice"
+        default: return "circle.dot"
         }
     }
 }
 
 #if canImport(PreviewsMacros)
+    #Preview("Dish Icons (Lucide Style)") {
+        let dishes: [(String, String)] = [
+            ("해산물", "dish.seafood"),
+            ("육류", "dish.meat"),
+            ("채소/허브", "dish.vegetable"),
+            ("두부/콩", "dish.tofu"),
+            ("면", "dish.noodle"),
+            ("만두", "dish.dumpling"),
+            ("국물/탕", "dish.broth"),
+            ("소스", "dish.sauce"),
+            ("구이", "dish.grill"),
+            ("볶음/웍", "dish.wok"),
+            ("튀김", "dish.crispy"),
+            ("찜/조림", "dish.steam"),
+            ("회/생요리", "dish.raw"),
+            ("발효/장", "dish.ferment"),
+            ("치즈", "dish.cheese"),
+            ("향신료", "dish.spice"),
+            ("차가운 요리", "dish.cold"),
+            ("디저트", "dish.dessert"),
+            ("음료", "dish.beverage"),
+            ("밥", "dish.rice")
+        ]
+
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Lucide Style Dish Icons (20종)")
+                    .font(TBFont.bold(18))
+                    .foregroundStyle(TBColor.textPrimary)
+
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 84))], spacing: 12) {
+                    ForEach(dishes, id: \.0) { item in
+                        VStack(spacing: 8) {
+                            LucideIcon(systemName: item.1, size: 24, strokeWidth: 1.8)
+                                .foregroundStyle(TBColor.textPrimary)
+                            Text(item.0)
+                                .font(TBFont.medium(11))
+                                .foregroundStyle(TBColor.textSecondary)
+                        }
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(TBColor.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(TBColor.borderSubtle, lineWidth: 1)
+                        }
+                    }
+                }
+            }
+            .padding()
+        }
+        .background(TBColor.page)
+    }
+
     #Preview("Lucide Icons") {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 42))], spacing: 14) {
             ForEach(LucideIconName.allCases, id: \.rawValue) { name in

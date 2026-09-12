@@ -45,9 +45,12 @@ import { getChefImageByName } from '../constants/chefImages';
 import {
   TASTE_MEASUREMENT_AVERAGES,
   createInitialTasteMeasurementResults,
+  isReferenceFoodRecallSnapshot,
   type TasteMeasurementResults,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
+import { readTasteSurveySubmission } from './tasteSurveyEvidence';
+import { restoreTasteSurveyMeasurementSnapshot } from './tasteSurveyPersistence';
 import {
   computeReservationLearningSignal,
   createEmptyUserLearnedCalibration,
@@ -131,15 +134,10 @@ interface FeedbackItemQueryRow {
   updated_at?: string | null;
 }
 
-interface FeedbackItemEvidenceQueryRow {
+interface FeedbackItemEvidenceQueryRow extends Omit<FeedbackItemQueryRow, 'reservation_dishes'> {
   id: string;
-  selected_detail_tag_ids?: unknown;
-  selected_dish_kind_ids?: unknown;
-  selected_experience_ids?: unknown;
-  selected_tag_ids: unknown;
-  tba_analysis_snapshot?: unknown;
-  tba_confidence?: number | null;
-  tba_signal_ids?: unknown;
+  updated_at: string;
+  reservation_dishes: { sort_order: number };
 }
 
 interface TbaFeedbackEvidenceEventQueryRow {
@@ -195,6 +193,7 @@ interface MeasurementSessionQueryRow {
   completed_at: string | null;
   id: string;
   source?: MeasurementSource | null;
+  raw_payload?: Record<string, unknown> | null;
 }
 
 interface ContentChefQueryRow {
@@ -1270,55 +1269,21 @@ function inferTbaFeedbackEvidenceEventType(params: {
   return 'updated';
 }
 
-async function fetchFeedbackItemEvidenceRow(
-  feedbackSubmissionId: string,
-  reservationDishId: string,
-): Promise<FeedbackItemEvidenceQueryRow | null> {
-  if (!supabase) {
-    return null;
-  }
-
-  const fetchRow = (selectDetails: boolean, selectTbaAnalysis: boolean) =>
-    supabase
-      .from('feedback_items')
-      .select(`
-        id,
-        selected_tag_ids,
-        ${selectDetails
-          ? `
-        selected_experience_ids,
-        selected_detail_tag_ids,
-        selected_dish_kind_ids,
-        `
-          : ''}
-        ${selectTbaAnalysis
-          ? `
-        tba_analysis_snapshot,
-        tba_signal_ids,
-        tba_confidence
-        `
-          : ''}
-      `)
-      .eq('feedback_submission_id', feedbackSubmissionId)
-      .eq('reservation_dish_id', reservationDishId)
-      .maybeSingle();
-
-  let { data, error } = await fetchRow(true, true);
-
-  if (error && isFeedbackItemTbaAnalysisSchemaError(error)) {
-    ({ data, error } = await fetchRow(true, false));
-  }
-
-  if (error && isFeedbackItemDetailSchemaError(error)) {
-    ({ data, error } = await fetchRow(false, false));
-  }
-
-  if (error) {
-    console.warn('Failed to fetch previous TBA feedback evidence.', error);
-    return null;
-  }
-
-  return (data as FeedbackItemEvidenceQueryRow | null) ?? null;
+async function fetchFeedbackSubmissionForMutation(reservationId: string, userId: string) {
+  const { data, error } = await supabase!
+    .from('feedback_submissions')
+    .select('id, updated_at, client_submission_completed_at, feedback_items(*, reservation_dishes(sort_order))')
+    .eq('reservation_id', reservationId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  // A missing schema or failed read must never become an empty previous state.
+  if (error) throw error;
+  return data as {
+    id: string;
+    updated_at: string;
+    client_submission_completed_at: string | null;
+    feedback_items: FeedbackItemEvidenceQueryRow[];
+  } | null;
 }
 
 async function upsertUserTbaConfidenceStates(
@@ -1403,84 +1368,43 @@ async function refreshUserTbaConfidenceStates(userId: string) {
   await upsertUserTbaConfidenceStates(userId, states);
 }
 
-async function recordTbaFeedbackEvidenceEvent(params: {
+function buildTbaFeedbackEvidenceEvent(params: {
   eventType: TasteBuddyAgentFeedbackEvidenceEventType;
-  feedbackItemId: string | null;
-  feedbackSubmissionId: string;
   next: TasteBuddyAgentFeedbackEvidenceState | null;
   payload?: Record<string, unknown>;
   previous: TasteBuddyAgentFeedbackEvidenceState | null;
-  reservationDishId: string;
-  reservationId: string;
-  userId: string;
 }) {
-  if (!supabase) {
-    return;
-  }
-
   const confidenceEffect = TBA.calculateFeedbackEvidenceConfidenceEffect({
     eventType: params.eventType,
     next: params.next,
     previous: params.previous,
   });
   if (confidenceEffect.action === 'ignore') {
-    return;
+    return null;
   }
 
-  const { error } = await supabase
-    .from('tba_feedback_evidence_events')
-    .insert({
-      user_id: params.userId,
-      reservation_id: params.reservationId,
-      feedback_submission_id: params.feedbackSubmissionId,
-      feedback_item_id: params.feedbackItemId,
-      reservation_dish_id: params.reservationDishId,
-      event_type: params.eventType,
-      evidence_action: confidenceEffect.action,
-      previous_snapshot: params.previous?.snapshot ?? null,
-      next_snapshot: params.next?.snapshot ?? null,
-      previous_tba_signal_ids: params.previous?.signalIds ?? [],
-      next_tba_signal_ids: params.next?.signalIds ?? [],
-      previous_tba_confidence: params.previous?.tbaConfidence ?? null,
-      next_tba_confidence: params.next?.tbaConfidence ?? null,
-      confidence_delta: confidenceEffect.confidenceDelta,
-      confidence_effect: confidenceEffect,
-      payload: {
-        ...params.payload,
-        changedDimensions: confidenceEffect.changedDimensions,
-        nextDetailTagIds: params.next?.detailTagIds ?? [],
-        nextDishKindIds: params.next?.dishKindIds ?? [],
-        nextTasteTagIds: params.next?.tasteTagIds ?? [],
-        previousDetailTagIds: params.previous?.detailTagIds ?? [],
-        previousDishKindIds: params.previous?.dishKindIds ?? [],
-        previousTasteTagIds: params.previous?.tasteTagIds ?? [],
-      },
-    });
-
-  if (error && isTbaFeedbackEvidenceEventSchemaError(error)) {
-    console.warn('TBA feedback evidence event table is not ready yet.', error);
-    return;
-  }
-
-  if (error) {
-    console.warn('Failed to record TBA feedback evidence event.', error);
-    return;
-  }
-
-  await refreshUserTbaConfidenceStates(params.userId);
-}
-
-function getLegacyFeedbackTagIds(
-  dish: DiningDishMetadata,
-  response: DiningFeedbackDraft['dishResponses'][string],
-) {
-  if (response.selectedChoiceId) {
-    return [response.selectedChoiceId];
-  }
-
-  return hasDiningDishFeedbackResponse(response) && dish.feedbackChoices[0]
-    ? [dish.feedbackChoices[0].id]
-    : [];
+  return {
+    event_type: params.eventType,
+    evidence_action: confidenceEffect.action,
+    previous_snapshot: params.previous?.snapshot ?? null,
+    next_snapshot: params.next?.snapshot ?? null,
+    previous_tba_signal_ids: params.previous?.signalIds ?? [],
+    next_tba_signal_ids: params.next?.signalIds ?? [],
+    previous_tba_confidence: params.previous?.tbaConfidence ?? null,
+    next_tba_confidence: params.next?.tbaConfidence ?? null,
+    confidence_delta: confidenceEffect.confidenceDelta,
+    confidence_effect: confidenceEffect,
+    payload: {
+      ...params.payload,
+      changedDimensions: confidenceEffect.changedDimensions,
+      nextDetailTagIds: params.next?.detailTagIds ?? [],
+      nextDishKindIds: params.next?.dishKindIds ?? [],
+      nextTasteTagIds: params.next?.tasteTagIds ?? [],
+      previousDetailTagIds: params.previous?.detailTagIds ?? [],
+      previousDishKindIds: params.previous?.dishKindIds ?? [],
+      previousTasteTagIds: params.previous?.tasteTagIds ?? [],
+    },
+  };
 }
 
 function isMatchingPlaceIndexRow(row: RestaurantPlaceIndexQueryRow, restaurantName: string) {
@@ -2718,7 +2642,7 @@ async function upsertReservationDishes(reservationId: string, dishes: readonly D
   return idMap;
 }
 
-export async function hydrateReservationPageData(): Promise<HydratedReservationPageData> {
+export async function hydrateReservationPageData({ seedIfEmpty = true }: { seedIfEmpty?: boolean } = {}): Promise<HydratedReservationPageData> {
   if (!supabase || !isSupabaseConfigured) {
     return {
       reservations: RESERVATION_CATALOG,
@@ -2753,7 +2677,7 @@ export async function hydrateReservationPageData(): Promise<HydratedReservationP
       rows.length === 0 ||
       rows.every((row) => parseMockReservationExternalRef(row.external_ref) !== null);
 
-    if (shouldSeedContentReservations) {
+    if (seedIfEmpty && shouldSeedContentReservations) {
       await syncReservationCatalogToSupabase(userId);
       rows = await fetchReservationRows(userId);
     }
@@ -2820,7 +2744,7 @@ export async function hydrateLatestMeasurementSnapshot() {
 
   const { data: latestSession, error: latestSessionError } = await supabase
     .from('measurement_sessions')
-    .select('id, completed_at, source')
+    .select('id, completed_at, source, raw_payload')
     .eq('user_id', userId)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
@@ -2834,6 +2758,10 @@ export async function hydrateLatestMeasurementSnapshot() {
 
   if (!latestSession?.id) {
     return null;
+  }
+
+  if (latestSession.raw_payload?.derived_snapshot_source === 'recalled-intensity') {
+    return restoreTasteSurveyMeasurementSnapshot(latestSession.raw_payload);
   }
 
   const { data: resultRows, error: resultRowsError } = await supabase
@@ -2866,7 +2794,7 @@ export async function hydrateRecentMeasurementSnapshots(limit = 6) {
 
   const { data: sessionRows, error: sessionError } = await supabase
     .from('measurement_sessions')
-    .select('id, completed_at, source')
+    .select('id, completed_at, source, raw_payload')
     .eq('user_id', userId)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
@@ -2911,11 +2839,17 @@ export async function hydrateRecentMeasurementSnapshots(limit = 6) {
 
   return [...sessions]
     .reverse()
-    .map((session) => ({
-      measuredAt: session.completed_at ?? new Date().toISOString(),
-      results: toTasteMeasurementResults(resultsBySessionId.get(session.id) ?? []),
-      source: session.source === 'quick_calibration' ? 'broad-starter' : 'measured',
-    }));
+    .flatMap((session): TasteMeasurementSnapshot[] => {
+      if (session.raw_payload?.derived_snapshot_source === 'recalled-intensity') {
+        const snapshot = restoreTasteSurveyMeasurementSnapshot(session.raw_payload);
+        return snapshot ? [snapshot] : [];
+      }
+      return [{
+        measuredAt: session.completed_at ?? new Date().toISOString(),
+        results: toTasteMeasurementResults(resultsBySessionId.get(session.id) ?? []),
+        source: session.source === 'quick_calibration' ? 'broad-starter' : 'measured',
+      }];
+    });
 }
 
 export async function hydrateUserLearnedCalibration(): Promise<UserLearnedCalibration | null> {
@@ -2973,6 +2907,10 @@ export async function hydrateUserTbaConfidenceStates(): Promise<TasteBuddyAgentU
   if (!userId) {
     return [];
   }
+
+  await refreshUserTbaConfidenceStates(userId).catch((error) => {
+    console.warn('Failed to rebuild the TBA confidence cache.', error);
+  });
 
   const { data, error } = await supabase
     .from('user_tba_confidence_states')
@@ -3269,7 +3207,11 @@ export async function persistTasteMeasurementSnapshot(
     return false;
   }
 
-  const confidenceScore = source === 'tastick' ? 0.82 : source === 'quick_calibration' ? 0.68 : 0.55;
+  const isRecall = isReferenceFoodRecallSnapshot(snapshot);
+  const submission = isRecall ? readTasteSurveySubmission(snapshot.surveySubmission) : null;
+  if (isRecall && !submission) return false;
+  // Existing NOT NULL column: zero means no validated calibration confidence, not measured accuracy.
+  const confidenceScore = isRecall ? 0 : source === 'tastick' ? 0.82 : source === 'quick_calibration' ? 0.68 : 0.55;
 
   const { data: sessionRow, error: sessionError } = await supabase
     .from('measurement_sessions')
@@ -3283,6 +3225,14 @@ export async function persistTasteMeasurementSnapshot(
       raw_payload: {
         persisted_from: 'taste-buddy-app',
         ...(options.rawPayload ?? {}),
+        ...(submission ? {
+          measurement_flow: 'taste_survey',
+          derived_snapshot_source: 'recalled-intensity',
+          instrument_id: submission.instrument.id,
+          instrument_version: submission.instrument.version,
+          confidence_status: 'not_validated',
+          survey_submission: submission,
+        } : {}),
       },
     })
     .select('id')
@@ -3292,6 +3242,9 @@ export async function persistTasteMeasurementSnapshot(
     console.warn('Failed to persist measurement session.', sessionError);
     return false;
   }
+
+  // Ordinal recall responses are retained in raw_payload, never in millimetre or population-reference columns.
+  if (isRecall) return true;
 
   const resultRows = TASTE_IDS.map((tasteId) => {
     const valueMm = snapshot.results[tasteId] ?? TASTE_MEASUREMENT_AVERAGES[tasteId];
@@ -3357,89 +3310,102 @@ async function persistDiningFeedbackToSupabase(input: SubmitDiningFeedbackInput)
   }
 
   const reservationId = await getOrCreateReservationId(userId, input.reservation);
-  if (input.createOnly) {
-    const { data: existing, error } = await supabase.from('feedback_submissions')
-      .select('client_submission_completed_at')
-      .eq('reservation_id', reservationId)
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (error) throw error;
-    // A retry after a lost acknowledgement must never overwrite a later edit/delete.
-    if (existing?.client_submission_completed_at) {
-      return { persisted: true, remoteId: reservationId, reservationSignalReasons: [] };
-    }
-  }
-  const persistableDraft = await uploadFeedbackReflectionPhotos({
-    draft: input.draft,
-    reservationId,
-  });
+  if (!reservationId) return { persisted: false, reservationSignalReasons: [] };
+  const previousSubmission = await fetchFeedbackSubmissionForMutation(reservationId, userId);
+  const persistableDraft = await uploadFeedbackReflectionPhotos({ draft: input.draft, reservationId });
   const feedbackDishes = getPersistableFeedbackDishes(input.scenario, persistableDraft);
-  const reservationDishIds = await upsertReservationDishes(reservationId, feedbackDishes);
+  const feedbackObservations = [];
+  const items = [];
 
-  const { data: feedbackSubmission, error: feedbackSubmissionError } = await supabase
-    .from('feedback_submissions')
-    .upsert(
-      {
-        reservation_id: reservationId,
-        user_id: userId,
-        overall_rating: persistableDraft.overallRating,
-        overall_comment: persistableDraft.overallComment,
-        return_intent: persistableDraft.returnIntent,
-      },
-      {
-        onConflict: 'reservation_id',
-      },
-    )
-    .select('id')
-    .single();
-
-  if (feedbackSubmissionError) {
-    throw feedbackSubmissionError;
+  for (const [sortOrder, dish] of feedbackDishes.entries()) {
+    const response = persistableDraft.dishResponses[dish.id] ?? createDiningDishFeedbackDraft(dish);
+    const clear = !hasDiningDishFeedbackResponse(response);
+    if (clear) {
+      const previousRow = previousSubmission?.feedback_items.find((item) => item.reservation_dishes?.sort_order === sortOrder);
+      if (!previousRow || !hasDiningDishFeedbackResponse({
+        rating: previousRow.rating,
+        selectedChoiceId: readStringArray(previousRow.selected_tag_ids)[0] ?? null,
+        selectedExperienceIds: readStringArray(previousRow.selected_experience_ids),
+        selectedDetailTagIds: readStringArray(previousRow.selected_detail_tag_ids),
+        customDetailTags: readStringArrayRecord(previousRow.custom_detail_tags),
+        reflectionNote: previousRow.reflection_note ?? '',
+        reflectionPhotoName: previousRow.reflection_photo_name,
+        reflectionPhotoPreviewUrl: previousRow.reflection_photo_preview_url,
+      })) continue;
+    }
+    const selectedChoice = dish.feedbackChoices.find((choice) => choice.id === response.selectedChoiceId);
+    const parsedReaction = parseFeedbackSelections(selectedChoice ? [{ tagId: selectedChoice.id }] : []);
+    items.push(buildAtomicFeedbackItem({ dish, response, sortOrder, previousSubmission, parsedReaction,
+      restaurantName: input.reservation.restaurant, clear }));
+    if (clear) continue;
+    feedbackObservations.push({
+      rating: response.rating,
+      daysSinceDining: Math.max(0, Math.floor((Date.now() - new Date(input.scenario.completedAt).getTime()) / 86400000)),
+      parsedReaction,
+      sourceConfidence: 1,
+    });
   }
 
-  const feedbackObservations = [];
-  let shouldPersistFeedbackItemDetails = true;
+  const { data, error } = await supabase.rpc('save_dining_feedback_atomic', {
+    p_reservation_id: reservationId,
+    p_expected_user_id: userId,
+    p_expected_updated_at: previousSubmission?.updated_at ?? null,
+    p_submission: {
+      overall_rating: persistableDraft.overallRating,
+      overall_comment: persistableDraft.overallComment,
+      return_intent: persistableDraft.returnIntent,
+    },
+    p_items: items,
+    p_create_only: input.createOnly ?? false,
+    p_clear: false,
+  });
+  // Never fall back to separate writes: an unavailable RPC leaves the draft retryable.
+  if (error) throw error;
+  if (!data?.persisted) return { persisted: false, reservationSignalReasons: [] };
+  await refreshUserTbaConfidenceStates(userId).catch((cacheError) => {
+    console.warn('Feedback saved; TBA confidence cache will be rebuilt on the next read.', cacheError);
+  });
+  return {
+    persisted: true,
+    remoteId: reservationId,
+    reservationSignalReasons: computeReservationLearningSignal(feedbackObservations).reasons,
+  };
+}
 
-  for (const dish of feedbackDishes) {
-    const response = persistableDraft.dishResponses[dish.id];
-    const reservationDishId = reservationDishIds.get(dish.id);
-
-    if (!response || !reservationDishId || !hasDiningDishFeedbackResponse(response)) {
-      continue;
-    }
-
-    const selectedChoice = dish.feedbackChoices.find((choice) => choice.id === response.selectedChoiceId);
-    const selectedExperienceIds = getFeedbackEvidenceSelectedExperienceIds(response);
-    const parsedReaction = parseFeedbackSelections(
-      selectedChoice ? [{ tagId: selectedChoice.id }] : [],
-    );
-    const previousFeedbackItemRow = await fetchFeedbackItemEvidenceRow(
-      feedbackSubmission.id,
-      reservationDishId,
-    );
-    const previousEvidenceState = buildFeedbackEvidenceStateFromRow(previousFeedbackItemRow);
-    const tbaAnalysisFields = getFeedbackItemTbaAnalysisFields({
-      dish,
-      response,
-      selectedChoice: selectedChoice ?? null,
-    });
-    const nextEvidenceState = buildFeedbackEvidenceStateFromResponse({
-      response,
-      tbaAnalysisFields,
-    });
-    const baseFeedbackItemRow = {
-      feedback_submission_id: feedbackSubmission.id,
-      reservation_dish_id: reservationDishId,
+function buildAtomicFeedbackItem(params: {
+  dish: DiningDishMetadata;
+  response: DiningFeedbackDraft['dishResponses'][string];
+  sortOrder: number;
+  previousSubmission: Awaited<ReturnType<typeof fetchFeedbackSubmissionForMutation>>;
+  parsedReaction: ReturnType<typeof parseFeedbackSelections>;
+  restaurantName: string;
+  clear?: boolean;
+}) {
+  const { dish, response, parsedReaction, sortOrder } = params;
+  const selectedChoice = dish.feedbackChoices.find((choice) => choice.id === response.selectedChoiceId);
+  const previousRow = params.previousSubmission?.feedback_items.find(
+    (item) => item.reservation_dishes?.sort_order === sortOrder,
+  ) ?? null;
+  const previous = buildFeedbackEvidenceStateFromRow(previousRow);
+  const tbaFields = params.clear ? getClearedFeedbackItemTbaAnalysisFields()
+    : getFeedbackItemTbaAnalysisFields({ dish, response, selectedChoice: selectedChoice ?? null });
+  const next = params.clear ? {
+    detailTagIds: [], dishKindIds: [], signalIds: [], snapshot: null, tasteTagIds: [], tbaConfidence: null,
+  } : buildFeedbackEvidenceStateFromResponse({ response, tbaAnalysisFields: tbaFields });
+  return {
+    expected_updated_at: previousRow?.updated_at ?? null,
+    dish: {
+      course_position: mapCoursePosition(dish.courseLabel),
+      title: dish.title, subtitle: dish.subtitle, chef_intent: dish.chefIntent,
+      ingredients: [...dish.ingredients], techniques: [...dish.techniques], flavor_notes: [...dish.flavorNotes],
+      sort_order: sortOrder,
+    },
+    feedback: {
       rating: response.rating,
-      selected_tag_ids: shouldPersistFeedbackItemDetails
-        ? response.selectedChoiceId ? [response.selectedChoiceId] : []
-        : getLegacyFeedbackTagIds(dish, response),
+      selected_tag_ids: response.selectedChoiceId ? [response.selectedChoiceId] : [],
       selected_reason: selectedChoice?.label ?? null,
       comment: selectedChoice?.reason ?? null,
-    };
-    const detailedFeedbackItemRow = {
-      ...baseFeedbackItemRow,
-      selected_experience_ids: [...new Set(selectedExperienceIds)],
+      selected_experience_ids: [...new Set(getFeedbackEvidenceSelectedExperienceIds(response))],
       selected_detail_tag_ids: response.selectedDetailTagIds ?? [],
       selected_dish_kind_ids: response.selectedDishKindIds ?? [],
       custom_dish_kind_labels: response.customDishKindLabels ?? [],
@@ -3447,120 +3413,22 @@ async function persistDiningFeedbackToSupabase(input: SubmitDiningFeedbackInput)
       reflection_note: response.reflectionNote?.trim() || null,
       reflection_photo_name: response.reflectionPhotoName ?? null,
       reflection_photo_preview_url: response.reflectionPhotoPreviewUrl ?? null,
-      ...tbaAnalysisFields,
-    };
-
-    let { data: feedbackItem, error: feedbackItemError } = await supabase
-      .from('feedback_items')
-      .upsert(
-        shouldPersistFeedbackItemDetails ? detailedFeedbackItemRow : baseFeedbackItemRow,
-        {
-          onConflict: 'feedback_submission_id,reservation_dish_id',
-        },
-      )
-      .select('id')
-      .single();
-
-    if (feedbackItemError && isFeedbackItemTbaAnalysisSchemaError(feedbackItemError)) {
-      ({ data: feedbackItem, error: feedbackItemError } = await supabase
-        .from('feedback_items')
-        .upsert(
-          stripFeedbackItemTbaAnalysisFields(detailedFeedbackItemRow),
-          {
-            onConflict: 'feedback_submission_id,reservation_dish_id',
-          },
-        )
-        .select('id')
-        .single());
-    }
-
-    if (feedbackItemError && isFeedbackItemDetailSchemaError(feedbackItemError)) {
-      shouldPersistFeedbackItemDetails = false;
-      ({ data: feedbackItem, error: feedbackItemError } = await supabase
-        .from('feedback_items')
-        .upsert(
-          {
-            ...baseFeedbackItemRow,
-            selected_tag_ids: getLegacyFeedbackTagIds(dish, response),
-          },
-          {
-            onConflict: 'feedback_submission_id,reservation_dish_id',
-          },
-        )
-        .select('id')
-        .single());
-    }
-
-    if (feedbackItemError) {
-      throw feedbackItemError;
-    }
-
-    const { error: parseError } = await supabase
-      .from('feedback_parses')
-      .upsert(
-        {
-          feedback_item_id: feedbackItem.id,
-          perception_taste_delta: parsedReaction.perceptionTasteDelta,
-          perception_perceptual_delta: parsedReaction.perceptionPerceptualDelta,
-          preference_taste_delta: parsedReaction.preferenceTasteDelta,
-          preference_perceptual_delta: parsedReaction.preferencePerceptualDelta,
-          confidence: parsedReaction.confidence,
-          rationale: parsedReaction.rationale,
-        },
-        {
-          onConflict: 'feedback_item_id',
-        },
-      );
-
-    if (parseError) {
-      throw parseError;
-    }
-
-    await recordTbaFeedbackEvidenceEvent({
-      eventType: inferTbaFeedbackEvidenceEventType({
-        next: nextEvidenceState,
-        previous: previousEvidenceState,
-      }),
-      feedbackItemId: feedbackItem.id,
-      feedbackSubmissionId: feedbackSubmission.id,
-      next: nextEvidenceState,
-      payload: {
-        dishId: dish.id,
-        dishTitle: dish.title,
-        restaurantName: input.reservation.restaurant,
-        selectedChoiceId: response.selectedChoiceId,
-      },
-      previous: previousEvidenceState,
-      reservationDishId,
-      reservationId,
-      userId,
-    });
-
-    feedbackObservations.push({
-      rating: response.rating,
-      daysSinceDining: Math.max(
-        0,
-        Math.floor(
-          (Date.now() - new Date(input.scenario.completedAt).getTime()) /
-            (1000 * 60 * 60 * 24),
-        ),
-      ),
-      parsedReaction,
-      sourceConfidence: 1,
-    });
-  }
-
-  const reservationSignal = computeReservationLearningSignal(feedbackObservations);
-  const { error: completionError } = await supabase.from('feedback_submissions')
-    .update({ client_submission_completed_at: new Date().toISOString() })
-    .eq('id', feedbackSubmission.id)
-    .eq('user_id', userId);
-  if (completionError) throw completionError;
-
-  return {
-    persisted: true,
-    remoteId: reservationId,
-    reservationSignalReasons: reservationSignal.reasons,
+      ...tbaFields,
+    },
+    parse: {
+      perception_taste_delta: parsedReaction.perceptionTasteDelta,
+      perception_perceptual_delta: parsedReaction.perceptionPerceptualDelta,
+      preference_taste_delta: parsedReaction.preferenceTasteDelta,
+      preference_perceptual_delta: parsedReaction.preferencePerceptualDelta,
+      confidence: params.clear ? 0 : parsedReaction.confidence,
+      rationale: parsedReaction.rationale,
+    },
+    evidence: buildTbaFeedbackEvidenceEvent({
+      eventType: params.clear ? 'deleted' : inferTbaFeedbackEvidenceEventType({ next, previous }),
+      next, previous,
+      payload: { dishId: dish.id, dishTitle: dish.title, restaurantName: params.restaurantName,
+        selectedChoiceId: response.selectedChoiceId },
+    }),
   };
 }
 
@@ -3596,132 +3464,34 @@ async function clearPersistedDiningFeedbackItem(
   }
 
   const reservationId = await getOrCreateReservationId(userId, input.reservation);
-
-  if (!reservationId) {
-    return { persisted: false };
-  }
-
+  if (!reservationId) return { persisted: false };
+  const previousSubmission = await fetchFeedbackSubmissionForMutation(reservationId, userId);
+  if (!previousSubmission) return { persisted: false };
   const persistableDishes = getPersistableFeedbackDishes(input.scenario, input.draft);
   const feedbackDishes = persistableDishes.some((dish) => dish.id === input.dish.id)
-    ? persistableDishes
-    : [...persistableDishes, input.dish];
-  const reservationDishIds = await upsertReservationDishes(reservationId, feedbackDishes);
-  const reservationDishId = reservationDishIds.get(input.dish.id);
-
-  if (!reservationDishId) {
-    return { persisted: false };
-  }
-
-  const { data: feedbackSubmission, error: feedbackSubmissionError } = await supabase
-    .from('feedback_submissions')
-    .select('id')
-    .eq('reservation_id', reservationId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (feedbackSubmissionError) {
-    throw feedbackSubmissionError;
-  }
-
-  if (!feedbackSubmission) {
-    return { persisted: false };
-  }
-
-  const previousFeedbackItemRow = await fetchFeedbackItemEvidenceRow(
-    feedbackSubmission.id,
-    reservationDishId,
-  );
-  const previousEvidenceState = buildFeedbackEvidenceStateFromRow(previousFeedbackItemRow);
-  const clearedResponse = createDiningDishFeedbackDraft(input.dish);
-  const clearedEvidenceState: TasteBuddyAgentFeedbackEvidenceState = {
-    detailTagIds: [],
-    dishKindIds: [],
-    signalIds: [],
-    snapshot: null,
-    tasteTagIds: [],
-    tbaConfidence: null,
-  };
-  const baseFeedbackItemRow = {
-    feedback_submission_id: feedbackSubmission.id,
-    reservation_dish_id: reservationDishId,
-    rating: clearedResponse.rating,
-    selected_tag_ids: [],
-    selected_reason: null,
-    comment: null,
-  };
-  const detailedFeedbackItemRow = {
-    ...baseFeedbackItemRow,
-    selected_experience_ids: [],
-    selected_detail_tag_ids: [],
-    selected_dish_kind_ids: clearedResponse.selectedDishKindIds ?? [],
-    custom_dish_kind_labels: [],
-    custom_detail_tags: {},
-    reflection_note: null,
-    reflection_photo_name: null,
-    reflection_photo_preview_url: null,
-    ...getClearedFeedbackItemTbaAnalysisFields(),
-  };
-
-  let { data: feedbackItem, error: feedbackItemError } = await supabase
-    .from('feedback_items')
-    .upsert(detailedFeedbackItemRow, {
-      onConflict: 'feedback_submission_id,reservation_dish_id',
-    })
-    .select('id')
-    .single();
-
-  if (feedbackItemError && isFeedbackItemTbaAnalysisSchemaError(feedbackItemError)) {
-    ({ data: feedbackItem, error: feedbackItemError } = await supabase
-      .from('feedback_items')
-      .upsert(stripFeedbackItemTbaAnalysisFields(detailedFeedbackItemRow), {
-        onConflict: 'feedback_submission_id,reservation_dish_id',
-      })
-      .select('id')
-      .single());
-  }
-
-  if (feedbackItemError && isFeedbackItemDetailSchemaError(feedbackItemError)) {
-    ({ data: feedbackItem, error: feedbackItemError } = await supabase
-      .from('feedback_items')
-      .upsert(baseFeedbackItemRow, {
-        onConflict: 'feedback_submission_id,reservation_dish_id',
-      })
-      .select('id')
-      .single());
-  }
-
-  if (feedbackItemError) {
-    throw feedbackItemError;
-  }
-
-  // The server derives learning from current parses; clearing a dish must clear its parse too.
-  const emptyParse = parseFeedbackSelections([]);
-  const { error: parseError } = await supabase.from('feedback_parses').upsert({
-    feedback_item_id: feedbackItem.id,
-    perception_taste_delta: emptyParse.perceptionTasteDelta,
-    perception_perceptual_delta: emptyParse.perceptionPerceptualDelta,
-    preference_taste_delta: emptyParse.preferenceTasteDelta,
-    preference_perceptual_delta: emptyParse.preferencePerceptualDelta,
-    confidence: 0,
-    rationale: emptyParse.rationale,
-  }, { onConflict: 'feedback_item_id' });
-  if (parseError) throw parseError;
-
-  await recordTbaFeedbackEvidenceEvent({
-    eventType: 'deleted',
-    feedbackItemId: feedbackItem?.id ?? previousFeedbackItemRow?.id ?? null,
-    feedbackSubmissionId: feedbackSubmission.id,
-    next: clearedEvidenceState,
-    payload: {
-      dishId: input.dish.id,
-      dishTitle: input.dish.title,
-      restaurantName: input.reservation.restaurant,
-    },
-    previous: previousEvidenceState,
-    reservationDishId,
-    reservationId,
-    userId,
+    ? persistableDishes : [...persistableDishes, input.dish];
+  const item = buildAtomicFeedbackItem({
+    dish: input.dish,
+    response: createDiningDishFeedbackDraft(input.dish),
+    sortOrder: feedbackDishes.findIndex((dish) => dish.id === input.dish.id),
+    previousSubmission,
+    parsedReaction: parseFeedbackSelections([]),
+    restaurantName: input.reservation.restaurant,
+    clear: true,
   });
-
+  const { data, error } = await supabase.rpc('save_dining_feedback_atomic', {
+    p_reservation_id: reservationId,
+    p_expected_user_id: userId,
+    p_expected_updated_at: previousSubmission.updated_at,
+    p_submission: null,
+    p_items: [item],
+    p_create_only: false,
+    p_clear: true,
+  });
+  if (error) throw error;
+  if (!data?.persisted) return { persisted: false };
+  await refreshUserTbaConfidenceStates(userId).catch((cacheError) => {
+    console.warn('Feedback cleared; TBA confidence cache will be rebuilt on the next read.', cacheError);
+  });
   return { persisted: true, remoteId: reservationId };
 }

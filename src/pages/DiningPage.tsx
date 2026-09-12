@@ -1134,7 +1134,7 @@ export default function DiningPage({
       submittedFeedbackReservationIds.has(Number(reservationId)),
     ),
   ) as Record<number, DiningFeedbackDraft>;
-  const localTasteProfile = TBA.buildTasteIdentity({
+  const localTasteProfile = measurementSnapshot.source === 'recalled-intensity' ? undefined : TBA.buildTasteIdentity({
     feedbackCount: Object.keys(submittedFeedbackByReservationId).length,
     measurementSnapshot,
     reviewCount: Object.values(submittedFeedbackByReservationId)

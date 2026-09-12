@@ -68,7 +68,7 @@ function createSurveyCase(
   id: string,
   responses: TasteSurveyResponse[],
 ) {
-  const result = buildTasteSurveyCompatibleResult(responses);
+  const result = buildTasteSurveyCompatibleResult(responses, { measuredAt: FIXED_MEASURED_AT });
 
   return {
     id,
@@ -427,7 +427,7 @@ export function buildContractFixtures() {
       ],
     },
     tasteSurvey: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       sourceFiles: [
         'src/constants/tasteSurveyConfig.ts',
         'src/constants/tasteSurveyItems.ts',
@@ -438,11 +438,24 @@ export function buildContractFixtures() {
       contextSteps: TASTE_SURVEY_CONTEXT_STEPS,
       items: TASTE_SURVEY_ITEMS,
       cases: [
-        createSurveyCase('neutral', createSurveyResponses(4)),
+        createSurveyCase('mid-intensity', createSurveyResponses(2)),
+        createSurveyCase('zero-intensity', createSurveyResponses(0)),
+        createSurveyCase('strong-intensity', createSurveyResponses(4)),
         createSurveyCase('uncertain', createSurveyResponses(null)),
+        createSurveyCase('partial-and-distinct-unknowns', [
+          { itemId: TASTE_SURVEY_ITEMS[0].id, selectedValue: 0, uncertain: false },
+          { itemId: TASTE_SURVEY_ITEMS[1].id, selectedValue: null, uncertain: true, uncertaintyReason: 'never_tried' },
+          { itemId: TASTE_SURVEY_ITEMS.find((item) => item.tasteId === 'fat')!.id, selectedValue: null, uncertain: true, uncertaintyReason: 'cannot_isolate_taste' },
+        ]),
+        createSurveyCase('legacy-and-last-invalid', [
+          { itemId: 'sweet-salience', selectedValue: 4, uncertain: false },
+          { itemId: TASTE_SURVEY_ITEMS[0].id, selectedValue: 4, uncertain: false },
+          { itemId: TASTE_SURVEY_ITEMS[0].id, selectedValue: 7 as TasteSurveyResponse['selectedValue'], uncertain: false },
+        ]),
       ],
     },
     preferenceIntake: {
+      evidenceCases: PREFERENCE_EVIDENCE_CASES,
       schemaVersion: 1,
       sourceFiles: ['src/constants/preferenceIntakeData.ts'],
       questions: PREFERENCE_INTAKE_QUESTIONS,
@@ -512,3 +525,4 @@ export function buildContractFixtures() {
     tbaFullEngine: buildTbaFullEngineFixture(),
   };
 }
+import { PREFERENCE_EVIDENCE_CASES } from '../../scripts/tba-engine/preference-intake-fixtures.mjs';

@@ -136,7 +136,8 @@ import {
 import { resolvePublicMediaPath } from './lib/mediaAssets';
 import { buildTasteSurveyCompatibleResult } from './lib/tasteSurveyScoring';
 import { TASTE_SURVEY_ITEMS } from './constants/tasteSurveyItems';
-import { TASTE_SURVEY_CONTEXT_STEPS } from './constants/tasteSurveyConfig';
+import { TASTE_SURVEY_CONTEXT_STEPS, TASTE_SURVEY_INSTRUMENT } from './constants/tasteSurveyConfig';
+import { isTasteSurveyIntensityValue, normalizeTasteSurveyResponses, readTasteSurveySubmission, mergeTasteSurveyHistory } from './lib/tasteSurveyEvidence';
 import {
   createUserTasteAccentStyle,
   resolveUserTasteAccent,
@@ -168,6 +169,8 @@ import type {
   TasteSurveyLikertValue,
   TasteSurveyRespondentContext,
   TasteSurveyResponse,
+  TasteSurveySubmission,
+  TasteSurveyUncertaintyReason,
 } from './types/tasteSurvey';
 import type { Session } from '@supabase/supabase-js';
 
@@ -380,6 +383,7 @@ function createPersistableRestaurantFeedbackScenario(
 }
 
 interface PersistedUserState {
+  referenceSurveyHistory: TasteSurveySubmission[];
   hasCompletedInitialMeasurement: boolean;
   latestPreferenceIntakeProfile: PreferenceIntakeProfile | null;
   latestRestaurantReadyGuidance: RestaurantReadyGuidance | null;
@@ -393,6 +397,7 @@ interface PersistedUserState {
 }
 
 interface PersistedTasteSurveyDraft {
+  instrumentVersion: string;
   currentSurveyContextIndex: number;
   currentSurveyIndex: number;
   respondentContext: TasteSurveyRespondentContext;
@@ -408,7 +413,8 @@ function isTasteMeasurementSnapshot(value: unknown): value is TasteMeasurementSn
 
   const snapshot = value as TasteMeasurementSnapshot;
 
-  return typeof snapshot.measuredAt === 'string' && typeof snapshot.results === 'object';
+  return typeof snapshot.measuredAt === 'string' && snapshot.results !== null && typeof snapshot.results === 'object'
+    && (snapshot.source !== 'recalled-intensity' || readTasteSurveySubmission(snapshot.surveySubmission) !== null);
 }
 
 function isTasteSurveyFlowStep(value: unknown): value is TasteSurveyFlowStep {
@@ -424,12 +430,7 @@ function isTasteSurveyFlowStep(value: unknown): value is TasteSurveyFlowStep {
 }
 
 function isTasteSurveyLikertValue(value: unknown): value is TasteSurveyLikertValue {
-  return (
-    typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= 1 &&
-    value <= 7
-  );
+  return isTasteSurveyIntensityValue(value);
 }
 
 function isTasteSurveyResponse(value: unknown): value is TasteSurveyResponse {
@@ -524,16 +525,11 @@ function sanitizeTasteSurveyResponses(value: unknown) {
     return {} as Record<string, TasteSurveyResponse>;
   }
 
-  return Object.entries(value as Record<string, unknown>).reduce<Record<string, TasteSurveyResponse>>(
-    (responses, [itemId, response]) => {
-      if (isTasteSurveyResponse(response) && response.itemId === itemId) {
-        responses[itemId] = response;
-      }
-
-      return responses;
-    },
-    {},
-  );
+  return Object.fromEntries(normalizeTasteSurveyResponses(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([itemId, response]) => isTasteSurveyResponse(response) && response.itemId === itemId)
+      .map(([, response]) => response),
+  ).map((response) => [response.itemId, response]));
 }
 
 function isPersistedTasteSurveyDraft(value: unknown): value is PersistedTasteSurveyDraft {
@@ -544,6 +540,7 @@ function isPersistedTasteSurveyDraft(value: unknown): value is PersistedTasteSur
   const draft = value as Partial<PersistedTasteSurveyDraft>;
 
   return (
+    draft.instrumentVersion === TASTE_SURVEY_INSTRUMENT.version &&
     typeof draft.currentSurveyIndex === 'number' &&
     Number.isInteger(draft.currentSurveyIndex) &&
     draft.currentSurveyIndex >= 0 &&
@@ -581,6 +578,7 @@ function createTasteSurveyDraft(
   }
 
   return {
+    instrumentVersion: TASTE_SURVEY_INSTRUMENT.version,
     currentSurveyContextIndex: clampSurveyContextIndex(currentSurveyContextIndex),
     currentSurveyIndex: clampSurveyIndex(currentSurveyIndex),
     respondentContext: sanitizedRespondentContext,
@@ -606,8 +604,9 @@ function getTasteSurveyResponseList(
 
 function buildCompatibleResultFromSurveyResponses(
   responses: Record<string, TasteSurveyResponse | undefined>,
+  respondentContext: TasteSurveyRespondentContext = {},
 ) {
-  return buildTasteSurveyCompatibleResult(getTasteSurveyResponseList(responses));
+  return buildTasteSurveyCompatibleResult(getTasteSurveyResponseList(responses), { respondentContext });
 }
 
 function createTasteSurveyMeasurementRawPayload(
@@ -662,6 +661,7 @@ function getUserInitials(displayName: string | null, email: string | null) {
 
 function createEmptyPersistedUserState(): PersistedUserState {
   return {
+    referenceSurveyHistory: [],
     hasCompletedInitialMeasurement: false,
     latestPreferenceIntakeProfile: null,
     latestRestaurantReadyGuidance: null,
@@ -797,6 +797,7 @@ function loadPersistedUserState(): PersistedUserState {
         : null;
 
     return {
+      referenceSurveyHistory: mergeTasteSurveyHistory(Array.isArray(parsedValue.referenceSurveyHistory) ? parsedValue.referenceSurveyHistory : []),
       hasCompletedInitialMeasurement:
         Boolean(parsedValue.hasCompletedInitialMeasurement) && latestTasteMeasurementSnapshot !== null,
       latestPreferenceIntakeProfile,
@@ -810,6 +811,7 @@ function loadPersistedUserState(): PersistedUserState {
       tasteSurveyDraft:
         isPersistedTasteSurveyDraft(parsedValue.tasteSurveyDraft)
           ? {
+            instrumentVersion: TASTE_SURVEY_INSTRUMENT.version,
             currentSurveyContextIndex: clampSurveyContextIndex(
               parsedValue.tasteSurveyDraft.currentSurveyContextIndex ?? 0,
             ),
@@ -911,6 +913,14 @@ function MainApp() {
   const [latestTasteMeasurementSnapshot, setLatestTasteMeasurementSnapshot] = useState<
     TasteMeasurementSnapshot | null
   >(persistedUserState.latestTasteMeasurementSnapshot);
+  const [referenceSurveyHistory, setReferenceSurveyHistory] = useState(persistedUserState.referenceSurveyHistory);
+  useEffect(() => {
+    if (!latestTasteMeasurementSnapshot?.surveySubmission) return;
+    setReferenceSurveyHistory(current => {
+      const next = mergeTasteSurveyHistory([...current, latestTasteMeasurementSnapshot.surveySubmission]);
+      return JSON.stringify(current) === JSON.stringify(next) ? current : next;
+    });
+  }, [latestTasteMeasurementSnapshot]);
   const [palateBloomAvatarSnapshot, setPalateBloomAvatarSnapshot] = useState<
     TasteMeasurementSnapshot | null
   >(persistedUserState.palateBloomAvatarSnapshot);
@@ -950,6 +960,7 @@ function MainApp() {
       persistedUserState.tasteSurveyDraft?.tasteSurveyFlowStep === 'result'
         ? buildCompatibleResultFromSurveyResponses(
           persistedUserState.tasteSurveyDraft.surveyResponses,
+          persistedUserState.tasteSurveyDraft.respondentContext,
         )
         : null,
     );
@@ -994,6 +1005,7 @@ function MainApp() {
   const [tasteSurveyIntroReturnTarget, setTasteSurveyIntroReturnTarget] =
     useState<'auth' | 'profile'>('profile');
   const [isPreferenceIntakeSheetOpen, setIsPreferenceIntakeSheetOpen] = useState(false);
+  const [isEditingPreferencesFromAnalysis, setIsEditingPreferencesFromAnalysis] = useState(false);
   const [isTasteSurveySheetOpen, setIsTasteSurveySheetOpen] = useState(false);
   const [profileConnectionView, setProfileConnectionView] =
     useState<ProfileConnectionKind | null>(null);
@@ -1060,6 +1072,7 @@ function MainApp() {
       window.localStorage.setItem(
         USER_STATE_STORAGE_KEY,
         JSON.stringify({
+          referenceSurveyHistory,
           hasCompletedInitialMeasurement,
           latestPreferenceIntakeProfile,
           latestRestaurantReadyGuidance,
@@ -1078,6 +1091,7 @@ function MainApp() {
       console.warn('Failed to persist Taste Buddy user state.', error);
     }
   }, [
+    referenceSurveyHistory,
     currentSurveyContextIndex,
     currentSurveyIndex,
     hasCompletedInitialMeasurement,
@@ -2550,12 +2564,24 @@ function MainApp() {
     setIsTasteSurveySheetOpen(true);
   };
 
-  const handleCompletePreferenceIntakeSheet = (profile: PreferenceIntakeProfile) => {
-    trackEvent('preference_intake_complete', {
-      preference_count: Object.keys(profile).length,
-    });
+  const savePreferenceIntakeProfile = (profile: PreferenceIntakeProfile) => {
+    const stored = window.localStorage.getItem(USER_STATE_STORAGE_KEY);
+    const previous = stored ? JSON.parse(stored) : {};
+    if (!previous || typeof previous !== 'object' || Array.isArray(previous)) throw new Error('INVALID_USER_STATE');
+    window.localStorage.setItem(USER_STATE_STORAGE_KEY, JSON.stringify({ ...previous, latestPreferenceIntakeProfile: profile }));
     setLatestPreferenceIntakeProfile(profile);
+  };
+
+  const handleCompletePreferenceIntakeSheet = (profile: PreferenceIntakeProfile) => {
+    savePreferenceIntakeProfile(profile);
+    trackEvent('preference_intake_complete', {
+      preference_count: profile.submissions?.at(-1)?.responses.filter(row => row.state === 'answered').length ?? 0,
+    });
     setIsPreferenceIntakeSheetOpen(false);
+    if (isEditingPreferencesFromAnalysis) {
+      setIsEditingPreferencesFromAnalysis(false);
+      return;
+    }
     handleOpenTasteSurveySheetFlow(true, 'context');
   };
 
@@ -2655,7 +2681,7 @@ function MainApp() {
     }));
   };
 
-  const handleSelectSurveyUncertain = (itemId: string) => {
+  const handleSelectSurveyUncertain = (itemId: string, reason: TasteSurveyUncertaintyReason) => {
     trackEvent('taste_survey_answer', {
       item_id: itemId,
       question_index: currentSurveyIndex,
@@ -2668,6 +2694,7 @@ function MainApp() {
         itemId,
         selectedValue: null,
         uncertain: true,
+        uncertaintyReason: reason,
       },
     }));
   };
@@ -2709,6 +2736,8 @@ function MainApp() {
   };
 
   const handleNextSurveyQuestion = () => {
+    const item = TASTE_SURVEY_ITEMS[currentSurveyIndex];
+    if (!item || normalizeTasteSurveyResponses([surveyResponses[item.id]]).length === 0) return;
     trackEvent('taste_survey_question_next', {
       question_index: currentSurveyIndex,
       is_last_question: currentSurveyIndex >= TASTE_SURVEY_ITEMS.length - 1,
@@ -2742,7 +2771,7 @@ function MainApp() {
       answered_count: Object.values(surveyResponses).filter(Boolean).length,
       total_count: TASTE_SURVEY_ITEMS.length,
     });
-    const compatibleResult = buildCompatibleResultFromSurveyResponses(surveyResponses);
+    const compatibleResult = buildCompatibleResultFromSurveyResponses(surveyResponses, tasteSurveyRespondentContext);
 
     setLatestSurveyCompatibleResult(compatibleResult);
     setTasteSurveyFlowStep('result');
@@ -2750,7 +2779,7 @@ function MainApp() {
 
   const handleCompleteTasteSurvey = () => {
     const compatibleResult =
-      latestSurveyCompatibleResult ?? buildCompatibleResultFromSurveyResponses(surveyResponses);
+      latestSurveyCompatibleResult ?? buildCompatibleResultFromSurveyResponses(surveyResponses, tasteSurveyRespondentContext);
 
     trackEvent('taste_survey_complete', {
       answered_count: Object.values(surveyResponses).filter(Boolean).length,
@@ -2857,6 +2886,7 @@ function MainApp() {
     setProfileAvatarPath(null);
     setExternalDiningFeedbackSubmissions([]);
     setLatestTasteMeasurementSnapshot(null);
+    setReferenceSurveyHistory([]);
     setHasCompletedInitialMeasurement(false);
     setAppState('onboarding');
     await clearLocalAccountCaches(localAvatarOwnerId, clearTasteBuddyLocalState, clearAppliedDesignTokenRuntimeState);
@@ -3107,9 +3137,10 @@ function MainApp() {
         {appState === 'intake' && (
           <PreferenceIntakeScreen
             initialProfile={latestPreferenceIntakeProfile}
+            userID={supabaseSession?.user.id ?? 'local-owner'}
             onBack={() => setAppState('onboarding')}
             onComplete={(profile) => {
-              setLatestPreferenceIntakeProfile(profile);
+              savePreferenceIntakeProfile(profile);
               handleEnterTasteSurveyFlow(true);
             }}
           />
@@ -3386,8 +3417,18 @@ function MainApp() {
               >
                 {latestTasteMeasurementSnapshot ? (
                   <AnalysisPage
-                    key={`analysis-${tabResetKeys.analysis}`}
+                    key={`analysis-${supabaseSession?.user.id ?? 'guest'}-${tabResetKeys.analysis}`}
                     isActive={activeTab === 'analysis'}
+                    preferenceProfile={latestPreferenceIntakeProfile}
+                    preferenceUserID={supabaseSession?.user.id ?? 'local-owner'}
+                    onEditPreferences={() => {
+                      setIsEditingPreferencesFromAnalysis(true);
+                      setIsPreferenceIntakeSheetOpen(true);
+                    }}
+                    surveyHistory={referenceSurveyHistory}
+                    feedbackSubmissions={externalDiningFeedbackSubmissions.filter(submission =>
+                      !submission.ownerUserId || submission.ownerUserId === supabaseSession?.user.id,
+                    )}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     onOpenRestaurantDetail={(menu) =>
                       openRestaurantDetail(createRestaurantDetailFromMenuRecommendation(menu))
@@ -3915,8 +3956,13 @@ function MainApp() {
         >
           <PreferenceIntakeScreen
             initialProfile={latestPreferenceIntakeProfile}
+            userID={supabaseSession?.user.id ?? 'local-owner'}
             onBack={() => {
               setIsPreferenceIntakeSheetOpen(false);
+              if (isEditingPreferencesFromAnalysis) {
+                setIsEditingPreferencesFromAnalysis(false);
+                return;
+              }
               setIsTasteSurveyIntroSheetOpen(true);
             }}
             onComplete={handleCompletePreferenceIntakeSheet}

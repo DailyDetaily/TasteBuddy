@@ -1,0 +1,1043 @@
+{
+  "version": "sensory-review-v1",
+  "authorship": "Hand authored from user requirements before production-rule inspection. Development review set, not a hidden holdout after feedback.",
+  "scoring": "ValueContains is an allowed exact source subphrase; extra surrounding verbatim source text is allowed. Unresolved is not semantic success.",
+  "cases": [
+    {
+      "id": "SR-001",
+      "domain": "taste",
+      "text": "토마토 수프에서 새콤한 맛이 둥글게 퍼졌다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "새콤한 맛이 둥글게 퍼졌다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-002",
+      "domain": "taste",
+      "text": "된장국의 짠맛은 얇고 끝에 살짝 단맛이 남았다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "짠맛은 얇고"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-003",
+      "domain": "taste",
+      "text": "자몽 속껍질 같은 쓴맛이 꽤 좋았습니다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "자몽 속껍질 같은 쓴맛"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive"
+      }
+    },
+    {
+      "id": "SR-004",
+      "domain": "taste",
+      "text": "브라우니가 혀를 덮을 만큼 달아서 부담스러웠음.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "혀를 덮을 만큼 달아서"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "negative"
+      }
+    },
+    {
+      "id": "SR-005",
+      "domain": "taste",
+      "text": "조개탕은 소금기보다 깊은 감칠맛이 먼저 왔다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "깊은 감칠맛"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-006",
+      "domain": "aroma",
+      "text": "메밀차에서 볕에 말린 풀 같은 향이 났다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "볕에 말린 풀 같은 향"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-007",
+      "domain": "aroma",
+      "text": "버섯구이 향은 비 온 뒤 숲 바닥을 떠올리게 했다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "비 온 뒤 숲 바닥을 떠올리게 했다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-008",
+      "domain": "aroma",
+      "text": "배를 먹는데 흰 꽃을 닮은 향이 은은하게 올라왔다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "흰 꽃을 닮은 향"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-009",
+      "domain": "aroma",
+      "text": "빵의 누룽지 같은 구수한 향이 좋았음.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "누룽지 같은 구수한 향"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive"
+      }
+    },
+    {
+      "id": "SR-010",
+      "domain": "aroma",
+      "text": "치즈에서 젖은 양말 같은 냄새가 나서 싫었습니다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "젖은 양말 같은 냄새"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "negative"
+      }
+    },
+    {
+      "id": "SR-011",
+      "domain": "texture",
+      "text": "오징어가 이 사이에서 고무줄처럼 튕겼다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "고무줄처럼 튕겼다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-012",
+      "domain": "texture",
+      "text": "감자 겉은 얇게 파삭하고 안은 포슬포슬 무너졌다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "얇게 파삭하고"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-013",
+      "domain": "texture",
+      "text": "젤리가 몇 번 씹어도 버티는 탄성이 좋았습니다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "몇 번 씹어도 버티는 탄성"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive"
+      }
+    },
+    {
+      "id": "SR-014",
+      "domain": "texture",
+      "text": "배 속의 작은 돌 알갱이 같은 까슬함이 거슬렸다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "작은 돌 알갱이 같은 까슬함"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "negative"
+      }
+    },
+    {
+      "id": "SR-015",
+      "domain": "texture",
+      "text": "생선 살이 결마다 촉촉하게 벌어졌다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "결마다 촉촉하게 벌어졌다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-016",
+      "domain": "mouthfeel",
+      "text": "우유가 혀에 얇은 막을 남겼다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "혀에 얇은 막을 남겼다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-017",
+      "domain": "mouthfeel",
+      "text": "홍차를 삼키니 잇몸이 조여 드는 듯했다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "잇몸이 조여 드는 듯했다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-018",
+      "domain": "mouthfeel",
+      "text": "죽은 입천장에 풀처럼 달라붙어서 별로였음.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "입천장에 풀처럼 달라붙어서"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "negative"
+      }
+    },
+    {
+      "id": "SR-019",
+      "domain": "mouthfeel",
+      "text": "들기름 국수는 입안에서 미끄러지는 감촉이 좋았다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "입안에서 미끄러지는 감촉"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive"
+      }
+    },
+    {
+      "id": "SR-020",
+      "domain": "mouthfeel",
+      "text": "초콜릿이 혀 위에서 밀랍처럼 남았다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "혀 위에서 밀랍처럼 남았다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-021",
+      "domain": "temperature",
+      "text": "냉면 육수가 이가 시릴 만큼 차가웠다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "이가 시릴 만큼 차가웠다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-022",
+      "domain": "temperature",
+      "text": "만두 속은 입천장을 데일 듯 뜨거웠음.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "입천장을 데일 듯 뜨거웠음"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-023",
+      "domain": "temperature",
+      "text": "차는 미지근해지자 향이 잘 느껴졌다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "미지근해지자"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-024",
+      "domain": "temperature",
+      "text": "아이스크림의 서늘함이 혀끝부터 번져서 좋았습니다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "서늘함이 혀끝부터 번져서"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive"
+      }
+    },
+    {
+      "id": "SR-025",
+      "domain": "irritation",
+      "text": "산초가 입술에 잔전류처럼 찌릿하게 남았다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "잔전류처럼 찌릿하게 남았다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-026",
+      "domain": "irritation",
+      "text": "겨자는 콧속으로 쏘고 고추는 목에서 화끈했다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "콧속으로 쏘고"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-027",
+      "domain": "irritation",
+      "text": "탄산의 바늘 같은 따끔함이 재미있었다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "바늘 같은 따끔함"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive"
+      }
+    },
+    {
+      "id": "SR-028",
+      "domain": "irritation",
+      "text": "민트 사탕은 바람이 통하는 듯 코끝이 서늘했다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "바람이 통하는 듯 코끝이 서늘했다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-029",
+      "domain": "finish",
+      "text": "커피를 넘긴 뒤 볶은 밤 같은 여운이 오래 남았다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "볶은 밤 같은 여운이 오래 남았다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-030",
+      "domain": "finish",
+      "text": "장어 소스의 단맛은 삼킨 뒤에도 입가에 매달렸다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "삼킨 뒤에도 입가에 매달렸다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-031",
+      "domain": "finish",
+      "text": "초반은 시지만 한참 뒤에는 고소한 여운이 왔다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "고소한 여운"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-032",
+      "domain": "combination",
+      "text": "사과의 아삭함과 치즈의 녹진함을 같이 먹으니 좋았음.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "치즈의 녹진함"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive",
+        "preserveContext": true
+      }
+    },
+    {
+      "id": "SR-033",
+      "domain": "condition",
+      "text": "소스를 찍을 때만 튀김의 바삭함이 좋았습니다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "튀김의 바삭함"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive",
+        "preserveContext": true
+      }
+    },
+    {
+      "id": "SR-034",
+      "domain": "condition",
+      "text": "따뜻할 때는 버터 향이 좋았지만 식으니 느끼했다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "버터 향"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive",
+        "preserveContext": true
+      }
+    },
+    {
+      "id": "SR-035",
+      "domain": "time",
+      "text": "첫입은 파삭했고 오래 씹자 반죽이 이에 붙었다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "오래 씹자 반죽이 이에 붙었다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "preserveContext": true
+      }
+    },
+    {
+      "id": "SR-036",
+      "domain": "time",
+      "text": "초반에는 향이 없었는데 식사 중반부터 허브 향이 났다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "허브 향"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "preserveContext": true
+      }
+    },
+    {
+      "id": "SR-037",
+      "domain": "negation",
+      "text": "이 국수는 맵지 않았고 달지도 않았다.",
+      "expected": {
+        "detail": [],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": true
+      }
+    },
+    {
+      "id": "SR-038",
+      "domain": "negation",
+      "text": "생선은 비리지 않아서 좋았음.",
+      "expected": {
+        "detail": [],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": true,
+        "liking": "positive"
+      }
+    },
+    {
+      "id": "SR-039",
+      "domain": "other_person",
+      "text": "친구는 홍차의 떫은맛을 좋아했지만 나는 아직 안 마셨다.",
+      "expected": {
+        "detail": [],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": true
+      }
+    },
+    {
+      "id": "SR-040",
+      "domain": "other_person",
+      "text": "엄마는 바삭해서 좋다는데 나는 눅눅하게 느꼈다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "눅눅하게 느꼈다"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": false
+      }
+    },
+    {
+      "id": "SR-041",
+      "domain": "insufficient",
+      "text": "사진만 보니 바삭해 보인다. 아직 먹기 전이다.",
+      "expected": {
+        "detail": [],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": true
+      }
+    },
+    {
+      "id": "SR-042",
+      "domain": "insufficient",
+      "text": "무슨 맛인지 기억이 안 난다.",
+      "expected": {
+        "detail": [],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": true
+      }
+    },
+    {
+      "id": "SR-043",
+      "domain": "missing",
+      "text": "첨부하지 않은 사진을 보고 식감을 분석해 줘.",
+      "expected": {
+        "detail": [],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": true
+      }
+    },
+    {
+      "id": "SR-044",
+      "domain": "irrelevant",
+      "text": "식당 조명이 따뜻하고 직원 말투가 달콤했다.",
+      "expected": {
+        "detail": [],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": true
+      }
+    },
+    {
+      "id": "SR-045",
+      "domain": "irrelevant",
+      "text": "가격이 매워서 지갑이 얼어붙었다.",
+      "expected": {
+        "detail": [],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "mustUnresolved": true
+      }
+    },
+    {
+      "id": "SR-046",
+      "domain": "metaphor",
+      "text": "이 향은 레몬을 닮았지만 레몬이 들어갔는지는 모른다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "레몬을 닮았지만"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-047",
+      "domain": "mixed",
+      "text": "향은 좋았습니다. 하지만 끈적이는 입안 느낌은 싫었음.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "끈적이는 입안 느낌"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "negative",
+        "preserveContext": true
+      }
+    },
+    {
+      "id": "SR-048",
+      "domain": "intensity",
+      "text": "신맛이 세다는 뜻이지 싫다는 말은 아니다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "신맛이 세다는"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ]
+      }
+    },
+    {
+      "id": "SR-049",
+      "domain": "reason",
+      "text": "국물이 너무 걸쭉해서 면의 향을 느끼기 어려웠다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "너무 걸쭉해서"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "preserveContext": true
+      }
+    },
+    {
+      "id": "SR-050",
+      "domain": "combination",
+      "text": "고기만 먹으면 기름지지만 피클과 함께면 산뜻해서 좋았다.",
+      "expected": {
+        "detail": [
+          {
+            "kind": "sensory_detail",
+            "scale": "sensory-detail-v1",
+            "valueContains": "피클과 함께면 산뜻해서"
+          }
+        ],
+        "forbidden": [
+          "fabricated_source_span",
+          "sensory_implies_liking",
+          "aroma_metaphor_implies_ingredient",
+          "early_implies_first_bite",
+          "context_implies_sensory"
+        ],
+        "liking": "positive",
+        "preserveContext": true
+      }
+    }
+  ],
+  "frozenContentSha256": "c0e764cd172ec8ed6bae940510260f35c49c4c86ae0a70dae1273251dab35fa4"
+}

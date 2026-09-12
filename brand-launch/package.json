@@ -1,0 +1,42 @@
+{
+  "name": "brand-launch",
+  "version": "1.0.0",
+  "description": "Taste Buddy 30\ucd08 \ube0c\ub79c\ub4dc \ub7f0\uce6d \uc601\uc0c1 \u00b7 \uc2e4\uc81c SwiftUI \ud654\uba74 \uc790\ub3d9 \uac31\uc2e0",
+  "repository": {},
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.521",
+    "@remotion/fonts": "4.0.521",
+    "@remotion/media": "4.0.521",
+    "@remotion/transitions": "4.0.521",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.521"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.521",
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "eslint": "9.19.0",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "studio": "remotion studio --no-open --port=3110",
+    "build": "remotion bundle",
+    "lint": "eslint src && tsc",
+    "native:capture": "node scripts/native-ui.mjs --once",
+    "native:watch": "node scripts/native-ui.mjs --watch",
+    "native:check": "node scripts/native-ui.mjs --check",
+    "test:sync": "node --test scripts/native-ui.test.mjs",
+    "sync:brand": "node scripts/sync-brand.mjs",
+    "audio:generate": "python3 scripts/generate-score.py",
+    "render": "node scripts/render.mjs",
+    "test:motion": "node --test scripts/taste-motion.test.mjs"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

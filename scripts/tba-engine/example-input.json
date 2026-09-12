@@ -1,0 +1,37 @@
+{
+  "evidenceClass": "synthetic_fixture",
+  "userId": "synthetic-palate-example",
+  "description": "실제 사용자의 기록이 아닌 엔진 실행 검증용 예시",
+  "foods": [
+    { "id": "sample-cake", "name": "검증용 견과 케이크" },
+    { "id": "sample-cookie", "name": "검증용 구운 쿠키" },
+    { "id": "sample-drink", "name": "검증용 음료" },
+    { "id": "sample-dessert", "name": "검증용 디저트" }
+  ],
+  "experiences": [
+    {
+      "id": "example-1", "mealId": "meal-1", "foodId": "sample-cake", "recordedAt": "2026-09-01T03:00:00.000Z",
+      "answers": [{ "answerKey": "notes", "question": "free_text", "value": "단맛이 좋았어요. 고소한 맛이 좋았어요." }]
+    },
+    {
+      "id": "example-2", "mealId": "meal-2", "foodId": "sample-cookie", "recordedAt": "2026-09-02T03:00:00.000Z",
+      "answers": [{ "answerKey": "notes", "question": "free_text", "value": "단맛이 좋았어요. 구운 향이 좋았어요." }]
+    },
+    {
+      "id": "example-3", "mealId": "meal-3", "foodId": "sample-dessert", "recordedAt": "2026-09-03T03:00:00.000Z",
+      "answers": [{ "answerKey": "notes", "question": "free_text", "value": "단맛이 좋았어요." }]
+    },
+    {
+      "id": "example-4", "mealId": "meal-4", "foodId": "sample-dessert", "recordedAt": "2026-09-04T03:00:00.000Z",
+      "answers": [{ "answerKey": "notes", "question": "free_text", "value": "단맛이 좋았어요." }]
+    },
+    {
+      "id": "example-5", "mealId": "meal-5", "foodId": "sample-drink", "recordedAt": "2026-09-05T03:00:00.000Z",
+      "answers": [{ "answerKey": "notes", "question": "free_text", "value": "단맛이 너무 강했어요. 단맛이 싫었어요." }]
+    },
+    {
+      "id": "example-6", "mealId": "meal-6", "foodId": "sample-dessert", "recordedAt": "2026-09-06T03:00:00.000Z",
+      "answers": [{ "answerKey": "notes", "question": "free_text", "value": "깔끔했어요." }]
+    }
+  ]
+}

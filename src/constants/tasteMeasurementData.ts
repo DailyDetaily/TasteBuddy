@@ -1,12 +1,18 @@
 import { TASTE_IDS, TASTE_TOKENS, type TasteId } from './designTokens';
+import type { TasteSurveySubmission } from '../types/tasteSurvey';
 
 export type TasteMeasurementResults = Record<TasteId, number | null>;
-export type TasteMeasurementSource = 'broad-starter' | 'measured';
+export type TasteMeasurementSource = 'broad-starter' | 'measured' | 'recalled-intensity';
 
 export interface TasteMeasurementSnapshot {
   measuredAt: string;
   results: TasteMeasurementResults;
   source?: TasteMeasurementSource;
+  surveySubmission?: TasteSurveySubmission;
+}
+
+export function isReferenceFoodRecallSnapshot(snapshot: TasteMeasurementSnapshot) {
+  return snapshot.source === 'recalled-intensity';
 }
 
 export interface TasteMeasurementEntry {
@@ -67,7 +73,7 @@ export function createTasteMeasurementSnapshot(
 export function isBroadStarterMeasurementSnapshot(
   snapshot: TasteMeasurementSnapshot,
 ) {
-  return snapshot.source === 'broad-starter';
+  return snapshot.source === 'broad-starter' || isReferenceFoodRecallSnapshot(snapshot);
 }
 
 export function resolveTasteMeasurementValue(

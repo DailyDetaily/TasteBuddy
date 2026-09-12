@@ -18,12 +18,12 @@ const SURVEY_STEPS = [
   {
     id: 2,
     title: '감각 반응 정리',
-    desc: '열두 문항으로 작은 차이와 부담이 생기는 지점을 차분하게 확인합니다.',
+    desc: '여섯 가지 기준 음식을 떠올리며 맛이 얼마나 강하게 느껴졌는지 기록합니다.',
   },
   {
     id: 3,
-    title: '첫 미각 프로필 준비',
-    desc: '응답은 예약 개인화와 셰프가 참고할 수 있는 표현으로 정리됩니다.',
+    title: '설문 응답 정리',
+    desc: '기준 음식과 답한 내용을 함께 보존하고, 다음 식사의 감각과 이어서 살펴봅니다.',
   },
 ] as const;
 
@@ -42,12 +42,12 @@ export default function TasteSurveyIntroScreen({
       defaultActionLabel="설문 시작"
       title={
         <>
-          지금부터 고객님의 미각을
+          최근에 느낀 감각을
           <br />
-          정밀하게 준비합니다.
+          차분하게 기록해요.
         </>
       }
-      subtitle="최근의 감각 반응을 바탕으로 첫 프로필을 차분하게 잡아볼게요."
+      subtitle="최근 3개월의 경험을 떠올려 주세요. 먹어본 적 없거나 기억나지 않으면 따로 표시할 수 있어요."
       steps={SURVEY_STEPS}
       onBack={onBack}
       secondaryActionLabel={reuseContextLabel}

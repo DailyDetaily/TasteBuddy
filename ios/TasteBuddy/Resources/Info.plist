@@ -41,6 +41,8 @@
 	<string>$(TB_AUTH_REDIRECT_URL)</string>
 	<key>TBBackendEnvironment</key>
 	<string>$(TB_BACKEND_ENVIRONMENT)</string>
+	<key>TBChatGPTEntryURL</key>
+	<string>$(TB_CHATGPT_ENTRY_URL)</string>
 	<key>TBGoogleMapsAPIKey</key>
 	<string>$(TB_GOOGLE_MAPS_API_KEY)</string>
 	<key>TBInstagramFacebookAppID</key>

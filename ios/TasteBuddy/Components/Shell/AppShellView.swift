@@ -416,6 +416,63 @@ struct TasteBloomTransition: View {
     }
 }
 
+/// Reuses the entrance bloom geometry in reverse so the presented dining flow
+/// contracts back into the bottom-tab center button.
+struct DiningFeedbackTasteBloomCollapseMask: View, Animatable {
+    let origin: CGPoint?
+    var progress: Double
+
+    var animatableData: Double {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            let dismissalProgress = min(max(progress, 0), 1)
+            let visualElapsed = TasteBloomTransitionMetrics.duration
+                * (1 - dismissalProgress)
+            let visualProgress = TasteBloomTransitionMetrics.normalizedProgress(
+                visualElapsed
+            )
+            let expansionProgress = TasteBloomTransitionMetrics.expansionProgress(
+                visualProgress
+            )
+            let motionProgress = visualElapsed
+                .truncatingRemainder(
+                    dividingBy: TasteBloomTransitionMetrics.motionDuration
+                )
+                / TasteBloomTransitionMetrics.motionDuration
+            let phase = motionProgress * .pi * 2
+            let size = proxy.size
+            let resolvedOrigin = TasteBloomTransitionMetrics.bloomOrigin(
+                in: size,
+                safeAreaBottom: proxy.safeAreaInsets.bottom,
+                measuredOrigin: origin
+            )
+            let radius = TasteBloomTransitionMetrics.expansionRadius(
+                size: size,
+                origin: resolvedOrigin,
+                progress: expansionProgress
+            )
+
+            TasteBloomRadialMask(
+                origin: resolvedOrigin,
+                radius: radius,
+                phase: phase,
+                expansionProgress: expansionProgress
+            )
+            .blur(
+                radius: TasteBloomTransitionMetrics.maskFeatherRadius(
+                    expansionProgress: expansionProgress
+                )
+            )
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+}
+
 private struct TasteBloomRadialMask: View {
     let origin: CGPoint
     let radius: CGFloat
@@ -482,13 +539,15 @@ private struct TasteBloomCameraRevealMask: View {
 }
 
 private enum TasteBloomTransitionMetrics {
-    static let duration: TimeInterval = 0.88
+    static let duration = TasteBloomMotion.duration(.bloom, reduceMotion: false)
     static let motionDuration: TimeInterval = 3.6
     static let hueRotationAmplitude = 17.0
     static let launchHueRotationAmplitude = 42.0
     static let sourceButtonRadius: CGFloat = 24
     static let edgeRimWidth: CGFloat = 2.2
     static let cameraRevealStartProgress = 0.70
+    static let endpointRoundnessProgress = 0.12
+    static let endpointMinimumAmplitudeScale = 0.08
 
     static let blobSpecs: [TasteBloomBlobSpec] = [
         .init(color: .first, radiusX: 0.42, radiusY: 0.18, x: 0.18, y: 0.10, offset: 0, xSign: 1, ySign: 1, opacity: 0.84, usesWaveHeight: true),
@@ -511,7 +570,7 @@ private enum TasteBloomTransitionMetrics {
     }
 
     static func expansionProgress(_ progress: Double) -> Double {
-        smoothStep(progress)
+        TasteBloomMotion.progress(progress)
     }
 
     static func overlayOpacity(_ progress: Double) -> Double {
@@ -725,10 +784,15 @@ private enum TasteBloomTransitionMetrics {
     ) -> CGFloat {
         let base = max(min(size.width, size.height) * 0.072, 26)
         let growth = min(max(expansionProgress / 0.30, 0), 1)
+        let roundnessSpan = max(endpointRoundnessProgress, 0.001)
+        let endpointTransition = smoothStep(expansionProgress / roundnessSpan)
+        let endpointAmplitudeScale = endpointMinimumAmplitudeScale
+            + (1 - endpointMinimumAmplitudeScale) * endpointTransition
         let settle = 1 - min(max((expansionProgress - 0.90) / 0.10, 0), 1) * 0.54
         let radiusClamp = min(radius / 180, 1)
         return base
             * CGFloat(0.72 + 0.34 * growth)
+            * CGFloat(endpointAmplitudeScale)
             * CGFloat(settle)
             * CGFloat(0.76 + 0.24 * radiusClamp)
     }
@@ -870,6 +934,7 @@ struct AppShellView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var activeTab: MainTab
     @State private var routeStack: [AppRoute] = []
+    @State private var homeInsightTints: [String: Double] = [:]
     @State private var routeSwipeTranslation: CGFloat = 0
     @State private var topAppBarBloomToken = 0
     @State private var activeSheet: AppSheet?
@@ -880,7 +945,6 @@ struct AppShellView: View {
     @State private var stagedSheetDragBaseline: CGFloat = 0
     @State private var stagedSheetDragWaitedForScroll = false
     @StateObject private var stagedSheetScrollCoordinator = BottomSheetScrollCoordinator()
-    @State private var holdsStagedTopAppBarChrome = false
     @State private var bookmarkCoverIconID: BookmarkCoverIconID = .utensils
     @State private var bookmarkCoverTasteID: TasteAxis = .sweet
     @State private var isBookmarkCoverEditorOpen = false
@@ -915,6 +979,8 @@ struct AppShellView: View {
     var body: some View {
         GeometryReader { proxy in
             let screenBounds = UIScreen.main.bounds
+            let safeAreaTop = max(proxy.safeAreaInsets.top, hardwareStatusBarHeight)
+            let usesInternalStatusBarSpace = routeStack.isEmpty && !isGlobalSearchActive
 
             ZStack {
                 ZStack {
@@ -923,33 +989,46 @@ struct AppShellView: View {
                 }
                 .ignoresSafeArea()
                 .animation(
-                    isDraggingStagedSheet ? nil : StagedBottomSheetBackgroundMetrics.animation,
+                    isDraggingStagedSheet ? nil : TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion),
                     value: stagedSheetProgress
                 )
 
-                shellContent
-                    .environment(\.mainTabStatusBarHeight, proxy.safeAreaInsets.top)
-                    .modifier(
-                        StagedBottomSheetBackground(
-                            progress: stagedSheetProgress,
-                            dimOpacity: BottomSheetShellMetrics.overlayOpacity * stagedSheetProgress,
-                            animates: !isDraggingStagedSheet,
-                            topOverflowInset: proxy.safeAreaInsets.top
-                        )
-                    )
-                    .allowsHitTesting(activeStagedSheet == nil)
-                    .zIndex(1)
+                StagedSheetScreen(
+                    progress: stagedSheetProgress,
+                    dimOpacity: BottomSheetShellMetrics.overlayOpacity * stagedSheetProgress,
+                    animates: !isDraggingStagedSheet,
+                    openOffsetY: safeAreaTop + StagedBottomSheetBackgroundMetrics.openOffsetY
+                ) {
+                    VStack(spacing: 0) {
+                        Color.clear
+                            .frame(height: usesInternalStatusBarSpace ? 0 : safeAreaTop)
+                        shellContent
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .background(currentTopChromeBackground)
+                    .environment(\.colorScheme, .light)
+                    .environment(\.mainTabStatusBarHeight, usesInternalStatusBarSpace ? safeAreaTop : 0)
+                    .environment(\.tbTopChromeInset, usesInternalStatusBarSpace ? nil : safeAreaTop)
+                    .onPreferenceChange(HomeInsightTintPreferenceKey.self) { value in
+                        homeInsightTints = value
+                    }
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height)
+                .allowsHitTesting(activeStagedSheet == nil)
+                .zIndex(1)
 
                 if !currentRouteShowsContentUnderBottomSafeArea {
                     bottomSafeAreaBackground(safeAreaBottom: proxy.safeAreaInsets.bottom)
                         .zIndex(0.5)
                 }
 
-                statusBarBackground(safeAreaTop: proxy.safeAreaInsets.top)
+                statusBarBackground(safeAreaTop: safeAreaTop)
                     .zIndex(2)
 
                 if let activeStagedSheet {
                     stagedSheetView(for: activeStagedSheet)
+                        .environment(\.colorScheme, .light)
                         .environment(\.bottomSheetScrollCoordinator, stagedSheetScrollCoordinator)
                         .frame(
                             width: proxy.size.width,
@@ -964,8 +1043,9 @@ struct AppShellView: View {
                                 + stagedSheetDragTranslation
                         )
                         .simultaneousGesture(stagedSheetDragGesture)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .zIndex(1)
+                        .transition(TasteBloomMotion.sheetTransition(reduceMotion: reduceMotion))
+                        // 제거 전환 중에도 배경 카드·안전영역보다 앞에서 내려간다.
+                        .zIndex(3)
                 }
 
                 if activeStagedSheet != nil {
@@ -1000,7 +1080,7 @@ struct AppShellView: View {
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .ignoresSafeArea(edges: .horizontal)
+        .ignoresSafeArea(edges: [.horizontal, .top])
         .ignoresSafeArea(.container, edges: currentRouteShowsContentUnderBottomSafeArea ? .bottom : [])
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .overlay {
@@ -1011,8 +1091,8 @@ struct AppShellView: View {
                     .zIndex(20)
             }
         }
-        .animation(StagedBottomSheetBackgroundMetrics.animation, value: activeStagedSheet?.id)
-        .animation(StagedBottomSheetBackgroundMetrics.animation, value: showsProfileEditDeleteConfirmation)
+        .animation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion), value: activeStagedSheet?.id)
+        .animation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion), value: showsProfileEditDeleteConfirmation)
         .onChange(of: showsProfileEditDeleteConfirmation) { _, isPresented in
             if isPresented {
                 profileDeletionErrorMessage = nil
@@ -1094,7 +1174,10 @@ struct AppShellView: View {
             DiningFeedbackSheet(
                 startMode: newDiningFeedbackStartMode,
                 showsLaunchTransition: showsDiningFeedbackTasteBloomTransition,
-                launchOrigin: diningFeedbackLaunchOrigin
+                launchOrigin: diningFeedbackLaunchOrigin,
+                onClose: showsDiningFeedbackTasteBloomTransition
+                    ? dismissNewDiningFeedbackAfterTransition
+                    : nil
             ) { entry in
                 appModel.addDiningEntry(entry)
             }
@@ -1111,19 +1194,19 @@ struct AppShellView: View {
 
     @ViewBuilder
     private func statusBarBackground(safeAreaTop: CGFloat) -> some View {
-        if !usesProgressiveTopChrome || stagedSheetProgress > 0 {
+        if !routeUsesProgressiveTopChrome {
             VStack(spacing: 0) {
-                ZStack {
-                    if !usesProgressiveTopChrome {
-                        currentTopChromeBackground
-                    }
-                    Color.black.opacity(stagedSheetProgress)
-                }
-                .frame(height: safeAreaTop)
+                currentTopChromeBackground
+                    .frame(height: safeAreaTop)
                 Spacer(minLength: 0)
             }
             .ignoresSafeArea(edges: .top)
             .allowsHitTesting(false)
+            .opacity(1 - stagedSheetProgress)
+            .animation(
+                isDraggingStagedSheet ? nil : TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion),
+                value: stagedSheetProgress
+            )
         }
     }
 
@@ -1149,18 +1232,26 @@ struct AppShellView: View {
             return TBColor.focus
         }
 
+        if let kind = currentHomeInsight {
+            return kind.backgroundColor(tintProgress: homeInsightTints[kind.rawValue] ?? 0)
+        }
         return TBColor.page
     }
 
-    private var usesSystemMainTabScrollEdgeChrome: Bool {
-        routeStack.isEmpty
-            && !isGlobalSearchActive
-            && !usesStagedTopAppBarChrome
+    private var currentHomeInsight: HomeArchiveCard.Kind? {
+        guard !isGlobalSearchActive, let route = routeStack.last,
+              case .homeInsight(let kind) = route else { return nil }
+        return kind
     }
 
-    private var usesProgressiveTopChrome: Bool {
-        usesSystemMainTabScrollEdgeChrome
-            || (!routeStack.isEmpty && !isGlobalSearchActive && !usesStagedTopAppBarChrome)
+    private var routeUsesProgressiveTopChrome: Bool {
+        if isGlobalSearchActive {
+            return false
+        }
+        if currentRouteUsesCommentFocus {
+            return false
+        }
+        return true
     }
 
     private var currentBottomChromeBackground: Color {
@@ -1186,19 +1277,7 @@ struct AppShellView: View {
     }
 
     private var currentRouteShowsContentUnderBottomSafeArea: Bool {
-        guard let activeRoute = routeStack.last else {
-            return false
-        }
-
-        if case .restaurant = activeRoute {
-            return true
-        }
-
-        if case .restaurantSummary = activeRoute {
-            return true
-        }
-
-        return false
+        routeStack.last?.showsContentUnderBottomSafeArea ?? false
     }
 
     private var currentRouteUsesCommentFocus: Bool {
@@ -1282,13 +1361,21 @@ struct AppShellView: View {
         ZStack {
             AppRouteFocusContainer(
                 route: route,
+                insightTintProgress: homeInsightTints[route.title] ?? 0,
                 contentOffset: contentOffset,
+                bottomContentInset: keyWindowSafeAreaInsets.bottom,
                 topAppBarBloomToken: topAppBarBloomToken,
                 onBack: popRoute,
                 navigate: navigateImmediately,
-                onOpenSearch: { activeSheet = .globalSearch },
+                onOpenSearch: {
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                        activeSheet = .globalSearch
+                    }
+                },
                 onOpenPublicProfileActions: { profileID in
-                    activeSheet = .publicProfileActions(profileID: profileID)
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                        activeSheet = .publicProfileActions(profileID: profileID)
+                    }
                 },
                 onOpenBookmarkSheet: presentBookmarkSheet,
                 onOpenInfoSuggestionSheet: presentInfoSuggestionSheet,
@@ -1312,40 +1399,17 @@ struct AppShellView: View {
     }
 
     private var mainShellLayer: some View {
-        Group {
-            if usesSystemMainTabScrollEdgeChrome {
-                currentTabStack
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                legacyMainShellContent
-            }
-        }
-        .background(TBColor.page)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            BottomTabBar(activeTab: $activeTab) {
-                startDiningFeedbackFromCenterButton()
-            }
-        }
-        .onPreferenceChange(BottomTabCenterButtonFramePreferenceKey.self) { frame in
-            bottomTabCenterButtonFrame = frame
-        }
-    }
-
-    private var legacyMainShellContent: some View {
-        VStack(spacing: 0) {
-            mainTopAppBar(
-                appearance: usesStagedTopAppBarChrome ? .solid : .default
-            )
-
-            if activeTab == .home, !isGlobalSearchActive {
-                HomeSearchHeader {
-                    activeSheet = .globalSearch
+        currentTabStack
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(TBColor.page)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                BottomTabBar(activeTab: $activeTab) {
+                    startDiningFeedbackFromCenterButton()
                 }
             }
-
-            currentTabStack
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
+            .onPreferenceChange(BottomTabCenterButtonFramePreferenceKey.self) { frame in
+                bottomTabCenterButtonFrame = frame
+            }
     }
 
     private var systemMainTabTopChrome: some View {
@@ -1354,14 +1418,16 @@ struct AppShellView: View {
 
             if activeTab == .home {
                 HomeSearchHeader(showsBackground: false) {
-                    activeSheet = .globalSearch
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                        activeSheet = .globalSearch
+                    }
                 }
             }
         }
     }
 
     private var currentSystemMainTabTopChrome: AnyView? {
-        guard usesSystemMainTabScrollEdgeChrome else {
+        guard routeStack.isEmpty && !isGlobalSearchActive else {
             return nil
         }
 
@@ -1374,20 +1440,35 @@ struct AppShellView: View {
             solidBackground: .page,
             showSearchAction: activeTab != .home,
             profile: appModel.profile,
+            avatarImageData: appModel.profileAvatarImageData,
             hasUnreadNotifications: hasUnreadNotifications,
             bloomToken: topAppBarBloomToken,
             onStartMeasurement: {
-                activeSheet = .quickRefinement
+                withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                    activeSheet = .quickRefinement
+                }
             },
             onOpenSearch: {
-                activeSheet = .globalSearch
+                withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                    activeSheet = .globalSearch
+                }
             },
             onOpenNotifications: {
-                hasUnreadNotifications = false
-                activeSheet = .notifications
+                withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                    hasUnreadNotifications = false
+                    activeSheet = .notifications
+                }
             },
-            onOpenMenu: { activeSheet = .menu },
-            onOpenProfile: { activeSheet = .profileSummary }
+            onOpenMenu: {
+                withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                    activeSheet = .menu
+                }
+            },
+            onOpenProfile: {
+                withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                    activeSheet = .profileSummary
+                }
+            }
         )
     }
 
@@ -1463,10 +1544,6 @@ struct AppShellView: View {
         case .globalSearch:
             return nil
         }
-    }
-
-    private var usesStagedTopAppBarChrome: Bool {
-        activeStagedSheet != nil || holdsStagedTopAppBarChrome
     }
 
     private var isGlobalSearchActive: Bool {
@@ -1553,7 +1630,7 @@ struct AppShellView: View {
                 if shouldDismiss {
                     dismissStagedSheetFromDrag()
                 } else {
-                    withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
                         stagedSheetDragTranslation = 0
                         isDraggingStagedSheet = false
                         stagedSheetScrollCoordinator.isSheetDragging = false
@@ -1570,11 +1647,27 @@ struct AppShellView: View {
     }
 
     private var keyWindowSafeAreaInsets: UIEdgeInsets {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap(\.windows)
-            .first { $0.isKeyWindow }?
-            .safeAreaInsets ?? .zero
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let windows = scenes.flatMap(\.windows)
+        if let insets = windows.first(where: { $0.isKeyWindow })?.safeAreaInsets, insets.top > 0 {
+            return insets
+        }
+        if let insets = windows.first?.safeAreaInsets, insets.top > 0 {
+            return insets
+        }
+        return UIEdgeInsets(top: 59, left: 0, bottom: 34, right: 0)
+    }
+
+    private var hardwareStatusBarHeight: CGFloat {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        if let height = scenes.compactMap({ $0.statusBarManager?.statusBarFrame.height }).first(where: { $0 > 0 }) {
+            return height
+        }
+        let windows = scenes.flatMap(\.windows)
+        if let top = windows.compactMap({ $0.safeAreaInsets.top }).first(where: { $0 > 0 }) {
+            return top
+        }
+        return 59
     }
 
     private var systemSheetBinding: Binding<AppSheet?> {
@@ -1732,7 +1825,8 @@ struct AppShellView: View {
             case .quickRefinement:
                 QuickRefinementSheet(
                     onDismissRequest: dismissActiveSheet,
-                    usesNativeSheetChrome: false
+                    usesNativeSheetChrome: false,
+                    onStartDining: startDiningFeedbackFromCenterButton
                 )
             case .authEntry(let intent):
                 AuthEntrySheet(
@@ -1797,9 +1891,7 @@ struct AppShellView: View {
     }
 
     private func dismissActiveSheet() {
-        holdStagedTopAppBarChromeDuringDismissal()
-
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeSheet = nil
             activeBookmarkSheetRestaurant = nil
             activeDishOptionsItem = nil
@@ -1813,9 +1905,7 @@ struct AppShellView: View {
     }
 
     private func dismissBookmarkSheet() {
-        holdStagedTopAppBarChromeDuringDismissal()
-
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeBookmarkSheetRestaurant = nil
             activeDishOptionsItem = nil
             activeInfoSuggestionSheet = nil
@@ -1831,9 +1921,7 @@ struct AppShellView: View {
     }
 
     private func dismissStagedSheetFromDrag() {
-        holdStagedTopAppBarChromeDuringDismissal()
-
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             stagedSheetDragTranslation = stagedSheetHeight
             activeBookmarkSheetRestaurant = nil
             activeDishOptionsItem = nil
@@ -1849,7 +1937,9 @@ struct AppShellView: View {
             isDraggingStagedSheet = false
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + TasteBloomMotion.duration(.sheet, reduceMotion: reduceMotion)
+        ) {
             guard activeStagedSheet == nil else {
                 return
             }
@@ -1864,9 +1954,6 @@ struct AppShellView: View {
             || activeDishOptionsItem != nil
             || activeInfoSuggestionSheet != nil
             || activeMenuSuggestionSheetRestaurantName != nil
-        if isDismissingSheet {
-            holdStagedTopAppBarChromeDuringDismissal()
-        }
         activeSheet = nil
         activeBookmarkSheetRestaurant = nil
         activeDishOptionsItem = nil
@@ -1882,7 +1969,7 @@ struct AppShellView: View {
         }
 
         Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 250_000_000)
+            try? await Task.sleep(for: .seconds(TasteBloomMotion.duration(.sheet, reduceMotion: reduceMotion)))
             routeStack.append(route)
         }
     }
@@ -1901,7 +1988,7 @@ struct AppShellView: View {
     }
 
     private func presentBookmarkSheet(_ restaurant: RestaurantSummary) {
-        withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeBookmarkSheetRestaurant = restaurant
             activeDishOptionsItem = nil
             activeInfoSuggestionSheet = nil
@@ -1945,6 +2032,14 @@ struct AppShellView: View {
         }
     }
 
+    private func dismissNewDiningFeedbackAfterTransition() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            showsNewDiningFeedback = false
+        }
+    }
+
     private func triggerDiningFeedbackLaunchHaptic() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.prepare()
@@ -1952,7 +2047,7 @@ struct AppShellView: View {
     }
 
     private func presentDishOptionsSheet(_ item: DiningDishFeedbackItem) {
-        withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeDishOptionsItem = item
             activeBookmarkSheetRestaurant = nil
             activeInfoSuggestionSheet = nil
@@ -1965,7 +2060,7 @@ struct AppShellView: View {
     }
 
     private func presentInfoSuggestionSheet(restaurantName: String, infoRows: [RestaurantInfoRowModel]) {
-        withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeInfoSuggestionSheet = (restaurantName: restaurantName, infoRows: infoRows)
             activeMenuSuggestionSheetRestaurantName = nil
             activeBookmarkSheetRestaurant = nil
@@ -1978,9 +2073,7 @@ struct AppShellView: View {
     }
 
     private func dismissDishOptionsSheet() {
-        holdStagedTopAppBarChromeDuringDismissal()
-
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeDishOptionsItem = nil
             stagedSheetDragTranslation = 0
             isDraggingStagedSheet = false
@@ -1988,7 +2081,7 @@ struct AppShellView: View {
     }
 
     private func presentMenuSuggestionSheet(restaurantName: String) {
-        withAnimation(StagedBottomSheetBackgroundMetrics.animation) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeMenuSuggestionSheetRestaurantName = restaurantName
             activeInfoSuggestionSheet = nil
             activeBookmarkSheetRestaurant = nil
@@ -2004,7 +2097,7 @@ struct AppShellView: View {
         dismissDishOptionsSheet()
 
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(250))
+            try? await Task.sleep(for: .seconds(TasteBloomMotion.duration(.sheet, reduceMotion: reduceMotion)))
             navigateImmediately(.comments(id: item.id))
         }
     }
@@ -2013,7 +2106,7 @@ struct AppShellView: View {
         dismissDishOptionsSheet()
 
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(250))
+            try? await Task.sleep(for: .seconds(TasteBloomMotion.duration(.sheet, reduceMotion: reduceMotion)))
             activeDiningFeedbackEditEntry = entry
         }
     }
@@ -2027,9 +2120,7 @@ struct AppShellView: View {
     }
 
     private func dismissInfoSuggestionSheet() {
-        holdStagedTopAppBarChromeDuringDismissal()
-
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeInfoSuggestionSheet = nil
             stagedSheetDragTranslation = 0
             isDraggingStagedSheet = false
@@ -2037,30 +2128,10 @@ struct AppShellView: View {
     }
 
     private func dismissMenuSuggestionSheet() {
-        holdStagedTopAppBarChromeDuringDismissal()
-
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
             activeMenuSuggestionSheetRestaurantName = nil
             stagedSheetDragTranslation = 0
             isDraggingStagedSheet = false
-        }
-    }
-
-    private func holdStagedTopAppBarChromeDuringDismissal() {
-        guard activeStagedSheet != nil else {
-            return
-        }
-
-        holdsStagedTopAppBarChrome = true
-
-        DispatchQueue.main.asyncAfter(
-            deadline: .now() + StagedBottomSheetBackgroundMetrics.animationDuration
-        ) {
-            guard activeStagedSheet == nil else {
-                return
-            }
-
-            holdsStagedTopAppBarChrome = false
         }
     }
 
@@ -2075,7 +2146,11 @@ struct AppShellView: View {
             HomeView(
                 showsSearchTrigger: false,
                 systemTopChrome: currentSystemMainTabTopChrome,
-                onOpenSearch: { activeSheet = .globalSearch },
+                onOpenSearch: {
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                        activeSheet = .globalSearch
+                    }
+                },
                 onOpenRoute: navigate,
                 onOpenBookmarkSheet: presentBookmarkSheet,
                 onStartDiningFeedback: startDiningFeedbackFromSearch,
@@ -2086,7 +2161,9 @@ struct AppShellView: View {
             AnalysisView(
                 systemTopChrome: currentSystemMainTabTopChrome,
                 onStartMeasurement: {
-                    activeSheet = .quickRefinement
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                        activeSheet = .quickRefinement
+                    }
                 },
                 onOpenTasteChange: {
                     navigateImmediately(.tasteChange)
@@ -2102,8 +2179,16 @@ struct AppShellView: View {
             ProfileView(
                 systemTopChrome: currentSystemMainTabTopChrome,
                 onOpenConnection: { kind in navigateImmediately(.connectionList(kind)) },
-                onFindBuddy: { activeSheet = .globalSearch },
-                onOpenProfileSettings: { activeSheet = .profileSummary },
+                onFindBuddy: {
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                        activeSheet = .globalSearch
+                    }
+                },
+                onOpenProfileSettings: {
+                    withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
+                        activeSheet = .profileSummary
+                    }
+                },
                 onOpenSavedList: { navigateImmediately(.savedRestaurants) }
             )
         }
@@ -2140,8 +2225,11 @@ private struct HomeSearchHeader: View {
 }
 
 private struct AppRouteFocusContainer: View {
+    @Environment(\.mainTabStatusBarHeight) private var statusBarHeight
     let route: AppRoute
+    var insightTintProgress = 0.0
     var contentOffset: CGFloat = 0
+    var bottomContentInset: CGFloat = 0
     var topAppBarBloomToken = 0
     let onBack: () -> Void
     let navigate: (AppRoute) -> Void
@@ -2164,13 +2252,20 @@ private struct AppRouteFocusContainer: View {
                 }
             }
         }
+        .background {
+            if case .homeInsight = route { routeBackground.ignoresSafeArea() }
+        }
         .tbScreenTopChrome()
-        .ignoresSafeArea(.container, edges: showsContentUnderBottomSafeArea ? .bottom : [])
+        .ignoresSafeArea(.container, edges: route.showsContentUnderBottomSafeArea ? .bottom : [])
         .accessibilityAction(.escape, onBack)
     }
 
     private var topChrome: some View {
         VStack(spacing: 0) {
+            if statusBarHeight > 0 {
+                Color.clear.frame(height: statusBarHeight)
+            }
+
             TopAppBar(
                 appearance: .transparent,
                 title: topAppBarTitle,
@@ -2203,7 +2298,8 @@ private struct AppRouteFocusContainer: View {
             onOpenInfoSuggestionSheet: onOpenInfoSuggestionSheet,
             onOpenMenuSuggestionSheet: onOpenMenuSuggestionSheet,
             collapsingTopChrome: route.usesCollapsingTopChrome ? AnyView(topChrome) : nil,
-            contentOffset: contentOffset
+            contentOffset: contentOffset,
+            bottomContentInset: bottomContentInset
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(routeBackground)
@@ -2215,19 +2311,10 @@ private struct AppRouteFocusContainer: View {
     }
 
     private var routeBackground: Color {
-        isCommentsRoute ? TBColor.focus : TBColor.page
-    }
-
-    private var showsContentUnderBottomSafeArea: Bool {
-        if case .restaurant = route {
-            return true
+        if case .homeInsight(let kind) = route {
+            return kind.backgroundColor(tintProgress: insightTintProgress)
         }
-
-        if case .restaurantSummary = route {
-            return true
-        }
-
-        return false
+        return isCommentsRoute ? TBColor.focus : TBColor.page
     }
 
     private var showsDefaultActions: Bool {
@@ -2277,13 +2364,15 @@ private struct AppRouteFocusContainer: View {
 
 private extension AppRoute {
     var usesCollapsingTopChrome: Bool {
-        if case .tasteChange = self { return true }
-        return false
+        switch self {
+        case .tasteChange, .savedRestaurants: true
+        default: false
+        }
     }
 
     var showsTopAppBarDefaultActions: Bool {
         switch self {
-        case .dishFeedback, .comments, .savedRestaurants, .connectionList, .publicProfile:
+        case .dishFeedback, .comments, .savedRestaurants, .connectionList, .publicProfile, .homeInsight:
             return false
         default:
             return true
@@ -2318,79 +2407,77 @@ private struct ProfileSummarySheet: View {
         ) {
             BottomSheetScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    if let profile = appModel.profile {
-                        Button(action: openProfileEdit) {
-                            SectionCard(showsBorder: false) {
-                                VStack(alignment: .leading, spacing: 20) {
-                                    HStack(spacing: 14) {
-                                        ProfileAvatarDisplay(
-                                            imageData: appModel.profileAvatarImageData,
-                                            size: 64,
-                                            tasteProfile: profile,
-                                            shapeSeed: "current-user"
-                                        )
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(appModel.profileIdentity.displayName)
-                                                .font(TBFont.bold(18))
-                                                .foregroundStyle(TBColor.textPrimary)
-                                            Text(appModel.profileIdentity.displayNickname)
-                                                .font(TBFont.semibold(13))
-                                                .foregroundStyle(TBColor.textHint)
-                                        }
+                    Button(action: openProfileEdit) {
+                        SectionCard(showsBorder: false) {
+                            VStack(alignment: .leading, spacing: 20) {
+                                HStack(spacing: 14) {
+                                    ProfileAvatarDisplay(
+                                        imageData: appModel.profileAvatarImageData,
+                                        size: 64,
+                                        shapeSeed: "current-user",
+                                        profile: appModel.profile
+                                    )
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(appModel.profileIdentity.displayName)
+                                            .font(TBFont.bold(18))
+                                            .foregroundStyle(TBColor.textPrimary)
+                                        Text(appModel.profileIdentity.displayNickname)
+                                            .font(TBFont.semibold(13))
+                                            .foregroundStyle(TBColor.textHint)
                                     }
-
-                                    HStack {
-                                        Text(profileSummaryLabel(identity: appModel.profileIdentity))
-                                            .font(TBFont.semibold(12))
-                                            .foregroundStyle(profile.strongestAxis.darkColor)
-                                        Spacer()
-                                        LucideIcon(
-                                            .chevronRight,
-                                            size: TBIcon.Size.small,
-                                            strokeWidth: TBIcon.Stroke.regular
-                                        )
-                                            .foregroundStyle(profile.strongestAxis.darkColor)
-                                    }
-                                    .padding(12)
-                                    .background(profile.strongestAxis.tintColor)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                                 }
+
+                                HStack {
+                                    Text(profileSummaryLabel(identity: appModel.profileIdentity))
+                                        .font(TBFont.semibold(12))
+                                        .foregroundStyle(TBColor.textSecondary)
+                                    Spacer()
+                                    LucideIcon(
+                                        .chevronRight,
+                                        size: TBIcon.Size.small,
+                                        strokeWidth: TBIcon.Stroke.regular
+                                    )
+                                    .foregroundStyle(TBColor.textSecondary)
+                                }
+                                .padding(12)
+                                .background(TBColor.mutedSurface)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             }
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("프로필 편집")
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("프로필 편집")
 
-                        SectionCard(showsBorder: false) {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("계정 연결")
-                                    .font(TBFont.bold(14))
-                                    .foregroundStyle(TBColor.textPrimary)
-                                Text("지금 만든 미각 프로필을 이메일에 연결하면 다음 기기에서도 이어서 사용할 수 있어요.")
-                                    .font(TBFont.regular(12))
-                                    .foregroundStyle(TBColor.textSubtle)
-                                    .lineSpacing(4)
+                    SectionCard(showsBorder: false) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("계정 연결")
+                                .font(TBFont.bold(14))
+                                .foregroundStyle(TBColor.textPrimary)
+                            Text("현재 계정을 이메일에 연결하면 식사 기록과 입맛 해석을 다음 기기에서도 이어서 볼 수 있어요.")
+                                .font(TBFont.regular(12))
+                                .foregroundStyle(TBColor.textSubtle)
+                                .lineSpacing(4)
 
-                                Button {
-                                    openAuthEntry(.linkCurrentProfile)
-                                } label: {
-                                    HStack {
-                                        Text("현재 프로필을 이메일에 연결")
-                                            .font(TBFont.semibold(12))
-                                        Spacer()
-                                        LucideIcon(
-                                            .chevronRight,
-                                            size: TBIcon.Size.small,
-                                            strokeWidth: TBIcon.Stroke.regular
-                                        )
-                                    }
-                                    .foregroundStyle(profile.strongestAxis.darkColor)
-                                    .padding(.horizontal, 12)
-                                    .frame(height: 44)
-                                    .background(profile.strongestAxis.tintColor)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            Button {
+                                openAuthEntry(.linkCurrentProfile)
+                            } label: {
+                                HStack {
+                                    Text("현재 계정을 이메일에 연결")
+                                        .font(TBFont.semibold(12))
+                                    Spacer()
+                                    LucideIcon(
+                                        .chevronRight,
+                                        size: TBIcon.Size.small,
+                                        strokeWidth: TBIcon.Stroke.regular
+                                    )
                                 }
-                                .buttonStyle(.plain)
+                                .foregroundStyle(TBColor.textPrimary)
+                                .padding(.horizontal, 12)
+                                .frame(height: 44)
+                                .background(TBColor.mutedSurface)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -2423,29 +2510,17 @@ private struct ProfileSummarySheet: View {
 private struct ProfileAvatarDisplay: View {
     let imageData: Data?
     let size: CGFloat
-    let tasteProfile: TasteProfile
     let shapeSeed: String
+    var profile: TasteProfile? = nil
 
     var body: some View {
-        Group {
-            if let imageData,
-               let image = UIImage(data: imageData) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: size, height: size)
-                    .clipShape(Circle())
-                    .overlay {
-                        Circle().stroke(TBColor.borderAvatarSoft, lineWidth: 1)
-                    }
-            } else {
-                PalateBloomAvatar(
-                    size: size,
-                    tasteProfile: tasteProfile,
-                    shapeSeed: shapeSeed
-                )
-            }
-        }
+        let image = imageData.flatMap(UIImage.init(data:))
+        PalateBloomAvatar(
+            size: size,
+            tasteProfile: profile,
+            shapeSeed: shapeSeed,
+            image: image
+        )
     }
 }
 
@@ -2485,28 +2560,13 @@ private struct ProfileEditSheet: View {
             surfaceBackground: TBColor.page
         ) {
             BottomSheetScrollView {
-                if let profile = appModel.profile {
-                    VStack(alignment: .leading, spacing: 20) {
-                        avatarSection(profile: profile)
-                        informationSection
-                    }
-                    .padding(.horizontal, TBSpacing.page)
-                    .padding(.top, 8)
-                    .padding(.bottom, 12)
-                } else {
-                    VStack(spacing: 10) {
-                        Text("편집할 미각 프로필이 아직 없어요")
-                            .font(TBFont.bold(15))
-                            .foregroundStyle(TBColor.textPrimary)
-                        Text("먼저 미각 기준을 만들면 프로필 정보를 함께 다듬을 수 있어요.")
-                            .font(TBFont.regular(12))
-                            .foregroundStyle(TBColor.textMuted)
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(3)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(TBSpacing.page)
+                VStack(alignment: .leading, spacing: 20) {
+                    avatarSection
+                    informationSection
                 }
+                .padding(.horizontal, TBSpacing.page)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
             }
         }
         .onAppear(perform: resetDrafts)
@@ -2517,13 +2577,13 @@ private struct ProfileEditSheet: View {
         }
     }
 
-    private func avatarSection(profile: TasteProfile) -> some View {
+    private var avatarSection: some View {
         VStack(alignment: .center, spacing: 12) {
             ProfileAvatarDisplay(
                 imageData: draftAvatarImageData,
                 size: 96,
-                tasteProfile: profile,
-                shapeSeed: "current-user"
+                shapeSeed: "current-user",
+                profile: appModel.profile
             )
 
             HStack(spacing: 12) {
@@ -2540,10 +2600,10 @@ private struct ProfileEditSheet: View {
                         Text(isPreparingAvatar ? "사진 준비 중" : "사진 편집")
                             .font(TBFont.semibold(12))
                     }
-                    .foregroundStyle(isPreparingAvatar ? TBColor.textDisabled : profile.strongestAxis.darkColor)
+                    .foregroundStyle(isPreparingAvatar ? TBColor.textDisabled : TBColor.textPrimary)
                     .padding(.horizontal, 12)
                     .frame(height: 40)
-                    .background(isPreparingAvatar ? TBColor.disabledSurface : profile.strongestAxis.tintColor)
+                    .background(isPreparingAvatar ? TBColor.disabledSurface : TBColor.mutedSurface)
                     .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
                 }
                 .buttonStyle(.plain)
@@ -2562,14 +2622,14 @@ private struct ProfileEditSheet: View {
 
             Button {
                 draftAvatarImageData = nil
-                statusMessage = "저장을 누르면 현재 미각 기준 아바타로 변경됩니다."
+                statusMessage = "저장을 누르면 기본 아바타로 변경됩니다."
             } label: {
-                Text("현재 미각 기준으로 아바타 변경")
+                Text("기본 아바타로 변경")
                     .font(TBFont.semibold(12))
-                    .foregroundStyle(appModel.profile == nil || isPreparingAvatar ? TBColor.textDisabled : TBColor.textFaint)
+                    .foregroundStyle(isPreparingAvatar ? TBColor.textDisabled : TBColor.textFaint)
             }
             .buttonStyle(.plain)
-            .disabled(appModel.profile == nil || isPreparingAvatar)
+            .disabled(isPreparingAvatar)
 
             if let statusMessage {
                 Text(statusMessage)
@@ -3237,9 +3297,11 @@ private struct NotificationsSheet: View {
                     } label: {
                         NotificationCompactRow(
                             symbol: "sparkles",
-                            title: "미각 프로필이 업데이트됐어요",
-                            detail: "최근 피드백을 반영해 다음 다이닝 기준을 다듬었습니다.",
-                            time: "1일 전",
+                            title: "입맛 기록을 다시 정리했어요",
+                            detail: appModel.sensoryAnalysis.sourceExperienceCount > 0
+                                ? "분명한 근거 기록 \(appModel.sensoryAnalysis.sourceExperienceCount)개의 감각과 직접 평가를 반영했어요."
+                                : "완료한 식사 피드백부터 현재 해석에 반영해요.",
+                            time: "현재",
                             tone: .umami,
                             showsUnread: hasUnread
                         )
@@ -3276,47 +3338,59 @@ private struct QuickRefinementSheet: View {
     @Environment(\.dismiss) private var dismiss
     var onDismissRequest: (() -> Void)? = nil
     var usesNativeSheetChrome = true
+    let onStartDining: () -> Void
 
     var body: some View {
         BottomSheetShell(
             headerStart: AnyView(BottomSheetCloseButton(action: closeSheet)),
             headerCenter: AnyView(
-                Text("프로필 정교화")
+                Text("입맛 해석")
                     .font(TBFont.bold(15))
                     .foregroundStyle(TBColor.textPrimary)
             ),
             footer: AnyView(
-                PrimaryButton(title: "빠른 미각 보정 다시 하기") {
-                    appModel.restartCalibration()
-                    closeSheet()
-                }
+                PrimaryButton(title: "새 식사 기록하기", action: onStartDining)
             ),
             usesNativeSheetChrome: usesNativeSheetChrome
         ) {
             BottomSheetScrollView {
                 VStack(alignment: .leading, spacing: TBSpacing.section) {
                     TBFlowHeaderBlock(
-                        title: "현재 입맛으로 프로필을 다시 맞춰볼까요?",
-                        description: "짧은 질문으로 지금의 반응을 확인하고, 다음 다이닝에 쓰는 해석을 최신 상태로 다듬습니다.",
-                        topLeft: "미각 관리",
+                        title: refinementTitle,
+                        description: refinementDescription,
+                        topLeft: "현재 기록",
                         topRightSlot: AnyView(
                             StatusChip(
-                                title: appModel.profile?.confidence ?? "Starter",
-                                backgroundColor: TBColor.successSoft,
-                                foregroundColor: TBColor.success
+                                title: refinementStatus,
+                                backgroundColor: TBColor.mutedSurface,
+                                foregroundColor: TBColor.textSecondary
                             )
                         )
                     )
 
                     SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: TBSpacing.x12) {
                             MenuActionRowContent(
-                                icon: "slider.horizontal.3",
-                                title: "12문항 빠른 보정",
-                                detail: "기기 없이 현재 미각 반응 확인"
+                                icon: "fork.knife",
+                                title: "분명한 근거 기록",
+                                detail: "감각이나 직접 평가가 있는 기록 \(appModel.sensoryAnalysis.sourceExperienceCount)개"
                             )
                             Divider()
-                            Text("기존 식사 기록은 유지되고, 프로필 좌표와 해석만 새 응답으로 업데이트됩니다.")
+                            MenuActionRowContent(
+                                icon: "sparkles",
+                                title: "현재 인사이트",
+                                detail: "직접 평가에서 확인한 해석 \(appModel.sensoryAnalysis.insights.count)개"
+                            )
+                            if !appModel.sensoryAnalysis.unresolved.isEmpty {
+                                Divider()
+                                MenuActionRowContent(
+                                    icon: "circle-help",
+                                    title: "뜻을 확인 중인 기록",
+                                    detail: "기록 \(appModel.sensoryAnalysis.unresolvedExperienceCount)개 · 원문 표현 \(appModel.sensoryAnalysis.unresolved.count)개"
+                                )
+                            }
+                            Divider()
+                            Text("새 식사 피드백을 완료하면 기존 원문은 유지한 채 현재 해석을 다시 계산해요.")
                                 .font(TBFont.regular(12))
                                 .foregroundStyle(TBColor.textSubtle)
                                 .lineSpacing(4)
@@ -3333,6 +3407,26 @@ private struct QuickRefinementSheet: View {
         .prefersUISheetGrabberVisible(false)
     }
 
+    private var refinementTitle: String {
+        if appModel.sensoryAnalysisIsUpdating { return "식사 기록을 다시 읽고 있어요" }
+        if appModel.sensoryAnalysisError != nil { return "현재 해석을 불러오지 못했어요" }
+        return appModel.sensoryAnalysis.mainWing.label
+    }
+
+    private var refinementDescription: String {
+        if let error=appModel.sensoryAnalysisError { return error }
+        if appModel.sensoryAnalysis.sourceExperienceCount == 0 {
+            return "완료한 식사 피드백부터 감각과 직접 평가를 차근차근 모아요."
+        }
+        return "완료한 식사의 감각과 직접 평가만 사용하며, 미확정 표현은 원문으로 남겨둬요."
+    }
+
+    private var refinementStatus: String {
+        if appModel.sensoryAnalysisIsUpdating { return "분석 중" }
+        if appModel.sensoryAnalysisError != nil { return "불러오기 보류" }
+        return "기록 \(appModel.sensoryAnalysis.sourceExperienceCount)개"
+    }
+
     private func closeSheet() {
         if let onDismissRequest {
             onDismissRequest()
@@ -3345,8 +3439,9 @@ private struct QuickRefinementSheet: View {
 private let appMenuSheetCardCornerRadius: CGFloat = 20
 
 private struct PublicProfileActionsSheet: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
-    @State private var copyToastToken = 0
+    @StateObject private var copyToast = TBToastPresenter()
     let profileID: String
     var onDismissRequest: (() -> Void)? = nil
     var usesNativeSheetChrome = true
@@ -3436,7 +3531,7 @@ private struct PublicProfileActionsSheet: View {
                     .padding(.bottom, TBSpacing.page + 24)
                 }
 
-                if copyToastToken > 0 {
+                if copyToast.isPresented {
                     ToastSurface(
                         title: "프로필 URL을 복사했어요",
                         message: "원하는 곳에 붙여넣어 공유할 수 있어요.",
@@ -3445,28 +3540,13 @@ private struct PublicProfileActionsSheet: View {
                     )
                     .padding(.horizontal, TBSpacing.page)
                     .padding(.bottom, 12)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
                     .zIndex(1)
                 }
             }
         }
-        .task(id: copyToastToken) {
-            guard copyToastToken > 0 else {
-                return
-            }
-
-            let token = copyToastToken
-            try? await Task.sleep(nanoseconds: ToastSurface.defaultDisplayDurationNanoseconds)
-
-            guard !Task.isCancelled, copyToastToken == token else {
-                return
-            }
-
-            withAnimation(.easeOut(duration: 0.2)) {
-                copyToastToken = 0
-            }
-        }
-        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: copyToastToken)
+        .onDisappear { copyToast.cancel() }
+        .animation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion), value: copyToast.isPresented)
         .presentationDragIndicator(.hidden)
         .presentationBackground(Color.clear)
         .presentationCornerRadius(0)
@@ -3512,8 +3592,8 @@ private struct PublicProfileActionsSheet: View {
     private func copyProfileURL() {
         UIPasteboard.general.string = profileURLString
 
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
-            copyToastToken += 1
+        withAnimation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion)) {
+            copyToast.present(policy: .copyConfirmation)
         }
     }
 
@@ -3553,6 +3633,8 @@ private struct AppMenuSheet: View {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
     @State private var isLoggingOut = false
+    @State private var isSyncingAccountData = false
+    @State private var showsAccountConflictResolution = false
     @State private var logoutErrorMessage: String?
     let onDismissRequest: (() -> Void)?
     let openProfile: () -> Void
@@ -3577,10 +3659,9 @@ private struct AppMenuSheet: View {
                         HStack(spacing: 12) {
                             PalateBloomAvatar(
                                 size: 40,
-                                bloomProfile: appModel.profile.map {
-                                    PalateBloomProfile(profile: $0)
-                                } ?? .fallback(seed: "current-user"),
-                                shapeSeed: "current-user"
+                                tasteProfile: appModel.profile,
+                                shapeSeed: "current-user",
+                                image: appModel.profileAvatarImageData.flatMap(UIImage.init(data:))
                             )
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(appModel.profileIdentity.displayName)
@@ -3625,25 +3706,54 @@ private struct AppMenuSheet: View {
                         title: "미각 관리",
                         rows: [
                             MenuRowModel(
-                                symbol: "refresh-cw",
-                                title: "미각 재측정",
-                                detail: "현재 미각 반응 다시 측정",
-                                action: startQuickRefinement
-                            ),
-                            MenuRowModel(
-                                symbol: "shield.checkered",
-                                title: "프로필 정확도 향상",
-                                detail: "더 정밀한 캘리브레이션",
+                                symbol: "sparkles",
+                                title: "입맛 기록 현황",
+                                detail: "완료한 식사 근거와 현재 해석",
                                 action: startQuickRefinement
                             ),
                             MenuRowModel(
                                 symbol: "bell",
-                                title: "보정 알림 설정",
-                                detail: "다이닝 전 미각 측정 알림",
+                                title: "식후 기록 알림",
+                                detail: "식사 후 감각 기록 알림",
                                 action: openNotifications
                             ),
                         ]
                     )
+
+                    if let message = appModel.accountDataSyncError {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(message)
+                                .font(TBFont.regular(12))
+                                .foregroundStyle(TBColor.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                            if appModel.accountDataHasConflict {
+                                Button("사용할 기록 선택") { showsAccountConflictResolution = true }
+                                    .font(TBFont.semibold(13))
+                                    .foregroundStyle(TBColor.textPrimary)
+                                    .frame(minHeight: 44)
+                                    .disabled(isSyncingAccountData || isLoggingOut)
+                                    .confirmationDialog("어떤 기록을 사용할까요?", isPresented: $showsAccountConflictResolution, titleVisibility: .visible) {
+                                        Button("이 기기의 기록 사용") { resolveAccountConflict(.thisDevice) }
+                                        Button("계정에 보관한 기록 사용") { resolveAccountConflict(.accountBackup) }
+                                        Button("취소", role: .cancel) {}
+                                    } message: {
+                                        Text("선택한 기록으로 이 기기와 계정 백업을 맞춥니다. 두 원본은 이 기기에 별도로 보관합니다.")
+                                    }
+                            } else {
+                                Button(isSyncingAccountData ? "기록 확인 중" : "기록 다시 동기화") {
+                                    isSyncingAccountData = true
+                                    Task {
+                                        await appModel.syncAccountData()
+                                        isSyncingAccountData = false
+                                    }
+                                }
+                                .font(TBFont.semibold(13))
+                                .foregroundStyle(TBColor.textPrimary)
+                                .frame(minHeight: 44)
+                                .disabled(isSyncingAccountData || isLoggingOut)
+                            }
+                        }
+                    }
 
                     MenuSection(
                         title: "앱 정보",
@@ -3666,6 +3776,14 @@ private struct AppMenuSheet: View {
                 .padding(.horizontal, TBSpacing.page)
                 .padding(.bottom, TBSpacing.page + 24)
             }
+        }
+    }
+
+    private func resolveAccountConflict(_ resolution: NativeAccountConflictResolution) {
+        isSyncingAccountData = true
+        Task {
+            await appModel.resolveAccountDataConflict(using: resolution)
+            isSyncingAccountData = false
         }
     }
 

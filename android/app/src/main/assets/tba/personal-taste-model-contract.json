@@ -1,0 +1,5113 @@
+{
+  "version": "tba-personal-taste-model/1",
+  "fixtures": [
+    {
+      "id": "empty",
+      "userID": "fixture-user",
+      "records": [],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [],
+        "candidates": [],
+        "nextSelection": null,
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "first",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "1",
+          "userId": "fixture-user",
+          "experienceId": "e-1",
+          "mealId": "m-1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:4b5d31c58102079add84",
+            "mealID": "m-1",
+            "experienceIDs": [
+              "e-1"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "1"
+            ],
+            "evidence": [
+              {
+                "id": "1",
+                "mealID": "m-1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "1번의 식사를 비교했어요. 반례나 부족한 조건을 확인하며 판단을 유보해요.",
+            "status": "first_signal",
+            "direction": null,
+            "distribution": {
+              "positive": 1,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 1
+            },
+            "baselineDistribution": {
+              "positive": 1,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 1
+            },
+            "supportMealIDs": [
+              "m-1"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "1"
+            ],
+            "evidence": [
+              {
+                "id": "1",
+                "mealID": "m-1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [
+              "needs_independent_meals",
+              "leave_one_meal_out_unstable"
+            ],
+            "stability": {
+              "evaluatedMealCount": 1,
+              "unchangedCount": 0,
+              "stable": false
+            },
+            "contrastsWithBaseline": false
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:ca20f5835feb659ea7b8",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "산미는 어느 정도로 느껴졌나요?",
+          "reason": "intensity_not_reported",
+          "evidenceIDs": [
+            "1"
+          ],
+          "mealIDs": [
+            "m-1"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "repeated",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p1",
+          "userId": "fixture-user",
+          "experienceId": "e-p1",
+          "mealId": "m-p1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p2",
+          "userId": "fixture-user",
+          "experienceId": "e-p2",
+          "mealId": "m-p2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p3",
+          "userId": "fixture-user",
+          "experienceId": "e-p3",
+          "mealId": "m-p3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:6fcc8bdfe30d29b7709a",
+            "mealID": "m-p1",
+            "experienceIDs": [
+              "e-p1"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p1"
+            ],
+            "evidence": [
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:99143b5bbe3412f01e14",
+            "mealID": "m-p2",
+            "experienceIDs": [
+              "e-p2"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p2"
+            ],
+            "evidence": [
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:c94d2d9c2e0d3dadf4d8",
+            "mealID": "m-p3",
+            "experienceIDs": [
+              "e-p3"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "3번의 식사에서 호감 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "positive",
+            "distribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-p1",
+              "m-p2",
+              "m-p3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "p1",
+              "p2",
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:ca20f5835feb659ea7b8",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "산미는 어느 정도로 느껴졌나요?",
+          "reason": "intensity_not_reported",
+          "evidenceIDs": [
+            "p1",
+            "p2",
+            "p3"
+          ],
+          "mealIDs": [
+            "m-p1",
+            "m-p2",
+            "m-p3"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "counter",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p1",
+          "userId": "fixture-user",
+          "experienceId": "e-p1",
+          "mealId": "m-p1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p2",
+          "userId": "fixture-user",
+          "experienceId": "e-p2",
+          "mealId": "m-p2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p3",
+          "userId": "fixture-user",
+          "experienceId": "e-p3",
+          "mealId": "m-p3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "n",
+          "userId": "fixture-user",
+          "experienceId": "e-n",
+          "mealId": "m-n",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "negative",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "아쉬웠어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "아쉬웠어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:37f3db31d2329c87409d",
+            "mealID": "m-n",
+            "experienceIDs": [
+              "e-n"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "negative",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "n"
+            ],
+            "evidence": [
+              {
+                "id": "n",
+                "mealID": "m-n",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:6fcc8bdfe30d29b7709a",
+            "mealID": "m-p1",
+            "experienceIDs": [
+              "e-p1"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p1"
+            ],
+            "evidence": [
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:99143b5bbe3412f01e14",
+            "mealID": "m-p2",
+            "experienceIDs": [
+              "e-p2"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p2"
+            ],
+            "evidence": [
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:c94d2d9c2e0d3dadf4d8",
+            "mealID": "m-p3",
+            "experienceIDs": [
+              "e-p3"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "4번의 식사를 비교했어요. 반례나 부족한 조건을 확인하며 판단을 유보해요.",
+            "status": "mixed",
+            "direction": null,
+            "distribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 1,
+              "mixed": 0,
+              "mealCount": 4
+            },
+            "baselineDistribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 1,
+              "mixed": 0,
+              "mealCount": 4
+            },
+            "supportMealIDs": [
+              "m-p1",
+              "m-p2",
+              "m-p3"
+            ],
+            "counterMealIDs": [
+              "m-n"
+            ],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "n",
+              "p1",
+              "p2",
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "n",
+                "mealID": "m-n",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [
+              "counter_evidence_present"
+            ],
+            "stability": {
+              "evaluatedMealCount": 4,
+              "unchangedCount": 4,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:ca20f5835feb659ea7b8",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "산미는 어느 정도로 느껴졌나요?",
+          "reason": "unstable_context_comparison",
+          "evidenceIDs": [
+            "n",
+            "p1",
+            "p2",
+            "p3"
+          ],
+          "mealIDs": [
+            "m-n",
+            "m-p1",
+            "m-p2",
+            "m-p3"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "neutral",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "z1",
+          "userId": "fixture-user",
+          "experienceId": "e-z1",
+          "mealId": "m-z1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "neutral",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "보통이에요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "보통이에요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "z2",
+          "userId": "fixture-user",
+          "experienceId": "e-z2",
+          "mealId": "m-z2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "neutral",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "보통이에요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "보통이에요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "z3",
+          "userId": "fixture-user",
+          "experienceId": "e-z3",
+          "mealId": "m-z3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "neutral",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "보통이에요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "보통이에요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:f9708830be88e33bed6f",
+            "mealID": "m-z1",
+            "experienceIDs": [
+              "e-z1"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "neutral",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "z1"
+            ],
+            "evidence": [
+              {
+                "id": "z1",
+                "mealID": "m-z1",
+                "phrase": "보통이에요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "보통이에요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:b1d7f610fd33e70251a2",
+            "mealID": "m-z2",
+            "experienceIDs": [
+              "e-z2"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "neutral",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "z2"
+            ],
+            "evidence": [
+              {
+                "id": "z2",
+                "mealID": "m-z2",
+                "phrase": "보통이에요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "보통이에요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:4cbb0e25167caf52c316",
+            "mealID": "m-z3",
+            "experienceIDs": [
+              "e-z3"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "neutral",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "z3"
+            ],
+            "evidence": [
+              {
+                "id": "z3",
+                "mealID": "m-z3",
+                "phrase": "보통이에요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "보통이에요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "3번의 식사에서 중립 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "neutral",
+            "distribution": {
+              "positive": 0,
+              "neutral": 3,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 3,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-z1",
+              "m-z2",
+              "m-z3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [
+              "m-z1",
+              "m-z2",
+              "m-z3"
+            ],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "z1",
+              "z2",
+              "z3"
+            ],
+            "evidence": [
+              {
+                "id": "z1",
+                "mealID": "m-z1",
+                "phrase": "보통이에요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "보통이에요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "z2",
+                "mealID": "m-z2",
+                "phrase": "보통이에요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "보통이에요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "z3",
+                "mealID": "m-z3",
+                "phrase": "보통이에요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "보통이에요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:ca20f5835feb659ea7b8",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "산미는 어느 정도로 느껴졌나요?",
+          "reason": "intensity_not_reported",
+          "evidenceIDs": [
+            "z1",
+            "z2",
+            "z3"
+          ],
+          "mealIDs": [
+            "m-z1",
+            "m-z2",
+            "m-z3"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "same-meal-conflict",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p",
+          "userId": "fixture-user",
+          "experienceId": "e-p",
+          "mealId": "one",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "n",
+          "userId": "fixture-user",
+          "experienceId": "e-n",
+          "mealId": "one",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "negative",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "아쉬웠어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "아쉬웠어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:e2016c8db58d930b0f79",
+            "mealID": "one",
+            "experienceIDs": [
+              "e-n",
+              "e-p"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "mixed",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "n",
+              "p"
+            ],
+            "evidence": [
+              {
+                "id": "n",
+                "mealID": "one",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p",
+                "mealID": "one",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "1번의 식사를 비교했어요. 반례나 부족한 조건을 확인하며 판단을 유보해요.",
+            "status": "mixed",
+            "direction": null,
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 1,
+              "mealCount": 1
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 1,
+              "mealCount": 1
+            },
+            "supportMealIDs": [],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [
+              "one"
+            ],
+            "evidenceIDs": [
+              "n",
+              "p"
+            ],
+            "evidence": [
+              {
+                "id": "n",
+                "mealID": "one",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p",
+                "mealID": "one",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [
+              "needs_independent_meals",
+              "conflicting_reports_in_meal",
+              "no_unique_direction",
+              "leave_one_meal_out_unstable"
+            ],
+            "stability": {
+              "evaluatedMealCount": 1,
+              "unchangedCount": 0,
+              "stable": false
+            },
+            "contrastsWithBaseline": false
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:ca20f5835feb659ea7b8",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "산미는 어느 정도로 느껴졌나요?",
+          "reason": "unstable_context_comparison",
+          "evidenceIDs": [
+            "n",
+            "p"
+          ],
+          "mealIDs": [
+            "one"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "conditional-direction",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p1",
+          "userId": "fixture-user",
+          "experienceId": "e-p1",
+          "mealId": "m-p1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "sauce",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p2",
+          "userId": "fixture-user",
+          "experienceId": "e-p2",
+          "mealId": "m-p2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "sauce",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p3",
+          "userId": "fixture-user",
+          "experienceId": "e-p3",
+          "mealId": "m-p3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "sauce",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "n1",
+          "userId": "fixture-user",
+          "experienceId": "e-n1",
+          "mealId": "m-n1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "negative",
+          "scale": "attribute-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "아쉬웠어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "아쉬웠어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "n2",
+          "userId": "fixture-user",
+          "experienceId": "e-n2",
+          "mealId": "m-n2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "negative",
+          "scale": "attribute-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "아쉬웠어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "아쉬웠어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "n3",
+          "userId": "fixture-user",
+          "experienceId": "e-n3",
+          "mealId": "m-n3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "negative",
+          "scale": "attribute-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "아쉬웠어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "아쉬웠어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:56368f2e49abe4260d2a",
+            "mealID": "m-n1",
+            "experienceIDs": [
+              "e-n1"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "negative",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "n1"
+            ],
+            "evidence": [
+              {
+                "id": "n1",
+                "mealID": "m-n1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:f84b22377040c514beee",
+            "mealID": "m-n2",
+            "experienceIDs": [
+              "e-n2"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "negative",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "n2"
+            ],
+            "evidence": [
+              {
+                "id": "n2",
+                "mealID": "m-n2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:4dfa7cd0371623b6f0d8",
+            "mealID": "m-n3",
+            "experienceIDs": [
+              "e-n3"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "negative",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "n3"
+            ],
+            "evidence": [
+              {
+                "id": "n3",
+                "mealID": "m-n3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:b1e55457ed35f51d3ca3",
+            "mealID": "m-p1",
+            "experienceIDs": [
+              "e-p1"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "sauce",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p1"
+            ],
+            "evidence": [
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:83288ee006d205648de8",
+            "mealID": "m-p2",
+            "experienceIDs": [
+              "e-p2"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "sauce",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p2"
+            ],
+            "evidence": [
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:9df50bce18e475be3bc9",
+            "mealID": "m-p3",
+            "experienceIDs": [
+              "e-p3"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "sauce",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:5d4bc10a9f7c09608805",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "target",
+                "value": "whole_dish"
+              }
+            ],
+            "title": "산미, 음식 전체에서 남긴 평가",
+            "body": "3번의 식사에서 아쉬움 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "negative",
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 6
+            },
+            "supportMealIDs": [
+              "m-n1",
+              "m-n2",
+              "m-n3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "n1",
+              "n2",
+              "n3"
+            ],
+            "evidence": [
+              {
+                "id": "n1",
+                "mealID": "m-n1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "n2",
+                "mealID": "m-n2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "n3",
+                "mealID": "m-n3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": true
+          },
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "6번의 식사를 비교했어요. 반례나 부족한 조건을 확인하며 판단을 유보해요.",
+            "status": "mixed",
+            "direction": null,
+            "distribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 6
+            },
+            "baselineDistribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 6
+            },
+            "supportMealIDs": [],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "n1",
+              "n2",
+              "n3",
+              "p1",
+              "p2",
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "n1",
+                "mealID": "m-n1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "n2",
+                "mealID": "m-n2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "n3",
+                "mealID": "m-n3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [
+              "no_unique_direction",
+              "leave_one_meal_out_unstable"
+            ],
+            "stability": {
+              "evaluatedMealCount": 6,
+              "unchangedCount": 0,
+              "stable": false
+            },
+            "contrastsWithBaseline": false
+          },
+          {
+            "id": "candidate:ba0bbe831c3d0bb60d71",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "target",
+                "value": "sauce"
+              }
+            ],
+            "title": "산미, 소스에서 남긴 평가",
+            "body": "3번의 식사에서 호감 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "positive",
+            "distribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 6
+            },
+            "supportMealIDs": [
+              "m-p1",
+              "m-p2",
+              "m-p3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "p1",
+              "p2",
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": true
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:b76b32b7570ed12011d9",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "산미는 어느 정도로 느껴졌나요?",
+          "reason": "unstable_context_comparison",
+          "evidenceIDs": [
+            "p1",
+            "p2",
+            "p3"
+          ],
+          "mealIDs": [
+            "m-p1",
+            "m-p2",
+            "m-p3"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": [
+        {
+          "query": {
+            "attribute": "taste.sour",
+            "target": "sauce"
+          },
+          "expected": {
+            "direction": "positive",
+            "candidateID": "candidate:ba0bbe831c3d0bb60d71",
+            "status": "observed_condition_direction",
+            "abstainReasons": [],
+            "evidenceIDs": [
+              "p1",
+              "p2",
+              "p3"
+            ]
+          }
+        },
+        {
+          "query": {
+            "attribute": "taste.sour",
+            "target": "inside"
+          },
+          "expected": {
+            "direction": null,
+            "candidateID": null,
+            "status": "abstained",
+            "abstainReasons": [
+              "unobserved_attribute_or_conditions"
+            ],
+            "evidenceIDs": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "strong-unobserved-weak",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "strong1",
+          "userId": "fixture-user",
+          "experienceId": "e-strong1",
+          "mealId": "m-strong1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "negative",
+          "scale": "attribute-three-category-v1",
+          "target": "whole_dish",
+          "phase": "during_meal",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "아쉬웠어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "아쉬웠어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "strong1-intensity",
+          "userId": "fixture-user",
+          "experienceId": "e-strong1",
+          "mealId": "m-strong1",
+          "kind": "sensory_intensity",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "strong",
+          "scale": "expression-strength-v1",
+          "target": "whole_dish",
+          "phase": "during_meal",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "강하게",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 3,
+              "quote": "강하게"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "strong2",
+          "userId": "fixture-user",
+          "experienceId": "e-strong2",
+          "mealId": "m-strong2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "negative",
+          "scale": "attribute-three-category-v1",
+          "target": "whole_dish",
+          "phase": "during_meal",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "아쉬웠어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "아쉬웠어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "strong2-intensity",
+          "userId": "fixture-user",
+          "experienceId": "e-strong2",
+          "mealId": "m-strong2",
+          "kind": "sensory_intensity",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "strong",
+          "scale": "expression-strength-v1",
+          "target": "whole_dish",
+          "phase": "during_meal",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "강하게",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 3,
+              "quote": "강하게"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "strong3",
+          "userId": "fixture-user",
+          "experienceId": "e-strong3",
+          "mealId": "m-strong3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "negative",
+          "scale": "attribute-three-category-v1",
+          "target": "whole_dish",
+          "phase": "during_meal",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "아쉬웠어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "아쉬웠어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "strong3-intensity",
+          "userId": "fixture-user",
+          "experienceId": "e-strong3",
+          "mealId": "m-strong3",
+          "kind": "sensory_intensity",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "strong",
+          "scale": "expression-strength-v1",
+          "target": "whole_dish",
+          "phase": "during_meal",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "강하게",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 3,
+              "quote": "강하게"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:428fe6c60e7e405d75fa",
+            "mealID": "m-strong1",
+            "experienceIDs": [
+              "e-strong1"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "whole_dish",
+            "phase": "during_meal",
+            "intensity": "strong",
+            "dishKindIDs": [],
+            "liking": "negative",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong1",
+                "mealID": "m-strong1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong1-intensity",
+                "mealID": "m-strong1",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:afd6aafcc9b545133630",
+            "mealID": "m-strong2",
+            "experienceIDs": [
+              "e-strong2"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "whole_dish",
+            "phase": "during_meal",
+            "intensity": "strong",
+            "dishKindIDs": [],
+            "liking": "negative",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "strong2",
+              "strong2-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong2",
+                "mealID": "m-strong2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2-intensity",
+                "mealID": "m-strong2",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:e37e7bd6e0a1d1e07eca",
+            "mealID": "m-strong3",
+            "experienceIDs": [
+              "e-strong3"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "whole_dish",
+            "phase": "during_meal",
+            "intensity": "strong",
+            "dishKindIDs": [],
+            "liking": "negative",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "strong3",
+              "strong3-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong3",
+                "mealID": "m-strong3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3-intensity",
+                "mealID": "m-strong3",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:1e7fa286bbf8d54afce5",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "phase",
+                "value": "during_meal"
+              },
+              {
+                "dimension": "target",
+                "value": "whole_dish"
+              }
+            ],
+            "title": "산미, 먹는 동안 · 음식 전체에서 남긴 평가",
+            "body": "3번의 식사에서 아쉬움 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "negative",
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-strong1",
+              "m-strong2",
+              "m-strong3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity",
+              "strong2",
+              "strong2-intensity",
+              "strong3",
+              "strong3-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong1",
+                "mealID": "m-strong1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong1-intensity",
+                "mealID": "m-strong1",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2",
+                "mealID": "m-strong2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2-intensity",
+                "mealID": "m-strong2",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3",
+                "mealID": "m-strong3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3-intensity",
+                "mealID": "m-strong3",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          },
+          {
+            "id": "candidate:24153ed30dd6d0c42b71",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "phase",
+                "value": "during_meal"
+              }
+            ],
+            "title": "산미, 먹는 동안에서 남긴 평가",
+            "body": "3번의 식사에서 아쉬움 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "negative",
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-strong1",
+              "m-strong2",
+              "m-strong3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity",
+              "strong2",
+              "strong2-intensity",
+              "strong3",
+              "strong3-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong1",
+                "mealID": "m-strong1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong1-intensity",
+                "mealID": "m-strong1",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2",
+                "mealID": "m-strong2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2-intensity",
+                "mealID": "m-strong2",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3",
+                "mealID": "m-strong3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3-intensity",
+                "mealID": "m-strong3",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          },
+          {
+            "id": "candidate:4492550955173f889b99",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "intensity",
+                "value": "strong"
+              }
+            ],
+            "title": "산미, 강한 강도에서 남긴 평가",
+            "body": "3번의 식사에서 아쉬움 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "negative",
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-strong1",
+              "m-strong2",
+              "m-strong3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity",
+              "strong2",
+              "strong2-intensity",
+              "strong3",
+              "strong3-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong1",
+                "mealID": "m-strong1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong1-intensity",
+                "mealID": "m-strong1",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2",
+                "mealID": "m-strong2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2-intensity",
+                "mealID": "m-strong2",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3",
+                "mealID": "m-strong3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3-intensity",
+                "mealID": "m-strong3",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          },
+          {
+            "id": "candidate:53736524b673ec2ec19d",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "intensity",
+                "value": "strong"
+              },
+              {
+                "dimension": "phase",
+                "value": "during_meal"
+              }
+            ],
+            "title": "산미, 강한 강도 · 먹는 동안에서 남긴 평가",
+            "body": "3번의 식사에서 아쉬움 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "negative",
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-strong1",
+              "m-strong2",
+              "m-strong3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity",
+              "strong2",
+              "strong2-intensity",
+              "strong3",
+              "strong3-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong1",
+                "mealID": "m-strong1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong1-intensity",
+                "mealID": "m-strong1",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2",
+                "mealID": "m-strong2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2-intensity",
+                "mealID": "m-strong2",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3",
+                "mealID": "m-strong3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3-intensity",
+                "mealID": "m-strong3",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          },
+          {
+            "id": "candidate:5d4bc10a9f7c09608805",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "target",
+                "value": "whole_dish"
+              }
+            ],
+            "title": "산미, 음식 전체에서 남긴 평가",
+            "body": "3번의 식사에서 아쉬움 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "negative",
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-strong1",
+              "m-strong2",
+              "m-strong3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity",
+              "strong2",
+              "strong2-intensity",
+              "strong3",
+              "strong3-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong1",
+                "mealID": "m-strong1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong1-intensity",
+                "mealID": "m-strong1",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2",
+                "mealID": "m-strong2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2-intensity",
+                "mealID": "m-strong2",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3",
+                "mealID": "m-strong3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3-intensity",
+                "mealID": "m-strong3",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          },
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "3번의 식사에서 아쉬움 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "negative",
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-strong1",
+              "m-strong2",
+              "m-strong3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity",
+              "strong2",
+              "strong2-intensity",
+              "strong3",
+              "strong3-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong1",
+                "mealID": "m-strong1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong1-intensity",
+                "mealID": "m-strong1",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2",
+                "mealID": "m-strong2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2-intensity",
+                "mealID": "m-strong2",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3",
+                "mealID": "m-strong3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3-intensity",
+                "mealID": "m-strong3",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          },
+          {
+            "id": "candidate:95e26694b3a500ddb6d4",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "intensity",
+                "value": "strong"
+              },
+              {
+                "dimension": "target",
+                "value": "whole_dish"
+              }
+            ],
+            "title": "산미, 강한 강도 · 음식 전체에서 남긴 평가",
+            "body": "3번의 식사에서 아쉬움 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "negative",
+            "distribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 3,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-strong1",
+              "m-strong2",
+              "m-strong3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity",
+              "strong2",
+              "strong2-intensity",
+              "strong3",
+              "strong3-intensity"
+            ],
+            "evidence": [
+              {
+                "id": "strong1",
+                "mealID": "m-strong1",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong1-intensity",
+                "mealID": "m-strong1",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2",
+                "mealID": "m-strong2",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong2-intensity",
+                "mealID": "m-strong2",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3",
+                "mealID": "m-strong3",
+                "phrase": "아쉬웠어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "quote": "아쉬웠어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "strong3-intensity",
+                "mealID": "m-strong3",
+                "phrase": "강하게",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 3,
+                    "quote": "강하게"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:618e57e62786b7005a5c",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "다음 식사에서 약한 강도로 느낀 산미는 어떤지 확인해 볼까요?",
+          "reason": "unobserved_intensity_comparison",
+          "evidenceIDs": [
+            "strong1",
+            "strong1-intensity",
+            "strong2",
+            "strong2-intensity",
+            "strong3",
+            "strong3-intensity"
+          ],
+          "mealIDs": [
+            "m-strong1",
+            "m-strong2",
+            "m-strong3"
+          ],
+          "createsEvidence": false,
+          "intent": "exploration",
+          "proposedCondition": {
+            "dimension": "intensity",
+            "value": "weak"
+          },
+          "unobserved": true
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": [
+        {
+          "query": {
+            "attribute": "taste.sour",
+            "intensity": "weak"
+          },
+          "expected": {
+            "direction": null,
+            "candidateID": null,
+            "status": "abstained",
+            "abstainReasons": [
+              "unobserved_attribute_or_conditions"
+            ],
+            "evidenceIDs": []
+          }
+        },
+        {
+          "query": {
+            "attribute": "taste.sour",
+            "intensity": "strong",
+            "target": "whole_dish",
+            "phase": "during_meal"
+          },
+          "expected": {
+            "direction": "negative",
+            "candidateID": "candidate:1e7fa286bbf8d54afce5",
+            "status": "observed_condition_direction",
+            "abstainReasons": [],
+            "evidenceIDs": [
+              "strong1",
+              "strong1-intensity",
+              "strong2",
+              "strong2-intensity",
+              "strong3",
+              "strong3-intensity"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "absence",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p",
+          "userId": "fixture-user",
+          "experienceId": "e-p",
+          "mealId": "m-p",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "a",
+          "userId": "fixture-user",
+          "experienceId": "e-p",
+          "mealId": "m-p",
+          "kind": "sensory_presence",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": false,
+          "scale": "presence-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "보통이에요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "보통이에요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [],
+        "candidates": [],
+        "nextSelection": null,
+        "overallAssociations": [],
+        "excludedEvidence": [
+          {
+            "id": "p",
+            "reason": "absence_qualified"
+          }
+        ],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "overall-different-dish",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p",
+          "userId": "fixture-user",
+          "experienceId": "e-p",
+          "mealId": "one",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "o",
+          "userId": "fixture-user",
+          "experienceId": "e-o",
+          "mealId": "one",
+          "kind": "overall_liking",
+          "attribute": null,
+          "attributeLabel": null,
+          "reference": null,
+          "value": "very_negative",
+          "scale": "overall-five-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "보통이에요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "보통이에요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:e2016c8db58d930b0f79",
+            "mealID": "one",
+            "experienceIDs": [
+              "e-p"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p"
+            ],
+            "evidence": [
+              {
+                "id": "p",
+                "mealID": "one",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "1번의 식사를 비교했어요. 반례나 부족한 조건을 확인하며 판단을 유보해요.",
+            "status": "first_signal",
+            "direction": null,
+            "distribution": {
+              "positive": 1,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 1
+            },
+            "baselineDistribution": {
+              "positive": 1,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 1
+            },
+            "supportMealIDs": [
+              "one"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "p"
+            ],
+            "evidence": [
+              {
+                "id": "p",
+                "mealID": "one",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [
+              "needs_independent_meals",
+              "leave_one_meal_out_unstable"
+            ],
+            "stability": {
+              "evaluatedMealCount": 1,
+              "unchangedCount": 0,
+              "stable": false
+            },
+            "contrastsWithBaseline": false
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:ca20f5835feb659ea7b8",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "산미는 어느 정도로 느껴졌나요?",
+          "reason": "intensity_not_reported",
+          "evidenceIDs": [
+            "p"
+          ],
+          "mealIDs": [
+            "one"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "future-known",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p1",
+          "userId": "fixture-user",
+          "experienceId": "e-p1",
+          "mealId": "m-p1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-10T12:00:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p2",
+          "userId": "fixture-user",
+          "experienceId": "e-p2",
+          "mealId": "m-p2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-10T12:00:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p3",
+          "userId": "fixture-user",
+          "experienceId": "e-p3",
+          "mealId": "m-p3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-10T12:00:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": "2026-09-05T12:00:00.000Z",
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [],
+        "candidates": [],
+        "nextSelection": null,
+        "overallAssociations": [],
+        "excludedEvidence": [
+          {
+            "id": "p1",
+            "reason": "after_cutoff"
+          },
+          {
+            "id": "p2",
+            "reason": "after_cutoff"
+          },
+          {
+            "id": "p3",
+            "reason": "after_cutoff"
+          }
+        ],
+        "temporalValidity": {
+          "mode": "historical_as_of",
+          "asOf": "2026-09-05T12:00:00.000Z",
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "legacy-unknown-time",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p1",
+          "userId": "fixture-user",
+          "experienceId": "e-p1",
+          "mealId": "m-p1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": null,
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p2",
+          "userId": "fixture-user",
+          "experienceId": "e-p2",
+          "mealId": "m-p2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": null,
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p3",
+          "userId": "fixture-user",
+          "experienceId": "e-p3",
+          "mealId": "m-p3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": null,
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": "2026-09-05T12:00:00.000Z",
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [],
+        "candidates": [],
+        "nextSelection": null,
+        "overallAssociations": [],
+        "excludedEvidence": [
+          {
+            "id": "p1",
+            "reason": "known_time_unknown"
+          },
+          {
+            "id": "p2",
+            "reason": "known_time_unknown"
+          },
+          {
+            "id": "p3",
+            "reason": "known_time_unknown"
+          }
+        ],
+        "temporalValidity": {
+          "mode": "historical_as_of",
+          "asOf": "2026-09-05T12:00:00.000Z",
+          "missingKnownAtCount": 3,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "other-user",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p1",
+          "userId": "other-user",
+          "experienceId": "e-p1",
+          "mealId": "m-p1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p2",
+          "userId": "other-user",
+          "experienceId": "e-p2",
+          "mealId": "m-p2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p3",
+          "userId": "other-user",
+          "experienceId": "e-p3",
+          "mealId": "m-p3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [],
+        "candidates": [],
+        "nextSelection": null,
+        "overallAssociations": [],
+        "excludedEvidence": [
+          {
+            "id": "p1",
+            "reason": "different_user"
+          },
+          {
+            "id": "p2",
+            "reason": "different_user"
+          },
+          {
+            "id": "p3",
+            "reason": "different_user"
+          }
+        ],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "unanswered",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "present",
+          "userId": "fixture-user",
+          "experienceId": "e-present",
+          "mealId": "m-present",
+          "kind": "sensory_presence",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": true,
+          "scale": "presence-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "보통이에요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 5,
+              "quote": "보통이에요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [],
+        "candidates": [],
+        "nextSelection": {
+          "id": "next-selection:78c51eddc7db59c1b2fe",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "liking",
+          "question": "산미 자체는 어땠나요?",
+          "reason": "liking_not_reported",
+          "evidenceIDs": [
+            "present"
+          ],
+          "mealIDs": [
+            "m-present"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    },
+    {
+      "id": "dish-kind",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p1",
+          "userId": "fixture-user",
+          "experienceId": "e-p1",
+          "mealId": "m-p1",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [
+            "seafood"
+          ],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p2",
+          "userId": "fixture-user",
+          "experienceId": "e-p2",
+          "mealId": "m-p2",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [
+            "seafood"
+          ],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p3",
+          "userId": "fixture-user",
+          "experienceId": "e-p3",
+          "mealId": "m-p3",
+          "kind": "attribute_liking",
+          "attribute": "taste.sour",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [
+            "seafood"
+          ],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [
+          {
+            "id": "unit:75d0f490c3998f172d7c",
+            "mealID": "m-p1",
+            "experienceIDs": [
+              "e-p1"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [
+              "seafood"
+            ],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p1"
+            ],
+            "evidence": [
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:08c17f376ce424b41c24",
+            "mealID": "m-p2",
+            "experienceIDs": [
+              "e-p2"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [
+              "seafood"
+            ],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p2"
+            ],
+            "evidence": [
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          },
+          {
+            "id": "unit:8170c38373defbe9a4a1",
+            "mealID": "m-p3",
+            "experienceIDs": [
+              "e-p3"
+            ],
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "target": "unspecified",
+            "phase": "unspecified",
+            "intensity": null,
+            "dishKindIDs": [
+              "seafood"
+            ],
+            "liking": "positive",
+            "intensityConflict": false,
+            "evidenceIDs": [
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "candidate:86a616a116c78e7dfa5f",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [],
+            "title": "산미에 남긴 평가",
+            "body": "3번의 식사에서 호감 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "positive",
+            "distribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-p1",
+              "m-p2",
+              "m-p3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "p1",
+              "p2",
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          },
+          {
+            "id": "candidate:a6fb0fcb0d7c664615f6",
+            "attribute": "taste.sour",
+            "reference": null,
+            "label": "산미",
+            "conditions": [
+              {
+                "dimension": "dishKind",
+                "value": "seafood"
+              }
+            ],
+            "title": "산미, seafood에서 남긴 평가",
+            "body": "3번의 식사에서 호감 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.",
+            "status": "repeated_direction",
+            "direction": "positive",
+            "distribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "baselineDistribution": {
+              "positive": 3,
+              "neutral": 0,
+              "negative": 0,
+              "mixed": 0,
+              "mealCount": 3
+            },
+            "supportMealIDs": [
+              "m-p1",
+              "m-p2",
+              "m-p3"
+            ],
+            "counterMealIDs": [],
+            "neutralMealIDs": [],
+            "mixedMealIDs": [],
+            "evidenceIDs": [
+              "p1",
+              "p2",
+              "p3"
+            ],
+            "evidence": [
+              {
+                "id": "p1",
+                "mealID": "m-p1",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p2",
+                "mealID": "m-p2",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              },
+              {
+                "id": "p3",
+                "mealID": "m-p3",
+                "phrase": "좋았어요",
+                "sourceSpans": [
+                  {
+                    "start": 0,
+                    "end": 4,
+                    "quote": "좋았어요"
+                  }
+                ],
+                "selectionEvidence": null,
+                "conditionSources": []
+              }
+            ],
+            "abstainReasons": [],
+            "stability": {
+              "evaluatedMealCount": 3,
+              "unchangedCount": 3,
+              "stable": true
+            },
+            "contrastsWithBaseline": false
+          }
+        ],
+        "nextSelection": {
+          "id": "next-selection:ca20f5835feb659ea7b8",
+          "attribute": "taste.sour",
+          "label": "산미",
+          "facet": "intensity",
+          "question": "산미는 어느 정도로 느껴졌나요?",
+          "reason": "intensity_not_reported",
+          "evidenceIDs": [
+            "p1",
+            "p2",
+            "p3"
+          ],
+          "mealIDs": [
+            "m-p1",
+            "m-p2",
+            "m-p3"
+          ],
+          "createsEvidence": false,
+          "intent": "clarification",
+          "proposedCondition": null,
+          "unobserved": false
+        },
+        "overallAssociations": [],
+        "excludedEvidence": [],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": [
+        {
+          "query": {
+            "attribute": "taste.sour",
+            "dishKindIDs": [
+              "meat"
+            ]
+          },
+          "expected": {
+            "direction": null,
+            "candidateID": null,
+            "status": "abstained",
+            "abstainReasons": [
+              "unobserved_attribute_or_conditions"
+            ],
+            "evidenceIDs": []
+          }
+        },
+        {
+          "query": {
+            "attribute": "taste.sour",
+            "dishKindIDs": [
+              "seafood"
+            ]
+          },
+          "expected": {
+            "direction": "positive",
+            "candidateID": "candidate:a6fb0fcb0d7c664615f6",
+            "status": "observed_condition_direction",
+            "abstainReasons": [],
+            "evidenceIDs": [
+              "p1",
+              "p2",
+              "p3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "unknown-description",
+      "userID": "fixture-user",
+      "records": [
+        {
+          "observationId": "p1",
+          "userId": "fixture-user",
+          "experienceId": "e-p1",
+          "mealId": "m-p1",
+          "kind": "attribute_liking",
+          "attribute": "taste.unspecified",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p2",
+          "userId": "fixture-user",
+          "experienceId": "e-p2",
+          "mealId": "m-p2",
+          "kind": "attribute_liking",
+          "attribute": "taste.unspecified",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        },
+        {
+          "observationId": "p3",
+          "userId": "fixture-user",
+          "experienceId": "e-p3",
+          "mealId": "m-p3",
+          "kind": "attribute_liking",
+          "attribute": "taste.unspecified",
+          "attributeLabel": null,
+          "reference": null,
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "unspecified",
+          "phase": "unspecified",
+          "observedAt": "2026-09-01T12:00:00.000Z",
+          "knownAt": "2026-09-01T12:01:00.000Z",
+          "dishKindIDs": [],
+          "phrase": "좋았어요",
+          "sourceSpans": [
+            {
+              "start": 0,
+              "end": 4,
+              "quote": "좋았어요"
+            }
+          ],
+          "confirmationStatus": "explicit_user_choice",
+          "selectionEvidence": null,
+          "conditionSources": []
+        }
+      ],
+      "asOf": null,
+      "expected": {
+        "version": "tba-personal-taste-model/1",
+        "userID": "fixture-user",
+        "policy": {
+          "minMeals": 3,
+          "minConditionMeals": 3,
+          "maxConditionDimensions": 2
+        },
+        "units": [],
+        "candidates": [],
+        "nextSelection": null,
+        "overallAssociations": [],
+        "excludedEvidence": [
+          {
+            "id": "p1",
+            "reason": "unknown_attribute"
+          },
+          {
+            "id": "p2",
+            "reason": "unknown_attribute"
+          },
+          {
+            "id": "p3",
+            "reason": "unknown_attribute"
+          }
+        ],
+        "temporalValidity": {
+          "mode": "current_snapshot",
+          "asOf": null,
+          "missingKnownAtCount": 0,
+          "historicalReconstruction": false
+        },
+        "limits": [
+          "분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.",
+          "조건별 차이는 연관이며 원인을 확정하지 않아요.",
+          "전체 평가는 개별 감각의 평가를 바꾸지 않아요.",
+          "과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요."
+        ]
+      },
+      "predictions": []
+    }
+  ]
+}

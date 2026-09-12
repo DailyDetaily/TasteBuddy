@@ -21,7 +21,7 @@ struct BottomTabCenterButton: View {
             .frame(width: Metrics.buttonSize, height: Metrics.buttonSize)
             .contentShape(Circle())
         }
-        .buttonStyle(BottomTabCenterButtonStyle())
+        .buttonStyle(TBTokenButtonStyle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .updating($isPressing) { _, state, _ in
@@ -41,7 +41,7 @@ struct BottomTabCenterButton: View {
             if reduceMotion {
                 isBeamVisible = true
             } else {
-                withAnimation(.easeOut(duration: Metrics.fadeInDuration)) {
+                withAnimation(TasteBloomMotion.animation(.sheet, reduceMotion: reduceMotion)) {
                     isBeamVisible = true
                 }
             }
@@ -144,10 +144,7 @@ struct BottomTabCenterButton: View {
         }
         .frame(width: Metrics.buttonSize, height: Metrics.buttonSize)
         .animation(
-            .spring(
-                response: Metrics.pressAnimationResponse,
-                dampingFraction: Metrics.pressAnimationDamping
-            ),
+            TasteBloomMotion.animation(.press, reduceMotion: reduceMotion),
             value: isPressed
         )
     }
@@ -550,8 +547,6 @@ private enum Metrics {
     static let pressedPulseOuterWidth: CGFloat = 12
     static let pressedGlassCenterOpacityMultiplier = 0.72
     static let pressedGlassEdgeOpacityMultiplier = 1.18
-    static let pressAnimationResponse = 0.22
-    static let pressAnimationDamping = 0.78
     static let strokeBrightness = 1.28
     static let strokeSaturation = 1.46
     static let strokeHueMultiplier = 26.0 / 18.0
@@ -583,7 +578,6 @@ private enum Metrics {
     static let glassCausticBlur: CGFloat = 0.8
     static let glassCausticInset: CGFloat = 1.5
     static let motionDuration: TimeInterval = 3.6
-    static let fadeInDuration: TimeInterval = 0.6
     static let hueRotationAmplitude = 12.0
     static let travelDistance: CGFloat = 5.7
 }
@@ -1467,14 +1461,6 @@ private struct TasteBeamInnerMask: View {
             LinearGradient(stops: stops, startPoint: .top, endPoint: .bottom)
             LinearGradient(stops: stops, startPoint: .leading, endPoint: .trailing)
         }
-    }
-}
-
-private struct BottomTabCenterButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .animation(.easeOut(duration: 0.18), value: configuration.isPressed)
     }
 }
 

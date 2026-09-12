@@ -101,9 +101,9 @@ struct RestaurantPlaceInfo: Equatable {
 }
 
 struct RestaurantScoreModel: Equatable {
-    let personalMatchRate: Int
-    let palateFriendsAverageScore: Int
-    let overallScore: Double
+    let personalMatchRate: Int?
+    let palateFriendsAverageScore: Int?
+    let overallScore: Double?
 }
 
 struct RestaurantTagModel: Identifiable, Equatable {
@@ -186,14 +186,14 @@ extension RestaurantDetailModel {
             axis: restaurant.axis,
             locationLabel: contextProfile.locationLabel,
             summaryLine: restaurant.summary,
-            fitSummary: RestaurantDetailModel.fitSummary(for: restaurant),
-            mainRisk: RestaurantDetailModel.mainRisk(for: restaurant),
-            decisionReason: RestaurantDetailModel.decisionReason(for: restaurant),
-            confidenceLabel: RestaurantDetailModel.confidenceLabel(from: restaurant.matchRate),
+            fitSummary: "개인 적합도는 아직 계산하지 않았어요.",
+            mainRisk: "개인 취향과 연결한 주의점은 아직 확인하지 않았어요.",
+            decisionReason: "식당과 메뉴 정보를 확인하고 직접 남긴 경험으로 비교할 수 있어요.",
+            confidenceLabel: "미계산",
             scores: RestaurantScoreModel(
-                personalMatchRate: restaurant.matchRate,
-                palateFriendsAverageScore: restaurant.id == "mingles" ? 78 : 82,
-                overallScore: restaurant.id == "mingles" ? 4.6 : 4.5
+                personalMatchRate: nil,
+                palateFriendsAverageScore: nil,
+                overallScore: nil
             ),
             tags: contextProfile.tags,
             memorableDishes: restaurant.memorableDishes,
@@ -211,66 +211,29 @@ extension RestaurantDetailModel {
                 tone: axis == nil ? .neutral : .taste
             )
         }
-        let primaryTasteTag = tasteTags.first { $0.tasteAxis != nil }
-        let secondaryTag = tasteTags.first { $0.id != primaryTasteTag?.id }
-        let fitBand: String
-
-        if scores.personalMatchRate >= 82 {
-            fitBand = "내 기준 Fit 높음"
-        } else if scores.personalMatchRate >= 72 {
-            fitBand = "내 기준 Fit 안정적"
-        } else {
-            fitBand = "내 기준 Fit 확인 중"
-        }
-
-        let lowConfidenceHint = confidenceLabel == "더 확인 필요"
-            ? "아직 메뉴 단위 근거가 충분하지 않아요. 먹어본 메뉴로 남기면 다음 판단에서 감각 흐름을 더 분명하게 비교할 수 있어요."
-            : nil
-        let expectedTasteFlow: String
-
-        if let primaryTasteTag, let secondaryTag {
-            expectedTasteFlow = "\(primaryTasteTag.label)이 먼저 잡히고 \(secondaryTag.label)이 식사 후 기억의 길이를 정리할 가능성이 있어요."
-        } else {
-            expectedTasteFlow = "\(dish.title)의 중심 인상이 현재 프로필에서 어떻게 남는지 차분히 확인해볼 만해요."
-        }
-
         return RestaurantMenuDetailModel(
             id: "\(id)-\(dish.id)",
             title: dish.title,
             restaurantName: name,
             chefName: chefName,
-            courseLabel: index == 0 ? "첫 번째로 비교할 메뉴" : "기억 후보 \(index + 1)",
+            courseLabel: "메뉴 정보",
             imageName: nil,
             imageURL: nil,
             summaryLine: dish.summary,
-            fitBand: fitBand,
+            fitBand: "미계산",
             confidenceLabel: confidenceLabel,
-            expectedTasteFlow: expectedTasteFlow,
-            mainRisk: secondaryTag == nil
-                ? mainRisk
-                : "\(secondaryTag?.label ?? "마무리")이 예상보다 강하거나 짧게 남으면 전체 기억이 다르게 정리될 수 있어요.",
-            chefIntent: "\(chefName) 셰프는 \(dish.title)에서 \(primaryTasteTag?.label ?? dish.tags.first ?? "중심 풍미")을 차분히 전달하고, 코스 안에서 자연스럽게 이어지는 경험을 의도한 것으로 읽혀요.",
-            similarPalateSignal: primaryTasteTag == nil || secondaryTag == nil
-                ? "비슷한 미각 기준에서는 메뉴의 첫 인상보다 식사 후 어떻게 기억되는지가 더 중요한 단서였어요."
-                : "비슷한 미각 기준에서는 \(primaryTasteTag?.label ?? "중심 풍미")과 \(secondaryTag?.label ?? "마무리")이 함께 있을 때 만족도가 안정적으로 읽혔어요.",
-            pastExperienceComparison: index == 0
-                ? "지난번 좋았던 메인 후보보다 첫 인상은 더 조용하고, 피니시는 더 짧게 정리될 수 있어요."
-                : "앞선 메뉴 후보보다 중심 풍미는 조금 더 농도 있게, 마무리는 더 오래 남을 수 있어요.",
-            lowConfidenceHint: lowConfidenceHint,
+            expectedTasteFlow: dish.tags.isEmpty ? "기록된 감각 정보가 없어요." : dish.tags.joined(separator: " · "),
+            mainRisk: "개인 취향과 연결한 주의점은 아직 확인하지 않았어요.",
+            chefIntent: "셰프의 직접 설명이 아직 연결되지 않았어요.",
+            similarPalateSignal: "비슷한 입맛 그룹의 평가를 아직 계산하지 않았어요.",
+            pastExperienceComparison: nil,
+            lowConfidenceHint: "이 메뉴와 직접 연결된 이전 경험을 아직 비교하지 않았어요.",
             tasteTags: tasteTags
         )
     }
 
-    static func confidenceLabel(from matchRate: Int) -> String {
-        if matchRate >= 82 {
-            return "근거 충분"
-        }
-
-        if matchRate >= 72 {
-            return "근거 보통"
-        }
-
-        return "더 확인 필요"
+    static func confidenceLabel(from _: Int) -> String {
+        "미계산"
     }
 
     static func tasteAxis(from label: String) -> TasteAxis? {
@@ -550,32 +513,4 @@ extension RestaurantDetailModel {
         }
     }
 
-    private static func fitSummary(for restaurant: RestaurantSummary) -> String {
-        switch restaurant.id {
-        case "mingles":
-            return "장 발효의 감칠맛과 한우 메인의 깊이가 현재 프로필에서 기억될 중심 풍미와 자연스럽게 이어질 가능성이 있어요."
-        case "onjium":
-            return "맑은 감칠맛과 편안한 여운이 후반부 무게를 낮추는 방향으로 이어질 가능성이 있어요."
-        default:
-            return restaurant.summary
-        }
-    }
-
-    private static func mainRisk(for restaurant: RestaurantSummary) -> String {
-        switch restaurant.id {
-        case "mingles":
-            return "코스 후반의 감칠맛 밀도와 지방감이 길어지면 전체 인상이 조금 무겁게 남을 수 있어요."
-        default:
-            return "대표 메뉴 외 코스 전체의 산미, 지방감, 피니시 흐름은 방문 전 한 번 더 확인하면 좋아요."
-        }
-    }
-
-    private static func decisionReason(for restaurant: RestaurantSummary) -> String {
-        switch restaurant.id {
-        case "mingles":
-            return "비슷한 미각 기준에서는 장 발효의 깊이, 한우 메인, 페어링 흐름이 함께 있을 때 만족도가 안정적으로 읽혔어요."
-        default:
-            return "이 레스토랑은 현재 프로필의 중심 풍미와 실제 식사 기억을 비교하기 좋은 후보예요."
-        }
-    }
 }

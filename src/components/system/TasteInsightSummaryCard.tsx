@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 import { TASTE_IDS, TASTE_TOKENS } from '../../constants/designTokens';
 import { buildTasteAdjustmentGradient, getTasteColor } from '../../constants/tasteColors';
@@ -7,6 +7,27 @@ import CardDetailLabel from './CardDetailLabel';
 import TasteChip from './TasteChip';
 import TasteLineChart from './TasteLineChart';
 import TastePointArrowBox, { type TastePointArrowBoxTrend } from './TastePointArrowBox';
+
+export function TasteChangeEmptySummary() {
+  const gradientId = useId();
+  return <div className="flex w-full flex-col gap-1" aria-label="상승 변화와 하강 변화 모두 비교 기록 없음">
+    {['상승 변화', '하강 변화'].map((label, index) => <div key={label} className="flex h-6 items-center gap-4">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <TastePointArrowBox trend="neutral" />
+        <span className="text-[14px] font-medium text-[var(--tb-color-text-hint)]">{label}</span>
+      </div>
+      <svg aria-hidden="true" className="h-6 w-[132px] shrink-0" viewBox="0 0 132 24">
+        <defs><linearGradient id={`${gradientId}-${index}`} gradientUnits="userSpaceOnUse" x1="6" x2="126" y1="12" y2="12">
+          <stop stopColor="var(--tb-color-border-default)" /><stop offset="1" stopColor="var(--tb-color-text-hint)" />
+        </linearGradient></defs>
+        {/* Decorative empty state; this line does not represent observations. */}
+        <path d="M6 12H126" stroke="var(--tb-color-text-hint)" strokeOpacity="0.12" strokeWidth="12" strokeLinecap="round" />
+        <path d="M6 12H126" stroke={`url(#${gradientId}-${index})`} strokeWidth="2" strokeLinecap="round" />
+        <circle cx="126" cy="12" r="6" fill="var(--tb-color-text-hint)" />
+      </svg>
+    </div>)}
+  </div>;
+}
 
 export type TasteInsightSummaryDetail = {
   change: string;
@@ -17,6 +38,7 @@ export type TasteInsightSummaryDetail = {
 };
 
 interface TasteInsightSummaryCardProps {
+  children?: ReactNode;
   action?: ReactNode;
   actionLabel?: string;
   className?: string;
@@ -82,6 +104,7 @@ function buildIndicatorBackground(details: TasteInsightSummaryDetail[]) {
 }
 
 export default function TasteInsightSummaryCard({
+  children,
   action,
   actionLabel,
   className,
@@ -124,7 +147,7 @@ export default function TasteInsightSummaryCard({
             {title}
           </p>
 
-          <div className="flex flex-col gap-[10px]">
+          {children ?? <div className="flex flex-col gap-[10px]">
             <div className="flex w-full items-stretch gap-[24px]">
               <div className="flex min-w-0 grow basis-0 flex-col gap-[4px]">
                 {summaryDetails.map((detail) => (
@@ -154,7 +177,7 @@ export default function TasteInsightSummaryCard({
                 <KeywordChip key={keyword} keyword={keyword} />
               ))}
             </div>
-          </div>
+          </div>}
         </div>
       </div>
     </button>

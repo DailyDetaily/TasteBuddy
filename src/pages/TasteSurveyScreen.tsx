@@ -7,6 +7,7 @@ import type {
   TasteSurveyItem,
   TasteSurveyLikertValue,
   TasteSurveyResponse,
+  TasteSurveyUncertaintyReason,
 } from '../types/tasteSurvey';
 
 interface TasteSurveyScreenProps {
@@ -16,7 +17,7 @@ interface TasteSurveyScreenProps {
   onBack: () => void;
   onNext: () => void;
   onSelectLikert: (itemId: string, value: TasteSurveyLikertValue) => void;
-  onSelectUncertain: (itemId: string) => void;
+  onSelectUncertain: (itemId: string, reason: TasteSurveyUncertaintyReason) => void;
 }
 
 export default function TasteSurveyScreen({
@@ -33,7 +34,7 @@ export default function TasteSurveyScreen({
   const item = items[safeIndex] ?? null;
   const isFirst = safeIndex === 0;
   const isLast = safeIndex === total - 1;
-  const hasResponse = Boolean(currentResponse?.uncertain || currentResponse?.selectedValue);
+  const hasResponse = Boolean(currentResponse && (currentResponse.uncertain || currentResponse.selectedValue !== null));
   const activeColor = item ? TASTE_TOKENS[item.tasteId].palette.main : undefined;
 
   if (!item) {
@@ -42,9 +43,9 @@ export default function TasteSurveyScreen({
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-focus)] font-sans">
-      <header className="z-20 flex w-full shrink-0 justify-center">
+      <header className="absolute inset-x-0 top-0 z-20 flex w-full justify-center">
         <div
-          className="w-full max-w-[1440px] border-b border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-overlay)] backdrop-blur-md"
+          className="w-full max-w-[1440px] bg-[var(--tb-color-bg-focus)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-focus)]/70"
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
           <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">
@@ -78,16 +79,17 @@ export default function TasteSurveyScreen({
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-5 pt-4 no-scrollbar">
+      <main className="flex-1 overflow-y-auto px-5 pt-[calc(var(--tb-safe-area-top)+var(--tb-size-top-app-bar-height)+16px)] no-scrollbar">
         <div className="tb-section-stack pb-[calc(188px+var(--tb-safe-area-bottom))]">
           <TasteSurveyQuestionCard
             currentIndex={safeIndex}
             item={item}
             onSelectLikert={(value) => onSelectLikert(item.id, value)}
-            onSelectUncertain={() => onSelectUncertain(item.id)}
+            onSelectUncertain={(reason) => onSelectUncertain(item.id, reason)}
             selectedValue={currentResponse?.selectedValue ?? null}
             total={total}
             uncertain={currentResponse?.uncertain ?? false}
+            uncertaintyReason={currentResponse?.uncertaintyReason}
           />
         </div>
       </main>

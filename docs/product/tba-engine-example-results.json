@@ -1,0 +1,2916 @@
+{
+  "version": "tba-personal-engine/2",
+  "evidenceClass": "synthetic_fixture",
+  "userId": "synthetic-palate-example",
+  "evidenceSetHash": "35ee5a20b4ace6e652f036a855709667dc8f5ebfd55abe55cd63c166aea2bfae",
+  "coverage": {
+    "experiences": 6,
+    "meals": 6,
+    "observations": 16,
+    "unresolvedSignals": 1,
+    "independentSamples": null
+  },
+  "versions": {
+    "rules": "tba-rules/4",
+    "lexicon": "tba-semantic-lexicon/2",
+    "profile": "tba-palate-profile/1",
+    "insights": "tba-personal-insights/1",
+    "sensoryUnderstanding": "tba-sensory-understanding/1"
+  },
+  "profile": {
+    "version": "tba-palate-profile/1",
+    "userId": "synthetic-palate-example",
+    "evidenceSetHash": "35ee5a20b4ace6e652f036a855709667dc8f5ebfd55abe55cd63c166aea2bfae",
+    "evidenceClass": "synthetic_fixture",
+    "status": "provisional_profile",
+    "main": {
+      "id": "romantic",
+      "name": "로맨틱",
+      "label": "달콤형",
+      "status": "mixed",
+      "eligible": true,
+      "supportRefs": [
+        "example-1:r1:g0:o1",
+        "example-2:r1:g0:o1",
+        "example-3:r1:g0:o1",
+        "example-4:r1:g0:o1"
+      ],
+      "counterRefs": [
+        "example-5:r1:g0:o3"
+      ],
+      "neutralRefs": [],
+      "contextRefs": [],
+      "modelCandidateRefs": [],
+      "supportCoverage": {
+        "experiences": 4,
+        "meals": 4,
+        "observations": 4,
+        "independentSamples": null
+      },
+      "counterCoverage": {
+        "experiences": 1,
+        "meals": 1,
+        "observations": 1,
+        "independentSamples": null
+      },
+      "scope": {
+        "foodIds": [
+          "sample-cake",
+          "sample-cookie",
+          "sample-dessert",
+          "sample-drink"
+        ],
+        "experienceIds": [
+          "example-1",
+          "example-2",
+          "example-3",
+          "example-4",
+          "example-5"
+        ],
+        "mealIds": [
+          "meal-1",
+          "meal-2",
+          "meal-3",
+          "meal-4",
+          "meal-5"
+        ],
+        "targets": [
+          "whole_dish"
+        ],
+        "phases": [
+          "unspecified"
+        ]
+      },
+      "supportingAttributes": [
+        "taste.sweet"
+      ],
+      "probability": null
+    },
+    "wing": {
+      "id": "roaster",
+      "name": "로스터",
+      "label": "고소형",
+      "status": "repeated_support",
+      "eligible": true,
+      "supportRefs": [
+        "example-1:r1:g0:o3",
+        "example-2:r1:g0:o3"
+      ],
+      "counterRefs": [],
+      "neutralRefs": [],
+      "contextRefs": [],
+      "modelCandidateRefs": [],
+      "supportCoverage": {
+        "experiences": 2,
+        "meals": 2,
+        "observations": 2,
+        "independentSamples": null
+      },
+      "counterCoverage": {
+        "experiences": 0,
+        "meals": 0,
+        "observations": 0,
+        "independentSamples": null
+      },
+      "scope": {
+        "foodIds": [
+          "sample-cake",
+          "sample-cookie"
+        ],
+        "experienceIds": [
+          "example-1",
+          "example-2"
+        ],
+        "mealIds": [
+          "meal-1",
+          "meal-2"
+        ],
+        "targets": [
+          "whole_dish"
+        ],
+        "phases": [
+          "unspecified"
+        ]
+      },
+      "supportingAttributes": [
+        "aroma.roasted",
+        "flavor.nutty_savory"
+      ],
+      "probability": null
+    },
+    "mainCandidates": [],
+    "wingCandidates": [],
+    "candidates": [
+      {
+        "id": "purist",
+        "name": "퓨어리스트",
+        "label": "본연형",
+        "status": "unknown",
+        "eligible": false,
+        "supportRefs": [],
+        "counterRefs": [],
+        "neutralRefs": [],
+        "contextRefs": [],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [],
+          "experienceIds": [],
+          "mealIds": [],
+          "targets": [],
+          "phases": []
+        },
+        "supportingAttributes": [],
+        "probability": null
+      },
+      {
+        "id": "maximalist",
+        "name": "맥시멀리스트",
+        "label": "강렬형",
+        "status": "scoped_dislike",
+        "eligible": false,
+        "supportRefs": [],
+        "counterRefs": [
+          "example-5:r1:g0:o3"
+        ],
+        "neutralRefs": [],
+        "contextRefs": [
+          "example-5:r1:g0:o1"
+        ],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 1,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-drink"
+          ],
+          "experienceIds": [
+            "example-5"
+          ],
+          "mealIds": [
+            "meal-5"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "supportingAttributes": [],
+        "probability": null
+      },
+      {
+        "id": "alchemist",
+        "name": "알키미스트",
+        "label": "발효형",
+        "status": "unknown",
+        "eligible": false,
+        "supportRefs": [],
+        "counterRefs": [],
+        "neutralRefs": [],
+        "contextRefs": [],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [],
+          "experienceIds": [],
+          "mealIds": [],
+          "targets": [],
+          "phases": []
+        },
+        "supportingAttributes": [],
+        "probability": null
+      },
+      {
+        "id": "roaster",
+        "name": "로스터",
+        "label": "고소형",
+        "status": "repeated_support",
+        "eligible": true,
+        "supportRefs": [
+          "example-1:r1:g0:o3",
+          "example-2:r1:g0:o3"
+        ],
+        "counterRefs": [],
+        "neutralRefs": [],
+        "contextRefs": [],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 2,
+          "meals": 2,
+          "observations": 2,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cake",
+            "sample-cookie"
+          ],
+          "experienceIds": [
+            "example-1",
+            "example-2"
+          ],
+          "mealIds": [
+            "meal-1",
+            "meal-2"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "supportingAttributes": [
+          "aroma.roasted",
+          "flavor.nutty_savory"
+        ],
+        "probability": null
+      },
+      {
+        "id": "romantic",
+        "name": "로맨틱",
+        "label": "달콤형",
+        "status": "mixed",
+        "eligible": true,
+        "supportRefs": [
+          "example-1:r1:g0:o1",
+          "example-2:r1:g0:o1",
+          "example-3:r1:g0:o1",
+          "example-4:r1:g0:o1"
+        ],
+        "counterRefs": [
+          "example-5:r1:g0:o3"
+        ],
+        "neutralRefs": [],
+        "contextRefs": [],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 4,
+          "meals": 4,
+          "observations": 4,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 1,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cake",
+            "sample-cookie",
+            "sample-dessert",
+            "sample-drink"
+          ],
+          "experienceIds": [
+            "example-1",
+            "example-2",
+            "example-3",
+            "example-4",
+            "example-5"
+          ],
+          "mealIds": [
+            "meal-1",
+            "meal-2",
+            "meal-3",
+            "meal-4",
+            "meal-5"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "supportingAttributes": [
+          "taste.sweet"
+        ],
+        "probability": null
+      },
+      {
+        "id": "texturalist",
+        "name": "텍스처리스트",
+        "label": "식감형",
+        "status": "unknown",
+        "eligible": false,
+        "supportRefs": [],
+        "counterRefs": [],
+        "neutralRefs": [],
+        "contextRefs": [],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [],
+          "experienceIds": [],
+          "mealIds": [],
+          "targets": [],
+          "phases": []
+        },
+        "supportingAttributes": [],
+        "probability": null
+      },
+      {
+        "id": "epicure",
+        "name": "에피큐어",
+        "label": "농밀형",
+        "status": "unknown",
+        "eligible": false,
+        "supportRefs": [],
+        "counterRefs": [],
+        "neutralRefs": [],
+        "contextRefs": [],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [],
+          "experienceIds": [],
+          "mealIds": [],
+          "targets": [],
+          "phases": []
+        },
+        "supportingAttributes": [],
+        "probability": null
+      },
+      {
+        "id": "refresher",
+        "name": "리프레셔",
+        "label": "산뜻형",
+        "status": "unknown",
+        "eligible": false,
+        "supportRefs": [],
+        "counterRefs": [],
+        "neutralRefs": [],
+        "contextRefs": [],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [],
+          "experienceIds": [],
+          "mealIds": [],
+          "targets": [],
+          "phases": []
+        },
+        "supportingAttributes": [],
+        "probability": null
+      },
+      {
+        "id": "harmonist",
+        "name": "하모니스트",
+        "label": "조화형",
+        "status": "unknown",
+        "eligible": false,
+        "supportRefs": [],
+        "counterRefs": [],
+        "neutralRefs": [],
+        "contextRefs": [],
+        "modelCandidateRefs": [],
+        "supportCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "counterCoverage": {
+          "experiences": 0,
+          "meals": 0,
+          "observations": 0,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [],
+          "experienceIds": [],
+          "mealIds": [],
+          "targets": [],
+          "phases": []
+        },
+        "supportingAttributes": [],
+        "probability": null
+      }
+    ],
+    "policy": {
+      "minDistinctMeals": 2,
+      "basis": "versioned_product_policy_not_empirically_validated",
+      "adjacentOnly": false,
+      "forceWing": false
+    },
+    "coverage": {
+      "experiences": 6,
+      "meals": 6,
+      "observations": 16,
+      "unresolvedSignals": 1,
+      "independentSamples": null
+    },
+    "label": "로맨틱 · 로스터 윙"
+  },
+  "sensoryUnderstanding": {
+    "version": "tba-sensory-understanding/1",
+    "userId": "synthetic-palate-example",
+    "evidenceClass": "synthetic_fixture",
+    "evidenceSetHash": "35ee5a20b4ace6e652f036a855709667dc8f5ebfd55abe55cd63c166aea2bfae",
+    "frames": [
+      {
+        "id": "sensory-frame:65730acbf4f838de6a48",
+        "attribute": "flavor.nutty_savory",
+        "reference": null,
+        "label": "고소함",
+        "experienceId": "example-1",
+        "foodId": "sample-cake",
+        "foodName": "검증용 견과 케이크",
+        "target": "whole_dish",
+        "phase": "unspecified",
+        "status": "reported_in_scope",
+        "sensations": [
+          {
+            "observationId": "example-1:r1:g0:o2",
+            "value": true,
+            "quote": "고소한 맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "intensity": [],
+        "intensityStatus": "not_reported",
+        "descriptions": [],
+        "liking": [
+          {
+            "observationId": "example-1:r1:g0:o3",
+            "value": "positive",
+            "quote": "고소한 맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "qualifiedLiking": [],
+        "preferredLevel": [],
+        "observationRefs": [
+          "example-1:r1:g0:o2",
+          "example-1:r1:g0:o3"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 2,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cake"
+          ],
+          "experienceIds": [
+            "example-1"
+          ],
+          "mealIds": [
+            "meal-1"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-1:r1:g0:o2",
+            "foodId": "sample-cake",
+            "foodName": "검증용 견과 케이크",
+            "quote": "고소한 맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "sensory_presence",
+            "attribute": "flavor.nutty_savory",
+            "value": true,
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "고소한 맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-1:0",
+                "answerId": "synthetic-palate-example:example-1:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-1:0:answer:rules",
+                "recordedAt": "2026-09-01T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 22,
+                    "quote": "고소한 맛이 좋았어요.",
+                    "start": 10
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-1:r1:g0:o3",
+            "foodId": "sample-cake",
+            "foodName": "검증용 견과 케이크",
+            "quote": "고소한 맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "flavor.nutty_savory",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "고소한 맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-1:0",
+                "answerId": "synthetic-palate-example:example-1:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-1:0:answer:rules",
+                "recordedAt": "2026-09-01T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 22,
+                    "quote": "고소한 맛이 좋았어요.",
+                    "start": 10
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "causalExplanation": null
+      },
+      {
+        "id": "sensory-frame:78f6053538d661c2f6c4",
+        "attribute": "taste.sweet",
+        "reference": null,
+        "label": "단맛",
+        "experienceId": "example-1",
+        "foodId": "sample-cake",
+        "foodName": "검증용 견과 케이크",
+        "target": "whole_dish",
+        "phase": "unspecified",
+        "status": "reported_in_scope",
+        "sensations": [
+          {
+            "observationId": "example-1:r1:g0:o0",
+            "value": true,
+            "quote": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "intensity": [],
+        "intensityStatus": "not_reported",
+        "descriptions": [],
+        "liking": [
+          {
+            "observationId": "example-1:r1:g0:o1",
+            "value": "positive",
+            "quote": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "qualifiedLiking": [],
+        "preferredLevel": [],
+        "observationRefs": [
+          "example-1:r1:g0:o0",
+          "example-1:r1:g0:o1"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 2,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cake"
+          ],
+          "experienceIds": [
+            "example-1"
+          ],
+          "mealIds": [
+            "meal-1"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-1:r1:g0:o0",
+            "foodId": "sample-cake",
+            "foodName": "검증용 견과 케이크",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-1:0",
+                "answerId": "synthetic-palate-example:example-1:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-1:0:answer:rules",
+                "recordedAt": "2026-09-01T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-1:r1:g0:o1",
+            "foodId": "sample-cake",
+            "foodName": "검증용 견과 케이크",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-1:0",
+                "answerId": "synthetic-palate-example:example-1:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-1:0:answer:rules",
+                "recordedAt": "2026-09-01T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "causalExplanation": null
+      },
+      {
+        "id": "sensory-frame:cac76ab3c197976e3724",
+        "attribute": "aroma.roasted",
+        "reference": null,
+        "label": "구운 향",
+        "experienceId": "example-2",
+        "foodId": "sample-cookie",
+        "foodName": "검증용 구운 쿠키",
+        "target": "whole_dish",
+        "phase": "unspecified",
+        "status": "reported_in_scope",
+        "sensations": [
+          {
+            "observationId": "example-2:r1:g0:o2",
+            "value": true,
+            "quote": "구운 향이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "intensity": [],
+        "intensityStatus": "not_reported",
+        "descriptions": [],
+        "liking": [
+          {
+            "observationId": "example-2:r1:g0:o3",
+            "value": "positive",
+            "quote": "구운 향이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "qualifiedLiking": [],
+        "preferredLevel": [],
+        "observationRefs": [
+          "example-2:r1:g0:o2",
+          "example-2:r1:g0:o3"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 2,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cookie"
+          ],
+          "experienceIds": [
+            "example-2"
+          ],
+          "mealIds": [
+            "meal-2"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-2:r1:g0:o2",
+            "foodId": "sample-cookie",
+            "foodName": "검증용 구운 쿠키",
+            "quote": "구운 향이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "sensory_presence",
+            "attribute": "aroma.roasted",
+            "value": true,
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "구운 향이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-2:0",
+                "answerId": "synthetic-palate-example:example-2:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-2:0:answer:rules",
+                "recordedAt": "2026-09-02T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 21,
+                    "quote": "구운 향이 좋았어요.",
+                    "start": 10
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-2:r1:g0:o3",
+            "foodId": "sample-cookie",
+            "foodName": "검증용 구운 쿠키",
+            "quote": "구운 향이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "aroma.roasted",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "구운 향이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-2:0",
+                "answerId": "synthetic-palate-example:example-2:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-2:0:answer:rules",
+                "recordedAt": "2026-09-02T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 21,
+                    "quote": "구운 향이 좋았어요.",
+                    "start": 10
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "causalExplanation": null
+      },
+      {
+        "id": "sensory-frame:8f32c9e733f2ea736a02",
+        "attribute": "taste.sweet",
+        "reference": null,
+        "label": "단맛",
+        "experienceId": "example-2",
+        "foodId": "sample-cookie",
+        "foodName": "검증용 구운 쿠키",
+        "target": "whole_dish",
+        "phase": "unspecified",
+        "status": "reported_in_scope",
+        "sensations": [
+          {
+            "observationId": "example-2:r1:g0:o0",
+            "value": true,
+            "quote": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "intensity": [],
+        "intensityStatus": "not_reported",
+        "descriptions": [],
+        "liking": [
+          {
+            "observationId": "example-2:r1:g0:o1",
+            "value": "positive",
+            "quote": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "qualifiedLiking": [],
+        "preferredLevel": [],
+        "observationRefs": [
+          "example-2:r1:g0:o0",
+          "example-2:r1:g0:o1"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 2,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cookie"
+          ],
+          "experienceIds": [
+            "example-2"
+          ],
+          "mealIds": [
+            "meal-2"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-2:r1:g0:o0",
+            "foodId": "sample-cookie",
+            "foodName": "검증용 구운 쿠키",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-2:0",
+                "answerId": "synthetic-palate-example:example-2:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-2:0:answer:rules",
+                "recordedAt": "2026-09-02T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-2:r1:g0:o1",
+            "foodId": "sample-cookie",
+            "foodName": "검증용 구운 쿠키",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-2:0",
+                "answerId": "synthetic-palate-example:example-2:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-2:0:answer:rules",
+                "recordedAt": "2026-09-02T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "causalExplanation": null
+      },
+      {
+        "id": "sensory-frame:0ea89ea809dd800146b7",
+        "attribute": "taste.sweet",
+        "reference": null,
+        "label": "단맛",
+        "experienceId": "example-3",
+        "foodId": "sample-dessert",
+        "foodName": "검증용 디저트",
+        "target": "whole_dish",
+        "phase": "unspecified",
+        "status": "reported_in_scope",
+        "sensations": [
+          {
+            "observationId": "example-3:r1:g0:o0",
+            "value": true,
+            "quote": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "intensity": [],
+        "intensityStatus": "not_reported",
+        "descriptions": [],
+        "liking": [
+          {
+            "observationId": "example-3:r1:g0:o1",
+            "value": "positive",
+            "quote": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "qualifiedLiking": [],
+        "preferredLevel": [],
+        "observationRefs": [
+          "example-3:r1:g0:o0",
+          "example-3:r1:g0:o1"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 2,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-dessert"
+          ],
+          "experienceIds": [
+            "example-3"
+          ],
+          "mealIds": [
+            "meal-3"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-3:r1:g0:o0",
+            "foodId": "sample-dessert",
+            "foodName": "검증용 디저트",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-3:0",
+                "answerId": "synthetic-palate-example:example-3:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-3:0:answer:rules",
+                "recordedAt": "2026-09-03T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-3:r1:g0:o1",
+            "foodId": "sample-dessert",
+            "foodName": "검증용 디저트",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-3:0",
+                "answerId": "synthetic-palate-example:example-3:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-3:0:answer:rules",
+                "recordedAt": "2026-09-03T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "causalExplanation": null
+      },
+      {
+        "id": "sensory-frame:b62c5da82144a9070e99",
+        "attribute": "taste.sweet",
+        "reference": null,
+        "label": "단맛",
+        "experienceId": "example-4",
+        "foodId": "sample-dessert",
+        "foodName": "검증용 디저트",
+        "target": "whole_dish",
+        "phase": "unspecified",
+        "status": "reported_in_scope",
+        "sensations": [
+          {
+            "observationId": "example-4:r1:g0:o0",
+            "value": true,
+            "quote": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "intensity": [],
+        "intensityStatus": "not_reported",
+        "descriptions": [],
+        "liking": [
+          {
+            "observationId": "example-4:r1:g0:o1",
+            "value": "positive",
+            "quote": "단맛이 좋았어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "qualifiedLiking": [],
+        "preferredLevel": [],
+        "observationRefs": [
+          "example-4:r1:g0:o0",
+          "example-4:r1:g0:o1"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 2,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-dessert"
+          ],
+          "experienceIds": [
+            "example-4"
+          ],
+          "mealIds": [
+            "meal-4"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-4:r1:g0:o0",
+            "foodId": "sample-dessert",
+            "foodName": "검증용 디저트",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-4:0",
+                "answerId": "synthetic-palate-example:example-4:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-4:0:answer:rules",
+                "recordedAt": "2026-09-04T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-4:r1:g0:o1",
+            "foodId": "sample-dessert",
+            "foodName": "검증용 디저트",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-4:0",
+                "answerId": "synthetic-palate-example:example-4:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-4:0:answer:rules",
+                "recordedAt": "2026-09-04T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "causalExplanation": null
+      },
+      {
+        "id": "sensory-frame:dffc4a985dbbefc81652",
+        "attribute": "taste.sweet",
+        "reference": null,
+        "label": "단맛",
+        "experienceId": "example-5",
+        "foodId": "sample-drink",
+        "foodName": "검증용 음료",
+        "target": "whole_dish",
+        "phase": "unspecified",
+        "status": "reported_in_scope",
+        "sensations": [
+          {
+            "observationId": "example-5:r1:g0:o0",
+            "value": true,
+            "quote": "단맛이 너무 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "intensity": [
+          {
+            "observationId": "example-5:r1:g0:o1",
+            "value": "strong",
+            "quote": "단맛이 너무 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "intensityStatus": "reported_level",
+        "descriptions": [],
+        "liking": [
+          {
+            "observationId": "example-5:r1:g0:o3",
+            "value": "negative",
+            "quote": "단맛이 싫었어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "qualifiedLiking": [],
+        "preferredLevel": [
+          {
+            "observationId": "example-5:r1:g0:o2",
+            "value": "above_preferred",
+            "quote": "단맛이 너무 강했어요.",
+            "confirmationStatus": "rule_extracted_statement"
+          }
+        ],
+        "observationRefs": [
+          "example-5:r1:g0:o0",
+          "example-5:r1:g0:o1",
+          "example-5:r1:g0:o2",
+          "example-5:r1:g0:o3"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 4,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-drink"
+          ],
+          "experienceIds": [
+            "example-5"
+          ],
+          "mealIds": [
+            "meal-5"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-5:r1:g0:o0",
+            "foodId": "sample-drink",
+            "foodName": "검증용 음료",
+            "quote": "단맛이 너무 강했어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "sensory_presence",
+            "attribute": "taste.sweet",
+            "value": true,
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 너무 강했어요.",
+                "eventId": "synthetic-palate-example:example-5:0",
+                "answerId": "synthetic-palate-example:example-5:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-5:0:answer:rules",
+                "recordedAt": "2026-09-05T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 12,
+                    "quote": "단맛이 너무 강했어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              },
+              {
+                "phrase": "단맛이 싫었어요.",
+                "eventId": "synthetic-palate-example:example-5:0",
+                "answerId": "synthetic-palate-example:example-5:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-5:0:answer:rules",
+                "recordedAt": "2026-09-05T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 22,
+                    "quote": "단맛이 싫었어요.",
+                    "start": 13
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-5:r1:g0:o1",
+            "foodId": "sample-drink",
+            "foodName": "검증용 음료",
+            "quote": "단맛이 너무 강했어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "sensory_intensity",
+            "attribute": "taste.sweet",
+            "value": "strong",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 너무 강했어요.",
+                "eventId": "synthetic-palate-example:example-5:0",
+                "answerId": "synthetic-palate-example:example-5:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-5:0:answer:rules",
+                "recordedAt": "2026-09-05T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 12,
+                    "quote": "단맛이 너무 강했어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-5:r1:g0:o2",
+            "foodId": "sample-drink",
+            "foodName": "검증용 음료",
+            "quote": "단맛이 너무 강했어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "preference_fit",
+            "attribute": "taste.sweet",
+            "value": "above_preferred",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 너무 강했어요.",
+                "eventId": "synthetic-palate-example:example-5:0",
+                "answerId": "synthetic-palate-example:example-5:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-5:0:answer:rules",
+                "recordedAt": "2026-09-05T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 12,
+                    "quote": "단맛이 너무 강했어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-5:r1:g0:o3",
+            "foodId": "sample-drink",
+            "foodName": "검증용 음료",
+            "quote": "단맛이 싫었어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "negative",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 싫었어요.",
+                "eventId": "synthetic-palate-example:example-5:0",
+                "answerId": "synthetic-palate-example:example-5:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-5:0:answer:rules",
+                "recordedAt": "2026-09-05T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 22,
+                    "quote": "단맛이 싫었어요.",
+                    "start": 13
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "causalExplanation": null
+      }
+    ],
+    "preferences": [
+      {
+        "id": "sensory-preference:8cfaf4f1f86de72a5b5f",
+        "attribute": "aroma.roasted",
+        "reference": null,
+        "label": "구운 향",
+        "status": "first_scoped_report",
+        "positiveRefs": [
+          "example-2:r1:g0:o3"
+        ],
+        "negativeRefs": [],
+        "neutralRefs": [],
+        "contexts": [
+          {
+            "id": "preference-context:4977887838aff44e35f8",
+            "status": "single_report_in_context",
+            "values": [
+              "positive"
+            ],
+            "observationRefs": [
+              "example-2:r1:g0:o3"
+            ],
+            "coverage": {
+              "experiences": 1,
+              "meals": 1,
+              "observations": 1,
+              "independentSamples": null
+            },
+            "scope": {
+              "foodIds": [
+                "sample-cookie"
+              ],
+              "experienceIds": [
+                "example-2"
+              ],
+              "mealIds": [
+                "meal-2"
+              ],
+              "targets": [
+                "whole_dish"
+              ],
+              "phases": [
+                "unspecified"
+              ]
+            },
+            "evidence": [
+              {
+                "observationId": "example-2:r1:g0:o3",
+                "foodId": "sample-cookie",
+                "foodName": "검증용 구운 쿠키",
+                "quote": "구운 향이 좋았어요.",
+                "target": "whole_dish",
+                "phase": "unspecified",
+                "kind": "attribute_liking",
+                "attribute": "aroma.roasted",
+                "value": "positive",
+                "confirmationStatus": "rule_extracted_statement",
+                "sourceAnswerRefs": [
+                  {
+                    "phrase": "구운 향이 좋았어요.",
+                    "eventId": "synthetic-palate-example:example-2:0",
+                    "answerId": "synthetic-palate-example:example-2:0:answer",
+                    "question": "free_text",
+                    "answerKey": "notes",
+                    "artifactId": "synthetic-palate-example:example-2:0:answer:rules",
+                    "recordedAt": "2026-09-02T03:00:00.000Z",
+                    "sourceSpans": [
+                      {
+                        "end": 21,
+                        "quote": "구운 향이 좋았어요.",
+                        "start": 10
+                      }
+                    ],
+                    "choiceVersion": "tba-semantic-lexicon/2",
+                    "questionVersion": "2",
+                    "extractionMethod": "rules",
+                    "confirmationStatus": "rule_extracted_statement"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "intensityAssociations": [],
+        "observationRefs": [
+          "example-2:r1:g0:o3"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 1,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cookie"
+          ],
+          "experienceIds": [
+            "example-2"
+          ],
+          "mealIds": [
+            "meal-2"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-2:r1:g0:o3",
+            "foodId": "sample-cookie",
+            "foodName": "검증용 구운 쿠키",
+            "quote": "구운 향이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "aroma.roasted",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "구운 향이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-2:0",
+                "answerId": "synthetic-palate-example:example-2:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-2:0:answer:rules",
+                "recordedAt": "2026-09-02T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 21,
+                    "quote": "구운 향이 좋았어요.",
+                    "start": 10
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "predictedLiking": null,
+        "optimalIntensity": null,
+        "populationConfidence": null
+      },
+      {
+        "id": "sensory-preference:8310da974fbf0f4ddb26",
+        "attribute": "flavor.nutty_savory",
+        "reference": null,
+        "label": "고소함",
+        "status": "first_scoped_report",
+        "positiveRefs": [
+          "example-1:r1:g0:o3"
+        ],
+        "negativeRefs": [],
+        "neutralRefs": [],
+        "contexts": [
+          {
+            "id": "preference-context:e0b83c8ecbdffd716e57",
+            "status": "single_report_in_context",
+            "values": [
+              "positive"
+            ],
+            "observationRefs": [
+              "example-1:r1:g0:o3"
+            ],
+            "coverage": {
+              "experiences": 1,
+              "meals": 1,
+              "observations": 1,
+              "independentSamples": null
+            },
+            "scope": {
+              "foodIds": [
+                "sample-cake"
+              ],
+              "experienceIds": [
+                "example-1"
+              ],
+              "mealIds": [
+                "meal-1"
+              ],
+              "targets": [
+                "whole_dish"
+              ],
+              "phases": [
+                "unspecified"
+              ]
+            },
+            "evidence": [
+              {
+                "observationId": "example-1:r1:g0:o3",
+                "foodId": "sample-cake",
+                "foodName": "검증용 견과 케이크",
+                "quote": "고소한 맛이 좋았어요.",
+                "target": "whole_dish",
+                "phase": "unspecified",
+                "kind": "attribute_liking",
+                "attribute": "flavor.nutty_savory",
+                "value": "positive",
+                "confirmationStatus": "rule_extracted_statement",
+                "sourceAnswerRefs": [
+                  {
+                    "phrase": "고소한 맛이 좋았어요.",
+                    "eventId": "synthetic-palate-example:example-1:0",
+                    "answerId": "synthetic-palate-example:example-1:0:answer",
+                    "question": "free_text",
+                    "answerKey": "notes",
+                    "artifactId": "synthetic-palate-example:example-1:0:answer:rules",
+                    "recordedAt": "2026-09-01T03:00:00.000Z",
+                    "sourceSpans": [
+                      {
+                        "end": 22,
+                        "quote": "고소한 맛이 좋았어요.",
+                        "start": 10
+                      }
+                    ],
+                    "choiceVersion": "tba-semantic-lexicon/2",
+                    "questionVersion": "2",
+                    "extractionMethod": "rules",
+                    "confirmationStatus": "rule_extracted_statement"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "intensityAssociations": [],
+        "observationRefs": [
+          "example-1:r1:g0:o3"
+        ],
+        "coverage": {
+          "experiences": 1,
+          "meals": 1,
+          "observations": 1,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cake"
+          ],
+          "experienceIds": [
+            "example-1"
+          ],
+          "mealIds": [
+            "meal-1"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-1:r1:g0:o3",
+            "foodId": "sample-cake",
+            "foodName": "검증용 견과 케이크",
+            "quote": "고소한 맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "flavor.nutty_savory",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "고소한 맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-1:0",
+                "answerId": "synthetic-palate-example:example-1:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-1:0:answer:rules",
+                "recordedAt": "2026-09-01T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 22,
+                    "quote": "고소한 맛이 좋았어요.",
+                    "start": 10
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "predictedLiking": null,
+        "optimalIntensity": null,
+        "populationConfidence": null
+      },
+      {
+        "id": "sensory-preference:7e2b6023ec8ea36e6ec2",
+        "attribute": "taste.sweet",
+        "reference": null,
+        "label": "단맛",
+        "status": "context_or_experience_dependent",
+        "positiveRefs": [
+          "example-1:r1:g0:o1",
+          "example-2:r1:g0:o1",
+          "example-3:r1:g0:o1",
+          "example-4:r1:g0:o1"
+        ],
+        "negativeRefs": [
+          "example-5:r1:g0:o3"
+        ],
+        "neutralRefs": [],
+        "contexts": [
+          {
+            "id": "preference-context:90c71abc67304684833f",
+            "status": "single_report_in_context",
+            "values": [
+              "positive"
+            ],
+            "observationRefs": [
+              "example-1:r1:g0:o1"
+            ],
+            "coverage": {
+              "experiences": 1,
+              "meals": 1,
+              "observations": 1,
+              "independentSamples": null
+            },
+            "scope": {
+              "foodIds": [
+                "sample-cake"
+              ],
+              "experienceIds": [
+                "example-1"
+              ],
+              "mealIds": [
+                "meal-1"
+              ],
+              "targets": [
+                "whole_dish"
+              ],
+              "phases": [
+                "unspecified"
+              ]
+            },
+            "evidence": [
+              {
+                "observationId": "example-1:r1:g0:o1",
+                "foodId": "sample-cake",
+                "foodName": "검증용 견과 케이크",
+                "quote": "단맛이 좋았어요.",
+                "target": "whole_dish",
+                "phase": "unspecified",
+                "kind": "attribute_liking",
+                "attribute": "taste.sweet",
+                "value": "positive",
+                "confirmationStatus": "rule_extracted_statement",
+                "sourceAnswerRefs": [
+                  {
+                    "phrase": "단맛이 좋았어요.",
+                    "eventId": "synthetic-palate-example:example-1:0",
+                    "answerId": "synthetic-palate-example:example-1:0:answer",
+                    "question": "free_text",
+                    "answerKey": "notes",
+                    "artifactId": "synthetic-palate-example:example-1:0:answer:rules",
+                    "recordedAt": "2026-09-01T03:00:00.000Z",
+                    "sourceSpans": [
+                      {
+                        "end": 9,
+                        "quote": "단맛이 좋았어요.",
+                        "start": 0
+                      }
+                    ],
+                    "choiceVersion": "tba-semantic-lexicon/2",
+                    "questionVersion": "2",
+                    "extractionMethod": "rules",
+                    "confirmationStatus": "rule_extracted_statement"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "preference-context:427d75266078a4817454",
+            "status": "single_report_in_context",
+            "values": [
+              "positive"
+            ],
+            "observationRefs": [
+              "example-2:r1:g0:o1"
+            ],
+            "coverage": {
+              "experiences": 1,
+              "meals": 1,
+              "observations": 1,
+              "independentSamples": null
+            },
+            "scope": {
+              "foodIds": [
+                "sample-cookie"
+              ],
+              "experienceIds": [
+                "example-2"
+              ],
+              "mealIds": [
+                "meal-2"
+              ],
+              "targets": [
+                "whole_dish"
+              ],
+              "phases": [
+                "unspecified"
+              ]
+            },
+            "evidence": [
+              {
+                "observationId": "example-2:r1:g0:o1",
+                "foodId": "sample-cookie",
+                "foodName": "검증용 구운 쿠키",
+                "quote": "단맛이 좋았어요.",
+                "target": "whole_dish",
+                "phase": "unspecified",
+                "kind": "attribute_liking",
+                "attribute": "taste.sweet",
+                "value": "positive",
+                "confirmationStatus": "rule_extracted_statement",
+                "sourceAnswerRefs": [
+                  {
+                    "phrase": "단맛이 좋았어요.",
+                    "eventId": "synthetic-palate-example:example-2:0",
+                    "answerId": "synthetic-palate-example:example-2:0:answer",
+                    "question": "free_text",
+                    "answerKey": "notes",
+                    "artifactId": "synthetic-palate-example:example-2:0:answer:rules",
+                    "recordedAt": "2026-09-02T03:00:00.000Z",
+                    "sourceSpans": [
+                      {
+                        "end": 9,
+                        "quote": "단맛이 좋았어요.",
+                        "start": 0
+                      }
+                    ],
+                    "choiceVersion": "tba-semantic-lexicon/2",
+                    "questionVersion": "2",
+                    "extractionMethod": "rules",
+                    "confirmationStatus": "rule_extracted_statement"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "preference-context:0ae89f3f12735959d7a2",
+            "status": "repeated_report_in_context",
+            "values": [
+              "positive"
+            ],
+            "observationRefs": [
+              "example-3:r1:g0:o1",
+              "example-4:r1:g0:o1"
+            ],
+            "coverage": {
+              "experiences": 2,
+              "meals": 2,
+              "observations": 2,
+              "independentSamples": null
+            },
+            "scope": {
+              "foodIds": [
+                "sample-dessert"
+              ],
+              "experienceIds": [
+                "example-3",
+                "example-4"
+              ],
+              "mealIds": [
+                "meal-3",
+                "meal-4"
+              ],
+              "targets": [
+                "whole_dish"
+              ],
+              "phases": [
+                "unspecified"
+              ]
+            },
+            "evidence": [
+              {
+                "observationId": "example-3:r1:g0:o1",
+                "foodId": "sample-dessert",
+                "foodName": "검증용 디저트",
+                "quote": "단맛이 좋았어요.",
+                "target": "whole_dish",
+                "phase": "unspecified",
+                "kind": "attribute_liking",
+                "attribute": "taste.sweet",
+                "value": "positive",
+                "confirmationStatus": "rule_extracted_statement",
+                "sourceAnswerRefs": [
+                  {
+                    "phrase": "단맛이 좋았어요.",
+                    "eventId": "synthetic-palate-example:example-3:0",
+                    "answerId": "synthetic-palate-example:example-3:0:answer",
+                    "question": "free_text",
+                    "answerKey": "notes",
+                    "artifactId": "synthetic-palate-example:example-3:0:answer:rules",
+                    "recordedAt": "2026-09-03T03:00:00.000Z",
+                    "sourceSpans": [
+                      {
+                        "end": 9,
+                        "quote": "단맛이 좋았어요.",
+                        "start": 0
+                      }
+                    ],
+                    "choiceVersion": "tba-semantic-lexicon/2",
+                    "questionVersion": "2",
+                    "extractionMethod": "rules",
+                    "confirmationStatus": "rule_extracted_statement"
+                  }
+                ]
+              },
+              {
+                "observationId": "example-4:r1:g0:o1",
+                "foodId": "sample-dessert",
+                "foodName": "검증용 디저트",
+                "quote": "단맛이 좋았어요.",
+                "target": "whole_dish",
+                "phase": "unspecified",
+                "kind": "attribute_liking",
+                "attribute": "taste.sweet",
+                "value": "positive",
+                "confirmationStatus": "rule_extracted_statement",
+                "sourceAnswerRefs": [
+                  {
+                    "phrase": "단맛이 좋았어요.",
+                    "eventId": "synthetic-palate-example:example-4:0",
+                    "answerId": "synthetic-palate-example:example-4:0:answer",
+                    "question": "free_text",
+                    "answerKey": "notes",
+                    "artifactId": "synthetic-palate-example:example-4:0:answer:rules",
+                    "recordedAt": "2026-09-04T03:00:00.000Z",
+                    "sourceSpans": [
+                      {
+                        "end": 9,
+                        "quote": "단맛이 좋았어요.",
+                        "start": 0
+                      }
+                    ],
+                    "choiceVersion": "tba-semantic-lexicon/2",
+                    "questionVersion": "2",
+                    "extractionMethod": "rules",
+                    "confirmationStatus": "rule_extracted_statement"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "preference-context:5ee1837fc87f5cfbcd42",
+            "status": "single_report_in_context",
+            "values": [
+              "negative"
+            ],
+            "observationRefs": [
+              "example-5:r1:g0:o3"
+            ],
+            "coverage": {
+              "experiences": 1,
+              "meals": 1,
+              "observations": 1,
+              "independentSamples": null
+            },
+            "scope": {
+              "foodIds": [
+                "sample-drink"
+              ],
+              "experienceIds": [
+                "example-5"
+              ],
+              "mealIds": [
+                "meal-5"
+              ],
+              "targets": [
+                "whole_dish"
+              ],
+              "phases": [
+                "unspecified"
+              ]
+            },
+            "evidence": [
+              {
+                "observationId": "example-5:r1:g0:o3",
+                "foodId": "sample-drink",
+                "foodName": "검증용 음료",
+                "quote": "단맛이 싫었어요.",
+                "target": "whole_dish",
+                "phase": "unspecified",
+                "kind": "attribute_liking",
+                "attribute": "taste.sweet",
+                "value": "negative",
+                "confirmationStatus": "rule_extracted_statement",
+                "sourceAnswerRefs": [
+                  {
+                    "phrase": "단맛이 싫었어요.",
+                    "eventId": "synthetic-palate-example:example-5:0",
+                    "answerId": "synthetic-palate-example:example-5:0:answer",
+                    "question": "free_text",
+                    "answerKey": "notes",
+                    "artifactId": "synthetic-palate-example:example-5:0:answer:rules",
+                    "recordedAt": "2026-09-05T03:00:00.000Z",
+                    "sourceSpans": [
+                      {
+                        "end": 22,
+                        "quote": "단맛이 싫었어요.",
+                        "start": 13
+                      }
+                    ],
+                    "choiceVersion": "tba-semantic-lexicon/2",
+                    "questionVersion": "2",
+                    "extractionMethod": "rules",
+                    "confirmationStatus": "rule_extracted_statement"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "intensityAssociations": [
+          {
+            "frameId": "sensory-frame:dffc4a985dbbefc81652",
+            "reportedIntensity": [
+              "strong"
+            ],
+            "liking": [
+              "negative"
+            ],
+            "observationRefs": [
+              "example-5:r1:g0:o1",
+              "example-5:r1:g0:o3"
+            ],
+            "scope": {
+              "foodIds": [
+                "sample-drink"
+              ],
+              "experienceIds": [
+                "example-5"
+              ],
+              "mealIds": [
+                "meal-5"
+              ],
+              "targets": [
+                "whole_dish"
+              ],
+              "phases": [
+                "unspecified"
+              ]
+            },
+            "causalClaim": null
+          }
+        ],
+        "observationRefs": [
+          "example-1:r1:g0:o1",
+          "example-2:r1:g0:o1",
+          "example-3:r1:g0:o1",
+          "example-4:r1:g0:o1",
+          "example-5:r1:g0:o3"
+        ],
+        "coverage": {
+          "experiences": 5,
+          "meals": 5,
+          "observations": 5,
+          "independentSamples": null
+        },
+        "scope": {
+          "foodIds": [
+            "sample-cake",
+            "sample-cookie",
+            "sample-dessert",
+            "sample-drink"
+          ],
+          "experienceIds": [
+            "example-1",
+            "example-2",
+            "example-3",
+            "example-4",
+            "example-5"
+          ],
+          "mealIds": [
+            "meal-1",
+            "meal-2",
+            "meal-3",
+            "meal-4",
+            "meal-5"
+          ],
+          "targets": [
+            "whole_dish"
+          ],
+          "phases": [
+            "unspecified"
+          ]
+        },
+        "evidence": [
+          {
+            "observationId": "example-1:r1:g0:o1",
+            "foodId": "sample-cake",
+            "foodName": "검증용 견과 케이크",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-1:0",
+                "answerId": "synthetic-palate-example:example-1:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-1:0:answer:rules",
+                "recordedAt": "2026-09-01T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-2:r1:g0:o1",
+            "foodId": "sample-cookie",
+            "foodName": "검증용 구운 쿠키",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-2:0",
+                "answerId": "synthetic-palate-example:example-2:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-2:0:answer:rules",
+                "recordedAt": "2026-09-02T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-3:r1:g0:o1",
+            "foodId": "sample-dessert",
+            "foodName": "검증용 디저트",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-3:0",
+                "answerId": "synthetic-palate-example:example-3:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-3:0:answer:rules",
+                "recordedAt": "2026-09-03T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-4:r1:g0:o1",
+            "foodId": "sample-dessert",
+            "foodName": "검증용 디저트",
+            "quote": "단맛이 좋았어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "positive",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 좋았어요.",
+                "eventId": "synthetic-palate-example:example-4:0",
+                "answerId": "synthetic-palate-example:example-4:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-4:0:answer:rules",
+                "recordedAt": "2026-09-04T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 9,
+                    "quote": "단맛이 좋았어요.",
+                    "start": 0
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          },
+          {
+            "observationId": "example-5:r1:g0:o3",
+            "foodId": "sample-drink",
+            "foodName": "검증용 음료",
+            "quote": "단맛이 싫었어요.",
+            "target": "whole_dish",
+            "phase": "unspecified",
+            "kind": "attribute_liking",
+            "attribute": "taste.sweet",
+            "value": "negative",
+            "confirmationStatus": "rule_extracted_statement",
+            "sourceAnswerRefs": [
+              {
+                "phrase": "단맛이 싫었어요.",
+                "eventId": "synthetic-palate-example:example-5:0",
+                "answerId": "synthetic-palate-example:example-5:0:answer",
+                "question": "free_text",
+                "answerKey": "notes",
+                "artifactId": "synthetic-palate-example:example-5:0:answer:rules",
+                "recordedAt": "2026-09-05T03:00:00.000Z",
+                "sourceSpans": [
+                  {
+                    "end": 22,
+                    "quote": "단맛이 싫었어요.",
+                    "start": 13
+                  }
+                ],
+                "choiceVersion": "tba-semantic-lexicon/2",
+                "questionVersion": "2",
+                "extractionMethod": "rules",
+                "confirmationStatus": "rule_extracted_statement"
+              }
+            ]
+          }
+        ],
+        "predictedLiking": null,
+        "optimalIntensity": null,
+        "populationConfidence": null
+      }
+    ],
+    "relationships": [],
+    "retainedDescriptions": [],
+    "modelCandidates": [],
+    "clarificationCandidates": [
+      {
+        "id": "sensory-question:example-6:r1:g0:u0",
+        "reason": "insufficient_semantic_information",
+        "optional": true,
+        "question": "“깔끔했어요.”에서 어떤 느낌이나 평가를 뜻했는지 조금 더 알려주실 수 있나요?",
+        "phrase": "깔끔했어요.",
+        "unresolvedRefs": [
+          "example-6:r1:g0:u0"
+        ],
+        "observationRefs": [],
+        "createsEvidence": false
+      }
+    ],
+    "processing": {
+      "status": "partial_meaning_retained",
+      "sourceAnswerCount": 6,
+      "unresolvedAnswerCount": 1,
+      "excludedSignalCount": 0,
+      "verifiedSemanticAccuracy": null,
+      "meaningComplete": null
+    },
+    "limits": [
+      "감각 묘사와 감각의 호감을 구분합니다.",
+      "음식·부위·시점의 관찰 범위를 유지하며 물리적 강도나 원인을 추정하지 않습니다.",
+      "분류하지 못한 표현은 원문으로 남으며 같은 의미라고 임의로 합치지 않습니다."
+    ]
+  },
+  "insights": [
+    {
+      "id": "finding:fc70cd5f5491bb947795",
+      "version": "tba-personal-insights/1",
+      "kind": "contextual_preference",
+      "title": "단맛, 즐거웠던 경우와 아쉬웠던 경우",
+      "text": "검증용 견과 케이크, 검증용 구운 쿠키, 검증용 디저트에서는 “단맛이 좋았어요.”, 검증용 음료에서는 “단맛이 싫었어요.”라고 남겼어요.",
+      "priority": 100,
+      "topicKey": "[\"[\\\"taste.sweet\\\",null]\"]",
+      "status": "observed_across_meals",
+      "userId": "synthetic-palate-example",
+      "evidenceClass": "synthetic_fixture",
+      "evidenceSetHash": "35ee5a20b4ace6e652f036a855709667dc8f5ebfd55abe55cd63c166aea2bfae",
+      "observationRefs": [
+        "example-1:r1:g0:o1",
+        "example-2:r1:g0:o1",
+        "example-3:r1:g0:o1",
+        "example-4:r1:g0:o1",
+        "example-5:r1:g0:o3"
+      ],
+      "scope": {
+        "foodIds": [
+          "sample-cake",
+          "sample-cookie",
+          "sample-dessert",
+          "sample-drink"
+        ],
+        "experienceIds": [
+          "example-1",
+          "example-2",
+          "example-3",
+          "example-4",
+          "example-5"
+        ],
+        "mealIds": [
+          "meal-1",
+          "meal-2",
+          "meal-3",
+          "meal-4",
+          "meal-5"
+        ],
+        "targets": [
+          "whole_dish"
+        ],
+        "phases": [
+          "unspecified"
+        ]
+      },
+      "coverage": {
+        "experiences": 5,
+        "meals": 5,
+        "observations": 5,
+        "independentSamples": null
+      },
+      "causalClaim": null,
+      "populationClaim": null,
+      "positiveRefs": [
+        "example-1:r1:g0:o1",
+        "example-2:r1:g0:o1",
+        "example-3:r1:g0:o1",
+        "example-4:r1:g0:o1"
+      ],
+      "negativeRefs": [
+        "example-5:r1:g0:o3"
+      ],
+      "comparisonDimensions": [
+        "foodId"
+      ],
+      "contexts": [
+        {
+          "scope": {
+            "foodIds": [
+              "sample-cake"
+            ],
+            "experienceIds": [
+              "example-1"
+            ],
+            "mealIds": [
+              "meal-1"
+            ],
+            "targets": [
+              "whole_dish"
+            ],
+            "phases": [
+              "unspecified"
+            ]
+          },
+          "values": [
+            "positive"
+          ],
+          "observationRefs": [
+            "example-1:r1:g0:o1"
+          ]
+        },
+        {
+          "scope": {
+            "foodIds": [
+              "sample-cookie"
+            ],
+            "experienceIds": [
+              "example-2"
+            ],
+            "mealIds": [
+              "meal-2"
+            ],
+            "targets": [
+              "whole_dish"
+            ],
+            "phases": [
+              "unspecified"
+            ]
+          },
+          "values": [
+            "positive"
+          ],
+          "observationRefs": [
+            "example-2:r1:g0:o1"
+          ]
+        },
+        {
+          "scope": {
+            "foodIds": [
+              "sample-dessert"
+            ],
+            "experienceIds": [
+              "example-3",
+              "example-4"
+            ],
+            "mealIds": [
+              "meal-3",
+              "meal-4"
+            ],
+            "targets": [
+              "whole_dish"
+            ],
+            "phases": [
+              "unspecified"
+            ]
+          },
+          "values": [
+            "positive"
+          ],
+          "observationRefs": [
+            "example-3:r1:g0:o1",
+            "example-4:r1:g0:o1"
+          ]
+        },
+        {
+          "scope": {
+            "foodIds": [
+              "sample-drink"
+            ],
+            "experienceIds": [
+              "example-5"
+            ],
+            "mealIds": [
+              "meal-5"
+            ],
+            "targets": [
+              "whole_dish"
+            ],
+            "phases": [
+              "unspecified"
+            ]
+          },
+          "values": [
+            "negative"
+          ],
+          "observationRefs": [
+            "example-5:r1:g0:o3"
+          ]
+        }
+      ],
+      "allowedClaim": "보고된 평가의 차이만 설명한다. 음식·부위·시점 차이를 원인으로 확정하지 않는다.",
+      "evidence": [
+        {
+          "observationId": "example-1:r1:g0:o1",
+          "foodId": "sample-cake",
+          "foodName": "검증용 견과 케이크",
+          "quote": "단맛이 좋았어요.",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "kind": "attribute_liking",
+          "attribute": "taste.sweet",
+          "value": "positive",
+          "confirmationStatus": "rule_extracted_statement"
+        },
+        {
+          "observationId": "example-2:r1:g0:o1",
+          "foodId": "sample-cookie",
+          "foodName": "검증용 구운 쿠키",
+          "quote": "단맛이 좋았어요.",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "kind": "attribute_liking",
+          "attribute": "taste.sweet",
+          "value": "positive",
+          "confirmationStatus": "rule_extracted_statement"
+        },
+        {
+          "observationId": "example-3:r1:g0:o1",
+          "foodId": "sample-dessert",
+          "foodName": "검증용 디저트",
+          "quote": "단맛이 좋았어요.",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "kind": "attribute_liking",
+          "attribute": "taste.sweet",
+          "value": "positive",
+          "confirmationStatus": "rule_extracted_statement"
+        },
+        {
+          "observationId": "example-4:r1:g0:o1",
+          "foodId": "sample-dessert",
+          "foodName": "검증용 디저트",
+          "quote": "단맛이 좋았어요.",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "kind": "attribute_liking",
+          "attribute": "taste.sweet",
+          "value": "positive",
+          "confirmationStatus": "rule_extracted_statement"
+        },
+        {
+          "observationId": "example-5:r1:g0:o3",
+          "foodId": "sample-drink",
+          "foodName": "검증용 음료",
+          "quote": "단맛이 싫었어요.",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "kind": "attribute_liking",
+          "attribute": "taste.sweet",
+          "value": "negative",
+          "confirmationStatus": "rule_extracted_statement"
+        }
+      ]
+    },
+    {
+      "id": "finding:3ec475076a4a29aa3dc1",
+      "version": "tba-personal-insights/1",
+      "kind": "scoped_preference",
+      "title": "구운 향에서 찾은 즐거움",
+      "text": "검증용 구운 쿠키에서 “구운 향이 좋았어요.”라고 남겼어요.",
+      "priority": 30,
+      "topicKey": "[\"[\\\"aroma.roasted\\\",null]\"]",
+      "status": "observed_in_experience",
+      "userId": "synthetic-palate-example",
+      "evidenceClass": "synthetic_fixture",
+      "evidenceSetHash": "35ee5a20b4ace6e652f036a855709667dc8f5ebfd55abe55cd63c166aea2bfae",
+      "observationRefs": [
+        "example-2:r1:g0:o3"
+      ],
+      "scope": {
+        "foodIds": [
+          "sample-cookie"
+        ],
+        "experienceIds": [
+          "example-2"
+        ],
+        "mealIds": [
+          "meal-2"
+        ],
+        "targets": [
+          "whole_dish"
+        ],
+        "phases": [
+          "unspecified"
+        ]
+      },
+      "coverage": {
+        "experiences": 1,
+        "meals": 1,
+        "observations": 1,
+        "independentSamples": null
+      },
+      "causalClaim": null,
+      "populationClaim": null,
+      "polarity": "positive",
+      "positiveRefs": [
+        "example-2:r1:g0:o3"
+      ],
+      "negativeRefs": [],
+      "allowedClaim": "기록한 음식과 조건에서 반복된 평가다. 먹어보지 않은 음식의 취향을 예측하지 않는다.",
+      "evidence": [
+        {
+          "observationId": "example-2:r1:g0:o3",
+          "foodId": "sample-cookie",
+          "foodName": "검증용 구운 쿠키",
+          "quote": "구운 향이 좋았어요.",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "kind": "attribute_liking",
+          "attribute": "aroma.roasted",
+          "value": "positive",
+          "confirmationStatus": "rule_extracted_statement"
+        }
+      ]
+    },
+    {
+      "id": "finding:f088d79ad1521f986857",
+      "version": "tba-personal-insights/1",
+      "kind": "scoped_preference",
+      "title": "고소함에서 찾은 즐거움",
+      "text": "검증용 견과 케이크에서 “고소한 맛이 좋았어요.”라고 남겼어요.",
+      "priority": 30,
+      "topicKey": "[\"[\\\"flavor.nutty_savory\\\",null]\"]",
+      "status": "observed_in_experience",
+      "userId": "synthetic-palate-example",
+      "evidenceClass": "synthetic_fixture",
+      "evidenceSetHash": "35ee5a20b4ace6e652f036a855709667dc8f5ebfd55abe55cd63c166aea2bfae",
+      "observationRefs": [
+        "example-1:r1:g0:o3"
+      ],
+      "scope": {
+        "foodIds": [
+          "sample-cake"
+        ],
+        "experienceIds": [
+          "example-1"
+        ],
+        "mealIds": [
+          "meal-1"
+        ],
+        "targets": [
+          "whole_dish"
+        ],
+        "phases": [
+          "unspecified"
+        ]
+      },
+      "coverage": {
+        "experiences": 1,
+        "meals": 1,
+        "observations": 1,
+        "independentSamples": null
+      },
+      "causalClaim": null,
+      "populationClaim": null,
+      "polarity": "positive",
+      "positiveRefs": [
+        "example-1:r1:g0:o3"
+      ],
+      "negativeRefs": [],
+      "allowedClaim": "기록한 음식과 조건에서 반복된 평가다. 먹어보지 않은 음식의 취향을 예측하지 않는다.",
+      "evidence": [
+        {
+          "observationId": "example-1:r1:g0:o3",
+          "foodId": "sample-cake",
+          "foodName": "검증용 견과 케이크",
+          "quote": "고소한 맛이 좋았어요.",
+          "target": "whole_dish",
+          "phase": "unspecified",
+          "kind": "attribute_liking",
+          "attribute": "flavor.nutty_savory",
+          "value": "positive",
+          "confirmationStatus": "rule_extracted_statement"
+        }
+      ]
+    }
+  ],
+  "narrative": {
+    "version": "tba-personal-narrative/1",
+    "status": "source_summary",
+    "source": "evidence_summary",
+    "evidenceSetHash": "35ee5a20b4ace6e652f036a855709667dc8f5ebfd55abe55cd63c166aea2bfae",
+    "paragraphs": [
+      {
+        "text": "검증용 견과 케이크, 검증용 구운 쿠키, 검증용 디저트에서는 “단맛이 좋았어요.”, 검증용 음료에서는 “단맛이 싫었어요.”라고 남겼어요.",
+        "findingIds": [
+          "finding:fc70cd5f5491bb947795"
+        ],
+        "quotes": [
+          {
+            "observationId": "example-1:r1:g0:o1",
+            "quote": "단맛이 좋았어요."
+          },
+          {
+            "observationId": "example-2:r1:g0:o1",
+            "quote": "단맛이 좋았어요."
+          },
+          {
+            "observationId": "example-3:r1:g0:o1",
+            "quote": "단맛이 좋았어요."
+          },
+          {
+            "observationId": "example-4:r1:g0:o1",
+            "quote": "단맛이 좋았어요."
+          },
+          {
+            "observationId": "example-5:r1:g0:o3",
+            "quote": "단맛이 싫었어요."
+          }
+        ]
+      },
+      {
+        "text": "검증용 구운 쿠키에서 “구운 향이 좋았어요.”라고 남겼어요.",
+        "findingIds": [
+          "finding:3ec475076a4a29aa3dc1"
+        ],
+        "quotes": [
+          {
+            "observationId": "example-2:r1:g0:o3",
+            "quote": "구운 향이 좋았어요."
+          }
+        ]
+      },
+      {
+        "text": "검증용 견과 케이크에서 “고소한 맛이 좋았어요.”라고 남겼어요.",
+        "findingIds": [
+          "finding:f088d79ad1521f986857"
+        ],
+        "quotes": [
+          {
+            "observationId": "example-1:r1:g0:o3",
+            "quote": "고소한 맛이 좋았어요."
+          }
+        ]
+      }
+    ],
+    "generation": {
+      "actualApiCalls": 0,
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "semanticValidation": "scoped_rule_output",
+      "model": null
+    }
+  },
+  "followUp": {
+    "optional": true,
+    "unresolvedRefs": [
+      "example-6:r1:g0:u0"
+    ],
+    "question": "“깔끔했어요.”에서 어떤 느낌이 특히 좋거나 아쉬웠나요?"
+  },
+  "unresolved": [
+    {
+      "unresolvedId": "example-6:r1:g0:u0",
+      "phrase": "깔끔했어요.",
+      "foodName": "검증용 디저트",
+      "unresolvedReason": "insufficient_semantic_information"
+    }
+  ],
+  "limits": {
+    "populationValidated": false,
+    "classificationProbability": null,
+    "groups": "out_of_scope",
+    "recommendations": "out_of_scope"
+  },
+  "execution": {
+    "inputClass": "synthetic_fixture",
+    "extractionRuns": [],
+    "actualApiCalls": 0
+  }
+}

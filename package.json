@@ -29,6 +29,8 @@
             "@radix-ui/react-toggle": "^1.1.2",
             "@radix-ui/react-toggle-group": "^1.1.2",
             "@radix-ui/react-tooltip": "^1.1.8",
+            "@remotion/cli": "^4.0.522",
+            "@remotion/player": "^4.0.522",
             "@supabase/supabase-js": "^2.100.1",
             "border-beam": "^1.2.0",
             "class-variance-authority": "^0.7.1",
@@ -46,6 +48,7 @@
             "react-hook-form": "^7.55.0",
             "react-resizable-panels": "^2.1.7",
             "recharts": "^2.15.2",
+            "remotion": "^4.0.522",
             "sonner": "^2.0.3",
             "tailwind-merge": "*",
             "vaul": "^1.1.2"
@@ -65,6 +68,8 @@
       "scripts": {
             "dev": "vite",
             "dev:web": "vite",
+            "remotion:preview": "remotion preview src/remotion/index.ts",
+            "remotion:render": "remotion render src/remotion/index.ts TasteBuddyIntro out/video.mp4",
             "dev:all": "open ios/TasteBuddy.xcodeproj && vite",
             "ios:open": "open ios/TasteBuddy.xcodeproj",
             "ios:generate": "cd ios && xcodegen generate",

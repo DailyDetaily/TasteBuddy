@@ -4,25 +4,21 @@ import SectionTitle from '../system/SectionTitle';
 import SelectionCard from '../system/SelectionCard';
 import StepBadge from '../system/StepBadge';
 import { cn } from '../ui/utils';
-import { TASTE_SURVEY_LIKERT_SCALE } from '../../constants/tasteSurveyConfig';
+import { TASTE_SURVEY_LIKERT_SCALE, TASTE_SURVEY_UNCERTAINTY_LABELS } from '../../constants/tasteSurveyConfig';
 import { TASTE_TOKENS } from '../../constants/designTokens';
-import type { TasteSurveyItem, TasteSurveyLikertValue } from '../../types/tasteSurvey';
+import type { TasteSurveyItem, TasteSurveyLikertValue, TasteSurveyUncertaintyReason } from '../../types/tasteSurvey';
 
 interface TasteSurveyQuestionCardProps {
   className?: string;
   currentIndex?: number;
   item: TasteSurveyItem;
   onSelectLikert: (value: TasteSurveyLikertValue) => void;
-  onSelectUncertain: () => void;
+  onSelectUncertain: (reason: TasteSurveyUncertaintyReason) => void;
   selectedValue: TasteSurveyLikertValue | null;
   total?: number;
   uncertain: boolean;
+  uncertaintyReason?: TasteSurveyUncertaintyReason;
 }
-
-const CONSTRUCT_HELPER_COPY: Record<TasteSurveyItem['construct'], string> = {
-  overload: '조금 더 강해졌을 때 쉽게 과하다고 느끼는지 확인해요.',
-  salience: '작은 차이가 빨리 또렷하게 느껴지는지 확인해요.',
-};
 
 export default function TasteSurveyQuestionCard({
   className,
@@ -33,6 +29,7 @@ export default function TasteSurveyQuestionCard({
   selectedValue,
   total,
   uncertain,
+  uncertaintyReason,
 }: TasteSurveyQuestionCardProps) {
   const taste = TASTE_TOKENS[item.tasteId];
   const isExploratory = Boolean(item.exploratoryMetadata);
@@ -70,7 +67,7 @@ export default function TasteSurveyQuestionCard({
           {item.prompt}
         </SectionTitle>
         <p className="text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
-          {CONSTRUCT_HELPER_COPY[item.construct]}
+          {item.helper}
         </p>
       </div>
 
@@ -93,29 +90,32 @@ export default function TasteSurveyQuestionCard({
         })}
       </div>
 
-      <button
+      {(Object.entries(TASTE_SURVEY_UNCERTAINTY_LABELS) as [TasteSurveyUncertaintyReason, string][])
+        .filter(([reason]) => reason !== 'cannot_isolate_taste' || item.tasteId === 'fat')
+        .map(([reason, label]) => {
+          const selected = uncertain && (uncertaintyReason ?? 'cannot_recall') === reason;
+          return <button
+        key={reason}
         type="button"
-        aria-pressed={uncertain}
+        aria-pressed={selected}
         className={cn(
           'flex min-h-[44px] w-full items-center justify-between gap-3 rounded-[20px] border border-dashed p-4 text-left transition-all active:scale-[0.99]',
-          uncertain
+          selected
             ? 'border-[var(--tb-color-text-secondary)] bg-[var(--tb-color-surface-muted)]'
             : 'border-[var(--tb-color-border-strong)] bg-[var(--tb-color-surface-base)]',
         )}
-        onClick={onSelectUncertain}
+        onClick={() => onSelectUncertain(reason)}
       >
         <span className="flex flex-col gap-1">
           <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
-            {TASTE_SURVEY_LIKERT_SCALE.uncertainLabel}
+            {label}
           </span>
           <span className="text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">
-            최근 기준으로 떠올리기 어렵다면 따로 표시해요.
+            떠올리기 어렵다면 이 항목을 선택해 주세요.
           </span>
         </span>
-        <span className="text-[11px] font-semibold text-[var(--tb-color-text-faint)]">
-          별도 저장
-        </span>
-      </button>
+      </button>;
+      })}
     </div>
   );
 }

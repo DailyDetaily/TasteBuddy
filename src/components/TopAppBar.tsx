@@ -89,6 +89,7 @@ export default function TopAppBar({
           {showBack ? (
             <button
               onClick={onBack}
+              aria-label="뒤로 가기"
               className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors"
               style={{
                 width: APP_SHELL_ICON_BUTTON_SIZE,

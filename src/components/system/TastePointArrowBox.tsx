@@ -27,7 +27,7 @@ const TASTE_POINT_ARROW_BOX_DIRECTION_PATHS: Record<TastePointArrowBoxTrend, str
 
 interface TastePointArrowBoxProps {
   className?: string;
-  parentTaste: string;
+  parentTaste?: string;
   size?: TastePointArrowBoxSize;
   trend: TastePointArrowBoxTrend;
 }
@@ -39,7 +39,7 @@ export default function TastePointArrowBox({
   trend,
 }: TastePointArrowBoxProps) {
   const boxSize = TASTE_POINT_ARROW_BOX_SIZE_TOKENS[size];
-  const fillColor = getTasteColor(parentTaste);
+  const fillColor = parentTaste ? getTasteColor(parentTaste) : 'var(--tb-color-text-hint)';
 
   return (
     <div

@@ -3,10 +3,12 @@ import type { RestaurantReadyGuidance } from '../constants/quickTasteCalibration
 import type { TasteMeasurementSnapshot } from '../constants/tasteMeasurementData';
 
 export type TasteSurveyInstrumentId = 'taste-buddy-initial-six-taste-survey';
-export type TasteSurveyVersion = '1.0.0';
+export type TasteSurveyVersion = '2.0.0';
 export type TasteSurveyRecallWindow = 'recent-3-months';
-export type TasteSurveyConstruct = 'salience' | 'overload';
-export type TasteSurveyLikertValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type TasteSurveyConstruct = 'recalled_intensity';
+/** Ordered response categories, not measured thresholds or equal sensory intervals. */
+export type TasteSurveyLikertValue = 0 | 1 | 2 | 3 | 4;
+export type TasteSurveyUncertaintyReason = 'never_tried' | 'cannot_recall' | 'cannot_isolate_taste';
 export type TasteSurveyAnchorStability = 'high' | 'medium' | 'low';
 export type TasteSurveySexContext =
   | 'female'
@@ -27,9 +29,12 @@ export interface TasteSurveyInstrumentMetadata {
 }
 
 export interface TasteSurveyAnchor {
+  id: string;
+  version: string;
   description: string;
   label: string;
   stability: TasteSurveyAnchorStability;
+  conditions: readonly string[];
 }
 
 export interface TasteSurveyExploratoryMetadata {
@@ -44,6 +49,7 @@ export interface TasteSurveyItem {
   exploratoryMetadata?: TasteSurveyExploratoryMetadata;
   id: string;
   prompt: string;
+  helper: string;
   recallWindow: TasteSurveyRecallWindow;
   reverseKeyed: false;
   tasteId: TasteId;
@@ -53,6 +59,7 @@ export interface TasteSurveyResponse {
   itemId: TasteSurveyItem['id'];
   selectedValue: TasteSurveyLikertValue | null;
   uncertain: boolean;
+  uncertaintyReason?: TasteSurveyUncertaintyReason;
 }
 
 export interface TasteSurveyRespondentContext {
@@ -63,19 +70,32 @@ export interface TasteSurveyRespondentContext {
 
 export interface TasteSurveyLikertScaleConfig {
   labels: Record<TasteSurveyLikertValue, string>;
-  max: 7;
-  min: 1;
-  neutralValue: 4;
+  max: 4;
+  min: 0;
+  midpointValue: 2;
   uncertainLabel: string;
 }
 
 export interface TasteSurveyScoringConfig {
   constructs: readonly TasteSurveyConstruct[];
-  outputSnapshotSource: 'broad-starter';
+  outputSnapshotSource: 'recalled-intensity';
   recallWindow: TasteSurveyRecallWindow;
 }
 
 export interface TasteSurveyCompatibleResult {
   snapshot: TasteMeasurementSnapshot;
   starterGuidance: RestaurantReadyGuidance;
+}
+
+/** The instrument actually shown; future catalog edits must not rewrite old evidence. */
+export interface TasteSurveySubmission {
+  schemaVersion: 2;
+  source: 'reference-food-recall';
+  recordedAt: string;
+  instrument: TasteSurveyInstrumentMetadata;
+  recallWindow: TasteSurveyRecallWindow;
+  scale: TasteSurveyLikertScaleConfig;
+  items: readonly TasteSurveyItem[];
+  responses: readonly TasteSurveyResponse[];
+  respondentContext: TasteSurveyRespondentContext;
 }

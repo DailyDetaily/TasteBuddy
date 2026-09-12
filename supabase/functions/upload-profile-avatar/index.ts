@@ -1,3 +1,4 @@
+import { isDirectAppSessionToken } from '../_shared/direct-app-session.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { withAccountMediaUpload } from '../_shared/account-media.ts';
 
@@ -294,6 +295,9 @@ Deno.serve(async (request) => {
       },
     },
   });
+  if (!isDirectAppSessionToken(accessToken)) {
+    return jsonResponse({ error: 'Direct app session required' }, { status: 401 });
+  }
   const { data: userData, error: userError } = await userClient.auth.getUser(accessToken);
 
   if (userError || !userData.user) {

@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct OnboardingView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let onComplete: () -> Void
     @State private var selection = 0
 
@@ -13,16 +14,19 @@ struct OnboardingView: View {
         ),
         OnboardingStep(
             imageName: "onboarding_render_2",
+            motion: .analysis,
             title: "가볍게 시작해\n현재 프로필을 만듭니다",
             description: "복잡한 설명보다, 지금의 미각 경향을 빠르게 정리해\n첫 예약부터 활용할 수 있는 프로필을 만듭니다."
         ),
         OnboardingStep(
             imageName: "onboarding_render_3",
+            motion: .rotatingLayers,
             title: "프로필은 식당과 식사 맥락에 맞춰\n실용적으로 전달됩니다",
             description: "당신의 프로필은 매장과 주방이 의도를 해치지 않으면서도\n더 잘 맞는 경험을 준비할 수 있도록 정리됩니다."
         ),
         OnboardingStep(
             imageName: "onboarding_render_4",
+            motion: .feedbackRings,
             title: "프로필은 식사와 피드백을 통해\n조금씩 더 정교해집니다",
             description: "예약, 식후 피드백, 다시 찾은 선택이 쌓일수록\n다음 다이닝은 더 자연스럽고 섬세하게 맞춰집니다."
         ),
@@ -36,7 +40,7 @@ struct OnboardingView: View {
 
                 TabView(selection: $selection) {
                     ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
-                        OnboardingPage(step: step)
+                        OnboardingPage(step: step, isActive: selection == index)
                             .tag(index)
                     }
                 }
@@ -57,7 +61,7 @@ struct OnboardingView: View {
         if selection == steps.count - 1 {
             onComplete()
         } else {
-            withAnimation(.easeInOut(duration: 0.28)) {
+            withAnimation(TasteBloomMotion.animation(.content, reduceMotion: reduceMotion)) {
                 selection += 1
             }
         }
@@ -66,12 +70,14 @@ struct OnboardingView: View {
 
 private struct OnboardingStep {
     let imageName: String
+    var motion: TasteMotionStyle? = nil
     let title: String
     let description: String
 }
 
 private struct OnboardingPage: View {
     let step: OnboardingStep
+    let isActive: Bool
 
     var body: some View {
         GeometryReader { geometry in
@@ -79,7 +85,9 @@ private struct OnboardingPage: View {
                 Spacer(minLength: 0)
 
                 Group {
-                    if let image = bundledImage {
+                    if let motion = step.motion {
+                        TasteMotionView(style: motion, isActive: isActive)
+                    } else if let image = bundledImage {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFit()

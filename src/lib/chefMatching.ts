@@ -242,6 +242,7 @@ export function buildPersonalizedChefMatches({
   measurementSnapshot,
   resolveChefImage,
 }: BuildPersonalizedChefMatchesOptions): PersonalizedChefMatch[] {
+  if (measurementSnapshot.source === 'recalled-intensity') return [];
   const rankedAxes = getRankedTasteAxes(measurementSnapshot);
   const selectedMatches: Array<PersonalizedDishMatch & { profileRank: number }> = [];
   const axisCandidateEntries = rankedAxes.map((rankedAxis) => ({

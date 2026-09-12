@@ -11,11 +11,13 @@ struct DesignSystemPreviewView: View {
                 TastePalettePreviewSection()
                 CoreControlsPreviewSection()
                 SystemCoreComponentsPreviewSection()
+                NativeRegistryPreviewSection()
+                NativeInputRecipesPreviewSection()
+                StateRecipesPreviewSection()
                 FullInventoryPreviewSection(profile: profile)
                 GenericPrimitivePreviewSection()
                 FileOnlyPreviewSection()
                 ProductCardsPreviewSection(profile: profile)
-                StateRecipesPreviewSection()
             }
             .padding(TBSpacing.page)
         }
@@ -37,11 +39,48 @@ struct DesignSystemPreviewView: View {
     }
 }
 
+/// Isolated state fixture for simulator checks; it does not mutate product data.
+struct NativeDesignStatesPreview: View {
+    @State private var enlargedText = false
+    @State private var correction = "주소"
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: TBSpacing.section) {
+                Toggle("글자 확대 확인", isOn: $enlargedText)
+                    .font(TBFont.semibold(14))
+                    .tint(TBColor.textPrimary)
+                VStack(alignment: .leading, spacing: TBSpacing.section) {
+                    SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("식당 정보 수정 · 선택 레이아웃").tbTextStyle(.caption)
+                            TBFlowLayout(spacing: 8) {
+                                ForEach(["주소", "전화번호", "영업시간", "인스타그램"], id: \.self) { title in
+                                    TBSelectableChip(
+                                        title: title,
+                                        isSelected: correction == title,
+                                        variant: .correction
+                                    ) { correction = title }
+                                }
+                            }
+                        }
+                    }
+                    NativeInputRecipesPreviewSection()
+                    StateRecipesPreviewSection()
+                }
+                .dynamicTypeSize(enlargedText ? .accessibility2 : .large)
+            }
+            .padding(TBSpacing.page)
+        }
+        .background(TBColor.page.ignoresSafeArea())
+    }
+}
+
 private struct FoundationPreviewSection: View {
     var body: some View {
         TBPageSection(
             title: "Foundation",
-            subtitle: "웹 source of truth의 neutral surface, spacing, radius, type scale을 SwiftUI에서 같은 이름으로 사용합니다."
+            subtitle: "제품 기준을 보존한 네이티브 토큰과 글자 역할입니다. 현재 SwiftUI 수치는 ios/DESIGN_SYSTEM.md에서 확인합니다."
         ) {
             VStack(alignment: .leading, spacing: 12) {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -55,20 +94,19 @@ private struct FoundationPreviewSection: View {
 
                 SectionCard(background: TBColor.elevatedSurface) {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Typography clamp")
+                        Text("Pretendard · 글자 역할")
                             .font(TBFont.semibold(14))
                             .foregroundStyle(TBColor.textPrimary)
 
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("18px max for product UI")
-                                .font(TBFont.bold(28))
-                                .foregroundStyle(TBColor.textPrimary)
-                            Text("Body copy stays calm at 13px with line spacing.")
-                                .font(TBFont.regular(13))
-                                .foregroundStyle(TBColor.textBody)
-                            Text("Caption and metadata use 11-12px, not oversized display type.")
-                                .font(TBFont.medium(11))
-                                .foregroundStyle(TBColor.textHint)
+                            Text("다음 다이닝을 위한 해석")
+                                .tbTextStyle(.sectionTitle)
+                            Text("본문은 차분하게 읽히도록 크기와 행간을 함께 사용합니다.")
+                                .tbTextStyle(.body)
+                            Text("캡션은 짧은 보조 정보를 전달합니다.")
+                                .tbTextStyle(.caption)
+                            Text("자세히 보기")
+                                .tbTextStyle(.detailAction)
                         }
                     }
                 }
@@ -361,13 +399,122 @@ private struct SystemCoreComponentsPreviewSection: View {
     }
 }
 
+private struct NativeRegistryPreviewSection: View {
+    var body: some View {
+        TBPageSection(
+            title: "네이티브 컴포넌트 등록부",
+            subtitle: "Swift 타입과 파일, 실제 제품 사용 여부를 구분합니다. 제품용 부품부터 선택하고 시각 참고 견본을 그대로 화면에 넣지 않습니다."
+        ) {
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(NativeComponentUsage.allCases, id: \.self) { usage in
+                    let entries = NativeProductComponentCatalog.entries.filter { $0.usage == usage }
+                    SectionCard {
+                        DisclosureGroup("\(usage.rawValue) · \(entries.count)") {
+                            VStack(alignment: .leading, spacing: 16) {
+                                ForEach(entries) { entry in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(entry.swiftType)
+                                            .font(TBFont.semibold(13))
+                                            .foregroundStyle(TBColor.textPrimary)
+                                        Text("TasteBuddy/\(entry.sourceFile)")
+                                            .font(TBFont.regular(11))
+                                            .foregroundStyle(TBColor.textBody)
+                                            .textSelection(.enabled)
+                                        Text(entry.note)
+                                            .font(TBFont.regular(12))
+                                            .foregroundStyle(TBColor.textBody)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                            .padding(.top, 12)
+                        }
+                        .font(TBFont.semibold(13))
+                        .tint(TBColor.textPrimary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct NativeInputRecipesPreviewSection: View {
+    @State private var restaurant = ""
+    @State private var email = "taste@"
+    @State private var selected = true
+
+    var body: some View {
+        TBPageSection(
+            title: "네이티브 입력과 선택",
+            subtitle: "실제 입력·포커스·오류·비활성·선택 상태를 확인하는 제품 컴포넌트입니다."
+        ) {
+            VStack(spacing: 12) {
+                SectionCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        TBTextInput(
+                            text: $restaurant,
+                            placeholder: "예: 정식당",
+                            label: "식당명",
+                            helperText: "직접 입력하고 키보드와 포커스 표시를 확인해 보세요."
+                        )
+                        TBTextInput(
+                            text: $email,
+                            placeholder: "이메일을 입력해주세요",
+                            label: "이메일 · 오류 예시",
+                            errorText: "이메일 주소를 확인해주세요.",
+                            variant: .auth,
+                            keyboardType: .emailAddress,
+                            textContentType: .emailAddress
+                        )
+                        TBTextInput(
+                            text: .constant("taste@example.com"),
+                            placeholder: "이메일을 입력해주세요",
+                            label: "이메일 · 전송 중",
+                            variant: .auth,
+                            isEnabled: false
+                        )
+                        TBWrapLayout(spacing: 8) {
+                            TBSelectableChip(title: "디저트", isSelected: selected) { selected.toggle() }
+                            TBSelectableChip(title: "주소", variant: .correction) {}
+                            TBSelectableChip(title: "선택 불가", isEnabled: false) {}
+                        }
+                    }
+                }
+                SectionCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("미각 라벨과 넘치는 태그").tbTextStyle(.caption)
+                        TBWrapLayout(spacing: 6) {
+                            ForEach(TasteAxis.allCases) { axis in
+                                TasteChip(title: axis.label, tone: .taste, colorAxis: axis, size: .sm)
+                            }
+                        }
+                        TBOverflowTagRow(items: TasteAxis.allCases) { axis in
+                            TasteChip(title: axis.label, tone: .neutral, size: .sm)
+                        } overflow: { count in
+                            TasteChip(title: "+\(count)", tone: .neutral, size: .sm)
+                                .accessibilityLabel("\(count)개 태그 더 있음")
+                        }
+                        .frame(maxWidth: 220)
+                        PrimaryButton(
+                            title: "미각 측정 이어가기",
+                            size: .compact,
+                            appearance: .tasteTint(.sweet),
+                            action: {}
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 private struct FullInventoryPreviewSection: View {
     let profile: TasteProfile
 
     var body: some View {
         TBPageSection(
-            title: "Full Design-System Inventory",
-            subtitle: "React /design-system architecture group 전체를 native inventory로 추적합니다."
+            title: "웹 기준 이식 인벤토리",
+            subtitle: "기존 React 카탈로그의 이식 이력입니다. 아래 수치는 현재 제품 사용 여부나 상태 검증 완료를 뜻하지 않습니다."
         ) {
             VStack(alignment: .leading, spacing: 12) {
                 LazyVGrid(
@@ -445,8 +592,8 @@ private struct FullInventoryPreviewSection: View {
 private struct GenericPrimitivePreviewSection: View {
     var body: some View {
         TBPageSection(
-            title: "Generic UI Primitives",
-            subtitle: "React ui/* primitive도 SwiftUI 대응 컴포넌트로 유지하되, 제품 화면에서는 tb-* system 컴포넌트를 우선합니다."
+            title: "시각 참고 · Generic UI Primitives",
+            subtitle: "정적 웹 primitive 견본입니다. 입력과 액션의 실제 상태는 위의 네이티브 제품 컴포넌트에서 확인합니다."
         ) {
             VStack(alignment: .leading, spacing: 12) {
                 TBUICard(title: "ui/card.tsx", description: "generic card primitive") {
@@ -510,8 +657,8 @@ private struct GenericPrimitivePreviewSection: View {
 private struct FileOnlyPreviewSection: View {
     var body: some View {
         TBPageSection(
-            title: "File-Only Preview Components",
-            subtitle: "filePreviewRegistry.tsx에 등록된 단일 파일 프리뷰들도 native preview surface에 포함합니다."
+            title: "이식 참고 · File-Only Components",
+            subtitle: "기존 파일 프리뷰 이력입니다. 예약과 Tastick 관련 견본은 현재 네이티브 제품 범위에 포함되지 않습니다."
         ) {
             VStack(alignment: .leading, spacing: 12) {
                 TasteMeasurementChecklistPanel()
@@ -634,32 +781,70 @@ private struct ProductCardsPreviewSection: View {
 }
 
 private struct StateRecipesPreviewSection: View {
+    @State private var didRetry = false
+    @State private var toastTitle = ""
+    @State private var toastResult = ""
+    @StateObject private var toast = TBToastPresenter()
+
     var body: some View {
         TBPageSection(
-            title: "State Recipes",
-            subtitle: "loading, empty, error도 앱 톤을 깨지 않고 다음 행동을 설명합니다."
+            title: "네이티브 상태 레시피",
+            subtitle: "실제 로딩·재시도·빈 상태·토스트를 사용합니다. 아래 동작은 카탈로그 안에서만 실행됩니다."
         ) {
-            VStack(spacing: 10) {
-                PreviewStateCard(
-                    icon: "clock",
-                    title: "프로필을 불러오는 중",
-                    message: "staging 세션을 복원하는 동안 기존 식사 기록은 그대로 보존합니다.",
-                    tone: .neutral
-                )
-                PreviewStateCard(
-                    icon: "tray",
-                    title: "아직 식사 피드백이 없습니다",
-                    message: "첫 기록을 남기면 다음 다이닝의 조절점이 더 구체화됩니다.",
-                    tone: .warning
-                )
-                PreviewStateCard(
-                    icon: "exclamationmark.triangle",
-                    title: "동기화가 잠시 멈췄습니다",
-                    message: "중복 mutation 없이 다시 시도할 수 있도록 로컬 변경을 보관합니다.",
-                    tone: .warning
-                )
+            VStack(spacing: 12) {
+                SectionCard {
+                    TBFlowLoadingState(message: "미각 설문을 준비하고 있어요")
+                        .frame(height: 112)
+                }
+                SectionCard {
+                    if didRetry {
+                        PrimaryButton(title: "재시도 동작 확인 · 예시 다시 보기") { didRetry = false }
+                    } else {
+                        TBFlowRetryState(
+                            title: "미각 설문을 불러오지 못했어요",
+                            message: "잠시 후 다시 시도해 주세요.",
+                            retry: { didRetry = true }
+                        )
+                    }
+                }
+                SectionCard {
+                    EmptyState(
+                        title: "아직 식사 피드백이 없습니다",
+                        description: "첫 기록을 남기면 다음 다이닝의 조절점이 더 구체화됩니다.",
+                        icon: .utensils
+                    )
+                }
+                SectionCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("토스트 · 복사와 되돌리기").tbTextStyle(.caption)
+                        PrimaryButton(title: "복사 완료 · 3.5초", size: .compact) {
+                            toastTitle = "프로필 URL을 복사했어요"
+                            toastResult = ""
+                            toast.present(policy: .copyConfirmation)
+                        }
+                        PrimaryButton(title: "삭제 후 되돌리기 · 3.5초", size: .compact) {
+                            toastTitle = "메뉴를 삭제했어요"
+                            toastResult = ""
+                            toast.present(policy: .undo) { toastResult = "되돌리기 표시가 종료됐어요." }
+                        }
+                        if toast.isPresented {
+                            ToastSurface(
+                                title: toastTitle,
+                                actionTitle: toastTitle == "메뉴를 삭제했어요" ? "되돌리기" : nil,
+                                action: {
+                                    toast.cancel()
+                                    toastResult = "메뉴를 되돌렸어요."
+                                }
+                            )
+                        }
+                        if !toastResult.isEmpty {
+                            Text(toastResult).tbTextStyle(.caption)
+                        }
+                    }
+                }
             }
         }
+        .onDisappear { toast.cancel() }
     }
 }
 
@@ -798,39 +983,6 @@ private struct TastePaletteCard: View {
         .overlay {
             RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
                 .stroke(axis.tintSoftBorderColor, lineWidth: 1)
-        }
-    }
-}
-
-private struct PreviewStateCard: View {
-    let icon: String
-    let title: String
-    let message: String
-    let tone: StatusRow.Tone
-
-    var body: some View {
-        SectionCard(background: tone.background.opacity(0.65)) {
-            HStack(alignment: .top, spacing: 12) {
-                LucideIcon(
-                    systemName: icon,
-                    size: TBIcon.Size.small,
-                    strokeWidth: TBIcon.Stroke.regular
-                )
-                    .frame(width: 34, height: 34)
-                    .foregroundStyle(tone.foreground)
-                    .background(TBColor.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: TBRadius.icon, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(title)
-                        .font(TBFont.semibold(14))
-                        .foregroundStyle(TBColor.textPrimary)
-                    Text(message)
-                        .font(TBFont.regular(12))
-                        .foregroundStyle(TBColor.textBody)
-                        .lineSpacing(3)
-                }
-            }
         }
     }
 }

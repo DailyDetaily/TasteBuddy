@@ -66,6 +66,7 @@ enum HomeJournalBucketEngine {
 }
 
 struct HomeView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var appModel: AppModel
     let recommendationContentState: HomeRecommendationContentState
     let presentationMode: HomePresentationMode
@@ -81,6 +82,9 @@ struct HomeView: View {
     @State private var recommendationMode: RecommendationMode = .buddy
     @State private var isRecommendationEditorOpen = false
     @State private var showsSearch = false
+    @State private var showsQuestionsSheet = false
+    @State private var pendingPersonalTasteQuestion: PersonalTasteQuestionResponseContext?
+    @StateObject private var personalTasteQuestionErrorToast = TBToastPresenter()
 
     init(
         recommendationContentState: HomeRecommendationContentState = .populated,
@@ -152,121 +156,131 @@ struct HomeView: View {
                     .zIndex(1)
                 }
             }
-            .animation(.easeInOut(duration: 0.18), value: showsSearch)
+            .animation(TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion), value: showsSearch)
             .navigationTitle("홈")
             .tbInlineNavigationTitle()
             .tbPageBackground()
             .toolbar(.hidden, for: .navigationBar)
         }
         .ignoresSafeArea(.container, edges: systemTopChrome == nil ? [] : .top)
+        .sheet(isPresented: $showsQuestionsSheet) {
+            PersonalTasteQuestionsView()
+        }
+        .onAppear {
+            #if DEBUG || targetEnvironment(simulator)
+            if ProcessInfo.processInfo.arguments.contains("--question-list-qa") {
+                showsQuestionsSheet = true
+            }
+            #endif
+        }
+        .fullScreenCover(item: $pendingPersonalTasteQuestion) { context in
+            personalTasteQuestionFeedback(context)
+        }
+        .overlay(alignment: .bottom) {
+            if personalTasteQuestionErrorToast.isPresented {
+                ToastSurface(
+                    title: "연결된 기록이 없어 저장하지 못했어요",
+                    icon: .info,
+                    tone: .warning
+                )
+                .padding(.horizontal, TBSpacing.page)
+                .padding(.bottom, TBSpacing.mainTabContentBottom)
+                .transition(TasteBloomMotion.reveal(reduceMotion: reduceMotion))
+                .zIndex(10)
+            }
+        }
+        .animation(
+            TasteBloomMotion.animation(.feedback, reduceMotion: reduceMotion),
+            value: personalTasteQuestionErrorToast.isPresented
+        )
+        .onDisappear { personalTasteQuestionErrorToast.cancel() }
+        .modifier(PersonalTasteAnswerToast())
     }
 
     @ViewBuilder
     private var personalJournalContent: some View {
-        let insightSections = HomePeriodInsightEngine.sections(
-            for: appModel.diningEntries
-        )
-
-        HomeSummaryRail(
-            metrics: HomeSummaryEngine.metrics(for: appModel.diningEntries),
-            onSelect: summarySelectionHandler
-        )
-
-        if appModel.diningEntries.isEmpty {
-            TBPageSection(title: "최근 기록") {
-                HomeJournalEmptyState()
+        HomeSensorySummarySection(
+            snapshot: appModel.sensoryAnalysis,
+            isUpdating: appModel.sensoryAnalysisIsUpdating,
+            error: appModel.sensoryAnalysisError,
+            onOpenAnalysis: onOpenTasteAnalysis,
+            onOpenQuestions: { showsQuestionsSheet = true },
+            onStartNewDining: { selection in
+                pendingPersonalTasteQuestion = appModel.personalTasteQuestionResponseContext(
+                    for: selection
+                )
+            },
+            onOpenInsight: { kind in
+                onOpenRoute?(.homeInsight(kind))
             }
-        } else {
-            ForEach(insightSections) { section in
-                HomePeriodInsightSection(
-                    section: section,
-                    onSelect: periodInsightSelectionHandler
+        )
+
+        HomeArchiveMetricsSection(
+            sections: HomeArchiveMetricsEngine.sections(
+                entries: appModel.diningEntries,
+                snapshot: appModel.sensoryAnalysis
+            )
+        )
+
+        TBPageSection(title: "최근 기록") {
+            if appModel.diningEntries.isEmpty {
+                HomeJournalEmptyState()
+            } else {
+                let entries = appModel.diningEntries.sorted { $0.date > $1.date }
+                let complete = entries.filter(\.hasCompletedTasteFeedback).count
+                HomePeriodInsightCard(
+                    data: HomePeriodInsightCardData(
+                        kind: .recordFlow,
+                        title: "\(entries.count)개의 미식 기록",
+                        detail: "맛 피드백 완료 \(complete)개 · 최근 메뉴 \(entries.first?.menu ?? "")",
+                        supportingText: nil,
+                        stats: [],
+                        chartValues: [],
+                        accentAxis: .umami,
+                        state: .populated
+                    ),
+                    onTap: onOpenJournal
                 )
             }
         }
     }
 
-    @ViewBuilder
     private var socialArchiveContent: some View {
-        if appModel.profile != nil {
-            HomeRecommendationSection(
-                isEditorOpen: $isRecommendationEditorOpen,
-                mode: $recommendationMode,
-                contentState: recommendationContentState,
-                viewerProfile: appModel.profile ?? .sample,
-                onOpenRoute: onOpenRoute
-            )
+        personalJournalContent
+    }
 
-            TBPageSection(title: "팔로잉 디시 카드", titleSize: .medium) {
-                VStack(spacing: 12) {
-                    switch recommendationContentState {
-                    case .loading:
-                        ForEach(0..<3, id: \.self) { _ in
-                            NativeDishFeedbackCardSkeleton()
-                        }
-                    case .empty:
-                        EmptyState(
-                            title: "아직 팔로잉 디시 카드가 없어요",
-                            description: "버디를 팔로우하거나 다이닝 피드백을 남기면 같은 구조의 디시 카드가 이곳에 쌓입니다.",
-                            icon: .messageCircle
-                        )
-                    case .failed(let message):
-                        EmptyState(
-                            title: "디시 카드를 불러오지 못했어요",
-                            description: message,
-                            icon: .sparkles
-                        )
-                    case .populated, .fallbackBuddy:
-                        ForEach(TasteBuddyNativeContent.followingDishFeedbackItems) { item in
-                            let displayItem = appModel
-                                .dishFeedbackItemWithCurrentComments(item)
-                            NativeDishFeedbackCard(
-                                item: displayItem,
-                                absoluteDateLabel: "2026년 6월 5일",
-                                relativeDateLabel: "오늘",
-                                showsOptions: false,
-                                noteTrailingPadding: TBSpacing.x20,
-                                onDetailTap: {
-                                    onOpenRoute?(.comments(id: item.id))
-                                },
-                                onCommentsTap: {
-                                    onOpenRoute?(.comments(id: item.id))
-                                }
-                            )
-                        }
-                    }
+    @ViewBuilder
+    private func personalTasteQuestionFeedback(
+        _ context: PersonalTasteQuestionResponseContext
+    ) -> some View {
+        if context.selection.intent == "clarification",
+           let sourceEntryID = context.sourceEntryID,
+           let sourceEntry = appModel.diningEntry(id: sourceEntryID) {
+            DiningFeedbackSheet(entry: sourceEntry, startMode: .details) { entry in
+                savePersonalTasteQuestionResponse(entry, context: context)
+            }
+        } else if context.selection.intent == "exploration" {
+            DiningFeedbackSheet(startMode: .menu) { entry in
+                savePersonalTasteQuestionResponse(entry, context: context)
+            }
+        } else {
+            Color.clear
+                .onAppear {
+                    appModel.refreshSensoryAnalysis()
+                    pendingPersonalTasteQuestion = nil
                 }
-            }
         }
     }
 
-    private var summarySelectionHandler: ((HomeSummaryMetricKind) -> Void)? {
-        guard onOpenJournal != nil || onOpenTasteAnalysis != nil else {
-            return nil
-        }
-
-        return { kind in
-            switch kind {
-            case .tasteDiscovery, .tasteChange:
-                onOpenTasteAnalysis?()
-            case .record, .frequentMenu, .regularRestaurant, .breadth:
-                onOpenJournal?()
-            }
-        }
-    }
-
-    private var periodInsightSelectionHandler: ((HomePeriodInsightKind) -> Void)? {
-        guard onOpenJournal != nil || onOpenTasteAnalysis != nil else {
-            return nil
-        }
-
-        return { kind in
-            switch kind {
-            case .tasteClue, .tasteChange:
-                onOpenTasteAnalysis?()
-            case .recordFlow, .newExperiences, .repeatPatterns, .experienceBreadth:
-                onOpenJournal?()
-            }
+    private func savePersonalTasteQuestionResponse(
+        _ entry: DiningEntry,
+        context: PersonalTasteQuestionResponseContext
+    ) {
+        if case .sourceUnavailable = appModel.savePersonalTasteQuestionResponse(
+            entry,
+            context: context
+        ) {
+            personalTasteQuestionErrorToast.present(policy: .copyConfirmation)
         }
     }
 
@@ -412,67 +426,80 @@ struct HomeSearchSheet: View {
             onSubmit: submitSearch,
             onClose: closeSearch
         ) {
-            VStack(alignment: .leading, spacing: TBSpacing.section) {
+            ZStack(alignment: .topLeading) {
                 if trimmedQuery.isEmpty {
                     searchSuggestions
+                        .transition(.opacity)
                 } else if filteredSections.isEmpty {
                     if hasRemotePhaseMessage {
                         remoteStatusRows
+                            .transition(.opacity)
                     } else {
                         EmptyState(
                             title: "아직 맞는 결과를 찾지 못했어요",
                             description: emptyStateDescription,
                             icon: .search
                         )
+                        .transition(.opacity)
                     }
                 } else {
-                    HStack {
-                        Text("총 \(resultCount)개 결과")
-                            .font(TBFont.semibold(13))
-                            .foregroundStyle(TBColor.textPrimary)
-                        Spacer()
-                        Text(resultSummaryLabel)
-                            .font(TBFont.medium(11))
-                            .foregroundStyle(TBColor.textHint)
-                    }
-
-                    ForEach(filteredSections) { section in
-                        VStack(alignment: .leading, spacing: TBSpacing.card) {
-                            VStack(alignment: .leading, spacing: TBSpacing.x4) {
-                                SearchSuggestionTitle(section.title)
-                                Text(section.subtitle)
-                                    .font(TBFont.regular(12))
-                                    .foregroundStyle(TBColor.textBody)
-                                    .lineSpacing(3)
-                            }
-
-                            VStack(spacing: 10) {
-                                ForEach(section.items) { item in
-                                    SearchResultRow(
-                                        item: item,
-                                        isRecorded: recordedResultIDs.contains(item.id),
-                                        isBookmarked: item.bookmarkRestaurantID.map {
-                                            appModel.isRestaurantSaved(id: $0)
-                                        } ?? false,
-                                        onSelectResult: openResult,
-                                        onRecordResult: recordResult,
-                                        onBookmarkResult: toggleBookmark
-                                    )
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-
-                    remoteStatusRows
+                    searchResults
+                        .transition(.opacity)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .tasteBloomMotion(.content, value: trimmedQuery.isEmpty)
+            .tasteBloomMotion(.content, value: filteredSections.isEmpty)
         }
         .sheet(item: $bookmarkTarget) { restaurant in
             RestaurantBookmarkNativeSheet(restaurant: restaurant)
         }
         .task(id: trimmedQuery) {
             await refreshRemoteSearch(for: trimmedQuery)
+        }
+    }
+
+    private var searchResults: some View {
+        VStack(alignment: .leading, spacing: TBSpacing.section) {
+            HStack {
+                Text("총 \(resultCount)개 결과")
+                    .font(TBFont.semibold(13))
+                    .foregroundStyle(TBColor.textPrimary)
+                Spacer()
+                Text(resultSummaryLabel)
+                    .font(TBFont.medium(11))
+                    .foregroundStyle(TBColor.textHint)
+            }
+
+            ForEach(filteredSections) { section in
+                VStack(alignment: .leading, spacing: TBSpacing.card) {
+                    VStack(alignment: .leading, spacing: TBSpacing.x4) {
+                        SearchSuggestionTitle(section.title)
+                        Text(section.subtitle)
+                            .font(TBFont.regular(12))
+                            .foregroundStyle(TBColor.textBody)
+                            .lineSpacing(3)
+                    }
+
+                    VStack(spacing: 10) {
+                        ForEach(section.items) { item in
+                            SearchResultRow(
+                                item: item,
+                                isRecorded: recordedResultIDs.contains(item.id),
+                                isBookmarked: item.bookmarkRestaurantID.map {
+                                    appModel.isRestaurantSaved(id: $0)
+                                } ?? false,
+                                onSelectResult: openResult,
+                                onRecordResult: recordResult,
+                                onBookmarkResult: toggleBookmark
+                            )
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            remoteStatusRows
         }
     }
 
@@ -1003,85 +1030,9 @@ private struct SearchSuggestionWrap<Content: View>: View {
     }
 
     var body: some View {
-        SearchSuggestionFlexLayout(spacing: SearchSuggestionMetrics.chipGap) {
+        TBWrapLayout(spacing: SearchSuggestionMetrics.chipGap) {
             content
         }
-    }
-}
-
-private struct SearchSuggestionFlexLayout: Layout {
-    let spacing: CGFloat
-
-    func sizeThatFits(
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) -> CGSize {
-        let availableWidth = proposal.width ?? .greatestFiniteMagnitude
-        let result = layoutRows(in: availableWidth, subviews: subviews)
-
-        return CGSize(
-            width: proposal.width ?? result.width,
-            height: result.height
-        )
-    }
-
-    func placeSubviews(
-        in bounds: CGRect,
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > bounds.minX
-                && x + size.width > bounds.maxX
-
-            if shouldWrap {
-                x = bounds.minX
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            subview.place(
-                at: CGPoint(x: x, y: y),
-                proposal: ProposedViewSize(size)
-            )
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-    }
-
-    private func layoutRows(in availableWidth: CGFloat, subviews: Subviews) -> CGSize {
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        var maxRowWidth: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > 0 && x + size.width > availableWidth
-
-            if shouldWrap {
-                maxRowWidth = max(maxRowWidth, x - spacing)
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-
-        if x > 0 {
-            maxRowWidth = max(maxRowWidth, x - spacing)
-        }
-
-        return CGSize(width: maxRowWidth, height: y + rowHeight)
     }
 }
 

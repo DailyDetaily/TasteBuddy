@@ -5,35 +5,40 @@ import type {
   TasteSurveyScoringConfig,
   TasteSurveySexContext,
   TasteSurveySmokingStatus,
+  TasteSurveyUncertaintyReason,
 } from '../types/tasteSurvey';
 
 export const TASTE_SURVEY_INSTRUMENT = {
   id: 'taste-buddy-initial-six-taste-survey',
-  title: 'Taste Buddy Initial Six-Taste Survey',
-  version: '1.0.0',
+  title: 'Taste Buddy Reference Food Recall Survey',
+  version: '2.0.0',
 } as const satisfies TasteSurveyInstrumentMetadata;
 
 export const TASTE_SURVEY_LIKERT_SCALE = {
-  min: 1,
-  max: 7,
-  neutralValue: 4,
-  uncertainLabel: '잘 모르겠어요',
+  min: 0,
+  max: 4,
+  midpointValue: 2,
+  uncertainLabel: '기억나지 않아요',
   labels: {
-    1: '전혀 그렇지 않다',
-    2: '그렇지 않은 편이다',
-    3: '조금 그렇지 않다',
-    4: '보통이다',
-    5: '조금 그렇다',
-    6: '그런 편이다',
-    7: '매우 그렇다',
+    0: '전혀 느끼지 않음',
+    1: '약하게 느껴짐',
+    2: '중간 정도로 느껴짐',
+    3: '강하게 느껴짐',
+    4: '매우 강하게 느껴짐',
   },
 } as const satisfies TasteSurveyLikertScaleConfig;
 
 export const TASTE_SURVEY_SCORING_CONFIG = {
-  constructs: ['salience', 'overload'],
-  outputSnapshotSource: 'broad-starter',
+  constructs: ['recalled_intensity'],
+  outputSnapshotSource: 'recalled-intensity',
   recallWindow: 'recent-3-months',
 } as const satisfies TasteSurveyScoringConfig;
+
+export const TASTE_SURVEY_UNCERTAINTY_LABELS: Record<TasteSurveyUncertaintyReason, string> = {
+  never_tried: '먹어본 적 없어요',
+  cannot_recall: '기억나지 않아요',
+  cannot_isolate_taste: '지방맛을 구분하기 어려워요',
+};
 
 export const TASTE_SURVEY_TASTE_ORDER = [
   'sweet',

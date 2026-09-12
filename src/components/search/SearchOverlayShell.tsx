@@ -20,6 +20,7 @@ interface SearchOverlayShellProps {
   ariaLabel: string;
   children: ReactNode;
   inputRef: RefObject<HTMLInputElement | null>;
+  isClosing?: boolean;
   onClearQuery: () => void;
   onClose: () => void;
   onQueryChange: (value: string) => void;
@@ -32,6 +33,7 @@ export default function SearchOverlayShell({
   ariaLabel,
   children,
   inputRef,
+  isClosing = false,
   onClearQuery,
   onClose,
   onQueryChange,
@@ -39,14 +41,31 @@ export default function SearchOverlayShell({
   placeholder,
   query,
 }: SearchOverlayShellProps) {
+  const dismissKeyboard = () => {
+    inputRef.current?.blur();
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
+
+  const handleCancelPointerDown = () => {
+    dismissKeyboard();
+  };
+
   return (
     <>
       <div
-        className="fixed inset-x-0 top-0 z-[35] bg-[var(--tb-color-bg-page)] animate-fadeIn"
+        className={cn(
+          'fixed inset-x-0 top-0 z-[35] bg-[var(--tb-color-bg-page)] transition-opacity duration-200 ease-out',
+          isClosing ? 'opacity-0 pointer-events-none' : 'animate-fadeIn opacity-100',
+        )}
         style={{ bottom: SEARCH_OVERLAY_BOTTOM_OFFSET }}
       />
       <div
-        className="fixed inset-x-0 z-[56] flex justify-center"
+        className={cn(
+          'fixed inset-x-0 z-[56] flex justify-center transition-all duration-200 ease-out',
+          isClosing ? 'opacity-0 pointer-events-none -translate-y-1' : 'opacity-100 translate-y-0',
+        )}
         style={{
           top: SEARCH_OVERLAY_TOP_OFFSET,
           bottom: SEARCH_OVERLAY_BOTTOM_OFFSET,
@@ -93,7 +112,11 @@ export default function SearchOverlayShell({
               </button>
               <button
                 type="button"
-                onClick={onClose}
+                onPointerDown={handleCancelPointerDown}
+                onClick={() => {
+                  dismissKeyboard();
+                  onClose();
+                }}
                 className="shrink-0 text-[13px] font-semibold text-[var(--tb-color-text-body)] transition-colors hover:text-[var(--tb-color-text-primary)]"
               >
                 취소
@@ -101,7 +124,21 @@ export default function SearchOverlayShell({
             </form>
           </div>
 
-          <div className={SEARCH_PANEL_BODY_CLASS_NAME}>{children}</div>
+          <div
+            className={SEARCH_PANEL_BODY_CLASS_NAME}
+            onScroll={() => {
+              if (document.activeElement === inputRef.current) {
+                dismissKeyboard();
+              }
+            }}
+            onTouchMove={() => {
+              if (document.activeElement === inputRef.current) {
+                dismissKeyboard();
+              }
+            }}
+          >
+            {children}
+          </div>
         </div>
       </div>
     </>

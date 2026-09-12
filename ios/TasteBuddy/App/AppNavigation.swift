@@ -58,11 +58,19 @@ enum AppRoute: Hashable {
     case dishFeedback(id: String)
     case comments(id: String)
     case tasteChange
+    case homeInsight(HomeArchiveCard.Kind)
     case savedRestaurants
     case connectionList(ProfileConnectionKind)
     case publicProfile(id: String)
 
     var hidesMainShell: Bool { true }
+
+    var showsContentUnderBottomSafeArea: Bool {
+        switch self {
+        case .restaurant, .restaurantSummary, .homeInsight: true
+        default: false
+        }
+    }
 
     var title: String {
         switch self {
@@ -81,6 +89,8 @@ enum AppRoute: Hashable {
             "댓글"
         case .tasteChange:
             "미각 변화"
+        case .homeInsight(let kind):
+            kind.rawValue
         case .savedRestaurants:
             "테이스트 리스트"
         case .connectionList(let kind):

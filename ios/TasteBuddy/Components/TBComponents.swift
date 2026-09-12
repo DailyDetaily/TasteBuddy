@@ -28,6 +28,7 @@ struct SectionCard<Content: View>: View {
                 if showsBorder && cardBordersVisible {
                     RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
                         .stroke(TBColor.borderCard, lineWidth: 1)
+                        .allowsHitTesting(false)
                 }
             }
     }
@@ -90,8 +91,32 @@ struct TBTokenButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(isEnabled && configuration.isPressed && !reduceMotion ? 0.98 : 1)
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
+            .scaleEffect(isEnabled && configuration.isPressed && !reduceMotion ? TasteBloomMotion.Scale.press : 1)
+            .animation(TasteBloomMotion.animation(.press, reduceMotion: reduceMotion), value: configuration.isPressed)
+    }
+}
+
+enum PrimaryButtonAppearance {
+    case primary
+    case tasteTint(TasteAxis)
+
+    var foreground: Color {
+        switch self {
+        case .primary: TBColor.textInverse
+        case .tasteTint(let axis): axis.tintTextColor
+        }
+    }
+
+    var background: Color {
+        switch self {
+        case .primary: TBColor.textPrimary
+        case .tasteTint(let axis): axis.tintColor
+        }
+    }
+
+    var hasShadow: Bool {
+        if case .primary = self { return true }
+        return false
     }
 }
 
@@ -103,6 +128,7 @@ struct PrimaryButton: View {
     var visualDisabled = false
     var fullWidth = true
     var size: PrimaryButtonSize = .default
+    var appearance: PrimaryButtonAppearance = .primary
     let action: () -> Void
 
     var body: some View {
@@ -113,11 +139,12 @@ struct PrimaryButton: View {
                 .padding(.vertical, size.verticalPadding)
                 .frame(maxWidth: fullWidth ? .infinity : nil)
                 .frame(minHeight: size.height)
-                .foregroundStyle(appearsDisabled ? TBColor.textDisabled : TBColor.textInverse)
-                .background(appearsDisabled ? TBColor.disabledSurface : TBColor.textPrimary)
+                .foregroundStyle(appearsDisabled ? TBColor.textDisabled : appearance.foreground)
+                .background(appearsDisabled ? TBColor.disabledSurface : appearance.background)
                 .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
                 .shadow(
-                    color: (!appearsDisabled && size == .default) ? Color.black.opacity(0.10) : .clear,
+                    color: (!appearsDisabled && size == .default && appearance.hasShadow)
+                        ? Color.black.opacity(0.10) : .clear,
                     radius: 20,
                     x: 0,
                     y: 8
@@ -125,6 +152,7 @@ struct PrimaryButton: View {
         }
         .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
+        .tasteBloomMotion(.feedback, value: appearsDisabled)
     }
 
     private var appearsDisabled: Bool {
@@ -189,7 +217,7 @@ struct TBStepIndicator: View {
                         width: index == currentIndex ? StepIndicatorMetrics.activeWidth : StepIndicatorMetrics.inactiveWidth,
                         height: StepIndicatorMetrics.height
                     )
-                    .animation(.easeInOut(duration: 0.3), value: currentIndex)
+                    .tasteBloomMotion(.content, value: currentIndex)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -289,6 +317,7 @@ struct TBFlowBottomCTA: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea(edges: .bottom)
+            .allowsHitTesting(false)
         )
     }
 
@@ -547,6 +576,7 @@ struct TBSelectionCard: View {
         .buttonStyle(TBTokenButtonStyle())
         .disabled(!isEnabled)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .tasteBloomMotion(.feedback, value: isSelected)
     }
 
     @ViewBuilder
@@ -760,84 +790,12 @@ struct TasteBubbleRow: View {
     }
 
     var body: some View {
-        DishFeedbackWrapLayout(spacing: DishFeedbackCardMetrics.chipStackGap) {
+        TBWrapLayout(spacing: DishFeedbackCardMetrics.chipStackGap) {
             ForEach(bubbles) { bubble in
                 DishFeedbackTasteBubbleChip(bubble: bubble)
             }
         }
         .accessibilityLabel(bubbles.map(\.label).joined(separator: ", "))
-    }
-}
-
-private struct DishFeedbackWrapLayout: Layout {
-    let spacing: CGFloat
-
-    func sizeThatFits(
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) -> CGSize {
-        let availableWidth = proposal.width ?? .greatestFiniteMagnitude
-        let result = layoutRows(in: availableWidth, subviews: subviews)
-
-        return CGSize(
-            width: proposal.width ?? result.width,
-            height: result.height
-        )
-    }
-
-    func placeSubviews(
-        in bounds: CGRect,
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > bounds.minX && x + size.width > bounds.maxX
-
-            if shouldWrap {
-                x = bounds.minX
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-    }
-
-    private func layoutRows(in availableWidth: CGFloat, subviews: Subviews) -> CGSize {
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        var maxRowWidth: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let shouldWrap = x > 0 && x + size.width > availableWidth
-
-            if shouldWrap {
-                maxRowWidth = max(maxRowWidth, x - spacing)
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-
-        if x > 0 {
-            maxRowWidth = max(maxRowWidth, x - spacing)
-        }
-
-        return CGSize(width: maxRowWidth, height: y + rowHeight)
     }
 }
 
@@ -867,6 +825,10 @@ struct NativeDishFeedbackCard: View {
     var showsOptions = true
     var framed = true
     var noteTrailingPadding: CGFloat = 0
+    var avatarProfile: TasteProfile? = nil
+    var avatarImageData: Data? = nil
+    var avatarImage: UIImage? = nil
+    var avatarShapeSeed: String? = nil
     var onOptionsTap: (() -> Void)? = nil
     var onDetailTap: (() -> Void)? = nil
     var onCommentsTap: (() -> Void)? = nil
@@ -922,6 +884,39 @@ struct NativeDishFeedbackCard: View {
         item.primaryTasteAxis
     }
 
+    private var resolvedAvatarImage: UIImage? {
+        avatarImage ?? avatarImageData.flatMap(UIImage.init(data:))
+    }
+
+    private var isOwnItem: Bool {
+        item.authorName == "나"
+    }
+
+    @ViewBuilder
+    private var avatarView: some View {
+        let seed = avatarShapeSeed ?? (isOwnItem ? "current-user" : item.id)
+        if let avatarProfile {
+            PalateBloomAvatar(
+                size: DishFeedbackCardMetrics.avatarSize,
+                tasteProfile: avatarProfile,
+                shapeSeed: seed,
+                image: resolvedAvatarImage
+            )
+        } else if isOwnItem {
+            PalateBloomAvatar(
+                size: DishFeedbackCardMetrics.avatarSize,
+                seed: seed,
+                image: resolvedAvatarImage
+            )
+        } else {
+            PalateBloomAvatar(
+                size: DishFeedbackCardMetrics.avatarSize,
+                seed: seed,
+                image: resolvedAvatarImage
+            )
+        }
+    }
+
     @ViewBuilder
     private var cardBody: some View {
         if framed {
@@ -944,7 +939,7 @@ struct NativeDishFeedbackCard: View {
     private var cardContent: some View {
         VStack(alignment: .leading, spacing: DishFeedbackCardMetrics.contentGap) {
             HStack(spacing: DishFeedbackCardMetrics.headerGap) {
-                PalateBloomAvatar(size: DishFeedbackCardMetrics.avatarSize, seed: item.id)
+                avatarView
                     .accessibilityLabel("\(item.authorName) 프로필 아바타")
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -1022,6 +1017,7 @@ struct NativeDishFeedbackCard: View {
                             strokeWidth: TBIcon.Stroke.regular,
                             filled: isLiked
                         )
+                        .tasteBloomReplace(value: isLiked)
                         .frame(
                             width: DishFeedbackCardMetrics.actionIconFrameWidth,
                             height: DishFeedbackCardMetrics.actionButtonSize
@@ -1029,17 +1025,19 @@ struct NativeDishFeedbackCard: View {
                         .foregroundStyle(isLiked ? primaryAxis.mainColor : TBColor.textHint)
 
                         actionCountText(displayedLikeCount)
+                            .contentTransition(.opacity)
                     }
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TBTokenButtonStyle())
+                .tasteBloomMotion(.feedback, value: isLiked)
                 .accessibilityLabel(isLiked ? "좋아요 \(displayedLikeCount)개, 좋아요 취소" : "좋아요 \(displayedLikeCount)개")
 
                 if let onCommentsTap {
                     Button(action: onCommentsTap) {
                         commentActionLabel
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(TBTokenButtonStyle())
                     .accessibilityLabel("댓글 \(item.commentCount)개 보기")
                 } else {
                     commentActionLabel
@@ -1050,7 +1048,7 @@ struct NativeDishFeedbackCard: View {
                 } label: {
                     shareActionLabel
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TBTokenButtonStyle())
                 .accessibilityLabel("공유 \(displayedShareCount)개")
 
                 Spacer()
@@ -1406,45 +1404,14 @@ private struct DishFeedbackDetailTagRow: View {
     let tags: [DishFeedbackCardTag]
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            ForEach(Array((0...tags.count).reversed()), id: \.self) { visibleCount in
-                DishFeedbackDetailTagCandidate(
-                    tags: tags,
-                    visibleCount: visibleCount
-                )
-            }
+        TBOverflowTagRow(items: tags) { tag in
+            TasteChip(title: tag.label, tone: .neutral, size: .sm)
+                .accessibilityLabel(tag.title ?? tag.label)
+        } overflow: { hiddenCount in
+            TasteChip(title: "+\(hiddenCount)", tone: .neutral, size: .sm)
+                .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .clipped()
-    }
-}
-
-private struct DishFeedbackDetailTagCandidate: View {
-    let tags: [DishFeedbackCardTag]
-    let visibleCount: Int
-
-    var body: some View {
-        HStack(spacing: 6) {
-            ForEach(visibleTags) { tag in
-                TasteChip(title: tag.label, tone: .neutral, size: .sm)
-                    .lineLimit(1)
-                    .accessibilityLabel(tag.title ?? tag.label)
-            }
-
-            if hiddenCount > 0 {
-                TasteChip(title: "+\(hiddenCount)", tone: .neutral, size: .sm)
-                    .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
-            }
-        }
-        .fixedSize(horizontal: true, vertical: false)
-    }
-
-    private var hiddenCount: Int {
-        max(0, tags.count - visibleCount)
-    }
-
-    private var visibleTags: [DishFeedbackCardTag] {
-        Array(tags.prefix(visibleCount))
     }
 }
 
@@ -1459,33 +1426,83 @@ private struct DishFeedbackImageRail: View {
     var body: some View {
         if !visibleImages.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                LazyHStack(spacing: 8) {
                     ForEach(visibleImages) { image in
-                        dishImage(image)
+                        DishFeedbackImageTile(image: image)
                     }
                 }
                 .padding(.horizontal, unframed ? TBSpacing.page : TBSpacing.card)
             }
             .contentMargins(.horizontal, 0, for: .scrollContent)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 144)
             .padding(.horizontal, unframed ? -TBSpacing.page : -TBSpacing.card)
             .accessibilityElement(children: .contain)
         }
     }
+}
+
+private struct DishFeedbackImageTile: View {
+    @Environment(\.displayScale) private var displayScale
+    let image: DiningDishFeedbackItem.Image
+    @State private var thumbnail: CGImage?
+    @State private var loadedRequest: Request?
+    @State private var loadGeneration = UUID()
+    @State private var didFinishLoading = false
+    private let tileSize: CGFloat = 144
+
+    private struct Request: Equatable {
+        let filename: String?
+        let data: Data?
+        let pixels: Int
+
+        var hasLocalSource: Bool { filename != nil || data != nil }
+    }
+
+    var body: some View {
+        let request = Request(
+            filename: image.localPhotoFilename,
+            data: image.imageData,
+            pixels: max(1, Int(ceil(tileSize * displayScale)))
+        )
+        imageContent(for: request)
+            .frame(width: tileSize, height: tileSize)
+            .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
+            .clipped()
+            .accessibilityLabel(image.alt)
+            .task(id: request) {
+                let generation = UUID()
+                loadGeneration = generation
+                thumbnail = nil
+                loadedRequest = request
+                didFinishLoading = false
+                guard request.hasLocalSource else { return }
+                let result = await DiningReflectionPhotoStore.thumbnail(
+                    for: request.filename,
+                    data: request.data,
+                    fillingSquareOf: request.pixels
+                )
+                guard !Task.isCancelled, loadGeneration == generation else { return }
+                thumbnail = result
+                didFinishLoading = true
+            }
+            .onDisappear {
+                // Lazy stacks retain row state; release its decoded pixels outside the viewport.
+                loadGeneration = UUID()
+                thumbnail = nil
+                loadedRequest = nil
+                didFinishLoading = false
+            }
+    }
 
     @ViewBuilder
-    private func dishImage(_ image: DiningDishFeedbackItem.Image) -> some View {
-        let tileSize: CGFloat = 144
-
-        if let imageData = image.imageData,
-           let localImage = UIImage(data: imageData) {
-            Image(uiImage: localImage)
+    private func imageContent(for request: Request) -> some View {
+        if loadedRequest == request, let thumbnail {
+            Image(decorative: thumbnail, scale: displayScale, orientation: .up)
                 .resizable()
                 .scaledToFill()
-                .frame(width: tileSize, height: tileSize)
-                .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
-                .clipped()
-                .accessibilityLabel(image.alt)
+        } else if request.hasLocalSource, !(didFinishLoading && loadedRequest == request) {
+            loadingPlaceholder
         } else if let imageURL = image.imageURL {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
@@ -1496,25 +1513,23 @@ private struct DishFeedbackImageRail: View {
                 case .failure:
                     feedbackImagePlaceholder
                 case .empty:
-                    ProgressView()
-                        .tint(TBColor.textHint)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(TBColor.disabledSurface)
+                    loadingPlaceholder
                 @unknown default:
                     feedbackImagePlaceholder
                 }
             }
-            .frame(width: tileSize, height: tileSize)
-            .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
-            .clipped()
-            .accessibilityLabel(image.alt)
         } else if let imageName = image.imageName {
             BundledPNG(name: imageName)
-                .frame(width: tileSize, height: tileSize)
-                .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
-                .clipped()
-                .accessibilityLabel(image.alt)
+        } else if request.hasLocalSource {
+            feedbackImagePlaceholder
         }
+    }
+
+    private var loadingPlaceholder: some View {
+        ProgressView()
+            .tint(TBColor.textHint)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(TBColor.disabledSurface)
     }
 
     private var feedbackImagePlaceholder: some View {
@@ -1611,6 +1626,7 @@ private struct DiningNotePreview: View {
         }
         .padding(DishFeedbackCardMetrics.notePadding)
         .padding(.trailing, trailingPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(TBColor.mutedSurface)
         .clipShape(RoundedRectangle(cornerRadius: DishFeedbackCardMetrics.noteRadius, style: .continuous))
     }
@@ -1745,6 +1761,21 @@ struct SectionHeading: View {
 }
 
 #if canImport(PreviewsMacros)
+    #Preview("Primary and taste-tinted buttons") {
+        VStack(spacing: TBSpacing.x16) {
+            PrimaryButton(title: "다음으로") {}
+            PrimaryButton(title: "미각 측정 시작", size: .compact, appearance: .tasteTint(.sweet)) {}
+            PrimaryButton(
+                title: "미각 측정 시작",
+                isEnabled: false,
+                size: .compact,
+                appearance: .tasteTint(.sweet)
+            ) {}
+        }
+        .padding(TBSpacing.page)
+        .background(TBColor.page)
+    }
+
     #Preview("CTA Disabled Color Tokens") {
         ZStack {
             LinearGradient(

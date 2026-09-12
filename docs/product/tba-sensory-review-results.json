@@ -1,0 +1,1696 @@
+{
+  "version": "sensory-review-evaluation/1",
+  "suiteVersion": "sensory-review-v1",
+  "suiteHash": "c0e764cd172ec8ed6bae940510260f35c49c4c86ae0a70dae1273251dab35fa4",
+  "ruleVersion": "tba-rules/4",
+  "productionSourceHashes": {
+    "rules.mjs": "185f19ff9141f3fdb1a42cf475f20cd346f4194ff4abac866cb2fb6d84c64110",
+    "sensory-language.mjs": "9eedee35670543a41b427c137f5f6cdae97b6af6c239aa51c8ecadec5383d157",
+    "semantic-lexicon.json": "43bc129ce1c97481dfcd136f33ef65c325c6243f44a8556c3b7cc1e6ed8ce1e8"
+  },
+  "capturedAt": "2026-09-06T07:15:32.426Z",
+  "evaluationRole": "development_review_not_hidden_holdout",
+  "metrics": {
+    "cases": 50,
+    "safety": {
+      "casesWithViolation": 0,
+      "limitation": "Selected machine-checkable invariants only; not overall safety accuracy"
+    },
+    "detailRecall": {
+      "matched": 16,
+      "expected": 42
+    },
+    "meaningCoverage": {
+      "matched": 16,
+      "expected": 42,
+      "existingAtomAlternativeCases": [
+        33,
+        34,
+        36,
+        48
+      ],
+      "limitation": "Detail fragment or explicitly permitted semantic equivalent; not full sentence relation correctness"
+    },
+    "rubricReview": {
+      "ambiguousLikingCase": "SR-027",
+      "reason": "재미있었다 expresses interest but may not assert sensory liking; frozen expectation retained, not silently relaxed",
+      "unambiguousLikingExpected": 15,
+      "unambiguousLikingMatched": 7
+    },
+    "explicitLiking": {
+      "matched": 7,
+      "expected": 16
+    },
+    "sourcePreservation": {
+      "casesWithInvalidAtomSource": 0
+    },
+    "unresolvedCases": 39,
+    "context": {
+      "requiringRelationReview": 8,
+      "automaticRelationAccuracy": null
+    },
+    "semanticSuccess": 2,
+    "overallAccuracy": null
+  },
+  "limitations": [
+    "No LLM/API calls",
+    "Review fixtures are synthetic; not user preference evidence",
+    "Cases may be shared for fixes, so this is not an undisclosed holdout",
+    "Matched fragments do not establish complete target/time/condition/combination interpretation",
+    "Unresolved and API-pending cases never count as semantic success",
+    "This is not interchangeable with the existing fixed regression suite"
+  ],
+  "results": [
+    {
+      "id": "SR-001",
+      "domain": "taste",
+      "detailResults": [
+        {
+          "expected": "새콤한 맛이 둥글게 퍼졌다",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": true,
+      "semanticSuccess": true,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "taste.sour",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "sensory_detail",
+          "attribute": "taste.sour",
+          "value": "토마토 수프에서 새콤한 맛이 둥글게 퍼졌다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-002",
+      "domain": "taste",
+      "detailResults": [
+        {
+          "expected": "짠맛은 얇고",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "taste.salty",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "sensory_presence",
+          "attribute": "taste.sweet",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "sensory_intensity",
+          "attribute": "taste.sweet",
+          "value": "weak",
+          "scale": "expression-strength-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-003",
+      "domain": "taste",
+      "detailResults": [
+        {
+          "expected": "자몽 속껍질 같은 쓴맛",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "positive",
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "taste.bitter",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "attribute_liking",
+          "attribute": "taste.bitter",
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-004",
+      "domain": "taste",
+      "detailResults": [
+        {
+          "expected": "혀를 덮을 만큼 달아서",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": "negative",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [
+        "explicit_liking_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "taste.sweet",
+          "value": "브라우니가 혀를 덮을 만큼 달아서 부담스러웠음.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-005",
+      "domain": "taste",
+      "detailResults": [
+        {
+          "expected": "깊은 감칠맛",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "taste.umami",
+          "value": "조개탕은 소금기보다 깊은 감칠맛이 먼저 왔다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-006",
+      "domain": "aroma",
+      "detailResults": [
+        {
+          "expected": "볕에 말린 풀 같은 향",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "메밀차에서 볕에 말린 풀 같은 향이 났다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-007",
+      "domain": "aroma",
+      "detailResults": [
+        {
+          "expected": "비 온 뒤 숲 바닥을 떠올리게 했다",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "버섯구이 향은 비 온 뒤 숲 바닥을 떠올리게 했다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-008",
+      "domain": "aroma",
+      "detailResults": [
+        {
+          "expected": "흰 꽃을 닮은 향",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "흰 꽃을 닮은 향이 은은하게 올라왔다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-009",
+      "domain": "aroma",
+      "detailResults": [
+        {
+          "expected": "누룽지 같은 구수한 향",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": "positive",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [
+        "explicit_liking_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "빵의 누룽지 같은 구수한 향이 좋았음.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-010",
+      "domain": "aroma",
+      "detailResults": [
+        {
+          "expected": "젖은 양말 같은 냄새",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": "negative",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [
+        "explicit_liking_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "치즈에서 젖은 양말 같은 냄새가 나서 싫었습니다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-011",
+      "domain": "texture",
+      "detailResults": [
+        {
+          "expected": "고무줄처럼 튕겼다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-012",
+      "domain": "texture",
+      "detailResults": [
+        {
+          "expected": "얇게 파삭하고",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "texture.unspecified",
+          "value": "감자 겉은 얇게 파삭하고",
+          "scale": "sensory-detail-v1",
+          "target": "surface",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-013",
+      "domain": "texture",
+      "detailResults": [
+        {
+          "expected": "몇 번 씹어도 버티는 탄성",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "positive",
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "texture.springy",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "attribute_liking",
+          "attribute": "texture.springy",
+          "value": "positive",
+          "scale": "attribute-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-014",
+      "domain": "texture",
+      "detailResults": [
+        {
+          "expected": "작은 돌 알갱이 같은 까슬함",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "negative",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing",
+        "explicit_liking_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-015",
+      "domain": "texture",
+      "detailResults": [
+        {
+          "expected": "결마다 촉촉하게 벌어졌다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-016",
+      "domain": "mouthfeel",
+      "detailResults": [
+        {
+          "expected": "혀에 얇은 막을 남겼다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-017",
+      "domain": "mouthfeel",
+      "detailResults": [
+        {
+          "expected": "잇몸이 조여 드는 듯했다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-018",
+      "domain": "mouthfeel",
+      "detailResults": [
+        {
+          "expected": "입천장에 풀처럼 달라붙어서",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "negative",
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "overall_liking",
+          "attribute": null,
+          "value": "negative",
+          "scale": "overall-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-019",
+      "domain": "mouthfeel",
+      "detailResults": [
+        {
+          "expected": "입안에서 미끄러지는 감촉",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": "positive",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [
+        "explicit_liking_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "mouthfeel.unspecified",
+          "value": "들기름 국수는 입안에서 미끄러지는 감촉이 좋았다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-020",
+      "domain": "mouthfeel",
+      "detailResults": [
+        {
+          "expected": "혀 위에서 밀랍처럼 남았다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-021",
+      "domain": "temperature",
+      "detailResults": [
+        {
+          "expected": "이가 시릴 만큼 차가웠다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-022",
+      "domain": "temperature",
+      "detailResults": [
+        {
+          "expected": "입천장을 데일 듯 뜨거웠음",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "texture.unspecified",
+          "value": "만두 속은 입천장을 데일 듯 뜨거웠음.",
+          "scale": "sensory-detail-v1",
+          "target": "inside",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-023",
+      "domain": "temperature",
+      "detailResults": [
+        {
+          "expected": "미지근해지자",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "차는 미지근해지자 향이 잘 느껴졌다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-024",
+      "domain": "temperature",
+      "detailResults": [
+        {
+          "expected": "서늘함이 혀끝부터 번져서",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "positive",
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "overall_liking",
+          "attribute": null,
+          "value": "positive",
+          "scale": "overall-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-025",
+      "domain": "irritation",
+      "detailResults": [
+        {
+          "expected": "잔전류처럼 찌릿하게 남았다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-026",
+      "domain": "irritation",
+      "detailResults": [
+        {
+          "expected": "콧속으로 쏘고",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-027",
+      "domain": "irritation",
+      "detailResults": [
+        {
+          "expected": "바늘 같은 따끔함",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "positive",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing",
+        "explicit_liking_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "trigeminal.fizzy",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-028",
+      "domain": "irritation",
+      "detailResults": [
+        {
+          "expected": "바람이 통하는 듯 코끝이 서늘했다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-029",
+      "domain": "finish",
+      "detailResults": [
+        {
+          "expected": "볶은 밤 같은 여운이 오래 남았다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "finish.duration",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-030",
+      "domain": "finish",
+      "detailResults": [
+        {
+          "expected": "삼킨 뒤에도 입가에 매달렸다",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": true,
+      "semanticSuccess": true,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "taste.sweet",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "sauce",
+          "phase": "after_swallow"
+        },
+        {
+          "kind": "sensory_detail",
+          "attribute": "taste.sweet",
+          "value": "장어 소스의 단맛은 삼킨 뒤에도 입가에 매달렸다.",
+          "scale": "sensory-detail-v1",
+          "target": "sauce",
+          "phase": "after_swallow"
+        }
+      ]
+    },
+    {
+      "id": "SR-031",
+      "domain": "finish",
+      "detailResults": [
+        {
+          "expected": "고소한 여운",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "finish.duration",
+          "value": true,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-032",
+      "domain": "combination",
+      "detailResults": [
+        {
+          "expected": "치즈의 녹진함",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "positive",
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": true,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_automatically_scored",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "combination_liking",
+          "attribute": null,
+          "value": "positive",
+          "scale": "combination-three-category-v1",
+          "target": "combination",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-033",
+      "domain": "condition",
+      "detailResults": [
+        {
+          "expected": "튀김의 바삭함",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "positive",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": true,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_automatically_scored",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing",
+        "explicit_liking_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-034",
+      "domain": "condition",
+      "detailResults": [
+        {
+          "expected": "버터 향",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": "positive",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": true,
+      "contextVerbatimAvailable": false,
+      "relationshipSemantics": "not_automatically_scored",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [
+        "explicit_liking_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "따뜻할 때는 버터 향이 좋았지만",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "sensory_detail",
+          "attribute": "temperature.unspecified",
+          "value": "식으니 느끼했다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-035",
+      "domain": "time",
+      "detailResults": [
+        {
+          "expected": "오래 씹자 반죽이 이에 붙었다",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": true,
+      "contextVerbatimAvailable": false,
+      "relationshipSemantics": "not_automatically_scored",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "texture.unspecified",
+          "value": "오래 씹자 반죽이 이에 붙었다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-036",
+      "domain": "time",
+      "detailResults": [
+        {
+          "expected": "허브 향",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": true,
+      "contextVerbatimAvailable": false,
+      "relationshipSemantics": "not_automatically_scored",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "초반에는 향이 없었는데",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "식사 중반부터 허브 향이 났다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-037",
+      "domain": "negation",
+      "detailResults": [],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": false,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "required_unresolved_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_presence",
+          "attribute": "trigeminal.spicy",
+          "value": false,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "sensory_presence",
+          "attribute": "taste.sweet",
+          "value": false,
+          "scale": "presence-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-038",
+      "domain": "negation",
+      "detailResults": [],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "positive",
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": false,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": false,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "required_unresolved_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "overall_liking",
+          "attribute": null,
+          "value": "positive",
+          "scale": "overall-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-039",
+      "domain": "other_person",
+      "detailResults": [],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": []
+    },
+    {
+      "id": "SR-040",
+      "domain": "other_person",
+      "detailResults": [
+        {
+          "expected": "눅눅하게 느꼈다",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-041",
+      "domain": "insufficient",
+      "detailResults": [],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": []
+    },
+    {
+      "id": "SR-042",
+      "domain": "insufficient",
+      "detailResults": [],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": []
+    },
+    {
+      "id": "SR-043",
+      "domain": "missing",
+      "detailResults": [],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": []
+    },
+    {
+      "id": "SR-044",
+      "domain": "irrelevant",
+      "detailResults": [],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": []
+    },
+    {
+      "id": "SR-045",
+      "domain": "irrelevant",
+      "detailResults": [],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": []
+    },
+    {
+      "id": "SR-046",
+      "domain": "metaphor",
+      "detailResults": [
+        {
+          "expected": "레몬을 닮았지만",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "이 향은 레몬을 닮았지만",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-047",
+      "domain": "mixed",
+      "detailResults": [
+        {
+          "expected": "끈적이는 입안 느낌",
+          "matched": true
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": true,
+      "likingRequired": "negative",
+      "likingMatched": false,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": true,
+      "contextVerbatimAvailable": false,
+      "relationshipSemantics": "not_automatically_scored",
+      "unresolved": true,
+      "interpretedDetail": true,
+      "semanticSuccess": false,
+      "failures": [
+        "explicit_liking_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "sensory_detail",
+          "attribute": "aroma.unspecified",
+          "value": "향은 좋았습니다.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        },
+        {
+          "kind": "sensory_detail",
+          "attribute": "mouthfeel.unspecified",
+          "value": "끈적이는 입안 느낌은 싫었음.",
+          "scale": "sensory-detail-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    },
+    {
+      "id": "SR-048",
+      "domain": "intensity",
+      "detailResults": [
+        {
+          "expected": "신맛이 세다는",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": false,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_applicable",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-049",
+      "domain": "reason",
+      "detailResults": [
+        {
+          "expected": "너무 걸쭉해서",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": null,
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": true,
+      "contextVerbatimAvailable": true,
+      "relationshipSemantics": "not_automatically_scored",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": []
+    },
+    {
+      "id": "SR-050",
+      "domain": "combination",
+      "detailResults": [
+        {
+          "expected": "피클과 함께면 산뜻해서",
+          "matched": false
+        }
+      ],
+      "existingMeaningEquivalent": false,
+      "detailOrEquivalent": false,
+      "likingRequired": "positive",
+      "likingMatched": true,
+      "sourceErrors": [],
+      "safetyFailures": [],
+      "mustUnresolved": true,
+      "contextRequired": true,
+      "contextVerbatimAvailable": false,
+      "relationshipSemantics": "not_automatically_scored",
+      "unresolved": true,
+      "interpretedDetail": false,
+      "semanticSuccess": false,
+      "failures": [
+        "detail_or_equivalent_missing"
+      ],
+      "atoms": [
+        {
+          "kind": "overall_liking",
+          "attribute": null,
+          "value": "positive",
+          "scale": "overall-three-category-v1",
+          "target": "whole_dish",
+          "phase": "unspecified"
+        }
+      ]
+    }
+  ]
+}

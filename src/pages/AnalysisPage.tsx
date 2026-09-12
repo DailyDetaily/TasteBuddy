@@ -16,6 +16,11 @@ import {
 import PalateSignatureHeroCard from '../components/analysis/PalateSignatureHeroCard';
 import { type RealMenuRecommendationCardData } from '../components/analysis/RealMenuRecommendationCard';
 import TasteMeasurementMiniCta from '../components/measurement/TasteMeasurementMiniCta';
+import TasteSurveyEvidencePanel from '../components/measurement/TasteSurveyEvidencePanel';
+import PreferenceIntakeEvidenceCard from '../components/analysis/PreferenceIntakeEvidenceCard';
+import type { PreferenceIntakeProfile } from '../constants/preferenceIntakeData';
+import type { TasteSurveySubmission } from '../types/tasteSurvey';
+import type { DiningPageExternalFeedbackSubmission } from './DiningPage';
 import SectionCard from '../components/SectionCard';
 import InterpretationDetailDrawer, {
   type InterpretationDetailContent,
@@ -52,9 +57,10 @@ import {
   hydrateReservationPageData,
 } from '../lib/tasteBuddySupabase';
 import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reservationCatalog';
-import TasteChangePage from './TasteChangePage';
+import TasteChangePage, { TasteChangeEvidencePage, type TasteChangeSeries } from './TasteChangePage';
 
 const RADAR_CHART = DATA_VIZ_TOKENS.radar;
+const TastePerceptionCards = React.lazy(() => import('../components/analysis/TastePerceptionCards'));
 const TREND_TINT_LINE_STROKE_WIDTH = 12;
 const TREND_LINE_STROKE_WIDTH = 2;
 const TREND_DOT_RADIUS = 6;
@@ -1504,6 +1510,12 @@ function buildProfileChangeTrendData(
 }
 
 interface AnalysisPageProps {
+  preferenceProfile?: PreferenceIntakeProfile | null;
+  preferenceUserID?: string;
+  onEditPreferences?: () => void;
+  onOpenTasteChange?: (series: TasteChangeSeries[]) => void;
+  surveyHistory?: readonly TasteSurveySubmission[];
+  feedbackSubmissions?: readonly DiningPageExternalFeedbackSubmission[];
   isActive?: boolean;
   measurementSnapshot: TasteMeasurementSnapshot;
   onStartMeasurement: () => void;
@@ -1513,7 +1525,41 @@ interface AnalysisPageProps {
   hasUnreadNotifications?: boolean;
 }
 
-export default function AnalysisPage({
+export default function AnalysisPage(props: AnalysisPageProps) {
+  const [changeSeries, setChangeSeries] = useState<TasteChangeSeries[] | null>(null);
+  if (changeSeries !== null) return <TasteChangeEvidencePage series={changeSeries} onBack={() => setChangeSeries(null)} onOpenMenu={props.onOpenMenu} />;
+  if (props.measurementSnapshot.source === 'recalled-intensity') {
+    return <main className="flex h-full flex-col overflow-y-auto bg-[var(--tb-color-bg-page)] px-5 pt-5 pb-20">
+      <React.Suspense fallback={<SectionCard><p>미각변화를 불러오고 있어요.</p></SectionCard>}>
+        <TastePerceptionCards {...props} onOpenTasteChange={setChangeSeries} />
+      </React.Suspense>
+      <PageSection title="내가 알려준 선호" className="mt-6">
+        <PreferenceIntakeEvidenceCard profile={props.preferenceProfile} userID={props.preferenceUserID} onEdit={props.onEditPreferences} />
+      </PageSection>
+      <PageSection title="처음 남긴 맛의 단서" className="mt-6">
+        {props.measurementSnapshot.surveySubmission ? (
+          <TasteSurveyEvidencePanel submission={props.measurementSnapshot.surveySubmission} />
+        ) : <p className="text-[13px] text-[var(--tb-color-text-muted)]">기준 음식의 응답을 다시 남겨주세요.</p>}
+        <SectionCard>
+          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">다음 식사에서 이어서 살펴봐요</p>
+          <p className="mt-2 text-[13px] text-[var(--tb-color-text-subtle)]">실제 음식에서 느낀 강도와 좋아하는 정도가 쌓이면 더 구체적으로 해석할 수 있어요.</p>
+        </SectionCard>
+        <button type="button" className="min-h-[44px] rounded-[14px] bg-white px-4 text-[13px] font-semibold" onClick={props.onStartMeasurement}>
+          기준 음식 다시 기록하기
+        </button>
+      </PageSection>
+    </main>;
+  }
+  return <LegacyMeasurementAnalysisPage {...props} onOpenTasteChange={setChangeSeries} />;
+}
+
+function LegacyMeasurementAnalysisPage({
+  preferenceProfile,
+  preferenceUserID,
+  onEditPreferences,
+  onOpenTasteChange,
+  surveyHistory,
+  feedbackSubmissions,
   isActive = true,
   measurementSnapshot,
   onStartMeasurement,
@@ -2465,51 +2511,12 @@ export default function AnalysisPage({
               weakestTasteLabel={getWeakestTasteMeasurement(measurementSnapshot).label}
             />
 
-            <SectionCard hoverEffect={false}>
-              <div className="flex items-center justify-between w-full">
-                <button
-                  type="button"
-                  aria-label="이전 측정 그래프 보기"
-                  disabled={!canShowPreviousRadarMeasurement}
-                  className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-muted)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-30"
-                  onClick={() => handleMoveRadarMeasurement(-1)}
-                >
-                  <ChevronLeftIcon size={ICON_TOKENS.size.lg} className="-translate-x-px text-[var(--tb-color-icon-primary)]" />
-                </button>
-                <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
-                  {selectedRadarPeriod}
-                </span>
-                <button
-                  type="button"
-                  aria-label="다음 측정 그래프 보기"
-                  disabled={!canShowNextRadarMeasurement}
-                  className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-muted)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-30"
-                  onClick={() => handleMoveRadarMeasurement(1)}
-                >
-                  <ChevronRightIcon size={ICON_TOKENS.size.lg} className="translate-x-px text-[var(--tb-color-icon-primary)]" />
-                </button>
-              </div>
+            <React.Suspense fallback={<SectionCard><p>미각변화를 불러오고 있어요.</p></SectionCard>}>
+              <TastePerceptionCards measurementSnapshot={measurementSnapshot} surveyHistory={surveyHistory}
+                feedbackSubmissions={feedbackSubmissions} isActive={isActive} onOpenTasteChange={onOpenTasteChange} />
+            </React.Suspense>
 
-              <div className="flex w-full flex-col items-center animate-slideUp">
-                <HexRadarChart myTasteData={selectedRadarData} shouldAnimate={isActive} />
-
-                <div className="mt-2 flex items-end gap-0">
-                  <div className="flex flex-col items-center gap-[4px]">
-                    <span className="text-[10px] text-[var(--tb-color-text-hint)]">나의 반응</span>
-                    <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
-                      {selectedRadarTotalSensitivity > avgSensitivity + 0.5 ? '민감' : selectedRadarTotalSensitivity < avgSensitivity - 0.5 ? '부드러움' : '평균'}
-                    </span>
-                  </div>
-                  <span className="mx-[4px] flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-[var(--tb-color-text-disabled)] text-[10px] text-[var(--tb-color-text-inverse)]">→</span>
-                  <div className="flex flex-col items-center gap-[4px]">
-                    <span className="text-[10px] text-[var(--tb-color-text-hint)]">기준 반응</span>
-                    <span className="rounded-[6px] bg-[var(--tb-color-text-primary)] px-[10px] py-[3px] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">
-                      평균
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </SectionCard>
+            <PreferenceIntakeEvidenceCard profile={preferenceProfile} userID={preferenceUserID} onEdit={onEditPreferences} />
 
             <TasteMeasurementMiniCta
               accentTaste={
@@ -2531,15 +2538,6 @@ export default function AnalysisPage({
               tone={needsMeasurementRefresh ? 'alert' : 'neutral'}
             />
 
-            <LegacyHomeTasteProfileCard
-              cardData={legacyTasteProfileCard}
-              onOpenDetail={() => setIsTasteChangePageOpen(true)}
-            />
-
-            <LegacyHomeSpecialNoteCard
-              cardData={legacySpecialNoteCard}
-              onOpenDetail={() => setActiveLegacyDetail('special-note')}
-            />
           </PageSection>
 
           <PageSection title="세부 분석" titleSize="md">

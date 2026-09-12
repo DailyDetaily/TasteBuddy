@@ -113,9 +113,9 @@ export default function TasteSurveyContextScreen({
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-focus)] font-sans">
-      <header className="z-20 flex w-full shrink-0 justify-center">
+      <header className="absolute inset-x-0 top-0 z-20 flex w-full justify-center">
         <div
-          className="w-full max-w-[1440px] bg-[var(--tb-color-bg-focus)]"
+          className="w-full max-w-[1440px] bg-[var(--tb-color-bg-focus)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-focus)]/70"
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
           <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">
@@ -145,7 +145,7 @@ export default function TasteSurveyContextScreen({
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-5 pt-4 no-scrollbar">
+      <main className="flex-1 overflow-y-auto px-5 pt-[calc(var(--tb-safe-area-top)+var(--tb-size-top-app-bar-height)+16px)] no-scrollbar">
         <div className="tb-section-stack pb-[calc(188px+var(--tb-safe-area-bottom))]">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <OutlineBadge>{step.badgeLabel}</OutlineBadge>

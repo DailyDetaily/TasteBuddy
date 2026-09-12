@@ -951,6 +951,8 @@ struct ReservationConfirmationPanel: View {
     }
 }
 
+/// Historical React inventory counts remain stable for migration contract tests.
+/// Use NativeProductComponentCatalog to find current SwiftUI product components.
 enum NativeDesignSystemInventory {
     static let architectureGroups: [(title: String, components: [String])] = [
         (
@@ -1111,4 +1113,68 @@ enum NativeDesignSystemInventory {
     static let currentlyUsedComponentCount = 32
     static let unusedPrimitiveCount = 20
     static let componentStyleSpecCount = 30
+}
+
+enum NativeComponentUsage: String, CaseIterable {
+    case production = "제품 사용"
+    case visualReference = "시각 참고"
+    case migrationReference = "이식 참고"
+    case outOfScope = "현재 제품 범위 밖"
+}
+
+struct NativeComponentCatalogEntry: Identifiable {
+    let swiftType: String
+    let sourceFile: String
+    let usage: NativeComponentUsage
+    let note: String
+
+    var id: String { swiftType }
+}
+
+/// Curated native registry; registration identifies usage, not parity completion.
+enum NativeProductComponentCatalog {
+    static let entries: [NativeComponentCatalogEntry] = [
+        .init(swiftType: "PrimaryButton", sourceFile: "Components/TBComponents.swift", usage: .production,
+              note: "48pt 기본·40pt compact, 실제 disabled, 미각 tint, 공용 눌림 반응"),
+        .init(swiftType: "SectionCard", sourceFile: "Components/TBComponents.swift", usage: .production,
+              note: "20pt radius·12pt 내부 여백의 제품 카드"),
+        .init(swiftType: "TBSelectionCard", sourceFile: "Components/TBComponents.swift", usage: .production,
+              note: "라디오·체크박스 선택 카드와 선택 접근성"),
+        .init(swiftType: "TasteChip", sourceFile: "Components/SystemParityComponents.swift", usage: .production,
+              note: "라벨 전용은 읽기용 미각색, 숫자형은 중립 라벨과 미각 시그널"),
+        .init(swiftType: "BottomSheetShell", sourceFile: "Components/SystemCoreComponents.swift", usage: .production,
+              note: "공용 제목·닫기·grabber·footer; 용도별 stage와 native chrome 옵션"),
+        .init(swiftType: "TBTextInput", sourceFile: "Components/NativeInputComponents.swift", usage: .production,
+              note: "다이닝·인증 입력의 라벨, 포커스, 오류, disabled 계약"),
+        .init(swiftType: "TBSelectableChip", sourceFile: "Components/NativeInputComponents.swift", usage: .production,
+              note: "다이닝·식당 정보 수정 선택형 칩의 상태와 접근성"),
+        .init(swiftType: "TBWrapLayout", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
+              note: "실제 subview 측정으로 줄바꿈; 칩 모양과 간격은 호출부가 선택"),
+        .init(swiftType: "TBOverflowTagRow", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
+              note: "태그와 +N을 같은 폭 계산으로 배치, 기존 순서 보존"),
+        .init(swiftType: "TBFlowLoadingState", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
+              note: "미각 설문·사전조사의 로딩과 안내 문구"),
+        .init(swiftType: "TBFlowRetryState", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
+              note: "미각 설문·사전조사의 오류 설명과 실제 재시도 callback"),
+        .init(swiftType: "EmptyState", sourceFile: "Components/SystemCoreComponents.swift", usage: .production,
+              note: "빈 목록·검색 결과 없음과 선택적 다음 행동"),
+        .init(swiftType: "ToastSurface", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .production,
+              note: "완료·되돌리기 알림의 외형; 문구와 action은 화면 소유"),
+        .init(swiftType: "TBToastPresenter", sourceFile: "Components/NativeFeedbackComponents.swift", usage: .production,
+              note: "복사·되돌리기 3.5초, 북마크 후 닫기 0.7초; 교체·취소·만료"),
+        .init(swiftType: "TBUIInput", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .visualReference,
+              note: "정적 웹 primitive 견본; 제품 입력에는 TBTextInput 사용"),
+        .init(swiftType: "TBUITextarea", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .visualReference,
+              note: "정적 견본; 편집 가능한 제품 multiline 입력의 계약을 대신하지 않음"),
+        .init(swiftType: "TBUIButton", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .visualReference,
+              note: "웹 variant 외형 견본; 제품 기본 액션에는 PrimaryButton 사용"),
+        .init(swiftType: "InterpretationDetailDrawer", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .migrationReference,
+              note: "이식 참조 wrapper; 현재 분석 상세는 BottomSheetShell 조합 사용"),
+        .init(swiftType: "ReservationCard", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .outOfScope,
+              note: "예약은 네이티브 제품 범위 밖. 카탈로그 참고만 유지"),
+        .init(swiftType: "ReservationConfirmationPanel", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .outOfScope,
+              note: "이전 이식 견본이며 활성 제품 경로가 아님"),
+        .init(swiftType: "TasteMeasurementActivePanel", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .outOfScope,
+              note: "Tastick 측정 참고 견본; 현재 설문 보정 흐름과 구분")
+    ]
 }

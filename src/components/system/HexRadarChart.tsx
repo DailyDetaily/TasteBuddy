@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { DATA_VIZ_TOKENS } from '../../constants/designTokens';
+import { DATA_VIZ_TOKENS, TASTE_IDS, TASTE_TOKENS } from '../../constants/designTokens';
 import { getTasteColor, mixHexColors } from '../../constants/tasteColors';
 import type { TasteMeasurementEntry } from '../../constants/tasteMeasurementData';
 import { cn } from '../ui/utils';
@@ -454,16 +454,31 @@ function buildHybridProfileSegmentPaths(
 export interface HexRadarChartProps {
   /** Array of 6 taste measurement entries with score / averageScore. */
   className?: string;
-  myTasteData: TasteMeasurementEntry[];
+  myTasteData: Pick<TasteMeasurementEntry, 'label' | 'score' | 'averageScore'>[];
   /** Whether the chart should animate on mount (default true). */
   shouldAnimate?: boolean;
 }
 
-export default function HexRadarChart({
+type ReportedRadarProps = { reportedValues: (number | null)[]; referenceValues?: (number | null)[]; maximum: 3 | 4; className?: string };
+export default function HexRadarChart(props: HexRadarChartProps | ReportedRadarProps) {
+  if (!('reportedValues' in props)) return <LegacyHexRadarChart {...props} />;
+  const valid = (value: number | null | undefined) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= props.maximum;
+  const data = TASTE_IDS.map((axis, index) => ({
+    label: TASTE_TOKENS[axis].label,
+    score: valid(props.reportedValues[index]) ? props.reportedValues[index]! / props.maximum * 100 : 0,
+    averageScore: valid(props.referenceValues?.[index]) ? props.referenceValues![index]! / props.maximum * 100 : 0,
+  }));
+  return <LegacyHexRadarChart className={props.className} myTasteData={data} shouldAnimate={false} isReported
+    hasReference={props.referenceValues?.filter(valid).length === TASTE_IDS.length} />;
+}
+
+function LegacyHexRadarChart({
   className,
   myTasteData,
   shouldAnimate = true,
-}: HexRadarChartProps) {
+  isReported = false,
+  hasReference = true,
+}: HexRadarChartProps & { isReported?: boolean; hasReference?: boolean }) {
   const cx = 160;
   const cy = 145;
   const maxR = 100;
@@ -529,7 +544,7 @@ export default function HexRadarChart({
     };
   }, [profileAnimationDurationMs, shouldAnimate, tasteProfileAnimationKey]);
 
-  const animatedProfileProgress = getRadarAnimationProgress(profileMotionProgress);
+  const animatedProfileProgress = isReported ? 1 : getRadarAnimationProgress(profileMotionProgress);
 
   // 나의 민감도 폴리곤 좌표
   const NODE_RADIUS = 8;
@@ -550,7 +565,7 @@ export default function HexRadarChart({
   // 노드 위치를 적응형 라운드 코너 기하학에 맞춰 동적으로 계산.
   // 각 꼭짓점의 Bezier 곡선 중점(헥사곤 경로에서 원래 꼭짓점에 가장 가까운 점)을 구한 뒤,
   // 거기서 NODE_RADIUS만큼 중심 방향으로 들여서 노드 원이 헥사곤에 접하도록 보장한다.
-  const myNodePoints = myPoints.map((point, index) => {
+  const rawNodePoints = myPoints.map((point, index) => {
     const corner = adaptiveCorners[index];
 
     if (!corner) {
@@ -564,6 +579,9 @@ export default function HexRadarChart({
     // Bezier 중점에서 NODE_RADIUS만큼 안쪽으로 → 헥사곤이 노드 겉면에 접함
     return movePointTowardCenter(cx, cy, bezierMidX, bezierMidY, NODE_RADIUS);
   });
+  // 최소 길이는 빈 그래프의 표시만 바꾼다. 원응답은 null 그대로 유지한다.
+  const myNodePoints = rawNodePoints.map((point, index) => isReported && Math.hypot(point[0] - cx, point[1] - cy) < centerMaskRadius + NODE_RADIUS
+    ? hexPoint(cx, cy, centerMaskRadius + NODE_RADIUS, index) : point);
   const chartOuterPoints = myTasteData.map((_, i) => hexPoint(cx, cy, maxR, i));
   const mySegmentPaths = buildHybridProfileSegmentPaths(
     myNodePoints,
@@ -652,12 +670,12 @@ export default function HexRadarChart({
       ))}
 
       {/* 평균 민감도 헥사곤 */}
-      <path
+      {hasReference && <path
         d={avgPath}
         fill="none"
         stroke={RADAR_CHART.averageStroke}
         strokeWidth="1.5"
-      />
+      />}
 
       {/* 중심점에서 나의 민감도 노드로 연결되는 축 */}
       {myNodePoints.map(([x, y], idx) => (
@@ -694,6 +712,7 @@ export default function HexRadarChart({
       {myNodePoints.map(([x, y], i) => (
         <circle
           key={`my-${i}`}
+          data-perception-axis={isReported ? TASTE_IDS[i] : undefined}
           cx={x}
           cy={y}
           r="8"
