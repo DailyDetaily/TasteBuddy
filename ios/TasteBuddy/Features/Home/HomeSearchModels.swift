@@ -144,7 +144,7 @@ struct FixtureHomeSearchRepository: HomeSearchRepository {
     }
 
     func friendResults(matching query: String) async throws -> [HomeSearchResultItem] {
-        guard HomeSearchEngine.isSearchableFriendQuery(query) else {
+        guard !FoodMemoryPrivacy.isPersonalQuery(query), HomeSearchEngine.isSearchableFriendQuery(query) else {
             return []
         }
 
@@ -638,6 +638,7 @@ enum HomeSearchEngine {
         query: String,
         localSections: [HomeSearchResultSection]
     ) -> Bool {
+        guard !FoodMemoryPrivacy.isPersonalQuery(query) else { return false }
         let normalizedQuery = normalize(query)
 
         guard hasSearchableCompleteCharacter(normalizedQuery),

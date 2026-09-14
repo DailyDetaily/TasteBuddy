@@ -1,0 +1,44 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "ECC03A6B-6CF1-4758-A33B-AD4E1492E4F4.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-04-current-original_0_FBD220D8-6657-4139-987E-07A737A60215.png",
+        "timestamp" : 1789295469.453
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "81668AE5-18D8-4F61-9B47-62F9F72A0C53.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-03-category_0_2A190823-5EB6-4B6B-BFAB-DF83EBD6B74C.png",
+        "timestamp" : 1789295458.191
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "F35AD161-75A1-42EA-A23D-AEBAFBB41698.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-02-four-charts_0_0C85B836-EEF2-48A2-A475-8BE28C0BA399.png",
+        "timestamp" : 1789295452.543
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "3C0BF226-D11B-4DD8-A269-16D6305F76B9.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-01-scope_0_515FC750-D416-4BA8-84F6-0F578BAFEBCD.png",
+        "timestamp" : 1789295445.123
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal"
+  }
+]

@@ -88,12 +88,11 @@ enum HomeArchiveSummaryEngine {
         entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot,
         referenceDate: Date = .now, calendar: Calendar = .current
     ) -> [HomeArchiveCard] {
-        var seen = Set<UUID>()
-        let entries = entries.filter { $0.observedAt <= referenceDate && seen.insert($0.id).inserted }
-            .sorted { $0.observedAt == $1.observedAt ? $0.id.uuidString < $1.id.uuidString : $0.observedAt > $1.observedAt }
+        let entries = HomeArchiveIdentity.entries(entries, asOf: referenceDate)
         let completedIDs = Set(entries.filter(\.hasCompletedTasteFeedback).map(\.id))
         let excludedIDs = Set(snapshot.personalModel?.excludedEvidence.map(\.id) ?? [])
-        let observations = snapshot.observations.filter { completedIDs.contains($0.experienceID) && !excludedIDs.contains($0.id) }
+        let revisions = Dictionary(entries.map { ($0.id, $0.memoryRevisionNumber) }, uniquingKeysWith: { first, _ in first })
+        let observations = snapshot.observations.filter { completedIDs.contains($0.experienceID) && !excludedIDs.contains($0.id) && revisions[$0.experienceID] == $0.sourceRevision }
         let evidenceByID = Dictionary(observations.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 
         func card(
@@ -106,16 +105,16 @@ enum HomeArchiveSummaryEngine {
         }
 
         // 전체 아카이브는 미완료 기록도 포함한다. 취향 해석은 완료된 직접 관찰만 사용한다.
-        var cards = [card(.record, "\(entries.count)개 기록", "\(Set(entries.map(\.mealID)).count)번의 식사", records: entries)]
-        let menus = Dictionary(grouping: entries.filter { !normalized($0.menu).isEmpty }, by: menuKey)
-        let restaurants = Dictionary(grouping: entries.filter { !normalized($0.restaurant).isEmpty }, by: restaurantKey)
-        let repeats = menus.map { (key: "menu:" + $0.key, name: $0.value[0].menu, entries: $0.value) }
-            + restaurants.map { (key: "restaurant:" + $0.key, name: $0.value[0].restaurant, entries: $0.value) }
+        var cards = [card(.record, "\(Set(entries.map(\.mealID)).count)번의 식사", "디시 기록 \(entries.count)개 · 전체 기간", records: entries)]
+        let menus = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasMenu), by: menuKey)
+        let restaurants = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasRestaurant), by: restaurantKey)
+        let repeats = menus.map { (key: "menu:" + $0.key, name: normalized($0.value[0].menu).isEmpty ? "이름 미확인 메뉴" : $0.value[0].menu, entries: $0.value) }
+            + restaurants.map { (key: "restaurant:" + $0.key, name: normalized($0.value[0].restaurant).isEmpty ? "이름 미확인 식당" : $0.value[0].restaurant, entries: $0.value) }
         if let repeated = repeats.filter({ Set($0.entries.map(\.mealID)).count > 1 }).sorted(by: {
             let left = Set($0.entries.map(\.mealID)).count, right = Set($1.entries.map(\.mealID)).count
             return left == right ? $0.key < $1.key : left > right
         }).first {
-            cards.append(card(.repeated, repeated.name, "\(Set(repeated.entries.map(\.mealID)).count)회 기록",
+            cards.append(card(.repeated, repeated.name, "같은 식당에서 \(Set(repeated.entries.map(\.mealID)).count)번 기록",
                               records: repeated.entries, explanation: "전체 기록에서 다시 등장했어요."))
         }
         if !menus.isEmpty {
@@ -123,13 +122,13 @@ enum HomeArchiveSummaryEngine {
         }
 
         let overalls = Dictionary(grouping: observations.filter {
-            $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1"
+            $0.kind == "overall_liking"
         }, by: \.experienceID)
         if let liked = entries.first(where: { entry in
             guard let ratings = overalls[entry.id], !ratings.isEmpty else { return false }
             return ratings.allSatisfy { ["positive", "very_positive"].contains($0.value.text) }
         }) {
-            cards.append(card(.liking, liked.menu, "전체 평가 · 호감", evidence: overalls[liked.id] ?? [],
+            cards.append(card(.liking, liked.menu, "음식 전체 · 좋았어요", evidence: overalls[liked.id] ?? [],
                               explanation: "좋았다고 남긴 가장 최근 음식이에요."))
         }
 
@@ -142,8 +141,8 @@ enum HomeArchiveSummaryEngine {
                         ? $0.id < $1.id : $0.distribution.mealCount > $1.distribution.mealCount
                 }
             if let candidate = candidates.first(where: { $0.conditions.isEmpty }) {
-                let assessment = candidate.direction.map(likingLabel)
-                    ?? (candidate.status == "mixed" ? "평가가 나뉘어요" : "첫 단서")
+                let assessment = "좋음 \(candidate.distribution.positive)회 · 아쉬움 \(candidate.distribution.negative)회"
+                    + (candidate.distribution.mixed > 0 ? " · 평가 나뉨 \(candidate.distribution.mixed)회" : "")
                 cards.append(card(.sensation, candidate.label, assessment,
                                   evidence: candidate.evidenceIDs.compactMap { evidenceByID[$0] },
                                   explanation: "\(candidate.distribution.mealCount)번의 식사\n\(candidate.body)"))
@@ -155,18 +154,26 @@ enum HomeArchiveSummaryEngine {
                 return $0.mealIDs.count == $1.mealIDs.count ? $0.id < $1.id : $0.mealIDs.count > $1.mealIDs.count
             }
             if let fit = fits.first {
-                cards.append(card(.fit, fit.label, fit.repeatedValue.map(PersonalTasteInsightPresentation.fitLabel)
+                cards.append(card(.fit, fit.label, fit.repeatedValue.map { value in
+                    let count = value == "just_right" ? fit.distribution.justRight : value == "below_preferred" ? fit.distribution.belowPreferred : fit.distribution.abovePreferred
+                    return "\(PersonalTasteInsightPresentation.fitLabel(value)) \(count)회"
+                }
                                   ?? (fit.status == "mixed_fit" ? "응답이 나뉘어요" : "첫 단서"),
                                   evidence: fit.evidenceIDs.compactMap { evidenceByID[$0] },
                                   explanation: PersonalTasteInsightPresentation.fitSummary(fit)))
             }
-            if let candidate = candidates.first(where: { !$0.conditions.isEmpty && $0.direction != nil }),
-               let direction = candidate.direction,
-               let assessment = ["positive": "호감", "neutral": "중립", "negative": "아쉬움"][direction] {
-                let conditions = PersonalTasteInsightPresentation.conditionText(candidate.conditions)
-                cards.append(card(.condition, "\(candidate.label) · \(assessment)", conditions,
-                                  evidence: candidate.evidenceIDs.compactMap { evidenceByID[$0] },
-                                  explanation: "\(conditions) · \(likingLabel(direction))\n\(candidate.body)"))
+            let conditional = candidates.filter { !$0.conditions.isEmpty && $0.direction != nil }
+            if let first = conditional.first(where: { left in conditional.contains { right in
+                left.attribute == right.attribute && left.reference == right.reference && left.conditions != right.conditions
+                    && left.conditions.count == 1 && right.conditions.count == 1
+                    && left.conditions[0].dimension == right.conditions[0].dimension && left.direction != right.direction
+            }}), let second = conditional.first(where: {
+                $0.attribute == first.attribute && $0.reference == first.reference && $0.conditions != first.conditions
+                    && $0.conditions.count == 1 && $0.conditions[0].dimension == first.conditions[0].dimension && $0.direction != first.direction
+            }) {
+                cards.append(card(.condition, "\(first.label), 다른 반응", "기록한 두 조건의 평가 차이",
+                    evidence: Set(first.evidenceIDs + second.evidenceIDs).sorted().compactMap { evidenceByID[$0] },
+                    explanation: "\(PersonalTasteInsightPresentation.conditionText(first.conditions)) · \(likingLabel(first.direction!))\n\(PersonalTasteInsightPresentation.conditionText(second.conditions)) · \(likingLabel(second.direction!))\n기록한 조건의 차이이며 원인을 확정하지 않아요."))
             }
             let differences = model.overallPatterns.filter { $0.conditions.isEmpty }.flatMap { pattern in
                 pattern.cells.filter { cell in
@@ -191,23 +198,26 @@ enum HomeArchiveSummaryEngine {
         }
 
         // 취향 변화가 아닌, 현재 보존된 감각 기록의 기간별 비중만 비교한다.
+        let mealRecordDates = Dictionary(grouping: entries, by: \.mealID).compactMapValues { $0.compactMap(\.savedAt).min() }
+        let recordDates = Dictionary(entries.compactMap { entry in mealRecordDates[entry.mealID].map { (entry.id, $0) } }, uniquingKeysWith: { first, _ in first })
+        func recordedDate(_ row: SensoryObservation) -> Date { recordDates[row.experienceID] ?? .distantPast }
         let day = calendar.startOfDay(for: referenceDate)
         if let recentStart = calendar.date(byAdding: .day, value: -89, to: day),
            let previousStart = calendar.date(byAdding: .day, value: -179, to: day) {
             let presence = observations.filter {
                 $0.kind == "sensory_presence" && $0.value == .flag(true) && $0.attribute != nil
-                    && $0.attribute?.hasSuffix(".unspecified") != true && $0.recordedAt >= previousStart
+                    && $0.attribute?.hasSuffix(".unspecified") != true && recordedDate($0) >= previousStart
             }
-            let recent = presence.filter { $0.recordedAt >= recentStart }
-            let previous = presence.filter { $0.recordedAt < recentStart }
+            let recent = presence.filter { recordedDate($0) >= recentStart }
+            let previous = presence.filter { recordedDate($0) < recentStart }
             let recentCount = Set(recent.map(\.independentMealID)).count
             let previousCount = Set(previous.map(\.independentMealID)).count
             let minimum = snapshot.personalModel?.policy.minMeals ?? 3
             if recentCount >= minimum && previousCount >= minimum {
                 let changes = Dictionary(grouping: presence) { [$0.attribute ?? "", $0.reference ?? ""].joined(separator: "|") }
                     .map { key, rows in
-                        let before = Set(rows.filter { $0.recordedAt < recentStart }.map(\.independentMealID)).count
-                        let after = Set(rows.filter { $0.recordedAt >= recentStart }.map(\.independentMealID)).count
+                        let before = Set(rows.filter { recordedDate($0) < recentStart }.map(\.independentMealID)).count
+                        let after = Set(rows.filter { recordedDate($0) >= recentStart }.map(\.independentMealID)).count
                         let from = Int((Double(before) / Double(previousCount) * 100).rounded())
                         let to = Int((Double(after) / Double(recentCount) * 100).rounded())
                         return (key: key, rows: rows, before: before, after: after, from: from, to: to)
@@ -219,12 +229,21 @@ enum HomeArchiveSummaryEngine {
                     let periodEntryIDs = Set(presence.map(\.experienceID))
                     cards.append(card(.change, change.rows[0].attributeLabel, "기록 \(change.from)% → \(change.to)%",
                                       records: entries.filter { periodEntryIDs.contains($0.id) }, evidence: change.rows,
-                                      explanation: "직전 90일 · \(change.before)/\(previousCount)번의 식사\n최근 90일 · \(change.after)/\(recentCount)번의 식사\n현재 남아 있는 감각 기록의 비중이에요."))
+                                      explanation: "직전 90일 · \(change.before)/\(previousCount)번의 식사\n최근 90일 · \(change.after)/\(recentCount)번의 식사\n기록일 기준으로 비교한 감각 기록의 비중이며 취향 변화가 아니에요."))
                 }
             }
         }
-        return HomeArchiveCard.Kind.allCases.map { kind in
-            cards.first { $0.kind == kind && !$0.isEmpty } ?? .empty(kind)
+        if !cards.contains(where: { $0.kind == .sensation }) {
+            let presence = Dictionary(grouping: observations.filter { $0.kind == "sensory_presence" && $0.value == .flag(true) && $0.attribute?.hasSuffix(".unspecified") == false }, by: \.attributeLabel)
+            if let item = presence.sorted(by: {
+                let a = Set($0.value.map(\.independentMealID)).count, b = Set($1.value.map(\.independentMealID)).count
+                return a == b ? $0.key < $1.key : a > b
+            }).first {
+                cards.append(card(.sensation, item.key, "\(Set(item.value.map(\.independentMealID)).count)번의 식사에서 기록", evidence: item.value))
+            }
+        }
+        return HomeArchiveCard.Kind.allCases.compactMap { kind in
+            cards.first { $0.kind == kind && (!$0.isEmpty || kind == .record) }
         }
     }
 
@@ -237,11 +256,11 @@ enum HomeArchiveSummaryEngine {
     }
 
     private static func menuKey(_ entry: DiningEntry) -> String {
-        entry.menuItemID.map { "id:" + $0 } ?? "name:" + normalized(entry.menu)
+        HomeArchiveIdentity.menu(entry)
     }
 
     private static func restaurantKey(_ entry: DiningEntry) -> String {
-        entry.restaurantID.map { "id:" + $0 } ?? "name:" + normalized(entry.restaurant)
+        HomeArchiveIdentity.restaurant(entry)
     }
 }
 
@@ -674,6 +693,7 @@ struct HomePeriodInsightCardData: Identifiable, Equatable {
     let chartValues: [Double]
     let accentAxis: TasteAxis?
     let state: HomeSummaryMetricState
+    var archiveChart: HomeArchiveChart? = nil
 
     var id: String { kind.rawValue }
 }
@@ -1154,86 +1174,8 @@ struct HomeArchiveMetricSection: Identifiable, Equatable {
 
 /// 하단은 관찰 분포를 표시하고, 취향 방향에 대한 해석은 상단 TBA에 맡긴다.
 enum HomeArchiveMetricsEngine {
-    static func sections(
-        entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot,
-        referenceDate: Date = .now
-    ) -> [HomeArchiveMetricSection] {
-        var seen = Set<UUID>()
-        let entries = entries.filter { $0.observedAt <= referenceDate && seen.insert($0.id).inserted }
-            .sorted {
-                $0.observedAt == $1.observedAt ? $0.id.uuidString < $1.id.uuidString : $0.observedAt > $1.observedAt
-            }
-        let completed = entries.filter(\.hasCompletedTasteFeedback)
-        let completedIDs = Set(completed.map(\.id))
-        let excludedIDs = Set(snapshot.personalModel?.excludedEvidence.map(\.id) ?? [])
-        var seenEvidence = Set<String>()
-        let observations = snapshot.observations.filter {
-            completedIDs.contains($0.experienceID) && !excludedIDs.contains($0.id)
-                && ($0.observedAt ?? $0.recordedAt) <= referenceDate
-                && ($0.knownAt ?? $0.recordedAt) <= referenceDate
-                && seenEvidence.insert($0.id).inserted
-        }
-        let meals = Dictionary(entries.map { ($0.id, $0.mealID) }, uniquingKeysWith: { first, _ in first })
-        let menus = Dictionary(grouping: entries.filter { !normalized($0.menu).isEmpty }, by: {
-            $0.menuItemID.map { "id:" + $0 } ?? "name:" + normalized($0.menu)
-        })
-        let restaurants = Dictionary(grouping: entries.filter { !normalized($0.restaurant).isEmpty }, by: {
-            $0.restaurantID.map { "id:" + $0 } ?? "name:" + normalized($0.restaurant)
-        })
-
-        func metric(_ id: String, _ label: String, _ title: String, _ detail: String,
-                    kind: HomePeriodInsightKind = .recordFlow, axis: TasteAxis? = nil,
-                    records: [DiningEntry] = [], evidence: [SensoryObservation] = []) -> HomeArchiveMetric {
-            .init(id: id, label: label,
-                  data: .init(kind: kind, title: title, detail: detail, supportingText: nil,
-                              stats: [], chartValues: [], accentAxis: axis,
-                              state: records.isEmpty && evidence.isEmpty ? .empty : .populated),
-                  entryIDs: Set(records.map(\.id)).union(evidence.map(\.experienceID)),
-                  evidenceIDs: Set(evidence.map(\.id)))
-        }
-
-        let repeatedMenuCount = menus.values.count { Set($0.map(\.mealID)).count >= 2 }
-        let revisitedRestaurantCount = restaurants.values.count { Set($0.map(\.mealID)).count >= 2 }
-        let recordCards = [
-            metric("meals", "식사", "\(Set(entries.map(\.mealID)).count)회",
-                   "전체 기록 · 피드백을 남긴 식사 \(Set(completed.map(\.mealID)).count)회", records: entries),
-            metric("menus", "메뉴", "\(menus.count)가지",
-                   "다시 먹은 메뉴 \(repeatedMenuCount)가지 · 전체 기간",
-                   kind: .experienceBreadth, records: entries),
-            metric("restaurants", "식당", "\(restaurants.count)곳",
-                   "다시 방문한 식당 \(revisitedRestaurantCount)곳 · 전체 기간", kind: .experienceBreadth, records: entries),
-        ]
-
-        // 같은 식사의 서로 다른 응답은 하나를 임의 선택하지 않고 '평가 나뉨'으로 보존한다.
-        func distribution(_ rows: [SensoryObservation], values: [(String, String)]) -> String {
-            guard !rows.isEmpty else { return "응답 없음" }
-            let byMeal = Dictionary(grouping: rows, by: { meals[$0.experienceID] ?? $0.independentMealID })
-            let votes = byMeal.values.map { Set($0.map { $0.value.text }) }
-            var parts = values.map { value, label in
-                "\(label) \(votes.count { $0 == Set([value]) })"
-            }
-            let mixed = votes.count { $0.count > 1 }
-            if mixed > 0 { parts.append("평가 나뉨 \(mixed)") }
-            return parts.joined(separator: " · ") + " / \(byMeal.count)회"
-        }
-
-        let overallValues = [("very_positive", "매우 좋음"), ("positive", "좋음"), ("neutral", "보통"),
-                             ("negative", "별로"), ("very_negative", "매우 별로")]
-        let overall = observations.filter { row in
-            row.kind == "overall_liking" && row.scale == "overall-five-category-v1"
-                && overallValues.contains { $0.0 == row.value.text }
-        }
-        let overallCard = metric("overall", "전체 만족도",
-                                 overall.isEmpty ? "응답 없음" : "\(Set(overall.map { meals[$0.experienceID] ?? $0.independentMealID }).count)회의 평가",
-                                 overall.isEmpty ? "음식 전체에 남긴 평가" : distribution(overall, values: overallValues),
-                                 kind: .tasteClue, evidence: overall)
-        return [
-            .init(id: "archive", title: "아카이브", cards: recordCards + [overallCard]),
-        ]
-    }
-
-    private static func normalized(_ value: String) -> String {
-        value.trimmingCharacters(in: .whitespacesAndNewlines)
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+    static func sections(entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot,
+                         referenceDate: Date = .now) -> [HomeArchiveMetricSection] {
+        HomeArchiveVisualizationEngine.sections(entries: entries, snapshot: snapshot, referenceDate: referenceDate)
     }
 }

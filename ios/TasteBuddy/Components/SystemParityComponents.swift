@@ -1035,6 +1035,55 @@ enum TasteLineChartMetrics {
     }
 }
 
+/// 홈의 기존 캡슐 막대와 끝점을 공유한다. 작은 값도 실제 높이 안에서만 그린다.
+struct TasteChartBarMark: View {
+    let axis: TasteAxis
+    var showsEndpoint = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            let diameter = min(geometry.size.width, geometry.size.height)
+            if diameter > 0 {
+                ZStack(alignment: .top) {
+                    Capsule().fill(axis.tintSoftBorderColor)
+                    if showsEndpoint {
+                        Circle().fill(axis.mainColor)
+                            .frame(width: diameter, height: diameter)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// 기존 선 그래프의 트랙·그라데이션·끝점을 값이 정한 가로 구간에 사용한다.
+struct TasteChartTrackMark: View {
+    let axis: TasteAxis
+
+    var body: some View {
+        Canvas { context, size in
+            let diameter = min(TasteLineChartMetrics.currentNodeDiameter, min(size.width, size.height))
+            guard diameter > 0 else { return }
+            let radius = diameter / 2
+            let start = CGPoint(x: radius, y: size.height / 2)
+            let end = CGPoint(x: size.width - radius, y: start.y)
+            var path = Path()
+            path.move(to: start)
+            path.addLine(to: end)
+            context.stroke(path, with: .color(axis.tintSoftBorderColor),
+                           style: StrokeStyle(lineWidth: diameter, lineCap: .round))
+            context.stroke(path, with: .linearGradient(
+                Gradient(colors: [axis.tintSoftBorderColor, axis.mainColor]), startPoint: start, endPoint: end),
+                style: StrokeStyle(lineWidth: min(TasteLineChartMetrics.coreLineWidth, diameter), lineCap: .round))
+            context.fill(Path(ellipseIn: CGRect(x: end.x - radius, y: end.y - radius, width: diameter, height: diameter)),
+                         with: .color(axis.mainColor))
+        }
+        .accessibilityHidden(true)
+    }
+}
+
 struct TasteLineChart: View {
     let entries: [TasteLineChartEntry]
     var maxPointGap: CGFloat = 36
@@ -1555,6 +1604,7 @@ struct RecommendationMiniCardLayout<Visual: View>: View {
     let subtitle: String
     let detail: String
     let detailFont: Font
+    var subtitleFont: Font = TBFont.regular(10)
     var onTap: (() -> Void)? = nil
     private let visual: Visual
 
@@ -1564,6 +1614,7 @@ struct RecommendationMiniCardLayout<Visual: View>: View {
         subtitle: String,
         detail: String,
         detailFont: Font = TBFont.semibold(10),
+        subtitleFont: Font = TBFont.regular(10),
         onTap: (() -> Void)? = nil,
         @ViewBuilder visual: () -> Visual
     ) {
@@ -1572,6 +1623,7 @@ struct RecommendationMiniCardLayout<Visual: View>: View {
         self.subtitle = subtitle
         self.detail = detail
         self.detailFont = detailFont
+        self.subtitleFont = subtitleFont
         self.onTap = onTap
         self.visual = visual()
     }
@@ -1601,7 +1653,8 @@ struct RecommendationMiniCardLayout<Visual: View>: View {
                 subtitle: subtitle,
                 detail: detail,
                 axis: axis,
-                detailFont: detailFont
+                detailFont: detailFont,
+                subtitleFont: subtitleFont
             )
         }
         .frame(
@@ -1633,6 +1686,7 @@ struct RecommendationMiniCardTextLayout: View {
     let detail: String
     let axis: TasteAxis
     var detailFont: Font = TBFont.semibold(10)
+    var subtitleFont: Font = TBFont.regular(10)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -1645,7 +1699,7 @@ struct RecommendationMiniCardTextLayout: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Text(subtitle)
-                    .font(TBFont.regular(10))
+                    .font(subtitleFont)
                     .foregroundStyle(axis.tintSubTextColor)
                     .lineLimit(1)
                     .truncationMode(.tail)

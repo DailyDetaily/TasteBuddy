@@ -1,0 +1,35 @@
+ M integrations/chatgpt/app.mjs
+ M ios/TasteBuddy.xcodeproj/project.pbxproj
+ M ios/TasteBuddy/App/AppModel.swift
+ M ios/TasteBuddy/App/TasteBuddyApp.swift
+ M ios/TasteBuddy/Components/Shell/AppRouteDestinations.swift
+ M ios/TasteBuddy/Data/Backend/NativeAccountDataRepository.swift
+ M ios/TasteBuddy/Domain/Models/SensoryAnalysisModels.swift
+ M ios/TasteBuddy/Domain/Models/TastePerception.swift
+ M ios/TasteBuddy/Domain/UseCases/SensoryAnalysisEngine.swift
+ M ios/TasteBuddy/Features/Analysis/ChatGPTAnalysisCard.swift
+ M ios/TasteBuddy/Features/Analysis/ChatGPTAnalysisConnection.swift
+ M ios/TasteBuddy/Features/Analysis/PersonalTasteInsightCards.swift
+ M ios/TasteBuddy/Features/Analysis/SensoryAnalysisCards.swift
+ M ios/TasteBuddy/Features/Dining/DiningView.swift
+ M ios/TasteBuddy/Features/Home/HomeSearchModels.swift
+ M ios/TasteBuddy/Features/Home/HomeView.swift
+ M ios/TasteBuddy/Models/TasteModels.swift
+ M ios/TasteBuddy/Resources/Info.plist
+ M ios/project.yml
+?? docs/product/longitudinal-food-memory.md
+?? integrations/chatgpt/test/food-memory.test.mjs
+?? ios/TasteBuddy.xcodeproj/xcshareddata/xcschemes/TasteBuddyMemoryQA.xcscheme
+?? ios/TasteBuddy/Domain/Models/DiningMemoryContext.swift
+?? ios/TasteBuddy/Domain/Models/FoodMemory.swift
+?? ios/TasteBuddy/Features/Home/FoodMemoryViews.swift
+?? ios/TasteBuddy/Resources/Fixtures/longitudinal-food-memory.json
+?? ios/TasteBuddyMemoryUITests/
+?? ios/TasteBuddyTests/LongitudinalFoodMemoryTests.swift
+?? output/home-taste-questions/
+?? output/longitudinal-memory/
+?? scripts/longitudinal-memory-storage.test.mjs
+?? scripts/test-native-food-memory-core.py
+?? scripts/test-native-memory-parser.py
+?? supabase/migrations/20260913010000_food_memory_export_v2.sql
+?? supabase/migrations/20260913011000_native_food_memory_v2.sql

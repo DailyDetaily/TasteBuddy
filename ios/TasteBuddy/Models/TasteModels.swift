@@ -379,14 +379,14 @@ struct DiningEntry: Identifiable, Codable, Equatable {
     let menu: String
     let menuItemID: String?
     /// 기존 호출부와 저장 자료의 호환 필드. observedAt과 같은 값으로 기록한다.
-    let date: Date
+    var date: Date
     /// 현재 입력 흐름이 알고 있는 경험 시각이다. 정확한 섭취 시각보다 정밀하게 해석하지 않는다.
-    let observedAt: Date
+    var observedAt: Date
     /// 레거시에 없던 시각은 nil로 두어 당시 값을 아는 것처럼 만들지 않는다.
     let savedAt: Date?
     let updatedAt: Date?
     let rating: Int
-    let note: String
+    var note: String
     let tasteExperienceIDs: [String]
     let detailTagIDs: [String]
     /// nil은 이전 ID 기록, 빈 배열은 새 선택을 모두 해제한 기록이다.
@@ -394,9 +394,13 @@ struct DiningEntry: Identifiable, Codable, Equatable {
     let overallEvaluation: DiningOverallEvaluation?
     let dishKindIDs: [String]
     let reflectionPhotoFilename: String?
-    let tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot?
+    var tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot?
     let feedbackStatus: DiningEntryFeedbackStatus
     let photoPalette: DiningPhotoPalette?
+
+    var mealTime: DiningMealTime?
+    var memoryRevision: Int?
+    var memoryCorrections: [DiningMemoryCorrection]?
 
     var hasCompletedTasteFeedback: Bool {
         feedbackStatus == .completed
@@ -423,7 +427,10 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         reflectionPhotoFilename: String? = nil,
         tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot? = nil,
         feedbackStatus: DiningEntryFeedbackStatus = .completed,
-        photoPalette: DiningPhotoPalette? = nil
+        photoPalette: DiningPhotoPalette? = nil,
+        mealTime: DiningMealTime? = nil,
+        memoryRevision: Int? = nil,
+        memoryCorrections: [DiningMemoryCorrection]? = nil
     ) {
         let resolvedObservedAt = observedAt ?? date
         self.id = id
@@ -447,6 +454,9 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         self.tbaAnalysisSnapshot = tbaAnalysisSnapshot
         self.feedbackStatus = feedbackStatus
         self.photoPalette = photoPalette
+        self.mealTime = mealTime
+        self.memoryRevision = memoryRevision
+        self.memoryCorrections = memoryCorrections
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -471,6 +481,7 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         case tbaAnalysisSnapshot
         case feedbackStatus
         case photoPalette
+        case mealTime, memoryRevision, memoryCorrections
     }
 
     init(from decoder: Decoder) throws {
@@ -511,6 +522,9 @@ struct DiningEntry: Identifiable, Codable, Equatable {
             DiningPhotoPalette.self,
             forKey: .photoPalette
         )
+        mealTime = try container.decodeIfPresent(DiningMealTime.self, forKey: .mealTime)
+        memoryRevision = try container.decodeIfPresent(Int.self, forKey: .memoryRevision)
+        memoryCorrections = try container.decodeIfPresent([DiningMemoryCorrection].self, forKey: .memoryCorrections)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -539,6 +553,9 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         try container.encodeIfPresent(tbaAnalysisSnapshot, forKey: .tbaAnalysisSnapshot)
         try container.encode(feedbackStatus, forKey: .feedbackStatus)
         try container.encodeIfPresent(photoPalette, forKey: .photoPalette)
+        try container.encodeIfPresent(mealTime, forKey: .mealTime)
+        try container.encodeIfPresent(memoryRevision, forKey: .memoryRevision)
+        try container.encodeIfPresent(memoryCorrections, forKey: .memoryCorrections)
     }
 
     func preparedForInitialSave(at savedAt: Date) -> DiningEntry {
@@ -549,11 +566,16 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         )
     }
 
-    func preparedForUpdate(previous: DiningEntry, at updatedAt: Date) -> DiningEntry {
-        replacingStorageContext(
+    func preparedForUpdate(previous: DiningEntry, at updatedAt: Date) throws -> DiningEntry {
+        var corrected = try recordingCorrection(from: previous, at: updatedAt)
+        if corrected.memoryRevisionNumber != previous.memoryRevisionNumber,
+           corrected.tbaAnalysisSnapshot == previous.tbaAnalysisSnapshot {
+            corrected.tbaAnalysisSnapshot = nil
+        }
+        return corrected.replacingStorageContext(
             mealID: previous.mealID,
             savedAt: previous.savedAt,
-            updatedAt: updatedAt
+            updatedAt: corrected.memoryRevisionNumber == previous.memoryRevisionNumber ? previous.updatedAt : updatedAt
         )
     }
 
@@ -571,7 +593,8 @@ struct DiningEntry: Identifiable, Codable, Equatable {
             rating: 0,
             note: "",
             sensorySelections: [],
-            feedbackStatus: .captured
+            feedbackStatus: .captured,
+            mealTime: mealTime
         )
     }
 
@@ -600,7 +623,10 @@ struct DiningEntry: Identifiable, Codable, Equatable {
             reflectionPhotoFilename: reflectionPhotoFilename,
             tbaAnalysisSnapshot: tbaAnalysisSnapshot,
             feedbackStatus: feedbackStatus,
-            photoPalette: photoPalette
+            photoPalette: photoPalette,
+            mealTime: mealTime,
+            memoryRevision: memoryRevision,
+            memoryCorrections: memoryCorrections
         )
     }
 

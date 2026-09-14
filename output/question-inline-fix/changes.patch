@@ -1,0 +1,476 @@
+--- before/ios/TasteBuddy/Domain/Models/DiningMemoryContext.swift
++++ after/ios/TasteBuddy/Domain/Models/DiningMemoryContext.swift
+@@ -76,7 +76,10 @@
+         let erased = changed.filter { field in
+             // 날짜 출처의 nil 복원은 개인정보 삭제 동작이 아니라 이전 불확실성으로의 교정이다.
+             // 기록 자체를 삭제하면 날짜 교정 이력도 함께 사라진다.
+-            !["mealTime", "observedAt"].contains(field) &&
++            // 레거시 선택 ID가 남은 nil 복원도 실행 취소다. 명시적인 [] 삭제와 구분한다.
++            let restoresLegacySelections = field == "sensorySelections" && after[field] == .null
++                && (!result.tasteExperienceIDs.isEmpty || !result.detailTagIDs.isEmpty)
++            return !["mealTime", "observedAt"].contains(field) && !restoresLegacySelections &&
+                 (after[field] == .null || after[field] == .string("") || after[field] == .array([]))
+         }
+         for i in history.indices {
+@@ -116,7 +119,28 @@
+             return .object(["response": fields[parts[3]] ?? .null,
+                             "target": fields["target"] ?? .null, "phase": fields["phase"] ?? .null])
+         }
+-        if let correction = memoryCorrections?.last(where: { $0.fields.contains(key) && facet($0.before[key]) != facet($0.after[key]) }) { return correction.changedAt }
++        var historicalBubbles = tasteExperienceIDs, historicalTags = detailTagIDs
++        func ids(_ value: DiningSelectionJSON?, fallback: [String]) -> [String] {
++            guard case .array(let values) = value else { return fallback }
++            return values.compactMap { if case .string(let id) = $0 { return id }; return nil }
++        }
++        func restored(_ value: DiningSelectionJSON?, bubbles: [String], tags: [String]) -> DiningSelectionJSON? {
++            guard key == "sensorySelections", value == .null else { return value }
++            let selections = SensoryAnalysisEngine.legacySelections(bubbleIDs: bubbles, tagIDs: tags, catalog: SensoryAnalysisEngine.contract?.selectionCatalog)
++            guard let data = try? JSONEncoder().encode(selections) else { return value }
++            return (try? JSONDecoder().decode(DiningSelectionJSON.self, from: data)) ?? value
++        }
++        for correction in (memoryCorrections ?? []).reversed() {
++            let beforeBubbles = ids(correction.before["tasteExperienceIDs"], fallback: historicalBubbles)
++            let beforeTags = ids(correction.before["detailTagIDs"], fallback: historicalTags)
++            if correction.fields.contains(key) {
++                // nil 레거시를 실제 선택 배열로 저장해도 원래 선택까지 새 응답 시각으로 바꾸지 않는다.
++                let before = restored(correction.before[key], bubbles: beforeBubbles, tags: beforeTags)
++                let after = restored(correction.after[key], bubbles: historicalBubbles, tags: historicalTags)
++                if facet(before) != facet(after) { return correction.changedAt }
++            }
++            historicalBubbles = beforeBubbles; historicalTags = beforeTags
++        }
+         return memoryCorrections == nil ? updatedAt ?? savedAt : savedAt
+     }
+ 
+--- before/ios/TasteBuddy/Domain/UseCases/PersonalTasteQuestionAnswer.swift
++++ after/ios/TasteBuddy/Domain/UseCases/PersonalTasteQuestionAnswer.swift
+@@ -6,9 +6,9 @@
+ }
+ 
+ enum PersonalTasteInlineAnswer {
+-    /// 가상 영향 계산도 실제 저장 가능한 선택지만 사용한다. 원문/레거시는 편집 경로다.
++    /// 가상 영향 계산도 실제 저장 가능한 선택지만 사용한다. 자유 원문은 편집 경로다.
+     static func safeSemanticAnswers(record: PersonalTasteModelRecord, facet: String, entry: DiningEntry) -> [String] {
+-        guard record.selectionEvidence != nil, entry.sensorySelections != nil else { return [] }
++        guard record.selectionEvidence != nil else { return [] }
+         let selection = PersonalTasteNextSelection(id: "validation-only", attribute: record.attribute ?? "", label: record.attributeLabel ?? "",
+             facet: facet, question: "", reason: "", evidenceIDs: [record.observationId], mealIDs: [record.mealId], createsEvidence: false,
+             intent: "clarification", proposedCondition: nil, unobserved: false)
+@@ -46,9 +46,24 @@
+         let choices: [TasteQuestionChoice]
+         let reason: String
+     }
++
++    /// 즉시 답변 카드에는 실제 원출처에 저장 가능한 질문만 표시한다.
++    /// 원문 확인과 새 식사 제안은 분석 대기열에 보존하되 답변 카드로 표시하지 않는다.
++    static func answerableQuestions(_ questions: [PersonalTasteNextSelection], observations: [SensoryObservation], entries: [DiningEntry]) -> [PersonalTasteNextSelection] {
++        let sources = Dictionary(observations.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
++        let originals = Dictionary(entries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
++        return questions.filter { question in
++            guard question.intent == "clarification", let id = question.responseSourceID, let source = sources[id] else { return false }
++            return !availability(selection: question, observation: source, entry: originals[source.experienceID]).choices.isEmpty
++        }
++    }
++
+     static func availability(selection: PersonalTasteNextSelection, observation: SensoryObservation?, entry: DiningEntry?) -> Availability {
+-        guard let entry, let observation else { return .init(choices: [], reason: "원출처를 확인할 수 없어 기록을 다시 열어야 해요.") }
+-        guard entry.sensorySelections != nil else { return .init(choices: [], reason: "이전 형식의 기록이에요. 원래 기록에서 확인하고 수정해 주세요.") }
++        guard selection.intent == "clarification", let entry, let observation,
++              observation.experienceID == entry.id, observation.id == selection.responseSourceID,
++              observation.attribute == selection.attribute, selection.evidenceIDs.contains(observation.id) else {
++            return .init(choices: [], reason: "원출처를 확인할 수 없어 기록을 다시 열어야 해요.")
++        }
+         guard observation.selectionEvidence != nil else { return .init(choices: [], reason: "원문에서 나온 질문이에요. 당시 표현을 확인하고 보완해 주세요.") }
+         let context = PersonalTasteQuestionResponseContext(selection: selection, userID: "", sourceEntryID: entry.id,
+             sourceTarget: observation.target, sourcePhase: observation.phase, sourceReference: observation.reference,
+@@ -64,15 +79,15 @@
+               entry.hasCompletedTasteFeedback,
+               let source = context.sourceSelectionEvidence,
+               choices(for: context.selection.facet).contains(where: { $0.id == answerID }),
+-              var selections = entry.sensorySelections else { return nil }
++              let catalog = SensoryAnalysisEngine.contract?.selectionCatalog else { return nil }
++        var selections = SensoryAnalysisEngine.effectiveSelections(for: entry, catalog: catalog)
+         let matches = selections.indices.filter {
+             let item = selections[$0]
+             return item.id == source.selectionID && item.type.rawValue == source.type
+                 && item.catalogVersion == source.catalogVersion && item.labelSnapshot == source.labelSnapshot
+                 && item.relatedBubbleID == source.relatedBubbleID && item.unparsedPayload == nil
+         }
+-        guard matches.count == 1, let index = matches.first,
+-              let catalog = SensoryAnalysisEngine.contract?.selectionCatalog else { return nil }
++        guard matches.count == 1, let index = matches.first else { return nil }
+         func related(_ evidence: SensorySelectionEvidence?) -> Bool {
+             evidence?.selectionID == source.selectionID && evidence?.type == source.type
+                 && evidence?.catalogVersion == source.catalogVersion && evidence?.relatedBubbleID == source.relatedBubbleID
+--- before/ios/TasteBuddy/Domain/UseCases/SensoryAnalysisEngine.swift
++++ after/ios/TasteBuddy/Domain/UseCases/SensoryAnalysisEngine.swift
+@@ -46,16 +46,7 @@
+             if Task.isCancelled { break }
+             var sources: [(String, String, SensoryRuleResult)] = []
+             if let overall = entry.overallEvaluation { sources.append(("overallEvaluation:liking", overall.responseLabelSnapshot, overall.parse())) }
+-            let selections: [DiningSensorySelection]
+-            if let direct = entry.sensorySelections { selections = direct }
+-            else {
+-                let ids = entry.tasteExperienceIDs.map { ($0, DiningSensorySelection.Kind.bubble) } + entry.detailTagIDs.map { ($0, DiningSensorySelection.Kind.detailTag) }
+-                selections = ids.map { id, kind in
+-                    let known = contract?.selectionCatalog.entries.first { $0.id == id && $0.type == kind.rawValue }
+-                    let oldLabel = kind == .bubble ? TasteExperienceCatalog.experienceByID[id]?.label : DiningDetailTagCatalog.metadata(for: id)?.label
+-                    return DiningSensorySelection(id: id, type: kind, labelSnapshot: known?.label ?? oldLabel ?? id)
+-                }
+-            }
++            let selections = effectiveSelections(for: entry, catalog: contract?.selectionCatalog)
+             if let contract {
+                 let chosen = DiningSensorySelectionParser.parse(selections, catalog: contract.selectionCatalog)
+                 for atom in chosen.observations {
+@@ -90,13 +81,13 @@
+         observations = dedupe(observations, by: { $0.id })
+         unresolved = dedupe(unresolved, by: { $0.id })
+         let entriesByID = Dictionary(uniqueKeysWithValues: completed.map { ($0.id,$0) })
+-        let selectionKeys = Dictionary(uniqueKeysWithValues: completed.map { ($0.id, PersonalTasteModelBuilder.canonical($0.sensorySelections)) })
++        let selectionKeys = Dictionary(uniqueKeysWithValues: completed.map { ($0.id, PersonalTasteModelBuilder.canonical(effectiveSelections(for: $0, catalog: contract?.selectionCatalog))) })
+         var safeAnswerCache: [String: [String]] = [:]
+         let personalModel = PersonalTasteModelBuilder.buildRecords(records: observations.map { o in
+             .init(observationId: o.id, userId: userID, experienceId: o.experienceID.uuidString.lowercased(), mealId: o.independentMealID.uuidString.lowercased(), kind: o.kind, attribute: o.attribute, attributeLabel: o.attributeLabel, reference: o.reference, value: o.value, scale: o.scale, target: o.target, phase: o.phase, observedAt: o.observedAt.map(PersonalTasteModelBuilder.timestamp), knownAt: o.knownAt.map(PersonalTasteModelBuilder.timestamp), dishKindIDs: o.dishKindIDs, phrase: o.phrase, sourceSpans: o.sourceSpans, confirmationStatus: o.selectionEvidence == nil ? "rule_extracted_statement" : "explicit_user_choice", selectionEvidence: o.selectionEvidence, conditionSources: personalConditionSources(o, entry: entriesByID[o.experienceID]))
+         }, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs, individualQuestions: true, nativeAnswerOptions: { record, facet in
+             guard let id = UUID(uuidString: record.experienceId), let entry = entriesByID[id] else { return [] }
+-            guard let source = record.selectionEvidence, entry.sensorySelections != nil else { return [] }
++            guard let source = record.selectionEvidence else { return [] }
+             let key = PersonalTasteModelBuilder.json([selectionKeys[id] ?? "", source.type, source.selectionID,
+                 source.catalogVersion, source.labelSnapshot, source.relatedBubbleID ?? "", record.attribute ?? "", record.reference ?? "",
+                 record.target, record.phase, facet])
+@@ -110,6 +101,22 @@
+             unresolved = unresolved.filter { ($0.observedAt ?? .distantFuture) <= asOf && ($0.knownAt ?? .distantFuture) <= asOf }
+         }
+         return .init(engineVersion: "\(version):\(contract?.ruleVersion ?? "unavailable")", observations: observations, unresolved: unresolved, insights: buildInsights(observations), mainWing: buildProfile(observations, styles: contract?.styles ?? []), completedExperienceCount: completed.filter { entry in asOf.map { entry.observedAt <= $0 && (entry.updatedAt ?? entry.savedAt ?? .distantFuture) <= $0 } ?? true }.count, sourceExperienceCount: Set(observations.filter { ($0.kind != "sensory_detail" && $0.kind != "unresolved") || ($0.selectionEvidence != nil && $0.selectionEvidence?.resolution != "unresolved") }.map(\.experienceID)).count, actualApiCalls: 0, needsMeaningReview: unresolved.contains(where: \.needsMeaningReview), limits: ["직접 남긴 감각과 평가만 해석하며 음식 이름·기존 점수로 취향을 추정하지 않아요.", "미등록 표현과 복잡한 조건은 원문으로 보관하고 의미 확인을 기다려요.", "메인·윙은 반복 기록을 구분하는 표시 정책이며 검증된 확률이나 고정 성격이 아니에요.", "같은 식사의 여러 기록은 mealID로 묶어 반복 횟수를 계산해요.", "현재 원문을 분석한 결과예요. asOf는 확인 가능한 시각 필터이며 과거 전체 원본 상태의 복원이 아니에요."], personalModel: personalModel, perception: TastePerceptionEngine.build(observations: observations, asOf: asOf))
++    }
++
++    /// 분석과 질문 응답에서 동일한 이전 선택 복원을 사용한다. 명시적인 빈 배열은 복원하지 않는다.
++    static func effectiveSelections(for entry: DiningEntry, catalog: DiningSensoryCatalogContract?) -> [DiningSensorySelection] {
++        if let direct = entry.sensorySelections { return direct }
++        return legacySelections(bubbleIDs: entry.tasteExperienceIDs, tagIDs: entry.detailTagIDs, catalog: catalog)
++    }
++
++    static func legacySelections(bubbleIDs: [String], tagIDs: [String], catalog: DiningSensoryCatalogContract?) -> [DiningSensorySelection] {
++        let ids = bubbleIDs.map { ($0, DiningSensorySelection.Kind.bubble) }
++            + tagIDs.map { ($0, DiningSensorySelection.Kind.detailTag) }
++        return ids.map { id, kind in
++            let known = catalog?.entries.first { $0.id == id && $0.type == kind.rawValue }
++            let oldLabel = kind == .bubble ? TasteExperienceCatalog.experienceByID[id]?.label : DiningDetailTagCatalog.metadata(for: id)?.label
++            return DiningSensorySelection(id: id, type: kind, labelSnapshot: known?.label ?? oldLabel ?? id)
++        }
+     }
+ 
+     private static func personalConditionSources(_ observation: SensoryObservation, entry: DiningEntry?) -> [PersonalTasteConditionSource] {
+--- before/ios/TasteBuddy/Features/Analysis/AnalysisView.swift
++++ after/ios/TasteBuddy/Features/Analysis/AnalysisView.swift
+@@ -232,7 +232,9 @@
+         in snapshot: SensoryAnalysisSnapshot
+     ) -> PersonalTasteNextSelection? {
+         guard let model = snapshot.personalModel else { return nil }
+-        return model.availableSelections.first { appModel.shouldPresentPersonalTasteQuestion(id: $0.id, userID: model.userID) }
++        return PersonalTasteInlineAnswer.answerableQuestions(
++            model.availableSelections, observations: snapshot.observations, entries: appModel.diningEntries
++        ).first { appModel.shouldPresentPersonalTasteQuestion(id: $0.id, userID: model.userID) }
+     }
+ 
+     @ViewBuilder
+--- before/ios/TasteBuddy/Features/Analysis/PersonalTasteInsightsRuntimePreview.swift
++++ after/ios/TasteBuddy/Features/Analysis/PersonalTasteInsightsRuntimePreview.swift
+@@ -26,6 +26,21 @@
+     }
+ 
+     private static var entries: [DiningEntry] {
++        if ProcessInfo.processInfo.arguments.contains("--question-legacy-qa") {
++            let legacy = (1...4).map { index in
++                DiningEntry(restaurant: "이전 기록 식당 \(index)", menu: "산미를 기록한 국물 \(index)",
++                    date: Date.now.addingTimeInterval(-Double(index) * 86400), rating: 0, note: "",
++                    tasteExperienceIDs: ["sour-fresh"], sensorySelections: nil, feedbackStatus: .completed)
++            }
++            let raw = DiningEntry(restaurant: "원문 식당", menu: "원문 국물", date: .now, rating: 0,
++                note: "산미가 강했다.", sensorySelections: [], feedbackStatus: .completed)
++            let conflict = DiningEntry(restaurant: "확인할 식당", menu: "확인할 국물", date: .now, rating: 0, note: "",
++                sensorySelections: [
++                    .init(id: "sour-fresh", type: .bubble, labelSnapshot: "산뜻한 산미", liking: .liked),
++                    .init(id: "sour-fresh", type: .bubble, labelSnapshot: "산뜻한 산미", liking: .disliked)
++                ], feedbackStatus: .completed)
++            return legacy + [raw, conflict]
++        }
+         var original = (0..<7).map { index in
+             let id = UUID(uuidString: String(format: "C0000000-0000-0000-0000-%012d", index + 1))!
+             let observed = Date(timeIntervalSince1970: 1_788_480_000 + Double(index * 86_400))
+--- before/ios/TasteBuddy/Features/Analysis/SensoryAnalysisCards.swift
++++ after/ios/TasteBuddy/Features/Analysis/SensoryAnalysisCards.swift
+@@ -668,24 +668,24 @@
+         let reason = selection.intent == "source_review" ? (selection.facet == "conflict" ? "기존 응답이 충돌해요. 원문에서 확인하며 수정할 수 있어요." : "말씀하신 뜻을 임의로 정하지 않았어요. 원문을 보완하거나 나중에 확인할 수 있어요.") : availability.reason
+         let supporting = [entry?.memoryDateDescription,
+             observation.map { "“\($0.selectionEvidence?.labelSnapshot ?? $0.phrase)”" } ?? pending.map { "“\($0.phrase)”" }, reason].compactMap { $0 }.joined(separator: "\n")
+-        TasteQuestionStackCard(
+-            question: [meal, scope.isEmpty ? nil : scope, selection.question].compactMap { $0 }.joined(separator: "\n"),
+-            supportingText: supporting,
+-            choices: selection.intent == "clarification" ? availability.choices : [],
+-            photoFilename: entry?.reflectionPhotoFilename,
+-            illustrationSeed: selection.id,
+-            showsStack: showsStack,
+-            initiallyExpanded: initiallyExpandedForQA,
+-            isStackExpanded: isStackExpanded,
+-            onToggleStack: onToggleStack,
+-            fallbackActionTitle: selection.intent == "exploration" ? "새 식사에서 확인 · 선택 사항" : "원래 기록 보기/수정",
+-            onConfirm: saveAnswer,
+-            onStartRecord: onStartNewRecord,
+-            onInteraction: {
+-                appModel.recordPersonalTasteQuestionExposure(id: selection.id, userID: appModel.sensoryAnalysis.personalModel?.userID ?? "local-owner")
+-            }
+-        )
+-        .id(selection.id)
++        if !availability.choices.isEmpty {
++            TasteQuestionStackCard(
++                question: [meal, scope.isEmpty ? nil : scope, selection.question].compactMap { $0 }.joined(separator: "\n"),
++                supportingText: supporting,
++                choices: availability.choices,
++                photoFilename: entry?.reflectionPhotoFilename,
++                illustrationSeed: selection.id,
++                showsStack: showsStack,
++                initiallyExpanded: initiallyExpandedForQA,
++                isStackExpanded: isStackExpanded,
++                onToggleStack: onToggleStack,
++                onConfirm: saveAnswer,
++                onInteraction: {
++                    appModel.recordPersonalTasteQuestionExposure(id: selection.id, userID: appModel.sensoryAnalysis.personalModel?.userID ?? "local-owner")
++                }
++            )
++            .id(selection.id)
++        }
+     }
+ 
+     private var initiallyExpandedForQA: Bool {
+--- before/ios/TasteBuddy/Features/Home/HomeSummaryComponents.swift
++++ after/ios/TasteBuddy/Features/Home/HomeSummaryComponents.swift
+@@ -109,7 +109,9 @@
+     }
+ 
+     private var visibleQuestions: [PersonalTasteNextSelection] {
+-        (snapshot.personalModel?.availableSelections ?? []).filter {
++        PersonalTasteInlineAnswer.answerableQuestions(
++            snapshot.personalModel?.availableSelections ?? [], observations: snapshot.observations, entries: appModel.diningEntries
++        ).filter {
+             appModel.shouldPresentPersonalTasteQuestion(id: $0.id, userID: personalModelUserID)
+         }
+     }
+@@ -228,7 +230,10 @@
+     private var userID: String { appModel.sensoryAnalysis.personalModel?.userID ?? "local-owner" }
+ 
+     private var groups: [PersonalTasteQuestionList.Group] {
+-        let questions = (appModel.sensoryAnalysis.personalModel?.availableSelections ?? []).filter {
++        let questions = PersonalTasteInlineAnswer.answerableQuestions(
++            appModel.sensoryAnalysis.personalModel?.availableSelections ?? [],
++            observations: appModel.sensoryAnalysis.observations, entries: appModel.diningEntries
++        ).filter {
+             appModel.shouldPresentPersonalTasteQuestion(id: $0.id, userID: userID)
+         }
+         return PersonalTasteQuestionList.groups(questions: questions, observations: appModel.sensoryAnalysis.observations, entries: appModel.diningEntries)
+--- before/ios/TasteBuddyMemoryUITests/FoodMemoryUITests.swift
++++ after/ios/TasteBuddyMemoryUITests/FoodMemoryUITests.swift
+@@ -101,10 +101,10 @@
+         app = XCUIApplication()
+         app.launchArguments = ["--sensory-insights-home-qa", "--home-questions-confirmed-dates-qa"]
+     }
+-    private func reveal(_ element: XCUIElement) {
++    private func reveal(_ element: XCUIElement, verticalInset: CGFloat = 180) {
+         // SwiftUI는 스크롤 밖의 버튼도 hittable로 보고할 수 있다.
+         // 고정 헤더와 하단 탭을 피해 실제 화면 안에 중심을 옮긴 뒤 누른다.
+-        let visible = app.frame.insetBy(dx: 0, dy: 180)
++        let visible = app.frame.insetBy(dx: 0, dy: verticalInset)
+         for _ in 0..<24 {
+             guard element.exists else { app.swipeUp(); continue }
+             let frame = element.frame
+@@ -239,4 +239,49 @@
+         XCTAssertTrue(app.buttons["taste-question-toggle"].firstMatch.exists)
+         capture("home-question-all-list")
+     }
++
++    func test05LegacyQuestionHasInlineChoicesAndAllListExcludesEditingOnlyItems() throws {
++        app.launchArguments += ["--question-legacy-qa"]
++        app.launch()
++        let toggle = app.buttons["taste-question-toggle"].firstMatch
++        XCTAssertTrue(toggle.waitForExistence(timeout: 120))
++        reveal(toggle); toggle.tap()
++        let answer = app.buttons["taste-question-choice-liked"].firstMatch
++        reveal(answer)
++        XCTAssertTrue(app.buttons["taste-question-choice-neutral"].firstMatch.exists)
++        XCTAssertTrue(app.buttons["taste-question-choice-disliked"].firstMatch.exists)
++        XCTAssertFalse(app.buttons["원래 기록 보기/수정"].exists)
++        capture("legacy-home-inline-choices")
++        answer.tap()
++        XCTAssertTrue(text("이 식사에 답변을 기록했어요").waitForExistence(timeout: 10))
++        let stack = app.buttons["taste-question-stack-toggle"].firstMatch
++        reveal(stack); stack.tap()
++        let seeAll = app.buttons["taste-questions-see-all"]
++        reveal(seeAll); seeAll.tap()
++        XCTAssertTrue(app.staticTexts["질문 전체보기"].waitForExistence(timeout: 30))
++        let first = app.buttons["taste-question-toggle"].firstMatch
++        // 전체보기 시트는 홈의 고정 검색창보다 상단 여백이 작다.
++        reveal(first, verticalInset: 120); first.tap()
++        let remaining = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "taste-question-choice-")).firstMatch
++        reveal(remaining)
++        XCTAssertFalse(app.buttons["원래 기록 보기/수정"].exists)
++        XCTAssertFalse(text("서로 다른 응답을 확인하고").exists)
++        capture("legacy-question-all-list")
++        remaining.tap()
++        XCTAssertTrue(text("이 식사에 답변을 기록했어요").waitForExistence(timeout: 10))
++    }
++
++    func test06AnalysisLegacyQuestionHasInlineChoices() throws {
++        app.launchArguments = ["--sensory-insights-qa", "--question-legacy-qa"]
++        app.launch()
++        let toggle = app.buttons["taste-question-toggle"].firstMatch
++        XCTAssertTrue(toggle.waitForExistence(timeout: 120))
++        reveal(toggle); toggle.tap()
++        let answer = app.buttons["taste-question-choice-neutral"].firstMatch
++        reveal(answer)
++        XCTAssertFalse(app.buttons["원래 기록 보기/수정"].exists)
++        capture("legacy-analysis-inline-choices")
++        answer.tap()
++        XCTAssertTrue(text("이 식사에 답변을 기록했어요").waitForExistence(timeout: 10))
++    }
+ }
+--- before/ios/TasteBuddyTests/HomeTasteQuestionsIntegrationTests.swift
++++ after/ios/TasteBuddyTests/HomeTasteQuestionsIntegrationTests.swift
+@@ -35,18 +35,32 @@
+         return (model, defaults)
+     }
+ 
+-    @MainActor func testQ4LegacyAndExplicitEmptySelectionsHaveSafeEditingFallback() async throws {
++    @MainActor func testQ4LegacyCanAnswerInlineAndUndoWithoutRevivingExplicitEmptySelections() async throws {
+         var legacy = try replacing(source(), "sensorySelections", with: Optional<[DiningSensorySelection]>.none)
+         legacy = try replacing(legacy, "tasteExperienceIDs", with: ["sour-fresh"])
+         let (model, _) = try await app([legacy])
+         let question = try XCTUnwrap(model.sensoryAnalysis.personalModel?.availableSelections.first { $0.facet == "liking" })
+         let observation = model.sensoryAnalysis.observations.first { $0.id == question.responseSourceID }
+         let availability = PersonalTasteInlineAnswer.availability(selection: question, observation: observation, entry: model.diningEntry(id: legacy.id))
+-        XCTAssertTrue(availability.choices.isEmpty)
+-        XCTAssertTrue(availability.reason.contains("이전 형식"))
++        XCTAssertEqual(availability.choices.map(\.id), ["liked", "neutral", "disliked"])
+         XCTAssertNil(model.diningEntry(id: legacy.id)?.sensorySelections)
++        let context = try XCTUnwrap(model.personalTasteQuestionResponseContext(for: question))
++        let answer = try XCTUnwrap(PersonalTasteInlineAnswer.applying("liked", to: legacy, context: context))
++        XCTAssertEqual(answer.sensorySelections?.first?.liking, .liked)
++        XCTAssertEqual(answer.tasteExperienceIDs, legacy.tasteExperienceIDs)
++        XCTAssertEqual(answer.note, legacy.note)
++        XCTAssertEqual(answer.mealID, legacy.mealID)
++        XCTAssertEqual(model.savePersonalTasteQuestionResponse(answer, context: context), .updated(resolved: true))
++        model.preparePersonalTasteAnswerUndo(before: legacy, context: context)
++        try await wait(model)
++        XCTAssertFalse(model.sensoryAnalysis.personalModel!.availableSelections.contains { $0.id == question.id })
++        XCTAssertTrue(model.undoPersonalTasteAnswer())
++        XCTAssertNil(model.diningEntry(id: legacy.id)?.sensorySelections)
++        try await wait(model)
++        XCTAssertTrue(model.sensoryAnalysis.personalModel!.availableSelections.contains { $0.id == question.id })
+         legacy = try replacing(legacy, "sensorySelections", with: [DiningSensorySelection]())
+         XCTAssertTrue(try SensoryAnalysisEngine.analyze(entries: [legacy]).observations.isEmpty)
++        XCTAssertTrue(PersonalTasteInlineAnswer.availability(selection: question, observation: observation, entry: legacy).choices.isEmpty)
+     }
+ 
+     @MainActor func testQ5InheritedTargetAndPhaseApplyOnlyToOriginalTagFacet() async throws {
+@@ -292,7 +306,7 @@
+         XCTAssertEqual(PersonalTasteQuestionList.remaining(ids: batch, questions: []), [])
+     }
+ 
+-    func testSafeSimulationOptionsMatchInlineStorageAndLegacyHasNoHypotheticalButtons() throws {
++    func testSafeSimulationOptionsRequireTheActualLegacySelectionAndMatchInlineStorage() throws {
+         let entry = source()
+         let snapshot = try SensoryAnalysisEngine.analyze(entries: [entry])
+         let observation = try XCTUnwrap(snapshot.observations.first { $0.kind == "sensory_presence" })
+@@ -302,6 +316,93 @@
+         XCTAssertEqual(PersonalTasteInlineAnswer.safeSemanticAnswers(record: record, facet: "liking", entry: entry), ["positive", "neutral", "negative"])
+         let legacy = try replacing(entry, "sensorySelections", with: Optional<[DiningSensorySelection]>.none)
+         XCTAssertTrue(PersonalTasteInlineAnswer.safeSemanticAnswers(record: record, facet: "liking", entry: legacy).isEmpty)
++        let restored = try replacing(legacy, "tasteExperienceIDs", with: ["sour-fresh"])
++        let restoredSnapshot = try SensoryAnalysisEngine.analyze(entries: [restored])
++        let restoredObservation = try XCTUnwrap(restoredSnapshot.observations.first { $0.kind == "sensory_presence" })
++        let restoredRecord = PersonalTasteModelRecord(observationId: restoredObservation.id, userId: "owner", experienceId: restored.id.uuidString,
++            kind: restoredObservation.kind, attribute: restoredObservation.attribute, value: restoredObservation.value,
++            target: restoredObservation.target, phase: restoredObservation.phase, selectionEvidence: restoredObservation.selectionEvidence)
++        XCTAssertEqual(PersonalTasteInlineAnswer.safeSemanticAnswers(record: restoredRecord, facet: "liking", entry: restored), ["positive", "neutral", "negative"])
++    }
++
++    func testAnswerCardsExcludeReviewRawAndExplorationWithoutDeletingTheirEvidence() throws {
++        let direct = source()
++        let raw = DiningEntry(restaurant: "원문 식당", menu: "원문 국물", date: .now, rating: 0,
++            note: "산미가 강했다.", sensorySelections: [], feedbackStatus: .completed)
++        var conflicting = direct.sensorySelections![0]
++        conflicting.liking = .liked
++        var opposite = conflicting; opposite.liking = .disliked
++        let conflict = try replacing(source(restaurant: "충돌 식당"), "sensorySelections", with: [conflicting, opposite])
++        let entries = [raw, conflict, direct]
++        let snapshot = try SensoryAnalysisEngine.analyze(entries: entries)
++        var questions = snapshot.personalModel!.availableSelections
++        XCTAssertTrue(questions.contains { $0.intent == "source_review" })
++        XCTAssertTrue(questions.contains { $0.sourceExperienceID == raw.id.uuidString.lowercased() })
++        questions.append(.init(id: "future-exploration", attribute: "taste.sour", label: "산미", facet: "intensity", question: "다음 식사", reason: "",
++            evidenceIDs: [], mealIDs: [], createsEvidence: false, intent: "exploration", proposedCondition: nil, unobserved: true))
++        let answerable = PersonalTasteInlineAnswer.answerableQuestions(questions, observations: snapshot.observations, entries: entries)
++        XCTAssertFalse(answerable.isEmpty)
++        XCTAssertTrue(answerable.allSatisfy { $0.sourceExperienceID == direct.id.uuidString.lowercased() })
++        XCTAssertFalse(snapshot.unresolved.isEmpty)
++        XCTAssertEqual(PersonalTasteInlineAnswer.answerableQuestions(questions, observations: snapshot.observations, entries: [raw, conflict]), [])
++        XCTAssertFalse(try SensoryAnalysisEngine.analyze(entries: [raw]).observations.isEmpty)
++    }
++
++    func testLegacyAnswerPreservesOtherSelectionsUnknownIDsAndOriginalFields() throws {
++        var legacy = try replacing(source(), "sensorySelections", with: Optional<[DiningSensorySelection]>.none)
++        legacy = try replacing(legacy, "tasteExperienceIDs", with: ["sour-fresh", "unknown-legacy-bubble"])
++        legacy = try replacing(legacy, "detailTagIDs", with: ["unknown-legacy-tag"])
++        legacy.note = "원래 기록 메모"
++        let snapshot = try SensoryAnalysisEngine.analyze(entries: [legacy])
++        let question = try XCTUnwrap(snapshot.personalModel!.availableSelections.first { $0.attribute == "taste.sour" && $0.facet == "liking" })
++        let observation = try XCTUnwrap(snapshot.observations.first { $0.id == question.responseSourceID })
++        let context = PersonalTasteQuestionResponseContext(selection: question, userID: "local-owner", sourceEntryID: legacy.id,
++            sourceTarget: observation.target, sourcePhase: observation.phase, sourceReference: observation.reference,
++            entryIDsAtStart: [legacy.id], mealIDsAtStart: [legacy.mealID], sourceSelectionEvidence: observation.selectionEvidence)
++        let answer = try XCTUnwrap(PersonalTasteInlineAnswer.applying("neutral", to: legacy, context: context))
++        let effective = SensoryAnalysisEngine.effectiveSelections(for: legacy, catalog: SensoryAnalysisEngine.contract?.selectionCatalog)
++        XCTAssertEqual(Array(answer.sensorySelections!.dropFirst()), Array(effective.dropFirst()))
++        let encoder = JSONEncoder()
++        var before = try JSONSerialization.jsonObject(with: encoder.encode(legacy)) as! [String: Any]
++        var after = try JSONSerialization.jsonObject(with: encoder.encode(answer)) as! [String: Any]
++        before.removeValue(forKey: "sensorySelections"); after.removeValue(forKey: "sensorySelections")
++        XCTAssertEqual(before as NSDictionary, after as NSDictionary)
++        let reparsed = try SensoryAnalysisEngine.analyze(entries: [answer])
++        XCTAssertEqual(reparsed.unresolved, snapshot.unresolved)
++        XCTAssertEqual(reparsed.observations.filter { $0.kind != "attribute_liking" }, snapshot.observations)
++        XCTAssertEqual(reparsed.observations.filter { $0.kind == "attribute_liking" }.map(\.value), [.text("neutral")])
++        let duplicate = try replacing(legacy, "tasteExperienceIDs", with: ["sour-fresh", "sour-fresh"])
++        XCTAssertNil(PersonalTasteInlineAnswer.applying("liked", to: duplicate, context: context))
++    }
++
++    func testLegacyInlineAnswerDatesOnlyTheNewResponseAndPreservesCorrectionHistory() throws {
++        var legacy = try replacing(source(), "sensorySelections", with: Optional<[DiningSensorySelection]>.none)
++        legacy = try replacing(legacy, "tasteExperienceIDs", with: ["sour-fresh"])
++        let snapshot = try SensoryAnalysisEngine.analyze(entries: [legacy])
++        let question = try XCTUnwrap(snapshot.personalModel!.availableSelections.first { $0.facet == "liking" })
++        let observation = try XCTUnwrap(snapshot.observations.first { $0.id == question.responseSourceID })
++        let context = PersonalTasteQuestionResponseContext(selection: question, userID: "local-owner", sourceEntryID: legacy.id,
++            sourceTarget: observation.target, sourcePhase: observation.phase, sourceReference: observation.reference,
++            entryIDsAtStart: [legacy.id], mealIDsAtStart: [legacy.mealID], sourceSelectionEvidence: observation.selectionEvidence)
++        let answer = try XCTUnwrap(PersonalTasteInlineAnswer.applying("liked", to: legacy, context: context))
++        let answeredAt = legacy.savedAt!.addingTimeInterval(86400)
++        let saved = try answer.preparedForUpdate(previous: legacy, at: answeredAt)
++        let after = try SensoryAnalysisEngine.analyze(entries: [saved])
++        XCTAssertEqual(after.observations.first { $0.kind == "sensory_presence" }?.knownAt, observation.knownAt)
++        XCTAssertEqual(after.observations.first { $0.kind == "attribute_liking" }?.knownAt, answeredAt)
++        XCTAssertEqual(saved.memoryCorrections?.last?.before["sensorySelections"], .null)
++        // 뒤에 레거시 ID만 수정해도 앞선 변환 당시의 출처로 시간을 비교한다.
++        let later = try replacing(saved, "tasteExperienceIDs", with: ["different-legacy-id"])
++            .preparedForUpdate(previous: saved, at: answeredAt.addingTimeInterval(3600))
++        XCTAssertEqual(later.knownAt(sourceField: observation.sourceField), observation.knownAt)
++        let undone = try legacy.preparedForUpdate(previous: saved, at: answeredAt.addingTimeInterval(7200))
++        XCTAssertNil(undone.sensorySelections)
++        XCTAssertEqual(undone.knownAt(sourceField: observation.sourceField), observation.knownAt)
++        XCTAssertEqual(undone.memoryCorrections?.first?.before["sensorySelections"], .null)
++        let cleared = try replacing(saved, "sensorySelections", with: [DiningSensorySelection]())
++            .preparedForUpdate(previous: saved, at: answeredAt.addingTimeInterval(7200))
++        XCTAssertTrue(cleared.memoryCorrections!.allSatisfy { $0.before["sensorySelections"] == nil })
++        XCTAssertTrue(try SensoryAnalysisEngine.analyze(entries: [cleared]).observations.isEmpty)
+     }
+ 
+     @MainActor func testCachedHomePresentationInvalidatesOnRevisionAndKeepsRawMemoryReadable() async throws {

@@ -1452,6 +1452,7 @@ struct TasteChangeFocusView: View {
     @State private var selectedTasteIndex = 0
     @State private var selectedSeriesID: String?
     @State private var selectedEntry: DiningEntry?
+    @State private var showsMemoryComparison = false
     private let tastes = TasteAxis.allCases
     private var allSeries: [TasteChangeSeries] {
         seriesOverride ?? TasteChangeSeries.build(perception: appModel.sensoryAnalysis.perception,
@@ -1487,6 +1488,9 @@ struct TasteChangeFocusView: View {
             .onChange(of: selectedMonths) { _, _ in periodOffset = 0 }
         } content: {
             VStack(spacing: 16) {
+                Button("음식·표현·호감 기록을 시간순으로 비교") { showsMemoryComparison = true }
+                Text("아래 그래프는 확인된 식사 시점의 지각 강도와 기준 음식 회상 응답을 구분해요. 원문 교정은 취향 전환으로 세지 않아요.")
+                    .font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary)
                 HStack {
                     CircleNavigationButton(symbol: "chevron.left", isEnabled: canGoBack) { periodOffset -= 1 }
                         .accessibilityLabel("이전 기간 보기")
@@ -1558,6 +1562,7 @@ struct TasteChangeFocusView: View {
                let index = tastes.firstIndex(of: first.axis) { selectedTasteIndex = index; selectedSeriesID = first.id }
         }
         .sheet(item: $selectedEntry) { DishFeedbackDetailSheet(item: .fromDiningEntry($0, analysis: nil)) }
+        .sheet(isPresented: $showsMemoryComparison) { FoodMemoryComparisonView(scope: .all) }
     }
     private func moveTaste(_ direction: Int) {
         selectedTasteIndex = (selectedTasteIndex + direction + tastes.count) % tastes.count

@@ -1,0 +1,191 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project ios/TasteBuddy.xcodeproj -scheme TasteBuddyMemoryQA -destination "platform=iOS Simulator,id=54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4" -derivedDataPath /tmp/TasteBuddyHomeQuestionsQA -resultBundlePath output/question-inline-fix/ui-2.xcresult -jobs 4 -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO "-only-testing:TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test05LegacyQuestionHasInlineChoicesAndAllListExcludesEditingOnlyItems" "-only-testing:TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test06AnalysisLegacyQuestionHasInlineChoices"
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.5.0
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.9.0
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.4.0
+  ProgressiveBlurHeader: https://github.com/dominikmartn/ProgressiveBlurHeader @ main (0e8c29b)
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.7.1
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.6.0
+  VariableBlur: https://github.com/nikstar/VariableBlur @ main (5073a0d)
+  Supabase: https://github.com/supabase/supabase-swift.git @ 2.46.0
+
+Writing result bundle at path:
+	/Users/sinjunho/Desktop/Taste Buddy/output/question-inline-fix/ui-2.xcresult
+
+2026-09-13 20:41:35.855488+0900 TasteBuddyMemoryUITests-Runner[16490:4548345] [Default] Running tests...
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-09-13 20:41:37.713.
+Test Suite 'TasteBuddyMemoryUITests.xctest' started at 2026-09-13 20:41:37.715.
+Test Suite 'HomeTasteQuestionUITests' started at 2026-09-13 20:41:37.715.
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test05LegacyQuestionHasInlineChoicesAndAllListExcludesEditingOnlyItems]' started.
+    t =     0.00s Start Test at 2026-09-13 20:41:37.718
+    t =     0.11s Set Up
+    t =     0.11s Open com.juneh96.tastebuddy.ios
+    t =     0.12s     Launch com.juneh96.tastebuddy.ios
+2026-09-13 20:41:37.912 xcodebuild[16411:4547975] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-09-13 20:41:37.912 xcodebuild[16411:4547975] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.64s         Setting up automation session
+    t =     3.95s         Wait for com.juneh96.tastebuddy.ios to idle
+    t =     7.55s Waiting 120.0s for "taste-question-toggle" Button to exist
+    t =     8.58s     Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-toggle" Button`
+    t =     8.58s         Checking existence of `"taste-question-toggle" Button`
+    t =     8.86s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =     8.96s Checking existence of `"taste-question-toggle" Button`
+    t =     9.09s Find the "taste-question-toggle" Button
+    t =     9.25s Find the "taste-question-toggle" Button
+    t =     9.56s Tap "taste-question-toggle" Button
+    t =     9.56s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =     9.59s     Find the "taste-question-toggle" Button
+    t =     9.77s     Check for interrupting elements affecting "taste-question-toggle" Button
+    t =     9.91s     Synthesize event
+    t =    10.26s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    10.31s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    10.40s Checking existence of `"taste-question-choice-liked" Button`
+    t =    10.57s Find the "taste-question-choice-liked" Button
+    t =    10.74s Find the "taste-question-choice-liked" Button
+    t =    10.96s Checking existence of `"taste-question-choice-neutral" Button`
+    t =    11.14s Checking existence of `"taste-question-choice-disliked" Button`
+    t =    11.30s Checking existence of `"원래 기록 보기/수정" Button`
+    t =    11.41s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    11.91s Added attachment named 'legacy-home-inline-choices'
+    t =    11.91s Tap "taste-question-choice-liked" Button
+    t =    11.91s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    11.93s     Find the "taste-question-choice-liked" Button
+    t =    12.10s     Check for interrupting elements affecting "taste-question-choice-liked" Button
+    t =    12.24s     Synthesize event
+    t =    12.63s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    12.67s Waiting 10.0s for StaticText (First Match) to exist
+    t =    13.70s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    13.70s         Checking existence of `StaticText (First Match)`
+    t =    13.76s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    13.88s Checking existence of `"taste-question-stack-toggle" Button`
+    t =    14.05s Find the "taste-question-stack-toggle" Button
+    t =    14.33s Find the "taste-question-stack-toggle" Button
+    t =    14.57s Tap "taste-question-stack-toggle" Button
+    t =    14.57s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    14.61s     Find the "taste-question-stack-toggle" Button
+    t =    14.79s     Check for interrupting elements affecting "taste-question-stack-toggle" Button
+    t =    14.95s     Synthesize event
+    t =    15.35s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    15.37s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    15.50s Checking existence of `"taste-questions-see-all" Button`
+    t =    15.64s Find the "taste-questions-see-all" Button
+    t =    15.88s Find the "taste-questions-see-all" Button
+    t =    16.54s Tap "taste-questions-see-all" Button
+    t =    16.54s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    16.58s     Find the "taste-questions-see-all" Button
+    t =    16.79s     Check for interrupting elements affecting "taste-questions-see-all" Button
+    t =    16.95s     Synthesize event
+    t =    17.35s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    17.92s Waiting 30.0s for "질문 전체보기" StaticText to exist
+    t =    18.95s     Checking `Expect predicate `existsNoRetry == 1` for object "질문 전체보기" StaticText`
+    t =    18.96s         Checking existence of `"질문 전체보기" StaticText`
+    t =    19.27s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    19.42s Checking existence of `"taste-question-toggle" Button`
+    t =    19.55s Find the "taste-question-toggle" Button
+    t =    19.70s Find the "taste-question-toggle" Button
+    t =    19.89s Tap "taste-question-toggle" Button
+    t =    19.89s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    19.90s     Find the "taste-question-toggle" Button
+    t =    20.03s     Check for interrupting elements affecting "taste-question-toggle" Button
+    t =    20.18s     Synthesize event
+    t =    20.53s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    20.90s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    21.05s Checking existence of `Button (First Match)`
+    t =    21.15s Find the Button (First Match)
+    t =    21.31s Find the "taste-question-choice-liked" Button
+    t =    21.48s Checking existence of `"원래 기록 보기/수정" Button`
+    t =    21.66s Checking existence of `StaticText (First Match)`
+    t =    22.03s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    22.55s Added attachment named 'legacy-question-all-list'
+    t =    22.59s Tap "taste-question-choice-liked" Button
+    t =    22.60s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    22.63s     Find the "taste-question-choice-liked" Button
+    t =    22.78s     Check for interrupting elements affecting "taste-question-choice-liked" Button
+    t =    22.94s     Synthesize event
+    t =    23.30s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    23.35s Waiting 10.0s for StaticText (First Match) to exist
+    t =    24.38s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    24.38s         Checking existence of `StaticText (First Match)`
+    t =    24.56s Tear Down
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test05LegacyQuestionHasInlineChoicesAndAllListExcludesEditingOnlyItems]' passed (24.898 seconds).
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test06AnalysisLegacyQuestionHasInlineChoices]' started.
+    t =     0.00s Start Test at 2026-09-13 20:42:02.618
+    t =     0.15s Set Up
+    t =     0.15s Open com.juneh96.tastebuddy.ios
+    t =     0.15s     Launch com.juneh96.tastebuddy.ios
+    t =     0.16s         Terminate com.juneh96.tastebuddy.ios:16505
+2026-09-13 20:42:03.800 xcodebuild[16411:4547975] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-09-13 20:42:03.800 xcodebuild[16411:4547975] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.61s         Setting up automation session
+    t =     4.32s         Wait for com.juneh96.tastebuddy.ios to idle
+    t =     8.58s Waiting 120.0s for "taste-question-toggle" Button to exist
+    t =     9.64s     Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-toggle" Button`
+    t =     9.64s         Checking existence of `"taste-question-toggle" Button`
+    t =    10.38s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    10.56s Checking existence of `"taste-question-toggle" Button`
+    t =    10.93s Find the "taste-question-toggle" Button
+    t =    11.35s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    11.53s Press Target Application 'com.juneh96.tastebuddy.ios'[0.90, 0.50] for 0.1 seconds, then drag to Target Application 'com.juneh96.tastebuddy.ios'[0.90, 0.50] -> (0.0, -218.5) with velocity of 250.00 pixels per second, and then hold for 0.2 seconds 
+    t =    11.53s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    11.55s     Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    11.81s     Check for interrupting elements affecting "Taste Buddy" Application
+    t =    12.05s     Synthesize event
+    t =    12.07s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    12.36s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    12.64s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    12.87s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    13.22s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    14.94s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    14.96s Checking existence of `"taste-question-toggle" Button`
+    t =    15.36s Find the "taste-question-toggle" Button
+    t =    15.70s Find the "taste-question-toggle" Button
+    t =    16.25s Tap "taste-question-toggle" Button
+    t =    16.25s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    16.27s     Find the "taste-question-toggle" Button
+    t =    16.63s     Check for interrupting elements affecting "taste-question-toggle" Button
+    t =    16.81s     Synthesize event
+    t =    17.28s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    17.32s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    17.53s Checking existence of `"taste-question-choice-neutral" Button`
+    t =    17.83s Find the "taste-question-choice-neutral" Button
+    t =    18.36s Find the "taste-question-choice-neutral" Button
+    t =    18.84s Checking existence of `"원래 기록 보기/수정" Button`
+    t =    19.11s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    20.42s Added attachment named 'legacy-analysis-inline-choices'
+    t =    20.42s Tap "taste-question-choice-neutral" Button
+    t =    20.42s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    20.44s     Find the "taste-question-choice-neutral" Button
+    t =    20.81s     Check for interrupting elements affecting "taste-question-choice-neutral" Button
+    t =    21.13s     Synthesize event
+    t =    21.62s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    21.79s Waiting 10.0s for StaticText (First Match) to exist
+    t =    22.80s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    22.80s         Checking existence of `StaticText (First Match)`
+    t =    22.89s Tear Down
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test06AnalysisLegacyQuestionHasInlineChoices]' passed (23.761 seconds).
+Test Suite 'HomeTasteQuestionUITests' passed at 2026-09-13 20:42:26.379.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 48.659 (48.664) seconds
+Test Suite 'TasteBuddyMemoryUITests.xctest' passed at 2026-09-13 20:42:26.382.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 48.659 (48.668) seconds
+Test Suite 'Selected tests' passed at 2026-09-13 20:42:26.385.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 48.659 (48.672) seconds
+2026-09-13 20:43:29.039 xcodebuild[16411:4547975] [MT] IDETestOperationsObserverDebug: 116.289 elapsed -- Testing started completed.
+2026-09-13 20:43:29.039 xcodebuild[16411:4547975] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-13 20:43:29.039 xcodebuild[16411:4547975] [MT] IDETestOperationsObserverDebug: 116.289 sec, +116.289 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/sinjunho/Desktop/Taste Buddy/output/question-inline-fix/ui-2.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

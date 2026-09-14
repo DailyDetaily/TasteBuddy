@@ -1,0 +1,10 @@
+*.log
+*.txt
+*.xcresult/
+*.xctestrun
+baseline-binary/
+simulators-current.txt
+booted-devices.txt
+device-types.json
+runtimes.json
+qa-install-state.png

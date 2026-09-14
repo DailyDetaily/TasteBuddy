@@ -8,21 +8,23 @@ struct HomeSensorySummarySection: View {
     let error: String?
     var onOpenAnalysis: (() -> Void)?
     var onOpenQuestions: (() -> Void)?
-    @State private var homeQuestionIDs: [String]?
     var onStartNewDining: ((PersonalTasteNextSelection) -> Void)?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    var onOpenInsight: ((HomeArchiveCard.Kind) -> Void)? = nil
     @State private var isQuestionStackExpanded: Bool = {
         #if DEBUG || targetEnvironment(simulator)
         let arguments = ProcessInfo.processInfo.arguments
-        return arguments.contains("--sensory-insights-home-qa") && arguments.contains("--question-queue-expanded-qa")
+        return arguments.contains("--sensory-insights-home-qa")
+            && arguments.contains("--question-queue-expanded-qa")
         #else
         return false
         #endif
     }()
-    var onOpenInsight: ((HomeArchiveCard.Kind) -> Void)? = nil
 
     var body: some View {
-        let cards = HomeArchiveSummaryEngine.cards(entries: appModel.diningEntries, snapshot: snapshot)
+        let cards = appModel.homeArchivePresentation?.summaries ?? []
+        let pendingQuestions = visibleQuestions
+        let questions = Array(pendingQuestions.prefix(isQuestionStackExpanded ? 3 : 1))
         TBPageSection(title: "인사이트 요약", titleSize: .medium) {
             CardScrollList(spacing: TBSpacing.x12) {
                 ForEach(cards) { card in
@@ -41,22 +43,17 @@ struct HomeSensorySummarySection: View {
                 SensoryAnalysisStatusCard(state: .processing)
             } else if let error {
                 SensoryAnalysisStatusCard(state: .failed(error))
-            } else {
-                let batchIDs = homeQuestionIDs ?? PersonalTasteQuestionList.homeIDs(
-                    questions: visibleQuestions, observations: snapshot.observations, entries: appModel.diningEntries
-                )
-                let questions = PersonalTasteQuestionList.remaining(ids: batchIDs, questions: visibleQuestions)
-                let hasMore = visibleQuestions.contains { !batchIDs.contains($0.id) }
+            } else if !pendingQuestions.isEmpty {
                 VStack(spacing: TBSpacing.x12) {
-                    ForEach(Array((isQuestionStackExpanded ? questions : Array(questions.prefix(1))).enumerated()), id: \.element.id) { index, question in
+                    ForEach(Array(questions.enumerated()), id: \.element.id) { index, question in
                         PersonalTasteNextQuestionCard(
                             selection: question,
                             sourceSelectionLabel: snapshot.observations.first {
                                 $0.id == question.responseSourceID
                             }?.selectionEvidence?.labelSnapshot,
-                            showsStack: !isQuestionStackExpanded && (questions.count > 1 || hasMore),
+                            showsStack: !isQuestionStackExpanded && pendingQuestions.count > 1,
                             isStackExpanded: isQuestionStackExpanded,
-                            onToggleStack: question.id == questions.first?.id && (questions.count > 1 || hasMore) ? {
+                            onToggleStack: index == 0 && pendingQuestions.count > 1 ? {
                                 withAnimation(TasteBloomMotion.animation(isQuestionStackExpanded ? .content : .sheet, reduceMotion: reduceMotion)) {
                                     isQuestionStackExpanded.toggle()
                                 }
@@ -64,38 +61,20 @@ struct HomeSensorySummarySection: View {
                             onStartNewRecord: { onStartNewDining?(question) }
                         )
                         .transition(TasteBloomMotion.questionReveal(reduceMotion: reduceMotion, index: max(0, index - 1)))
-                        .task(id: question.id) {
-                            appModel.recordPersonalTasteQuestionExposure(id: question.id, userID: personalModelUserID)
-                        }
                     }
-                    if questions.isEmpty, let homeQuestionIDs, !homeQuestionIDs.isEmpty {
-                        let answered = homeQuestionIDs.allSatisfy {
-                            appModel.personalTasteQuestionProgressByUser[personalModelUserID]?[$0]?.status == .resolved
-                        }
-                        SectionCard(showsBorder: false) {
-                            Text(answered ? "지금 보여드린 질문에 모두 답했어요" : "기록이 바뀌어 지금 확인할 질문이 없어요")
-                                .font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                        }
-                    }
-                    if (isQuestionStackExpanded || questions.isEmpty), hasMore {
-                        Button("질문 전체보기 · \(visibleQuestions.count)개") { onOpenQuestions?() }
+                    if isQuestionStackExpanded && pendingQuestions.count > 3 {
+                        Button("질문 전체보기 · \(pendingQuestions.count)개") { onOpenQuestions?() }
                             .font(TBFont.regular(12)).foregroundStyle(TBColor.textAction)
                             .frame(maxWidth: .infinity, minHeight: 44)
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("taste-questions-see-all")
                     }
                 }
+                .accessibilityIdentifier("home-taste-questions")
             }
         }
         .tasteBloomMotion(.content, value: isUpdating)
-        .tasteBloomMotion(.content, value: visibleQuestions.map(\.id))
-        .onChange(of: isUpdating ? [] : visibleQuestions.map(\.id), initial: true) { _, ids in
-            guard homeQuestionIDs == nil, !ids.isEmpty, error == nil else { return }
-            homeQuestionIDs = PersonalTasteQuestionList.homeIDs(
-                questions: visibleQuestions, observations: snapshot.observations, entries: appModel.diningEntries
-            )
-        }
+        .tasteBloomMotion(.content, value: pendingQuestions.map(\.id))
     }
 
     private var personalModelUserID: String {
@@ -103,7 +82,9 @@ struct HomeSensorySummarySection: View {
     }
 
     private var visibleQuestions: [PersonalTasteNextSelection] {
-        (snapshot.personalModel?.availableSelections ?? []).filter {
+        PersonalTasteInlineAnswer.answerableQuestions(
+            snapshot.personalModel?.availableSelections ?? [], observations: snapshot.observations, entries: appModel.diningEntries
+        ).filter {
             appModel.shouldPresentPersonalTasteQuestion(id: $0.id, userID: personalModelUserID)
         }
     }
@@ -123,7 +104,7 @@ enum PersonalTasteQuestionList {
         for question in questions {
             let entry = PersonalTasteInlineAnswer.sourceEntry(for: question, observations: observations, entries: entries)
             let key = entry.map { entry in
-                if let id = entry.menuItemID, !id.isEmpty { return "menu:\(id)" }
+                if let id = entry.menuItemID, !id.isEmpty { return HomeArchiveIdentity.restaurant(entry) + "menu:\(id)" }
                 let names = [entry.restaurant, entry.menu].map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
                 return "meal:" + names.joined(separator: "\u{001F}")
             } ?? "question:\(question.id)"
@@ -137,13 +118,6 @@ enum PersonalTasteQuestionList {
         return result
     }
 
-    static func homeIDs(questions: [PersonalTasteNextSelection], observations: [SensoryObservation], entries: [DiningEntry]) -> [String] {
-        groups(questions: questions, observations: observations, entries: entries).prefix(3).compactMap { $0.questions.first?.id }
-    }
-
-    static func remaining(ids: [String], questions: [PersonalTasteNextSelection]) -> [PersonalTasteNextSelection] {
-        ids.compactMap { id in questions.first { $0.id == id } }
-    }
 }
 
 struct PersonalTasteQuestionsView: View {
@@ -184,9 +158,6 @@ struct PersonalTasteQuestionsView: View {
                                             pendingQuestion = appModel.personalTasteQuestionResponseContext(for: question)
                                         }
                                     )
-                                    .task(id: question.id) {
-                                        appModel.recordPersonalTasteQuestionExposure(id: question.id, userID: userID)
-                                    }
                                 }
                             }
                         }
@@ -199,7 +170,7 @@ struct PersonalTasteQuestionsView: View {
         .presentationDragIndicator(.hidden)
         .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
         .fullScreenCover(item: $pendingQuestion) { context in
-            if context.selection.intent == "clarification", let id = context.sourceEntryID,
+            if context.selection.intent != "exploration", let id = context.sourceEntryID,
                let entry = appModel.diningEntry(id: id) {
                 DiningFeedbackSheet(entry: entry, startMode: .details) { save($0, context: context) }
             } else if context.selection.intent == "exploration" {
@@ -225,7 +196,10 @@ struct PersonalTasteQuestionsView: View {
     private var userID: String { appModel.sensoryAnalysis.personalModel?.userID ?? "local-owner" }
 
     private var groups: [PersonalTasteQuestionList.Group] {
-        let questions = (appModel.sensoryAnalysis.personalModel?.availableSelections ?? []).filter {
+        let questions = PersonalTasteInlineAnswer.answerableQuestions(
+            appModel.sensoryAnalysis.personalModel?.availableSelections ?? [],
+            observations: appModel.sensoryAnalysis.observations, entries: appModel.diningEntries
+        ).filter {
             appModel.shouldPresentPersonalTasteQuestion(id: $0.id, userID: userID)
         }
         return PersonalTasteQuestionList.groups(questions: questions, observations: appModel.sensoryAnalysis.observations, entries: appModel.diningEntries)
@@ -292,14 +266,14 @@ struct HomeArchiveDetailView: View {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var backgroundTintProgress = 0.0
+    @State private var showsAllRecords = false
     let kind: HomeArchiveCard.Kind
     var bottomContentInset: CGFloat = 0
 
     var body: some View {
         let snapshot = appModel.sensoryAnalysis
-        let card = HomeArchiveSummaryEngine.cards(entries: appModel.diningEntries, snapshot: snapshot)
-            .first { $0.kind == kind } ?? .empty(kind)
-        let entries = appModel.diningEntries.filter { card.entryIDs.contains($0.id) }
+        let card = appModel.homeArchivePresentation?.summaries.first { $0.kind == kind } ?? .empty(kind)
+        let entries = appModel.diningEntries.filter { showsAllRecords || card.entryIDs.contains($0.id) }
             .sorted { $0.observedAt > $1.observedAt }
 
         let tasteDistribution = HomeInsightTasteDistribution.make(card: card, entries: entries, snapshot: snapshot)
@@ -343,6 +317,13 @@ struct HomeArchiveDetailView: View {
                         .accessibilityElement(children: .combine)
                     }
 
+                    HStack {
+                        Text(showsAllRecords ? "필터: 전체 기록" : "필터: \(kind.rawValue) · \(card.detail)")
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer()
+                        Button(showsAllRecords ? "관련 기록만" : "필터 해제") { showsAllRecords.toggle() }
+                            .frame(minHeight: 44)
+                    }.font(TBFont.medium(12))
                     if !entries.isEmpty {
                         VStack(spacing: 0) {
                             HStack(spacing: TBSpacing.x12) {
@@ -502,9 +483,10 @@ private struct HomeInsightRecordRow: View {
     let evidence: [SensoryObservation]
     let axis: TasteAxis
     let showsNote: Bool
+    @State private var showsOriginal = false
 
     var body: some View {
-        Group {
+        VStack(alignment: .leading, spacing: 8) {
             if !evidence.isEmpty || (showsNote && !entry.note.isEmpty) {
                 DisclosureGroup {
                     if !evidence.isEmpty {
@@ -520,16 +502,19 @@ private struct HomeInsightRecordRow: View {
             } else {
                 label
             }
+            Text(entry.memoryDateDescription).font(TBFont.regular(11)).foregroundStyle(TBColor.textSecondary)
+            Button("원래 기록 보기/수정") { showsOriginal = true }.font(TBFont.medium(12)).frame(minHeight: 44)
         }
         .padding(TBSpacing.x20)
+        .sheet(isPresented: $showsOriginal) { FoodMemoryDetailView(entryID: entry.id) }
     }
 
     private var label: some View {
         HStack(alignment: .top, spacing: TBSpacing.x12) {
             VStack(spacing: TBSpacing.x4) {
-                Text(entry.observedAt.formatted(.dateTime.month(.abbreviated)))
+                Text(entry.confirmedMealDate?.formatted(.dateTime.month(.abbreviated)) ?? "식사일")
                     .font(TBFont.regular(10))
-                Text(entry.observedAt.formatted(.dateTime.day()))
+                Text(entry.confirmedMealDate?.formatted(.dateTime.day()) ?? "—")
                     .font(TBFont.bold(18))
             }
             .foregroundStyle(axis.tintSurfaceTextColor)
@@ -576,9 +561,10 @@ struct HomeSummaryCard: View {
         RecommendationMiniCardLayout(
             axis: axis,
             title: label,
-            subtitle: detail,
-            detail: value,
-            detailFont: TBFont.regular(14),
+            subtitle: value,
+            detail: detail,
+            detailFont: TBFont.regular(10),
+            subtitleFont: TBFont.semibold(14),
             onTap: onTap
         ) {
             LucideIcon(

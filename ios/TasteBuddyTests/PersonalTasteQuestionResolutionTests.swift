@@ -5,7 +5,7 @@ import XCTest
 /// AM-15/18/20/27/28/29/30의 기존 기대를 유지한다.
 final class PersonalTasteQuestionResolutionTests: XCTestCase {
     @MainActor
-    func testHomeBatchLimitsMenusAndDoesNotRefillAfterAnswering() async throws {
+    func testHomeKeepsEveryRemainingQuestionAfterAnswering() async throws {
         let fixture = try await makeFixture()
         defer { fixture.defaults.removePersistentDomain(forName: fixture.suite) }
         for (index, target) in DiningSensorySelection.Target.allCases.filter({ $0 != .unspecified }).prefix(4).enumerated() {
@@ -15,19 +15,30 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
             ))
         }
         try await waitForAnalysis(fixture.model)
-        let questions = try XCTUnwrap(fixture.model.sensoryAnalysis.personalModel?.availableSelections)
+        let queued = try XCTUnwrap(fixture.model.sensoryAnalysis.personalModel?.availableSelections)
         let observations = fixture.model.sensoryAnalysis.observations
         let entries = fixture.model.diningEntries
+        let questions = PersonalTasteInlineAnswer.answerableQuestions(queued, observations: observations, entries: entries)
         let groups = PersonalTasteQuestionList.groups(questions: questions, observations: observations, entries: entries)
         XCTAssertGreaterThanOrEqual(groups.count, 4)
         XCTAssertTrue(groups.contains { $0.questions.count > 1 })
         XCTAssertEqual(groups.flatMap(\.questions).count, questions.count)
-        let ids = PersonalTasteQuestionList.homeIDs(questions: questions, observations: observations, entries: entries)
-        XCTAssertEqual(ids.count, 3)
-        XCTAssertEqual(ids, Array(groups.prefix(3).compactMap { $0.questions.first?.id }))
-        let afterFirstAnswer = questions.filter { $0.id != ids.first }
-        XCTAssertEqual(PersonalTasteQuestionList.remaining(ids: ids, questions: afterFirstAnswer).map(\.id), Array(ids.dropFirst()))
-        XCTAssertTrue(PersonalTasteQuestionList.remaining(ids: ids, questions: questions.filter { !ids.contains($0.id) }).isEmpty)
+        XCTAssertGreaterThan(questions.count, 3)
+        let first = try XCTUnwrap(questions.first)
+        let context = try XCTUnwrap(fixture.model.personalTasteQuestionResponseContext(for: first))
+        let source = try XCTUnwrap(fixture.model.diningEntry(id: context.sourceEntryID!))
+        let choice = try XCTUnwrap(PersonalTasteInlineAnswer.availability(
+            selection: first, observation: observations.first { $0.id == first.responseSourceID }, entry: source
+        ).choices.first)
+        let updated = try XCTUnwrap(PersonalTasteInlineAnswer.applying(choice.id, to: source, context: context))
+        assertSaved(fixture.model.savePersonalTasteQuestionResponse(updated, context: context), resolved: true)
+        try await waitForAnalysis(fixture.model)
+        let remaining = PersonalTasteInlineAnswer.answerableQuestions(
+            fixture.model.sensoryAnalysis.personalModel?.availableSelections ?? [],
+            observations: fixture.model.sensoryAnalysis.observations, entries: fixture.model.diningEntries
+        )
+        XCTAssertFalse(remaining.contains { $0.id == first.id })
+        XCTAssertEqual(Set(remaining.map(\.id)), Set(questions.dropFirst().map(\.id)))
     }
 
     @MainActor
@@ -83,8 +94,9 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         XCTAssertNil(fixture.model.personalTasteAnswerUndo)
         try await waitForAnalysis(fixture.model)
 
-        assertSaved(fixture.model.savePersonalTasteQuestionResponse(updated, context: fixture.context), resolved: true)
-        fixture.model.preparePersonalTasteAnswerUndo(before: fixture.source, context: fixture.context)
+        let freshContext = try refreshed(fixture.context, in: fixture.model)
+        assertSaved(fixture.model.savePersonalTasteQuestionResponse(updated, context: freshContext), resolved: true)
+        fixture.model.preparePersonalTasteAnswerUndo(before: fixture.source, context: freshContext)
         fixture.model.removeDiningEntry(id: fixture.source.id)
         XCTAssertFalse(fixture.model.undoPersonalTasteAnswer())
         XCTAssertNil(fixture.model.diningEntry(id: fixture.source.id))
@@ -131,6 +143,12 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         assertUnresolved(fixture)
     }
 
+    @MainActor
+    private func refreshed(_ context: PersonalTasteQuestionResponseContext, in model: AppModel) throws -> PersonalTasteQuestionResponseContext {
+        let current = try XCTUnwrap(model.sensoryAnalysis.personalModel?.availableSelections.first { $0.id == context.id })
+        return try XCTUnwrap(model.personalTasteQuestionResponseContext(for: current))
+    }
+
     private struct Fixture {
         let suite: String
         let defaults: UserDefaults
@@ -164,7 +182,7 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         if exploration {
             XCTAssertNil(context.sourceEntryID)
             XCTAssertEqual(question.proposedCondition?.dimension, "intensity")
-            XCTAssertEqual(question.proposedCondition?.value, "weak")
+            XCTAssertEqual(question.proposedCondition?.value, "medium")
         } else {
             XCTAssertEqual(context.sourceEntryID, source.id)
             XCTAssertEqual(context.sourceTarget, "sauce")
@@ -292,7 +310,7 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         try await waitForAnalysis(f.model)
         assertUnresolved(f)
         let actual = entry(id: f.source.id, mealID: f.source.mealID, selections: [selection(intensity: .medium), other])
-        assertSaved(f.model.savePersonalTasteQuestionResponse(actual, context: f.context), resolved: true)
+        assertSaved(f.model.savePersonalTasteQuestionResponse(actual, context: try refreshed(f.context, in: f.model)), resolved: true)
     }
 
     @MainActor
@@ -313,8 +331,8 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         assertSaved(model.savePersonalTasteQuestionResponse(separate, context: context), resolved: false)
         try await waitForAnalysis(model)
         let actual = DiningEntry(id: source.id, mealID: source.mealID, restaurant: source.restaurant, menu: source.menu, rating: 4,
-            note: "산미가 강했어요. 산미가 좋았어요.", sensorySelections: [])
-        assertSaved(model.savePersonalTasteQuestionResponse(actual, context: context), resolved: true)
+            note: "산미가 강해서 좋았어요.", sensorySelections: [])
+        assertSaved(model.savePersonalTasteQuestionResponse(actual, context: try refreshed(context, in: model)), resolved: true)
     }
 
     @MainActor
@@ -326,13 +344,13 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         assertSaved(f.model.savePersonalTasteQuestionResponse(unrelated, context: f.context), added: true, resolved: false)
         try await waitForAnalysis(f.model)
         assertUnresolved(f)
-        let actual = entry(selections: [selection(intensity: .light)])
+        let actual = entry(selections: [selection(intensity: .medium)])
         assertSaved(f.model.savePersonalTasteQuestionResponse(actual, context: f.context), added: true, resolved: true)
         try await waitForAnalysis(f.model)
         XCTAssertEqual(f.model.diningEntries.count, originals.count + 2)
         for original in originals { XCTAssertEqual(f.model.diningEntry(id: original.id), original) }
         XCTAssertEqual(f.model.personalTasteQuestionProgressByUser[f.userID]?[f.context.selection.id]?.status, .resolved)
-        XCTAssertTrue(f.model.sensoryAnalysis.observations.contains { $0.experienceID == actual.id && $0.kind == "sensory_intensity" && $0.attribute == "taste.sour" && $0.value == .text("weak") })
+        XCTAssertTrue(f.model.sensoryAnalysis.observations.contains { $0.experienceID == actual.id && $0.kind == "sensory_intensity" && $0.attribute == "taste.sour" && $0.value == .text("medium") })
     }
 
     @MainActor
@@ -340,7 +358,7 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         let f = try await makeFixture(exploration: true)
         defer { f.defaults.removePersistentDomain(forName: f.suite) }
         let originals = f.model.diningEntries
-        var intensityOnly = selection(intensity: .light)
+        var intensityOnly = selection(intensity: .medium)
         intensityOnly.liking = nil
         let otherScope = DiningSensorySelection(
             id: "sour-soft-citrus", type: .bubble, labelSnapshot: "부드러운 과일 산미",
@@ -353,10 +371,10 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         XCTAssertEqual(f.model.diningEntry(id: incomplete.id)?.sensorySelections, [intensityOnly, otherScope])
         XCTAssertEqual(f.model.diningEntries.count, originals.count + 1)
 
-        // 다른 대상·시점의 중립 응답을 약한 산미의 호감으로 합치지 않는다.
+        // 다른 대상·시점의 중립 응답을 중간 강도 산미의 호감으로 합치지 않는다.
         XCTAssertFalse(f.model.sensoryAnalysis.personalModel?.units.contains {
             $0.experienceIDs.contains(incomplete.id.uuidString.lowercased())
-                && $0.intensity == "weak" && $0.target == "sauce"
+                && $0.intensity == "medium" && $0.target == "sauce"
                 && $0.phase == "after_swallow" && $0.liking == "neutral"
         } ?? false)
         let clarification = try XCTUnwrap(f.model.sensoryAnalysis.personalModel?.nextSelection)
@@ -374,7 +392,7 @@ final class PersonalTasteQuestionResolutionTests: XCTestCase {
         XCTAssertEqual(f.model.diningEntry(id: saved.id)?.sensorySelections, [answered, otherScope])
         XCTAssertTrue(f.model.sensoryAnalysis.personalModel?.units.contains {
             $0.experienceIDs.contains(saved.id.uuidString.lowercased())
-                && $0.intensity == "weak" && $0.target == "sauce"
+                && $0.intensity == "medium" && $0.target == "sauce"
                 && $0.phase == "after_swallow" && $0.liking == "neutral"
         } ?? false)
         for original in originals { XCTAssertEqual(f.model.diningEntry(id: original.id), original) }

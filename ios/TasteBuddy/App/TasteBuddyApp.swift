@@ -114,6 +114,7 @@ private struct RootView: View {
     private var sensoryRuntimePreview: AnyView? {
         #if DEBUG || targetEnvironment(simulator)
         let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("--food-memory-qa") { return AnyView(FoodMemoryRuntimePreview()) }
         if arguments.contains("--taste-perception-qa") {
             return AnyView(TastePerceptionRuntimePreview())
         }

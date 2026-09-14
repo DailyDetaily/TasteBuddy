@@ -6,7 +6,8 @@ import Supabase
 
 /// 원문 Codable 데이터를 그대로 보관한다. 파생 분석 결과를 원본으로 재저장하지 않는다.
 struct NativeAccountSnapshot: Codable, Equatable {
-    var schemaVersion = 1
+    // v1 앱은 v2를 읽지 않아 새 시간·교정 필드를 재인코딩하며 지우지 않는다.
+    var schemaVersion = 2
     var values: [String: Data] = [:]
     var hasSeenOnboarding = false
     var photoFilenames: [String] = []
@@ -74,7 +75,7 @@ struct SupabaseNativeAccountDataRepository: NativeAccountDataRepository {
             .eq("user_id", value: userID)
             .limit(1)
             .execute().value
-        guard (rows.first?.payload.schemaVersion ?? 1) == 1 else {
+        guard [1, 2].contains(rows.first?.payload.schemaVersion ?? 1) else {
             throw NativeAccountDataError.unsupportedVersion
         }
         return rows.first

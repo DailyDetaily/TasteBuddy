@@ -3,7 +3,7 @@ import CryptoKit
 
 /// Deterministic, API-free native mirror of the sensory contract. The legacy axis engine is not an input.
 enum SensoryAnalysisEngine {
-    static let version = "tba-native-sensory/2"
+    static let version = "tba-native-sensory/3"
     static let contract: SensoryNativeContract? = {
         let bundle = Bundle.main
         guard let url = bundle.url(forResource: "tba-sensory-contract", withExtension: "json", subdirectory: "TBA")
@@ -22,31 +22,31 @@ enum SensoryAnalysisEngine {
     static func analyze(entries: [DiningEntry], contract: SensoryNativeContract?, userID: String = "local-owner", asOf: Date? = nil, suppressedQuestionIDs: [String] = [], preferenceSubmissions: [PreferenceIntakeSubmission] = []) throws -> SensoryAnalysisSnapshot {
         guard contract != nil else { throw AnalysisError.contractUnavailable }
         var snapshot = buildSnapshot(entries: entries, contract: contract, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs)
+        if var model = snapshot.personalModel {
+            let queue = model.availableSelections
+            let reviews = PersonalTasteSourceReviewQuestions.make(unresolved: snapshot.unresolved, entries: entries, userID: userID)
+            model.queuedSelections = queue.filter { $0.intent != "exploration" } + reviews + queue.filter { $0.intent == "exploration" }
+            snapshot.personalModel = model
+        }
         snapshot.statedPreferences = PreferenceIntakeContractEngine.evidence(submissions: preferenceSubmissions, userID: userID, asOf: asOf)
         return snapshot
     }
 
     private static func buildSnapshot(entries: [DiningEntry], contract: SensoryNativeContract?, userID: String, asOf: Date?, suppressedQuestionIDs: [String]) -> SensoryAnalysisSnapshot {
-        // Repeated IDs are not independent experiences. Use the latest supplied copy once.
-        var seen: Set<UUID> = []
-        let completed = entries.filter { $0.hasCompletedTasteFeedback && seen.insert($0.id).inserted }
+        // 같은 ID의 서로 다른 현재 사본을 입력 순서로 고르지 않는다.
+        let completed = Dictionary(grouping: entries, by: \.id).values.compactMap { rows -> DiningEntry? in
+            guard let first = rows.first, first.hasCompletedTasteFeedback, rows.allSatisfy({ $0 == first }) else { return nil }
+            return first
+        }.sorted { $0.id.uuidString < $1.id.uuidString }
         let parser = contract.map(SensoryNativeParser.init)
         let labels = Dictionary(uniqueKeysWithValues: (contract?.semantic.attributes ?? []).map { ($0.id, $0.label ?? $0.meaning) })
         var observations: [SensoryObservation] = []
         var unresolved: [SensoryUnresolved] = []
         for entry in completed {
+            if Task.isCancelled { break }
             var sources: [(String, String, SensoryRuleResult)] = []
             if let overall = entry.overallEvaluation { sources.append(("overallEvaluation:liking", overall.responseLabelSnapshot, overall.parse())) }
-            let selections: [DiningSensorySelection]
-            if let direct = entry.sensorySelections { selections = direct }
-            else {
-                let ids = entry.tasteExperienceIDs.map { ($0, DiningSensorySelection.Kind.bubble) } + entry.detailTagIDs.map { ($0, DiningSensorySelection.Kind.detailTag) }
-                selections = ids.map { id, kind in
-                    let known = contract?.selectionCatalog.entries.first { $0.id == id && $0.type == kind.rawValue }
-                    let oldLabel = kind == .bubble ? TasteExperienceCatalog.experienceByID[id]?.label : DiningDetailTagCatalog.metadata(for: id)?.label
-                    return DiningSensorySelection(id: id, type: kind, labelSnapshot: known?.label ?? oldLabel ?? id)
-                }
-            }
+            let selections = effectiveSelections(for: entry, catalog: contract?.selectionCatalog)
             if let contract {
                 let chosen = DiningSensorySelectionParser.parse(selections, catalog: contract.selectionCatalog)
                 for atom in chosen.observations {
@@ -71,24 +71,52 @@ enum SensoryAnalysisEngine {
                               return span.start >= 0 && span.end > span.start && span.end <= ns.length && ns.substring(with: NSRange(location: span.start, length: span.end - span.start)) == span.quote
                           }) else { continue }
                     let id = stableID([entry.id.uuidString, field, atom.kind, atom.attribute ?? "", atom.value.text, atom.target ?? "whole_dish", atom.phase ?? "unspecified", phrase, String(spans.first?.start ?? 0), evidenceIdentity(atom.selectionEvidence)])
-                    observations.append(.init(id: id, experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, kind: atom.kind, attribute: atom.attribute, attributeLabel: atom.reference ?? labels[atom.attribute ?? ""] ?? "음식 전체", value: atom.value, scale: atom.scale, target: atom.target ?? "whole_dish", phase: atom.phase ?? "unspecified", phrase: phrase, sourceSpans: spans, reference: atom.reference, combinationComponents: atom.combinationComponents ?? [], selectionEvidence: atom.selectionEvidence, mealID: entry.mealID, observedAt: entry.observedAt, knownAt: entry.updatedAt ?? entry.savedAt, dishKindIDs: entry.dishKindIDs, restaurantID: entry.restaurantID, menuItemID: entry.menuItemID, restaurantName: entry.restaurant))
+                    observations.append(.init(id: id, experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, kind: atom.kind, attribute: atom.attribute, attributeLabel: atom.reference ?? labels[atom.attribute ?? ""] ?? (atom.kind == "part_liking" ? "부분 평가" : "음식 전체"), value: atom.value, scale: atom.scale, target: atom.target ?? "whole_dish", phase: atom.phase ?? "unspecified", phrase: phrase, sourceSpans: spans, reference: atom.reference, combinationComponents: atom.combinationComponents ?? [], selectionEvidence: atom.selectionEvidence, mealID: entry.mealID, observedAt: entry.observedAt, knownAt: entry.knownAt(sourceField: field, phrase: phrase), dishKindIDs: entry.dishKindIDs, restaurantID: entry.restaurantID, menuItemID: entry.menuItemID, restaurantName: entry.restaurant, sourceRevision: entry.memoryRevisionNumber, mealTimeIsConfirmed: entry.confirmedMealDate != nil))
                 }
                 for pending in result.unresolved {
-                    unresolved.append(.init(id: stableID([entry.id.uuidString, field, pending.reason, pending.phrase, String(pending.sourceSpans.first?.start ?? 0), evidenceIdentity(pending.selectionEvidence)]), experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, phrase: pending.phrase, reason: pending.reason, sourceSpans: pending.sourceSpans, needsMeaningReview: result.needsAI || pending.selectionEvidence != nil, selectionEvidence: pending.selectionEvidence, observedAt: entry.observedAt, knownAt: entry.updatedAt ?? entry.savedAt))
+                    unresolved.append(.init(id: stableID([entry.id.uuidString, field, pending.reason, pending.phrase, String(pending.sourceSpans.first?.start ?? 0), evidenceIdentity(pending.selectionEvidence)]), experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, phrase: pending.phrase, reason: pending.reason, sourceSpans: pending.sourceSpans, needsMeaningReview: result.needsAI || pending.selectionEvidence != nil, selectionEvidence: pending.selectionEvidence, observedAt: entry.observedAt, knownAt: entry.knownAt(sourceField: field, phrase: pending.phrase)))
                 }
             }
         }
         observations = dedupe(observations, by: { $0.id })
         unresolved = dedupe(unresolved, by: { $0.id })
         let entriesByID = Dictionary(uniqueKeysWithValues: completed.map { ($0.id,$0) })
+        let selectionKeys = Dictionary(uniqueKeysWithValues: completed.map { ($0.id, PersonalTasteModelBuilder.canonical(effectiveSelections(for: $0, catalog: contract?.selectionCatalog))) })
+        var safeAnswerCache: [String: [String]] = [:]
         let personalModel = PersonalTasteModelBuilder.buildRecords(records: observations.map { o in
             .init(observationId: o.id, userId: userID, experienceId: o.experienceID.uuidString.lowercased(), mealId: o.independentMealID.uuidString.lowercased(), kind: o.kind, attribute: o.attribute, attributeLabel: o.attributeLabel, reference: o.reference, value: o.value, scale: o.scale, target: o.target, phase: o.phase, observedAt: o.observedAt.map(PersonalTasteModelBuilder.timestamp), knownAt: o.knownAt.map(PersonalTasteModelBuilder.timestamp), dishKindIDs: o.dishKindIDs, phrase: o.phrase, sourceSpans: o.sourceSpans, confirmationStatus: o.selectionEvidence == nil ? "rule_extracted_statement" : "explicit_user_choice", selectionEvidence: o.selectionEvidence, conditionSources: personalConditionSources(o, entry: entriesByID[o.experienceID]))
-        }, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs)
+        }, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs, individualQuestions: true, nativeAnswerOptions: { record, facet in
+            guard let id = UUID(uuidString: record.experienceId), let entry = entriesByID[id] else { return [] }
+            guard let source = record.selectionEvidence else { return [] }
+            let key = PersonalTasteModelBuilder.json([selectionKeys[id] ?? "", source.type, source.selectionID,
+                source.catalogVersion, source.labelSnapshot, source.relatedBubbleID ?? "", record.attribute ?? "", record.reference ?? "",
+                record.target, record.phase, facet])
+            if let cached = safeAnswerCache[key] { return cached }
+            let answers = PersonalTasteInlineAnswer.safeSemanticAnswers(record: record, facet: facet, entry: entry)
+            safeAnswerCache[key] = answers
+            return answers
+        })
         if let asOf {
             observations = observations.filter { ($0.observedAt ?? .distantFuture) <= asOf && ($0.knownAt ?? .distantFuture) <= asOf }
             unresolved = unresolved.filter { ($0.observedAt ?? .distantFuture) <= asOf && ($0.knownAt ?? .distantFuture) <= asOf }
         }
-        return .init(engineVersion: "\(version):\(contract?.ruleVersion ?? "unavailable")", observations: observations, unresolved: unresolved, insights: buildInsights(observations), mainWing: buildProfile(observations, styles: contract?.styles ?? []), completedExperienceCount: completed.filter { entry in asOf.map { entry.observedAt <= $0 && (entry.updatedAt ?? entry.savedAt ?? .distantFuture) <= $0 } ?? true }.count, sourceExperienceCount: Set(observations.filter { ($0.kind != "sensory_detail" && $0.kind != "unresolved") || ($0.selectionEvidence != nil && $0.selectionEvidence?.resolution != "unresolved") }.map(\.experienceID)).count, actualApiCalls: 0, needsMeaningReview: unresolved.contains(where: \.needsMeaningReview), limits: ["직접 남긴 감각과 평가만 해석하며 음식 이름·기존 점수로 취향을 추정하지 않아요.", "미등록 표현과 복잡한 조건은 원문으로 보관하고 의미 확인을 기다려요.", "메인·윙은 반복 기록을 구분하는 표시 정책이며 검증된 확률이나 고정 성격이 아니에요.", "같은 식사의 여러 기록은 mealID로 묶어 반복 횟수를 계산해요."], personalModel: personalModel, perception: TastePerceptionEngine.build(observations: observations, asOf: asOf))
+        return .init(engineVersion: "\(version):\(contract?.ruleVersion ?? "unavailable")", observations: observations, unresolved: unresolved, insights: buildInsights(observations), mainWing: buildProfile(observations, styles: contract?.styles ?? []), completedExperienceCount: completed.filter { entry in asOf.map { entry.observedAt <= $0 && (entry.updatedAt ?? entry.savedAt ?? .distantFuture) <= $0 } ?? true }.count, sourceExperienceCount: Set(observations.filter { ($0.kind != "sensory_detail" && $0.kind != "unresolved") || ($0.selectionEvidence != nil && $0.selectionEvidence?.resolution != "unresolved") }.map(\.experienceID)).count, actualApiCalls: 0, needsMeaningReview: unresolved.contains(where: \.needsMeaningReview), limits: ["직접 남긴 감각과 평가만 해석하며 음식 이름·기존 점수로 취향을 추정하지 않아요.", "미등록 표현과 복잡한 조건은 원문으로 보관하고 의미 확인을 기다려요.", "메인·윙은 반복 기록을 구분하는 표시 정책이며 검증된 확률이나 고정 성격이 아니에요.", "같은 식사의 여러 기록은 mealID로 묶어 반복 횟수를 계산해요.", "현재 원문을 분석한 결과예요. asOf는 확인 가능한 시각 필터이며 과거 전체 원본 상태의 복원이 아니에요."], personalModel: personalModel, perception: TastePerceptionEngine.build(observations: observations, asOf: asOf))
+    }
+
+    /// 분석과 질문 응답에서 동일한 이전 선택 복원을 사용한다. 명시적인 빈 배열은 복원하지 않는다.
+    static func effectiveSelections(for entry: DiningEntry, catalog: DiningSensoryCatalogContract?) -> [DiningSensorySelection] {
+        if let direct = entry.sensorySelections { return direct }
+        return legacySelections(bubbleIDs: entry.tasteExperienceIDs, tagIDs: entry.detailTagIDs, catalog: catalog)
+    }
+
+    static func legacySelections(bubbleIDs: [String], tagIDs: [String], catalog: DiningSensoryCatalogContract?) -> [DiningSensorySelection] {
+        let ids = bubbleIDs.map { ($0, DiningSensorySelection.Kind.bubble) }
+            + tagIDs.map { ($0, DiningSensorySelection.Kind.detailTag) }
+        return ids.map { id, kind in
+            let known = catalog?.entries.first { $0.id == id && $0.type == kind.rawValue }
+            let oldLabel = kind == .bubble ? TasteExperienceCatalog.experienceByID[id]?.label : DiningDetailTagCatalog.metadata(for: id)?.label
+            return DiningSensorySelection(id: id, type: kind, labelSnapshot: known?.label ?? oldLabel ?? id)
+        }
     }
 
     private static func personalConditionSources(_ observation: SensoryObservation, entry: DiningEntry?) -> [PersonalTasteConditionSource] {
@@ -146,8 +174,9 @@ enum SensoryAnalysisEngine {
     private static func dedupe<T>(_ values: [T], by key: (T) -> String) -> [T] { var seen: Set<String> = []; return values.filter { seen.insert(key($0)).inserted } }
     private static func scopeKey(_ o: SensoryObservation) -> String { [o.experienceID.uuidString, o.attribute ?? "", o.reference ?? "", o.target, o.phase].joined(separator: "|") }
     private static func directLiking(_ records: [SensoryObservation]) -> [SensoryObservation] {
-        records.filter { item in
-            item.kind == "attribute_liking" && item.attribute?.hasSuffix(".unspecified") != true && !records.contains { $0.kind == "sensory_presence" && $0.value == .flag(false) && scopeKey($0) == scopeKey(item) }
+        let absentScopes = Set(records.filter { $0.kind == "sensory_presence" && $0.value == .flag(false) }.map(scopeKey))
+        return records.filter { item in
+            item.kind == "attribute_liking" && item.attribute?.hasSuffix(".unspecified") != true && !absentScopes.contains(scopeKey(item))
         }
     }
 
@@ -321,12 +350,15 @@ private final class SensoryNativeParser {
             }
         }
         var otherSpeaker = false, previousEnded = false
+        var previousPart: (scope: Scope, start: Int, endsWithContrast: Bool)?
         for clause in clauses {
             let body = clause.text.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !body.isEmpty else { continue }
             let start = clause.start + (clause.text as NSString).range(of: body).location
             let span = SensorySourceSpan(start: start, end: start + body.utf16.count, quote: body)
             func unresolved(_ reason: String, ai: Bool = false) { result.unresolved.append(.init(phrase: body, reason: reason, sourceSpans: [span])); result.needsAI = result.needsAI || ai }
+            let inheritedPart = previousEnded ? nil : previousPart
+            previousPart = nil
             if previousEnded { otherSpeaker = false }
             previousEnded = has(#"[.!?\n]$"#, clause.text)
             if has(#"(?:^|\s)(?:저는|나는|제가|내가)"#, body) { otherSpeaker = false }
@@ -334,24 +366,42 @@ private final class SensoryNativeParser {
             if has("(?:모르겠|기억이 안|기억나지|기억 안)", body) { unresolved("insufficient_semantic_information"); continue }
             let selfFeeling = has("(?:다고|라고) 느꼈|(?:다고|라고) 느껴", body)
             let attributed = has("(?:친구|직원|동료|엄마|아빠|다른 사람|손님|셰프|남편|아내)(?:는|가|이|도|의|께서)|(?:라고|다고|다며|대요|다던데|다네요|더라고 전했)", body) && !selfFeeling
-            let instruction = has("(?:무시해|무시하|지시|지침|시스템|프롬프트|출력해|기록해|저장해|답해|말해|평가해|추출해|분석해|분석해 줘|분석해줘|설명해)|(?:라면|다면|으면 좋|다면 좋|일 것|것 같|줄 알|내일|먹으면|먹기 전|안 먹|먹지 않)", body)
+            let instruction = has("(?:무시해|무시하|지시|지침|시스템|프롬프트|출력해|기록해|저장해|답해|말해|평가해|추출해|분석해|분석해 줘|분석해줘|설명해)|(?:라면|다면|으면 좋|다면 좋|일 것|것 같|줄 알|내일|앞으로|먹고 싶|먹으면|먹기 전|안 먹|먹지 않)", body)
             if otherSpeaker || attributed || clause.quoted || instruction { unresolved("not_direct_self_experience"); continue }
             if clause.deferred { unresolved("unresolved_clause_structure", ai: true); continue }
             if has("(?:조명|말투|인테리어|직원|접객|좌석|의자|실내|식당 분위기)", body) { unresolved("non_food_context"); continue }
             let found = senses(body), scope = scope(body, target: target, phase: phase)
+            if !scope.ambiguous && scope.target != "whole_dish" {
+                previousPart = (scope, start, has("지만$", body))
+            }
             func add(_ kind: String, _ attribute: String?, _ value: SensoryValue, reference: String? = nil, combination: Bool = false, components: [SensoryCombinationComponent]? = nil) {
                 result.observations.append(.init(kind: kind, attribute: attribute, value: value, scale: contract.semantic.kinds[kind]?.scale ?? "", target: combination ? "combination" : scope.target, phase: scope.phase, phrase: body, sourceSpans: [span], reference: reference, combinationComponents: components))
             }
             if domain(body) == "aroma" && !found.isEmpty && found.allSatisfy({ !$0.attribute.hasPrefix("aroma.") }) && !scope.ambiguous {
                 add("sensory_detail", "aroma.unspecified", .text(body)); unresolved("sensory_descriptor_domain_unresolved", ai: true); continue
             }
-            let vague = matches(#"(?:^|\s)(?:깔끔|담백|고소|구수|시원|개운)(?:한|함|해요|했어요|하다|하고|하지만|하지|했지만)"#, body).contains { match in
+            let vague = matches(#"(?:^|\s)(?:깔끔|담백|고소|구수|시원|개운)(?:한|함|해요|했어요|하다|하고|하지만|하지|했지만|해서)"#, body).contains { match in
                 let raw = slice(body, match.range), trimmedOffset = (raw as NSString).rangeOfCharacter(from: .whitespacesAndNewlines.inverted).location
                 return !found.contains { $0.range.location <= match.range.location + trimmedOffset && NSMaxRange($0.range) >= NSMaxRange(match.range) }
             }
             let ambiguousNegation = has("(?:지 않지|없지 않|안 .*않|아닌 건 아니|않은 건 아니|않다고는|덜 .*않)", body)
             let combination = has("조합|함께 먹|같이 먹|어울", body)
             let positive = has(pattern("positiveEvaluation"), body), negative = has(pattern("negativeEvaluation"), body)
+            // 같은 문장의 명시된 부위 뒤 '…지만 고소해서 좋았다'만 이어받는다.
+            // 고소함을 특정 감각으로 정하거나 음식 전체 호감/장기 선호로 승격하지 않는다.
+            if found.isEmpty, scope.target == "whole_dish", !scope.ambiguous,
+               let inheritedPart, inheritedPart.endsWithContrast,
+               has("^(?:고소|구수|담백|깔끔|개운)해서 (?:좋았|좋았어|좋았습니다|아쉬웠|별로였)", body),
+               positive != negative, !ambiguousNegation, !has("아니|않|없", body) {
+                let range = NSRange(location: inheritedPart.start, length: span.end - inheritedPart.start)
+                let quote = slice(text, range)
+                result.observations.append(.init(kind: "part_liking", attribute: nil,
+                    value: .text(positive ? "positive" : "negative"), scale: "part-three-category-v1",
+                    target: inheritedPart.scope.target, phase: inheritedPart.scope.phase,
+                    phrase: quote, sourceSpans: [.init(start: range.location, end: NSMaxRange(range), quote: quote)]))
+                unresolved("sensory_descriptor_domain_unresolved", ai: true)
+                continue
+            }
             if has(pattern("comparativeOrConditional"), body) && !found.isEmpty {
                 if found.count == 1 && !scope.ambiguous && !has("때만", body) { add("sensory_detail", found[0].attribute, .text(body), reference: found[0].reference) }
                 unresolved("unresolved_condition_or_comparison", ai: true); continue

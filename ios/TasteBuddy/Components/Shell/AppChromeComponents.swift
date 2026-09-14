@@ -1084,6 +1084,9 @@ private struct BottomTabButton: View {
                 Text(tab.title)
                     .font(isActive ? TBFont.semibold(10) : TBFont.medium(10))
                     .tracking(AppChromeMetrics.tabLabelTracking)
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
             .foregroundStyle(isActive ? TBColor.textPrimary : TBColor.textDisabled)
             .frame(maxWidth: .infinity)

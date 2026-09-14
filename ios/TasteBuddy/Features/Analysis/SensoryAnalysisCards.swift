@@ -8,6 +8,7 @@ enum SensoryAnalysisDisplayState: Equatable {
 }
 
 struct SensoryAnalysisHeroCard: View {
+    @State private var showsEvidence = false
     let snapshot: SensoryAnalysisSnapshot
 
     var body: some View {
@@ -18,7 +19,7 @@ struct SensoryAnalysisHeroCard: View {
                         .font(TBFont.medium(12))
                         .foregroundStyle(TBColor.textHint)
 
-                    Text(snapshot.mainWing.label)
+                    Text(snapshot.mainWing.status == "ambiguous_main" ? "여러 취향이 함께 보여요" : snapshot.mainWing.label)
                         .font(TBFont.semibold(18))
                         .tracking(-0.24)
                         .foregroundStyle(TBColor.textPrimary)
@@ -31,19 +32,33 @@ struct SensoryAnalysisHeroCard: View {
                     .lineSpacing(4)
 
                 HStack(alignment: .top, spacing: 12) {
-                    recordCount(title: "완료 기록", count: snapshot.completedExperienceCount)
-                    recordCount(title: "근거 기록", count: snapshot.sourceExperienceCount)
+                    recordCount(title: "완료 음식 기록", count: snapshot.completedExperienceCount)
+                    recordCount(title: "관련 식사", count: Set(heroEvidence.map(\.independentMealID)).count, unit: "회")
                 }
                 .padding(.top, 2)
+                Button("직접 평가·반대 근거 보기") { showsEvidence = true }
+                    .font(TBFont.medium(12)).frame(minHeight: 44)
             }
-            .accessibilityElement(children: .combine)
+            .accessibilityElement(children: .contain)
         }
+        .sheet(isPresented: $showsEvidence) { SensoryEvidenceDetailSheet(observations: heroEvidence, unresolved: []) }
+    }
+
+    private var heroEvidence: [SensoryObservation] {
+        let selected = [snapshot.mainWing.main, snapshot.mainWing.wing].compactMap { $0 }
+        let candidates = selected.isEmpty ? snapshot.mainWing.candidates : selected
+        let ids = Set(candidates.flatMap { $0.supportEvidenceIDs + $0.counterEvidenceIDs })
+        return snapshot.observations.filter { ids.contains($0.id) }
     }
 
     private var heroDescription: String {
         switch snapshot.mainWing.status {
         case "provisional_profile":
-            return "반복해서 나타난 직접 평가와 감각 기록을 바탕으로 한 현재 범위의 해석이에요."
+            if let main = snapshot.mainWing.main, main.counterExperienceCount > 0 {
+                return "이 넓은 범주에 긍정 \(main.supportExperienceCount)회·반대 \(main.counterExperienceCount)회의 식사가 있어요. 기록 분포를 요약한 이름이며, 조건별 선호 방향은 반례와 함께 보류할 수 있어요."
+            }
+            let labels = Array(Set(heroEvidence.filter { $0.kind == "attribute_liking" }.map(\.attributeLabel))).sorted().prefix(3).joined(separator: " · ")
+            return "\(labels.isEmpty ? "직접 남긴 평가" : labels + "에 남긴 직접 평가")를 요약했어요. 현재 기록에서 보이는 성향이며 조건별 판단과 반대 근거도 함께 확인해요."
         case "ambiguous_main":
             return "서로 다른 상황의 기록이 함께 있어 한 가지 입맛으로 정하지 않고 있어요."
         default:
@@ -51,12 +66,12 @@ struct SensoryAnalysisHeroCard: View {
         }
     }
 
-    private func recordCount(title: String, count: Int) -> some View {
+    private func recordCount(title: String, count: Int, unit: String = "개") -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(TBFont.medium(11))
                 .foregroundStyle(TBColor.textHint)
-            Text("\(count)개")
+            Text("\(count)\(unit)")
                 .font(TBFont.semibold(13))
                 .foregroundStyle(TBColor.textPrimary)
         }
@@ -170,7 +185,7 @@ struct PersonalTasteCandidateGroup: Identifiable {
             return "\(label), 조건에 따라 달랐던 반응"
         }
         if candidates.contains(where: { $0.status == "mixed" }) {
-            return "\(label), 상황에 따라 달랐던 기록"
+            return "\(label), 평가가 나뉘었어요"
         }
         return representative.conditions.isEmpty
             ? "\(label)에 남긴 평가"
@@ -345,10 +360,6 @@ enum PersonalTasteCandidatePresentation {
     }
 }
 
-struct TasteQuestionChoice: Identifiable, Equatable {
-    let id: String
-    let title: String
-}
 
 struct TasteQuestionMedia: View {
     var photoFilename: String?
@@ -398,6 +409,8 @@ struct TasteQuestionStackCard: View {
     var fallbackActionTitle = "기록에서 답하기"
     var onConfirm: ((String) -> String?)? = nil
     var onStartRecord: (() -> Void)? = nil
+    var onInteraction: (() -> Void)? = nil
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isExpanded: Bool
     @State private var selectedID: String?
@@ -417,7 +430,8 @@ struct TasteQuestionStackCard: View {
         onToggleStack: (() -> Void)? = nil,
         fallbackActionTitle: String = "기록에서 답하기",
         onConfirm: ((String) -> String?)? = nil,
-        onStartRecord: (() -> Void)? = nil
+        onStartRecord: (() -> Void)? = nil,
+        onInteraction: (() -> Void)? = nil
     ) {
         self.question = question
         self.supportingText = supportingText
@@ -431,6 +445,7 @@ struct TasteQuestionStackCard: View {
         self.fallbackActionTitle = fallbackActionTitle
         self.onConfirm = onConfirm
         self.onStartRecord = onStartRecord
+        self.onInteraction = onInteraction
         _isExpanded = State(initialValue: initiallyExpanded)
     }
 
@@ -439,6 +454,7 @@ struct TasteQuestionStackCard: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top, spacing: TBSpacing.x4) {
                     Button {
+                        onInteraction?()
                         withAnimation(TasteBloomMotion.animation(isExpanded ? .content : .sheet, reduceMotion: reduceMotion)) {
                             isExpanded.toggle()
                         }
@@ -451,7 +467,7 @@ struct TasteQuestionStackCard: View {
                                 Text(question)
                                     .font(TBFont.semibold(14))
                                     .foregroundStyle(TBColor.textPrimary)
-                                    .lineLimit(isExpanded ? 3 : 2)
+                                    .lineLimit(isExpanded ? nil : 2)
                                 if !isExpanded {
                                     Text(supportingText)
                                         .font(TBFont.regular(11))
@@ -461,9 +477,9 @@ struct TasteQuestionStackCard: View {
                                 }
                             }
                             .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60, alignment: .topLeading)
+                            .frame(maxWidth: .infinity, minHeight: 60, alignment: .topLeading)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60, alignment: .topLeading)
+                        .frame(maxWidth: .infinity, minHeight: 60, alignment: .topLeading)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -512,7 +528,7 @@ struct TasteQuestionStackCard: View {
     private var answerContent: some View {
         VStack(alignment: .leading, spacing: TBSpacing.x12) {
             if !choices.isEmpty, onConfirm != nil {
-                let layout = choices.count <= 3
+                let layout = choices.count <= 3 && !dynamicTypeSize.isAccessibilitySize
                     ? AnyLayout(HStackLayout(spacing: TBSpacing.x8))
                     : AnyLayout(VStackLayout(spacing: 0))
                 layout {
@@ -533,7 +549,6 @@ struct TasteQuestionStackCard: View {
             }
 
         }
-        .accessibilityIdentifier("taste-question-answers")
     }
 
     private func choiceButton(_ choice: TasteQuestionChoice) -> some View {
@@ -549,14 +564,14 @@ struct TasteQuestionStackCard: View {
                 .foregroundStyle(selected ? style.foreground : TBColor.textSecondary)
                 .padding(.horizontal, ChipSize.small.horizontalPadding)
                 .frame(maxWidth: .infinity)
-                .frame(height: ChipSize.small.lineHeight + 2 * ChipSize.small.verticalPadding)
+                .frame(minHeight: max(48, ChipSize.small.lineHeight + 2 * ChipSize.small.verticalPadding))
                 .background(style.background)
                 .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
                         .strokeBorder(selected ? style.border : TBColor.borderCard)
                 }
-                .frame(minHeight: 44)
+                .frame(minHeight: 48)
                 .contentShape(Rectangle())
         }
         .buttonStyle(TBTokenButtonStyle())
@@ -583,70 +598,6 @@ struct TasteQuestionStackCard: View {
     }
 }
 
-enum PersonalTasteInlineAnswer {
-    static func sourceEntry(for selection: PersonalTasteNextSelection, observations: [SensoryObservation], entries: [DiningEntry]) -> DiningEntry? {
-        guard selection.intent == "clarification",
-              let sourceID = selection.responseSourceID,
-              let source = observations.first(where: {
-                  $0.id == sourceID && $0.attribute == selection.attribute && selection.evidenceIDs.contains($0.id)
-              }) else { return nil }
-        return entries.first { $0.id == source.experienceID }
-    }
-
-    static func choices(for facet: String) -> [TasteQuestionChoice] {
-        switch facet {
-        case "liking": DiningSensorySelection.Liking.allCases.map { .init(id: $0.rawValue, title: $0.label) }
-        case "intensity": DiningSensorySelection.Intensity.allCases.map { .init(id: $0.rawValue, title: $0.label) }
-        case "target": DiningSensorySelection.Target.allCases.filter { $0 != .unspecified }.map { .init(id: $0.rawValue, title: $0.label) }
-        case "phase": DiningSensorySelection.Phase.allCases.filter { $0 != .unspecified }.map { .init(id: $0.rawValue, title: $0.label) }
-        default: []
-        }
-    }
-
-    /// 원래 선택에서 비어 있는 항목만 보완하며 새로운 식사나 출처를 만들지 않는다.
-    static func applying(_ answerID: String, to entry: DiningEntry, context: PersonalTasteQuestionResponseContext) -> DiningEntry? {
-        guard context.selection.intent == "clarification",
-              entry.id == context.sourceEntryID,
-              entry.hasCompletedTasteFeedback,
-              let source = context.sourceSelectionEvidence,
-              choices(for: context.selection.facet).contains(where: { $0.id == answerID }),
-              var selections = entry.sensorySelections else { return nil }
-        let matches = selections.indices.filter {
-            let item = selections[$0]
-            return item.id == source.selectionID && item.type.rawValue == source.type
-                && item.catalogVersion == source.catalogVersion && item.labelSnapshot == source.labelSnapshot
-                && item.relatedBubbleID == source.relatedBubbleID && item.unparsedPayload == nil
-                && item.target.rawValue == context.sourceTarget && item.phase.rawValue == context.sourcePhase
-        }
-        guard matches.count == 1, let index = matches.first else { return nil }
-        switch context.selection.facet {
-        case "liking":
-            guard selections[index].liking == nil else { return nil }
-            selections[index].liking = .init(rawValue: answerID)
-        case "intensity":
-            guard selections[index].intensity == nil else { return nil }
-            selections[index].intensity = .init(rawValue: answerID)
-        case "target":
-            guard selections[index].target == .unspecified else { return nil }
-            selections[index].target = .init(rawValue: answerID)
-        case "phase":
-            guard selections[index].phase == .unspecified else { return nil }
-            selections[index].phase = .init(rawValue: answerID)
-        default: return nil
-        }
-        return DiningEntry(
-            id: entry.id, mealID: entry.mealID, restaurant: entry.restaurant,
-            restaurantID: entry.restaurantID, menu: entry.menu, menuItemID: entry.menuItemID,
-            observedAt: entry.observedAt, savedAt: entry.savedAt, updatedAt: entry.updatedAt,
-            rating: entry.rating, note: entry.note, tasteExperienceIDs: entry.tasteExperienceIDs,
-            detailTagIDs: entry.detailTagIDs, sensorySelections: selections,
-            overallEvaluation: entry.overallEvaluation, dishKindIDs: entry.dishKindIDs,
-            reflectionPhotoFilename: entry.reflectionPhotoFilename,
-            tbaAnalysisSnapshot: entry.tbaAnalysisSnapshot, feedbackStatus: entry.feedbackStatus,
-            photoPalette: entry.photoPalette
-        )
-    }
-}
 
 struct PersonalTasteAnswerToast: ViewModifier {
     var bottomPadding: CGFloat = TBSpacing.mainTabContentBottom
@@ -660,7 +611,7 @@ struct PersonalTasteAnswerToast: ViewModifier {
             .overlay(alignment: .bottom) {
                 if toast.isPresented {
                     ToastSurface(
-                        title: undoFailed ? "기록이 바뀌어 취소하지 못했어요" : "답변을 기록했어요",
+                        title: undoFailed ? "기록이 바뀌어 취소하지 못했어요" : "이 식사에 답변을 기록했어요",
                         tone: undoFailed ? .warning : .success,
                         actionTitle: undoFailed ? nil : "취소",
                         action: {
@@ -707,22 +658,34 @@ struct PersonalTasteNextQuestionCard: View {
         let meal = entry.map {
             [$0.restaurant, $0.menu].filter { !$0.isEmpty }.joined(separator: " · ")
         }
-        TasteQuestionStackCard(
-            question: meal.map { "\($0)\n\(selection.question)" } ?? selection.question,
-            supportingText: "답변하려면 카드를 탭해주세요.",
-            choices: selection.intent == "clarification" && sourceSelectionLabel != nil
-                ? PersonalTasteInlineAnswer.choices(for: selection.facet) : [],
-            photoFilename: entry?.reflectionPhotoFilename,
-            illustrationSeed: selection.id,
-            showsStack: showsStack,
-            initiallyExpanded: initiallyExpandedForQA,
-            isStackExpanded: isStackExpanded,
-            onToggleStack: onToggleStack,
-            fallbackActionTitle: selection.intent == "exploration" ? "새 식사에서 확인" : "기록에서 답하기",
-            onConfirm: saveAnswer,
-            onStartRecord: onStartNewRecord
-        )
-        .id(selection.id)
+        let observation = appModel.sensoryAnalysis.observations.first { $0.id == selection.responseSourceID }
+        let availability = PersonalTasteInlineAnswer.availability(selection: selection, observation: observation, entry: entry)
+        let scope = observation.map { row in
+            [row.phase == "unspecified" ? nil : TastePerceptionEngine.phaseLabel(row.phase),
+             row.target == "unspecified" ? nil : TastePerceptionEngine.targetLabel(row.target)].compactMap { $0 }.joined(separator: " · ")
+        } ?? ""
+        let pending = appModel.sensoryAnalysis.unresolved.first { $0.id == selection.responseSourceID }
+        let reason = selection.intent == "source_review" ? (selection.facet == "conflict" ? "기존 응답이 충돌해요. 원문에서 확인하며 수정할 수 있어요." : "말씀하신 뜻을 임의로 정하지 않았어요. 원문을 보완하거나 나중에 확인할 수 있어요.") : availability.reason
+        let supporting = [entry?.memoryDateDescription,
+            observation.map { "“\($0.selectionEvidence?.labelSnapshot ?? $0.phrase)”" } ?? pending.map { "“\($0.phrase)”" }, reason].compactMap { $0 }.joined(separator: "\n")
+        if !availability.choices.isEmpty {
+            TasteQuestionStackCard(
+                question: [meal, scope.isEmpty ? nil : scope, selection.question].compactMap { $0 }.joined(separator: "\n"),
+                supportingText: supporting,
+                choices: availability.choices,
+                photoFilename: entry?.reflectionPhotoFilename,
+                illustrationSeed: selection.id,
+                showsStack: showsStack,
+                initiallyExpanded: initiallyExpandedForQA,
+                isStackExpanded: isStackExpanded,
+                onToggleStack: onToggleStack,
+                onConfirm: saveAnswer,
+                onInteraction: {
+                    appModel.recordPersonalTasteQuestionExposure(id: selection.id, userID: appModel.sensoryAnalysis.personalModel?.userID ?? "local-owner")
+                }
+            )
+            .id(selection.id)
+        }
     }
 
     private var initiallyExpandedForQA: Bool {
@@ -747,7 +710,7 @@ struct PersonalTasteNextQuestionCard: View {
             appModel.preparePersonalTasteAnswerUndo(before: entry, context: context)
             return nil
         case .updated, .added: return "답변을 기록했어요. 기록에서 남은 내용을 확인해주세요."
-        case .sourceUnavailable: return "연결된 기록을 찾지 못했어요. 기록을 다시 확인해주세요."
+        case .sourceUnavailable: return appModel.diningPersistenceError ?? "연결된 기록을 찾지 못했어요. 기록을 다시 확인해주세요."
         }
     }
 }
@@ -782,6 +745,7 @@ struct PersonalTasteCandidateDetailSheet: View {
     let observations: [SensoryObservation]
     let entries: [DiningEntry]
     let limits: [String]
+    var unresolved: [SensoryUnresolved] = []
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -818,6 +782,8 @@ struct PersonalTasteCandidateDetailSheet: View {
                             }
                         }
                     }
+
+                    TasteIntensityLikingMatrixView(observations: observations, attribute: group.attribute, reference: group.reference, unresolved: unresolved)
 
                     ForEach(group.highlightedCandidates) { candidate in
                         let condition = group.conditionText(candidate)
@@ -907,6 +873,7 @@ struct PersonalTasteCandidateDetailSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
         .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
+        .modifier(MemoryRevisionDismissal())
     }
 
     @ViewBuilder
@@ -1074,6 +1041,7 @@ struct SensoryInsightDetailSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
         .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
+        .modifier(MemoryRevisionDismissal())
     }
 }
 
@@ -1103,12 +1071,17 @@ struct SensoryEvidenceDetailSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
         .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
+        .modifier(MemoryRevisionDismissal())
     }
 }
 
 struct SensoryEvidenceList: View {
+    @EnvironmentObject private var appModel: AppModel
     let observations: [SensoryObservation]
     let unresolved: [SensoryUnresolved]
+    var showsMemoryActions = true
+    @State private var memoryEntryID: UUID?
+    @State private var showsComparison = false
 
     var body: some View {
         if items.isEmpty {
@@ -1119,6 +1092,22 @@ struct SensoryEvidenceList: View {
             }
         } else {
             VStack(spacing: TBSpacing.x12) {
+                if showsMemoryActions {
+                    let ids = Array(Set(observations.map(\.experienceID) + unresolved.map(\.experienceID))).sorted { $0.uuidString < $1.uuidString }
+                    Menu {
+                        ForEach(ids, id: \.self) { id in
+                            let entry = appModel.diningEntry(id: id)
+                            let name = entry?.menu ?? observations.first { $0.experienceID == id }?.foodName ?? unresolved.first { $0.experienceID == id }?.foodName ?? "음식 기억"
+                            Button(name + " · " + (entry?.memoryDateDescription ?? "현재 원문 확인 필요")) { memoryEntryID = id }
+                                .accessibilityIdentifier("open-food-memory-\(id.uuidString.lowercased())")
+                        }
+                    } label: {
+                        Text("원본 열기·수정").frame(minHeight: 48).contentShape(Rectangle())
+                    }
+                    Button { showsComparison = true } label: {
+                        Text("관련 경험·반례 비교").frame(minHeight: 48).contentShape(Rectangle())
+                    }
+                }
                 ForEach(items) { item in
                     SectionCard {
                         VStack(alignment: .leading, spacing: TBSpacing.x8) {
@@ -1149,6 +1138,13 @@ struct SensoryEvidenceList: View {
                         }
                     }
                 }
+            }
+            .sheet(isPresented: Binding(get: { memoryEntryID != nil }, set: { if !$0 { memoryEntryID = nil } })) {
+                if let memoryEntryID { FoodMemoryDetailView(entryID: memoryEntryID) }
+            }
+            .sheet(isPresented: $showsComparison) {
+                let ids = Array(Set(observations.map(\.experienceID) + unresolved.map(\.experienceID)))
+                FoodMemoryComparisonView(scope: .relatedEntries(ids))
             }
         }
     }

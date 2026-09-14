@@ -1,0 +1,10 @@
+✔ v2 preserves revision and uncertain meal time without inventing observedAt (10.369997ms)
+✔ v2 rejects source mismatch, duplicate experience, incomplete scope, and undeclared private data (6.532547ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2934.490871

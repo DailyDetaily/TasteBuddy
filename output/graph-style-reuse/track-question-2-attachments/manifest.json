@@ -1,0 +1,452 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "D1FA48FF-E851-4ACF-986A-CD9A0E61199B.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for com.juneh96.tastebuddy_0_545E31EC-C720-4318-9678-4C3BFB2793B6.ios",
+        "timestamp" : 1789296676.052
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "1E72399B-E192-4D02-9137-99F138EDD35D",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.51.16",
+        "timestamp" : 1789296676.053
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "7F7EFBD5-6192-47A8-A1A1-47FBAB0D7695",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.51.04",
+        "timestamp" : 1789296664.665
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "39EAE519-E8F8-48F3-A6FC-9C5887D681B0",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.51.05",
+        "timestamp" : 1789296665.486
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "7A8C3722-776A-4D9F-AE65-3F79F03B0A37.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-01-scope_0_B4040A87-EC8D-41BF-8B50-67688421AE4F.png",
+        "timestamp" : 1789296662.085
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "8585CD90-E253-409F-ACF8-DDC754F084D8",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.50.57",
+        "timestamp" : 1789296657.521
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "6E3DD470-CD99-414D-BB9C-86B3E0FEB752.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-09-13 at 19.50.40.mp4",
+        "timestamp" : 1789296640.427
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "372EDB69-61D1-496D-AB02-FBE7D5E15D83.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for com.juneh96.tastebuddy_0_437C9302-AB34-4820-B19E-0930FC6C84CE.ios",
+        "timestamp" : 1789296677.669
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "2B19AA4E-816B-40ED-8FD3-29E95101C95D",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.51.17",
+        "timestamp" : 1789296677.669
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "04C46C3F-1FCB-4814-8C95-435143DDAB95.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for com.juneh96.tastebuddy_0_F815DE46-0A1C-489D-A6F3-39A5B19104E0.ios",
+        "timestamp" : 1789296758.115
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "0CFA1062-125C-41FC-9084-06987FBEA4EE",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.52.38",
+        "timestamp" : 1789296758.116
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "053FDEF4-E5FE-4F86-8FF9-044638E3066C.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_362C32B7-F262-463B-A821-F9D7432A8BA2.txt",
+        "timestamp" : 1789296757.319
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "33744EFD-AEE7-415B-8D47-6F7AF235B161.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_89DBAFB3-86B1-4B89-9F4F-5EF6164AEEE2.txt",
+        "timestamp" : 1789296756.441
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "DC4C6C2B-26CC-4428-9129-5B7A66C12F54.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_BAC579A0-6039-48A6-B300-7D7ADACEA601.txt",
+        "timestamp" : 1789296755.472
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "ADB00B94-E006-4B63-8341-211420E4C225.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_919B2DA7-5D4F-4B9E-986C-D060A198A3EA.txt",
+        "timestamp" : 1789296754.443
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "02650019-76FE-422B-88AE-5122B343F7DB.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_360D8281-10F0-48CE-9BD4-A2D35CB2C606.txt",
+        "timestamp" : 1789296753.501
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "01CFF54B-2C9F-4E31-AFF1-4CC4429D6CF8.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_9477C164-6FBD-48F7-932F-8A82BB2FBF6A.txt",
+        "timestamp" : 1789296752.457
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "49D60B42-99A8-4637-9288-6ECE4DD20498.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_0A9B326A-7524-48B2-88E8-7A7969CD0FA4.txt",
+        "timestamp" : 1789296751.507
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "11C28787-744E-4FE9-8F4E-15798D190A5E.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_AED5BF36-0B17-4F5D-9417-0C82F0D4A1B2.txt",
+        "timestamp" : 1789296750.456
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "7AED568B-7FB1-4D46-BBF7-520011C12251.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_AADF2027-FCFF-4382-AED7-C6F76C36F752.txt",
+        "timestamp" : 1789296749.549
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "55D9060F-49FA-4C82-A5F6-2D26C95B557B.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_0A980339-4844-4731-9F2F-38BA3AD770EF.txt",
+        "timestamp" : 1789296748.52
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "FC63CAC3-8D0C-401F-A45C-75A010C2F83E.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_9EBF37C5-9C88-4827-B8B4-EF2F1D518128.txt",
+        "timestamp" : 1789296747.67
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "CF6C1FC2-4E93-4582-8437-A27ABC36CD9A.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_1D63675A-988E-44AF-B0D6-5B6F0EB0CCB5.txt",
+        "timestamp" : 1789296746.498
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "26CBA490-E8EA-4248-B517-E4E0D68C44B4.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_AE27E4E5-A22F-4483-95D3-2FB6D0EB19F2.txt",
+        "timestamp" : 1789296745.421
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "F6562FAF-9F92-40FF-ADCA-B3B01F944BAB.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_1F912E72-4970-4346-80A7-C17181D288E4.txt",
+        "timestamp" : 1789296744.7
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "A41939DE-2883-463A-B816-DA57EE754603.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_B20FD3B8-8381-42F9-877C-F3AC2337CFE1.txt",
+        "timestamp" : 1789296743.75
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "84577880-DCE1-4FC2-A6F5-D6817C1C6E96.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_60A38B2D-FE4B-4823-805C-ADD5D13C1ED2.txt",
+        "timestamp" : 1789296742.494
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "970F922C-09F5-413E-A843-7B3C259257C3.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_43B7B33F-E066-4FD4-B19C-0D96C3591250.txt",
+        "timestamp" : 1789296741.415
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "5607AC4F-0DFC-478A-852F-9B30722AFEE0.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_00101598-A688-44B0-88BA-F371666370FE.txt",
+        "timestamp" : 1789296740.455
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "C290DB69-5305-4B63-8329-8A45D8AD6B01.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_70656F33-A04F-45B7-BD12-B0290A97CEC3.txt",
+        "timestamp" : 1789296739.585
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "C3C2CB10-458E-4ADC-9FFE-4D0C5BF4D68C.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_A0C65B87-E9AD-46EA-BD00-93875D93BA23.txt",
+        "timestamp" : 1789296738.426
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "7C3EEDBD-E7EC-4C5F-843A-0E4AAB06F916.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_E3C8B578-2D5A-4259-B00A-B70269158527.txt",
+        "timestamp" : 1789296737.44
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "8B409096-C15D-4E60-8B23-E8C9FAC640CF.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_D0F5C460-7963-4044-9DBC-655F0328647F.txt",
+        "timestamp" : 1789296736.445
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "C40E7368-8215-414A-BAFB-3B7DBC1D270C.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_D189A409-60AE-43AE-A35F-CE5CC8BF0ADF.txt",
+        "timestamp" : 1789296735.481
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "41F28835-A867-4A6B-8662-E022EEB94EEB.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_1DBDDC7D-D724-4E2A-AC93-C7916B320986.txt",
+        "timestamp" : 1789296734.488
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "E4C11A2A-ECA1-4AA6-A191-EF77A4380B33.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_12DF3876-6C73-4899-8828-29539B6B8C05.txt",
+        "timestamp" : 1789296733.535
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "643B14A3-F7FE-488A-A81C-7FC81C6824CE.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_1FD4F8E1-173A-4096-A52C-784C4BC493FB.txt",
+        "timestamp" : 1789296732.433
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "2EDF192B-26CC-4FC6-B8B6-7DCB26A73D00.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_43274E5E-AA52-4886-A7D4-A8148895D767.txt",
+        "timestamp" : 1789296731.554
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "B3C7E086-2A8A-4CD4-802D-7966D132A76C.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_60E809E1-6937-4280-A66A-042CBC738E43.txt",
+        "timestamp" : 1789296730.548
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "F0B90EB4-7BFC-4DB0-ADA5-84201437C8A4.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_F4AB6E92-C5AC-4F7B-A033-142D8D354588.txt",
+        "timestamp" : 1789296729.523
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "A246D6E5-C3EB-4DDE-8E99-F33F2F8F15BA.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `StaticText (First Match)`_0_F1B0B0A1-825E-4075-A426-E2198C85E951.txt",
+        "timestamp" : 1789296728.534
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "80437DE9-9715-43C2-9B90-85811BBD7D86",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.52.06",
+        "timestamp" : 1789296726.504
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "23A26E04-5431-4958-8B7B-D9312012376F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.52.06",
+        "timestamp" : 1789296726.922
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "E4AD959B-406B-4763-829F-F8E02C37E901.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-large-01-actions_0_94B3FF0A-7E83-44C4-8740-44F8D8BE9ECA.png",
+        "timestamp" : 1789296725.387
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "EF1C8A2E-9657-4C44-843E-EC61E441C3A3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.52.03",
+        "timestamp" : 1789296723.503
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "B098E8A2-0C0D-484B-A4AF-DB2EE674EE6A.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-09-13 at 19.51.32.mp4",
+        "timestamp" : 1789296692.857
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test02LargeTypeQuestionAndMetricActionsRemainReachable()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test02LargeTypeQuestionAndMetricActionsRemainReachable"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "34EE029E-0CFE-49B8-8214-E11A8DD26F32.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-all-list_0_28F0B3B9-2801-4A3C-BC42-220A91917396.png",
+        "timestamp" : 1789296779.748
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "19B36605-FE8F-45C7-A5AB-1661C7549AB8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-see-all_0_8E4B68FF-D48B-42BC-99EC-7C6D7B27FA46.png",
+        "timestamp" : 1789296775.853
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test04QuestionSeeAllOpensExistingListInsteadOfReplacingHomeBatch()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test04QuestionSeeAllOpensExistingListInsteadOfReplacingHomeBatch"
+  }
+]

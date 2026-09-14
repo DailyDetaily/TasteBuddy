@@ -1,0 +1,437 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "A22A6260-2A84-4DF3-82CF-BA6D4CD725F5.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-04-current-original_0_CF712768-059B-4553-8148-7AA7268533AB.png",
+        "timestamp" : 1789297119.317
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "EB3D3AA1-8A11-4EFB-B2FC-F0F983549528.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-03-category_0_19ACACFB-484E-45AB-9C86-B6477BBB5E5D.png",
+        "timestamp" : 1789297102.663
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "3D7E4A97-F1AA-434B-B461-433BB9C10E3A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-02-four-charts_0_E8A98146-045F-4A37-BC30-1891EA11D6A1.png",
+        "timestamp" : 1789297093.811
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "CCA3F9DB-58D2-4B36-80F1-67845B64211A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-01-scope_0_5AA910C4-38CE-4F5A-A9F3-A45A446C203F.png",
+        "timestamp" : 1789297083.376
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "C2FA7FEF-3861-4368-935B-50120259E00D",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 20.00.25",
+        "timestamp" : 1789297225.063
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "A3426C4B-904B-4A28-86FA-ADA4E081DAD2",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 20.00.25",
+        "timestamp" : 1789297225.565
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "CF30D5D1-4514-4B22-8674-52EFE1FAE4CF",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 20.00.20",
+        "timestamp" : 1789297220.347
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "34E8C421-ADB0-4DF7-AD15-C50B4220942D",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 20.00.20",
+        "timestamp" : 1789297220.85
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "1E6DD77D-62C5-4FBB-95D9-433F8CD4BD09",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 20.00.15",
+        "timestamp" : 1789297215.689
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "D2984957-0B9B-492C-BA48-6B51C6B6DD4C",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 20.00.16",
+        "timestamp" : 1789297216.161
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "42CB69FA-D191-4BA4-BADC-20701CAC6267",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 20.00.10",
+        "timestamp" : 1789297210.914
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "8EF05DF8-0CE3-4F43-B38B-8F2ACB991B60",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 20.00.11",
+        "timestamp" : 1789297211.419
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "6AEEE40A-F693-456E-99C2-D21D9C03C561",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 20.00.06",
+        "timestamp" : 1789297206.347
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "472BBAB2-243A-40FB-AF56-C72C8523592A",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 20.00.06",
+        "timestamp" : 1789297206.845
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "8E077862-1647-4752-8283-3190628F840D",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 20.00.01",
+        "timestamp" : 1789297201.747
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "DD1125D5-0F0E-4A50-9B8C-B8F8840428BD",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 20.00.02",
+        "timestamp" : 1789297202.255
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "1F9338BA-B286-494C-874B-1B9AF782F2E4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.57",
+        "timestamp" : 1789297197.244
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "70ACE705-4A72-465E-8273-BDF99E8E5D5F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.57",
+        "timestamp" : 1789297197.751
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "9FAB1CB2-7489-479B-8BA0-CA1DBB99AF1E",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.52",
+        "timestamp" : 1789297192.928
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "AC34E972-0E7C-4F40-909F-643D041E4697",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.53",
+        "timestamp" : 1789297193.437
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "CDF35C5E-879A-48E1-ADDE-371F865D1342",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.48",
+        "timestamp" : 1789297188.028
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "5833D325-FCCD-43A9-BC16-B5546CE85338",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.48",
+        "timestamp" : 1789297188.545
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "C36AD433-3943-412F-8FFF-C0DC475410FF",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.43",
+        "timestamp" : 1789297183.167
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "7848867F-888F-4A0C-993E-7E46C637F118",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.43",
+        "timestamp" : 1789297183.639
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "D25E5CBF-9A7A-4A28-B862-382EF8A5EFFB",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.38",
+        "timestamp" : 1789297178.054
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "E22735B4-4E25-455B-979E-6C9F83D68B47",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.38",
+        "timestamp" : 1789297178.517
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "B99BB246-A53F-4806-9F05-383172E08060",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.33",
+        "timestamp" : 1789297173.554
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "CF445F03-8637-44A7-AE26-3D4C1AB027B3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.34",
+        "timestamp" : 1789297174.052
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "131A5732-1C9D-4BE0-A9EE-043879D70D7C",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.29",
+        "timestamp" : 1789297169.02
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "DAC64C46-B762-4CFF-B1C5-33BFA588F0F2",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.29",
+        "timestamp" : 1789297169.478
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "B1F95DA2-C3A4-4743-B300-4E3BC957782F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.24",
+        "timestamp" : 1789297164.443
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "3F168B7A-E6A5-40BA-8E3C-9DE4E7368785",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.24",
+        "timestamp" : 1789297164.944
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "6582F1ED-FE20-4979-ABFD-00A3F161B129",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.19",
+        "timestamp" : 1789297159.896
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "5C61AC25-FD05-49A3-A434-2A2C42868693",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.20",
+        "timestamp" : 1789297160.416
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "201F19CE-2CB5-4557-8336-87C682DEF675",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.15",
+        "timestamp" : 1789297155.28
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "2B9A098F-9766-4F9B-BF47-C780C3064D9A",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.15",
+        "timestamp" : 1789297155.761
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "36F8FE15-D7AC-4BD6-B8A1-2044AF7E6823",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.10",
+        "timestamp" : 1789297150.871
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "4789A422-F136-47E2-9FE0-4AFADD314BA7",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.11",
+        "timestamp" : 1789297151.371
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "1D06ADAD-68BE-4329-AF90-EF95BF00A6B7",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.06",
+        "timestamp" : 1789297146.36
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "0E1BB6AA-6B3F-4551-9F3F-D1421FFF26F8",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.06",
+        "timestamp" : 1789297146.849
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "331E9E77-A621-4D9E-BEC1-69FD9F01CBE6",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.59.01",
+        "timestamp" : 1789297141.937
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "8AAAA2E1-A3C6-4C06-866E-D32CBC2A95E9",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.59.02",
+        "timestamp" : 1789297142.402
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "0BC11A62-62E4-45AA-BD96-09CBCACE0069",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.58.57",
+        "timestamp" : 1789297137.347
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "AA550A47-8493-43CC-A5B0-5DB942AEA2B3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.58.57",
+        "timestamp" : 1789297137.839
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "A85425D5-3D22-43AC-97FE-D7B6FF62FD2B",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-09-13 at 19.58.54",
+        "timestamp" : 1789297134.059
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "3D1AA05F-1F69-4E5B-81E5-2C66CB338A81",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-09-13 at 19.58.54",
+        "timestamp" : 1789297134.529
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "AA39D8E5-B3DE-4AAC-83AC-B69E7D2B94F3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-09-13 at 19.58.39",
+        "timestamp" : 1789297119.922
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test02LargeTypeQuestionAndMetricActionsRemainReachable()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test02LargeTypeQuestionAndMetricActionsRemainReachable"
+  }
+]

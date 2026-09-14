@@ -58,17 +58,24 @@ extension PersonalTasteModelBuilder {
         return records + [copy]
     }
 
-    static func assessQuestionGroups(_ questions: [String: Question], included: [PersonalTasteModelRecord], userID: String, policy: PersonalTastePolicy, candidates: [PersonalTasteCandidate], fitPatterns: [PersonalTasteFitPattern], overallPatterns: [PersonalTasteOverallPattern]) -> [String: Question] {
-        struct Baseline { let records: [PersonalTasteModelRecord]; let states: [String: String] }
+    static func assessQuestionGroups(_ questions: [String: Question], included: [PersonalTasteModelRecord], userID: String, policy: PersonalTastePolicy, candidates: [PersonalTasteCandidate], fitPatterns: [PersonalTasteFitPattern], overallPatterns: [PersonalTasteOverallPattern], assessmentLimit: Int? = nil, answerOptions: [String: [String]]? = nil) -> [String: Question] {
+        struct Baseline { let records: [PersonalTasteModelRecord]; let relevant: [PersonalTasteModelRecord]; let states: [String: String] }
         var baselines: [String: Baseline] = [:], result: [String: Question] = [:]
-        for key in questions.keys.sorted() {
+        for (index, key) in questions.keys.sorted(by: {
+            questions[$0]!.score == questions[$1]!.score ? $0 < $1 : questions[$0]!.score > questions[$1]!.score
+        }).enumerated() {
             var question = questions[key]!
+            // 해석 영향은 보조 정보다. 상위 12개만 가상 계산하고 나머지 기억 질문도 보존한다.
+            if Task.isCancelled { result[key] = question; continue }
+            if let assessmentLimit, index >= assessmentLimit { result[key] = question; continue }
+            // 원문 편집/레거시에 가상의 버튼 답변 영향은 계산하지 않는다.
+            if question.intent != "exploration", answerOptions?[key]?.isEmpty == true { result[key] = question; continue }
             let attributeKey = json([question.attribute, nullable(question.reference)])
             if baselines[attributeKey] == nil {
                 let attributeRecords = included.filter { insightAttributeKey($0) == attributeKey }
                 let experiences = Set(attributeRecords.map(\.experienceId))
                 let records = attributeRecords + included.filter { $0.kind == "overall_liking" && experiences.contains($0.experienceId) }
-                baselines[attributeKey] = .init(records: records, states: decisionStates(
+                baselines[attributeKey] = .init(records: records, relevant: records.filter { insightAttributeKey($0) == attributeKey }, states: decisionStates(
                     policy: policy,
                     candidates: candidates.filter { $0.attribute == question.attribute && $0.reference == question.reference },
                     fitPatterns: fitPatterns.filter { $0.attribute == question.attribute && $0.reference == question.reference },
@@ -76,13 +83,14 @@ extension PersonalTasteModelBuilder {
                 ))
             }
             let baseline = baselines[attributeKey]!
-            let relevant = baseline.records.filter { insightAttributeKey($0) == attributeKey }
+            let relevant = baseline.relevant
             let source = question.intent == "exploration" ? nil : relevant.first {
-                question.evidenceIDs.contains($0.observationId) && $0.target == question.target && $0.phase == question.phase
+                (question.responseSourceID == nil ? question.evidenceIDs.contains($0.observationId) : question.responseSourceID == $0.observationId) && $0.target == question.target && $0.phase == question.phase
                     && (question.facet != "liking" || $0.kind == "sensory_presence")
             }
             let answers: [String]
-            if question.intent == "exploration" || question.facet == "liking" { answers = likingValues }
+            if question.intent != "exploration", let safe = answerOptions?[key] { answers = safe }
+            else if question.intent == "exploration" || question.facet == "liking" { answers = likingValues }
             else if question.facet == "intensity" { answers = ["weak", "medium", "strong"] }
             else { answers = unique(relevant.map { question.facet == "target" ? $0.target : $0.phase }.filter { $0 != "unspecified" }) }
             var states = [baseline.states], alternativeCount = 0

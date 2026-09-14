@@ -43,6 +43,8 @@
 	<string>$(TB_BACKEND_ENVIRONMENT)</string>
 	<key>TBChatGPTEntryURL</key>
 	<string>$(TB_CHATGPT_ENTRY_URL)</string>
+	<key>TBChatGPTExportVersion</key>
+	<string>$(TB_CHATGPT_EXPORT_VERSION)</string>
 	<key>TBGoogleMapsAPIKey</key>
 	<string>$(TB_GOOGLE_MAPS_API_KEY)</string>
 	<key>TBInstagramFacebookAppID</key>

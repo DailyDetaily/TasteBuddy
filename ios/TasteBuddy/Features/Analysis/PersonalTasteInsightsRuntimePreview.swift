@@ -26,7 +26,35 @@ struct PersonalTasteInsightsRuntimePreview: View {
     }
 
     private static var entries: [DiningEntry] {
-        let original = (0..<7).map { index in
+        if ProcessInfo.processInfo.arguments.contains("--question-finish-qa") {
+            let completeAfterLiking = DiningEntry(
+                restaurant: "완료 확인 식당 1", menu: "진한 산미의 국물", date: .now, rating: 0, note: "",
+                sensorySelections: [.init(id: "sour-fresh", type: .bubble, labelSnapshot: "산뜻한 산미",
+                    intensity: .strong, target: .broth, phase: .duringMeal)], feedbackStatus: .completed
+            )
+            let completeAfterIntensity = DiningEntry(
+                restaurant: "완료 확인 식당 2", menu: "산뜻한 산미의 국물", date: .now.addingTimeInterval(-3600), rating: 0, note: "",
+                sensorySelections: [.init(id: "sour-fresh", type: .bubble, labelSnapshot: "산뜻한 산미",
+                    liking: .liked, target: .broth, phase: .duringMeal)], feedbackStatus: .completed
+            )
+            return [completeAfterLiking, completeAfterIntensity]
+        }
+        if ProcessInfo.processInfo.arguments.contains("--question-legacy-qa") {
+            let legacy = (1...4).map { index in
+                DiningEntry(restaurant: "이전 기록 식당 \(index)", menu: "산미를 기록한 국물 \(index)",
+                    date: Date.now.addingTimeInterval(-Double(index) * 86400), rating: 0, note: "",
+                    tasteExperienceIDs: ["sour-fresh"], sensorySelections: nil, feedbackStatus: .completed)
+            }
+            let raw = DiningEntry(restaurant: "원문 식당", menu: "원문 국물", date: .now, rating: 0,
+                note: "산미가 강했다.", sensorySelections: [], feedbackStatus: .completed)
+            let conflict = DiningEntry(restaurant: "확인할 식당", menu: "확인할 국물", date: .now, rating: 0, note: "",
+                sensorySelections: [
+                    .init(id: "sour-fresh", type: .bubble, labelSnapshot: "산뜻한 산미", liking: .liked),
+                    .init(id: "sour-fresh", type: .bubble, labelSnapshot: "산뜻한 산미", liking: .disliked)
+                ], feedbackStatus: .completed)
+            return legacy + [raw, conflict]
+        }
+        var original = (0..<7).map { index in
             let id = UUID(uuidString: String(format: "C0000000-0000-0000-0000-%012d", index + 1))!
             let observed = Date(timeIntervalSince1970: 1_788_480_000 + Double(index * 86_400))
             return DiningEntry(
@@ -38,6 +66,11 @@ struct PersonalTasteInsightsRuntimePreview: View {
                     preferenceFit: index < 3 ? .justRight : .tooStrong, target: .broth, phase: .duringMeal)],
                 overallEvaluation: .init(response: .veryLiked), dishKindIDs: ["broth"]
             )
+        }
+        if ProcessInfo.processInfo.arguments.contains("--home-questions-confirmed-dates-qa") {
+            for index in original.indices {
+                original[index].mealTime = .init(source: .confirmed, start: original[index].observedAt, confirmedAt: original[index].savedAt)
+            }
         }
         guard ProcessInfo.processInfo.arguments.contains("--question-batch-qa") else { return original }
         let extra = DiningSensorySelection.Target.allCases.filter { $0 != .unspecified }.prefix(4).enumerated().map { index, target in

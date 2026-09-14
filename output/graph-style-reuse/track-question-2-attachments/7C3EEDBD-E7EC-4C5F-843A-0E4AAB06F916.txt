@@ -1,0 +1,5 @@
+Query chain:
+ →Find: Target Application 'com.juneh96.tastebuddy.ios'
+  ↪︎Find: Descendants matching type StaticText
+    ↪︎Find: Elements matching predicate 'label CONTAINS "이 식사에 답변을 기록했어요"'
+      ↪︎Find: First Match

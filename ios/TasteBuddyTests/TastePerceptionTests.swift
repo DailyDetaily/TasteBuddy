@@ -40,7 +40,8 @@ final class TastePerceptionTests: XCTestCase {
             let date = Date(timeIntervalSince1970: 1_780_000_000 + Double(index * 86400))
             return .init(restaurant: "테스트 식당", menu: "국물 요리", date: date, savedAt: date,
                          rating: 1, note: "", sensorySelections: [.init(id: "salty-broth-salt", type: .bubble,
-                         labelSnapshot: "육수의 짠맛", liking: .disliked, intensity: .strong, preferenceFit: .justRight, target: .broth, phase: .firstBite)])
+                         labelSnapshot: "육수의 짠맛", liking: .disliked, intensity: .strong, preferenceFit: .justRight, target: .broth, phase: .firstBite)],
+                         mealTime: .init(source: .confirmed, start: date, confirmedAt: date))
         }
         let result = try SensoryAnalysisEngine.analyze(entries: entries, contract: contract)
         XCTAssertEqual(result.perception.current(for: .salty)?.currentLevel, 2)
@@ -69,6 +70,36 @@ final class TastePerceptionTests: XCTestCase {
         XCTAssertEqual(TasteChangeSeries.changeLabel(sweet.points), "더 약하게")
         XCTAssertTrue(sweet.points.allSatisfy { $0.experienceIDs.isEmpty })
         XCTAssertEqual(TasteChangeSeries.changeLabel(Array(sweet.points.suffix(1))), "비교 부족")
+    }
+    func testMouthfeelDoesNotFillMissingTasteAxisAndUnknownMealTimeCannotBecomeRecentComparison() throws {
+        let entries = (0..<3).map { index -> DiningEntry in
+            let date = Date(timeIntervalSince1970: 1_780_000_000 + Double(index) * 86400)
+            return .init(restaurant: "합성 식당", menu: "크림 파스타", date: date, savedAt: date, rating: 5, note: "",
+                sensorySelections: [.init(id: "fat-coating", type: .bubble, labelSnapshot: "입안을 감싸는 지방감",
+                    intensity: .light, target: .sauce, phase: .afterSwallow)],
+                mealTime: .init(source: .confirmed, start: date, confirmedAt: date))
+        }
+        // 문구는 현재 카탈로그에서 가져와 테스트용 선택을 만든다.
+        let catalog = try XCTUnwrap(SensoryAnalysisEngine.contract?.selectionCatalog)
+        let item = try XCTUnwrap(catalog.entries.first { $0.attribute == "mouthfeel.fatty" && $0.type == "bubble" && $0.intrinsicIntensity == nil })
+        let records = entries.map { entry in
+            DiningEntry(id: entry.id, restaurant: entry.restaurant, menu: entry.menu, date: entry.date, savedAt: entry.savedAt,
+                rating: 5, note: "", sensorySelections: [.init(id: item.id, type: .bubble, labelSnapshot: item.label,
+                    intensity: .light, target: .sauce, phase: .afterSwallow)], mealTime: entry.mealTime)
+        }
+        let result = try SensoryAnalysisEngine.analyze(entries: records)
+        XCTAssertNil(result.perception.current(for: .fat)?.currentLevel)
+        XCTAssertNil(result.perception.current(for: .fat)?.previousLevel)
+        var unknown = records.map { entry in
+            DiningEntry(id: entry.id, restaurant: entry.restaurant, menu: entry.menu, date: entry.date, savedAt: entry.savedAt,
+                rating: 5, note: "", sensorySelections: [.init(id: "sour-fresh", type: .bubble, labelSnapshot: "산뜻한 산미",
+                    intensity: .light, target: .sauce, phase: .afterSwallow)], mealTime: entry.mealTime)
+        }
+        XCTAssertEqual(try SensoryAnalysisEngine.analyze(entries: unknown).perception.current(for: .sour)?.currentLevel, 0)
+        for index in unknown.indices { unknown[index].mealTime = nil }
+        XCTAssertTrue(try SensoryAnalysisEngine.analyze(entries: unknown).perception.patterns.isEmpty)
+        XCTAssertNil(TastePerceptionEngine.axis(for: "mouthfeel.fatty"))
+        XCTAssertNil(TastePerceptionEngine.axis(for: "aroma.nutty"))
     }
     func testChangeScreenUsesScopedPeriodsWithoutInventingMissingValues() throws {
         let fixtures = try JSONDecoder().decode(Fixtures.self, from: Data(contentsOf: root.appendingPathComponent("TasteBuddy/Resources/TBA/taste-perception-fixtures.json")))

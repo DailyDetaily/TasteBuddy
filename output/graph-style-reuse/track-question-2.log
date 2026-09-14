@@ -1,0 +1,288 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project ios/TasteBuddy.xcodeproj -scheme TasteBuddyMemoryQA -destination "platform=iOS Simulator,id=54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4" -derivedDataPath /tmp/TasteBuddyHomeQuestionsQA -resultBundlePath output/graph-style-reuse/track-question-2.xcresult -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO "-only-testing:TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal" "-only-testing:TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test02LargeTypeQuestionAndMetricActionsRemainReachable" "-only-testing:TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test04QuestionSeeAllOpensExistingListInsteadOfReplacingHomeBatch"
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.9.0
+  ProgressiveBlurHeader: https://github.com/dominikmartn/ProgressiveBlurHeader @ main (0e8c29b)
+  VariableBlur: https://github.com/nikstar/VariableBlur @ main (5073a0d)
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.6.0
+  Supabase: https://github.com/supabase/supabase-swift.git @ 2.46.0
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.7.1
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.5.0
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.4.0
+
+Writing result bundle at path:
+	/Users/sinjunho/Desktop/Taste Buddy/output/graph-style-reuse/track-question-2.xcresult
+
+2026-09-13 19:50:29.573878+0900 TasteBuddyMemoryUITests-Runner[9092:4430218] [Default] Running tests...
+2026-09-13 19:50:29.673149+0900 TasteBuddyMemoryUITests-Runner[9092:4430579] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+2026-09-13 19:50:29.710077+0900 TasteBuddyMemoryUITests-Runner[9092:4430589] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-09-13 19:50:39.527.
+Test Suite 'TasteBuddyMemoryUITests.xctest' started at 2026-09-13 19:50:39.529.
+Test Suite 'HomeTasteQuestionUITests' started at 2026-09-13 19:50:39.530.
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test01QuestionScopeAnswerUndoAndChartCategoryOriginal]' started.
+    t =     0.01s Start Test at 2026-09-13 19:50:39.537
+    t =     0.90s Set Up
+    t =     0.92s Open com.juneh96.tastebuddy.ios
+    t =     0.93s     Launch com.juneh96.tastebuddy.ios
+2026-09-13 19:50:40.610 xcodebuild[8935:4427132] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-09-13 19:50:40.611 xcodebuild[8935:4427132] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     4.89s         Setting up automation session
+    t =     9.15s         Wait for com.juneh96.tastebuddy.ios to idle
+    t =    14.39s Waiting 120.0s for "taste-question-toggle" Button to exist
+    t =    15.47s     Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-toggle" Button`
+    t =    15.47s         Checking existence of `"taste-question-toggle" Button`
+    t =    16.05s Checking existence of `"taste-question-toggle" Button`
+    t =    16.28s Find the "taste-question-toggle" Button
+    t =    16.68s Tap "taste-question-toggle" Button
+    t =    16.68s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    16.70s     Find the "taste-question-toggle" Button
+    t =    17.02s     Check for interrupting elements affecting "taste-question-toggle" Button
+    t =    17.44s     Synthesize event
+    t =    18.00s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    18.30s Checking existence of `StaticText (First Match)`
+    t =    18.74s Checking existence of `StaticText (First Match)`
+    t =    19.16s Checking existence of `"taste-question-choice-medium" Button`
+    t =    19.52s Find the "taste-question-choice-medium" Button
+    t =    20.28s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    22.55s Added attachment named 'home-question-01-scope'
+    t =    22.56s Checking existence of `"원래 기록 보기/수정" Button`
+    t =    22.98s Checking existence of `"기억이 안 나요" Button`
+    t =    23.34s Checking existence of `"나중에" Button`
+    t =    23.74s Checking existence of `"이 질문은 그만 보기" Button`
+    t =    24.22s Tap "taste-question-choice-medium" Button
+    t =    24.22s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    24.28s     Find the "taste-question-choice-medium" Button
+    t =    24.60s     Check for interrupting elements affecting "taste-question-choice-medium" Button
+    t =    25.08s     Synthesize event
+    t =    25.96s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    26.46s Waiting 30.0s for StaticText (First Match) to exist
+    t =    27.54s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    27.55s         Checking existence of `StaticText (First Match)`
+    t =    27.69s Find the "취소" Button
+    t =    28.91s Tap "취소" Button
+    t =    28.91s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    28.95s     Find the "취소" Button
+    t =    29.20s     Check for interrupting elements affecting "취소" Button
+    t =    30.71s     Synthesize event
+    t =    30.85s         Scroll element to visible
+    t =    30.88s         Find the "취소" Button
+    t =    32.79s             Find the "취소" Button (retry 1)
+    t =    34.91s             Find the "취소" Button (retry 2)
+    t =    35.91s             Collecting debug information to assist test failure triage
+    t =    35.91s                 Requesting snapshot of accessibility hierarchy for app with pid 9140
+    t =    36.58s             Requesting snapshot of accessibility hierarchy for app with pid 9140
+    t =    37.32s             Requesting snapshot of accessibility hierarchy for app with pid 9140
+/Users/sinjunho/Desktop/Taste Buddy/ios/TasteBuddyMemoryUITests/FoodMemoryUITests.swift:135: error: -[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test01QuestionScopeAnswerUndoAndChartCategoryOriginal] : Failed to get matching snapshot: No matches found for first query match sequence: `Descendants matching type Button` -> `Elements matching predicate '"취소" IN identifiers'`, given input App element pid: 9140
+    t =    42.20s Tear Down
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test01QuestionScopeAnswerUndoAndChartCategoryOriginal]' failed (52.571 seconds).
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test02LargeTypeQuestionAndMetricActionsRemainReachable]' started.
+    t =     0.00s Start Test at 2026-09-13 19:51:32.109
+    t =     0.77s Set Up
+    t =     0.78s             Open com.juneh96.tastebuddy.ios
+    t =     0.79s                 Launch com.juneh96.tastebuddy.ios
+    t =     0.79s                     Terminate com.juneh96.tastebuddy.ios:9140
+2026-09-13 19:51:34.037 xcodebuild[8935:4427132] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-09-13 19:51:34.037 xcodebuild[8935:4427132] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     4.48s                     Setting up automation session
+    t =    11.03s                     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    27.45s             Waiting 120.0s for "taste-question-toggle" Button to exist
+    t =    28.53s                 Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-toggle" Button`
+    t =    28.53s                     Checking existence of `"taste-question-toggle" Button`
+    t =    29.28s             Find the "나의 입맛" Button
+    t =    29.54s             Find the "나의 입맛" Button
+    t =    29.66s             Checking existence of `"taste-question-toggle" Button`
+    t =    29.97s             Find the "taste-question-toggle" Button
+    t =    30.38s             Tap "taste-question-toggle" Button
+    t =    30.38s                 Wait for com.juneh96.tastebuddy.ios to idle
+    t =    30.42s                 Find the "taste-question-toggle" Button
+    t =    30.66s                 Check for interrupting elements affecting "taste-question-toggle" Button
+    t =    30.96s                 Synthesize event
+    t =    31.40s                 Wait for com.juneh96.tastebuddy.ios to idle
+    t =    31.53s             Checking existence of `"taste-question-choice-medium" Button`
+    t =    31.79s             Find the "taste-question-choice-medium" Button
+    t =    32.41s             Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    33.28s Added attachment named 'home-question-large-01-actions'
+    t =    33.29s             Find the "taste-question-choice-medium" Button
+    t =    33.60s             Checking existence of `"나중에" Button`
+    t =    33.87s             Tap "taste-question-choice-medium" Button
+    t =    33.87s                 Wait for com.juneh96.tastebuddy.ios to idle
+    t =    33.89s                 Find the "taste-question-choice-medium" Button
+    t =    34.14s                 Check for interrupting elements affecting "taste-question-choice-medium" Button
+    t =    34.36s                 Synthesize event
+    t =    34.82s                 Wait for com.juneh96.tastebuddy.ios to idle
+    t =    34.87s             Waiting 30.0s for StaticText (First Match) to exist
+    t =    35.93s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    35.93s                     Checking existence of `StaticText (First Match)`
+    t =    36.42s                     Capturing element debug description
+    t =    36.96s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    36.96s                     Checking existence of `StaticText (First Match)`
+    t =    37.41s                     Capturing element debug description
+    t =    37.93s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    37.94s                     Checking existence of `StaticText (First Match)`
+    t =    38.44s                     Capturing element debug description
+    t =    38.97s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    38.97s                     Checking existence of `StaticText (First Match)`
+    t =    39.44s                     Capturing element debug description
+    t =    39.88s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    39.88s                     Checking existence of `StaticText (First Match)`
+    t =    40.32s                     Capturing element debug description
+    t =    40.97s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    40.97s                     Checking existence of `StaticText (First Match)`
+    t =    41.42s                     Capturing element debug description
+    t =    41.94s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    41.95s                     Checking existence of `StaticText (First Match)`
+    t =    42.38s                     Capturing element debug description
+    t =    42.91s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    42.91s                     Checking existence of `StaticText (First Match)`
+    t =    43.37s                     Capturing element debug description
+    t =    43.90s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    43.90s                     Checking existence of `StaticText (First Match)`
+    t =    44.33s                     Capturing element debug description
+    t =    44.88s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    44.88s                     Checking existence of `StaticText (First Match)`
+    t =    45.33s                     Capturing element debug description
+    t =    45.88s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    45.88s                     Checking existence of `StaticText (First Match)`
+    t =    46.32s                     Capturing element debug description
+    t =    46.97s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    46.97s                     Checking existence of `StaticText (First Match)`
+    t =    47.47s                     Capturing element debug description
+    t =    47.90s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    47.91s                     Checking existence of `StaticText (First Match)`
+    t =    48.35s                     Capturing element debug description
+    t =    48.88s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    48.88s                     Checking existence of `StaticText (First Match)`
+    t =    49.30s                     Capturing element debug description
+    t =    49.95s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    49.96s                     Checking existence of `StaticText (First Match)`
+    t =    50.38s                     Capturing element debug description
+    t =    50.92s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    50.92s                     Checking existence of `StaticText (First Match)`
+    t =    51.64s                     Capturing element debug description
+    t =    51.96s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    51.96s                     Checking existence of `StaticText (First Match)`
+    t =    52.59s                     Capturing element debug description
+    t =    52.91s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    52.91s                     Checking existence of `StaticText (First Match)`
+    t =    53.31s                     Capturing element debug description
+    t =    53.95s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    53.95s                     Checking existence of `StaticText (First Match)`
+    t =    54.38s                     Capturing element debug description
+    t =    54.93s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    54.93s                     Checking existence of `StaticText (First Match)`
+    t =    55.56s                     Capturing element debug description
+    t =    55.88s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    55.88s                     Checking existence of `StaticText (First Match)`
+    t =    56.40s                     Capturing element debug description
+    t =    56.95s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    56.95s                     Checking existence of `StaticText (First Match)`
+    t =    57.44s                     Capturing element debug description
+    t =    57.88s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    57.88s                     Checking existence of `StaticText (First Match)`
+    t =    58.35s                     Capturing element debug description
+    t =    58.88s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    58.88s                     Checking existence of `StaticText (First Match)`
+    t =    59.40s                     Capturing element debug description
+    t =    59.91s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    59.91s                     Checking existence of `StaticText (First Match)`
+    t =    60.35s                     Capturing element debug description
+    t =    60.97s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    60.97s                     Checking existence of `StaticText (First Match)`
+    t =    61.39s                     Capturing element debug description
+    t =    61.92s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    61.92s                     Checking existence of `StaticText (First Match)`
+    t =    62.33s                     Capturing element debug description
+    t =    62.94s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    62.95s                     Checking existence of `StaticText (First Match)`
+    t =    63.36s                     Capturing element debug description
+    t =    63.88s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    63.88s                     Checking existence of `StaticText (First Match)`
+    t =    64.33s                     Capturing element debug description
+    t =    64.89s                 Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    64.89s                     Checking existence of `StaticText (First Match)`
+    t =    65.21s                     Capturing element debug description
+    t =    65.21s                 Checking existence of `StaticText (First Match)`
+    t =    65.70s             Collecting debug information to assist test failure triage
+    t =    65.70s                 Requesting snapshot of accessibility hierarchy for app with pid 9231
+/Users/sinjunho/Desktop/Taste Buddy/ios/TasteBuddyMemoryUITests/FoodMemoryUITests.swift:204: error: -[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test02LargeTypeQuestionAndMetricActionsRemainReachable] : XCTAssertTrue failed
+    t =    66.08s Tear Down
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test02LargeTypeQuestionAndMetricActionsRemainReachable]' failed (66.642 seconds).
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test04QuestionSeeAllOpensExistingListInsteadOfReplacingHomeBatch]' started.
+    t =     0.00s Start Test at 2026-09-13 19:52:38.753
+    t =     0.26s Set Up
+    t =     0.26s             Open com.juneh96.tastebuddy.ios
+    t =     0.27s                 Launch com.juneh96.tastebuddy.ios
+    t =     0.27s                     Terminate com.juneh96.tastebuddy.ios:9231
+2026-09-13 19:52:40.048 xcodebuild[8935:4427132] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-09-13 19:52:40.048 xcodebuild[8935:4427132] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.93s                     Setting up automation session
+    t =     5.34s                     Wait for com.juneh96.tastebuddy.ios to idle
+    t =     9.31s             Waiting 120.0s for "taste-question-stack-toggle" Button to exist
+    t =    10.38s                 Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-stack-toggle" Button`
+    t =    10.38s                     Checking existence of `"taste-question-stack-toggle" Button`
+    t =    10.82s                     Capturing element debug description
+    t =    11.35s                 Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-stack-toggle" Button`
+    t =    11.35s                     Checking existence of `"taste-question-stack-toggle" Button`
+    t =    11.55s                     Capturing element debug description
+    t =    12.31s                 Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-stack-toggle" Button`
+    t =    12.31s                     Checking existence of `"taste-question-stack-toggle" Button`
+    t =    12.52s                     Capturing element debug description
+    t =    13.39s                 Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-stack-toggle" Button`
+    t =    13.39s                     Checking existence of `"taste-question-stack-toggle" Button`
+    t =    13.65s             Checking existence of `"taste-question-stack-toggle" Button`
+    t =    13.88s             Find the "taste-question-stack-toggle" Button
+    t =    14.19s             Tap "taste-question-stack-toggle" Button
+    t =    14.19s                 Wait for com.juneh96.tastebuddy.ios to idle
+    t =    14.24s                 Find the "taste-question-stack-toggle" Button
+    t =    14.51s                 Check for interrupting elements affecting "taste-question-stack-toggle" Button
+    t =    14.82s                 Synthesize event
+    t =    15.19s                 Wait for com.juneh96.tastebuddy.ios to idle
+    t =    15.22s             Checking existence of `"taste-questions-see-all" Button`
+    t =    15.45s             Find the "taste-questions-see-all" Button
+    t =    15.93s             Find the "taste-questions-see-all" Button
+    t =    16.22s             Checking existence of `"다른 확인할 기록 보기" Button`
+    t =    16.45s             Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    17.10s Added attachment named 'home-question-see-all'
+    t =    17.14s             Tap "taste-questions-see-all" Button
+    t =    17.14s                 Wait for com.juneh96.tastebuddy.ios to idle
+    t =    17.17s                 Find the "taste-questions-see-all" Button
+    t =    17.45s                 Check for interrupting elements affecting "taste-questions-see-all" Button
+    t =    17.72s                 Synthesize event
+    t =    18.14s                 Wait for com.juneh96.tastebuddy.ios to idle
+    t =    18.59s             Waiting 30.0s for "질문 전체보기" StaticText to exist
+    t =    19.65s                 Checking `Expect predicate `existsNoRetry == 1` for object "질문 전체보기" StaticText`
+    t =    19.66s                     Checking existence of `"질문 전체보기" StaticText`
+    t =    20.09s             Checking existence of `"taste-question-toggle" Button`
+    t =    20.26s             Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    21.00s Added attachment named 'home-question-all-list'
+    t =    21.00s Tear Down
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test04QuestionSeeAllOpensExistingListInsteadOfReplacingHomeBatch]' passed (21.845 seconds).
+Test Suite 'HomeTasteQuestionUITests' failed at 2026-09-13 19:53:00.599.
+	 Executed 3 tests, with 2 failures (0 unexpected) in 141.058 (141.069) seconds
+Test Suite 'TasteBuddyMemoryUITests.xctest' failed at 2026-09-13 19:53:00.601.
+	 Executed 3 tests, with 2 failures (0 unexpected) in 141.058 (141.072) seconds
+Test Suite 'Selected tests' failed at 2026-09-13 19:53:00.603.
+	 Executed 3 tests, with 2 failures (0 unexpected) in 141.058 (141.077) seconds
+2026-09-13 19:54:13.436 xcodebuild[8935:4427132] [MT] IDETestOperationsObserverDebug: 274.090 elapsed -- Testing started completed.
+2026-09-13 19:54:13.436 xcodebuild[8935:4427132] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-13 19:54:13.436 xcodebuild[8935:4427132] [MT] IDETestOperationsObserverDebug: 274.090 sec, +274.090 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/sinjunho/Desktop/Taste Buddy/output/graph-style-reuse/track-question-2.xcresult
+
+Failing tests:
+	HomeTasteQuestionUITests.test01QuestionScopeAnswerUndoAndChartCategoryOriginal()
+	HomeTasteQuestionUITests.test02LargeTypeQuestionAndMetricActionsRemainReachable()
+
+** TEST EXECUTE FAILED **
+
+Testing started

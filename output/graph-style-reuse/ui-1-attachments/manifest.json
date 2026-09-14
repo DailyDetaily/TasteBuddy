@@ -1,0 +1,119 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "344E9966-498D-4995-A8D6-26A7568A5342.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-04-current-original_0_D78A45AE-54EE-40BD-B786-DFFAB3109EBA.png",
+        "timestamp" : 1789293818.116
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "2ACB9504-EEC1-4DFB-801C-D847D3CB4036.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-03-category_0_153E3AC2-EA1C-4104-938E-4436A1D3F231.png",
+        "timestamp" : 1789293803.889
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "E5244A8C-7662-4CDE-8182-7FD613F33A7A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-02-four-charts_0_0D7C4733-DD3D-4D7F-9DBA-84F15FF2D60F.png",
+        "timestamp" : 1789293794.767
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "EC9569D7-B35F-40C3-AE54-98CF988B7823.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-01-scope_0_043FF125-5869-4790-BC12-0562DBE1FAA2.png",
+        "timestamp" : 1789293783.104
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test01QuestionScopeAnswerUndoAndChartCategoryOriginal"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "9308F36B-EB26-4235-A01A-2DB5D384A3F8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-large-03-zero-category_0_81F6E9A7-FA5C-4DE4-98DC-5E83C639B0E2.png",
+        "timestamp" : 1789293863.119
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "8FC6C6FF-25D8-4224-A046-4382062C5E8E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-large-02-chart_0_D14E0593-8947-40E1-B515-93D2447E806B.png",
+        "timestamp" : 1789293846.788
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "AA81CBE0-0E41-4243-B869-B6939823B42B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-question-large-01-actions_0_55E89B22-4982-4688-95CB-F12C31EC806B.png",
+        "timestamp" : 1789293842.275
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test02LargeTypeQuestionAndMetricActionsRemainReachable()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test02LargeTypeQuestionAndMetricActionsRemainReachable"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "AF3C77C0-9487-48D3-B9C9-DBEA67BF1326.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "analysis-question-04-current-original_0_DC735E28-9655-44E4-9819-70E2A137E8C9.png",
+        "timestamp" : 1789293929.823
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "A1F820A6-4D77-459C-BA5A-5A04E912FBE1.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "analysis-question-03-matrix-evidence_0_F9EABE03-0978-461F-BB51-4AD5FFE1AF0D.png",
+        "timestamp" : 1789293912.163
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "BD4BF1C7-5671-4CDD-836B-F05838E6E121.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "analysis-question-02-matrix_0_387D56E5-DA8A-4740-9DDD-FC253432FA92.png",
+        "timestamp" : 1789293905.855
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "7E7941B3-0B4D-43A5-A9F9-7652AD6F8848.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "analysis-question-01-radar_0_00C07C9C-8724-4C8D-BD1A-412534EF5339.png",
+        "timestamp" : 1789293890.613
+      }
+    ],
+    "testIdentifier" : "HomeTasteQuestionUITests/test03AnalysisRadarMissingAxesAndMatrixOriginal()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test03AnalysisRadarMissingAxesAndMatrixOriginal"
+  }
+]

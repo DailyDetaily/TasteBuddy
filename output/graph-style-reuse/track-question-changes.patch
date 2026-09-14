@@ -1,0 +1,172 @@
+--- before/Components/SystemParityComponents.swift
++++ after/Components/SystemParityComponents.swift
+@@ -1053,6 +1053,32 @@
+                 }
+                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+             }
++        }
++        .accessibilityHidden(true)
++    }
++}
++
++/// 기존 선 그래프의 트랙·그라데이션·끝점을 값이 정한 가로 구간에 사용한다.
++struct TasteChartTrackMark: View {
++    let axis: TasteAxis
++
++    var body: some View {
++        Canvas { context, size in
++            let diameter = min(TasteLineChartMetrics.currentNodeDiameter, min(size.width, size.height))
++            guard diameter > 0 else { return }
++            let radius = diameter / 2
++            let start = CGPoint(x: radius, y: size.height / 2)
++            let end = CGPoint(x: size.width - radius, y: start.y)
++            var path = Path()
++            path.move(to: start)
++            path.addLine(to: end)
++            context.stroke(path, with: .color(axis.tintSoftBorderColor),
++                           style: StrokeStyle(lineWidth: diameter, lineCap: .round))
++            context.stroke(path, with: .linearGradient(
++                Gradient(colors: [axis.tintSoftBorderColor, axis.mainColor]), startPoint: start, endPoint: end),
++                style: StrokeStyle(lineWidth: min(TasteLineChartMetrics.coreLineWidth, diameter), lineCap: .round))
++            context.fill(Path(ellipseIn: CGRect(x: end.x - radius, y: end.y - radius, width: diameter, height: diameter)),
++                         with: .color(axis.mainColor))
+         }
+         .accessibilityHidden(true)
+     }
+--- before/Features/Analysis/SensoryAnalysisCards.swift
++++ after/Features/Analysis/SensoryAnalysisCards.swift
+@@ -409,7 +409,6 @@
+     var fallbackActionTitle = "기록에서 답하기"
+     var onConfirm: ((String) -> String?)? = nil
+     var onStartRecord: (() -> Void)? = nil
+-    var onSkip: ((String) -> Void)? = nil
+     var onInteraction: (() -> Void)? = nil
+     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+@@ -432,7 +431,6 @@
+         fallbackActionTitle: String = "기록에서 답하기",
+         onConfirm: ((String) -> String?)? = nil,
+         onStartRecord: (() -> Void)? = nil,
+-        onSkip: ((String) -> Void)? = nil,
+         onInteraction: (() -> Void)? = nil
+     ) {
+         self.question = question
+@@ -447,7 +445,6 @@
+         self.fallbackActionTitle = fallbackActionTitle
+         self.onConfirm = onConfirm
+         self.onStartRecord = onStartRecord
+-        self.onSkip = onSkip
+         self.onInteraction = onInteraction
+         _isExpanded = State(initialValue: initiallyExpanded)
+     }
+@@ -530,8 +527,6 @@
+ 
+     private var answerContent: some View {
+         VStack(alignment: .leading, spacing: TBSpacing.x12) {
+-            Text(supportingText).font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary)
+-                .fixedSize(horizontal: false, vertical: true)
+             if !choices.isEmpty, onConfirm != nil {
+                 let layout = choices.count <= 3 && !dynamicTypeSize.isAccessibilitySize
+                     ? AnyLayout(HStackLayout(spacing: TBSpacing.x8))
+@@ -542,18 +537,8 @@
+                     }
+                 }
+                 .disabled(submitted)
+-            }
+-            if let onStartRecord {
+-                Button(action: onStartRecord) {
+-                    Text(fallbackActionTitle).font(TBFont.medium(12)).frame(minHeight: 48).contentShape(Rectangle())
+-                }.buttonStyle(.plain)
+-            }
+-            if let onSkip {
+-                if dynamicTypeSize.isAccessibilitySize {
+-                    VStack(alignment: .leading, spacing: TBSpacing.x8) { skipButtons(onSkip) }
+-                } else {
+-                    TBFlowLayout(spacing: TBSpacing.x8) { skipButtons(onSkip) }
+-                }
++            } else if let onStartRecord {
++                PrimaryButton(title: fallbackActionTitle, size: .compact, action: onStartRecord)
+             }
+ 
+             if let errorMessage {
+@@ -563,15 +548,6 @@
+                     .fixedSize(horizontal: false, vertical: true)
+             }
+ 
+-        }
+-    }
+-
+-    private func skipButtons(_ action: @escaping (String) -> Void) -> some View {
+-        ForEach(["기억이 안 나요", "나중에", "이 질문은 그만 보기"], id: \.self) { title in
+-            Button { action(title) } label: {
+-                Text(title).font(TBFont.regular(12)).fixedSize(horizontal: false, vertical: true)
+-                    .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading).contentShape(Rectangle())
+-            }.buttonStyle(.plain)
+         }
+     }
+ 
+@@ -705,11 +681,6 @@
+             fallbackActionTitle: selection.intent == "exploration" ? "새 식사에서 확인 · 선택 사항" : "원래 기록 보기/수정",
+             onConfirm: saveAnswer,
+             onStartRecord: onStartNewRecord,
+-            onSkip: { action in
+-                let user = appModel.sensoryAnalysis.personalModel?.userID ?? "local-owner"
+-                if action == "이 질문은 그만 보기" { appModel.dismissPersonalTasteQuestion(id: selection.id, userID: user) }
+-                else { appModel.deferPersonalTasteQuestion(id: selection.id, userID: user, cannotRecall: action == "기억이 안 나요") }
+-            },
+             onInteraction: {
+                 appModel.recordPersonalTasteQuestionExposure(id: selection.id, userID: appModel.sensoryAnalysis.personalModel?.userID ?? "local-owner")
+             }
+--- before/Features/Home/HomeArchiveVisualizationViews.swift
++++ after/Features/Home/HomeArchiveVisualizationViews.swift
+@@ -31,24 +31,15 @@
+     private var composition: some View {
+         GeometryReader { geometry in
+             HStack(spacing: 0) {
+-                ForEach(Array(chart.segments.enumerated()), id: \.element.id) { index, segment in
+-                    Rectangle().fill(compositionColor(index))
++                ForEach(chart.segments) { segment in
++                    TasteChartTrackMark(axis: axis)
+                         .frame(width: geometry.size.width * HomeArchiveChart.heightFraction(segment.count, maximum: chart.total))
+-                        .overlay(alignment: .leading) {
+-                            if index > 0 && segment.count > 0 && chart.segments.prefix(index).contains(where: { $0.count > 0 }) {
+-                                Rectangle().fill(TBColor.surface).frame(width: 1)
+-                            }
+-                        }
+                         .onTapGesture { onSelect?(segment.id) }
+                 }
+-            }.clipShape(Capsule())
++            }
+         }
+         .frame(height: TasteLineChartMetrics.trackLineWidth)
+         .tasteBloomChartReveal()
+-    }
+-
+-    private func compositionColor(_ index: Int) -> Color {
+-        index == 0 ? axis.tintSoftBorderColor : axis.mainColor
+     }
+ 
+     private var bars: some View {
+@@ -73,8 +64,8 @@
+                     }.frame(maxWidth: .infinity).contentShape(Rectangle())
+                         .onTapGesture { onSelect?(segment.id) }
+                 }
+-            }.overlay(alignment: .bottom) { Rectangle().fill(TBColor.borderSubtle).frame(height: 1) }
+-                .tasteBloomChartReveal(from: .bottom)
++            }
++            .tasteBloomChartReveal(from: .bottom)
+             if !compact {
+                 HStack(alignment: .top, spacing: 8) {
+                     ForEach(chart.segments) { segment in
+--- before/Features/Home/HomeSummaryComponents.swift
++++ after/Features/Home/HomeSummaryComponents.swift
+@@ -80,9 +80,6 @@
+                             .font(TBFont.regular(12)).foregroundStyle(TBColor.textHint).frame(minHeight: 44)
+                     }
+                     if (isQuestionStackExpanded || questions.isEmpty), hasMore {
+-                        Button("다른 확인할 기록 보기") {
+-                            homeQuestionIDs = PersonalTasteQuestionList.homeIDs(questions: visibleQuestions, observations: snapshot.observations, entries: appModel.diningEntries)
+-                        }.font(TBFont.regular(12)).frame(minHeight: 44)
+                         Button("질문 전체보기 · \(visibleQuestions.count)개") { onOpenQuestions?() }
+                             .font(TBFont.regular(12)).foregroundStyle(TBColor.textAction)
+                             .frame(maxWidth: .infinity, minHeight: 44)

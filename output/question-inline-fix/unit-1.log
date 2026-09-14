@@ -1,0 +1,894 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project ios/TasteBuddy.xcodeproj -scheme TasteBuddy -destination "platform=iOS Simulator,id=54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4" -derivedDataPath /tmp/TasteBuddyHomeQuestionsQA -resultBundlePath output/question-inline-fix/unit-1.xcresult -jobs 4 -parallel-testing-enabled NO SWIFT_OPTIMIZATION_LEVEL=-Onone "OTHER_SWIFT_FLAGS=$(inherited) -j4" CODE_SIGNING_ALLOWED=NO "-only-testing:TasteBuddyTests/HomeTasteQuestionsIntegrationTests" "-skip-testing:TasteBuddyTests/HomeTasteQuestionsIntegrationTests/testSyntheticPerformanceSamplesSeparateAnalysisFromChartAndFilterWork" "-only-testing:TasteBuddyTests/PersonalTasteQuestionResolutionTests" "-only-testing:TasteBuddyTests/SensoryStructuredSelectionTests"
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+    OTHER_SWIFT_FLAGS = $(inherited) -j4
+    SWIFT_OPTIMIZATION_LEVEL = -Onone
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  VariableBlur: https://github.com/nikstar/VariableBlur @ main (5073a0d)
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.5.0
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.7.1
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.6.0
+  ProgressiveBlurHeader: https://github.com/dominikmartn/ProgressiveBlurHeader @ main (0e8c29b)
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.4.0
+  Supabase: https://github.com/supabase/supabase-swift.git @ 2.46.0
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.9.0
+
+Writing result bundle at path:
+	/Users/sinjunho/Desktop/Taste Buddy/output/question-inline-fix/unit-1.xcresult
+
+Build Preparation
+Build task concurrency set to 4 via user default IDEBuildOperationMaxNumberOfConcurrentCompileTasks
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (28 targets)
+    Target 'TasteBuddyTests' in project 'TasteBuddy'
+        ➜ Explicit dependency on target 'TasteBuddy' in project 'TasteBuddy'
+    Target 'TasteBuddy' in project 'TasteBuddy'
+        ➜ Explicit dependency on target 'ProgressiveBlurHeader' in project 'ProgressiveBlurHeader'
+        ➜ Explicit dependency on target 'VariableBlur' in project 'VariableBlur'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'swift-crypto_Crypto' in project 'swift-crypto' (no dependencies)
+    Target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay' (no dependencies)
+    Target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+    Target 'HTTPTypes' in project 'swift-http-types' (no dependencies)
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras' (no dependencies)
+    Target 'ProgressiveBlurHeader' in project 'ProgressiveBlurHeader'
+        ➜ Explicit dependency on target 'ProgressiveBlurHeader' in project 'ProgressiveBlurHeader'
+        ➜ Explicit dependency on target 'VariableBlur' in project 'VariableBlur'
+    Target 'ProgressiveBlurHeader' in project 'ProgressiveBlurHeader'
+        ➜ Explicit dependency on target 'VariableBlur' in project 'VariableBlur'
+    Target 'VariableBlur' in project 'VariableBlur'
+        ➜ Explicit dependency on target 'VariableBlur' in project 'VariableBlur'
+    Target 'VariableBlur' in project 'VariableBlur' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk /tmp/TasteBuddyHomeQuestionsQA/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-6cfe768891a92b912361537c460fe42b.sdkstatcache
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -o /tmp/TasteBuddyHomeQuestionsQA/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-6cfe768891a92b912361537c460fe42b.sdkstatcache
+
+ProcessInfoPlistFile /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle/Info.plist /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist (in target 'swift-crypto_Crypto' from project 'swift-crypto')
+    cd /tmp/TasteBuddyHomeQuestionsQA/SourcePackages/checkouts/swift-crypto
+    builtin-infoPlistUtility /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle/Info.plist
+
+MkDir /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /bin/mkdir -p /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest
+
+MkDir /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /bin/mkdir -p /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+
+MkDir /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /bin/mkdir -p /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/XCTest.framework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/XCTest.framework (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/XCTest.framework /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/XCTest.framework/XCTest (in target 'TasteBuddy' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/XCUIAutomation.framework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/XCUIAutomation.framework (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/XCUIAutomation.framework /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/XCUIAutomation.framework/XCUIAutomation (in target 'TasteBuddy' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/libXCTestSwiftSupport.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftDriver TasteBuddy normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name TasteBuddy -Onone @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.SwiftFileList -DDEBUG -j4 -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /tmp/TasteBuddyHomeQuestionsQA/Index.noindex/DataStore -swift-version 5 -I /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/TasteBuddyHomeQuestionsQA/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-6cfe768891a92b912361537c460fe42b.sdkstatcache -output-file-map /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -sdk-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftmodule -validate-clang-modules-once -clang-build-session-file /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex/Session.modulevalidation -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-generated-files.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-own-target-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy-13299a83df260b797a46b4b5b88bf8d1-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-project-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy-Swift.h -working-directory /Users/sinjunho/Desktop/Taste\ Buddy/ios -experimental-emit-module-separately -disable-cmo
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/libXCTestBundleInject.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestBundleInject.dylib (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestBundleInject.dylib /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestBundleInject.dylib (in target 'TasteBuddy' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/XCUnit.framework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCUnit.framework (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCUnit.framework /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCUnit.framework/XCUnit (in target 'TasteBuddy' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/XCTestSupport.framework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework/XCTestSupport (in target 'TasteBuddy' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/XCTestCore.framework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework/XCTestCore (in target 'TasteBuddy' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/XCTAutomationSupport.framework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework/XCTAutomationSupport (in target 'TasteBuddy' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks/Testing.framework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/Testing.framework (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/Testing.framework /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks
+warning: not stripping binary because it is signed: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks/Testing.framework/Testing (in target 'TasteBuddy' from project 'TasteBuddy')
+
+ProcessInfoPlistFile /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Info.plist /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Resources/Info.plist (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-infoPlistUtility /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Resources/Info.plist -producttype com.apple.product-type.application -genpkginfo /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/assetcatalog_generated_info.plist -scanforprivacyfile /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/swift-crypto_Crypto.bundle -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Info.plist
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ TasteBuddy (in target 'TasteBuddy' from project 'TasteBuddy')
+
+EmitSwiftModule normal x86_64 (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 Compiling\ HomeSummaryComponents.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Home/HomeSummaryComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Home/HomeSummaryComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 Compiling\ PersonalTasteInsightsRuntimePreview.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/PersonalTasteInsightsRuntimePreview.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/PersonalTasteInsightsRuntimePreview.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 Compiling\ SensoryAnalysisEngine.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Domain/UseCases/SensoryAnalysisEngine.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Domain/UseCases/SensoryAnalysisEngine.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 Compiling\ SensoryAnalysisCards.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/SensoryAnalysisCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/SensoryAnalysisCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling PersonalTasteInsightsRuntimePreview.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ PersonalTasteQuestionAnswer.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Domain/UseCases/PersonalTasteQuestionAnswer.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Domain/UseCases/PersonalTasteQuestionAnswer.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling SensoryAnalysisEngine.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ TasteIntensityLikingMatrixView.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/TasteIntensityLikingMatrixView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/TasteIntensityLikingMatrixView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling PersonalTasteQuestionAnswer.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ ChatGPTAnalysisCard.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/ChatGPTAnalysisCard.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/ChatGPTAnalysisCard.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling TasteIntensityLikingMatrixView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ SystemParityComponents.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/SystemParityComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/SystemParityComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling ChatGPTAnalysisCard.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ PersonalTasteInsightCards.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/PersonalTasteInsightCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/PersonalTasteInsightCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Emitting module for TasteBuddy (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftDriver\ Compilation\ Requirements TasteBuddy normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name TasteBuddy -Onone @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.SwiftFileList -DDEBUG -j4 -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /tmp/TasteBuddyHomeQuestionsQA/Index.noindex/DataStore -swift-version 5 -I /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/TasteBuddyHomeQuestionsQA/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-6cfe768891a92b912361537c460fe42b.sdkstatcache -output-file-map /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -sdk-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftmodule -validate-clang-modules-once -clang-build-session-file /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex/Session.modulevalidation -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-generated-files.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-own-target-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy-13299a83df260b797a46b4b5b88bf8d1-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-project-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy-Swift.h -working-directory /Users/sinjunho/Desktop/Taste\ Buddy/ios -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal x86_64 Compiling PersonalTasteInsightCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ DiningView.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Dining/DiningView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Dining/DiningView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.swiftmodule/x86_64-apple-ios-simulator.swiftmodule /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftmodule (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftmodule /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.swiftmodule/x86_64-apple-ios-simulator.swiftmodule
+
+SwiftDriverJobDiscovery normal x86_64 Compiling SystemParityComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.swiftmodule/x86_64-apple-ios-simulator.swiftdoc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftdoc (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftdoc /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.swiftmodule/x86_64-apple-ios-simulator.swiftdoc
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.swiftmodule/x86_64-apple-ios-simulator.abi.json /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.abi.json (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.abi.json /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.swiftmodule/x86_64-apple-ios-simulator.abi.json
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftsourceinfo (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftsourceinfo /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo
+
+SwiftCompile normal x86_64 Compiling\ DiningOverallEvaluationStepView.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Dining/DiningOverallEvaluationStepView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Dining/DiningOverallEvaluationStepView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 Compiling\ RestaurantDetailRouteView.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Restaurant/RestaurantDetailRouteView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Restaurant/RestaurantDetailRouteView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling DiningOverallEvaluationStepView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling SensoryAnalysisCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ TasteBloomMotion.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/DesignSystem/TasteBloomMotion.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/DesignSystem/TasteBloomMotion.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriver TasteBuddyTests normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name TasteBuddyTests -Onone @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.SwiftFileList -DDEBUG -j4 -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /tmp/TasteBuddyHomeQuestionsQA/Index.noindex/DataStore -swift-version 5 -I /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/TasteBuddyHomeQuestionsQA/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-6cfe768891a92b912361537c460fe42b.sdkstatcache -output-file-map /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -sdk-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.swiftmodule -validate-clang-modules-once -clang-build-session-file /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex/Session.modulevalidation -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-generated-files.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-own-target-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy-13299a83df260b797a46b4b5b88bf8d1-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-project-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests-Swift.h -working-directory /Users/sinjunho/Desktop/Taste\ Buddy/ios -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal x86_64 Compiling HomeSummaryComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ AppChromeComponents.swift,\ AppRouteDestinations.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/Shell/AppChromeComponents.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/Shell/AppRouteDestinations.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/Shell/AppChromeComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/Shell/AppRouteDestinations.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling RestaurantDetailRouteView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ TastePerceptionCards.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/TastePerceptionCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/TastePerceptionCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling TasteBloomMotion.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ SystemCoreComponents.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/SystemCoreComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/SystemCoreComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftExplicitDependencyCompileModuleFromInterface x86_64 /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCUIAutomation-1VE8MNQR1HN5D.swiftmodule
+
+SwiftDriverJobDiscovery normal x86_64 Compiling TastePerceptionCards.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ DiningSensorySelectionEditor.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Dining/DiningSensorySelectionEditor.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Dining/DiningSensorySelectionEditor.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftExplicitDependencyCompileModuleFromInterface x86_64 /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCTest-2ZYWE75AW3WSV.swiftmodule
+
+SwiftDriverJobDiscovery normal x86_64 Compiling SystemCoreComponents.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ TasteGradientIndicator.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/DesignSystem/TasteGradientIndicator.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/DesignSystem/TasteGradientIndicator.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ TasteBuddyTests (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+EmitSwiftModule normal x86_64 (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling DiningSensorySelectionEditor.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ AdvancedPersonalTasteModelTests.swift,\ AppModelAdvancedModelTests.swift,\ AppModelPersistenceTests.swift,\ AppModelStructuredSelectionPersistenceTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AdvancedPersonalTasteModelTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AppModelAdvancedModelTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AppModelPersistenceTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AppModelStructuredSelectionPersistenceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AdvancedPersonalTasteModelTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AppModelAdvancedModelTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AppModelPersistenceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AppModelStructuredSelectionPersistenceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling TasteGradientIndicator.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ AppPhaseTests.swift,\ BackendIntegrationTests.swift,\ CalibrationEngineTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AppPhaseTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/BackendIntegrationTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/CalibrationEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/AppPhaseTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/BackendIntegrationTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/CalibrationEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Emitting module for TasteBuddyTests (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftDriver\ Compilation\ Requirements TasteBuddyTests normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name TasteBuddyTests -Onone @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.SwiftFileList -DDEBUG -j4 -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /tmp/TasteBuddyHomeQuestionsQA/Index.noindex/DataStore -swift-version 5 -I /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/TasteBuddyHomeQuestionsQA/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-6cfe768891a92b912361537c460fe42b.sdkstatcache -output-file-map /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -sdk-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.swiftmodule -validate-clang-modules-once -clang-build-session-file /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex/Session.modulevalidation -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-generated-files.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-own-target-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy-13299a83df260b797a46b4b5b88bf8d1-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-project-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests-Swift.h -working-directory /Users/sinjunho/Desktop/Taste\ Buddy/ios -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal x86_64 Compiling AppPhaseTests.swift, BackendIntegrationTests.swift, CalibrationEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ DiningSensoryPresentationTests.swift,\ DiningSensorySelectionBoundaryTests.swift,\ DiningSensorySelectionEditingTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningSensoryPresentationTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningSensorySelectionBoundaryTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningSensorySelectionEditingTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningSensoryPresentationTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningSensorySelectionBoundaryTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningSensorySelectionEditingTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddyTests.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.swiftsourceinfo (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.swiftsourceinfo /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddyTests.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo
+
+SwiftDriverJobDiscovery normal x86_64 Compiling AppChromeComponents.swift, AppRouteDestinations.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ HomeSearchEngineTests.swift,\ HomeSummaryEngineTests.swift,\ HomeTasteQuestionsIntegrationTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/HomeSearchEngineTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/HomeSummaryEngineTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/HomeTasteQuestionsIntegrationTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/HomeSearchEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/HomeSummaryEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/HomeTasteQuestionsIntegrationTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddyTests.swiftmodule/x86_64-apple-ios-simulator.swiftmodule /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.swiftmodule (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.swiftmodule /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddyTests.swiftmodule/x86_64-apple-ios-simulator.swiftmodule
+
+SwiftDriverJobDiscovery normal x86_64 Compiling DiningSensoryPresentationTests.swift, DiningSensorySelectionBoundaryTests.swift, DiningSensorySelectionEditingTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddyTests.swiftmodule/x86_64-apple-ios-simulator.abi.json /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.abi.json (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.abi.json /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddyTests.swiftmodule/x86_64-apple-ios-simulator.abi.json
+
+SwiftCompile normal x86_64 Compiling\ DiningOverallEvaluationFlowTests.swift,\ DiningPhotoPaletteTests.swift,\ DiningPhotoPerformanceTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningOverallEvaluationFlowTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningPhotoPaletteTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningPhotoPerformanceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningOverallEvaluationFlowTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningPhotoPaletteTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningPhotoPerformanceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 Compiling\ SensoryAnalysisEngineTests.swift,\ SensoryOverallEvaluationTests.swift,\ SensoryStructuredSelectionTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/SensoryAnalysisEngineTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/SensoryOverallEvaluationTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/SensoryStructuredSelectionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/SensoryAnalysisEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/SensoryOverallEvaluationTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/SensoryStructuredSelectionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling AdvancedPersonalTasteModelTests.swift, AppModelAdvancedModelTests.swift, AppModelPersistenceTests.swift, AppModelStructuredSelectionPersistenceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ NativeLayoutComponentsTests.swift,\ NativeToastPresenterTests.swift,\ PalateBloomAvatarTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/NativeLayoutComponentsTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/NativeToastPresenterTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/PalateBloomAvatarTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/NativeLayoutComponentsTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/NativeToastPresenterTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/PalateBloomAvatarTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling DiningView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ SystemParityComponentTests.swift,\ TasteBloomMotionTests.swift,\ TasteBuddyAgentFullEngineTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/SystemParityComponentTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TasteBloomMotionTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TasteBuddyAgentFullEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/SystemParityComponentTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TasteBloomMotionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TasteBuddyAgentFullEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling NativeLayoutComponentsTests.swift, NativeToastPresenterTests.swift, PalateBloomAvatarTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ LongitudinalFoodMemoryTests.swift,\ NativeAccountDataTests.swift,\ NativeAccountPhotoRepositoryTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/LongitudinalFoodMemoryTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/NativeAccountDataTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/NativeAccountPhotoRepositoryTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/LongitudinalFoodMemoryTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/NativeAccountDataTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/NativeAccountPhotoRepositoryTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling DiningOverallEvaluationFlowTests.swift, DiningPhotoPaletteTests.swift, DiningPhotoPerformanceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ ChatGPTAnalysisConnectionTests.swift,\ DiningAdvancedStorageTests.swift,\ DiningFeedRenderingTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/ChatGPTAnalysisConnectionTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningAdvancedStorageTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningFeedRenderingTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/ChatGPTAnalysisConnectionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningAdvancedStorageTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/DiningFeedRenderingTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling SensoryAnalysisEngineTests.swift, SensoryOverallEvaluationTests.swift, SensoryStructuredSelectionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ PersonalTasteInsightTests.swift,\ PersonalTasteModelTests.swift,\ PersonalTasteQuestionResolutionTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/PersonalTasteInsightTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/PersonalTasteModelTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/PersonalTasteQuestionResolutionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/PersonalTasteInsightTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/PersonalTasteModelTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/PersonalTasteQuestionResolutionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling ChatGPTAnalysisConnectionTests.swift, DiningAdvancedStorageTests.swift, DiningFeedRenderingTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ TasteContractGoldenTests.swift,\ TastePerceptionTests.swift,\ TasteSurveyEvidenceTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TasteContractGoldenTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TastePerceptionTests.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TasteSurveyEvidenceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TasteContractGoldenTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TastePerceptionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddyTests/TasteSurveyEvidenceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling LongitudinalFoodMemoryTests.swift, NativeAccountDataTests.swift, NativeAccountPhotoRepositoryTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ AnalysisView.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/AnalysisView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Features/Analysis/AnalysisView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling PersonalTasteInsightTests.swift, PersonalTasteModelTests.swift, PersonalTasteQuestionResolutionTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ ProfileHeroCard.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/ProfileHeroCard.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/Components/ProfileHeroCard.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling TasteContractGoldenTests.swift, TastePerceptionTests.swift, TasteSurveyEvidenceTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 Compiling\ AppModel.swift /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/App/AppModel.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftCompile normal x86_64 /Users/sinjunho/Desktop/Taste\ Buddy/ios/TasteBuddy/App/AppModel.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling HomeSearchEngineTests.swift, HomeSummaryEngineTests.swift, HomeTasteQuestionsIntegrationTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling AnalysisView.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling ProfileHeroCard.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling AppModel.swift (in target 'TasteBuddy' from project 'TasteBuddy')
+
+SwiftDriver\ Compilation TasteBuddy normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name TasteBuddy -Onone @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.SwiftFileList -DDEBUG -j4 -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /tmp/TasteBuddyHomeQuestionsQA/Index.noindex/DataStore -swift-version 5 -I /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/TasteBuddyHomeQuestionsQA/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-6cfe768891a92b912361537c460fe42b.sdkstatcache -output-file-map /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -sdk-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftmodule -validate-clang-modules-once -clang-build-session-file /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex/Session.modulevalidation -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-generated-files.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-own-target-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy-13299a83df260b797a46b4b5b88bf8d1-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-project-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy-Swift.h -working-directory /Users/sinjunho/Desktop/Taste\ Buddy/ios -experimental-emit-module-separately -disable-cmo
+
+Ld /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy.debug.dylib normal (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -Os -L/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -F/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -filelist /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.LinkFileList -install_name @rpath/TasteBuddy.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy_lto.o -rdynamic -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy-linker-args.resp -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy.debug.dylib -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/ProgressiveBlurHeader.build/Debug-iphonesimulator/ProgressiveBlurHeader.build/Objects-normal/x86_64/ProgressiveBlurHeader.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/ProgressiveBlurHeader.build/Debug-iphonesimulator/ProgressiveBlurHeader.build/Objects-normal/x86_64/ProgressiveBlurHeader-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/VariableBlur.build/Debug-iphonesimulator/VariableBlur.build/Objects-normal/x86_64/VariableBlur.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/VariableBlur.build/Debug-iphonesimulator/VariableBlur.build/Objects-normal/x86_64/VariableBlur-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/x86_64/Supabase.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/x86_64/Supabase-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-concurrency-extras.build/Debug-iphonesimulator/ConcurrencyExtras.build/Objects-normal/x86_64/ConcurrencyExtras.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-concurrency-extras.build/Debug-iphonesimulator/ConcurrencyExtras.build/Objects-normal/x86_64/ConcurrencyExtras-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-http-types.build/Debug-iphonesimulator/HTTPTypes.build/Objects-normal/x86_64/HTTPTypes.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-http-types.build/Debug-iphonesimulator/HTTPTypes.build/Objects-normal/x86_64/HTTPTypes-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-clocks.build/Debug-iphonesimulator/Clocks.build/Objects-normal/x86_64/Clocks.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-clocks.build/Debug-iphonesimulator/Clocks.build/Objects-normal/x86_64/Clocks-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IssueReporting.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IssueReporting-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReportingPackageSupport.build/Objects-normal/x86_64/IssueReportingPackageSupport.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReportingPackageSupport.build/Objects-normal/x86_64/IssueReportingPackageSupport-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/XCTestDynamicOverlay.build/Objects-normal/x86_64/XCTestDynamicOverlay.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/XCTestDynamicOverlay.build/Objects-normal/x86_64/XCTestDynamicOverlay-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/Helpers.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/Helpers-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Crypto.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Crypto-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/Auth.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/Auth-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Functions.build/Objects-normal/x86_64/Functions.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Functions.build/Objects-normal/x86_64/Functions-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/PostgREST.build/Objects-normal/x86_64/PostgREST.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/PostgREST.build/Objects-normal/x86_64/PostgREST-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Realtime.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Realtime-linker-args.resp -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Storage.build/Objects-normal/x86_64/Storage.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Storage.build/Objects-normal/x86_64/Storage-linker-args.resp
+
+ConstructStubExecutorLinkFileList /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-ExecutorLinkFileList-normal-x86_64.txt (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    construct-stub-executor-link-file-list /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-ExecutorLinkFileList-normal-x86_64.txt
+note: Using stub executor library with Swift entry point. (in target 'TasteBuddy' from project 'TasteBuddy')
+
+GenerateDSYMFile /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app.dSYM /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy.debug.dylib (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy.debug.dylib -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app.dSYM
+
+Ld /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy normal (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios17.0-simulator -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -Os -L/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -rdynamic -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-DebugDylibPath-normal-x86_64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-DebugDylibInstallName-normal-x86_64.txt -Xlinker -filelist -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy-ExecutorLinkFileList-normal-x86_64.txt /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy.debug.dylib -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy
+
+GenerateDSYMFile /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app.dSYM /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil -q /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app.dSYM
+
+ExtractAppIntentsMetadata (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name TasteBuddy --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.juneh96.tastebuddy.ios --output /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app --target-triple x86_64-apple-ios17.0-simulator --binary-file /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy --dependency-file /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy_dependency_info.dat --stringsdata-file /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.SwiftFileList --metadata-file-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy.DependencyMetadataFileList --static-metadata-file-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/TasteBuddy.DependencyStaticMetadataFileList --swift-const-vals-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/Objects-normal/x86_64/TasteBuddy.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-09-13 20:27:40.109 appintentsmetadataprocessor[13990:4505989] Starting appintentsmetadataprocessor export
+2026-09-13 20:27:40.129 appintentsmetadataprocessor[13990:4505989] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+CopySwiftLibs /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy.debug.dylib --scan-folder /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks --scan-folder /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns --scan-folder /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/SystemExtensions --scan-folder /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+Ignoring --strip-bitcode because --sign was not passed
+
+Copy /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/swift-crypto_Crypto.bundle /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest
+
+ProcessInfoPlistFile /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/Info.plist /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/empty-TasteBuddyTests.plist (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-infoPlistUtility /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/empty-TasteBuddyTests.plist -producttype com.apple.product-type.bundle.unit-test -expandbuildsettings -format binary -platform iphonesimulator -scanforprivacyfile /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/swift-crypto_Crypto.bundle -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/Info.plist
+
+SwiftDriverJobDiscovery normal x86_64 Compiling SystemParityComponentTests.swift, TasteBloomMotionTests.swift, TasteBuddyAgentFullEngineTests.swift (in target 'TasteBuddyTests' from project 'TasteBuddy')
+
+SwiftDriver\ Compilation TasteBuddyTests normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name TasteBuddyTests -Onone @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.SwiftFileList -DDEBUG -j4 -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /tmp/TasteBuddyHomeQuestionsQA/Index.noindex/DataStore -swift-version 5 -I /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/TasteBuddyHomeQuestionsQA/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-6cfe768891a92b912361537c460fe42b.sdkstatcache -output-file-map /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -sdk-module-cache-path /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.swiftmodule -validate-clang-modules-once -clang-build-session-file /tmp/TasteBuddyHomeQuestionsQA/ModuleCache.noindex/Session.modulevalidation -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-generated-files.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-own-target-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddy-13299a83df260b797a46b4b5b88bf8d1-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests-project-headers.hmap -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources/x86_64 -Xcc -I/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests-Swift.h -working-directory /Users/sinjunho/Desktop/Taste\ Buddy/ios -experimental-emit-module-separately -disable-cmo
+
+Ld /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/TasteBuddyTests normal (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios17.0-simulator -bundle -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -Os -L/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/Developer/Library/Frameworks -filelist /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.LinkFileList -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/PackageFrameworks -Xlinker -rpath -Xlinker @loader_path/Frameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -dead_strip -bundle_loader /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy -Xlinker -object_path_lto -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests_lto.o -rdynamic -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.swiftmodule @/tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests-linker-args.resp -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Xlinker -needed_framework -Xlinker XCTest -framework XCTest -Xlinker -needed-lXCTestSwiftSupport -lXCTestSwiftSupport /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/TasteBuddy.debug.dylib -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/TasteBuddyTests
+
+CopySwiftLibs /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/TasteBuddyTests --scan-folder /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/Frameworks --scan-folder /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/PlugIns --scan-folder /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/SystemExtensions --scan-folder /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+Ignoring --strip-bitcode because --sign was not passed
+
+ExtractAppIntentsMetadata (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name TasteBuddyTests --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.tastebuddy.ios.tests --output /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest --target-triple x86_64-apple-ios17.0-simulator --binary-file /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/TasteBuddyTests --dependency-file /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests_dependency_info.dat --stringsdata-file /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.SwiftFileList --metadata-file-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests.DependencyMetadataFileList --static-metadata-file-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests.DependencyStaticMetadataFileList --swift-const-vals-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/Objects-normal/x86_64/TasteBuddyTests.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-09-13 20:27:55.144 appintentsmetadataprocessor[14002:4507172] Starting appintentsmetadataprocessor export
+2026-09-13 20:27:55.151 appintentsmetadataprocessor[14002:4507172] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+GenerateDSYMFile /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest.dSYM /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/TasteBuddyTests (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/TasteBuddyTests -o /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest.dSYM
+
+AppIntentsSSUTraining (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/Info.plist --temp-dir-path /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/ssu --bundle-id com.tastebuddy.ios.tests --product-path /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest --extracted-metadata-path /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/Metadata.appintents --metadata-file-list /tmp/TasteBuddyHomeQuestionsQA/Build/Intermediates.noindex/TasteBuddy.build/Debug-iphonesimulator/TasteBuddyTests.build/TasteBuddyTests.DependencyMetadataFileList --source-file /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest/Info.plist --archive-ssu-assets
+2026-09-13 20:27:55.218 appintentsnltrainingprocessor[14004:4507175] Parsing options for appintentsnltrainingprocessor
+2026-09-13 20:27:55.219 appintentsnltrainingprocessor[14004:4507175] Starting AppIntents SSU YAML Generation
+2026-09-13 20:27:55.225 appintentsnltrainingprocessor[14004:4507175] No AppShortcuts found - Skipping.
+
+RegisterExecutionPolicyException /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-RegisterExecutionPolicyException /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest
+
+Touch /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest (in target 'TasteBuddyTests' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    /usr/bin/touch -c /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app/PlugIns/TasteBuddyTests.xctest
+
+Validate /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app (in target 'TasteBuddy' from project 'TasteBuddy')
+    cd /Users/sinjunho/Desktop/Taste\ Buddy/ios
+    builtin-validationUtility /tmp/TasteBuddyHomeQuestionsQA/Build/Products/Debug-iphonesimulator/TasteBuddy.app -shallow-bundle -infoplist-subpath Info.plist
+
+2026-09-13 20:28:55.729709+0900 TasteBuddy[14234:4511055] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+2026-09-13 20:28:55.854589+0900 TasteBuddy[14234:4511072] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+Test Suite 'Selected tests' started at 2026-09-13 20:28:56.494.
+Test Suite 'TasteBuddyTests.xctest' started at 2026-09-13 20:28:56.495.
+Test Suite 'HomeTasteQuestionsIntegrationTests' started at 2026-09-13 20:28:56.495.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testAnswerCardsExcludeReviewRawAndExplorationWithoutDeletingTheirEvidence]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testAnswerCardsExcludeReviewRawAndExplorationWithoutDeletingTheirEvidence]' passed (0.041 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testCachedHomePresentationInvalidatesOnRevisionAndKeepsRawMemoryReadable]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testCachedHomePresentationInvalidatesOnRevisionAndKeepsRawMemoryReadable]' passed (0.190 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testConflictingDuplicateExperienceCannotDependOnInputOrder]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testConflictingDuplicateExperienceCannotDependOnInputOrder]' passed (0.031 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testDifferentDishesHaveSeparateOverallRatingsAndRestaurantScopedMenus]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testDifferentDishesHaveSeparateOverallRatingsAndRestaurantScopedMenus]' passed (0.044 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testFutureQuestionStateRoundTripsWithoutRevivingOrChangingAnAnswer]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testFutureQuestionStateRoundTripsWithoutRevivingOrChangingAnAnswer]' passed (0.005 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testLegacyAnswerPreservesOtherSelectionsUnknownIDsAndOriginalFields]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testLegacyAnswerPreservesOtherSelectionsUnknownIDsAndOriginalFields]' passed (0.077 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testM1ThroughM9AndC1KeepOriginalMeaningAndCorrectionScope]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testM1ThroughM9AndC1KeepOriginalMeaningAndCorrectionScope]' passed (0.109 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testMatrixPairsOnlySameSelectionAndScopeWithoutFillingMissingValues]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testMatrixPairsOnlySameSelectionAndScopeWithoutFillingMissingValues]' passed (0.056 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ11AccountGenerationAndQ12FailedPersistenceCannotResolve]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ11AccountGenerationAndQ12FailedPersistenceCannotResolve]' passed (0.076 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ11StaleEditorCannotOverwriteNewNote]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ11StaleEditorCannotOverwriteNewNote]' passed (0.084 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ12RestartAfterSourceSaveRecoversWithoutCompletionHistory]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ12RestartAfterSourceSaveRecoversWithoutCompletionHistory]' passed (0.141 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ13UndoRejectsLaterEditsAndQ18OnlyAnsweredFacetDisappears]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ13UndoRejectsLaterEditsAndQ18OnlyAnsweredFacetDisappears]' passed (0.151 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ16FixedBatchDoesNotRefillUntilExplicitRefresh]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ16FixedBatchDoesNotRefillUntilExplicitRefresh]' passed (0.033 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ17LegacyFamilyHistoryDefersOldSourcesButNotNewExperience]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ17LegacyFamilyHistoryDefersOldSourcesButNotNewExperience]' passed (0.213 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ17UnknownLegacyDatePreservesTemporarySuppressionWithoutInventingResolution]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ17UnknownLegacyDatePreservesTemporarySuppressionWithoutInventingResolution]' passed (0.083 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ1AndQ8EachExperienceHasItsOwnQuestionEvenInOneMeal]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ1AndQ8EachExperienceHasItsOwnQuestionEvenInOneMeal]' passed (0.019 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ2AndQ3AnswerDoesNotBlockOtherOrNewMealsAndClearingReevaluates]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ2AndQ3AnswerDoesNotBlockOtherOrNewMealsAndClearingReevaluates]' passed (0.279 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ4LegacyCanAnswerInlineAndUndoWithoutRevivingExplicitEmptySelections]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ4LegacyCanAnswerInlineAndUndoWithoutRevivingExplicitEmptySelections]' passed (0.348 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ5InheritedTargetAndPhaseApplyOnlyToOriginalTagFacet]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ5InheritedTargetAndPhaseApplyOnlyToOriginalTagFacet]' passed (0.112 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ6IntrinsicStrengthIsNotMissingAndQ7ConflictRequiresEditing]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ6IntrinsicStrengthIsNotMissingAndQ7ConflictRequiresEditing]' passed (0.036 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ8DifferentReferencesWithinOneExperienceKeepSeparateAnswerTargets]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ8DifferentReferencesWithinOneExperienceKeepSeparateAnswerTargets]' passed (0.160 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ9NonEvaluationResponsesAndQ10ExposureDoNotCreateEvidence]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testQ9NonEvaluationResponsesAndQ10ExposureDoNotCreateEvidence]' passed (0.104 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testSafeSimulationOptionsRequireTheActualLegacySelectionAndMatchInlineStorage]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testSafeSimulationOptionsRequireTheActualLegacySelectionAndMatchInlineStorage]' passed (0.032 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testSyntheticArchiveAndQuestionReanalysisCost]' started.
+HOME_QUESTION_PERF synthetic=50 analysis_ms=247.21002578735352 chart_ms=8.622050285339355 filter_summary_ms=11.87896728515625
+HOME_QUESTION_PERF synthetic=500 analysis_ms=2371.490955352783 chart_ms=95.75009346008301 filter_summary_ms=109.55393314361572
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testSyntheticArchiveAndQuestionReanalysisCost]' passed (2.881 seconds).
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testZeroEqualCountsUnknownDatesAndCompositionDenominators]' started.
+Test Case '-[TasteBuddyTests.HomeTasteQuestionsIntegrationTests testZeroEqualCountsUnknownDatesAndCompositionDenominators]' passed (0.008 seconds).
+Test Suite 'HomeTasteQuestionsIntegrationTests' passed at 2026-09-13 20:29:01.837.
+	 Executed 25 tests, with 0 failures (0 unexpected) in 5.313 (5.342) seconds
+Test Suite 'PersonalTasteQuestionResolutionTests' started at 2026-09-13 20:29:01.838.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testCapturedSaveCannotResolveEvenWhenRawSelectionContainsIntensity]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testCapturedSaveCannotResolveEvenWhenRawSelectionContainsIntensity]' passed (0.064 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testClarificationUnrelatedSweetnessSaveCannotResolveMissingSourIntensity]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testClarificationUnrelatedSweetnessSaveCannotResolveMissingSourIntensity]' passed (0.124 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testDeletedOrDifferentOriginalEntryCannotBeResurrectedThroughQuestionSave]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testDeletedOrDifferentOriginalEntryCannotBeResurrectedThroughQuestionSave]' passed (0.059 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testDifferentKnownTargetOrPhaseDoesNotAnswerOriginalScopedQuestion]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testDifferentKnownTargetOrPhaseDoesNotAnswerOriginalScopedQuestion]' passed (0.139 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testExplorationCannotOverwriteExistingSourceEntryAsThoughItWereANewMeal]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testExplorationCannotOverwriteExistingSourceEntryAsThoughItWereANewMeal]' passed (0.081 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testExplorationIntensityWithoutScopedLikingStaysOpenAndNewRecordCanBeClarified]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testExplorationIntensityWithoutScopedLikingStaysOpenAndNewRecordCanBeClarified]' passed (0.435 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testExplorationNeedsActualProposedIntensityInNewMealAndPreservesOriginalMeals]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testExplorationNeedsActualProposedIntensityInNewMealAndPreservesOriginalMeals]' passed (0.261 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testHomeBatchLimitsMenusAndDoesNotRefillAfterAnswering]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testHomeBatchLimitsMenusAndDoesNotRefillAfterAnswering]' passed (0.614 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testImmediateAnswerUndoRestoresQuestionAndRejectsChangedRecord]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testImmediateAnswerUndoRestoresQuestionAndRejectsChangedRecord]' passed (0.147 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testInlineAnswerCannotConvertFutureExplorationIntoAnOldMealResponse]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testInlineAnswerCannotConvertFutureExplorationIntoAnOldMealResponse]' passed (0.099 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testInlineAnswerRejectsInvalidValuesAndDoesNotOverwriteExistingAnswer]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testInlineAnswerRejectsInvalidValuesAndDoesNotOverwriteExistingAnswer]' passed (0.051 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testInlineAnswerUpdatesOnlyMissingFacetAndResolvesThroughExistingSave]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testInlineAnswerUpdatesOnlyMissingFacetAndResolvesThroughExistingSave]' passed (0.091 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testQuestionMediaUsesOnlyItsSourceMealAndNeverAFutureMeal]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testQuestionMediaUsesOnlyItsSourceMealAndNeverAFutureMeal]' passed (0.150 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testQueuedQuestionKeepsRankingAndCanBeAnsweredIndependently]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testQueuedQuestionKeepsRankingAndCanBeAnsweredIndependently]' passed (0.480 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testSameAttributeOnAnotherSelectionDoesNotResolveTheChosenSource]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testSameAttributeOnAnotherSelectionDoesNotResolveTheChosenSource]' passed (0.143 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testTextClarificationRequiresATextResponseForItsOriginalEvidence]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testTextClarificationRequiresATextResponseForItsOriginalEvidence]' passed (0.172 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testUnknownSelectionVersionValueAndLabelCannotResolveQuestion]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testUnknownSelectionVersionValueAndLabelCannotResolveQuestion]' passed (0.252 seconds).
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testValidOriginalSourceCompletionUpdatesSameEntryAndResolvesWithActualEvidence]' started.
+Test Case '-[TasteBuddyTests.PersonalTasteQuestionResolutionTests testValidOriginalSourceCompletionUpdatesSameEntryAndResolvesWithActualEvidence]' passed (0.128 seconds).
+Test Suite 'PersonalTasteQuestionResolutionTests' passed at 2026-09-13 20:29:05.350.
+	 Executed 18 tests, with 0 failures (0 unexpected) in 3.490 (3.512) seconds
+Test Suite 'SensoryStructuredSelectionTests' started at 2026-09-13 20:29:05.351.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS01RoastedAromaIsNotBitterTasteOrLiking]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS01RoastedAromaIsNotBitterTasteOrLiking]' passed (0.237 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS02SoftTextureIsNotFatPresenceOrPreference]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS02SoftTextureIsNotFatPresenceOrPreference]' passed (0.264 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS03BubbleSelectionWithoutEvaluationDoesNotImplyLiking]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS03BubbleSelectionWithoutEvaluationDoesNotImplyLiking]' passed (0.203 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS04StrongLikedAndJustRightAreIndependentFacets]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS04StrongLikedAndJustRightAreIndependentFacets]' passed (0.285 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS05TagDislikeDoesNotSpreadToAnotherBubble]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS05TagDislikeDoesNotSpreadToAnotherBubble]' passed (0.294 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS06RecommendedButUnselectedTagsAreNotEvidence]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS06RecommendedButUnselectedTagsAreNotEvidence]' passed (0.214 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS07ExplicitTargetAndPhaseRemainScoped]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS07ExplicitTargetAndPhaseRemainScoped]' passed (0.195 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS08EmptyNotesCanProduceRepeatedPersonalInsights]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS08EmptyNotesCanProduceRepeatedPersonalInsights]' passed (0.308 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS09CorrectedEvaluationReplacesPreviousLiking]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS09CorrectedEvaluationReplacesPreviousLiking]' passed (0.427 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS10ExplicitClearDoesNotResurrectLegacyIDs]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS10ExplicitClearDoesNotResurrectLegacyIDs]' passed (0.152 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS11DeletingMealRemovesItsInterpretation]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS11DeletingMealRemovesItsInterpretation]' passed (0.321 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS12LegacySelectionDoesNotAcquireAbsentEvaluation]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS12LegacySelectionDoesNotAcquireAbsentEvaluation]' passed (0.156 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS13NilAndEmptySelectionListsRemainDifferentAfterCoding]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS13NilAndEmptySelectionListsRemainDifferentAfterCoding]' passed (0.361 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS14UnknownIDKeepsOriginalSelectionAndWaitsForInterpretation]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS14UnknownIDKeepsOriginalSelectionAndWaitsForInterpretation]' passed (0.177 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS15UnsupportedCatalogVersionIsNotSilentlyRemapped]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS15UnsupportedCatalogVersionIsNotSilentlyRemapped]' passed (0.163 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS16MismatchedIDAndLabelDoesNotCreateConfirmedEvidence]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS16MismatchedIDAndLabelDoesNotCreateConfirmedEvidence]' passed (0.163 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS17DuplicateSelectionsAndMealsDoNotMultiplyEvidence]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS17DuplicateSelectionsAndMealsDoNotMultiplyEvidence]' passed (0.166 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS18GeneratedMemoDoesNotBecomeAdditionalSelectionEvidence]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS18GeneratedMemoDoesNotBecomeAdditionalSelectionEvidence]' passed (0.162 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS19TagRelationDoesNotTransferItsLikingToBubble]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS19TagRelationDoesNotTransferItsLikingToBubble]' passed (0.181 seconds).
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS20OpposingSensoryEvaluationsStaySeparateWithoutMemo]' started.
+Test Case '-[TasteBuddyTests.SensoryStructuredSelectionTests testSS20OpposingSensoryEvaluationsStaySeparateWithoutMemo]' passed (0.207 seconds).
+Test Suite 'SensoryStructuredSelectionTests' passed at 2026-09-13 20:29:10.012.
+	 Executed 20 tests, with 0 failures (0 unexpected) in 4.637 (4.662) seconds
+Test Suite 'TasteBuddyTests.xctest' passed at 2026-09-13 20:29:10.013.
+	 Executed 63 tests, with 0 failures (0 unexpected) in 13.440 (13.518) seconds
+Test Suite 'Selected tests' passed at 2026-09-13 20:29:10.014.
+	 Executed 63 tests, with 0 failures (0 unexpected) in 13.440 (13.521) seconds
+2026-09-13 20:29:10.390 xcodebuild[13718:4502575] [MT] IDETestOperationsObserverDebug: 73.965 elapsed -- Testing started completed.
+2026-09-13 20:29:10.390 xcodebuild[13718:4502575] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-13 20:29:10.390 xcodebuild[13718:4502575] [MT] IDETestOperationsObserverDebug: 73.965 sec, +73.965 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/sinjunho/Desktop/Taste Buddy/output/question-inline-fix/unit-1.xcresult
+
+** TEST SUCCEEDED **
+
+Testing started

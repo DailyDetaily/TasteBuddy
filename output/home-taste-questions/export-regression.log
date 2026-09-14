@@ -1,0 +1,15 @@
+✔ OAuth token validates signature, issuer, audience, client, subject, scope, role and expiry (215.144077ms)
+✔ export lookup is bounded to verified subject and rejects expired or unexpected personal fields (61.705316ms)
+✔ real MCP transport exposes OAuth discovery and reads only after valid account authentication (1115.023359ms)
+✔ Vercel discovery publishes only matching public settings and removes stale metadata when disabled (47.655349ms)
+✔ Vercel function adapter keeps missing configuration closed and serves MCP after URL rewrite (5123.686833ms)
+✔ v2 preserves revision and uncertain meal time without inventing observedAt (143.806605ms)
+✔ v2 rejects source mismatch, duplicate experience, incomplete scope, and undeclared private data (15.494602ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7178.209512

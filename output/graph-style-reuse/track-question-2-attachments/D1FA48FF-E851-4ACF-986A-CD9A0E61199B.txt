@@ -1,0 +1,122 @@
+Application, 0x10e41a7e0, pid: 9140, label: 'Taste Buddy' <App element pid: 9140>
+  Window (Main), 0x10e41a490, {{0.0, 0.0}, {402.0, 874.0}} <AX element pid: 9140, elementOrHash.elementID: 4361054096.3>
+    Other, 0x10e41b5b0, {{0.0, 0.0}, {402.0, 874.0}} <AX element pid: 9140, elementOrHash.elementID: 4364215488.4>
+      Other, 0x10e41b230, {{0.0, 0.0}, {402.0, 874.0}} <AX element pid: 9140, elementOrHash.elementID: 4361052112.5>
+        Other, 0x10e41aed0, {{0.0, 0.0}, {402.0, 874.0}} <AX element pid: 9140, elementOrHash.elementID: 4489170112.6>
+          Other, 0x10e41ab60, {{0.0, 0.0}, {402.0, 874.0}} <AX element pid: 9140, elementOrHash.elementID: 4364310208.7>
+            Other, 0x10e41b920, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4367360016.8>
+              Other, 0x10e427240, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4366325776.9>
+                Other, 0x10e427360, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4367458576.10>
+                  Other, 0x10e522630, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4360244720.11>
+                    Other, 0x10bc12b60, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4489206480.12>
+                      Other, 0x10bc12460, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4489209776.18>
+                        Other, 0x10bc12eb0, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4489249616.20>
+                          Other, 0x10bc13250, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4430368416.22>
+                            Other, 0x10bc135b0, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4429427712.23>
+                              ScrollView, 0x10bc16550, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4521772544.24>
+                                Other, 0x10bc09fb0, {{0.0, 162.0}, {402.0, 1026.7}} <AX element pid: 9140, elementOrHash.elementID: 4430401792.31>
+                                  StaticText, 0x10bc173c0, {{20.0, 170.0}, {86.7, 19.3}}, label: '인사이트 요약' <AX element pid: 9140, elementOrHash.elementID: 4430615808.33>
+                                  ScrollView, 0x10bc2aef0, {{0.0, 201.3}, {402.0, 136.0}} <AX element pid: 9140, elementOrHash.elementID: 4521753088.34>
+                                    Other, 0x10bc2b010, {{0.0, 201.3}, {1036.0, 136.0}} <AX element pid: 9140, elementOrHash.elementID: 4430388832.43>
+                                      Button, 0x10bc2b130, {{19.5, 202.8}, {133.0, 133.0}}, label: '기록, 7번의 식사, 디시 기록 7개 · 전체 기간' <AX element pid: 9140, elementOrHash.elementID: 4368484064.157>
+                                        StaticText, 0x10bc2b250, {{32.0, 269.3}, {24.3, 17.0}}, label: '기록' <AX element pid: 9140, elementOrHash.elementID: 4368552496.183>
+                                        StaticText, 0x10bc2b370, {{32.0, 288.3}, {59.7, 17.0}}, label: '7번의 식사' <AX element pid: 9140, elementOrHash.elementID: 4368554864.184>
+                                        StaticText, 0x10bc2b490, {{32.0, 311.3}, {98.7, 12.0}}, label: '디시 기록 7개 · 전체 기간' <AX element pid: 9140, elementOrHash.elementID: 4368587520.185>
+                                      Button, 0x10bc2b5b0, {{163.5, 202.8}, {133.0, 133.0}}, label: '반복, 국물의 산미 기록, 같은 식당에서 7번 기록' <AX element pid: 9140, elementOrHash.elementID: 4368677024.158>
+                                        StaticText, 0x10bc2b6d0, {{176.0, 269.3}, {24.3, 17.0}}, label: '반복' <AX element pid: 9140, elementOrHash.elementID: 4368606864.186>
+                                        StaticText, 0x10bc2b7f0, {{176.0, 288.3}, {91.7, 17.0}}, label: '국물의 산미 기록' <AX element pid: 9140, elementOrHash.elementID: 4368674144.187>
+                                        StaticText, 0x10bc2b910, {{176.0, 311.3}, {91.0, 12.0}}, label: '같은 식당에서 7번 기록' <AX element pid: 9140, elementOrHash.elementID: 4368674576.188>
+                                      Button, 0x10bc2ba30, {{307.5, 202.8}, {133.0, 133.0}}, label: '경험, 2개 메뉴, 1곳의 식당' <AX element pid: 9140, elementOrHash.elementID: 4369644160.159>
+                                        StaticText, 0x10bc2bc00, {{320.0, 269.3}, {24.3, 17.0}}, label: '경험' <AX element pid: 9140, elementOrHash.elementID: 4369736976.189>
+                                        StaticText, 0x10bc2bd20, {{320.0, 288.3}, {48.3, 17.0}}, label: '2개 메뉴' <AX element pid: 9140, elementOrHash.elementID: 4369640576.190>
+                                        StaticText, 0x10bc2be40, {{320.0, 311.3}, {41.7, 12.0}}, label: '1곳의 식당' <AX element pid: 9140, elementOrHash.elementID: 4369641360.191>
+                                      Button, 0x10bc2bf60, {{451.5, 202.8}, {133.0, 133.0}}, label: '호감, 진한 산미의 국물, 음식 전체 · 좋았어요' <AX element pid: 9140, elementOrHash.elementID: 4369648368.160>
+                                        StaticText, 0x10bc2c080, {{464.0, 269.3}, {24.3, 17.0}}, label: '호감' <AX element pid: 9140, elementOrHash.elementID: 4369645056.192>
+                                        StaticText, 0x10bc2c1a0, {{464.0, 288.3}, {91.7, 17.0}}, label: '진한 산미의 국물' <AX element pid: 9140, elementOrHash.elementID: 4369645488.193>
+                                        StaticText, 0x10e427480, {{464.0, 311.3}, {79.3, 12.0}}, label: '음식 전체 · 좋았어요' <AX element pid: 9140, elementOrHash.elementID: 4369645920.194>
+                                      Button, 0x10e7196c0, {{595.5, 202.8}, {133.0, 133.0}}, label: '감각, 산미, 좋음 3회 · 아쉬움 4회' <AX element pid: 9140, elementOrHash.elementID: 4430719216.161>
+                                        StaticText, 0x10e113e00, {{608.0, 269.3}, {24.3, 17.0}}, label: '감각' <AX element pid: 9140, elementOrHash.elementID: 4430618256.195>
+                                        StaticText, 0x10e1151a0, {{608.0, 288.3}, {24.3, 17.0}}, label: '산미' <AX element pid: 9140, elementOrHash.elementID: 4430535312.196>
+                                        StaticText, 0x10e71a160, {{608.0, 311.3}, {85.7, 12.0}}, label: '좋음 3회 · 아쉬움 4회' <AX element pid: 9140, elementOrHash.elementID: 4430535744.197>
+                                      Button, 0x10e719de0, {{739.5, 202.8}, {133.0, 133.0}}, label: '알맞음, 산미, 응답이 나뉘어요' <AX element pid: 9140, elementOrHash.elementID: 4429513936.162>
+                                        StaticText, 0x10e71a4e0, {{752.0, 269.3}, {36.3, 17.0}}, label: '알맞음' <AX element pid: 9140, elementOrHash.elementID: 4429505872.198>
+                                        StaticText, 0x10e71a870, {{752.0, 288.3}, {24.3, 17.0}}, label: '산미' <AX element pid: 9140, elementOrHash.elementID: 4429511024.199>
+                                        StaticText, 0x10e71abf0, {{752.0, 311.3}, {63.3, 12.0}}, label: '응답이 나뉘어요' <AX element pid: 9140, elementOrHash.elementID: 4429511808.200>
+                                      Button, 0x10e71af90, {{883.5, 202.8}, {133.0, 133.0}}, label: '차이, 음식 · 호감, 산미 · 아쉬움' <AX element pid: 9140, elementOrHash.elementID: 4368679472.163>
+                                        StaticText, 0x10e71b310, {{896.0, 269.3}, {24.3, 17.0}}, label: '차이' <AX element pid: 9140, elementOrHash.elementID: 4429514832.201>
+                                        StaticText, 0x10e028c30, {{896.0, 288.3}, {59.0, 17.0}}, label: '음식 · 호감' <AX element pid: 9140, elementOrHash.elementID: 4429515664.202>
+                                        StaticText, 0x10e5232a0, {{896.0, 311.3}, {51.0, 12.0}}, label: '산미 · 아쉬움' <AX element pid: 9140, elementOrHash.elementID: 4429516096.203>
+                                  Other, 0x10e5233c0, {{20.0, 349.3}, {362.0, 84.0}} <AX element pid: 9140, elementOrHash.elementID: 4430720112.130>
+                                    Button, 0x10e21aec0, {{32.0, 361.3}, {338.0, 60.0}}, identifier: 'taste-question-toggle', label: '다음 식사에서 약한 강도로 느낀 산미는 어떤지 확인해 볼까요?, 원출처를 확인할 수 없어 기록을 다시 열어야 해요.', value: 접힘 <AX element pid: 9140, elementOrHash.elementID: 4429519840.136>
+                                      Other, 0x10e4275a0, {{32.0, 361.3}, {60.0, 60.0}} <AX element pid: 9140, elementOrHash.elementID: 4429516528.164>
+                                      StaticText, 0x10e4276c0, {{104.0, 361.3}, {253.3, 33.7}}, label: '다음 식사에서 약한 강도로 느낀 산미는 어떤지 확인해 볼까요?' <AX element pid: 9140, elementOrHash.elementID: 4429517632.165>
+                                      StaticText, 0x10e4277e0, {{104.0, 399.0}, {212.3, 13.3}}, label: '원출처를 확인할 수 없어 기록을 다시 열어야 해요.' <AX element pid: 9140, elementOrHash.elementID: 4429518064.166>
+                                  StaticText, 0x10e427900, {{20.0, 453.3}, {62.3, 21.7}}, label: '아카이브' <AX element pid: 9140, elementOrHash.elementID: 4430721008.131>
+                                  Button, 0x10e427a20, {{20.0, 487.0}, {362.0, 108.0}}, identifier: 'home-archive-metric-meals', label: '기록한 식사, 7회, 전체 기간 · 디시 기록 7개
+식사일 확인 7회 · 시점 미확인 0회, 일별 · 2026.9.4–2026.9.10 · 9.4 1회 · 9.5 1회 · 9.6 1회 · 9.7 1회 · 9.8 1회 · 9.9 1회 · 9.10 1회 · 식사 시점 미확인 0회' <AX element pid: 9140, elementOrHash.elementID: 4430726928.132>
+                                    StaticText, 0x112915270, {{54.0, 499.0}, {64.0, 17.0}}, label: '기록한 식사' <AX element pid: 9140, elementOrHash.elementID: 4430721440.137>
+                                    StaticText, 0x112915c70, {{306.3, 500.8}, {47.7, 13.3}}, label: '자세히보기' <AX element pid: 9140, elementOrHash.elementID: 4430721872.138>
+                                    StaticText, 0x112915fd0, {{32.0, 528.0}, {23.3, 19.3}}, label: '7회' <AX element pid: 9140, elementOrHash.elementID: 4430722672.139>
+                                    StaticText, 0x112916350, {{32.0, 551.3}, {159.7, 31.7}}, label: '전체 기간 · 디시 기록 7개
+식사일 확인 7회 · 시점 미확인 0회' <AX element pid: 9140, elementOrHash.elementID: 4430723456.140>
+                                    Other, 0x1129166e0, {{238.0, 539.7}, {132.0, 32.0}}, label: '일별 · 2026.9.4–2026.9.10 · 9.4 1회 · 9.5 1회 · 9.6 1회 · 9.7 1회 · 9.8 1회 · 9.9 1회 · 9.10 1회 · 식사 시점 미확인 0회' <AX element pid: 9140, elementOrHash.elementID: 4366413328.141>
+                                      Other, 0x112916a40, {{238.0, 539.7}, {16.3, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4429520272.167>
+                                      Other, 0x112916de0, {{257.3, 539.7}, {16.3, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4429521568.168>
+                                      Other, 0x112917130, {{276.7, 539.7}, {16.3, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4429522672.169>
+                                      Other, 0x1129174c0, {{296.0, 539.7}, {16.0, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4429523776.170>
+                                      Other, 0x112917840, {{315.0, 539.7}, {16.3, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4429524880.171>
+                                      Other, 0x112917b90, {{334.3, 539.7}, {16.3, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4367725472.172>
+                                      Other, 0x112917f30, {{353.7, 539.7}, {16.3, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4367734160.173>
+                                  Button, 0x1129182b0, {{20.0, 607.0}, {362.0, 108.0}}, identifier: 'home-archive-metric-menus', label: '경험한 메뉴, 2가지, 한 번 기록 0가지 · 반복 기록 2가지
+전체 기간 · 식당별로 구분, 전체 기간 · 한 번 기록 0가지 · 여러 식사에서 반복 2가지' <AX element pid: 9140, elementOrHash.elementID: 4366376992.133>
+                                    StaticText, 0x112918600, {{54.0, 619.0}, {64.0, 17.0}}, label: '경험한 메뉴' <AX element pid: 9140, elementOrHash.elementID: 4369726416.142>
+                                    StaticText, 0x112918960, {{306.3, 620.8}, {47.7, 13.3}}, label: '자세히보기' <AX element pid: 9140, elementOrHash.elementID: 4369649264.143>
+                                    StaticText, 0x112918ce0, {{32.0, 648.0}, {37.7, 19.3}}, label: '2가지' <AX element pid: 9140, elementOrHash.elementID: 4369649696.144>
+                                    StaticText, 0x112919040, {{32.0, 671.3}, {163.0, 31.7}}, label: '한 번 기록 0가지 · 반복 기록 2가지
+전체 기간 · 식당별로 구분' <AX element pid: 9140, elementOrHash.elementID: 4369650128.145>
+                                    Other, 0x112919390, {{238.0, 669.7}, {132.0, 12.0}}, label: '전체 기간 · 한 번 기록 0가지 · 여러 식사에서 반복 2가지' <AX element pid: 9140, elementOrHash.elementID: 4429525312.146>
+                                      Other, 0x1129196f0, {{238.0, 669.5}, {0.0, 12.0}} <AX element pid: 9140, elementOrHash.elementID: 4369650912.174>
+                                      Other, 0x10e01d3f0, {{238.0, 669.7}, {132.0, 12.0}} <AX element pid: 9140, elementOrHash.elementID: 4369529408.175>
+                                  Button, 0x10e0292f0, {{20.0, 727.0}, {362.0, 108.0}}, identifier: 'home-archive-metric-restaurants', label: '기록한 식당, 1곳, 한 번 기록 0곳 · 재방문 기록 1곳
+전체 기간, 전체 기간 · 한 번 기록 0곳 · 재방문 기록 1곳' <AX element pid: 9140, elementOrHash.elementID: 4489388656.134>
+                                    StaticText, 0x10e029410, {{54.0, 739.0}, {64.0, 17.0}}, label: '기록한 식당' <AX element pid: 9140, elementOrHash.elementID: 4430728288.147>
+                                    StaticText, 0x10e71b6a0, {{306.3, 740.8}, {47.7, 13.3}}, label: '자세히보기' <AX element pid: 9140, elementOrHash.elementID: 4430728720.148>
+                                    StaticText, 0x112919a70, {{32.0, 768.0}, {21.3, 19.3}}, label: '1곳' <AX element pid: 9140, elementOrHash.elementID: 4430729568.149>
+                                    StaticText, 0x112919df0, {{32.0, 791.3}, {150.7, 31.7}}, label: '한 번 기록 0곳 · 재방문 기록 1곳
+전체 기간' <AX element pid: 9140, elementOrHash.elementID: 4363336528.150>
+                                    Other, 0x11291a140, {{238.0, 789.7}, {132.0, 12.0}}, label: '전체 기간 · 한 번 기록 0곳 · 재방문 기록 1곳' <AX element pid: 9140, elementOrHash.elementID: 4367736464.151>
+                                      Other, 0x11291a4a0, {{238.0, 789.5}, {0.0, 12.0}} <AX element pid: 9140, elementOrHash.elementID: 4367730512.176>
+                                      Other, 0x10e113360, {{238.0, 789.7}, {132.0, 12.0}} <AX element pid: 9140, elementOrHash.elementID: 4367355424.177>
+                                  Button, 0x10e112ff0, {{20.0, 847.0}, {362.0, 125.3}}, identifier: 'home-archive-metric-overall', label: '음식 전체 평가, 7개 음식의 평가, 전체 기간 · 음식 경험 단위
+5단계 미응답 0개 · 현재 응답 충돌 0개 · 원문 전체 평가 0개, 전체 기간 · 직접 응답 5단계 · 정말 좋았어요 7개 음식 · 좋았어요 0개 음식 · 보통이었어요 0개 음식 · 아쉬웠어요 0개 음식 · 많이 아쉬웠어요 0개 음식 · 5단계 미응답 0개 음식 · 현재 응답 충돌 0개 음식 · 원문 전체 평가 0개 음식' <AX element pid: 9140, elementOrHash.elementID: 4430730000.135>
+                                    StaticText, 0x10e112ca0, {{54.0, 859.0}, {79.3, 17.0}}, label: '음식 전체 평가' <AX element pid: 9140, elementOrHash.elementID: 4489389552.152>
+                                    StaticText, 0x10e215220, {{306.3, 860.8}, {47.7, 13.3}}, label: '자세히보기' <AX element pid: 9140, elementOrHash.elementID: 4489390640.153>
+                                    StaticText, 0x10e112910, {{32.0, 888.0}, {99.7, 19.3}}, label: '7개 음식의 평가' <AX element pid: 9140, elementOrHash.elementID: 4489391424.154>
+                                    StaticText, 0x10e10e990, {{32.0, 911.3}, {189.7, 49.0}}, label: '전체 기간 · 음식 경험 단위
+5단계 미응답 0개 · 현재 응답 충돌 0개 · 원문 전체 평가 0개' <AX element pid: 9140, elementOrHash.elementID: 4489392208.155>
+                                    Other, 0x10e71ba20, {{238.0, 908.3}, {132.0, 32.0}}, label: '전체 기간 · 직접 응답 5단계 · 정말 좋았어요 7개 음식 · 좋았어요 0개 음식 · 보통이었어요 0개 음식 · 아쉬웠어요 0개 음식 · 많이 아쉬웠어요 0개 음식 · 5단계 미응답 0개 음식 · 현재 응답 충돌 0개 음식 · 원문 전체 평가 0개 음식' <AX element pid: 9140, elementOrHash.elementID: 4489398864.156>
+                                      Other, 0x10e71c120, {{238.0, 908.3}, {24.0, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4489392992.178>
+                                      Other, 0x10bc2c2c0, {{265.0, 908.3}, {24.0, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4489394448.179>
+                                      Other, 0x10bc2c3e0, {{292.0, 908.3}, {24.0, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4489395552.180>
+                                      Other, 0x10bc2c500, {{319.0, 908.3}, {24.0, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4489396656.181>
+                                      Other, 0x10bc2c620, {{346.0, 908.3}, {24.0, 32.0}} <AX element pid: 9140, elementOrHash.elementID: 4489397760.182>
+                                  StaticText, 0x10bc2c740, {{20.0, 992.3}, {66.7, 21.7}}, label: '최근 기록' <AX element pid: 9140, elementOrHash.elementID: 4429410608.41>
+                                  Button, 0x10bc2c860, {{20.0, 1026.0}, {362.0, 90.7}}, label: '기록 흐름, 7개의 미식 기록, 맛 피드백 완료 7개 · 최근 메뉴 진한 산미의 국물' <AX element pid: 9140, elementOrHash.elementID: 4429418000.42>
+                                    StaticText, 0x10bc2c980, {{54.0, 1038.0}, {51.7, 17.0}}, label: '기록 흐름' <AX element pid: 9140, elementOrHash.elementID: 4429411392.70>
+                                    StaticText, 0x10bc2caa0, {{306.3, 1039.8}, {47.7, 13.3}}, label: '자세히보기' <AX element pid: 9140, elementOrHash.elementID: 4429412176.71>
+                                    StaticText, 0x10e61a460, {{32.0, 1067.0}, {99.7, 19.3}}, label: '7개의 미식 기록' <AX element pid: 9140, elementOrHash.elementID: 4429412960.72>
+                                    StaticText, 0x10e611250, {{32.0, 1090.3}, {223.7, 14.3}}, label: '맛 피드백 완료 7개 · 최근 메뉴 진한 산미의 국물' <AX element pid: 9140, elementOrHash.elementID: 4429413744.73>
+                              Other, 0x10e610b40, {{0.0, 0.0}, {402.0, 170.0}} <AX element pid: 9140, elementOrHash.elementID: 4360127200.25>
+                              Button, 0x10e614dc0, {{19.5, 109.5}, {363.0, 45.0}}, label: '레스토랑, 메뉴, 셰프, 버디 검색' <AX element pid: 9140, elementOrHash.elementID: 4429419760.26>
+                              Button, 0x10e615bb0, {{20.0, 62.0}, {32.0, 32.0}}, label: '프로필 확인 및 편집' <AX element pid: 9140, elementOrHash.elementID: 4429422112.27>
+                                Other, 0x10e615f10, {{19.5, 61.5}, {33.0, 33.0}} <AX element pid: 9140, elementOrHash.elementID: 4429420976.32>
+                              Button, 0x10e6162b0, {{270.0, 62.0}, {32.0, 32.0}}, label: '알림' <AX element pid: 9140, elementOrHash.elementID: 4429424112.28>
+                              Button, 0x10e615830, {{310.0, 62.0}, {32.0, 32.0}}, label: '미각 측정 시작' <AX element pid: 9140, elementOrHash.elementID: 4429426496.29>
+                              Button, 0x10e6154b0, {{350.0, 62.0}, {32.0, 32.0}}, label: '메뉴 열기' <AX element pid: 9140, elementOrHash.elementID: 4429428880.30>
+                      Other, 0x10e616630, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4361157424.19>
+                        Other, 0x10e616990, {{0.0, 0.0}, {402.0, 840.0}} <AX element pid: 9140, elementOrHash.elementID: 4368482064.21>
+                    Button, 0x10e616d10, {{8.0, 785.0}, {77.3, 50.0}}, label: '홈', Selected <AX element pid: 9140, elementOrHash.elementID: 4360167104.13>
+                    Button, 0x10e617060, {{85.3, 785.0}, {77.0, 50.0}}, label: '나의 입맛' <AX element pid: 9140, elementOrHash.elementID: 4360075664.14>
+                    Button, 0x10e5234e0, {{177.0, 786.0}, {48.0, 48.0}}, label: '디시 기록 추가' <AX element pid: 9140, elementOrHash.elementID: 4360241808.15>
+                    Button, 0x10e20dcf0, {{239.7, 785.0}, {77.0, 50.0}}, label: '다이닝' <AX element pid: 9140, elementOrHash.elementID: 4360242704.16>
+                    Button, 0x10e20e950, {{316.7, 785.0}, {77.3, 50.0}}, label: '프로필' <AX element pid: 9140, elementOrHash.elementID: 4360243600.17>

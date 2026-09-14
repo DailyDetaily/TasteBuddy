@@ -135,6 +135,7 @@ struct AnalysisView: View {
                             accentColor: TBColor.textDisabled,
                             onExpand: { selectedSheet = .personalCandidate(candidate.id) }
                         )
+                        .accessibilityIdentifier("taste-candidate-\(candidate.id)")
                     }
                 }
             } else if snapshot.insights.isEmpty {
@@ -199,12 +200,7 @@ struct AnalysisView: View {
                         )
                     }
                 )
-                .task(id: question.id) {
-                    appModel.recordPersonalTasteQuestionExposure(
-                        id: question.id,
-                        userID: snapshot.personalModel?.userID ?? "local-owner"
-                    )
-                }
+
             }
         }
 
@@ -235,15 +231,10 @@ struct AnalysisView: View {
     private func visibleNextSelection(
         in snapshot: SensoryAnalysisSnapshot
     ) -> PersonalTasteNextSelection? {
-        guard let model = snapshot.personalModel,
-              let selection = model.nextSelection,
-              appModel.shouldPresentPersonalTasteQuestion(
-                id: selection.id,
-                userID: model.userID
-              ) else {
-            return nil
-        }
-        return selection
+        guard let model = snapshot.personalModel else { return nil }
+        return PersonalTasteInlineAnswer.answerableQuestions(
+            model.availableSelections, observations: snapshot.observations, entries: appModel.diningEntries
+        ).first { appModel.shouldPresentPersonalTasteQuestion(id: $0.id, userID: model.userID) }
     }
 
     @ViewBuilder
@@ -272,7 +263,8 @@ struct AnalysisView: View {
                     group: group,
                     observations: appModel.sensoryAnalysis.observations,
                     entries: appModel.diningEntries,
-                    limits: model.limits + appModel.sensoryAnalysis.limits
+                    limits: model.limits + appModel.sensoryAnalysis.limits,
+                    unresolved: appModel.sensoryAnalysis.unresolved
                 )
             }
         case .personalInsight(let id):
@@ -302,7 +294,7 @@ struct AnalysisView: View {
     private func personalTasteQuestionFeedback(
         _ context: PersonalTasteQuestionResponseContext
     ) -> some View {
-        if context.selection.intent == "clarification",
+        if context.selection.intent != "exploration",
            let sourceEntryID = context.sourceEntryID,
            let sourceEntry = appModel.diningEntry(id: sourceEntryID) {
             DiningFeedbackSheet(entry: sourceEntry, startMode: .details) { entry in

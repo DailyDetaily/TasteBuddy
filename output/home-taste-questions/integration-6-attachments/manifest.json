@@ -1,0 +1,66 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "F96562EB-0D84-49A6-ACF0-4ABEC97FC4A9.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-archive-populated-402-1_0_84C648AD-C229-4F8F-ADBA-F92C43CD6900.png",
+        "timestamp" : 1789289808.034
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "EF8810B8-88E4-434A-9E42-C901CCA0995E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-archive-populated-402-0_0_BF170EFA-1793-47C8-BBD5-AEDB7625A8A3.png",
+        "timestamp" : 1789289806.622
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "A4AA0078-4BE7-45D7-8494-8E5206785890.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-archive-empty-320-1_0_D3ABAE89-8E3E-4953-B416-99072CFA6EE4.png",
+        "timestamp" : 1789289804.128
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "7BFD575B-8497-46EF-9AC0-64F69B84FF5B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "home-archive-empty-320-0_0_957E94BE-9158-40D2-A208-32619069F17C.png",
+        "timestamp" : 1789289803.029
+      }
+    ],
+    "testIdentifier" : "HomeArchiveMetricsEngineTests/testHomeMetricsFitCompactViewportAndRemainReachableByScrolling()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyTests/HomeArchiveMetricsEngineTests/testHomeMetricsFitCompactViewportAndRemainReachableByScrolling"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "6D9CB3C1-F4FB-4448-977D-47DF6069A559.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4",
+        "deviceName" : "Taste Buddy Memory QA 20260913",
+        "exportedFileName" : "90CA1E94-82E8-41D3-8821-7B6B14D5EFA6.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      }
+    ],
+    "testIdentifier" : "SensoryOverallEvaluationTests/testOverallAndSensoryPersistOnReopenAndOverallCorrectionLeavesSensoryUnchanged()",
+    "testIdentifierURL" : "test://com.apple.xcode/TasteBuddy/TasteBuddyTests/SensoryOverallEvaluationTests/testOverallAndSensoryPersistOnReopenAndOverallCorrectionLeavesSensoryUnchanged"
+  }
+]

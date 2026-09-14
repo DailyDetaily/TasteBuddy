@@ -125,14 +125,20 @@ final class SensoryOverallEvaluationTests: XCTestCase {
         try await waitForAnalysis(model)
         let expectedSensory = beforeSensory.map { observation in
             var revised = observation
-            revised.knownAt = updatedAt
+            // 전체 평가 교정은 감각 응답을 새로 알게 된 시각으로 바꾸지 않는다.
+            revised.sourceRevision = 1
             return revised
         }
         XCTAssertEqual(model.sensoryAnalysis.observations.filter { $0.kind != "overall_liking" }, expectedSensory)
         let savedCorrected = try XCTUnwrap(model.diningEntries.first)
         XCTAssertEqual(savedCorrected.savedAt, savedAt)
         XCTAssertEqual(savedCorrected.updatedAt, updatedAt)
-        try assertDiningSourceUnchangedByStorage(savedCorrected, original: corrected)
+        XCTAssertEqual(savedCorrected.memoryRevisionNumber, 1)
+        XCTAssertEqual(savedCorrected.memoryCorrections?.count, 1)
+        var expectedSource = corrected
+        expectedSource.memoryRevision = savedCorrected.memoryRevision
+        expectedSource.memoryCorrections = savedCorrected.memoryCorrections
+        try assertDiningSourceUnchangedByStorage(savedCorrected, original: expectedSource)
         XCTAssertEqual(model.sensoryAnalysis.sourceExperienceCount, 1)
         let reopened = AppModel(defaults: defaults, authRepository: FixtureBackendAuthRepository())
         try await waitForAnalysis(reopened)

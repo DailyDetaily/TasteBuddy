@@ -6,6 +6,7 @@ struct TastePerceptionCards: View {
     let entries: [DiningEntry]
     var onOpenTasteChange: () -> Void = {}
     @State private var showMeals = false
+    @State private var sourceWasChosen = false
     @State var showPrevious = false
     @State private var detail: PerceptionDetail?
 
@@ -52,10 +53,13 @@ struct TastePerceptionCards: View {
                         radarNavigationButton("chevron.left", label: "이전 기간 보기", enabled: !showPrevious && hasPrevious) { showPrevious = true }
                         Spacer()
                         Menu {
-                            Button("기준 음식 회상") { showMeals = false; showPrevious = false }
-                            Button("식사 기록") { showMeals = true; showPrevious = false }
+                            Button("기준 음식 회상") { sourceWasChosen = true; showMeals = false; showPrevious = false }
+                            Button("식사 기록") { sourceWasChosen = true; showMeals = true; showPrevious = false }
                         } label: {
-                            Text(periodLabel).font(TBFont.semibold(14)).foregroundStyle(TBColor.textPrimary)
+                            VStack(spacing: 3) {
+                                Text(showMeals ? "식사 기록" : "기준 음식 회상").font(TBFont.semibold(14))
+                                Text(periodLabel).font(TBFont.regular(11))
+                            }.foregroundStyle(TBColor.textPrimary)
                                 .frame(minHeight: 44)
                         }.accessibilityLabel("\(periodLabel), 기록 출처 선택")
                         Spacer()
@@ -63,23 +67,27 @@ struct TastePerceptionCards: View {
                     }
                     ZStack {
                         TasteRadarView(reportedValues: values(previous: showPrevious), maximum: showMeals ? 3 : 4,
-                                       referenceValues: showPrevious ? [:] : values(previous: true))
+                                       referenceValues: showPrevious ? [:] : values(previous: true).filter { values(previous: false)[$0.key] != nil })
                             .frame(maxWidth: 360).frame(maxWidth: .infinity)
                             .id([showMeals, showPrevious])
                             .transition(.opacity)
                     }
                     .tasteBloomMotion(.content, value: [showMeals, showPrevious])
+                    Text(showMeals ? "약·중·강의 직접 보고 · 호감 점수 아님" : "기준 음식 회상 0–4 척도 · 호감 점수 아님")
+                        .font(TBFont.regular(11)).foregroundStyle(TBColor.textHint)
+                    Text("실선·채운 점: 선택한 기록 / 점선·빈 점: 비교 가능한 이전 기록 / —: 미확인")
+                        .font(TBFont.regular(10)).foregroundStyle(TBColor.textHint).fixedSize(horizontal: false, vertical: true)
                     HStack(alignment: .bottom, spacing: 4) {
                         Button { openRadarEvidence() } label: {
                             VStack(spacing: 4) {
-                                Text("나의 반응").font(TBFont.regular(10)).foregroundStyle(TBColor.textHint)
+                                Text(showPrevious ? "이전 기록" : "현재 기록").font(TBFont.regular(10)).foregroundStyle(TBColor.textHint)
                                 RadarComparisonValueBadge(count(previous: showPrevious) == 0 ? "기록 없음" : showMeals ? "식사 \(count(previous: showPrevious))회" : "회상 \(count(previous: showPrevious))개")
                             }.frame(minHeight: 44)
                         }.buttonStyle(.plain).accessibilityHint("적용 조건과 원본 기록 보기")
                         RadarComparisonArrowBadge()
                         Button { openRadarEvidence(reference: true) } label: {
                             VStack(spacing: 4) {
-                                Text("기준 반응").font(TBFont.regular(10)).foregroundStyle(TBColor.textHint)
+                                Text("비교할 이전 기록").font(TBFont.regular(10)).foregroundStyle(TBColor.textHint)
                                 RadarComparisonValueBadge(!showPrevious && !values(previous: true).isEmpty ? "이전 기록" : "아직 없음")
                             }.frame(minHeight: 44)
                         }.buttonStyle(.plain).disabled(showPrevious || values(previous: true).isEmpty)
@@ -109,8 +117,11 @@ struct TastePerceptionCards: View {
                     .font(TBFont.regular(13)).foregroundStyle(TBColor.textBody).lineSpacing(4)
             }
         }
-        .onAppear { showMeals = TasteAxis.allCases.contains { model.current(for: $0)?.currentLevel != nil } }
-        .onChange(of: snapshot.perception) { _, _ in detail = nil }
+        .onAppear { if !sourceWasChosen { showMeals = TasteAxis.allCases.contains { model.current(for: $0)?.currentLevel != nil } } }
+        .onChange(of: snapshot.perception) { _, _ in
+            detail = nil
+            if !sourceWasChosen { showMeals = TasteAxis.allCases.contains { model.current(for: $0)?.currentLevel != nil } }
+        }
         .sheet(item: $detail) { selection in
             TastePerceptionDetailSheet(selection: selection, model: model, survey: survey, observations: snapshot.observations, entries: entries)
         }
@@ -125,7 +136,7 @@ struct TastePerceptionCards: View {
 
     private var changeTitle: String {
         if let first = model.changes.first { return "\(first.axis.label)을 느낀 강도가 달라졌어요" }
-        return surveyChanges.isEmpty ? "아직 변화없음" : "기준 음식에서 기억한 강도가 달라졌어요"
+        return surveyChanges.isEmpty ? (hasComparison ? "비교한 기록에서는 같은 강도예요" : "비교할 기록이 부족해요") : "기준 음식에서 기억한 강도가 달라졌어요"
     }
     private var changeSummary: String {
         if let first = model.changes.first {

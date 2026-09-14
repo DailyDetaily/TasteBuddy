@@ -398,6 +398,12 @@ struct DishFeedbackDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        if let id = UUID(uuidString: item.id), item.authorName == "나" {
+            FoodMemoryDetailView(entryID: id)
+        } else { publicDetail }
+    }
+
+    private var publicDetail: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: TBSpacing.section) {
@@ -972,6 +978,7 @@ struct DiningFeedbackSheet: View {
     @State private var capturedPhotoPalette: DiningPhotoPalette?
     @State private var quickSavedEntryID: UUID?
     @State private var workingEntryDate: Date
+    @State private var workingMealTime: DiningMealTime?
     @State private var didRestoreEntryMenuSelection = false
     @State private var showsLaunchTransitionOverlay: Bool
     @State private var isRunningTasteBloomDismissal = false
@@ -1088,6 +1095,7 @@ struct DiningFeedbackSheet: View {
             initialValue: entry?.feedbackStatus == .captured ? entry?.id : nil
         )
         _workingEntryDate = State(initialValue: entry?.date ?? .now)
+        _workingMealTime = State(initialValue: entry?.mealTime ?? (entry == nil ? .init(source: .recordedOnly) : nil))
         _showsLaunchTransitionOverlay = State(
             initialValue: showsLaunchTransition && startMode == .cameraCapture
         )
@@ -1588,7 +1596,7 @@ struct DiningFeedbackSheet: View {
         .onDisappear {
             deletionToast.cancel()
         }
-        .alert("사진을 저장하지 못했어요", isPresented: photoLoadErrorBinding) {
+        .alert(appModel.diningPersistenceError == nil ? "사진을 저장하지 못했어요" : "기록을 저장하지 못했어요", isPresented: photoLoadErrorBinding) {
             Button("확인", role: .cancel) {
                 photoLoadError = nil
             }
@@ -1922,6 +1930,8 @@ struct DiningFeedbackSheet: View {
                             .font(TBFont.regular(11))
                             .foregroundStyle(TBColor.textFaint)
 
+                        DiningMealTimeEditor(value: $workingMealTime)
+
                         DiningReflectionPhotoEditor(
                             photoData: reflectionPhotoData,
                             photoPickerItem: $photoPickerItem,
@@ -2120,7 +2130,7 @@ struct DiningFeedbackSheet: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(edges: .horizontal)
-        .alert("사진을 저장하지 못했어요", isPresented: photoLoadErrorBinding) {
+        .alert(appModel.diningPersistenceError == nil ? "사진을 저장하지 못했어요" : "기록을 저장하지 못했어요", isPresented: photoLoadErrorBinding) {
             Button("확인", role: .cancel) {
                 photoLoadError = nil
             }
@@ -3620,7 +3630,7 @@ struct DiningFeedbackSheet: View {
                 restaurantID: resolvedRestaurantID,
                 menu: selectedMenuTitle,
                 menuItemID: resolvedMenuItemID,
-                observedAt: workingEntryDate,
+                observedAt: workingMealTime?.confirmedDate ?? workingEntryDate,
                 savedAt: entry?.savedAt,
                 updatedAt: entry?.updatedAt,
                 rating: 0,
@@ -3632,9 +3642,11 @@ struct DiningFeedbackSheet: View {
                 reflectionPhotoFilename: photoFilename,
                 tbaAnalysisSnapshot: nil,
                 feedbackStatus: .captured,
-                photoPalette: photoPalette
+                photoPalette: photoPalette,
+                mealTime: workingMealTime
             )
         )
+        guard appModel.diningPersistenceError == nil else { photoLoadError = appModel.diningPersistenceError; return }
         showResultCard(kind: .quickCapture)
     }
 
@@ -3654,8 +3666,7 @@ struct DiningFeedbackSheet: View {
                 photoLoadError = "사진을 기기에 저장하지 못했어요. 기존 기록은 그대로 유지했어요."
                 return
             }
-        } else if let existingFilename = entry?.reflectionPhotoFilename {
-            DiningReflectionPhotoStore.remove(filename: existingFilename)
+        } else if entry?.reflectionPhotoFilename != nil {
             photoFilename = nil
         }
         let dishKindIDs = resolvedSelectedDishKindIDs
@@ -3668,7 +3679,7 @@ struct DiningFeedbackSheet: View {
                 restaurantID: resolvedRestaurantID,
                 menu: selectedMenuTitle,
                 menuItemID: resolvedMenuItemID,
-                observedAt: workingEntryDate,
+                observedAt: workingMealTime?.confirmedDate ?? workingEntryDate,
                 savedAt: entry?.savedAt,
                 updatedAt: entry?.updatedAt,
                 rating: entry?.rating ?? 0,
@@ -3681,9 +3692,11 @@ struct DiningFeedbackSheet: View {
                 reflectionPhotoFilename: photoFilename,
                 tbaAnalysisSnapshot: nil,
                 feedbackStatus: .completed,
-                photoPalette: capturedPhotoPalette ?? entry?.photoPalette
+                photoPalette: capturedPhotoPalette ?? entry?.photoPalette,
+                mealTime: workingMealTime
             )
         )
+        guard appModel.diningPersistenceError == nil else { photoLoadError = appModel.diningPersistenceError; return }
         closeFeedback()
     }
 

@@ -1,0 +1,157 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project ios/TasteBuddy.xcodeproj -scheme TasteBuddyMemoryQA -destination "platform=iOS Simulator,id=54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4" -derivedDataPath /tmp/TasteBuddyHomeQuestionsQA -resultBundlePath output/graph-style-reuse/track-question-4.xcresult -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO "-only-testing:TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test02LargeTypeQuestionAndMetricActionsRemainReachable"
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.7.1
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.9.0
+  VariableBlur: https://github.com/nikstar/VariableBlur @ main (5073a0d)
+  Supabase: https://github.com/supabase/supabase-swift.git @ 2.46.0
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.4.0
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.5.0
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.6.0
+  ProgressiveBlurHeader: https://github.com/dominikmartn/ProgressiveBlurHeader @ main (0e8c29b)
+
+Writing result bundle at path:
+	/Users/sinjunho/Desktop/Taste Buddy/output/graph-style-reuse/track-question-4.xcresult
+
+2026-09-13 20:02:40.929467+0900 TasteBuddyMemoryUITests-Runner[10601:4456172] [Default] Running tests...
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-09-13 20:02:44.317.
+Test Suite 'TasteBuddyMemoryUITests.xctest' started at 2026-09-13 20:02:44.322.
+Test Suite 'HomeTasteQuestionUITests' started at 2026-09-13 20:02:44.323.
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test02LargeTypeQuestionAndMetricActionsRemainReachable]' started.
+    t =     0.00s Start Test at 2026-09-13 20:02:44.328
+    t =     0.19s Set Up
+    t =     0.22s Open com.juneh96.tastebuddy.ios
+    t =     0.22s     Launch com.juneh96.tastebuddy.ios
+2026-09-13 20:02:44.776 xcodebuild[10557:4455613] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-09-13 20:02:44.776 xcodebuild[10557:4455613] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     3.05s         Setting up automation session
+    t =     7.68s         Wait for com.juneh96.tastebuddy.ios to idle
+    t =    12.17s Waiting 120.0s for "taste-question-toggle" Button to exist
+    t =    13.25s     Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-toggle" Button`
+    t =    13.25s         Checking existence of `"taste-question-toggle" Button`
+    t =    13.80s Find the "나의 입맛" Button
+    t =    14.04s Find the "나의 입맛" Button
+    t =    14.15s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    14.39s Checking existence of `"taste-question-toggle" Button`
+    t =    14.64s Find the "taste-question-toggle" Button
+    t =    14.92s Find the "taste-question-toggle" Button
+    t =    15.26s Tap "taste-question-toggle" Button
+    t =    15.26s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    15.31s     Find the "taste-question-toggle" Button
+    t =    15.55s     Check for interrupting elements affecting "taste-question-toggle" Button
+    t =    15.87s     Synthesize event
+    t =    16.39s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    16.52s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    16.80s Checking existence of `"taste-question-choice-medium" Button`
+    t =    17.12s Find the "taste-question-choice-medium" Button
+    t =    17.42s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    17.65s Press Target Application 'com.juneh96.tastebuddy.ios'[0.90, 0.50] for 0.1 seconds, then drag to Target Application 'com.juneh96.tastebuddy.ios'[0.90, 0.50] -> (0.0, -218.5) with velocity of 250.00 pixels per second, and then hold for 0.2 seconds 
+    t =    17.65s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    17.67s     Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    17.89s     Check for interrupting elements affecting "Taste Buddy" Application
+    t =    18.16s     Synthesize event
+    t =    18.21s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    18.39s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    18.57s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    18.77s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    18.99s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    20.66s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    20.83s Checking existence of `"taste-question-choice-medium" Button`
+    t =    21.20s Find the "taste-question-choice-medium" Button
+    t =    21.63s Find the "taste-question-choice-medium" Button
+    t =    21.98s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    22.89s Added attachment named 'home-question-large-01-actions'
+    t =    22.90s Find the "taste-question-choice-medium" Button
+    t =    23.22s Checking existence of `"나중에" Button`
+    t =    23.54s Tap "taste-question-choice-medium" Button
+    t =    23.54s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    23.56s     Find the "taste-question-choice-medium" Button
+    t =    23.97s     Check for interrupting elements affecting "taste-question-choice-medium" Button
+    t =    24.37s     Synthesize event
+    t =    24.92s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    25.16s Waiting 30.0s for StaticText (First Match) to exist
+    t =    26.23s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    26.23s         Checking existence of `StaticText (First Match)`
+    t =    26.38s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    26.63s Checking existence of `"home-archive-metric-meals" Button`
+    t =    26.93s Find the "home-archive-metric-meals" Button
+    t =    27.34s Find the "home-archive-metric-meals" Button
+    t =    27.69s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    28.48s Added attachment named 'home-question-large-02-chart'
+    t =    28.50s Tap "home-archive-metric-meals" Button
+    t =    28.50s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    28.53s     Find the "home-archive-metric-meals" Button
+    t =    28.89s     Check for interrupting elements affecting "home-archive-metric-meals" Button
+    t =    29.22s     Synthesize event
+    t =    29.68s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    31.08s Waiting 30.0s for "기록한 식사" NavigationBar to exist
+    t =    32.16s     Checking `Expect predicate `existsNoRetry == 1` for object "기록한 식사" NavigationBar`
+    t =    32.16s         Checking existence of `"기록한 식사" NavigationBar`
+    t =    32.70s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    33.08s Checking existence of `"archive-segment-unknown" Button`
+    t =    33.56s Find the "archive-segment-unknown" Button
+    t =    34.03s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    34.39s Press Target Application 'com.juneh96.tastebuddy.ios'[0.90, 0.50] for 0.1 seconds, then drag to Target Application 'com.juneh96.tastebuddy.ios'[0.90, 0.50] -> (0.0, -218.5) with velocity of 250.00 pixels per second, and then hold for 0.2 seconds 
+    t =    34.39s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    34.43s     Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    34.94s     Check for interrupting elements affecting "Taste Buddy" Application
+    t =    35.35s     Synthesize event
+    t =    35.37s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    35.72s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    36.07s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    36.40s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    36.75s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    38.59s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    38.81s Checking existence of `"archive-segment-unknown" Button`
+    t =    39.43s Find the "archive-segment-unknown" Button
+    t =    39.90s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    40.27s Press Target Application 'com.juneh96.tastebuddy.ios'[0.90, 0.50] for 0.1 seconds, then drag to Target Application 'com.juneh96.tastebuddy.ios'[0.90, 0.50] -> (0.0, -218.5) with velocity of 250.00 pixels per second, and then hold for 0.2 seconds 
+    t =    40.28s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    40.32s     Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    40.79s     Check for interrupting elements affecting "Taste Buddy" Application
+    t =    41.28s     Synthesize event
+    t =    41.29s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    41.60s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    41.93s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    42.31s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    42.64s         Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    44.36s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    44.71s Checking existence of `"archive-segment-unknown" Button`
+    t =    45.27s Find the "archive-segment-unknown" Button
+    t =    45.83s Find the "archive-segment-unknown" Button
+    t =    46.39s Tap "archive-segment-unknown" Button
+    t =    46.39s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    46.43s     Find the "archive-segment-unknown" Button
+    t =    46.90s     Check for interrupting elements affecting "archive-segment-unknown" Button
+    t =    47.32s     Synthesize event
+    t =    47.81s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    47.88s Checking existence of `"필터 해제" Button`
+    t =    48.43s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    49.33s Added attachment named 'home-question-large-03-zero-category'
+    t =    49.35s Tear Down
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test02LargeTypeQuestionAndMetricActionsRemainReachable]' passed (49.730 seconds).
+Test Suite 'HomeTasteQuestionUITests' passed at 2026-09-13 20:03:34.058.
+	 Executed 1 test, with 0 failures (0 unexpected) in 49.730 (49.736) seconds
+Test Suite 'TasteBuddyMemoryUITests.xctest' passed at 2026-09-13 20:03:34.061.
+	 Executed 1 test, with 0 failures (0 unexpected) in 49.730 (49.740) seconds
+Test Suite 'Selected tests' passed at 2026-09-13 20:03:34.063.
+	 Executed 1 test, with 0 failures (0 unexpected) in 49.730 (49.747) seconds
+2026-09-13 20:04:47.615 xcodebuild[10557:4455613] [MT] IDETestOperationsObserverDebug: 131.934 elapsed -- Testing started completed.
+2026-09-13 20:04:47.615 xcodebuild[10557:4455613] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-13 20:04:47.615 xcodebuild[10557:4455613] [MT] IDETestOperationsObserverDebug: 131.934 sec, +131.934 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/sinjunho/Desktop/Taste Buddy/output/graph-style-reuse/track-question-4.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

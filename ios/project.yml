@@ -96,6 +96,7 @@ targets:
           UIColorName: LaunchBackground
         TBBackendEnvironment: $(TB_BACKEND_ENVIRONMENT)
         TBChatGPTEntryURL: $(TB_CHATGPT_ENTRY_URL)
+        TBChatGPTExportVersion: $(TB_CHATGPT_EXPORT_VERSION)
         TBAuthRedirectURL: $(TB_AUTH_REDIRECT_URL)
         TBGoogleMapsAPIKey: $(TB_GOOGLE_MAPS_API_KEY)
         TBInstagramFacebookAppID: $(TB_INSTAGRAM_FACEBOOK_APP_ID)
@@ -144,6 +145,22 @@ targets:
         PRODUCT_NAME: TasteBuddyTests
         SWIFT_VERSION: "5.10"
 
+  TasteBuddyMemoryUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: TasteBuddyMemoryUITests
+    dependencies:
+      - target: TasteBuddy
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.tastebuddy.ios.memoryuitests
+        PRODUCT_NAME: TasteBuddyMemoryUITests
+        TEST_TARGET_NAME: TasteBuddy
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: U7QNRP437U
+
 schemes:
   TasteBuddy:
     build:
@@ -154,3 +171,12 @@ schemes:
     test:
       targets:
         - TasteBuddyTests
+  TasteBuddyMemoryQA:
+    build:
+      targets:
+        TasteBuddy: all
+        TasteBuddyMemoryUITests:
+          - test
+    test:
+      targets:
+        - TasteBuddyMemoryUITests

@@ -1,0 +1,260 @@
+--- before/Components/SystemParityComponents.swift
++++ after/Components/SystemParityComponents.swift
+@@ -1032,6 +1032,29 @@
+ 
+     static func visibleValues(_ values: [Double]) -> [Double] {
+         Array(values.suffix(maximumPointCount))
++    }
++}
++
++/// 홈의 기존 캡슐 막대와 끝점을 공유한다. 작은 값도 실제 높이 안에서만 그린다.
++struct TasteChartBarMark: View {
++    let axis: TasteAxis
++    var showsEndpoint = false
++
++    var body: some View {
++        GeometryReader { geometry in
++            let diameter = min(geometry.size.width, geometry.size.height)
++            if diameter > 0 {
++                ZStack(alignment: .top) {
++                    Capsule().fill(axis.tintSoftBorderColor)
++                    if showsEndpoint {
++                        Circle().fill(axis.mainColor)
++                            .frame(width: diameter, height: diameter)
++                    }
++                }
++                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
++            }
++        }
++        .accessibilityHidden(true)
+     }
+ }
+ 
+--- before/Features/Analysis/TasteIntensityLikingMatrixView.swift
++++ after/Features/Analysis/TasteIntensityLikingMatrixView.swift
+@@ -8,6 +8,7 @@
+     @State private var selected: TasteIntensityLikingMatrix.Cell?
+     private var matrix: TasteIntensityLikingMatrix { .build(observations: observations, attribute: attribute, reference: reference,
+         unresolved: unresolved, catalog: SensoryAnalysisEngine.contract?.selectionCatalog) }
++    private var axis: TasteAxis? { TastePerceptionEngine.axis(for: attribute) }
+ 
+     var body: some View {
+         TBPageSection(title: "강도와 호감", titleSize: .medium) {
+@@ -24,9 +25,22 @@
+                                 Text(PersonalTasteInsightPresentation.likingLabel(liking)).font(TBFont.regular(11))
+                                 ForEach(matrix.cells.filter { $0.liking == liking }) { cell in
+                                     Button { selected = cell } label: {
+-                                        Text("\(cell.entryIDs.count)").font(TBFont.semibold(15))
+-                                            .frame(maxWidth: .infinity, minHeight: 44)
+-                                            .background(TBColor.mutedSurface, in: RoundedRectangle(cornerRadius: TBRadius.row))
++                                        HStack(spacing: TBSpacing.x4) {
++                                            if !cell.entryIDs.isEmpty {
++                                                Circle().fill(axis?.mainColor ?? TBColor.textSecondary)
++                                                    .frame(width: 6, height: 6)
++                                            }
++                                            Text("\(cell.entryIDs.count)")
++                                                .font(cell.entryIDs.isEmpty ? TBFont.regular(15) : TBFont.semibold(15))
++                                        }
++                                        .foregroundStyle(cell.entryIDs.isEmpty ? TBColor.textHint : (axis?.tintTextColor ?? TBColor.textPrimary))
++                                        .frame(maxWidth: .infinity, minHeight: 44)
++                                        .background(cell.entryIDs.isEmpty ? TBColor.mutedSurface : (axis?.tintColor ?? TBColor.mutedSurface),
++                                                    in: RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
++                                        .overlay {
++                                            RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
++                                                .strokeBorder(cell.entryIDs.isEmpty ? .clear : (axis?.tintSoftBorderColor ?? TBColor.borderSubtle), lineWidth: 1)
++                                        }
+                                     }.buttonStyle(.plain)
+                                         .accessibilityIdentifier("taste-matrix-\(cell.id)")
+                                         .accessibilityLabel("\(TastePerceptionEngine.levelLabels[TasteIntensityLikingMatrix.levels.firstIndex(of: cell.intensity)!]), \(PersonalTasteInsightPresentation.likingLabel(liking)), 음식 경험 \(cell.entryIDs.count)개, 독립 식사 \(cell.mealIDs.count)회")
+--- before/Features/Home/HomeArchiveVisualizationViews.swift
++++ after/Features/Home/HomeArchiveVisualizationViews.swift
+@@ -2,6 +2,7 @@
+ 
+ struct HomeArchiveChartView: View {
+     let chart: HomeArchiveChart
++    let axis: TasteAxis
+     var compact = true
+     var onSelect: ((String) -> Void)? = nil
+ 
+@@ -10,15 +11,7 @@
+             if chart.segments.isEmpty {
+                 Text("—").font(TBFont.medium(16)).foregroundStyle(TBColor.textHint)
+             } else if chart.kind == .composition {
+-                GeometryReader { geometry in
+-                    HStack(spacing: 0) {
+-                        ForEach(Array(chart.segments.enumerated()), id: \.element.id) { index, segment in
+-                            Rectangle().fill(index == 0 ? TBColor.textSecondary : TBColor.textHint)
+-                                .frame(width: geometry.size.width * HomeArchiveChart.heightFraction(segment.count, maximum: chart.total))
+-                                .onTapGesture { onSelect?(segment.id) }
+-                        }
+-                    }
+-                }.frame(height: 12).clipShape(Capsule())
++                composition
+             } else if !compact && chart.segments.count > 12 {
+                 ScrollView(.horizontal) {
+                     bars.frame(width: CGFloat(chart.segments.count) * 44)
+@@ -37,12 +30,49 @@
+             Text(chart.period).font(TBFont.regular(10)).foregroundStyle(TBColor.textHint)
+                 .fixedSize(horizontal: false, vertical: true)
+             if compact {
+-                Text(chart.kind == .composition ? chart.segments.map { "\($0.label) \($0.count)" }.joined(separator: " / ") : "0 기준 · 단위 \(chart.unit)")
+-                    .font(TBFont.regular(10)).foregroundStyle(TBColor.textSecondary).fixedSize(horizontal: false, vertical: true)
++                if chart.kind == .composition {
++                    VStack(alignment: .leading, spacing: TBSpacing.x4) {
++                        ForEach(Array(chart.segments.enumerated()), id: \.element.id) { index, segment in
++                            HStack(alignment: .firstTextBaseline, spacing: TBSpacing.x4) {
++                                Circle().fill(compositionColor(index))
++                                    .frame(width: 6, height: 6)
++                                Text("\(segment.label) \(segment.count)\(chart.unit)")
++                                    .fixedSize(horizontal: false, vertical: true)
++                            }
++                        }
++                    }.font(TBFont.regular(10)).foregroundStyle(TBColor.textSecondary)
++                } else {
++                    Text("0 기준 · 단위 \(chart.unit)")
++                        .font(TBFont.regular(10)).foregroundStyle(TBColor.textSecondary)
++                        .fixedSize(horizontal: false, vertical: true)
++                }
+             }
+         }
+         .accessibilityElement(children: .ignore)
+         .accessibilityLabel(chart.summary)
++    }
++
++    private var composition: some View {
++        GeometryReader { geometry in
++            HStack(spacing: 0) {
++                ForEach(Array(chart.segments.enumerated()), id: \.element.id) { index, segment in
++                    Rectangle().fill(compositionColor(index))
++                        .frame(width: geometry.size.width * HomeArchiveChart.heightFraction(segment.count, maximum: chart.total))
++                        .overlay(alignment: .leading) {
++                            if index > 0 && segment.count > 0 && chart.segments.prefix(index).contains(where: { $0.count > 0 }) {
++                                Rectangle().fill(TBColor.surface).frame(width: 1)
++                            }
++                        }
++                        .onTapGesture { onSelect?(segment.id) }
++                }
++            }.clipShape(Capsule())
++        }
++        .frame(height: TasteLineChartMetrics.trackLineWidth)
++        .tasteBloomChartReveal()
++    }
++
++    private func compositionColor(_ index: Int) -> Color {
++        index == 0 ? axis.tintSoftBorderColor : axis.mainColor
+     }
+ 
+     private var bars: some View {
+@@ -54,14 +84,21 @@
+                     VStack(spacing: 4) {
+                         if !compact { Text("\(segment.count)").font(TBFont.medium(11)).fixedSize() }
+                         GeometryReader { geometry in
+-                            Rectangle().fill(TBColor.textSecondary)
+-                                .frame(height: geometry.size.height * HomeArchiveChart.heightFraction(segment.count, maximum: maximum))
+-                                .frame(maxHeight: .infinity, alignment: .bottom)
++                            TasteChartBarMark(
++                                axis: axis,
++                                showsEndpoint: chart.kind == .distribution || segment.id == chart.segments.last?.id
++                            )
++                            .frame(
++                                width: min(geometry.size.width, compact ? TasteLineChartMetrics.trackLineWidth : TasteRadarContract.nodeRadius * 2),
++                                height: geometry.size.height * HomeArchiveChart.heightFraction(segment.count, maximum: maximum)
++                            )
++                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                         }.frame(height: compact ? 32 : 72)
+                     }.frame(maxWidth: .infinity).contentShape(Rectangle())
+                         .onTapGesture { onSelect?(segment.id) }
+                 }
+             }.overlay(alignment: .bottom) { Rectangle().fill(TBColor.borderSubtle).frame(height: 1) }
++                .tasteBloomChartReveal(from: .bottom)
+             if !compact {
+                 HStack(alignment: .top, spacing: 8) {
+                     ForEach(chart.segments) { segment in
+@@ -99,7 +136,7 @@
+                         if appModel.sensoryAnalysisIsUpdating && metricID == "overall" {
+                             ProgressView("현재 평가를 갱신하고 있어요")
+                         } else {
+-                            HomeArchiveChartView(chart: chart, compact: false) { segmentID = $0 }
++                            HomeArchiveChartView(chart: chart, axis: metric.data.accentAxis ?? metric.data.kind.cardAxis, compact: false) { segmentID = $0 }
+                             ForEach(chart.segments + chart.supplements) { segment in
+                                 Button { segmentID = segment.id } label: {
+                                     HStack {
+--- before/Features/Home/HomePeriodInsightComponents.swift
++++ after/Features/Home/HomePeriodInsightComponents.swift
+@@ -58,7 +58,8 @@
+             .layoutPriority(1)
+ 
+             if let chart = data.archiveChart {
+-                HomeArchiveChartView(chart: chart).frame(width: dynamicTypeSize.isAccessibilitySize ? nil : 132)
++                HomeArchiveChartView(chart: chart, axis: indicatorAxis)
++                    .frame(width: dynamicTypeSize.isAccessibilitySize ? nil : 132)
+             } else if !data.chartValues.isEmpty {
+                 HomePeriodInsightSparkBars(
+                     values: data.chartValues,
+@@ -89,16 +90,8 @@
+     let values: [Double]
+     let axis: TasteAxis
+ 
+-    private var minimum: Double {
+-        values.min() ?? 0
+-    }
+-
+     private var maximum: Double {
+         values.max() ?? 1
+-    }
+-
+-    private var range: Double {
+-        max(maximum - minimum, 1)
+     }
+ 
+     var body: some View {
+@@ -108,24 +101,8 @@
+                     GeometryReader { barProxy in
+                         let thickness = barProxy.size.width
+ 
+-                        ZStack(alignment: .top) {
+-                            Capsule()
+-                                .fill(axis.tintSoftBorderColor)
+-                                .frame(
+-                                    width: thickness,
+-                                    height: barHeight(
+-                                        for: value,
+-                                        in: proxy.size.height,
+-                                        thickness: thickness
+-                                    )
+-                                )
+-
+-                            if value > 0 && index == values.indices.last {
+-                                Circle()
+-                                    .fill(axis.mainColor)
+-                                    .frame(width: thickness, height: thickness)
+-                            }
+-                        }
++                        TasteChartBarMark(axis: axis, showsEndpoint: index == values.indices.last)
++                        .frame(width: thickness, height: barHeight(for: value, in: proxy.size.height))
+                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                     }
+                     .frame(maxWidth: .infinity)
+@@ -144,11 +121,9 @@
+ 
+     private func barHeight(
+         for value: Double,
+-        in height: CGFloat,
+-        thickness: CGFloat
++        in height: CGFloat
+     ) -> CGFloat {
+-        let maximumHeight = max(height, thickness)
+-        return normalizedValue(value) * maximumHeight
++        normalizedValue(value) * height
+     }
+ }
+ 
+@@ -172,7 +147,7 @@
+     }
+ }
+ 
+-private extension HomePeriodInsightKind {
++extension HomePeriodInsightKind {
+     /// Keep the fallback palette stable so a card does not change identity
+     /// when its content changes. An explicit mapping also follows the
+     /// existing home-summary axis language.

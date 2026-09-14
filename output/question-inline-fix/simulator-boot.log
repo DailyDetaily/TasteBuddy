@@ -1,0 +1,70 @@
+Monitoring boot status for Taste Buddy Memory QA 20260913 (54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4).
+[2026-09-13 11:36:16 +0000] Status=1, isTerminal=NO, Elapsed=00:02.
+	Waiting on BackBoard
+
+[2026-09-13 11:36:20 +0000] Status=4, isTerminal=NO, Elapsed=00:06.
+	Waiting on System App
+
+[2026-09-13 11:36:20 +0000] Status=4, isTerminal=NO, Elapsed=00:06.
+	Waiting on System App
+
+[2026-09-13 11:36:21 +0000] Status=4, isTerminal=NO, Elapsed=00:07.
+	Waiting on System App
+
+[2026-09-13 11:36:21 +0000] Status=4, isTerminal=NO, Elapsed=00:07.
+	Waiting on System App
+
+[2026-09-13 11:36:22 +0000] Status=4, isTerminal=NO, Elapsed=00:08.
+	Waiting on System App
+
+[2026-09-13 11:36:23 +0000] Status=4, isTerminal=NO, Elapsed=00:09.
+	Waiting on System App
+
+[2026-09-13 11:36:24 +0000] Status=4, isTerminal=NO, Elapsed=00:10.
+	Waiting on System App
+
+[2026-09-13 11:36:25 +0000] Status=4, isTerminal=NO, Elapsed=00:11.
+	Waiting on System App
+
+[2026-09-13 11:36:26 +0000] Status=4, isTerminal=NO, Elapsed=00:12.
+	Waiting on System App
+
+[2026-09-13 11:36:27 +0000] Status=4, isTerminal=NO, Elapsed=00:13.
+	Waiting on System App
+
+[2026-09-13 11:36:28 +0000] Status=4, isTerminal=NO, Elapsed=00:14.
+	Waiting on System App
+
+[2026-09-13 11:36:29 +0000] Status=4, isTerminal=NO, Elapsed=00:15.
+	Waiting on System App
+
+[2026-09-13 11:36:30 +0000] Status=4, isTerminal=NO, Elapsed=00:16.
+	Waiting on System App
+
+[2026-09-13 11:36:31 +0000] Status=4, isTerminal=NO, Elapsed=00:17.
+	Waiting on System App
+
+[2026-09-13 11:36:32 +0000] Status=4, isTerminal=NO, Elapsed=00:18.
+	Waiting on System App
+
+[2026-09-13 11:36:33 +0000] Status=4, isTerminal=NO, Elapsed=00:19.
+	Waiting on System App
+
+[2026-09-13 11:36:34 +0000] Status=4, isTerminal=NO, Elapsed=00:20.
+	Waiting on System App
+
+[2026-09-13 11:36:35 +0000] Status=4, isTerminal=NO, Elapsed=00:21.
+	Waiting on System App
+
+[2026-09-13 11:36:36 +0000] Status=4, isTerminal=NO, Elapsed=00:22.
+	Waiting on System App
+
+[2026-09-13 11:36:37 +0000] Status=4, isTerminal=NO, Elapsed=00:23.
+	Waiting on System App
+
+[2026-09-13 11:36:38 +0000] Status=4, isTerminal=NO, Elapsed=00:24.
+	Waiting on System App
+
+[2026-09-13 11:36:39 +0000] Status=4294967295, isTerminal=YES, Elapsed=00:25.
+	Finished
+

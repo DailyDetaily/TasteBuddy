@@ -1,0 +1,103 @@
+XCTAssertEqual failed: ("{
+    date = 721692800;
+    detailTagIDs =     (
+    );
+    dishKindIDs =     (
+    );
+    feedbackStatus = completed;
+    id = "62A7879A-E01B-4FC0-89D9-8EF30BE7784B";
+    mealID = "62A7879A-E01B-4FC0-89D9-8EF30BE7784B";
+    memoryCorrections =     (
+                {
+            after =             {
+                overallEvaluation =                 {
+                    phase = unspecified;
+                    questionID = "overall_liking";
+                    questionLabelSnapshot = "\Uc774 \Uc74c\Uc2dd\Uc740 \Uc804\Uccb4\Uc801\Uc73c\Ub85c \Uc5b4\Ub560\Ub098\Uc694?";
+                    questionVersion = "dining-overall-liking/1";
+                    responseLabelSnapshot = "\Ub9ce\Uc774 \Uc544\Uc26c\Uc6e0\Uc5b4\Uc694";
+                    responseValue = veryDisliked;
+                    target = "whole_dish";
+                };
+            };
+            before =             {
+                overallEvaluation =                 {
+                    phase = unspecified;
+                    questionID = "overall_liking";
+                    questionLabelSnapshot = "\Uc774 \Uc74c\Uc2dd\Uc740 \Uc804\Uccb4\Uc801\Uc73c\Ub85c \Uc5b4\Ub560\Ub098\Uc694?";
+                    questionVersion = "dining-overall-liking/1";
+                    responseLabelSnapshot = "\Uc88b\Uc558\Uc5b4\Uc694";
+                    responseValue = liked;
+                    target = "whole_dish";
+                };
+            };
+            changedAt = 821692860;
+            id = "68F6B12B-D5B2-4A0B-B007-FA00E851E153";
+            revision = 1;
+        }
+    );
+    memoryRevision = 1;
+    menu = "\Uae30\Ub85d\Ud55c \Uc74c\Uc2dd";
+    note = "";
+    observedAt = 721692800;
+    overallEvaluation =     {
+        phase = unspecified;
+        questionID = "overall_liking";
+        questionLabelSnapshot = "\Uc774 \Uc74c\Uc2dd\Uc740 \Uc804\Uccb4\Uc801\Uc73c\Ub85c \Uc5b4\Ub560\Ub098\Uc694?";
+        questionVersion = "dining-overall-liking/1";
+        responseLabelSnapshot = "\Ub9ce\Uc774 \Uc544\Uc26c\Uc6e0\Uc5b4\Uc694";
+        responseValue = veryDisliked;
+        target = "whole_dish";
+    };
+    rating = 5;
+    restaurant = "\Uae30\Ub85d\Ud55c \Uc2dd\Ub2f9";
+    sensorySelections =     (
+                {
+            catalogVersion = "dining-sensory-selection/1";
+            id = "sour-fresh";
+            labelSnapshot = "\Uc0b0\Ub73b\Ud55c \Uc0b0\Ubbf8";
+            liking = disliked;
+            phase = unspecified;
+            target = unspecified;
+            type = bubble;
+        }
+    );
+    tasteExperienceIDs =     (
+    );
+}") is not equal to ("{
+    date = 721692800;
+    detailTagIDs =     (
+    );
+    dishKindIDs =     (
+    );
+    feedbackStatus = completed;
+    id = "62A7879A-E01B-4FC0-89D9-8EF30BE7784B";
+    mealID = "62A7879A-E01B-4FC0-89D9-8EF30BE7784B";
+    menu = "\Uae30\Ub85d\Ud55c \Uc74c\Uc2dd";
+    note = "";
+    observedAt = 721692800;
+    overallEvaluation =     {
+        phase = unspecified;
+        questionID = "overall_liking";
+        questionLabelSnapshot = "\Uc774 \Uc74c\Uc2dd\Uc740 \Uc804\Uccb4\Uc801\Uc73c\Ub85c \Uc5b4\Ub560\Ub098\Uc694?";
+        questionVersion = "dining-overall-liking/1";
+        responseLabelSnapshot = "\Ub9ce\Uc774 \Uc544\Uc26c\Uc6e0\Uc5b4\Uc694";
+        responseValue = veryDisliked;
+        target = "whole_dish";
+    };
+    rating = 5;
+    restaurant = "\Uae30\Ub85d\Ud55c \Uc2dd\Ub2f9";
+    sensorySelections =     (
+                {
+            catalogVersion = "dining-sensory-selection/1";
+            id = "sour-fresh";
+            labelSnapshot = "\Uc0b0\Ub73b\Ud55c \Uc0b0\Ubbf8";
+            liking = disliked;
+            phase = unspecified;
+            target = unspecified;
+            type = bubble;
+        }
+    );
+    tasteExperienceIDs =     (
+    );
+}")

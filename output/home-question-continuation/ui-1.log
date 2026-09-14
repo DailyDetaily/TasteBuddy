@@ -1,0 +1,112 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project ios/TasteBuddy.xcodeproj -scheme TasteBuddyMemoryQA -destination "platform=iOS Simulator,id=54C3F98C-6BD5-47E0-98E5-DC9C1FCC40C4" -derivedDataPath /tmp/TasteBuddyHomeQuestionsQA -resultBundlePath output/home-question-continuation/ui-1.xcresult -jobs 4 -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO "-only-testing:TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test04HomeShowsEveryRemainingQuestionWithoutMenuBatch" "-only-testing:TasteBuddyMemoryUITests/HomeTasteQuestionUITests/test07HomeShowsAllThenLeavesQuestionAreaEmptyWhenFinished"
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  VariableBlur: https://github.com/nikstar/VariableBlur @ main (5073a0d)
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.6.0
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.4.0
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.7.1
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  Supabase: https://github.com/supabase/supabase-swift.git @ 2.46.0
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.5.0
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.9.0
+  ProgressiveBlurHeader: https://github.com/dominikmartn/ProgressiveBlurHeader @ main (0e8c29b)
+
+Writing result bundle at path:
+	/Users/sinjunho/Desktop/Taste Buddy/output/home-question-continuation/ui-1.xcresult
+
+2026-09-14 14:00:37.767783+0900 TasteBuddyMemoryUITests-Runner[22670:343227] [Default] Running tests...
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-09-14 14:00:44.034.
+Test Suite 'TasteBuddyMemoryUITests.xctest' started at 2026-09-14 14:00:44.036.
+Test Suite 'HomeTasteQuestionUITests' started at 2026-09-14 14:00:44.037.
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test04HomeShowsEveryRemainingQuestionWithoutMenuBatch]' started.
+    t =     0.00s Start Test at 2026-09-14 14:00:44.042
+    t =     0.74s Set Up
+    t =     0.76s Open com.juneh96.tastebuddy.ios
+    t =     0.76s     Launch com.juneh96.tastebuddy.ios
+2026-09-14 14:00:45.520 xcodebuild[22347:342547] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-09-14 14:00:45.520 xcodebuild[22347:342547] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     4.17s         Setting up automation session
+    t =     6.55s         Wait for com.juneh96.tastebuddy.ios to idle
+    t =    10.18s Waiting 120.0s for "taste-question-toggle" Button to exist
+    t =    11.20s     Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-toggle" Button`
+    t =    11.20s         Checking existence of `"taste-question-toggle" Button`
+    t =    11.95s Get number of matches for: Elements matching predicate '"taste-question-toggle" IN identifiers'
+    t =    12.15s Checking existence of `"taste-question-stack-toggle" Button`
+    t =    12.34s Checking existence of `"taste-questions-see-all" Button`
+    t =    12.50s Checking existence of `"다른 확인할 기록 보기" Button`
+    t =    12.67s Checking existence of `StaticText (First Match)`
+    t =    13.06s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    13.53s Added attachment named 'home-all-remaining-questions'
+    t =    13.53s Tear Down
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test04HomeShowsEveryRemainingQuestionWithoutMenuBatch]' passed (13.937 seconds).
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test07HomeShowsAllThenLeavesQuestionAreaEmptyWhenFinished]' started.
+    t =     0.00s Start Test at 2026-09-14 14:00:57.979
+    t =     0.12s Set Up
+    t =     0.13s Open com.juneh96.tastebuddy.ios
+    t =     0.13s     Launch com.juneh96.tastebuddy.ios
+    t =     0.13s         Terminate com.juneh96.tastebuddy.ios:22714
+2026-09-14 14:00:59.194 xcodebuild[22347:342547] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-09-14 14:00:59.194 xcodebuild[22347:342547] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.63s         Setting up automation session
+    t =     4.03s         Wait for com.juneh96.tastebuddy.ios to idle
+    t =     7.27s Waiting 120.0s for "taste-question-toggle" Button to exist
+    t =     8.29s     Checking `Expect predicate `existsNoRetry == 1` for object "taste-question-toggle" Button`
+    t =     8.29s         Checking existence of `"taste-question-toggle" Button`
+    t =     8.52s Get number of matches for: Elements matching predicate '"taste-question-toggle" IN identifiers'
+    t =     8.65s Checking existence of `"home-taste-questions" Other`
+    t =     8.77s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =     8.87s Checking existence of `"taste-question-choice-liked" Button`
+    t =     9.00s Find the "taste-question-choice-liked" Button
+    t =     9.25s Find the "taste-question-choice-liked" Button
+    t =     9.43s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =     9.81s Added attachment named 'home-two-remaining-questions'
+    t =     9.82s Tap "taste-question-choice-liked" Button
+    t =     9.82s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =     9.84s     Find the "taste-question-choice-liked" Button
+    t =     9.99s     Check for interrupting elements affecting "taste-question-choice-liked" Button
+    t =    10.12s     Synthesize event
+    t =    10.60s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    10.64s Get number of matches for: Elements matching predicate '"taste-question-toggle" IN identifiers'
+    t =    11.34s Get number of matches for: Elements matching predicate '"taste-question-toggle" IN identifiers'
+    t =    11.49s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    11.60s Checking existence of `"taste-question-choice-medium" Button`
+    t =    11.82s Find the "taste-question-choice-medium" Button
+    t =    12.05s Find the "taste-question-choice-medium" Button
+    t =    12.28s Tap "taste-question-choice-medium" Button
+    t =    12.28s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    12.29s     Find the "taste-question-choice-medium" Button
+    t =    12.45s     Check for interrupting elements affecting "taste-question-choice-medium" Button
+    t =    12.59s     Synthesize event
+    t =    12.93s     Wait for com.juneh96.tastebuddy.ios to idle
+    t =    12.94s Get number of matches for: Elements matching predicate '"taste-question-toggle" IN identifiers'
+    t =    13.07s Checking existence of `"home-taste-questions" Other`
+    t =    13.20s Checking existence of `StaticText (First Match)`
+    t =    13.49s Checking existence of `StaticText (First Match)`
+    t =    13.72s Find the Target Application 'com.juneh96.tastebuddy.ios'
+    t =    14.14s Added attachment named 'home-question-area-empty'
+    t =    14.14s Tear Down
+Test Case '-[TasteBuddyMemoryUITests.HomeTasteQuestionUITests test07HomeShowsAllThenLeavesQuestionAreaEmptyWhenFinished]' passed (14.743 seconds).
+Test Suite 'HomeTasteQuestionUITests' passed at 2026-09-14 14:01:12.722.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 28.680 (28.686) seconds
+Test Suite 'TasteBuddyMemoryUITests.xctest' passed at 2026-09-14 14:01:12.724.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 28.680 (28.688) seconds
+Test Suite 'Selected tests' passed at 2026-09-14 14:01:12.726.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 28.680 (28.692) seconds
+2026-09-14 14:02:12.103 xcodebuild[22347:342547] [MT] IDETestOperationsObserverDebug: 98.568 elapsed -- Testing started completed.
+2026-09-14 14:02:12.103 xcodebuild[22347:342547] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-14 14:02:12.103 xcodebuild[22347:342547] [MT] IDETestOperationsObserverDebug: 98.568 sec, +98.568 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/sinjunho/Desktop/Taste Buddy/output/home-question-continuation/ui-1.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

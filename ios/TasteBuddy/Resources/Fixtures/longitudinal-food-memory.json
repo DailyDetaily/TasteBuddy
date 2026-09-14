@@ -1,0 +1,183 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "mealID": "00000000-0000-4000-8000-000000000101",
+    "restaurant": "A",
+    "menu": "레몬 파스타",
+    "date": 789912000.0,
+    "rating": 4,
+    "note": "맛있었다.",
+    "tasteExperienceIDs": [
+      "sour-citrus"
+    ],
+    "detailTagIDs": [],
+    "dishKindIDs": [
+      "grain_noodle"
+    ],
+    "feedbackStatus": "completed"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "mealID": "00000000-0000-4000-8000-000000000102",
+    "restaurant": "B",
+    "menu": "유자 파스타",
+    "date": 791640000.0,
+    "rating": 4,
+    "note": "메인 미각 시트러스 산미으로 기억에 남은 식후 피드백입니다.",
+    "tasteExperienceIDs": [
+      "sour-citrus"
+    ],
+    "detailTagIDs": [
+      "flow-long-lasting"
+    ],
+    "dishKindIDs": [
+      "grain_noodle"
+    ],
+    "feedbackStatus": "completed"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000003",
+    "mealID": "00000000-0000-4000-8000-000000000103",
+    "restaurant": "A",
+    "menu": "레몬 파스타",
+    "date": 792590400.0,
+    "rating": 3,
+    "note": "오늘 점심에 먹었다. 전체적으로 맛있었지만 산미는 강해서 아쉬웠다.",
+    "tasteExperienceIDs": [
+      "sour-sharp"
+    ],
+    "detailTagIDs": [
+      "balance-intensity-high"
+    ],
+    "dishKindIDs": [
+      "grain_noodle"
+    ],
+    "feedbackStatus": "completed"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000004",
+    "mealID": "00000000-0000-4000-8000-000000000104",
+    "restaurant": "A",
+    "menu": "레몬 파스타",
+    "date": 800280000.0,
+    "rating": 3,
+    "note": "오늘 점심에 먹었다. 산미가 강해서 좋았다. 전체적으로도 맛있었다.",
+    "tasteExperienceIDs": [
+      "sour-sharp"
+    ],
+    "detailTagIDs": [
+      "balance-intensity-high"
+    ],
+    "dishKindIDs": [
+      "grain_noodle"
+    ],
+    "feedbackStatus": "completed"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000005",
+    "mealID": "00000000-0000-4000-8000-000000000105",
+    "restaurant": "C",
+    "menu": "토마토 파스타",
+    "date": 802958400.0,
+    "rating": 4,
+    "note": "작년에 먹은 사진을 보고 적는다. 맛있었던 것 같지만 날짜와 이유는 기억나지 않는다.",
+    "tasteExperienceIDs": [
+      "sour-citrus"
+    ],
+    "detailTagIDs": [],
+    "dishKindIDs": [
+      "grain_noodle"
+    ],
+    "feedbackStatus": "completed",
+    "reflectionPhotoFilename": "synthetic-photo-presence-only.jpg"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000006",
+    "mealID": "00000000-0000-4000-8000-000000000106",
+    "restaurant": "D",
+    "menu": "해산물 파스타",
+    "date": 803649600.0,
+    "rating": 4,
+    "note": "메인 미각 육수의 짠맛으로 기억에 남은 식후 피드백입니다.",
+    "tasteExperienceIDs": [
+      "salty-broth-salt"
+    ],
+    "detailTagIDs": [],
+    "dishKindIDs": [
+      "grain_noodle",
+      "seafood"
+    ],
+    "feedbackStatus": "completed",
+    "tbaAnalysisSnapshot": {
+      "summary": "해산물 파스타는 감칠맛 반응이 먼저 맑게 올라왔고, 깔끔한 마무리가 뒤를 정리해줘서 좋았어요.",
+      "confidence": 0.5,
+      "detailTags": [],
+      "foodKnowledgeMatchIds": [],
+      "foodOnMatchIds": [],
+      "generatedAt": "2026-06-20T12:00:00Z",
+      "lexiconCandidateIds": [],
+      "source": "synthetic-generated-interpretation",
+      "subject": "해산물 파스타",
+      "tasteBubbles": [],
+      "tbaSignalIds": [],
+      "version": "synthetic-test"
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000007",
+    "mealID": "00000000-0000-4000-8000-000000000107",
+    "restaurant": "E",
+    "menu": "세비체",
+    "date": 804600000.0,
+    "rating": 3,
+    "note": "산미가 또렷했다. 전체적으로 별로였다.",
+    "tasteExperienceIDs": [
+      "sour-sharp"
+    ],
+    "detailTagIDs": [
+      "aroma-seafood"
+    ],
+    "dishKindIDs": [
+      "seafood"
+    ],
+    "feedbackStatus": "completed"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000008",
+    "mealID": "00000000-0000-4000-8000-000000000108",
+    "restaurant": "F",
+    "menu": "크림 파스타",
+    "date": 805377600.0,
+    "rating": 3,
+    "note": "오늘 저녁 코스 마지막에 먹었다. 이미 배가 불렀고, 소스가 오래 남아 부담스러웠다.",
+    "tasteExperienceIDs": [
+      "fat-coating"
+    ],
+    "detailTagIDs": [
+      "texture-coating"
+    ],
+    "dishKindIDs": [
+      "grain_noodle"
+    ],
+    "feedbackStatus": "completed"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000009",
+    "mealID": "00000000-0000-4000-8000-000000000109",
+    "restaurant": "F",
+    "menu": "크림 파스타",
+    "date": 807278400.0,
+    "rating": 3,
+    "note": "오늘은 배고픈 점심이었다. 소스가 오래 남았지만 고소해서 좋았다.",
+    "tasteExperienceIDs": [
+      "fat-coating"
+    ],
+    "detailTagIDs": [
+      "texture-coating"
+    ],
+    "dishKindIDs": [
+      "grain_noodle"
+    ],
+    "feedbackStatus": "completed"
+  }
+]

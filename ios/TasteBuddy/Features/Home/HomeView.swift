@@ -216,10 +216,7 @@ struct HomeView: View {
         )
 
         HomeArchiveMetricsSection(
-            sections: HomeArchiveMetricsEngine.sections(
-                entries: appModel.diningEntries,
-                snapshot: appModel.sensoryAnalysis
-            )
+            sections: appModel.homeArchivePresentation?.sections ?? []
         )
 
         TBPageSection(title: "최근 기록") {
@@ -253,7 +250,7 @@ struct HomeView: View {
     private func personalTasteQuestionFeedback(
         _ context: PersonalTasteQuestionResponseContext
     ) -> some View {
-        if context.selection.intent == "clarification",
+        if context.selection.intent != "exploration",
            let sourceEntryID = context.sourceEntryID,
            let sourceEntry = appModel.diningEntry(id: sourceEntryID) {
             DiningFeedbackSheet(entry: sourceEntry, startMode: .details) { entry in
@@ -287,8 +284,8 @@ struct HomeView: View {
 }
 
 struct HomeSearchCard: View {
-    var placeholder = "레스토랑, 메뉴, 셰프, 버디 검색"
-    var accessibilityLabel = "레스토랑, 메뉴, 셰프, 버디 검색"
+    var placeholder = "내 음식 기록, 식당, 메뉴 검색"
+    var accessibilityLabel = "내 음식 기록, 식당, 메뉴 검색"
     let action: () -> Void
 
     var body: some View {
@@ -390,6 +387,8 @@ struct HomeSearchSheet: View {
     @State private var friendResults: [HomeSearchResultItem] = []
     @State private var kakaoPhase: HomeSearchAsyncPhase = .idle
     @State private var friendPhase: HomeSearchAsyncPhase = .idle
+    @State private var searchesPersonalMemory = true
+    @State private var pendingPersonalQuery: String?
     private let repository: any HomeSearchRepository
     private let placeholder: String
     private let scope: HomeSearchScope
@@ -421,12 +420,34 @@ struct HomeSearchSheet: View {
 
     var body: some View {
         SearchOverlayShell(
-            placeholder: placeholder,
+            placeholder: scope.allowsRestaurantResults && searchesPersonalMemory ? "내 기록 · 음식 이름, 식당, 회고 검색" : placeholder,
             query: $query,
             onSubmit: submitSearch,
             onClose: closeSearch
         ) {
-            ZStack(alignment: .topLeading) {
+            VStack(alignment: .leading, spacing: TBSpacing.x16) {
+                if scope.allowsRestaurantResults {
+                    Picker("검색 범위", selection: $searchesPersonalMemory) {
+                        Text("내 기록").tag(true)
+                        Text("공개 장소·버디").tag(false)
+                    }.pickerStyle(.segmented)
+                        .onChange(of: searchesPersonalMemory) { _, _ in
+                            query = pendingPersonalQuery ?? ""
+                            pendingPersonalQuery = nil
+                            resetRemoteSearch()
+                        }
+                }
+                if scope.allowsRestaurantResults && searchesPersonalMemory {
+                    FoodMemoryResultsView(query: query)
+                } else if scope.allowsRestaurantResults && FoodMemoryPrivacy.isPersonalQuery(query) {
+                    Text("개인 경험을 찾는 문장이에요. ‘내 기록’에서 검색해 주세요. 외부로 전송하지 않았어요.")
+                        .font(TBFont.regular(14)).foregroundStyle(TBColor.textSecondary)
+                    Button("내 기록에서 찾기") {
+                        pendingPersonalQuery = query
+                        searchesPersonalMemory = true
+                    }
+                } else {
+                ZStack(alignment: .topLeading) {
                 if trimmedQuery.isEmpty {
                     searchSuggestions
                         .transition(.opacity)
@@ -446,6 +467,8 @@ struct HomeSearchSheet: View {
                     searchResults
                         .transition(.opacity)
                 }
+                }
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .tasteBloomMotion(.content, value: trimmedQuery.isEmpty)
@@ -454,9 +477,10 @@ struct HomeSearchSheet: View {
         .sheet(item: $bookmarkTarget) { restaurant in
             RestaurantBookmarkNativeSheet(restaurant: restaurant)
         }
-        .task(id: trimmedQuery) {
+        .task(id: trimmedQuery + "|" + String(searchesPersonalMemory) + appModel.memoryGeneration.uuidString) {
             await refreshRemoteSearch(for: trimmedQuery)
         }
+        .onChange(of: appModel.memoryAccountGeneration) { _, _ in query = ""; resetRemoteSearch() }
     }
 
     private var searchResults: some View {
@@ -618,6 +642,7 @@ struct HomeSearchSheet: View {
     }
 
     private func submitSearch() {
+        guard !(scope.allowsRestaurantResults && searchesPersonalMemory), !FoodMemoryPrivacy.isPersonalQuery(query) else { return }
         guard !trimmedQuery.isEmpty else {
             return
         }
@@ -685,6 +710,9 @@ struct HomeSearchSheet: View {
 
     @MainActor
     private func refreshRemoteSearch(for rawQuery: String) async {
+        guard !(scope.allowsRestaurantResults && searchesPersonalMemory), !FoodMemoryPrivacy.isPersonalQuery(rawQuery) else {
+            resetRemoteSearch(); return
+        }
         let searchQuery = rawQuery.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !searchQuery.isEmpty else {

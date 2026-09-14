@@ -98,12 +98,12 @@ final class HomeArchiveSummaryEngineTests: XCTestCase {
         XCTAssertEqual(Set(HomeInsightTasteDistribution(counts: [0, 0, 0, 0, 1, 0]).dotColorIndices), [4])
     }
 
-    func testEmptyArchiveKeepsNineCardsWithoutInventingEvidence() throws {
+    func testEmptyArchiveKeepsOneRecordCardWithoutRepeatedWaitingCards() throws {
         let result = try cards([])
-        XCTAssertEqual(result.map(\.kind), HomeArchiveCard.Kind.allCases)
-        XCTAssertEqual(Set(result.map(\.id)).count, 9)
+        XCTAssertEqual(result.map(\.kind), [.record])
+        XCTAssertEqual(Set(result.map(\.id)).count, 1)
         XCTAssertTrue(result.allSatisfy { $0.isEmpty && $0.evidenceIDs.isEmpty })
-        XCTAssertEqual(result.map(\.value), ["기록 없음", "반복 없음", "경험 없음", "호감 기록 없음", "감각 기록 없음", "응답 없음", "데이터 대기 중", "데이터 대기 중", "데이터 대기 중"])
+        XCTAssertEqual(result.map(\.value), ["0번의 식사"])
     }
 
     func testArchiveCountsRecordsAndMealsSeparatelyWithoutInventingTaste() throws {
@@ -112,12 +112,12 @@ final class HomeArchiveSummaryEngineTests: XCTestCase {
         let second = entry(mealID: meal, menu: "샐러드", status: .captured, rating: 5)
         let result = try cards([first, first, second])
         XCTAssertEqual(result.filter { !$0.isEmpty }.map(\.kind), [.record, .experience])
-        XCTAssertEqual(result[0].value, "2개 기록")
-        XCTAssertEqual(result[0].detail, "1번의 식사")
+        XCTAssertEqual(result[0].value, "1번의 식사")
+        XCTAssertEqual(result[0].detail, "디시 기록 2개 · 전체 기간")
         XCTAssertEqual(result.first { $0.kind == .experience }?.value, "2개 메뉴")
         XCTAssertTrue(result.allSatisfy { $0.evidenceIDs.isEmpty })
-        XCTAssertEqual(try cards([]).map(\.kind), HomeArchiveCard.Kind.allCases)
-        XCTAssertEqual(try cards([entry(daysAgo: -1)]).first?.value, "기록 없음")
+        XCTAssertEqual(try cards([]).map(\.kind), [.record])
+        XCTAssertEqual(try cards([entry(daysAgo: -1)]).first?.value, "0번의 식사")
     }
 
     func testAllNineCardsUseTBAEvidenceAndStayStableWhenRecordsAreReordered() throws {
@@ -154,32 +154,33 @@ final class HomeArchiveSummaryEngineTests: XCTestCase {
         }
         let result = try cards([presence] + fits)
         XCTAssertNotNil(result.first { $0.kind == .fit })
-        XCTAssertFalse(result.contains { !$0.isEmpty && [.liking, .sensation, .condition, .difference].contains($0.kind) })
-        XCTAssertEqual(result.first { $0.kind == .fit }?.detail, "알맞았어요")
+        XCTAssertFalse(result.contains { !$0.isEmpty && [.liking, .condition, .difference].contains($0.kind) })
+        XCTAssertEqual(result.first { $0.kind == .fit }?.detail, "알맞았어요 3회")
+        XCTAssertEqual(result.first { $0.kind == .sensation }?.detail, "4번의 식사에서 기록")
     }
 
     func testSingleAndConflictingSensoryResponsesDoNotBecomeRepeatedPreference() throws {
         let single = try cards([entry(selection: sour(), overall: .init(response: .disliked))])
-        XCTAssertEqual(single.first { $0.kind == .sensation }?.detail, "첫 단서")
-        XCTAssertEqual(single.first { $0.kind == .condition }?.isEmpty, true)
-        XCTAssertEqual(single.first { $0.kind == .liking }?.isEmpty, true)
+        XCTAssertEqual(single.first { $0.kind == .sensation }?.detail, "좋음 1회 · 아쉬움 0회")
+        XCTAssertNil(single.first { $0.kind == .condition })
+        XCTAssertNil(single.first { $0.kind == .liking })
         let meal = UUID()
         let mixed = try cards([entry(mealID: meal, selection: sour()), entry(mealID: meal, selection: sour(liked: false))])
-        XCTAssertEqual(mixed.first { $0.kind == .sensation }?.detail, "평가가 나뉘어요")
-        XCTAssertEqual(mixed.first { $0.kind == .repeated }?.isEmpty, true)
-        XCTAssertEqual(mixed.first { $0.kind == .condition }?.isEmpty, true)
-        XCTAssertEqual(mixed.first { $0.kind == .difference }?.isEmpty, true)
+        XCTAssertEqual(mixed.first { $0.kind == .sensation }?.detail, "좋음 0회 · 아쉬움 0회 · 평가 나뉨 1회")
+        XCTAssertNil(mixed.first { $0.kind == .repeated })
+        XCTAssertNil(mixed.first { $0.kind == .condition })
+        XCTAssertNil(mixed.first { $0.kind == .difference })
     }
 
     func testRemovingEvidenceReplacesStalePersonalInterpretationsWithPlaceholders() throws {
         let entries = (1..<4).map { entry(daysAgo: $0, selection: sour(), overall: .init(response: .liked)) }
         let snapshot = try SensoryAnalysisEngine.analyze(entries: entries)
         let result = try cards([entries[0]], snapshot: snapshot)
-        XCTAssertEqual(result.first { $0.kind == .sensation }?.isEmpty, true)
-        XCTAssertEqual(result.first { $0.kind == .fit }?.isEmpty, true)
-        XCTAssertEqual(result.first { $0.kind == .condition }?.isEmpty, true)
+        XCTAssertEqual(result.first { $0.kind == .sensation }?.detail, "1번의 식사에서 기록")
+        XCTAssertNil(result.first { $0.kind == .fit })
+        XCTAssertNil(result.first { $0.kind == .condition })
         XCTAssertEqual(result.first { $0.kind == .liking }?.entryIDs, [entries[0].id])
-        XCTAssertEqual(try cards([]).map(\.kind), HomeArchiveCard.Kind.allCases)
+        XCTAssertEqual(try cards([]).map(\.kind), [.record])
     }
 
     func testChangeNeedsIndependentMealsInBothPeriods() throws {
@@ -188,8 +189,8 @@ final class HomeArchiveSummaryEngineTests: XCTestCase {
         let recent = (1..<4).map {
             entry(daysAgo: $0, mealID: recentMeal, selection: .init(id: "umami-clear", type: .bubble, labelSnapshot: "맑은 감칠맛"))
         }
-        XCTAssertEqual(try cards(previous + recent).first { $0.kind == .change }?.isEmpty, true)
-        XCTAssertEqual(try cards(previous).first { $0.kind == .change }?.isEmpty, true)
+        XCTAssertNil(try cards(previous + recent).first { $0.kind == .change })
+        XCTAssertNil(try cards(previous).first { $0.kind == .change })
     }
 }
 
@@ -619,11 +620,24 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
             snapshot: try SensoryAnalysisEngine.analyze(entries: entries), referenceDate: now).flatMap(\.cards)
     }
 
+    private func record(mealID: UUID = UUID(), restaurant: String = "기록 식당",
+                        restaurantID: String? = nil, menu: String = "국물",
+                        menuItemID: String? = nil,
+                        status: DiningEntryFeedbackStatus = .completed,
+                        overall: DiningOverallEvaluation.Response? = nil) -> DiningEntry {
+        DiningEntry(mealID: mealID, restaurant: restaurant, restaurantID: restaurantID,
+                    menu: menu, menuItemID: menuItemID,
+                    observedAt: now.addingTimeInterval(-86_400), savedAt: now.addingTimeInterval(-86_400),
+                    rating: 5, note: "", overallEvaluation: overall.map { DiningOverallEvaluation(response: $0) },
+                    feedbackStatus: status)
+    }
+
     func testEmptyArchiveKeepsAllFixedSlotsWithoutInventingNeutralRatings() throws {
         let cards = try metrics([])
         XCTAssertEqual(cards.map(\.id), ["meals", "menus", "restaurants", "overall"])
-        XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "0회")
-        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "응답 없음")
+        XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "0번")
+        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "아직 평가 없음")
+        XCTAssertTrue(cards.allSatisfy { $0.data.archiveChart?.hasData == false })
         XCTAssertTrue(cards.allSatisfy { $0.evidenceIDs.isEmpty })
     }
 
@@ -632,25 +646,72 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
         let first = entry(mealID: mealID)
         let second = entry(mealID: mealID, status: .captured)
         let cards = try metrics([first, first, second])
-        XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "1회")
-        XCTAssertEqual(cards.first { $0.id == "restaurants" }?.data.detail, "다시 방문한 식당 0곳 · 전체 기간")
-        XCTAssertEqual(cards.first { $0.id == "menus" }?.data.detail, "다시 먹은 메뉴 0가지 · 전체 기간")
-        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "응답 없음", "Legacy rating must not become direct overall feedback")
+        XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "1번의 식사")
+        XCTAssertEqual(cards.first { $0.id == "restaurants" }?.data.detail, "다시 기록한 식당은 아직 없어요\n전체 기간")
+        XCTAssertEqual(cards.first { $0.id == "menus" }?.data.detail, "다시 기록한 메뉴는 아직 없어요\n전체 기간 · 식당별로 구분")
+        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "아직 평가 없음", "Legacy rating must not become direct overall feedback")
         let repeated = try metrics([first, second, entry()])
-        XCTAssertEqual(repeated.first { $0.id == "restaurants" }?.data.detail, "다시 방문한 식당 1곳 · 전체 기간")
-        XCTAssertEqual(repeated.first { $0.id == "menus" }?.data.detail, "다시 먹은 메뉴 1가지 · 전체 기간")
+        XCTAssertEqual(repeated.first { $0.id == "restaurants" }?.data.detail, "다른 식사에서도 다시 기록했어요\n전체 기간")
+        XCTAssertEqual(repeated.first { $0.id == "menus" }?.data.detail, "다른 식사에서도 다시 기록했어요\n전체 기간 · 식당별로 구분")
     }
 
-    func testConflictingMealRatingsStayMixedAndUnfinishedFeedbackIsExcluded() throws {
+    func testThreeDishEntriesInOneMealCountAsOneMealAndThreeDishes() {
+        let mealID = UUID()
+        let entries = [" 파스타", "디저트", "샐러드"].map {
+            record(mealID: mealID, menu: $0.trimmingCharacters(in: .whitespaces))
+        }
+        let cards = HomeArchiveMetricsEngine.sections(entries: entries, snapshot: .empty,
+                                                       referenceDate: now).flatMap(\.cards)
+        XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "1번의 식사")
+        XCTAssertEqual(cards.first { $0.id == "meals" }?.entryIDs.count, 3)
+        XCTAssertTrue(cards.first { $0.id == "meals" }?.data.detail.contains("디시 기록 3개") == true)
+    }
+
+    func testSameMenuDuplicatedInsideOneMealDoesNotBecomeRepeatedMenu() {
+        let mealID = UUID()
+        let entries = [record(mealID: mealID, menu: "파스타"), record(mealID: mealID, menu: "파스타")]
+        let chart = HomeArchiveMetricsEngine.sections(entries: entries, snapshot: .empty,
+            referenceDate: now).flatMap(\.cards).first { $0.id == "menus" }?.data.archiveChart
+        XCTAssertEqual(chart?.total, 1)
+        XCTAssertEqual(chart?.segments.first { $0.id == "repeated" }?.count, 0)
+    }
+
+    func testSameMenuAcrossDifferentMealsBecomesRepeatedMenu() {
+        let entries = [record(menu: "파스타"), record(menu: "파스타")]
+        let chart = HomeArchiveMetricsEngine.sections(entries: entries, snapshot: .empty,
+            referenceDate: now).flatMap(\.cards).first { $0.id == "menus" }?.data.archiveChart
+        XCTAssertEqual(chart?.total, 1)
+        XCTAssertEqual(chart?.segments.first { $0.id == "repeated" }?.count, 1)
+    }
+
+    func testSameMenuNameAtDifferentRestaurantsKeepsSeparateMenuIdentities() {
+        let entries = [record(restaurant: "A", restaurantID: "a", menu: "파스타", menuItemID: "pasta"),
+                       record(restaurant: "B", restaurantID: "b", menu: "파스타", menuItemID: "pasta")]
+        let chart = HomeArchiveMetricsEngine.sections(entries: entries, snapshot: .empty,
+            referenceDate: now).flatMap(\.cards).first { $0.id == "menus" }?.data.archiveChart
+        XCTAssertEqual(chart?.total, 2)
+        XCTAssertEqual(chart?.segments.first { $0.id == "once" }?.count, 2)
+    }
+
+    func testSameRestaurantAcrossDifferentMealsBecomesRevisit() {
+        let entries = [record(restaurant: "A", restaurantID: "a", menu: "파스타"),
+                       record(restaurant: "A", restaurantID: "a", menu: "디저트")]
+        let chart = HomeArchiveMetricsEngine.sections(entries: entries, snapshot: .empty,
+            referenceDate: now).flatMap(\.cards).first { $0.id == "restaurants" }?.data.archiveChart
+        XCTAssertEqual(chart?.total, 1)
+        XCTAssertEqual(chart?.segments.first { $0.id == "repeated" }?.count, 1)
+    }
+
+    func testDifferentFoodsInOneMealKeepSeparateRatingsAndUnfinishedFeedbackIsExcluded() throws {
         let mealID = UUID()
         let positive = entry(mealID: mealID, overall: .liked)
         let negative = entry(mealID: mealID, overall: .disliked)
         let unfinished = entry(status: .captured, overall: .liked)
         let cards = try metrics([positive, negative, unfinished])
         let overall = try XCTUnwrap(cards.first { $0.id == "overall" })
-        XCTAssertEqual(overall.data.title, "1회의 평가")
-        XCTAssertTrue(overall.data.detail.contains("평가 나뉨 1 / 1회"))
-        XCTAssertFalse(overall.entryIDs.contains(unfinished.id))
+        XCTAssertEqual(overall.data.title, "2개의 음식 평가")
+        XCTAssertEqual(overall.data.archiveChart?.segments.map(\.count), [0, 1, 0, 1, 0])
+        XCTAssertFalse(overall.data.archiveChart!.segments.flatMap(\.entryIDs).contains(unfinished.id))
         XCTAssertEqual(cards, try metrics([unfinished, negative, positive]))
     }
 
@@ -665,11 +726,74 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
         let cards = HomeArchiveMetricsEngine.sections(entries: [fitOnly], snapshot: snapshot,
                                                        referenceDate: now).flatMap(\.cards)
         let overall = try XCTUnwrap(cards.first { $0.id == "overall" })
-        XCTAssertEqual(overall.data.title, "1회의 평가")
-        XCTAssertTrue(overall.data.detail.contains("매우 좋음 1"))
+        XCTAssertEqual(overall.data.title, "1개의 음식 평가")
+        XCTAssertEqual(overall.data.archiveChart?.segments.first?.count, 1)
         XCTAssertEqual(Set(snapshot.observations.filter { overall.evidenceIDs.contains($0.id) }.map(\.kind)), ["overall_liking"])
         XCTAssertEqual(cards.count, 4, "감각 응답이 있어도 하단 카드 수를 늘리지 않는다.")
-        XCTAssertEqual(try metrics([entry(liking: .liked)]).first { $0.id == "overall" }?.data.title, "응답 없음")
+        XCTAssertEqual(try metrics([entry(liking: .liked)]).first { $0.id == "overall" }?.data.title, "아직 평가 없음")
+    }
+
+    func testNilOverallEvaluationAndLegacyRatingStayOutsideDistribution() throws {
+        let nilEvaluation = record(menu: "음식 A")
+        let legacyRatingOnly = DiningEntry(restaurant: "기록 식당", menu: "음식 B",
+                                           observedAt: now.addingTimeInterval(-1), rating: 5, note: "")
+        let cards = try metrics([nilEvaluation, legacyRatingOnly])
+        let overall = try XCTUnwrap(cards.first { $0.id == "overall" })
+        XCTAssertEqual(overall.data.title, "아직 평가 없음")
+        XCTAssertEqual(overall.data.archiveChart?.total, 0)
+        XCTAssertTrue(overall.entryIDs.isEmpty)
+    }
+
+    func testCapturedEntryContributesToArchiveButNotCompletedOverallEvaluation() throws {
+        let captured = record(status: .captured, overall: .veryLiked)
+        let cards = try metrics([captured])
+        XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "1번의 식사")
+        XCTAssertEqual(cards.first { $0.id == "menus" }?.data.title, "1가지")
+        XCTAssertEqual(cards.first { $0.id == "restaurants" }?.data.title, "1곳")
+        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "아직 평가 없음")
+    }
+
+    func testMonthlyTimelineIncludesTrueZeroMonths() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(secondsFromGMT: 0))
+        func date(_ month: Int, _ day: Int) -> Date {
+            calendar.date(from: DateComponents(year: 2026, month: month, day: day))!
+        }
+        func confirmed(_ month: Int) -> DiningEntry {
+            var entry = record(menu: "\(month)월 메뉴")
+            entry.mealTime = .init(source: .confirmed, start: date(month, 15), confirmedAt: date(month, 16))
+            return entry
+        }
+        let chart = HomeArchiveVisualizationEngine.timeline(
+            entries: [confirmed(1), confirmed(4)], referenceDate: date(4, 30), calendar: calendar
+        )
+        XCTAssertEqual(chart.period.components(separatedBy: " · ").first, "월별")
+        XCTAssertEqual(chart.segments.map(\.count), [1, 0, 0, 1])
+        XCTAssertEqual(HomeArchiveChart.heightFraction(chart.segments[1].count, maximum: 1), 0)
+    }
+
+    func testEqualTimelineCountsKeepEqualBarFractions() {
+        let fractions = [2, 2, 2].map { HomeArchiveChart.heightFraction($0, maximum: 2) }
+        XCTAssertEqual(fractions, [1, 1, 1])
+    }
+
+    func testFutureAndUncertainMealDatesStayOutsideCurrentTimeline() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(secondsFromGMT: 0))
+        let reference = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 4, day: 30)))
+        var current = record(menu: "현재")
+        current.mealTime = .init(source: .confirmed,
+            start: try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 4, day: 1))), confirmedAt: reference)
+        var future = record(menu: "미래")
+        future.mealTime = .init(source: .confirmed,
+            start: try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 5, day: 1))), confirmedAt: reference)
+        let uncertain = record(menu: "시점 미확인")
+        let chart = HomeArchiveVisualizationEngine.timeline(
+            entries: [current, future, uncertain], referenceDate: reference, calendar: calendar
+        )
+        XCTAssertEqual(chart.total, 1)
+        XCTAssertEqual(chart.supplements.first { $0.id == "future" }?.entryIDs, [future.id])
+        XCTAssertEqual(chart.supplements.first { $0.id == "unknown" }?.entryIDs, [uncertain.id])
     }
 
     func testDeletedFutureAndNotYetKnownEvidenceCannotContribute() throws {
@@ -687,10 +811,10 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
             actualApiCalls: 0, needsMeaningReview: false, limits: [])
         let lateCards = HomeArchiveMetricsEngine.sections(entries: [current], snapshot: lateSnapshot,
                                                            referenceDate: now).flatMap(\.cards)
-        XCTAssertEqual(lateCards.first { $0.id == "overall" }?.data.title, "응답 없음")
+        XCTAssertEqual(lateCards.first { $0.id == "overall" }?.data.title, "아직 평가 없음")
         let cards = HomeArchiveMetricsEngine.sections(entries: [current, future], snapshot: snapshot,
                                                        referenceDate: now).flatMap(\.cards)
-        XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "1회")
+        XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "1번의 식사")
         XCTAssertEqual(cards.first { $0.id == "overall" }?.entryIDs, [current.id])
         XCTAssertTrue(cards.allSatisfy { !$0.entryIDs.contains(removed.id) && !$0.entryIDs.contains(future.id) })
     }
@@ -705,7 +829,7 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
             sourceExperienceCount: 1, actualApiCalls: 0, needsMeaningReview: false, limits: [])
         let cards = HomeArchiveMetricsEngine.sections(entries: [current], snapshot: snapshot,
                                                        referenceDate: now).flatMap(\.cards)
-        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "1회의 평가")
+        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "1개의 음식 평가")
         XCTAssertEqual(cards.first { $0.id == "overall" }?.evidenceIDs, [source.id])
         snapshot.personalModel = PersonalTasteModelBuilder.buildRecords(records: [
             .init(observationId: source.id, userId: "other-owner", experienceId: current.id.uuidString,
@@ -713,7 +837,7 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
         ], userID: "local-owner")
         let excluded = HomeArchiveMetricsEngine.sections(entries: [current], snapshot: snapshot,
                                                           referenceDate: now).flatMap(\.cards)
-        XCTAssertEqual(excluded.first { $0.id == "overall" }?.data.title, "응답 없음")
+        XCTAssertEqual(excluded.first { $0.id == "overall" }?.data.title, "아직 평가 없음")
         XCTAssertTrue(excluded.allSatisfy { !$0.evidenceIDs.contains(source.id) })
     }
 
@@ -733,7 +857,7 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
             sourceExperienceCount: 1, actualApiCalls: 0, needsMeaningReview: false, limits: [])
         let cards = HomeArchiveMetricsEngine.sections(entries: [current], snapshot: snapshot,
                                                        referenceDate: now).flatMap(\.cards)
-        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "응답 없음")
+        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "아직 평가 없음")
         XCTAssertTrue(cards.allSatisfy { $0.evidenceIDs.isEmpty })
     }
 

@@ -188,6 +188,7 @@ struct PersonalTasteInsightDetailSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
         .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
+        .modifier(MemoryRevisionDismissal())
     }
 }
 

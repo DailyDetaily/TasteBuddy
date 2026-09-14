@@ -17,6 +17,7 @@ struct HomeJournalEmptyState: View {
 /// focus of the card.
 struct HomePeriodInsightCard: View {
     let data: HomePeriodInsightCardData
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     var onTap: (() -> Void)? = nil
     var labelOverride: String? = nil
     var detailLineLimit: Int? = 2
@@ -39,7 +40,8 @@ struct HomePeriodInsightCard: View {
     }
 
     private var insightDetails: some View {
-        HStack(alignment: .center, spacing: TBSpacing.x16) {
+        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: TBSpacing.x12)) : AnyLayout(HStackLayout(alignment: .center, spacing: TBSpacing.x16))
+        return layout {
             VStack(alignment: .leading, spacing: TBSpacing.x4) {
                 Text(data.title)
                     .font(TBFont.bold(16))
@@ -55,7 +57,10 @@ struct HomePeriodInsightCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .layoutPriority(1)
 
-            if !data.chartValues.isEmpty {
+            if let chart = data.archiveChart, chart.hasData, chart.kind != .composition {
+                HomeArchiveChartView(chart: chart, axis: indicatorAxis)
+                    .frame(width: dynamicTypeSize.isAccessibilitySize ? nil : 132)
+            } else if !data.chartValues.isEmpty {
                 HomePeriodInsightSparkBars(
                     values: data.chartValues,
                     axis: indicatorAxis
@@ -74,6 +79,7 @@ struct HomePeriodInsightCard: View {
             labelOverride ?? data.kind.label,
             data.title,
             data.detail,
+            data.archiveChart?.summary ?? "",
         ]
         .filter { !$0.isEmpty }
         .joined(separator: ", ")
@@ -84,16 +90,8 @@ private struct HomePeriodInsightSparkBars: View {
     let values: [Double]
     let axis: TasteAxis
 
-    private var minimum: Double {
-        values.min() ?? 0
-    }
-
     private var maximum: Double {
         values.max() ?? 1
-    }
-
-    private var range: Double {
-        max(maximum - minimum, 1)
     }
 
     var body: some View {
@@ -103,24 +101,8 @@ private struct HomePeriodInsightSparkBars: View {
                     GeometryReader { barProxy in
                         let thickness = barProxy.size.width
 
-                        ZStack(alignment: .top) {
-                            Capsule()
-                                .fill(axis.tintSoftBorderColor)
-                                .frame(
-                                    width: thickness,
-                                    height: barHeight(
-                                        for: value,
-                                        in: proxy.size.height,
-                                        thickness: thickness
-                                    )
-                                )
-
-                            if index == values.indices.last {
-                                Circle()
-                                    .fill(axis.mainColor)
-                                    .frame(width: thickness, height: thickness)
-                            }
-                        }
+                        TasteChartBarMark(axis: axis, showsEndpoint: index == values.indices.last)
+                        .frame(width: thickness, height: barHeight(for: value, in: proxy.size.height))
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     }
                     .frame(maxWidth: .infinity)
@@ -134,17 +116,14 @@ private struct HomePeriodInsightSparkBars: View {
     }
 
     private func normalizedValue(_ value: Double) -> CGFloat {
-        CGFloat((value - minimum) / range)
+        maximum > 0 ? CGFloat(max(0, value) / maximum) : 0
     }
 
     private func barHeight(
         for value: Double,
-        in height: CGFloat,
-        thickness: CGFloat
+        in height: CGFloat
     ) -> CGFloat {
-        let maximumHeight = max(height, thickness)
-        return thickness
-            + normalizedValue(value) * (maximumHeight - thickness)
+        normalizedValue(value) * height
     }
 }
 
@@ -168,7 +147,7 @@ struct HomePeriodInsightSection: View {
     }
 }
 
-private extension HomePeriodInsightKind {
+extension HomePeriodInsightKind {
     /// Keep the fallback palette stable so a card does not change identity
     /// when its content changes. An explicit mapping also follows the
     /// existing home-summary axis language.
@@ -237,6 +216,7 @@ private extension HomePeriodInsightKind {
 /// 기존 기간 카드의 레이아웃을 그대로 사용하는 누적 지표 영역.
 struct HomeArchiveMetricsSection: View {
     let sections: [HomeArchiveMetricSection]
+    @State private var selectedMetric: String?
 
     var body: some View {
         ForEach(sections) { section in
@@ -245,6 +225,7 @@ struct HomeArchiveMetricsSection: View {
                     ForEach(section.cards) { card in
                         HomePeriodInsightCard(
                             data: card.data,
+                            onTap: { selectedMetric = card.id },
                             labelOverride: card.label,
                             detailLineLimit: nil
                         )
@@ -252,6 +233,9 @@ struct HomeArchiveMetricsSection: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: Binding(get: { selectedMetric != nil }, set: { if !$0 { selectedMetric = nil } })) {
+            if let selectedMetric { HomeArchiveMetricDetailView(metricID: selectedMetric) }
         }
     }
 }

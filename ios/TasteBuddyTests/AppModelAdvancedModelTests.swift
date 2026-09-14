@@ -108,7 +108,11 @@ final class AppModelAdvancedModelTests: XCTestCase {
         let reopened = AppModel(defaults: defaults, authRepository: FixtureBackendAuthRepository())
         try await waitForAnalysis(reopened)
         XCTAssertFalse(reopened.shouldPresentPersonalTasteQuestion(id: question.id, userID: personal.userID))
-        let nextQuestion = try XCTUnwrap(reopened.sensoryAnalysis.personalModel?.nextSelection)
+        // 현재 미응답 후보와 노출 억제는 별개다. 세 화면은 같은 shouldPresent 정책을 적용한다.
+        XCTAssertTrue(reopened.sensoryAnalysis.personalModel!.availableSelections.contains { $0.id == question.id })
+        let nextQuestion = try XCTUnwrap(reopened.sensoryAnalysis.personalModel?.availableSelections.first {
+            reopened.shouldPresentPersonalTasteQuestion(id: $0.id, userID: personal.userID)
+        })
         XCTAssertNotEqual(nextQuestion.id, question.id)
         XCTAssertEqual(reopened.sensoryAnalysis.observations, original.observations)
         XCTAssertEqual(reopened.sensoryAnalysis.personalModel?.units, original.personalModel?.units)

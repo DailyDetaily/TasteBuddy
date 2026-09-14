@@ -18,6 +18,7 @@ struct ChatGPTAnalysisCard: View {
                     .font(TBFont.semibold(14)).foregroundStyle(TBColor.textPrimary)
                 Text("식사 기록을 바탕으로 내 ChatGPT에서 입맛의 의미를 살펴봐요.")
                     .font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
+                if let receipt = appModel.chatGPTExportReceipt { Text(receipt.label).font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary) }
                 PrimaryButton(title: "AI를 통해 분석") { showsConnection = true }
             }
         }
@@ -52,6 +53,7 @@ struct ChatGPTAnalysisCard: View {
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("닫기") { showsConnection = false } } }
             }
             .task { await loadAccount() }
+            .task { appModel.retryInvalidatedExportRemoval() }
             .sheet(isPresented: $showsAuth, onDismiss: { Task { await loadAccount() } }) {
                 AuthEntrySheet(intent: .linkCurrentProfile, showsDevBypass: false,
                     onContinueAsGuest: { showsAuth = false },
@@ -72,13 +74,12 @@ struct ChatGPTAnalysisCard: View {
     }
 
     private func publishAndOpen(_ account: ChatGPTAnalysisAccount) {
-        let payload = ChatGPTAnalysisExport(snapshot: appModel.sensoryAnalysis)
         isWorking = true
         message = nil
         Task { @MainActor in
             defer { isWorking = false }
             do {
-                try await repository.publish(payload, account: account)
+                try await appModel.publishMemoryExport(account: account)
                 openURL(configuration.entryURL) { accepted in
                     if !accepted { message = "ChatGPT를 열지 못했습니다. 잠시 후 다시 시도해 주세요." }
                 }
@@ -94,7 +95,7 @@ struct ChatGPTAnalysisCard: View {
         Task { @MainActor in
             defer { isWorking = false }
             do {
-                try await repository.removeExport(account: account)
+                try await appModel.removeMemoryExport(account: account)
                 message = "공유한 분석 자료를 삭제했습니다. ChatGPT의 계정 연결은 ChatGPT 설정에서 해제할 수 있어요."
             } catch { message = "자료를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요." }
         }

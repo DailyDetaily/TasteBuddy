@@ -62,6 +62,8 @@ struct SensoryObservation: Identifiable, Equatable, Sendable {
     var restaurantID: String? = nil
     var menuItemID: String? = nil
     var restaurantName: String? = nil
+    var sourceRevision: Int = 0
+    var mealTimeIsConfirmed: Bool? = nil
     var independentMealID: UUID { mealID ?? experienceID }
     /// *.unspecified details preserve a mention; they do not confirm a sensation or liking.
     var isUnclassifiedDetail: Bool { kind == "sensory_detail" && attribute?.hasSuffix(".unspecified") == true }

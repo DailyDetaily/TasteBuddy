@@ -59,6 +59,10 @@ enum TastePerceptionEngine {
     static let minimumMeals = 3
     static let levels = ["weak", "medium", "strong"]
     static let levelLabels = ["약하게", "중간 정도로", "강하게"]
+    static func axis(for attribute: String?) -> TasteAxis? {
+        guard let attribute, attribute.hasPrefix("taste.") else { return nil }
+        return TasteAxis(rawValue: String(attribute.dropFirst(6)))
+    }
     static func targetLabel(_ value: String) -> String {
         ["whole_dish":"음식 전체", "sauce":"소스", "surface":"겉", "inside":"속", "broth":"국물", "noodles":"면", "meat":"고기", "coating":"튀김옷", "skin":"껍질", "filling":"소", "flesh":"속살", "cream":"크림"][value] ?? "부위 확인 중"
     }
@@ -102,9 +106,8 @@ enum TastePerceptionEngine {
         }
             .map { key([$0.independentMealID.uuidString, contextKey($0)]) })
         let valid = observations.filter { row in
-            guard !conflictingIDs.contains(row.id), row.kind == "sensory_intensity", row.scale == "expression-strength-v1", row.reference == nil,
-                  row.attribute?.hasPrefix("taste.") == true,
-                  TasteAxis(rawValue: String(row.attribute!.dropFirst(6))) != nil,
+            guard row.mealTimeIsConfirmed != false, !conflictingIDs.contains(row.id), row.kind == "sensory_intensity", row.scale == "expression-strength-v1", row.reference == nil,
+                  axis(for: row.attribute) != nil,
                   levels.contains(row.value.text), let observed = row.observedAt, let known = row.knownAt else { return false }
             return asOf.map { observed <= $0 && known <= $0 } ?? true
         }
@@ -124,7 +127,7 @@ enum TastePerceptionEngine {
                 && targetLabel(first.target) != "부위 확인 중" && phaseLabel(first.phase) != "시점 확인 중"
             let oldLevel = comparable && previous.count == minimumMeals && previous.last!.date < recent.first!.date ? median(previous) : nil
             let all = period(rows)
-            return .init(id: id, axis: TasteAxis(rawValue: String(first.attribute!.dropFirst(6)))!, foodKey: foodKey(first),
+            return .init(id: id, axis: axis(for: first.attribute)!, foodKey: foodKey(first),
                          foodName: first.foodName.trimmingCharacters(in: .whitespacesAndNewlines), restaurantName: first.restaurantName, target: first.target, phase: first.phase,
                          currentLevel: comparable ? median(recent) : nil, previousLevel: oldLevel,
                          counts: levels.indices.map { level in recent.filter { $0.level == level }.count },
@@ -207,7 +210,7 @@ struct TasteChangeSeries: Identifiable {
             }
             return Self(id: pattern.id, axis: pattern.axis, source: "식사 기록", condition: pattern.conditionLabel,
                         maximum: 2, points: points,
-                        details: ["같은 음식·부위·시점의 이전 3번과 최근 3번 식사를 비교해요.", "기록하지 않은 조리 상태·온도나 변화의 원인은 알 수 없어요."])
+                        details: ["이름·식당·부위·시점이 같은 범위의 이전 3번과 최근 3번 식사를 비교해요. 3번은 표시 정책이며 검증된 표본수가 아니에요.", "같은 이름도 같은 레시피라는 보장은 없어요. 기록하지 않은 조리 상태·온도나 변화의 원인은 알 수 없어요."])
         }
         let recalled = survey.compactMap { point -> Self? in
             guard let item = point.item else { return nil }

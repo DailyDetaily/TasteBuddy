@@ -94,6 +94,13 @@ final class NativeAccountDataTests: XCTestCase {
         XCTAssertEqual(destination.profileAvatarImageData, Data([1, 2, 3]))
         XCTAssertEqual(destination.savedRestaurantIDs, ["restaurant-1"])
         XCTAssertTrue(destination.hasSeenOnboarding)
+        let sourceSnapshot = try? SensoryAnalysisEngine.analyze(entries: source.diningEntries)
+        let destinationSnapshot = try? SensoryAnalysisEngine.analyze(entries: destination.diningEntries)
+        XCTAssertEqual(
+            sourceSnapshot.map { HomeArchiveMetricsEngine.sections(entries: source.diningEntries, snapshot: $0) },
+            destinationSnapshot.map { HomeArchiveMetricsEngine.sections(entries: destination.diningEntries, snapshot: $0) },
+            "계정 백업을 복원해도 아카이브의 분모와 분포가 달라지지 않아야 한다."
+        )
     }
 
     func testConcurrentDeviceConflictKeepsBothSourceVersions() async {
@@ -121,8 +128,8 @@ final class NativeAccountDataTests: XCTestCase {
         app.completeVerifiedEmailAuthEntry(user: accountA)
         repository.onFetch = { app.addDiningEntry(.sample) }
         await app.syncAccountData()
-        XCTAssertEqual(repository.rows[accountA.id]?.payload.values["tastebuddy.ios.dining-entries.v1"],
-                       try? JSONEncoder().encode(app.diningEntries))
+        let stored = repository.rows[accountA.id]?.payload.values["tastebuddy.ios.dining-entries.v1"]
+        XCTAssertEqual(stored.flatMap { try? JSONDecoder().decode([DiningEntry].self, from: $0) }, app.diningEntries)
 
         repository.onFetch = { app.completeVerifiedEmailAuthEntry(user: self.accountB) }
         await app.syncAccountData()

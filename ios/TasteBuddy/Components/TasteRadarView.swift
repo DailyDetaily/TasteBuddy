@@ -184,6 +184,11 @@ struct HexRadarChart: View {
             )
         }
 
+        if let reportedValues {
+            drawReported(context: &context, geometry: geometry, values: reportedValues, progress: profileProgress)
+            return
+        }
+
         if reportedValues == nil || referenceValues.count == TasteAxis.allCases.count {
             let averagePoints = entries.enumerated().map { index, entry in
                 geometry.point(index: index, value: reportedValues == nil ? CGFloat(entry.averageScore) / 100
@@ -310,6 +315,41 @@ struct HexRadarChart: View {
                     .foregroundStyle(TBColor.textHint)
             )
             context.draw(label, at: labelPoint, anchor: labelAnchor(index: index))
+        }
+    }
+
+    private func drawReported(context: inout GraphicsContext, geometry: RadarGeometry,
+                              values: [TasteAxis: Double], progress: CGFloat) {
+        let axes = TasteAxis.allCases
+        func point(_ index: Int, _ value: Double, animated: Bool = true) -> CGPoint {
+            geometry.point(index: index, value: CGFloat(value / reportedMaximum) * (animated ? progress : 1))
+        }
+        for index in axes.indices {
+            let axis = axes[index], next = (index + 1) % axes.count
+            if let old = referenceValues[axis] {
+                let p = point(index, old, animated: false)
+                context.stroke(Path(ellipseIn: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6)), with: .color(TBColor.textHint), lineWidth: 1)
+                if let following = referenceValues[axes[next]] {
+                    var path = Path(); path.move(to: p); path.addLine(to: point(next, following, animated: false))
+                    context.stroke(path, with: .color(TBColor.textHint), style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
+                }
+            }
+            if let value = values[axis] {
+                let p = point(index, value)
+                if value > 0 {
+                    var spoke = Path(); spoke.move(to: geometry.center); spoke.addLine(to: p)
+                    context.stroke(spoke, with: .color(axis.radarSpokeColor), style: StrokeStyle(lineWidth: geometry.scaled(16), lineCap: .round))
+                }
+                if let following = values[axes[next]] {
+                    var path = Path(); path.move(to: p); path.addLine(to: point(next, following))
+                    context.stroke(path, with: .color(axis.radarOutlineColor), lineWidth: geometry.scaled(2))
+                }
+                let radius = geometry.scaled(6)
+                context.fill(Path(ellipseIn: CGRect(x: p.x-radius, y: p.y-radius, width: radius*2, height: radius*2)), with: .color(axis.mainColor))
+            }
+            let text = axis.label + (values[axis] == nil ? " —" : values[axis] == 0 ? " 0" : "")
+            context.draw(context.resolve(Text(text).font(TBFont.medium(10)).foregroundStyle(TBColor.textHint)),
+                         at: geometry.point(index: index, radius: TasteRadarContract.maximumRadius + 10), anchor: labelAnchor(index: index))
         }
     }
 

@@ -51,6 +51,8 @@ struct PersonalTasteNextSelection: Codable, Equatable, Identifiable, Sendable {
     let intent: String; let proposedCondition: PersonalTasteCondition?; let unobserved: Bool
     var responseSourceID: String? = nil
     var impact: PersonalTasteQuestionImpact? = nil
+    var familyID: String? = nil
+    var sourceExperienceID: String? = nil
 }
 struct PersonalTasteOverallAssociation: Codable, Equatable, Sendable {
     let unitID: String; let mealID: String; let attribute: String; let individualValue: String; let overallValues: [String]; let evidenceIDs: [String]; let causalClaim: String?
@@ -149,7 +151,7 @@ enum PersonalTasteModelBuilder {
     }
     struct Question { let attribute: String; let reference: String?; let label: String; let facet: String; let reason: String; var score: Int; var evidenceIDs: [String]; var mealIDs: [String]; let target: String; let phase: String; var intent: String = "clarification"; var proposedCondition: PersonalTasteCondition? = nil; var responseSourceID: String? = nil; var impact: PersonalTasteQuestionImpact? = nil }
 
-    static func buildRecords(records: [PersonalTasteModelRecord], userID: String, asOf: Date? = nil, policy: PersonalTastePolicy = .init(), suppressedQuestionIDs: [String] = [], assessQuestions: Bool = true, includeEvidence: Bool = true) -> PersonalTasteModelSnapshot {
+    static func buildRecords(records: [PersonalTasteModelRecord], userID: String, asOf: Date? = nil, policy: PersonalTastePolicy = .init(), suppressedQuestionIDs: [String] = [], assessQuestions: Bool = true, includeEvidence: Bool = true, individualQuestions: Bool = false, nativeAnswerOptions: ((PersonalTasteModelRecord, String) -> [String])? = nil) -> PersonalTasteModelSnapshot {
         precondition(policy.minMeals >= 2 && policy.minConditionMeals >= 2 && policy.maxConditionDimensions == 2)
         var excluded: [PersonalTasteExcludedEvidence] = []; var included: [PersonalTasteModelRecord] = []; var missingKnownAtCount = 0
         let byID = Dictionary(grouping: records, by: \.observationId)
@@ -228,8 +230,9 @@ enum PersonalTasteModelBuilder {
         candidates.sort { $0.id < $1.id }
         let fitPatterns = buildFitPatterns(included, userID: userID, policy: policy, includeEvidence: includeEvidence)
         let overallPatterns = buildOverallPatterns(included, userID: userID, includeEvidence: includeEvidence)
+        let overallByExperience = Dictionary(grouping: included.filter { $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1" }, by: \.experienceId)
         let overallAssociations: [PersonalTasteOverallAssociation] = (includeEvidence ? units : []).compactMap { unit in
-            let overall = included.filter { $0.kind == "overall_liking" && unit.experienceIDs.contains($0.experienceId) && $0.scale == "overall-five-category-v1" }
+            let overall = unit.experienceIDs.flatMap { overallByExperience[$0] ?? [] }
             guard !overall.isEmpty else { return nil }
             return .init(unitID: unit.id, mealID: unit.mealID, attribute: unit.attribute, individualValue: unit.liking, overallValues: unique(overall.map { $0.value.text }), evidenceIDs: unique(unit.evidenceIDs + overall.map(\.observationId)), causalClaim: nil)
         }
@@ -240,7 +243,7 @@ enum PersonalTasteModelBuilder {
         if !assessQuestions { return snapshot(nil) }
         var questions: [Question] = []
         for r in included where r.attribute != nil && r.attribute?.hasSuffix(".unspecified") != true && r.kind == "sensory_presence" && r.value == .flag(true) {
-            if included.contains(where: { $0.kind == "attribute_liking" && scope($0) == scope(r) && sameSelection($0, r) }) { continue }
+            if (scopeGroups[scope(r)] ?? []).contains(where: { $0.kind == "attribute_liking" && sameSelection($0, r) }) { continue }
             questions.append(.init(attribute: r.attribute!, reference: r.reference, label: label(r), facet: "liking", reason: "liking_not_reported", score: 100, evidenceIDs: [r.observationId], mealIDs: [r.mealId], target: r.target, phase: r.phase))
         }
         for u in units {
@@ -257,27 +260,47 @@ enum PersonalTasteModelBuilder {
             let first = rows[0]
             questions.append(.init(attribute:first.attribute,reference:first.reference,label:first.label,facet:"intensity",reason:"unobserved_intensity_comparison",score:10,evidenceIDs:unique(rows.flatMap(\.evidenceIDs)),mealIDs:unique(rows.map(\.mealID)),target:"unspecified",phase:"unspecified",intent:"exploration",proposedCondition:.init(dimension:"intensity",value:proposed)))
         }
+        // 서버의 v2 가족 추천 계약은 보존한다. 실제 iOS 응답 대기열은 개별 출처로 정제한다.
         var questionGroups: [String: Question] = [:]
-        for q in questions {
-            let key = json([q.attribute, nullable(q.reference), q.facet, q.target, q.phase, q.intent, q.proposedCondition.map { ["dimension":$0.dimension,"value":$0.value] } as Any? ?? NSNull()])
-            if var old = questionGroups[key] { old.score = max(old.score, q.score); old.evidenceIDs = unique(old.evidenceIDs + q.evidenceIDs); old.mealIDs = unique(old.mealIDs + q.mealIDs); questionGroups[key] = old }
-            else { questionGroups[key] = q }
+        if individualQuestions { questionGroups = individualQuestionGroups(questions, included: included) }
+        else {
+            for q in questions {
+                let key = json([q.attribute, nullable(q.reference), q.facet, q.target, q.phase, q.intent, q.proposedCondition.map { ["dimension": $0.dimension, "value": $0.value] } as Any? ?? NSNull()])
+                if var old = questionGroups[key] { old.score = max(old.score, q.score); old.evidenceIDs = unique(old.evidenceIDs + q.evidenceIDs); old.mealIDs = unique(old.mealIDs + q.mealIDs); questionGroups[key] = old }
+                else { questionGroups[key] = q }
+            }
+        }
+        func questionID(_ key: String) -> String {
+            identifier(!individualQuestions || questionGroups[key]?.intent == "exploration" ? "next-selection" : "question-instance-v2", [userID, key])
         }
         let suppressed = Set(suppressedQuestionIDs)
-        questionGroups = questionGroups.filter { !suppressed.contains(identifier("next-selection", [userID, $0.key])) }
-        if assessQuestions { questionGroups = assessQuestionGroups(questionGroups, included: included, userID: userID, policy: policy, candidates: candidates, fitPatterns: fitPatterns, overallPatterns: overallPatterns) }
+        questionGroups = questionGroups.filter { !suppressed.contains(questionID($0.key)) }
+        let sourcesByID = Dictionary(included.map { ($0.observationId, $0) }, uniquingKeysWith: { first, _ in first })
+        let answerOptions: [String: [String]]? = nativeAnswerOptions.map { answers in
+            questionGroups.mapValues { question in
+                guard let id = question.responseSourceID, let source = sourcesByID[id] else { return [] }
+                return answers(source, question.facet)
+            }
+        }
+        if assessQuestions { questionGroups = assessQuestionGroups(questionGroups, included: included, userID: userID, policy: policy, candidates: candidates, fitPatterns: fitPatterns, overallPatterns: overallPatterns, assessmentLimit: individualQuestions ? 12 : nil, answerOptions: answerOptions) }
         let ranked = questionGroups.keys.sorted { a,b in
             let left = questionGroups[a]!, right = questionGroups[b]!
             let leftImpact = left.impact?.changedInterpretationCount ?? 0, rightImpact = right.impact?.changedInterpretationCount ?? 0
-            if leftImpact != rightImpact { return leftImpact > rightImpact }
+            if !individualQuestions && leftImpact != rightImpact { return leftImpact > rightImpact }
+            if individualQuestions && (left.intent == "clarification") != (right.intent == "clarification") { return left.intent == "clarification" }
+            if let answerOptions, left.intent == "clarification", right.intent == "clarification" {
+                let leftReady = !(answerOptions[a] ?? []).isEmpty, rightReady = !(answerOptions[b] ?? []).isEmpty
+                if leftReady != rightReady { return leftReady }
+            }
             if left.score != right.score { return left.score > right.score }
+            if leftImpact != rightImpact { return leftImpact > rightImpact }
             if left.mealIDs.count != right.mealIDs.count { return left.mealIDs.count > right.mealIDs.count }
             return a < b
         }
         let selections: [PersonalTasteNextSelection] = ranked.map { key in
             let q = questionGroups[key]!
             let question = q.intent == "exploration" ? "다음 식사에서 \(conditionLabel(q.proposedCondition!))로 느낀 \(q.label)는 어떤지 확인해 볼까요?" : ["liking":"\(q.label) 자체는 어땠나요?", "intensity":"\(q.label)는 어느 정도로 느껴졌나요?", "target":"\(q.label)는 어느 부분에서 느껴졌나요?", "phase":"\(q.label)는 언제 느껴졌나요?"][q.facet]!
-            return .init(id: identifier("next-selection", [userID, key]), attribute: q.attribute, label: q.label, facet: q.facet, question: question, reason: q.reason, evidenceIDs: unique(q.evidenceIDs), mealIDs: unique(q.mealIDs), createsEvidence: false, intent:q.intent, proposedCondition:q.proposedCondition, unobserved:q.intent == "exploration", responseSourceID: q.responseSourceID, impact: q.impact)
+            return .init(id: questionID(key), attribute: q.attribute, label: q.label, facet: q.facet, question: question, reason: q.reason, evidenceIDs: unique(q.evidenceIDs), mealIDs: unique(q.mealIDs), createsEvidence: false, intent:q.intent, proposedCondition:q.proposedCondition, unobserved:q.intent == "exploration", responseSourceID: q.responseSourceID, impact: q.impact, familyID: individualQuestions ? identifier("next-selection", [userID, json([q.attribute, nullable(q.reference), q.facet, q.target, q.phase, q.intent, q.proposedCondition.map { ["dimension": $0.dimension, "value": $0.value] } as Any? ?? NSNull()])]) : nil, sourceExperienceID: individualQuestions ? sourcesByID[q.responseSourceID ?? ""]?.experienceId : nil)
         }
         var result = snapshot(selections.first)
         result.queuedSelections = selections
