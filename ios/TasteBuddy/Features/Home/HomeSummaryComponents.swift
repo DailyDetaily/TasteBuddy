@@ -10,7 +10,10 @@ struct HomeSensorySummarySection: View {
     var onOpenQuestions: (() -> Void)?
     var onStartNewDining: ((PersonalTasteNextSelection) -> Void)?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     var onOpenInsight: ((HomeArchiveCard.Kind) -> Void)? = nil
+    @State private var selectedDiscoveryID: String?
+    @State private var showsAllStackCards = false
     @State private var isQuestionStackExpanded: Bool = {
         #if DEBUG || targetEnvironment(simulator)
         let arguments = ProcessInfo.processInfo.arguments
@@ -23,8 +26,8 @@ struct HomeSensorySummarySection: View {
 
     var body: some View {
         let cards = appModel.homeArchivePresentation?.summaries ?? []
-        let pendingQuestions = visibleQuestions
-        let questions = Array(pendingQuestions.prefix(isQuestionStackExpanded ? 3 : 1))
+        let pendingCards = appModel.homeJournalStackItems
+        let stackCards = HomeJournalStackItem.preview(pendingCards, limit: isQuestionStackExpanded ? 3 : 1)
         TBPageSection(title: "인사이트 요약", titleSize: .medium) {
             CardScrollList(spacing: TBSpacing.x12) {
                 ForEach(cards) { card in
@@ -43,27 +46,14 @@ struct HomeSensorySummarySection: View {
                 SensoryAnalysisStatusCard(state: .processing)
             } else if let error {
                 SensoryAnalysisStatusCard(state: .failed(error))
-            } else if !pendingQuestions.isEmpty {
+            } else if !pendingCards.isEmpty {
                 VStack(spacing: TBSpacing.x12) {
-                    ForEach(Array(questions.enumerated()), id: \.element.id) { index, question in
-                        PersonalTasteNextQuestionCard(
-                            selection: question,
-                            sourceSelectionLabel: snapshot.observations.first {
-                                $0.id == question.responseSourceID
-                            }?.selectionEvidence?.labelSnapshot,
-                            showsStack: !isQuestionStackExpanded && pendingQuestions.count > 1,
-                            isStackExpanded: isQuestionStackExpanded,
-                            onToggleStack: index == 0 && pendingQuestions.count > 1 ? {
-                                withAnimation(TasteBloomMotion.animation(isQuestionStackExpanded ? .content : .sheet, reduceMotion: reduceMotion)) {
-                                    isQuestionStackExpanded.toggle()
-                                }
-                            } : nil,
-                            onStartNewRecord: { onStartNewDining?(question) }
-                        )
-                        .transition(TasteBloomMotion.questionReveal(reduceMotion: reduceMotion, index: max(0, index - 1)))
+                    ForEach(Array(stackCards.enumerated()), id: \.element.id) { index, item in
+                        stackCard(item, index: index, total: pendingCards.count)
+                            .transition(TasteBloomMotion.questionReveal(reduceMotion: reduceMotion, index: max(0, index - 1)))
                     }
-                    if isQuestionStackExpanded && pendingQuestions.count > 3 {
-                        Button("질문 전체보기 · \(pendingQuestions.count)개") { onOpenQuestions?() }
+                    if isQuestionStackExpanded && pendingCards.count > stackCards.count {
+                        Button("카드 전체보기 · \(pendingCards.count)개") { showsAllStackCards = true }
                             .font(TBFont.regular(12)).foregroundStyle(TBColor.textAction)
                             .frame(maxWidth: .infinity, minHeight: 44)
                             .buttonStyle(.plain)
@@ -74,18 +64,46 @@ struct HomeSensorySummarySection: View {
             }
         }
         .tasteBloomMotion(.content, value: isUpdating)
-        .tasteBloomMotion(.content, value: pendingQuestions.map(\.id))
+        .tasteBloomMotion(.content, value: pendingCards.map(\.id))
+        .sheet(isPresented: Binding(get: { selectedDiscoveryID != nil }, set: { if !$0 { selectedDiscoveryID = nil } })) {
+            if let selectedDiscoveryID { HomeDiscoveryDetailView(discoveryID: selectedDiscoveryID) }
+        }
+        .sheet(isPresented: $showsAllStackCards) {
+            HomeJournalStackListView(onStartNewRecord: onStartNewDining)
+        }
+        .task { appModel.refreshHomeDiscoveriesIfNeeded() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { appModel.refreshHomeDiscoveriesIfNeeded() }
+        }
+        .onChange(of: appModel.memoryAccountGeneration) { _, _ in
+            selectedDiscoveryID = nil
+            showsAllStackCards = false
+            isQuestionStackExpanded = false
+        }
     }
 
-    private var personalModelUserID: String {
-        snapshot.personalModel?.userID ?? "local-owner"
-    }
-
-    private var visibleQuestions: [PersonalTasteNextSelection] {
-        PersonalTasteInlineAnswer.answerableQuestions(
-            snapshot.personalModel?.availableSelections ?? [], observations: snapshot.observations, entries: appModel.diningEntries
-        ).filter {
-            appModel.shouldPresentPersonalTasteQuestion(id: $0.id, userID: personalModelUserID)
+    @ViewBuilder
+    private func stackCard(_ item: HomeJournalStackItem, index: Int, total: Int) -> some View {
+        let toggle: (() -> Void)? = index == 0 && total > 1 ? {
+            withAnimation(TasteBloomMotion.animation(isQuestionStackExpanded ? .content : .sheet, reduceMotion: reduceMotion)) {
+                isQuestionStackExpanded.toggle()
+            }
+        } : nil
+        switch item {
+        case .question(let question):
+            PersonalTasteNextQuestionCard(
+                selection: question,
+                sourceSelectionLabel: snapshot.observations.first { $0.id == question.responseSourceID }?.selectionEvidence?.labelSnapshot,
+                showsStack: !isQuestionStackExpanded && total > 1,
+                isStackExpanded: isQuestionStackExpanded,
+                onToggleStack: toggle,
+                onStartNewRecord: { onStartNewDining?(question) },
+                stackAccessibilityLabel: "질문과 발견 카드"
+            )
+        case .discovery(let card):
+            HomeDiscoveryStackCard(card: card, showsStack: !isQuestionStackExpanded && total > 1,
+                isStackExpanded: isQuestionStackExpanded, onToggleStack: toggle,
+                onOpen: { selectedDiscoveryID = card.id })
         }
     }
 

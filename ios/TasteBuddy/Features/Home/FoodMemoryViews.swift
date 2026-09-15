@@ -68,7 +68,7 @@ struct FoodMemoryResultsView: View {
     }
 }
 
-private struct FoodMemoryRow: View {
+struct FoodMemoryRow: View {
     let document: FoodMemoryDocument
     var showsConditions = false
     private static let dishKindLabels: [String: String] = Dictionary(uniqueKeysWithValues:

@@ -395,7 +395,7 @@ struct TasteQuestionMedia: View {
     }
 }
 
-/// 질문의 출처나 학습 방식과 분리된 표시 컴포넌트. 뒷면은 질문 수를 나타내지 않는 장식이다.
+/// 질문/발견의 원본 처리와 분리된 공통 카드. 뒷면은 실제 카드 수를 나타내지 않는 장식이다.
 struct TasteQuestionStackCard: View {
     let question: String
     let supportingText: String
@@ -410,6 +410,10 @@ struct TasteQuestionStackCard: View {
     var onConfirm: ((String) -> String?)? = nil
     var onStartRecord: (() -> Void)? = nil
     var onInteraction: (() -> Void)? = nil
+    var contentLabel: String?
+    var onOpenContent: (() -> Void)?
+    var stackAccessibilityLabel: String
+    var contentAccessibilityIdentifier: String
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isExpanded: Bool
@@ -431,7 +435,11 @@ struct TasteQuestionStackCard: View {
         fallbackActionTitle: String = "기록에서 답하기",
         onConfirm: ((String) -> String?)? = nil,
         onStartRecord: (() -> Void)? = nil,
-        onInteraction: (() -> Void)? = nil
+        onInteraction: (() -> Void)? = nil,
+        contentLabel: String? = nil,
+        onOpenContent: (() -> Void)? = nil,
+        stackAccessibilityLabel: String = "대기 질문",
+        contentAccessibilityIdentifier: String = "taste-question-toggle"
     ) {
         self.question = question
         self.supportingText = supportingText
@@ -446,6 +454,10 @@ struct TasteQuestionStackCard: View {
         self.onConfirm = onConfirm
         self.onStartRecord = onStartRecord
         self.onInteraction = onInteraction
+        self.contentLabel = contentLabel
+        self.onOpenContent = onOpenContent
+        self.stackAccessibilityLabel = stackAccessibilityLabel
+        self.contentAccessibilityIdentifier = contentAccessibilityIdentifier
         _isExpanded = State(initialValue: initiallyExpanded)
     }
 
@@ -454,9 +466,13 @@ struct TasteQuestionStackCard: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top, spacing: TBSpacing.x4) {
                     Button {
-                        onInteraction?()
-                        withAnimation(TasteBloomMotion.animation(isExpanded ? .content : .sheet, reduceMotion: reduceMotion)) {
-                            isExpanded.toggle()
+                        if let onOpenContent {
+                            onOpenContent()
+                        } else {
+                            onInteraction?()
+                            withAnimation(TasteBloomMotion.animation(isExpanded ? .content : .sheet, reduceMotion: reduceMotion)) {
+                                isExpanded.toggle()
+                            }
                         }
                     } label: {
                         HStack(alignment: .top, spacing: TBSpacing.x12) {
@@ -464,15 +480,18 @@ struct TasteQuestionStackCard: View {
                                 TasteQuestionMedia(photoFilename: photoFilename, illustrationSeed: illustrationSeed)
                             }
                             VStack(alignment: .leading, spacing: TBSpacing.x4) {
+                                if let contentLabel {
+                                    Text(contentLabel).font(TBFont.medium(11)).foregroundStyle(TBColor.textSecondary)
+                                }
                                 Text(question)
                                     .font(TBFont.semibold(14))
                                     .foregroundStyle(TBColor.textPrimary)
-                                    .lineLimit(isExpanded ? nil : 2)
+                                    .lineLimit(isExpanded || onOpenContent != nil || dynamicTypeSize.isAccessibilitySize ? nil : 2)
                                 if !isExpanded {
                                     Text(supportingText)
                                         .font(TBFont.regular(11))
                                         .foregroundStyle(TBColor.textHint)
-                                        .lineLimit(1)
+                                        .lineLimit(onOpenContent != nil || dynamicTypeSize.isAccessibilitySize ? nil : 1)
                                         .minimumScaleFactor(0.85)
                                 }
                             }
@@ -484,9 +503,9 @@ struct TasteQuestionStackCard: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityElement(children: .combine)
-                    .accessibilityValue(isExpanded ? "펼쳐짐" : "접힘")
-                    .accessibilityHint(isExpanded ? "답변 선택지를 접습니다" : "답변 선택지를 펼칩니다")
-                    .accessibilityIdentifier("taste-question-toggle")
+                    .accessibilityValue(onOpenContent != nil ? "발견 카드" : (isExpanded ? "펼쳐짐" : "접힘"))
+                    .accessibilityHint(onOpenContent != nil ? "발견에 연결된 원본 기록을 엽니다" : (isExpanded ? "답변 선택지를 접습니다" : "답변 선택지를 펼칩니다"))
+                    .accessibilityIdentifier(contentAccessibilityIdentifier)
 
                     if let onToggleStack {
                         Button(action: onToggleStack) {
@@ -499,7 +518,7 @@ struct TasteQuestionStackCard: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(isStackExpanded ? "대기 질문 접기" : "대기 질문 펼치기")
+                        .accessibilityLabel("\(stackAccessibilityLabel) \(isStackExpanded ? "접기" : "펼치기")")
                         .accessibilityIdentifier("taste-question-stack-toggle")
                     }
                 }
@@ -650,6 +669,7 @@ struct PersonalTasteNextQuestionCard: View {
     var isStackExpanded = false
     var onToggleStack: (() -> Void)?
     var onStartNewRecord: (() -> Void)?
+    var stackAccessibilityLabel = "대기 질문"
 
     var body: some View {
         let entry = PersonalTasteInlineAnswer.sourceEntry(
@@ -682,7 +702,8 @@ struct PersonalTasteNextQuestionCard: View {
                 onConfirm: saveAnswer,
                 onInteraction: {
                     appModel.recordPersonalTasteQuestionExposure(id: selection.id, userID: appModel.sensoryAnalysis.personalModel?.userID ?? "local-owner")
-                }
+                },
+                stackAccessibilityLabel: stackAccessibilityLabel
             )
             .id(selection.id)
         }

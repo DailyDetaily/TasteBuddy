@@ -52,6 +52,9 @@
 		473CC960FE9C80516C16B602 /* AppChromeComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0407AA73CECE5A105C204BF9 /* AppChromeComponents.swift */; };
 		483A79E7F901848DAA7C60A7 /* NativeLayoutComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42488AC7B4F12B714E486DA9 /* NativeLayoutComponents.swift */; };
 		493005673D36448410EA011D /* HomeArchiveVisualizationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D02DA1A694FEBE631A63C90 /* HomeArchiveVisualizationModels.swift */; };
+		D15C0A000000000000000001 /* HomeDiscoveryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15C0A000000000000000011 /* HomeDiscoveryModels.swift */; };
+		D15C0A000000000000000002 /* HomeDiscoveryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15C0A000000000000000012 /* HomeDiscoveryViews.swift */; };
+		D15C0A000000000000000003 /* HomeDiscoveryEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15C0A000000000000000013 /* HomeDiscoveryEngineTests.swift */; };
 		4ABD96C465393A6DD28B74C5 /* TasteSurveyScoringEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C72D55438B5084E29B0C46B /* TasteSurveyScoringEngine.swift */; };
 		4B7D46F9F6941CF82B7CD258 /* TasteSurveyContractModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EA9D5752E6785C160448D5 /* TasteSurveyContractModels.swift */; };
 		4FB79DECD540AD816CEF966F /* TasteBuddyAgentContractModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFA9B3031BA22AEF4F9A30B /* TasteBuddyAgentContractModels.swift */; };
@@ -203,6 +206,9 @@
 		0C6612339BB988A7F229A72B /* ChatGPTAnalysisCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatGPTAnalysisCard.swift; sourceTree = "<group>"; };
 		0C72D55438B5084E29B0C46B /* TasteSurveyScoringEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasteSurveyScoringEngine.swift; sourceTree = "<group>"; };
 		0D02DA1A694FEBE631A63C90 /* HomeArchiveVisualizationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeArchiveVisualizationModels.swift; sourceTree = "<group>"; };
+		D15C0A000000000000000011 /* HomeDiscoveryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDiscoveryModels.swift; sourceTree = "<group>"; };
+		D15C0A000000000000000012 /* HomeDiscoveryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDiscoveryViews.swift; sourceTree = "<group>"; };
+		D15C0A000000000000000013 /* HomeDiscoveryEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDiscoveryEngineTests.swift; sourceTree = "<group>"; };
 		0DF8F8E3C0D5E54022945799 /* longitudinal-food-memory.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "longitudinal-food-memory.json"; sourceTree = "<group>"; };
 		1024AB4876963918ED22259F /* TasteBuddy.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TasteBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		149DBFFC7200CDE1D2EAE612 /* SensoryStructuredSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensoryStructuredSelectionTests.swift; sourceTree = "<group>"; };
@@ -424,6 +430,7 @@
 				059E477763679895089F8762 /* HomeSearchEngineTests.swift */,
 				447EF85B631CE34E2BE90F74 /* HomeSummaryEngineTests.swift */,
 				6A857EA19617801DB3A312C3 /* HomeTasteQuestionsIntegrationTests.swift */,
+				D15C0A000000000000000013 /* HomeDiscoveryEngineTests.swift */,
 				626268F029B77F527659D6F4 /* LongitudinalFoodMemoryTests.swift */,
 				E3E58B8ED8A968EE195C9AF1 /* NativeAccountDataTests.swift */,
 				2CB1B9403573A83D4D069202 /* NativeAccountPhotoRepositoryTests.swift */,
@@ -627,6 +634,8 @@
 				94CF68F410E791C951DB97CF /* FoodMemoryViews.swift */,
 				0D02DA1A694FEBE631A63C90 /* HomeArchiveVisualizationModels.swift */,
 				FBBB1D23660CC5070E92EF00 /* HomeArchiveVisualizationViews.swift */,
+				D15C0A000000000000000011 /* HomeDiscoveryModels.swift */,
+				D15C0A000000000000000012 /* HomeDiscoveryViews.swift */,
 				D3DA4199AD640391FE9AD756 /* HomePeriodInsightComponents.swift */,
 				87BAC2F716755DB861406A0C /* HomeSearchModels.swift */,
 				B0D9E6D1B4C34AB8D214782D /* HomeSummaryComponents.swift */,
@@ -979,6 +988,7 @@
 				C4BB16E19A004BE6A99AC0D8 /* HomeSearchEngineTests.swift in Sources */,
 				468FF2C181020E765E241F6C /* HomeSummaryEngineTests.swift in Sources */,
 				E62647AE4D007685E7345AA4 /* HomeTasteQuestionsIntegrationTests.swift in Sources */,
+				D15C0A000000000000000003 /* HomeDiscoveryEngineTests.swift in Sources */,
 				D95320CCBB24986843276650 /* LongitudinalFoodMemoryTests.swift in Sources */,
 				A8E8BC38066F1505B5BD72D4 /* NativeAccountDataTests.swift in Sources */,
 				509AEA1D1C9EC29AC43075C7 /* NativeAccountPhotoRepositoryTests.swift in Sources */,
@@ -1044,6 +1054,8 @@
 				5B43D6A8B23DE0473E3B163A /* FoodMemoryViews.swift in Sources */,
 				493005673D36448410EA011D /* HomeArchiveVisualizationModels.swift in Sources */,
 				D0256F0A5D1DD5F484FC594B /* HomeArchiveVisualizationViews.swift in Sources */,
+				D15C0A000000000000000001 /* HomeDiscoveryModels.swift in Sources */,
+				D15C0A000000000000000002 /* HomeDiscoveryViews.swift in Sources */,
 				C1661526A56F69737003A630 /* HomePeriodInsightComponents.swift in Sources */,
 				C356919D2D6B81A41D976366 /* HomeSearchModels.swift in Sources */,
 				232E80707B6D8F7FC3B6D2F8 /* HomeSummaryComponents.swift in Sources */,

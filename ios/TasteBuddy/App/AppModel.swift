@@ -373,6 +373,7 @@ final class AppModel: ObservableObject {
 
     var questionPresentationPolicy = PersonalTasteQuestionPresentationPolicy()
     @Published private(set) var homeArchivePresentation: HomeArchivePresentation?
+    @Published private(set) var homeDiscoveryHiddenUntil: [String: Date] = [:]
     @Published private(set) var personalTasteQuestionProgressByUser: [String: [String: PersonalTasteQuestionProgress]] = [:]
     @Published private(set) var savedRestaurantIDs: Set<String> = []
     @Published private(set) var bookmarkLists: [RestaurantBookmarkList] = []
@@ -423,6 +424,8 @@ final class AppModel: ObservableObject {
         static let dishFeedbackComments = "tastebuddy.ios.dish-feedback-comments.v1"
         static let rememberedRestaurantMenus = "tastebuddy.ios.restaurant-remembered-menus.v1"
         static let personalTasteQuestionProgress = "tastebuddy.ios.personal-taste-question-progress.v1"
+        // 열람 상태는 이 기기/계정에만 저장한다. 원본 백업이나 취향 증거에 섞지 않는다.
+        static let homeDiscoveryHistoryPrefix = "tastebuddy.ios.home-discovery-history.v1."
         static let chatGPTExportReceipt = "tastebuddy.ios.chatgpt-export-receipt.v1"
         static let activeAccount = "tastebuddy.ios.active-account.v1"
         static let accountArchivePrefix = "tastebuddy.ios.account-archive.v1."
@@ -461,6 +464,8 @@ final class AppModel: ObservableObject {
     private func reloadPersistedAccountData() {
         memorySourceFingerprint = ""
         foodMemoryIndex = .empty
+        homeDiscoveryHiddenUntil = defaults.data(forKey: Key.homeDiscoveryHistoryPrefix + activeAccountScope)
+            .flatMap { try? decoder.decode([String: Date].self, from: $0) } ?? [:]
         chatGPTExportReceipt = defaults.data(forKey: Key.chatGPTExportReceipt).flatMap { try? decoder.decode(ChatGPTExportReceipt.self, from: $0) }
         diningPersistenceError = nil
         invalidAccountDataKeys = unreadableKeys(in: currentAccountSnapshot())
@@ -1630,6 +1635,8 @@ final class AppModel: ObservableObject {
     }
 
     private func removeLocalAccountArchive(scope: String) {
+        defaults.removeObject(forKey: Key.homeDiscoveryHistoryPrefix + scope)
+        if scope == activeAccountScope { homeDiscoveryHiddenUntil = [:] }
         let archiveKey = Key.accountArchivePrefix + scope
         var removedPhotos = scope == activeAccountScope ? Set(diningEntries.compactMap(\.reflectionPhotoFilename)) : []
         for key in defaults.dictionaryRepresentation().keys where key == archiveKey || key.hasPrefix(archiveKey + ".") {
@@ -1951,6 +1958,66 @@ final class AppModel: ObservableObject {
                 var removed = receipt; removed.state = "removed"; self.saveExportReceipt(removed)
             } catch { /* 오프라인 제거 대기를 유지한다. 원문이나 검색어를 로그에 남기지 않는다. */ }
         }
+    }
+
+    var visibleHomeDiscoveries: [HomeDiscoveryCard] {
+        guard let presentation = homeArchivePresentation,
+              Calendar.current.isDate(presentation.referenceDay, inSameDayAs: now()) else { return [] }
+        return HomeDiscoveryPresentationPolicy.visible(presentation.discoveries,
+            hiddenUntil: homeDiscoveryHiddenUntil, referenceDate: now())
+    }
+
+    var homeJournalStackItems: [HomeJournalStackItem] {
+        let userID = sensoryAnalysis.personalModel?.userID ?? "local-owner"
+        let questions = PersonalTasteInlineAnswer.answerableQuestions(
+            sensoryAnalysis.personalModel?.availableSelections ?? [],
+            observations: sensoryAnalysis.observations, entries: diningEntries
+        ).filter { shouldPresentPersonalTasteQuestion(id: $0.id, userID: userID) }
+        return HomeJournalStackItem.merged(questions: questions, discoveries: visibleHomeDiscoveries)
+    }
+
+    func homeDiscovery(id: String) -> HomeDiscoveryCard? {
+        homeArchivePresentation?.discoveries.first { $0.id == id }
+    }
+
+    /// 상세 열람은 의미 단위로 보존한다. 원본/질문 응답을 생성하거나 수정하지 않는다.
+    func markHomeDiscoveryRead(id: String) {
+        guard let card = homeDiscovery(id: id) else { return }
+        persistHomeDiscoveryHistory(HomeDiscoveryPresentationPolicy.recordingRead(
+            card, in: homeDiscoveryHiddenUntil, at: now()))
+    }
+
+    /// 명시적으로 미룬 발견은 같은 ID의 원본이 수정되어도 7일간 유지한다.
+    func suppressHomeDiscovery(id: String) {
+        guard let card = homeDiscovery(id: id) else { return }
+        persistHomeDiscoveryHistory(HomeDiscoveryPresentationPolicy.snoozing(
+            card, in: homeDiscoveryHiddenUntil, at: now()))
+    }
+
+    /// 표시 이력의 상한만 관리하며 기록 원본이나 직접 평가에는 쓰지 않는다.
+    private func persistHomeDiscoveryHistory(_ values: [String: Date]) {
+        var history = values
+        if history.count > 2048 {
+            // 영구 읽음 키가 많아도 방금 요청한 숨김/대상 냉각을 밀어내지 않는다.
+            let retained = history.sorted {
+                let leftControl = $0.key.hasPrefix("snooze:") || $0.key.hasPrefix("subject:")
+                let rightControl = $1.key.hasPrefix("snooze:") || $1.key.hasPrefix("subject:")
+                if leftControl != rightControl { return leftControl }
+                return $0.value == $1.value ? $0.key < $1.key : $0.value > $1.value
+            }.prefix(2048)
+            history = Dictionary(uniqueKeysWithValues: retained.map { ($0.key, $0.value) })
+        }
+        guard let data = try? encoder.encode(history) else { return }
+        let key = Key.homeDiscoveryHistoryPrefix + activeAccountScope
+        defaults.set(data, forKey: key)
+        guard defaults.data(forKey: key) == data else { return }
+        homeDiscoveryHiddenUntil = history
+    }
+
+    func refreshHomeDiscoveriesIfNeeded() {
+        guard !sensoryAnalysisIsUpdating, let presentation = homeArchivePresentation,
+              !Calendar.current.isDate(presentation.referenceDay, inSameDayAs: now()) else { return }
+        refreshSensoryAnalysis()
     }
 
     func refreshSensoryAnalysis() {

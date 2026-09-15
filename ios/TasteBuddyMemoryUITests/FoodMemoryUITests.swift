@@ -99,7 +99,7 @@ final class HomeTasteQuestionUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = ["--sensory-insights-home-qa", "--home-questions-confirmed-dates-qa"]
+        app.launchArguments = ["--sensory-insights-home-qa", "--home-questions-confirmed-dates-qa", "--question-queue-expanded-qa"]
     }
     private func reveal(_ element: XCUIElement, verticalInset: CGFloat = 180) {
         // SwiftUI는 스크롤 밖의 버튼도 hittable로 보고할 수 있다.
@@ -223,17 +223,40 @@ final class HomeTasteQuestionUITests: XCTestCase {
         capture("home-question-large-03-zero-category")
     }
 
-    func test04HomeShowsEveryRemainingQuestionWithoutMenuBatch() throws {
+    func test04HomeStackKeepsEveryRemainingQuestionInAllCards() throws {
         app.launchArguments += ["--question-batch-qa"]
         app.launch()
-        let questions = app.buttons.matching(identifier: "taste-question-toggle")
-        XCTAssertTrue(questions.firstMatch.waitForExistence(timeout: 120))
-        XCTAssertGreaterThan(questions.count, 3)
-        XCTAssertFalse(app.buttons["taste-question-stack-toggle"].exists)
-        XCTAssertFalse(app.buttons["taste-questions-see-all"].exists)
+        let allCards = app.buttons["taste-questions-see-all"]
+        XCTAssertTrue(allCards.waitForExistence(timeout: 120))
+        reveal(allCards); allCards.tap()
+        XCTAssertTrue(app.navigationBars["질문과 발견 카드"].waitForExistence(timeout: 30))
+        let laterQuestion = app.buttons.matching(NSPredicate(format:
+            "identifier == %@ AND label CONTAINS %@", "taste-question-toggle", "검증 메뉴 4")).firstMatch
+        reveal(laterQuestion)
+        XCTAssertTrue(laterQuestion.isHittable)
         XCTAssertFalse(app.buttons["다른 확인할 기록 보기"].exists)
         XCTAssertFalse(text("이번에 보여드린 질문에 답변을 기록했어요").exists)
         capture("home-all-remaining-questions")
+    }
+
+    func test08DiscoverySharesTheQuestionStackAndOpensOnlyItsOriginals() throws {
+        app.launchArguments.removeAll { $0 == "--question-queue-expanded-qa" }
+        app.launch()
+        let discovery = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "home-discovery-open-")).firstMatch
+        XCTAssertTrue(discovery.waitForExistence(timeout: 120))
+        XCTAssertFalse(app.buttons["taste-question-toggle"].firstMatch.exists)
+        let stack = app.buttons["taste-question-stack-toggle"].firstMatch
+        reveal(stack); capture("home-discovery-01-collapsed"); stack.tap()
+        XCTAssertTrue(app.buttons["taste-question-toggle"].firstMatch.waitForExistence(timeout: 10))
+        reveal(discovery); capture("home-discovery-02-shared-stack"); discovery.tap()
+        XCTAssertTrue(app.navigationBars["발견 카드"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.staticTexts["home-discovery-detail-title"].exists)
+        XCTAssertTrue(text("연결된 음식 기록").exists)
+        XCTAssertFalse(app.buttons["taste-question-choice-liked"].exists)
+        let original = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "원본 열기 · 수정")).firstMatch
+        reveal(original); capture("home-discovery-03-originals"); original.tap()
+        XCTAssertTrue(app.navigationBars["음식 기억"].waitForExistence(timeout: 30))
+        capture("home-discovery-04-food-memory")
     }
 
     func test05LegacyQuestionsRemainOnHomeAfterOneAnswer() throws {

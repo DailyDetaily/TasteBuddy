@@ -4,9 +4,16 @@ import Foundation
 struct HomeArchivePresentation {
     let summaries: [HomeArchiveCard]
     let sections: [HomeArchiveMetricSection]
+    let discoveries: [HomeDiscoveryCard]
+    let referenceDay: Date
     static func make(entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot, referenceDate: Date) -> Self {
-        .init(summaries: HomeArchiveSummaryEngine.cards(entries: entries, snapshot: snapshot, referenceDate: referenceDate),
-              sections: HomeArchiveMetricsEngine.sections(entries: entries, snapshot: snapshot, referenceDate: referenceDate))
+        let sources = HomeArchiveSources(entries: entries, snapshot: snapshot, referenceDate: referenceDate)
+        return .init(
+            summaries: HomeArchiveSummaryEngine.cards(entries: sources.entries, snapshot: snapshot, referenceDate: referenceDate),
+            sections: HomeArchiveVisualizationEngine.sections(sources: sources, referenceDate: referenceDate),
+            discoveries: HomeDiscoveryEngine.cards(sources: sources, referenceDate: referenceDate),
+            referenceDay: Calendar.current.startOfDay(for: referenceDate)
+        )
     }
 }
 
@@ -67,9 +74,14 @@ enum HomeArchiveIdentity {
     }
 }
 
-enum HomeArchiveVisualizationEngine {
-    static func sections(entries source: [DiningEntry], snapshot: SensoryAnalysisSnapshot,
-                         referenceDate: Date = .now, calendar: Calendar = .current) -> [HomeArchiveMetricSection] {
+/// 아카이브와 발견 후보가 같은 현재 원본/직접 응답을 한 번 정규화해 사용한다.
+struct HomeArchiveSources {
+    let entries: [DiningEntry]
+    let observations: [SensoryObservation]
+    let menus: [String: [DiningEntry]]
+    let restaurants: [String: [DiningEntry]]
+
+    init(entries source: [DiningEntry], snapshot: SensoryAnalysisSnapshot, referenceDate: Date) {
         let entries = HomeArchiveIdentity.entries(source, asOf: referenceDate)
         let ids = Set(entries.filter(\.hasCompletedTasteFeedback).map(\.id))
         let revisions = Dictionary(entries.map { ($0.id, $0.memoryRevisionNumber) }, uniquingKeysWith: { first, _ in first })
@@ -77,13 +89,28 @@ enum HomeArchiveVisualizationEngine {
         let duplicateConflicts = Set(Dictionary(grouping: snapshot.observations, by: \.id)
             .filter { _, rows in rows.contains { $0 != rows[0] } }.keys)
         var seen = Set<String>()
-        let observations = snapshot.observations.filter {
+        self.observations = snapshot.observations.filter {
             ids.contains($0.experienceID) && revisions[$0.experienceID] == $0.sourceRevision && !excluded.contains($0.id) && !duplicateConflicts.contains($0.id)
                 && ($0.observedAt ?? $0.recordedAt) <= referenceDate
                 && ($0.knownAt ?? $0.recordedAt) <= referenceDate && seen.insert($0.id).inserted
         }
-        let menus = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasMenu), by: HomeArchiveIdentity.menu)
-        let restaurants = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasRestaurant), by: HomeArchiveIdentity.restaurant)
+        self.entries = entries
+        menus = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasMenu), by: HomeArchiveIdentity.menu)
+        restaurants = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasRestaurant), by: HomeArchiveIdentity.restaurant)
+    }
+}
+
+enum HomeArchiveVisualizationEngine {
+    static func sections(entries source: [DiningEntry], snapshot: SensoryAnalysisSnapshot,
+                         referenceDate: Date = .now, calendar: Calendar = .current) -> [HomeArchiveMetricSection] {
+        sections(sources: HomeArchiveSources(entries: source, snapshot: snapshot, referenceDate: referenceDate),
+                 referenceDate: referenceDate, calendar: calendar)
+    }
+
+    static func sections(sources: HomeArchiveSources, referenceDate: Date = .now,
+                         calendar: Calendar = .current) -> [HomeArchiveMetricSection] {
+        let entries = sources.entries, observations = sources.observations
+        let menus = sources.menus, restaurants = sources.restaurants
         func composition(_ groups: [String: [DiningEntry]], unit: String,
                          onceLabel: String, repeatedLabel: String) -> HomeArchiveChart {
             let once = groups.values.filter { Set($0.map(\.mealID)).count == 1 }

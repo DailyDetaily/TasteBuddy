@@ -526,6 +526,62 @@ final class HomeTasteQuestionsIntegrationTests: XCTestCase {
         XCTAssertNotEqual(model.personalTasteQuestionProgressByUser[context.userID]?[question.id]?.status, .resolved)
     }
 
+    @MainActor func testDiscoveryReadStatePersistsWithoutCreatingQuestionOrTasteEvidence() async throws {
+        let (model, defaults) = try await app([source(), source(), source()])
+        let card = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .repeatedMenu })
+        let originals = model.diningEntries
+        let observations = model.sensoryAnalysis.observations
+        let questions = model.personalTasteQuestionProgressByUser
+        model.markHomeDiscoveryRead(id: card.id)
+        XCTAssertFalse(model.visibleHomeDiscoveries.contains { $0.id == card.id })
+        XCTAssertEqual(model.diningEntries, originals)
+        XCTAssertEqual(model.sensoryAnalysis.observations, observations)
+        XCTAssertEqual(model.personalTasteQuestionProgressByUser, questions)
+        XCTAssertNotNil(model.homeDiscovery(id: card.id), "열린 상세는 숨김 상태와 별도로 현재 원본을 계속 읽는다.")
+
+        let relaunched = AppModel(defaults: defaults, authRepository: FixtureBackendAuthRepository())
+        try await wait(relaunched)
+        XCTAssertFalse(relaunched.visibleHomeDiscoveries.contains { $0.id == card.id })
+        XCTAssertEqual(relaunched.diningEntries, originals)
+    }
+
+    @MainActor func testDiscoveryRecomputesOnEditAndDisappearsAfterDeletionDropsBelowThreshold() async throws {
+        let (model, _) = try await app([source(), source(), source()])
+        let before = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .repeatedMenu })
+        model.suppressHomeDiscovery(id: before.id)
+        var changed = try XCTUnwrap(model.diningEntries.first)
+        changed.note = "사용자가 직접 바꾼 회고"
+        model.updateDiningEntry(changed)
+        XCTAssertNil(model.homeArchivePresentation)
+        try await wait(model)
+        let after = try XCTUnwrap(model.homeDiscovery(id: before.id))
+        XCTAssertEqual(after.id, before.id)
+        XCTAssertNotEqual(after.revisionKey, before.revisionKey)
+        XCTAssertEqual(after.semanticKey, before.semanticKey)
+        XCTAssertFalse(model.visibleHomeDiscoveries.contains { $0.id == before.id }, "문구 수정으로 명시적인 7일 숨김을 우회하지 않는다.")
+        model.removeDiningEntry(id: changed.id)
+        XCTAssertNil(model.homeArchivePresentation)
+        try await wait(model)
+        XCTAssertNil(model.homeDiscovery(id: before.id))
+    }
+
+    @MainActor func testDiscoverySnoozeSurvivesSourceEditAndRelaunch() async throws {
+        let (model, defaults) = try await app([source(), source(), source()])
+        let before = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .repeatedMenu })
+        model.suppressHomeDiscovery(id: before.id)
+        var edited = try XCTUnwrap(model.diningEntries.first)
+        edited.note = "명시적으로 미룬 뒤 수정한 회고"
+        model.updateDiningEntry(edited)
+        try await wait(model)
+        let current = try XCTUnwrap(model.homeDiscovery(id: before.id))
+        XCTAssertNotEqual(current.revisionKey, before.revisionKey)
+        XCTAssertFalse(model.visibleHomeDiscoveries.contains { $0.id == before.id })
+        let relaunched = AppModel(defaults: defaults, authRepository: FixtureBackendAuthRepository())
+        try await wait(relaunched)
+        XCTAssertNotNil(relaunched.homeDiscovery(id: before.id))
+        XCTAssertFalse(relaunched.visibleHomeDiscoveries.contains { $0.id == before.id })
+    }
+
     func testDifferentDishesHaveSeparateOverallRatingsAndRestaurantScopedMenus() throws {
         let meal = UUID()
         var a = source(meal: meal), b = source(meal: meal, restaurant: "다른 합성 식당")
