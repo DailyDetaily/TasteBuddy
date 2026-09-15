@@ -348,8 +348,9 @@ struct TDObservation: Equatable, Sendable {
     var domain: String {
         if attribute.hasPrefix("taste.") { return "맛" }
         if attribute.hasPrefix("aroma.") { return "향" }
-        return "식감"
-    }
+        if attribute.hasPrefix("texture.") || attribute.hasPrefix("mouthfeel.") { return "식감" }
+    return "기타"
+}
 }
 struct TDWindow: Equatable, Sendable {
     let label: String
@@ -439,10 +440,15 @@ enum TDDataEngine {
                         now: Date, calendar: Calendar) -> TDState {
         var conflicts = Set<String>()
         let grouped = Dictionary(grouping: records, by: \.id)
-        let unique = grouped.keys.sorted().compactMap { id -> TDRecord? in
+        var unique = grouped.keys.sorted().compactMap { id -> TDRecord? in
             guard let rows = grouped[id], let first = rows.first, !id.isEmpty, !first.mealID.isEmpty,
                   rows.allSatisfy({ $0 == first }) else { conflicts.insert(id); return nil }
             return first
+        }
+        let conflictMeals = Set(records.filter { conflicts.contains($0.id) }.map(\.mealID))
+        unique = unique.filter { row in
+            if conflictMeals.contains(row.mealID) { conflicts.insert(row.id); return false }
+            return true
         }
         var unknown = Set<String>(), future = Set<String>(), valid: [TDRecord] = []
         let today = calendar.startOfDay(for: now)
@@ -571,10 +577,17 @@ enum TDDataEngine {
         for dimension in TDDimension.allCases {
             let groups = entityGroups(state.selected, dimension)
             let missing = state.selected.filter { $0.identities(dimension).isEmpty }.count
-            let rows = groups.map { identity, entries in
-                TDRow(id: identity.id, title: identity.label, value: "\(meals(entries))번의 식사",
-                      amount: Double(meals(entries)), entryIDs: ids(entries))
-            }.sorted { $0.amount == $1.amount ? $0.id < $1.id : ($0.amount ?? 0) > ($1.amount ?? 0) }
+            var rows: [TDRow] = []
+            for (identity, records) in groups {
+                let count: Int = meals(records)
+                let row = TDRow(id: identity.id, title: identity.label,
+                      value: "\(count)번의 식사", amount: Double(count), entryIDs: ids(records))
+                rows.append(row)
+            }
+            rows.sort { (left: TDRow, right: TDRow) -> Bool in
+                let a = left.amount ?? 0, b = right.amount ?? 0
+                return a == b ? left.id < right.id : a > b
+            }
             let text = dimension == .menu ? "식당별 개별 메뉴 · 다른 식당의 같은 음식은 다른 메뉴" : dimension == .restaurant ? "확인된 식당·지점 · 방문 횟수나 선호가 아니에요" : "저장한 음식 분류 · 메뉴명으로 종류를 추정하지 않아요"
             cards.append(.init(id: "measure-" + dimension.id, title: "기록한 " + dimension.id,
                                meaning: rows.isEmpty && missing > 0 ? "연결·분류 확인 필요" : "\(rows.count)\(dimension.unit)", rows: rows,
@@ -993,11 +1006,12 @@ struct TasteDataCategoryView: View {
     @State private var expandedCards: Set<String> = []
     @State private var showAllDiscoveries = false
 
+    private var effectivePeriod: TDPeriodChoice { category == .change && period == .all ? .ninety : period }
     private var renderKey: TDRenderKey {
         let calendar = Calendar.current
         return .init(entries: appModel.diningEntries, analysis: appModel.sensoryAnalysis,
                      owner: String(describing: appModel.memoryAccountGeneration), category: category,
-                     period: period.window(now: referenceDate, calendar: calendar), day: calendar.startOfDay(for: referenceDate),
+                     period: effectivePeriod.window(now: referenceDate, calendar: calendar), day: calendar.startOfDay(for: referenceDate),
                      domain: domain, attribute: contextAttribute, facet: contextFacet, timeZone: calendar.timeZone.identifier)
     }
     private var existingDiscoveries: [HomeDiscoveryCard] {
@@ -1019,8 +1033,8 @@ struct TasteDataCategoryView: View {
                         Text(category.subtitle).tbTextStyle(.body)
                     }
                     Spacer(minLength: 8)
-                    Picker("측정 기간", selection: $period) {
-                        ForEach(TDPeriodChoice.allCases) { Text($0.rawValue).tag($0) }
+                    Picker("측정 기간", selection: Binding(get: { effectivePeriod }, set: { period = $0 })) {
+                        ForEach(TDPeriodChoice.allCases.filter { category != .change || $0 != .all }) { Text($0.rawValue).tag($0) }
                     }.pickerStyle(.menu)
                 }
                 Text(key.period.range(calendar: .current) + " · 확인된 식사일 기준").tbTextStyle(.caption)
@@ -1118,7 +1132,7 @@ struct TasteDataCategoryView: View {
         }
     }
     private var sensoryControls: some View {
-        Picker("감각 영역", selection: $domain) { ForEach(["맛", "향", "식감"], id: \.self) { Text($0).tag($0) } }
+        Picker("감각 영역", selection: $domain) { ForEach(["맛", "향", "식감", "기타"], id: \.self) { Text($0).tag($0) } }
             .pickerStyle(.segmented).accessibilityIdentifier("taste-data-sensory-domain")
     }
     private func contextControls(_ state: TDState) -> some View {
@@ -1264,7 +1278,7 @@ private struct TDCardSurface<Content: View>: View {
 private struct TDSegmentBar: View {
     let segments: [TDSegment]
     var body: some View {
-        let nonzero = segments.filter { $0.count > 0 }
+        let nonzero = segments // Stable shade positions, including zero-count response categories.
         let total = max(1, nonzero.reduce(0) { $0 + $1.count })
         VStack(alignment: .leading, spacing: 6) {
             GeometryReader { proxy in
