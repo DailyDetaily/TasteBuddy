@@ -90,7 +90,7 @@ enum AppRoute: Hashable {
         case .tasteChange:
             "미각 변화"
         case .homeInsight(let kind):
-            kind.rawValue
+            kind.dataCategory.rawValue
         case .savedRestaurants:
             "테이스트 리스트"
         case .connectionList(let kind):

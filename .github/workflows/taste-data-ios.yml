@@ -1,0 +1,46 @@
+name: Taste Data iOS Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/taste-data-ios.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: taste-data-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact pull request source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            ios
+            .github
+      - name: Record toolchain
+        run: |
+          xcodebuild -version
+          swiftc --version
+      - name: Compile and run production core regressions
+        run: python3 ios/Tools/validate-taste-data.py
+      - name: Compile native app for iOS Simulator
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ios/TasteBuddy.xcodeproj \
+            -scheme TasteBuddy \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/TasteBuddyDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
