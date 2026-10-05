@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!--
+ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+--><path d="M3 14.43C3 10.74 6.1 9.1 6.1 8A2.2 2.2 0 0 1 9.39296329 6.090698755A.35 .35 0 0 0 9.900806428 5.891679147A2.2 2.2 0 0 1 14.099193572 5.891679147A.35 .35 0 0 0 14.60703671 6.090698755A2.2 2.2 0 0 1 17.9 8C17.9 9.1 21 10.74 21 14.43C21 17.85 17 19.65 12 19.65C7 19.65 3 17.85 3 14.43Z" />
+  <path d="M8.5 10.38L7.3 11.46" />
+  <path d="M12 10.38L12 11.46" />
+  <path d="M15.5 10.38L16.7 11.46" />
+</svg>

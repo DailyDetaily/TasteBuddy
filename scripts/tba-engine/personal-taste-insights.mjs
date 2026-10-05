@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256 } from './sha256.mjs';
 
 export const FIT_VALUES = ['below_preferred', 'just_right', 'above_preferred'];
 export const LIKING_VALUES = ['positive', 'neutral', 'negative'];
@@ -6,12 +6,12 @@ export const OVERALL_VALUES = ['very_positive', 'positive', 'neutral', 'negative
 export const unique = values => [...new Set(values)].sort();
 export const canonical = value => JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item)
   ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : item);
-export const modelIdentifier = (kind, parts) => `${kind}:${createHash('sha256').update(canonical(parts)).digest('hex').slice(0, 20)}`;
+export const modelIdentifier = (kind, parts) => `${kind}:${sha256(canonical(parts)).slice(0, 20)}`;
 export const recordScope = record => canonical([record.experienceId, record.attribute, record.reference ?? null, record.target, record.phase]);
 export function sameSelection(left, right) {
   const a = left.selectionEvidence, b = right.selectionEvidence;
   if (!a || !b) return !a && !b;
-  return ['selectionID', 'type', 'catalogVersion', 'relatedBubbleID'].every(key => (a[key] ?? null) === (b[key] ?? null));
+  return ['selectionID', 'type', 'catalogVersion', 'relatedBubbleID', 'selectionInstanceID'].every(key => (a[key] ?? null) === (b[key] ?? null));
 }
 export const attributeIdentity = row => canonical([row.attribute, row.reference ?? null]);
 export const modelLabel = row => row.reference ?? row.attributeLabel ?? ({
@@ -52,11 +52,12 @@ export const matchesConditions = (row, conditions) => conditions.every(c => c.di
   ? row.dishKindIDs.includes(c.value) : row[c.dimension] === c.value);
 
 // 이 함수에는 소유자·시점·중복 ID 검사를 통과한 현재 유효 관찰만 전달한다.
-export function scopedRatings(records, kind, scale, values) {
+export function scopedRatings(records, kind, scale, values, validatedIntensityLinks = {}) {
   const scopes = new Map(grouped(records, recordScope));
   return records.filter(row => row.kind === kind && row.scale === scale && values.includes(row.value)
     && row.attribute && !row.attribute.endsWith('.unspecified')).flatMap(row => {
-    const related = (scopes.get(recordScope(row)) ?? []).filter(other => sameSelection(row, other));
+    const related = (scopes.get(recordScope(row)) ?? []).filter(other => sameSelection(row, other)
+      || (other.kind === 'sensory_intensity' && validatedIntensityLinks[row.observationId]?.includes(other.observationId)));
     if (related.some(other => other.kind === 'sensory_presence' && other.value === false)) return [];
     const intensities = related.filter(other => other.kind === 'sensory_intensity' && other.scale === 'expression-strength-v1');
     const levels = unique(intensities.map(other => other.value));
@@ -65,8 +66,8 @@ export function scopedRatings(records, kind, scale, values) {
   });
 }
 
-export function buildFitPatterns(records, userID, policy, { includeEvidence = true } = {}) {
-  const ratings = scopedRatings(records, 'preference_fit', 'preference-fit-v1', FIT_VALUES);
+export function buildFitPatterns(records, userID, policy, { includeEvidence = true, validatedIntensityLinks = {} } = {}) {
+  const ratings = scopedRatings(records, 'preference_fit', 'preference-fit-v1', FIT_VALUES, validatedIntensityLinks);
   const patterns = [];
   for (const [key, rows] of grouped(ratings, attributeIdentity)) {
     for (const [conditionKey, conditions] of conditionSets(rows)) {

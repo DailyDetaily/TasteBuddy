@@ -58,6 +58,7 @@ enum AppRoute: Hashable {
     case dishFeedback(id: String)
     case comments(id: String)
     case tasteChange
+    case cardDetail(TasteCardDetailRoute)
     case homeInsight(HomeArchiveCard.Kind)
     case savedRestaurants
     case connectionList(ProfileConnectionKind)
@@ -89,8 +90,10 @@ enum AppRoute: Hashable {
             "댓글"
         case .tasteChange:
             "미각 변화"
+        case .cardDetail(let detail):
+            detail.title
         case .homeInsight(let kind):
-            kind.rawValue
+            kind.dataCategory.rawValue
         case .savedRestaurants:
             "테이스트 리스트"
         case .connectionList(let kind):

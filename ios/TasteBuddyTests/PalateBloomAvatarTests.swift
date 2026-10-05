@@ -36,9 +36,9 @@ final class PalateBloomAvatarTests: XCTestCase {
         )
 
         XCTAssertEqual(layout.shapeCount, 4)
-        XCTAssertEqual(layout.shapeVariant.coreShape, .seedCluster)
+        XCTAssertEqual(layout.shapeVariant.pistilShape, .seedCluster)
         XCTAssertEqual(layout.shapeVariant.petalShape, .capsulePetal)
-        XCTAssertEqual(layout.shapeVariant.starShape, .roundedSpokeStar)
+        XCTAssertEqual(layout.shapeVariant.stamenShape, .roundedSpokeStamen)
         XCTAssertEqual(layout.layers.map(\.axis), [
             .umami, .sweet, .sour, .salty, .bitter, .fat
         ])

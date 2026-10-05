@@ -1,0 +1,190 @@
+{
+  "captures": [
+    {
+      "category": "large",
+      "file": "role-sectionTitle.png",
+      "height": 62,
+      "id": "role-sectionTitle",
+      "kind": "role",
+      "width": 390,
+      "sha256": "9cdacb485c06f90129163bf7d4eff4b01c598f00423473588101a4c803ad8a6f"
+    },
+    {
+      "category": "large",
+      "file": "role-subsectionTitle.png",
+      "height": 60,
+      "id": "role-subsectionTitle",
+      "kind": "role",
+      "width": 390,
+      "sha256": "8c15b983c47d9fb3e736e090518564d5f2cf2ef49341c848e061bf1866ee2a00"
+    },
+    {
+      "category": "large",
+      "file": "role-sheetTitle.png",
+      "height": 58,
+      "id": "role-sheetTitle",
+      "kind": "role",
+      "width": 390,
+      "sha256": "137872f0fe24eff88fa3370ba3a3fd30554165111d69bd0713d1359c7d62b0f3"
+    },
+    {
+      "category": "large",
+      "file": "role-body.png",
+      "height": 57,
+      "id": "role-body",
+      "kind": "role",
+      "width": 390,
+      "sha256": "4e0a00073fd3f2aa456d5c5f04b011100f487a5a2dfd3af235eba1f8fb7a4b2d"
+    },
+    {
+      "category": "large",
+      "file": "role-caption.png",
+      "height": 55,
+      "id": "role-caption",
+      "kind": "role",
+      "width": 390,
+      "sha256": "e6aee347bfd53b32315887ec68075574574302962be5cf8f1fc1453ca25a266c"
+    },
+    {
+      "category": "large",
+      "file": "role-detailAction.png",
+      "height": 54,
+      "id": "role-detailAction",
+      "kind": "role",
+      "width": 390,
+      "sha256": "91bbf4538c8f967f080efc61cfae1293070bca9a31e66dc01be72acf69868a71"
+    },
+    {
+      "category": "large",
+      "file": "dynamic-large.png",
+      "height": 268,
+      "id": "dynamic-large",
+      "kind": "dynamic",
+      "width": 390,
+      "sha256": "c705884b41203ccc98f5742d3d2baf20e498ff1e9e2ff149515c325881b2c85f"
+    },
+    {
+      "category": "xxxLarge",
+      "file": "dynamic-xxxLarge.png",
+      "height": 352,
+      "id": "dynamic-xxxLarge",
+      "kind": "dynamic",
+      "width": 390,
+      "sha256": "75f3637d944ac6e278d8cf9ac9acc5f5a58538943522ccf109f645c87ebf51af"
+    },
+    {
+      "category": "accessibility2",
+      "file": "dynamic-accessibility2.png",
+      "height": 541,
+      "id": "dynamic-accessibility2",
+      "kind": "dynamic",
+      "width": 390,
+      "sha256": "8e34e11c241624bc54647fad60ca5c6a91b31b89e34c438db8a4e9072c04b804"
+    },
+    {
+      "category": "large",
+      "file": "usage-home.png",
+      "height": 132,
+      "id": "usage-home",
+      "kind": "usage",
+      "width": 390,
+      "sha256": "57b6d05e669703018d0e8693d680835854070736b183a854d44df5c2c1847579"
+    },
+    {
+      "category": "large",
+      "file": "usage-dining.png",
+      "height": 199,
+      "id": "usage-dining",
+      "kind": "usage",
+      "width": 390,
+      "sha256": "d465760a5b178a658c96977dd4f8ce4ea01f8e74fc0d7b5960c48fc7e0c5d5d7"
+    },
+    {
+      "category": "large",
+      "file": "usage-analysis.png",
+      "height": 141,
+      "id": "usage-analysis",
+      "kind": "usage",
+      "width": 390,
+      "sha256": "15797bb86da825dbb41dc4f75a765d2bf6d6d8d5a3c11d1aa2c1796578caee1f"
+    }
+  ],
+  "fonts": [
+    {
+      "ascender": 17.138671875,
+      "baseSize": 18,
+      "capHeight": 12.7265625,
+      "descender": -4.341796875,
+      "familyName": "Pretendard",
+      "lineHeight": 21.48046875,
+      "postScriptName": "Pretendard-Bold",
+      "role": "sectionTitle"
+    },
+    {
+      "ascender": 15.234375,
+      "baseSize": 16,
+      "capHeight": 11.3125,
+      "descender": -3.859375,
+      "familyName": "Pretendard",
+      "lineHeight": 19.09375,
+      "postScriptName": "Pretendard-Bold",
+      "role": "subsectionTitle"
+    },
+    {
+      "ascender": 14.2822265625,
+      "baseSize": 15,
+      "capHeight": 10.60546875,
+      "descender": -3.6181640625,
+      "familyName": "Pretendard",
+      "lineHeight": 17.900390625,
+      "postScriptName": "Pretendard-Bold",
+      "role": "sheetTitle"
+    },
+    {
+      "ascender": 13.330078125,
+      "baseSize": 14,
+      "capHeight": 9.8984375,
+      "descender": -3.376953125,
+      "familyName": "Pretendard",
+      "lineHeight": 16.70703125,
+      "postScriptName": "Pretendard-Regular",
+      "role": "body"
+    },
+    {
+      "ascender": 11.42578125,
+      "baseSize": 12,
+      "capHeight": 8.484375,
+      "descender": -2.89453125,
+      "familyName": "Pretendard",
+      "lineHeight": 14.3203125,
+      "postScriptName": "Pretendard-SemiBold",
+      "role": "caption"
+    },
+    {
+      "ascender": 10.4736328125,
+      "baseSize": 11,
+      "capHeight": 7.77734375,
+      "descender": -2.6533203125,
+      "familyName": "Pretendard",
+      "lineHeight": 13.126953125,
+      "postScriptName": "Pretendard-Medium",
+      "role": "detailAction"
+    }
+  ],
+  "platform": "iOS · SwiftUI",
+  "capturedAt": "2026-10-02",
+  "sources": [
+    {
+      "path": "ios/TasteBuddy/DesignSystem/TBTheme.swift",
+      "sha256": "27ad815c4f51c91b2abe2d88f0704e0f7be37b5c767c8a777bb1aec1de47661e"
+    },
+    {
+      "path": "ios/TasteBuddy/Features/DesignSystem/TypographyDocumentationCapture.swift",
+      "sha256": "29c357647b6b10ce8c19c28b804c15d212f7eed8f19c229a96f1be51289e2e20"
+    },
+    {
+      "path": "ios/TasteBuddy/Components/TBComponents.swift",
+      "sha256": "9bcad96f82716c3370b9404c2959b08d1463f2af79fbd01543b7689fbdf017dd"
+    }
+  ]
+}

@@ -380,7 +380,7 @@ export interface RestaurantPlaceInfo {
   hours?: string;
   userRatingCount?: number;
   sourceByRow: {
-    address: 'kakao';
+    address?: 'kakao';
     hours?: 'google';
     phone?: 'kakao' | 'google';
     website?: 'google';
@@ -734,7 +734,7 @@ function getDominantTasteFromVector(vector: Partial<Record<TasteId, number>> | n
 }
 
 function readNumericRecord<K extends string>(keys: readonly K[], value: unknown) {
-  const source =
+  const source:Partial<Record<K,unknown>> =
     value && typeof value === 'object' && !Array.isArray(value)
       ? (value as Partial<Record<K, unknown>>)
       : {};
@@ -2228,13 +2228,14 @@ async function syncReservationCatalogToSupabase(userId: string) {
 async function hydrateFeedbackDrafts(
   reservationIdMap: Map<string, number>,
   feedbackScenariosByReservationId: Record<number, DiningFeedbackScenario>,
+  requireSource = false,
 ): Promise<Record<number, DiningFeedbackDraft>> {
   if (!supabase || reservationIdMap.size === 0) {
     return {};
   }
 
   const fetchFeedbackSubmissions = (selectDetails: boolean, selectTbaAnalysis: boolean) =>
-    supabase
+    supabase!
       .from('feedback_submissions')
       .select(`
         reservation_id,
@@ -2283,6 +2284,7 @@ async function hydrateFeedbackDrafts(
   }
 
   if (error) {
+    if (requireSource) throw error;
     console.warn('Failed to hydrate feedback drafts from Supabase.', error);
     return {};
   }
@@ -2642,7 +2644,12 @@ async function upsertReservationDishes(reservationId: string, dishes: readonly D
   return idMap;
 }
 
-export async function hydrateReservationPageData({ seedIfEmpty = true }: { seedIfEmpty?: boolean } = {}): Promise<HydratedReservationPageData> {
+export async function hydrateReservationPageData({ seedIfEmpty = true, expectedOwner }: { seedIfEmpty?: boolean; expectedOwner?: string } = {}): Promise<HydratedReservationPageData> {
+  const checkOwner = async () => {
+    if (expectedOwner !== undefined && ((await getCurrentSupabaseSession())?.user.id ?? 'guest') !== expectedOwner)
+      throw new Error('로그인 계정이 바뀌어 이전 기록 조회를 멈췄어요.');
+  };
+  await checkOwner();
   if (!supabase || !isSupabaseConfigured) {
     return {
       reservations: RESERVATION_CATALOG,
@@ -2662,6 +2669,9 @@ export async function hydrateReservationPageData({ seedIfEmpty = true }: { seedI
 
   try {
     const userId = await getHydrationUserId();
+    await checkOwner();
+    if (expectedOwner !== undefined && userId !== null && userId !== expectedOwner)
+      throw new Error('로그인 계정이 바뀌어 이전 기록 조회를 멈췄어요.');
 
     if (!userId) {
       return {
@@ -2704,7 +2714,9 @@ export async function hydrateReservationPageData({ seedIfEmpty = true }: { seedI
     const feedbackByReservationId = await hydrateFeedbackDrafts(
       reservationIdMap,
       feedbackScenariosByReservationId,
+      expectedOwner !== undefined,
     );
+    await checkOwner();
 
     return {
       reservations,
@@ -2712,6 +2724,7 @@ export async function hydrateReservationPageData({ seedIfEmpty = true }: { seedI
       feedbackScenariosByReservationId,
     };
   } catch (error) {
+    if (expectedOwner !== undefined) throw error;
     console.warn('Failed to hydrate reservation page data from Supabase.', error);
 
     return {

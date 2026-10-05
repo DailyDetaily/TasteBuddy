@@ -6,7 +6,7 @@
     "foodKnowledgeRuntime": 260,
     "foodKnowledgeSource": 6800,
     "foodOnBridge": 46,
-    "signalTaxonomy": 180
+    "signalTaxonomy": 201
   },
   "viewer": {
     "confidenceByAxis": {
@@ -209,8 +209,8 @@
     "createdAt": "2099-01-01T00:00:00.000Z",
     "dishId": null,
     "dishKindTags": [
-      "vegetable_herb",
-      "grilled_smoked"
+      "mushroom",
+      "grilled"
     ],
     "dishTitle": "표고버섯 숯불 구이",
     "experienceTags": [
@@ -255,57 +255,44 @@
     "similarityScore": 94
   },
   "snapshot": {
-    "confidence": 0.985,
+    "confidence": 0.942,
     "foodKnowledgeMatchIds": [
       "tba-food:foodon:foodon_03310919"
     ],
     "foodOnMatchIds": [
-      "foodon-bridge:process:charcoal-broiling",
-      "foodon-bridge:ingredient:shiitake",
       "foodon-bridge:process:grilling",
       "foodon-bridge:ingredient:mushroom",
-      "foodon-bridge:ingredient:leafy-green",
-      "foodon-bridge:ingredient:seed-oil",
-      "foodon-bridge:process:smoking"
+      "foodon-bridge:process:charcoal-broiling",
+      "foodon-bridge:ingredient:shiitake"
     ],
     "lexiconCandidateIds": [
       "charcoal-grilled",
       "charred-aroma",
       "mushroom-earthy-umami",
-      "leafy-green-bitterness",
-      "smoky-aroma",
-      "green-freshness",
       "beef-fat-depth",
-      "fatty-coat"
+      "meaty-aroma",
+      "roasted-aroma",
+      "pork-savory-fat",
+      "savory-depth"
     ],
     "tbaSignalIds": [
-      "process:charcoal",
-      "lexicon:charcoal-grilled",
-      "ingredient:mushroom",
-      "lexicon:mushroom-earthy-umami",
       "process:grilled",
       "lexicon:charred-aroma",
-      "ingredient:leafy-green",
-      "lexicon:leafy-green-bitterness",
-      "lexicon:green-freshness",
-      "ingredient:seed-oil",
-      "lexicon:nutty-aroma",
-      "lexicon:fatty-coat",
-      "process:smoked",
-      "lexicon:smoky-aroma",
+      "ingredient:mushroom",
+      "lexicon:mushroom-earthy-umami",
+      "process:charcoal",
+      "lexicon:charcoal-grilled",
       "ingredient:beef",
       "lexicon:beef-fat-depth",
       "lexicon:meaty-aroma",
       "lexicon:roasted-aroma",
       "dish-kind:meat",
-      "dish-kind:grilled_smoked",
-      "dish-kind:broth",
-      "dish-kind:grain_noodle",
-      "dish-kind:vegetable_herb",
-      "lexicon:clean-finish",
-      "lexicon:bright-acidity",
+      "dish-kind:grilled",
+      "dish-kind:mushroom",
       "lexicon:savory-depth",
-      "lexicon:pork-savory-fat"
+      "lexicon:clean-finish",
+      "lexicon:pork-savory-fat",
+      "lexicon:bright-acidity"
     ]
   },
   "lexiconCandidates": [
@@ -323,10 +310,10 @@
       "confidence": 1,
       "dishKindScore": 0.84,
       "foodKnowledgeScore": 0.598,
-      "foodOnScore": 0.86,
+      "foodOnScore": 1,
       "id": "charred-aroma",
       "profileScore": 0.43452,
-      "score": 0.9825112,
+      "score": 1,
       "textScore": 0.9
     },
     {
@@ -340,36 +327,6 @@
       "textScore": 1
     },
     {
-      "confidence": 1,
-      "dishKindScore": 0.94,
-      "foodKnowledgeScore": 0,
-      "foodOnScore": 0.86,
-      "id": "leafy-green-bitterness",
-      "profileScore": 0.4756842105263158,
-      "score": 0.9453410526315789,
-      "textScore": 1
-    },
-    {
-      "confidence": 1,
-      "dishKindScore": 0.9,
-      "foodKnowledgeScore": 0,
-      "foodOnScore": 0.86,
-      "id": "smoky-aroma",
-      "profileScore": 0.4543023255813953,
-      "score": 0.9320581395348837,
-      "textScore": 1
-    },
-    {
-      "confidence": 0.963275,
-      "dishKindScore": 0.82,
-      "foodKnowledgeScore": 0,
-      "foodOnScore": 0.86,
-      "id": "green-freshness",
-      "profileScore": 0.5079166666666667,
-      "score": 0.8696025,
-      "textScore": 0.9
-    },
-    {
       "confidence": 0.9619404347826087,
       "dishKindScore": 0.96,
       "foodKnowledgeScore": 0.598,
@@ -380,13 +337,43 @@
       "textScore": 0.9
     },
     {
-      "confidence": 0.9540741818181818,
-      "dishKindScore": 0.78,
+      "confidence": 0.950493,
+      "dishKindScore": 0.92,
+      "foodKnowledgeScore": 0.598,
+      "foodOnScore": 0,
+      "id": "meaty-aroma",
+      "profileScore": 0.5515500000000001,
+      "score": 0.8537823000000001,
+      "textScore": 0.9
+    },
+    {
+      "confidence": 0.9361602247191011,
+      "dishKindScore": 0.88,
+      "foodKnowledgeScore": 0.598,
+      "foodOnScore": 0,
+      "id": "roasted-aroma",
+      "profileScore": 0.4993370786516853,
+      "score": 0.8372162471910113,
+      "textScore": 0.9
+    },
+    {
+      "confidence": 0.902045593220339,
+      "dishKindScore": 0.96,
       "foodKnowledgeScore": 0,
-      "foodOnScore": 0.86,
-      "id": "fatty-coat",
-      "profileScore": 0.5412363636363636,
-      "score": 0.8586816000000002,
+      "foodOnScore": 0,
+      "id": "pork-savory-fat",
+      "profileScore": 0.554093220338983,
+      "score": 0.7534501525423728,
+      "textScore": 0.9
+    },
+    {
+      "confidence": 0.784921304347826,
+      "dishKindScore": 0.54,
+      "foodKnowledgeScore": 0,
+      "foodOnScore": 0,
+      "id": "savory-depth",
+      "profileScore": 0.5620217391304347,
+      "score": 0.6162134347826087,
       "textScore": 0.9
     }
   ],
@@ -413,10 +400,10 @@
     "changedDimensions": [
       "detail"
     ],
-    "confidenceDelta": 0.015,
+    "confidenceDelta": 0.058,
     "confidenceLift": 0.06,
     "nextEffectiveConfidence": 1,
-    "previousEffectiveConfidence": 0.985,
+    "previousEffectiveConfidence": 0.942,
     "reasons": [
       "사용자가 수정한 태그와 메뉴 종류는 TBA 자동 해석보다 강한 보정 신호로 기록합니다.",
       "사용자 수정 신호가 있어 해당 evidence의 유효 confidence를 소폭 올려 기록합니다."
@@ -457,29 +444,9 @@
       "adjustCount": 1,
       "confidence": 0.79,
       "evidenceCount": 2,
-      "label": "국물/브로스",
+      "label": "구이",
       "removeCount": 0,
-      "signalId": "dish-kind:broth",
-      "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "면/밥/곡물",
-      "removeCount": 0,
-      "signalId": "dish-kind:grain_noodle",
-      "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "구이/훈연",
-      "removeCount": 0,
-      "signalId": "dish-kind:grilled_smoked",
+      "signalId": "dish-kind:grilled",
       "signalType": "tba-signal",
       "supportCount": 1
     },
@@ -497,30 +464,10 @@
       "adjustCount": 1,
       "confidence": 0.79,
       "evidenceCount": 2,
-      "label": "채소/허브",
+      "label": "버섯",
       "removeCount": 0,
-      "signalId": "dish-kind:vegetable_herb",
+      "signalId": "dish-kind:mushroom",
       "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "지방 코팅감",
-      "removeCount": 0,
-      "signalId": "fatty-coat",
-      "signalType": "lexicon",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "잎채소",
-      "removeCount": 0,
-      "signalId": "foodon-bridge:ingredient:leafy-green",
-      "signalType": "foodon",
       "supportCount": 1
     },
     {
@@ -530,16 +477,6 @@
       "label": "버섯",
       "removeCount": 0,
       "signalId": "foodon-bridge:ingredient:mushroom",
-      "signalType": "foodon",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "참기름/들기름",
-      "removeCount": 0,
-      "signalId": "foodon-bridge:ingredient:seed-oil",
       "signalType": "foodon",
       "supportCount": 1
     },
@@ -577,29 +514,9 @@
       "adjustCount": 1,
       "confidence": 0.79,
       "evidenceCount": 2,
-      "label": "훈연",
+      "label": "구이",
       "removeCount": 0,
-      "signalId": "foodon-bridge:process:smoking",
-      "signalType": "foodon",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "풋풋한 신선감",
-      "removeCount": 0,
-      "signalId": "green-freshness",
-      "signalType": "lexicon",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "구이/훈연",
-      "removeCount": 0,
-      "signalId": "grilled_smoked",
+      "signalId": "grilled",
       "signalType": "dish-kind",
       "supportCount": 1
     },
@@ -617,40 +534,10 @@
       "adjustCount": 1,
       "confidence": 0.79,
       "evidenceCount": 2,
-      "label": "잎채소",
-      "removeCount": 0,
-      "signalId": "ingredient:leafy-green",
-      "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
       "label": "버섯",
       "removeCount": 0,
       "signalId": "ingredient:mushroom",
       "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "참기름/들기름",
-      "removeCount": 0,
-      "signalId": "ingredient:seed-oil",
-      "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "잎채소 쓴맛",
-      "removeCount": 0,
-      "signalId": "leafy-green-bitterness",
-      "signalType": "lexicon",
       "supportCount": 1
     },
     {
@@ -707,36 +594,6 @@
       "adjustCount": 1,
       "confidence": 0.79,
       "evidenceCount": 2,
-      "label": "지방 코팅감",
-      "removeCount": 0,
-      "signalId": "lexicon:fatty-coat",
-      "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "풋풋한 신선감",
-      "removeCount": 0,
-      "signalId": "lexicon:green-freshness",
-      "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "잎채소 쓴맛",
-      "removeCount": 0,
-      "signalId": "lexicon:leafy-green-bitterness",
-      "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
       "label": "육향",
       "removeCount": 0,
       "signalId": "lexicon:meaty-aroma",
@@ -750,16 +607,6 @@
       "label": "버섯 흙내음 감칠맛",
       "removeCount": 0,
       "signalId": "lexicon:mushroom-earthy-umami",
-      "signalType": "tba-signal",
-      "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "견과 향",
-      "removeCount": 0,
-      "signalId": "lexicon:nutty-aroma",
       "signalType": "tba-signal",
       "supportCount": 1
     },
@@ -797,10 +644,20 @@
       "adjustCount": 1,
       "confidence": 0.79,
       "evidenceCount": 2,
-      "label": "훈연 향",
+      "label": "육향",
       "removeCount": 0,
-      "signalId": "lexicon:smoky-aroma",
-      "signalType": "tba-signal",
+      "signalId": "meaty-aroma",
+      "signalType": "lexicon",
+      "supportCount": 1
+    },
+    {
+      "adjustCount": 1,
+      "confidence": 0.79,
+      "evidenceCount": 2,
+      "label": "버섯",
+      "removeCount": 0,
+      "signalId": "mushroom",
+      "signalType": "dish-kind",
       "supportCount": 1
     },
     {
@@ -810,6 +667,16 @@
       "label": "버섯 흙내음 감칠맛",
       "removeCount": 0,
       "signalId": "mushroom-earthy-umami",
+      "signalType": "lexicon",
+      "supportCount": 1
+    },
+    {
+      "adjustCount": 1,
+      "confidence": 0.79,
+      "evidenceCount": 2,
+      "label": "돼지고기 감칠 지방",
+      "removeCount": 0,
+      "signalId": "pork-savory-fat",
       "signalType": "lexicon",
       "supportCount": 1
     },
@@ -837,19 +704,19 @@
       "adjustCount": 1,
       "confidence": 0.79,
       "evidenceCount": 2,
-      "label": "훈연",
+      "label": "구운 향",
       "removeCount": 0,
-      "signalId": "process:smoked",
-      "signalType": "tba-signal",
+      "signalId": "roasted-aroma",
+      "signalType": "lexicon",
       "supportCount": 1
     },
     {
       "adjustCount": 1,
       "confidence": 0.79,
       "evidenceCount": 2,
-      "label": "훈연 향",
+      "label": "구수한 깊이",
       "removeCount": 0,
-      "signalId": "smoky-aroma",
+      "signalId": "savory-depth",
       "signalType": "lexicon",
       "supportCount": 1
     },
@@ -862,16 +729,6 @@
       "signalId": "tba-food:foodon:foodon_03310919",
       "signalType": "food-knowledge",
       "supportCount": 1
-    },
-    {
-      "adjustCount": 1,
-      "confidence": 0.79,
-      "evidenceCount": 2,
-      "label": "채소/허브",
-      "removeCount": 0,
-      "signalId": "vegetable_herb",
-      "signalType": "dish-kind",
-      "supportCount": 1
     }
   ],
   "feed": [
@@ -879,8 +736,8 @@
       "category": "Strong Match",
       "learnedConfidenceScore": 0.79,
       "learnedConfidenceSignals": [
-        "채소/허브",
-        "구이/훈연"
+        "버섯",
+        "구이"
       ],
       "matchScore": 94,
       "relationLabel": "Taste Twin",
@@ -897,23 +754,19 @@
     "dishKindIds": [
       "fermented_jang",
       "meat",
-      "broth",
-      "grilled_smoked"
+      "grilled"
     ],
     "foodKnowledgeMatchIds": [
       "tba-food:native:91511"
     ],
     "ingredients": [
       "돼지고기",
-      "갑각류",
       "간장/된장"
     ],
     "techniques": [
       "발효",
       "구이",
-      "숯불",
-      "육수",
-      "삶기/데침"
+      "숯불"
     ]
   },
   "foodOn": {
@@ -921,8 +774,7 @@
       "foodon-bridge:process:charcoal-broiling",
       "foodon-bridge:ingredient:shiitake",
       "foodon-bridge:process:grilling",
-      "foodon-bridge:ingredient:mushroom",
-      "foodon-bridge:ingredient:seed-oil"
+      "foodon-bridge:ingredient:mushroom"
     ],
     "tbaSignalIds": [
       "process:charcoal",
@@ -930,10 +782,7 @@
       "ingredient:mushroom",
       "lexicon:mushroom-earthy-umami",
       "process:grilled",
-      "lexicon:charred-aroma",
-      "ingredient:seed-oil",
-      "lexicon:nutty-aroma",
-      "lexicon:fatty-coat"
+      "lexicon:charred-aroma"
     ]
   },
   "signalMapping": {

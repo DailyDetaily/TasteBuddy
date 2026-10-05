@@ -1,6 +1,114 @@
 import XCTest
 import UIKit
 
+/// Exercises the real search → original → correction route with the existing isolated fixture.
+final class PlatingMemoryEditingUITests: XCTestCase {
+    private var app: XCUIApplication!
+    private let originalNote = "산미가 또렷했다. 전체적으로 별로였다."
+    private let correctedNote = "산미는 좋았다. 생선의 향은 아쉬웠다."
+
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+        app = XCUIApplication()
+        app.launchArguments = ["--food-memory-qa"]
+    }
+
+    private func text(_ value: String) -> XCUIElement {
+        app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", value)).firstMatch
+    }
+    private func button(_ value: String) -> XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", value)).firstMatch
+    }
+    private func reveal(_ element: XCUIElement) {
+        let visible = app.frame.insetBy(dx: 0, dy: 160)
+        for _ in 0..<18 {
+            if element.exists && element.isHittable && visible.contains(CGPoint(x: element.frame.midX, y: element.frame.midY)) { return }
+            app.swipeUp()
+        }
+        XCTFail("Could not reach \(element)\n\(app.debugDescription)")
+    }
+    private func replace(_ field: XCUIElement, with value: String) {
+        XCTAssertTrue(field.waitForExistence(timeout: 30), app.debugDescription)
+        field.tap()
+        // These fixtures fit inside the editing viewport. Explicitly tap the
+        // trailing empty area to put the insertion point AFTER the original.
+        // Cmd+A is not a select-all contract on the iPhone software keyboard.
+        // Reopening TextEditor and tapping its center can put the caret first.
+        field.coordinate(withNormalizedOffset: CGVector(
+            dx: 0.95, dy: field.elementType == .textView ? 0.85 : 0.5
+        )).tap()
+        let previous = field.value as? String ?? ""
+        if !previous.isEmpty {
+            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count))
+        }
+        if field.elementType == .textView {
+            XCTAssertEqual(field.value as? String, "", "Existing note must be cleared before typing")
+        }
+        field.typeText(value)
+        XCTAssertEqual(field.value as? String, value, "The test must enter exactly the intended replacement")
+    }
+    private func capture(_ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
+    }
+    private func openCorrection() {
+        app.launch()
+        XCTAssertTrue(text("평가 필터 8개").waitForExistence(timeout: 120), app.debugDescription)
+        replace(app.textFields.firstMatch, with: "세비체")
+        XCTAssertTrue(text("평가 필터 1개").waitForExistence(timeout: 30))
+        let record = button("세비체"); reveal(record); record.tap()
+        XCTAssertTrue(text(originalNote).waitForExistence(timeout: 30))
+        let edit = button("메모·날짜 수정"); reveal(edit)
+        XCTAssertGreaterThanOrEqual(edit.frame.height, 44)
+        capture("plating-edit-01-action-group")
+        edit.tap()
+        XCTAssertTrue(app.navigationBars["기록 바로잡기"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.textViews["회고 원문 수정"].waitForExistence(timeout: 30))
+    }
+
+    func testUnchangedCancelThenDirtyContinueDiscardAndSave() {
+        openCorrection()
+        let navigation = app.navigationBars["기록 바로잡기"]
+        XCTAssertFalse(navigation.buttons["저장"].isEnabled)
+        capture("plating-edit-02-unchanged")
+        navigation.buttons["취소"].tap()
+        XCTAssertTrue(app.staticTexts["음식 기억"].waitForExistence(timeout: 30))
+        XCTAssertEqual(app.alerts.count, 0)
+        let edit = button("메모·날짜 수정"); reveal(edit); edit.tap()
+        replace(app.textViews["회고 원문 수정"], with: correctedNote)
+        XCTAssertTrue(navigation.buttons["저장"].isEnabled)
+        capture("plating-edit-03-keyboard")
+        navigation.buttons["취소"].tap()
+        let discard = app.alerts["변경 내용을 버릴까요?"]
+        XCTAssertTrue(discard.waitForExistence(timeout: 10))
+        capture("plating-edit-04-discard-confirmation")
+        discard.buttons["계속 수정"].tap()
+        XCTAssertEqual(app.textViews["회고 원문 수정"].value as? String, correctedNote)
+        navigation.buttons["취소"].tap()
+        discard.buttons["변경 내용 버리기"].tap()
+        XCTAssertTrue(app.staticTexts["음식 기억"].waitForExistence(timeout: 30))
+        XCTAssertTrue(text(originalNote).exists)
+        reveal(edit); edit.tap()
+        XCTAssertEqual(app.textViews["회고 원문 수정"].value as? String, originalNote)
+        replace(app.textViews["회고 원문 수정"], with: correctedNote)
+        navigation.buttons["저장"].tap()
+        XCTAssertTrue(text(correctedNote).waitForExistence(timeout: 30))
+        capture("plating-edit-05-saved-original")
+    }
+
+    func testLargeTextEditorAndCancelRemainReachable() {
+        app.launchArguments += ["-UIPreferredContentSizeCategoryName", UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        openCorrection()
+        let editor = app.textViews["회고 원문 수정"]
+        XCTAssertGreaterThan(editor.frame.height, 180)
+        XCTAssertLessThanOrEqual(editor.frame.maxX, app.frame.maxX)
+        XCTAssertTrue(app.navigationBars["기록 바로잡기"].buttons["취소"].isHittable)
+        capture("plating-edit-06-large-text")
+        app.navigationBars["기록 바로잡기"].buttons["취소"].tap()
+        XCTAssertTrue(app.staticTexts["음식 기억"].waitForExistence(timeout: 30))
+    }
+}
+
 /// 실제 SwiftUI 화면을 합성 R1–R9로 구동한다. 사용자 계정이나 사진을 사용하지 않는다.
 final class FoodMemoryUITests: XCTestCase {
     private let correction = "산미는 좋았다. 싫었던 것은 생선 비린 향이었다. 앞의 ‘별로였다’는 전체 평가다."
@@ -56,23 +164,30 @@ final class FoodMemoryUITests: XCTestCase {
         reveal(record); record.tap()
         XCTAssertTrue(text("산미가 또렷했다. 전체적으로 별로였다.").waitForExistence(timeout: 30))
         capture("memory-04-original-uncertain-meal-date")
-        let edit = button("회고·식사 시점 바로잡기")
+        let edit = button("메모·날짜 수정")
         reveal(edit); edit.tap()
         replace(app.textViews.firstMatch, with: correction)
         app.navigationBars["기록 바로잡기"].buttons["저장"].tap()
         XCTAssertTrue(text(correction).waitForExistence(timeout: 30))
+        button("기록 옵션").tap()
+        button("수정 이력").tap()
         let undo = button("이전 수정 되돌리기")
         reveal(undo); capture("memory-05-correction-provenance")
         undo.tap()
-        XCTAssertTrue(text("현재 회고: 산미가 또렷했다. 전체적으로 별로였다.").waitForExistence(timeout: 30))
+        XCTAssertTrue(text("수정을 되돌렸어요.").waitForExistence(timeout: 30))
+        app.buttons["뒤로"].firstMatch.tap()
+        XCTAssertTrue(text("산미가 또렷했다. 전체적으로 별로였다.").waitForExistence(timeout: 30))
+        button("기록 옵션").tap()
+        button("수정 이력").tap()
         reveal(undo); undo.tap()
-        XCTAssertTrue(text("현재 회고: " + correction).waitForExistence(timeout: 30))
-        let delete = button("내가 먹은 기록이 아님 · 삭제")
-        reveal(delete); delete.tap()
+        app.buttons["뒤로"].firstMatch.tap()
+        XCTAssertTrue(text(correction).waitForExistence(timeout: 30))
+        button("기록 옵션").tap()
+        button("기록 삭제").tap()
         app.alerts.buttons["삭제"].tap()
         XCTAssertTrue(text("삭제되었거나 현재 계정에서 볼 수 없는 기록").waitForExistence(timeout: 30))
         capture("memory-06-deleted-detail")
-        app.navigationBars["음식 기억"].buttons["닫기"].tap()
+        app.buttons["뒤로"].tap()
         XCTAssertTrue(text("전체 8개 조회").waitForExistence(timeout: 30))
         XCTAssertTrue(text("평가 필터 0개").exists)
         capture("memory-07-deleted-search")
@@ -86,8 +201,9 @@ final class FoodMemoryUITests: XCTestCase {
         capture("memory-08-large-content-size")
         let record = button("크림 파스타")
         reveal(record); record.tap()
-        let edit = button("회고·식사 시점 바로잡기")
-        reveal(edit)
+        button("기록 옵션").tap()
+        let edit = app.sheets.buttons["메모·날짜 수정"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 10))
         XCTAssertFalse(edit.label.isEmpty)
         capture("memory-09-large-detail-actions")
     }
@@ -155,7 +271,7 @@ final class HomeTasteQuestionUITests: XCTestCase {
         capture("home-question-03-category")
         let record = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "중간 산미의 국물")).firstMatch
         reveal(record); record.tap()
-        XCTAssertTrue(app.navigationBars["음식 기억"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.staticTexts["음식 기억"].waitForExistence(timeout: 30))
         XCTAssertTrue(text("식사일").exists)
         capture("home-question-04-current-original")
     }
@@ -164,7 +280,7 @@ final class HomeTasteQuestionUITests: XCTestCase {
         app.launch()
         let radar = app.otherElements["여섯 가지 미각 축을 보여주는 미각 반응 차트"].firstMatch
         XCTAssertTrue(radar.waitForExistence(timeout: 120), app.debugDescription)
-        let radarTitle = text("맛을 느끼는 경향")
+        let radarTitle = text("감각 패턴")
         reveal(radarTitle)
         if radarTitle.exists && radarTitle.frame.minY > 180 {
             let origin = app.coordinate(withNormalizedOffset: .zero)
@@ -195,7 +311,7 @@ final class HomeTasteQuestionUITests: XCTestCase {
         XCTAssertTrue(original.waitForExistence(timeout: 10), app.debugDescription)
         XCTAssertTrue(original.label.contains("2026년 9월 7일"), original.label)
         original.tap()
-        XCTAssertTrue(app.navigationBars["음식 기억"].waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["음식 기억"].waitForExistence(timeout: 30), app.debugDescription)
         capture("analysis-question-04-current-original")
     }
     func test02LargeTypeQuestionAndMetricActionsRemainReachable() throws {
@@ -255,7 +371,7 @@ final class HomeTasteQuestionUITests: XCTestCase {
         XCTAssertFalse(app.buttons["taste-question-choice-liked"].exists)
         let original = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "원본 열기 · 수정")).firstMatch
         reveal(original); capture("home-discovery-03-originals"); original.tap()
-        XCTAssertTrue(app.navigationBars["음식 기억"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.staticTexts["음식 기억"].waitForExistence(timeout: 30))
         capture("home-discovery-04-food-memory")
     }
 
@@ -319,5 +435,75 @@ final class HomeTasteQuestionUITests: XCTestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.2))
         } while Date() < deadline
         XCTFail("남은 질문 수가 \(expected)개가 되지 않았어요")
+    }
+}
+
+final class FoodMemoryDetailRedesignUITests: XCTestCase {
+    private func makeApp(empty: Bool = false) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["--food-memory-detail-qa"]
+        if empty { app.launchArguments.append("--food-memory-detail-empty-qa") }
+        return app
+    }
+
+    func testPhotosPageWithoutChangingTheSelectedRecordAndOptionsStillEdit() {
+        continueAfterFailure = false
+        let app = makeApp()
+        app.launch()
+        XCTAssertTrue(app.staticTexts["구운 배"].waitForExistence(timeout: 60), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["1 / 2"].waitForExistence(timeout: 20))
+        XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "현재 원본 수정")).firstMatch.exists)
+        XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "미응답")).firstMatch.exists)
+        let photos = app.otherElements["food-memory-photos"]
+        XCTAssertTrue(photos.exists, app.debugDescription)
+        photos.swipeLeft()
+        XCTAssertTrue(app.staticTexts["2 / 2"].waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertFalse(app.staticTexts["시트러스와 배"].exists)
+        XCTAssertTrue(app.staticTexts["구운 배"].exists)
+        photos.swipeRight()
+        XCTAssertTrue(app.staticTexts["1 / 2"].waitForExistence(timeout: 10))
+        app.buttons["기록 옵션"].tap()
+        app.sheets.buttons["메모·날짜 수정"].tap()
+        XCTAssertTrue(app.navigationBars["기록 바로잡기"].waitForExistence(timeout: 10))
+        app.navigationBars["기록 바로잡기"].buttons["취소"].tap()
+        XCTAssertTrue(app.staticTexts["음식 기억"].waitForExistence(timeout: 10))
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "food-memory-redesign-carousel"; attachment.lifetime = .keepAlways; add(attachment)
+    }
+
+    func testPhotoManagementRemovesOnlyTheSelectedPhoto() {
+        continueAfterFailure = false
+        let app = makeApp()
+        app.launch()
+        XCTAssertTrue(app.staticTexts["1 / 2"].waitForExistence(timeout: 60))
+        app.buttons["기록 옵션"].tap()
+        app.sheets.buttons["사진 관리"].tap()
+        XCTAssertTrue(app.buttons["사진 1 삭제"].waitForExistence(timeout: 10))
+        app.buttons["사진 1 삭제"].tap()
+        app.alerts["이 사진을 삭제할까요?"].buttons["삭제"].tap()
+        XCTAssertTrue(app.buttons["사진 1 삭제"].exists)
+        XCTAssertFalse(app.buttons["사진 2 삭제"].exists)
+        app.buttons["뒤로"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["구운 배"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["1 / 2"].exists)
+        XCTAssertFalse(app.staticTexts["1 / 1"].exists)
+        XCTAssertTrue(app.staticTexts["전체 평가, 좋았어요"].exists)
+    }
+
+    func testNoPhotoOrFeedbackUsesACompactAddActionWithoutInventedInformation() {
+        continueAfterFailure = false
+        let app = makeApp(empty: true)
+        app.launch()
+        XCTAssertTrue(app.staticTexts["구운 배"].waitForExistence(timeout: 60))
+        XCTAssertTrue(app.buttons["사진 추가"].exists)
+        XCTAssertFalse(app.staticTexts["1 / 1"].exists)
+        XCTAssertFalse(app.staticTexts["기억에 남은 맛"].exists)
+        XCTAssertFalse(app.staticTexts["좋았어요"].exists)
+        XCTAssertFalse(app.staticTexts["메모"].exists)
+        app.buttons["기록 옵션"].tap()
+        app.sheets.buttons["기록 삭제"].tap()
+        XCTAssertTrue(app.alerts["이 기록을 삭제할까요?"].waitForExistence(timeout: 10))
+        app.alerts.buttons["취소"].tap()
+        XCTAssertTrue(app.staticTexts["구운 배"].exists)
     }
 }

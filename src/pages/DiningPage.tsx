@@ -1,3 +1,4 @@
+import { DINING_RECORDS_CHANGED } from '../lib/gastronomy/events';
 import {
   useEffect,
   useRef,
@@ -372,7 +373,7 @@ function buildDishFeedbackDiningAnalysisSnapshot({
   detailTags: string[];
   dish: DiningDishMetadata;
   dishKindTags: string[];
-  reviewerProfile: TasteProfileSnapshot;
+  reviewerProfile?: TasteProfileSnapshot;
   selectedFeedbackReason: string | null;
   tasteTags: DishTasteTag[];
 }): TasteBuddyAgentDiningAnalysisSnapshot {
@@ -399,7 +400,7 @@ function buildDishFeedbackItems({
   feedbackByReservationId: Record<number, DiningFeedbackDraft>;
   feedbackScenariosByReservationId: Record<number, DiningFeedbackScenario>;
   reservations: Reservation[];
-  reviewerProfile: TasteProfileSnapshot;
+  reviewerProfile?: TasteProfileSnapshot;
 }) {
   return reservations.flatMap<DishFeedbackItem>((reservation) => {
     const scenario = feedbackScenariosByReservationId[reservation.id] ?? FALLBACK_FEEDBACK_SCENARIOS[reservation.id];
@@ -1600,6 +1601,7 @@ export default function DiningPage({
             localFeedbackRevisionsRef.current.set(selectedReservation.id,
               (localFeedbackRevisionsRef.current.get(selectedReservation.id) ?? 0) + 1);
             onExternalFeedbackSaved?.(selectedReservation.id, nextDraft, selectedScenario, persistenceResult.remoteId);
+            window.dispatchEvent(new Event(DINING_RECORDS_CHANGED));
 
             setSubmittedFeedbackReservationIds((current) => {
               const nextReservationIds = new Set(current);

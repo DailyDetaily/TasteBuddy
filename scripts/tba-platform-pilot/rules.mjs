@@ -1,10 +1,10 @@
 import { parseOverallEvaluation, validateOverallEvaluationAtom, DINING_OVERALL_RESPONSES } from './dining-overall-evaluation.mjs';
 import semanticLexicon from './semantic-lexicon.json' with { type: 'json' };
 import { parseStructuredSelections, validateStructuredSelectionAtom } from './dining-selections.mjs';
-import { detailDomains, positiveEvaluation, negativeEvaluation, evaluationCue, comparativeOrConditional, additionalSenses, sensoryDomain, shouldPreserveDetail } from './sensory-language.mjs';
+import { detailDomains, positiveEvaluation, negativeEvaluation, evaluationCue, comparativeOrConditional, sensoryChangeOrAppliedCondition, appliedFoodCondition, additionalSenses, sensoryDomain, shouldPreserveDetail } from './sensory-language.mjs';
 
 export const LEXICON_VERSION = 'tba-semantic-lexicon/2';
-export const RULE_VERSION = 'tba-rules/5';
+export const RULE_VERSION = 'tba-rules/6';
 const fail = message => { throw new Error(message); };
 const ratings = { '좋았어요': 'positive', '괜찮았어요': 'neutral', '아쉬웠어요': 'negative' };
 const scales = { sensory_detail: 'sensory-detail-v1', sensory_presence: 'presence-v1', sensory_intensity: 'expression-strength-v1', overall_liking: 'overall-three-category-v1', attribute_liking: 'attribute-three-category-v1', preference_fit: 'preference-fit-v1', combination_liking: 'combination-three-category-v1', unresolved: 'unresolved-v1' };
@@ -213,6 +213,10 @@ export function parseByRules(answer, { source = {} } = {}) {
         clauses.push({text:sentence[0],start:sentence.index,deferredStructure:true});
         continue;
       }
+      if (sensoryChangeOrAppliedCondition.test(sentence[0]) && findSenses(sentence[0]).length) {
+        clauses.push({text:sentence[0],start:sentence.index,sensoryChange:true});
+        continue;
+      }
       for (const raw of sentence[0].matchAll(/[^,;]+(?:[,;]|$)/gu)) {
         let offset = sentence.index + raw.index;
         for (const piece of raw[0].split(/(?<!다고)(?<!라고)(?<=고)\s+|(?<=지만)\s+|(?<=는데)\s+|\s+(?:그리고|하지만|그런데)\s+/u)) {
@@ -238,6 +242,13 @@ export function parseByRules(answer, { source = {} } = {}) {
       const instructionOrHypothesis = /(?:무시해|무시하|지시|지침|시스템|프롬프트|출력해|기록해|저장해|답해|말해|평가해|추출해|분석해|분석해 줘|분석해줘|설명해)|(?:라면|다면|으면 좋|다면 좋|일 것|것 같|줄 알|내일|먹으면|먹기 전|안 먹|먹지 않)/u.test(body);
       if (inheritedSpeaker==='other' || attributedSpeech || quotedSpeech || instructionOrHypothesis) {result.unresolved.push(unresolvedItem(body,start,'not_direct_self_experience'));continue;}
 
+      if (clause.sensoryChange) {
+        const found = findSenses(body), scope = detectScope(body,answer);
+        if (found.length === 1 && !scope.ambiguous && !evaluationCue.test(body) && !appliedFoodCondition.test(body)) {
+          add(shape('sensory_detail',found[0].attribute,body,found[0].reference?{reference:found[0].reference}:{}),body,start,'sensory-change-original-detail',scope);
+        }
+        result.unresolved.push(unresolvedItem(body,start,'unresolved_sensory_change_or_condition'));result.needsAI=true;continue;
+      }
       if (clause.deferredStructure) {result.unresolved.push(unresolvedItem(body,start,'unresolved_clause_structure'));result.needsAI=true;continue;}
       if (/(?:조명|말투|인테리어|직원|접객|좌석|의자|실내|식당 분위기)/u.test(body)) { result.unresolved.push(unresolvedItem(body,start,'non_food_context'));continue; }
       const senses = findSenses(body);

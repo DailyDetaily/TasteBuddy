@@ -39,7 +39,7 @@ await test('private photo deletion drains every page and fails closed on storage
 });
 
 await test('private photo policies isolate accounts, require upload admission, and block OAuth and deletion races', async () => {
-  const db = await createTestSupabaseDb({ through: '20260908120000' });
+  const db = await createTestSupabaseDb({ through: '99999999999999' });
   const signIn = async (id: string, claims = {}) => {
     await db.exec('reset role; set role authenticated;');
     await db.query("select set_config('request.jwt.claim.sub', $1, false), set_config('request.jwt.claims', $2, false)",

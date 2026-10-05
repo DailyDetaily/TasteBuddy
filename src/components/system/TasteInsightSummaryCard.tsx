@@ -32,7 +32,7 @@ export function TasteChangeEmptySummary() {
 export type TasteInsightSummaryDetail = {
   change: string;
   detailLabel: string;
-  history: string[];
+  history: readonly string[];
   parentTaste: string;
   trend: TastePointArrowBoxTrend;
 };

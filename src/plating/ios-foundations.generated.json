@@ -1,0 +1,632 @@
+{
+  "sources": [
+    {
+      "path": "ios/TasteBuddy/DesignSystem/TBTheme.swift",
+      "sha256": "27ad815c4f51c91b2abe2d88f0704e0f7be37b5c767c8a777bb1aec1de47661e"
+    },
+    {
+      "path": "ios/TasteBuddy/Models/TasteModels.swift",
+      "sha256": "b9b2fd201bd0514d41744da141a70206bcbd7e27e96c021af5ae194961cfaa20"
+    },
+    {
+      "path": "ios/TasteBuddy/DesignSystem/TasteBloomMotion.swift",
+      "sha256": "d3861e1950188c213e2ab671d536619af4350c9d5b74a512579b4c0621ab733c"
+    }
+  ],
+  "colors": [
+    {
+      "name": "page",
+      "value": "#F3F3F3"
+    },
+    {
+      "name": "focus",
+      "value": "#FFFFFF",
+      "alias": "Color.white"
+    },
+    {
+      "name": "surface",
+      "value": "#FFFFFF",
+      "alias": "Color.white"
+    },
+    {
+      "name": "surfaceHover",
+      "value": "#FAFAFA"
+    },
+    {
+      "name": "mutedSurface",
+      "value": "#F7F7F7"
+    },
+    {
+      "name": "elevatedSurface",
+      "value": "#FCFCFC"
+    },
+    {
+      "name": "disabledSurface",
+      "value": "#EFEFEF"
+    },
+    {
+      "name": "placeholderSurface",
+      "value": "#EFEFEF"
+    },
+    {
+      "name": "inverseSurface",
+      "value": "#0F0F0F"
+    },
+    {
+      "name": "overlaySurface",
+      "value": "rgba(255, 255, 255, 0.8)"
+    },
+    {
+      "name": "textPrimary",
+      "value": "#0F0F0F"
+    },
+    {
+      "name": "textSecondary",
+      "value": "#3F3F3F"
+    },
+    {
+      "name": "textTertiary",
+      "value": "#535353"
+    },
+    {
+      "name": "textBody",
+      "value": "#666666"
+    },
+    {
+      "name": "textAction",
+      "value": "#666666",
+      "alias": "textBody"
+    },
+    {
+      "name": "textHint",
+      "value": "#6F6F6F"
+    },
+    {
+      "name": "textDisabled",
+      "value": "#AFAFAF"
+    },
+    {
+      "name": "textSubtle",
+      "value": "rgba(15, 15, 15, 0.6)"
+    },
+    {
+      "name": "textMuted",
+      "value": "rgba(15, 15, 15, 0.5)"
+    },
+    {
+      "name": "textFaint",
+      "value": "rgba(15, 15, 15, 0.4)"
+    },
+    {
+      "name": "textInverse",
+      "value": "#FFFFFF",
+      "alias": "Color.white"
+    },
+    {
+      "name": "borderCard",
+      "value": "#F0F0F0"
+    },
+    {
+      "name": "borderSubtle",
+      "value": "#E8E8E8"
+    },
+    {
+      "name": "border",
+      "value": "#E7E7E7"
+    },
+    {
+      "name": "borderStrong",
+      "value": "#E5E5E5"
+    },
+    {
+      "name": "borderDisabled",
+      "value": "#E0E0E0"
+    },
+    {
+      "name": "borderAvatar",
+      "value": "rgba(15, 15, 15, 0.2)"
+    },
+    {
+      "name": "borderAvatarSoft",
+      "value": "rgba(15, 15, 15, 0.15)"
+    },
+    {
+      "name": "iconPrimary",
+      "value": "#3F3F3F"
+    },
+    {
+      "name": "iconHover",
+      "value": "#6F6F6F"
+    },
+    {
+      "name": "iconMuted",
+      "value": "#AFAFAF"
+    },
+    {
+      "name": "neutral",
+      "value": "#3F3F3F"
+    },
+    {
+      "name": "neutralSoft",
+      "value": "#EFEFEF"
+    },
+    {
+      "name": "informative",
+      "value": "#3F3F3F"
+    },
+    {
+      "name": "informativeSoft",
+      "value": "#F7F7F7"
+    },
+    {
+      "name": "success",
+      "value": "#2F8F5B"
+    },
+    {
+      "name": "successText",
+      "value": "#236B45"
+    },
+    {
+      "name": "successStrong",
+      "value": "#236B45"
+    },
+    {
+      "name": "successSoft",
+      "value": "#E6F4EC"
+    },
+    {
+      "name": "warning",
+      "value": "#A8661A"
+    },
+    {
+      "name": "warningText",
+      "value": "#875014"
+    },
+    {
+      "name": "warningStrong",
+      "value": "#875014"
+    },
+    {
+      "name": "warningSoft",
+      "value": "#FFF1DE"
+    },
+    {
+      "name": "destructive",
+      "value": "#D4183D"
+    },
+    {
+      "name": "destructiveText",
+      "value": "#B31333"
+    },
+    {
+      "name": "destructiveSoft",
+      "value": "#FCEDEF"
+    },
+    {
+      "name": "actionPrimary",
+      "value": "#0F0F0F"
+    },
+    {
+      "name": "actionOnPrimary",
+      "value": "#FFFFFF",
+      "alias": "Color.white"
+    },
+    {
+      "name": "selectionSurface",
+      "value": "#0F0F0F"
+    },
+    {
+      "name": "selectionText",
+      "value": "#FFFFFF",
+      "alias": "Color.white"
+    },
+    {
+      "name": "focusRing",
+      "value": "#3F3F3F"
+    },
+    {
+      "name": "hoverOverlay",
+      "value": "rgba(0, 0, 0, 0.04)"
+    },
+    {
+      "name": "pressedOverlay",
+      "value": "rgba(0, 0, 0, 0.06)"
+    },
+    {
+      "name": "pressedInverseOverlay",
+      "value": "rgba(255, 255, 255, 0.1)"
+    },
+    {
+      "name": "scrimSubtle",
+      "value": "rgba(0, 0, 0, 0.35)"
+    },
+    {
+      "name": "scrimDefault",
+      "value": "rgba(0, 0, 0, 0.5)"
+    },
+    {
+      "name": "scrimStrong",
+      "value": "rgba(0, 0, 0, 0.6)"
+    }
+  ],
+  "spacing": [
+    {
+      "name": "x2",
+      "value": 2
+    },
+    {
+      "name": "x4",
+      "value": 4
+    },
+    {
+      "name": "x6",
+      "value": 6
+    },
+    {
+      "name": "x8",
+      "value": 8
+    },
+    {
+      "name": "x10",
+      "value": 10
+    },
+    {
+      "name": "x12",
+      "value": 12
+    },
+    {
+      "name": "x16",
+      "value": 16
+    },
+    {
+      "name": "x20",
+      "value": 20
+    },
+    {
+      "name": "x24",
+      "value": 24
+    },
+    {
+      "name": "x40",
+      "value": 40
+    },
+    {
+      "name": "page",
+      "value": 20
+    },
+    {
+      "name": "pageTop",
+      "value": 8
+    },
+    {
+      "name": "mainTabContentBottom",
+      "value": 72
+    },
+    {
+      "name": "section",
+      "value": 20
+    },
+    {
+      "name": "card",
+      "value": 12
+    }
+  ],
+  "radius": [
+    {
+      "name": "badge",
+      "value": 6
+    },
+    {
+      "name": "icon",
+      "value": 8
+    },
+    {
+      "name": "chip",
+      "value": 999
+    },
+    {
+      "name": "control",
+      "value": 10
+    },
+    {
+      "name": "row",
+      "value": 12
+    },
+    {
+      "name": "support",
+      "value": 14
+    },
+    {
+      "name": "card",
+      "value": 20
+    },
+    {
+      "name": "media",
+      "value": 24
+    },
+    {
+      "name": "full",
+      "value": 9999
+    }
+  ],
+  "sizes": [
+    {
+      "name": "screenMaxWidth",
+      "value": 1440
+    },
+    {
+      "name": "topAppBarHeight",
+      "value": 32
+    },
+    {
+      "name": "bottomTabBarHeight",
+      "value": 60
+    },
+    {
+      "name": "primaryButtonHeight",
+      "value": 48
+    },
+    {
+      "name": "bottomFadeMinHeight",
+      "value": 140
+    },
+    {
+      "name": "bottomIndicatorWidth",
+      "value": 134
+    },
+    {
+      "name": "chromeIconButton",
+      "value": 40
+    },
+    {
+      "name": "tasteLoopSize",
+      "value": 320
+    },
+    {
+      "name": "tasteLoopGuideDotDiameter",
+      "value": 1
+    },
+    {
+      "name": "tasteLoopGuideDotGap",
+      "value": 3
+    },
+    {
+      "name": "tasteLoopGuideRadius",
+      "value": 138
+    },
+    {
+      "name": "tasteLoopLabelOffset",
+      "value": 4
+    },
+    {
+      "name": "tasteLoopNodeRadius",
+      "value": 12
+    },
+    {
+      "name": "tasteLoopOuterRingInset",
+      "value": 10
+    },
+    {
+      "name": "tasteLoopOuterRingThickness",
+      "value": 24
+    },
+    {
+      "name": "tasteLoopRingRadius",
+      "value": 138
+    },
+    {
+      "name": "tasteLoopStepCount",
+      "value": 10
+    }
+  ],
+  "typography": {
+    "fontSizes": [
+      {
+        "name": "x10",
+        "value": 10
+      },
+      {
+        "name": "x11",
+        "value": 11
+      },
+      {
+        "name": "x12",
+        "value": 12
+      },
+      {
+        "name": "x13",
+        "value": 13
+      },
+      {
+        "name": "x14",
+        "value": 14
+      },
+      {
+        "name": "x15",
+        "value": 15
+      },
+      {
+        "name": "x16",
+        "value": 16
+      },
+      {
+        "name": "x18",
+        "value": 18
+      },
+      {
+        "name": "x20",
+        "value": 18
+      },
+      {
+        "name": "x22",
+        "value": 18
+      },
+      {
+        "name": "x24",
+        "value": 18
+      },
+      {
+        "name": "x28",
+        "value": 18
+      }
+    ],
+    "weights": {
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    },
+    "lineHeights": [
+      {
+        "name": "tight",
+        "value": 1.2
+      },
+      {
+        "name": "snug",
+        "value": 1.35
+      },
+      {
+        "name": "normal",
+        "value": 1.4
+      },
+      {
+        "name": "relaxed",
+        "value": 1.5
+      }
+    ],
+    "letterSpacing": [
+      {
+        "name": "tight",
+        "value": -0.24
+      },
+      {
+        "name": "micro",
+        "value": 0.14
+      },
+      {
+        "name": "none",
+        "value": 0
+      }
+    ],
+    "roles": [
+      {
+        "name": "sectionTitle",
+        "size": 18,
+        "weight": "bold",
+        "additionalLineSpacing": 0,
+        "color": "textPrimary"
+      },
+      {
+        "name": "subsectionTitle",
+        "size": 16,
+        "weight": "bold",
+        "additionalLineSpacing": 0,
+        "color": "textPrimary"
+      },
+      {
+        "name": "sheetTitle",
+        "size": 15,
+        "weight": "bold",
+        "additionalLineSpacing": 0,
+        "color": "textPrimary"
+      },
+      {
+        "name": "body",
+        "size": 14,
+        "weight": "regular",
+        "additionalLineSpacing": 4,
+        "color": "textBody"
+      },
+      {
+        "name": "caption",
+        "size": 12,
+        "weight": "semibold",
+        "additionalLineSpacing": 3,
+        "color": "textBody"
+      },
+      {
+        "name": "detailAction",
+        "size": 11,
+        "weight": "medium",
+        "additionalLineSpacing": 0,
+        "color": "textAction"
+      }
+    ]
+  },
+  "tastes": [
+    {
+      "id": "sweet",
+      "label": "단맛",
+      "main": "#FF9900",
+      "tintSurface": "#FFEBCC",
+      "tintText": "#6F4609",
+      "gradient": [
+        "#FF9900",
+        "#FFB84D"
+      ]
+    },
+    {
+      "id": "sour",
+      "label": "신맛",
+      "main": "#FBC02D",
+      "tintSurface": "#FFF7CC",
+      "tintText": "#6F5F09",
+      "gradient": [
+        "#FBC02D",
+        "#FFD54F"
+      ]
+    },
+    {
+      "id": "bitter",
+      "label": "쓴맛",
+      "main": "#95C900",
+      "tintSurface": "#EAF4CC",
+      "tintText": "#505B24",
+      "gradient": [
+        "#95C900",
+        "#AED581"
+      ]
+    },
+    {
+      "id": "salty",
+      "label": "짠맛",
+      "main": "#7299FF",
+      "tintSurface": "#E3EBFF",
+      "tintText": "#36466F",
+      "gradient": [
+        "#7299FF",
+        "#9FBFFF"
+      ]
+    },
+    {
+      "id": "umami",
+      "label": "감칠맛",
+      "main": "#B372B4",
+      "tintSurface": "#F0E3F0",
+      "tintText": "#513751",
+      "gradient": [
+        "#B372B4",
+        "#CE93D8"
+      ]
+    },
+    {
+      "id": "fat",
+      "label": "지방맛",
+      "main": "#95867A",
+      "tintSurface": "#EAE7E4",
+      "tintText": "#453F3A",
+      "gradient": [
+        "#95867A",
+        "#B0A49A"
+      ]
+    }
+  ],
+  "controlFeedback": {
+    "pressDistance": 1,
+    "widthBasisDivisor": 4,
+    "minimumBasis": 24,
+    "primaryOpacity": 0.1,
+    "neutralOpacity": 0.06,
+    "durationMs": 120
+  }
+}

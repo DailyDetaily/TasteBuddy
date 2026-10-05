@@ -1,9 +1,11 @@
 
 import { createRoot } from "react-dom/client";
+import { lazy, Suspense } from "react";
 import { registerSW } from "virtual:pwa-register";
 
-import App from "./App.tsx";
-import ChatGPTConsentPage from "./pages/ChatGPTConsentPage";
+const App = lazy(() => import("./App.tsx"));
+const PlatingSite = lazy(() => import("./plating/PlatingSite"));
+const ChatGPTConsentPage = lazy(() => import("./pages/ChatGPTConsentPage"));
 import "./index.css";
 
 async function resetLocalDevPwaState() {
@@ -58,8 +60,13 @@ async function bootstrap() {
     registerSW({ immediate: true });
   }
 
+  const isPlating = window.location.pathname === "/design-system" ||
+    window.location.pathname.startsWith("/design-system/") ||
+    new URLSearchParams(window.location.search).get("preview") === "design-system";
   createRoot(document.getElementById("root")!).render(
-    window.location.pathname === "/oauth/chatgpt" ? <ChatGPTConsentPage /> : <App />,
+    <Suspense fallback={<div role="status" style={{padding: 24}}>불러오고 있어요.</div>}>
+      {window.location.pathname === "/oauth/chatgpt" ? <ChatGPTConsentPage /> : isPlating ? <PlatingSite /> : <App />}
+    </Suspense>,
   );
 }
 

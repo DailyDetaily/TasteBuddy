@@ -1,9 +1,20 @@
 import { DINING_SELECTION_VERSION, DINING_SELECTION_CATALOG, DINING_SELECTION_VALUES, DINING_SELECTION_LABELS } from './dining-selection-catalog.mjs';
+import { SENSORY_V2, SENSORY_V2_VERSION, parseSensoryV2Selections } from '../../src/lib/sensoryV2.mjs';
 export { DINING_SELECTION_VERSION, DINING_SELECTION_CATALOG };
+export const ALL_DINING_SELECTION_CATALOG = [...DINING_SELECTION_CATALOG, ...SENSORY_V2.entries];
 const canonical=value=>JSON.stringify(value,(_,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).sort(([a],[b])=>a.localeCompare(b))):v);
 const catalog=new Map(DINING_SELECTION_CATALOG.map(e=>[`${e.type}:${e.id}`,e]));
 const scales={sensory_presence:'presence-v1',sensory_detail:'sensory-detail-v1',sensory_intensity:'expression-strength-v1',attribute_liking:'attribute-three-category-v1',preference_fit:'preference-fit-v1'};
-export function parseStructuredSelections(selections,{source={},questionVersion='2',choiceVersion=DINING_SELECTION_VERSION,ruleVersion='tba-rules/4',lexiconVersion='tba-semantic-lexicon/2'}={}) {
+export function parseStructuredSelections(selections, options={}) {
+ if(!Array.isArray(selections))throw new Error('INVALID_STRUCTURED_SELECTIONS');
+ if(options.choiceVersion && ![DINING_SELECTION_VERSION,SENSORY_V2_VERSION,'dining-sensory-selection/mixed'].includes(options.choiceVersion))return parseLegacySelections(selections,options);
+ const v2=selections.filter(s=>s?.catalogVersion===SENSORY_V2_VERSION);
+ if(!v2.length)return parseLegacySelections(selections,options);
+ const legacy=parseLegacySelections(selections.filter(s=>s?.catalogVersion!==SENSORY_V2_VERSION),{...options,choiceVersion:DINING_SELECTION_VERSION});
+ const current=parseSensoryV2Selections(v2,{...options,allSelections:selections,legacyEntries:DINING_SELECTION_CATALOG});
+ return {...legacy,observations:[...legacy.observations,...current.observations],unresolved:[...legacy.unresolved,...current.unresolved],decisionReasons:[...legacy.decisionReasons,'versioned_sensory_catalog']};
+}
+function parseLegacySelections(selections,{source={},questionVersion='2',choiceVersion=DINING_SELECTION_VERSION,ruleVersion='tba-rules/4',lexiconVersion='tba-semantic-lexicon/2'}={}) {
  if(!Array.isArray(selections))throw new Error('INVALID_STRUCTURED_SELECTIONS');
  const result={observations:[],unresolved:[],needsAI:false,decisionReasons:[],versions:{lexicon:lexiconVersion,rules:ruleVersion}};
  const unique=[...new Map(selections.map(s=>[canonical(s),s])).values()];

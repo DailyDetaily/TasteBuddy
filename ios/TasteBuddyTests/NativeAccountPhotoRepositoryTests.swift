@@ -9,6 +9,11 @@ import Supabase
 #endif
 
 final class NativeAccountPhotoRepositoryTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        DiningReflectionPhotoStore.activateAccountScope("guest")
+    }
+
     private func jpeg(red: CGFloat = 1) throws -> Data {
         let context = try XCTUnwrap(CGContext(data: nil, width: 16, height: 16, bitsPerComponent: 8,
             bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue))
@@ -47,7 +52,265 @@ final class NativeAccountPhotoRepositoryTests: XCTestCase {
         XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: filename), original)
     }
 
+    @MainActor
+    func testRecordDeletionPreservesPhotosUsedByOtherRecordsAndRecoveryArchives() throws {
+        let suite = "tastebuddy.photo.references.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let original = try jpeg(), filename = try DiningReflectionPhotoStore.save(original, entryID: UUID())
+        defer { DiningReflectionPhotoStore.remove(filename: filename) }
+        let app = AppModel(defaults: defaults,
+            authRepository: FixtureBackendAuthRepository(),
+            sessionRepository: FixtureBackendSessionRepository(status: .signedOut),
+            publicProfileRepository: FixtureBackendPublicProfileRepository(identities: []),
+            accountDataRepository: UnavailableNativeAccountDataRepository(),
+            accountPhotoRepository: UnavailableNativeAccountPhotoRepository())
+        let first = DiningEntry(restaurant: "first", menu: "menu", rating: 4, note: "", reflectionPhotoFilename: filename)
+        let second = DiningEntry(restaurant: "second", menu: "menu", rating: 4, note: "", reflectionPhotoFilename: filename)
+        app.addDiningEntry(first)
+        app.addDiningEntry(second)
+        XCTAssertTrue(app.deleteDiningEntry(id: first.id))
+        XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: filename), original)
+        let recovery = NativeAccountArchive(snapshot: .init(
+            values: ["tastebuddy.ios.dining-entries.v1": try JSONEncoder().encode([first])], photoFilenames: [filename]))
+        defaults.set(try JSONEncoder().encode(recovery), forKey: "tastebuddy.ios.account-archive.v1.guest.conflict.saved")
+        let updated = DiningEntry(id: second.id, restaurant: second.restaurant, menu: second.menu,
+            rating: second.rating, note: second.note, reflectionPhotoFilename: nil)
+        XCTAssertTrue(app.updateDiningEntry(updated, expected: app.diningEntry(id: second.id)))
+        XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: filename), original)
+    }
+
+    func testSamePhotoFilenameIsIsolatedByOwnerIncludingThumbnailCache() async throws {
+        let first = UUID().uuidString.lowercased(), second = UUID().uuidString.lowercased()
+        let filename = "\(UUID().uuidString.lowercased()).jpg"
+        let firstBytes = try jpeg(red: 1), secondBytes = try jpeg(red: 0)
+        defer {
+            DiningReflectionPhotoStore.remove(filename: filename, ownerScope: first)
+            DiningReflectionPhotoStore.remove(filename: filename, ownerScope: second)
+            DiningReflectionPhotoStore.activateAccountScope("guest")
+        }
+        try DiningReflectionPhotoStore.restore(firstBytes, filename: filename, ownerScope: first)
+        try DiningReflectionPhotoStore.restore(secondBytes, filename: filename, ownerScope: second)
+        DiningReflectionPhotoStore.activateAccountScope(first)
+        XCTAssertEqual(DiningReflectionPhotoStore.data(for: filename), firstBytes)
+        let firstThumbnail = await DiningReflectionPhotoStore.thumbnail(for: filename, fillingSquareOf: 16)
+        DiningReflectionPhotoStore.activateAccountScope(second)
+        XCTAssertEqual(DiningReflectionPhotoStore.data(for: filename), secondBytes)
+        let secondThumbnail = await DiningReflectionPhotoStore.thumbnail(for: filename, fillingSquareOf: 16)
+        XCTAssertNotNil(firstThumbnail)
+        XCTAssertNotNil(secondThumbnail)
+        XCTAssertFalse(firstThumbnail === secondThumbnail)
+        DiningReflectionPhotoStore.remove(filename: filename, ownerScope: first)
+        XCTAssertEqual(DiningReflectionPhotoStore.data(for: filename, ownerScope: second), secondBytes)
+    }
+
+    func testLegacyMigrationPreservesOriginalAndNeverAssignsItToTwoOwners() throws {
+        let first = UUID().uuidString.lowercased(), second = UUID().uuidString.lowercased()
+        let filename = "\(UUID().uuidString.lowercased()).jpg", bytes = try jpeg()
+        let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            .appendingPathComponent("TasteBuddy/DiningFeedbackPhotos", isDirectory: true)
+        let legacy = root.appendingPathComponent(filename)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try bytes.write(to: legacy)
+        defer {
+            try? FileManager.default.removeItem(at: legacy)
+            DiningReflectionPhotoStore.remove(filename: filename, ownerScope: first)
+            DiningReflectionPhotoStore.remove(filename: filename, ownerScope: second)
+        }
+        try DiningReflectionPhotoStore.migrateLegacyPhotos(filenames: [filename], ownerScope: first)
+        try DiningReflectionPhotoStore.migrateLegacyPhotos(filenames: [filename], ownerScope: second)
+        XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: filename, ownerScope: first), bytes)
+        XCTAssertNil(try DiningReflectionPhotoStore.originalData(for: filename, ownerScope: second))
+        XCTAssertEqual(try Data(contentsOf: legacy), bytes)
+    }
+
+    @MainActor
+    func testRecordDeletionRemovesPhotoWhenNoSourceStillReferencesIt() throws {
+        let suite = "tastebuddy.photo.unreferenced.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let filename = try DiningReflectionPhotoStore.save(jpeg(), entryID: UUID())
+        defer { DiningReflectionPhotoStore.remove(filename: filename) }
+        let app = AppModel(defaults: defaults,
+            authRepository: FixtureBackendAuthRepository(),
+            sessionRepository: FixtureBackendSessionRepository(status: .signedOut),
+            publicProfileRepository: FixtureBackendPublicProfileRepository(identities: []),
+            accountDataRepository: UnavailableNativeAccountDataRepository(),
+            accountPhotoRepository: UnavailableNativeAccountPhotoRepository())
+        let entry = DiningEntry(restaurant: "only", menu: "menu", rating: 4, note: "", reflectionPhotoFilename: filename)
+        app.addDiningEntry(entry)
+        XCTAssertTrue(app.deleteDiningEntry(id: entry.id))
+        XCTAssertNil(try DiningReflectionPhotoStore.originalData(for: filename))
+    }
+
+    @MainActor
+    func testExplicitGuestLinkCopiesOriginalIntoAccountPhotoScope() throws {
+        let suite = "tastebuddy.photo.guest-link.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let app = AppModel(defaults: defaults,
+            authRepository: FixtureBackendAuthRepository(),
+            sessionRepository: FixtureBackendSessionRepository(status: .signedOut),
+            publicProfileRepository: FixtureBackendPublicProfileRepository(identities: []),
+            accountDataRepository: UnavailableNativeAccountDataRepository(),
+            accountPhotoRepository: UnavailableNativeAccountPhotoRepository())
+        let owner = UUID().uuidString.lowercased(), bytes = try jpeg()
+        let filename = try DiningReflectionPhotoStore.save(bytes, entryID: UUID())
+        defer {
+            DiningReflectionPhotoStore.remove(filename: filename, ownerScope: "guest")
+            DiningReflectionPhotoStore.remove(filename: filename, ownerScope: owner)
+            DiningReflectionPhotoStore.activateAccountScope("guest")
+        }
+        app.addDiningEntry(.init(restaurant: "guest", menu: "menu", rating: 4, note: "", reflectionPhotoFilename: filename))
+        app.completeVerifiedEmailAuthEntry(user: .init(id: owner, email: "guest-link@example.com", isAnonymous: false), importingGuest: true)
+        XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: filename, ownerScope: owner), bytes)
+        XCTAssertEqual(app.diningEntries.count, 1)
+        app.completeAuthEntry()
+        XCTAssertTrue(app.diningEntries.isEmpty)
+    }
+
     #if canImport(Supabase)
+    func testCancelledOperationsKeepCancellationBeforeAccountMismatch() async throws {
+        let fixture = try PhotoRepositoryFixture { _, _ in
+            XCTFail("취소된 작업은 요청을 보내면 안 됩니다.")
+            return (500, Data())
+        }
+        let otherUserID = UUID().uuidString
+        for operation in 0..<5 {
+            let task = Task<Void, Error> {
+                // Cancel this exact task before entering the repository; no scheduling race.
+                withUnsafeCurrentTask { $0?.cancel() }
+                switch operation {
+                case 0:
+                    _ = try await fixture.dataRepository.fetch(userID: otherUserID)
+                case 1:
+                    _ = try await fixture.dataRepository.save(.init(), userID: otherUserID, expectedRevision: 0)
+                case 2:
+                    try await fixture.repository.backup(filenames: ["photo.jpg"], userID: otherUserID)
+                case 3:
+                    try await fixture.repository.restore(filenames: ["photo.jpg"], userID: otherUserID)
+                default:
+                    try await fixture.repository.remove(filenames: ["photo.jpg"], userID: otherUserID)
+                }
+            }
+            do {
+                try await task.value
+                XCTFail("취소된 작업이 성공했습니다: \(operation)")
+            } catch {
+                XCTAssertTrue(error is CancellationError, "\(operation): \(error)")
+            }
+        }
+        XCTAssertTrue(fixture.log.requests.isEmpty)
+    }
+
+    func testEmptyPhotoBatchesStillBypassAccountValidation() async throws {
+        let fixture = try PhotoRepositoryFixture { _, _ in
+            XCTFail("빈 사진 작업은 요청을 보내면 안 됩니다.")
+            return (500, Data())
+        }
+        try await fixture.repository.backup(filenames: [], userID: "not-a-user")
+        try await fixture.repository.restore(filenames: [], userID: "not-a-user")
+        try await fixture.repository.remove(filenames: [], userID: "not-a-user")
+        XCTAssertTrue(fixture.log.requests.isEmpty)
+    }
+
+    func testPhotoRemovalRejectsLateAccountSwitch() async throws {
+        let fixture = try PhotoRepositoryFixture { request, storage in
+            XCTAssertEqual(request.httpMethod, "DELETE")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer photo-session-\(storage.originalUserID!.uuidString)")
+            try storage.setUser(UUID())
+            return (200, Data("[]".utf8))
+        }
+        do {
+            try await fixture.repository.remove(filenames: ["photo.jpg"], userID: fixture.userID.uuidString)
+            XCTFail("계정 변경 뒤 완료된 삭제 응답을 정상 결과로 받으면 안 됩니다.")
+        } catch {
+            XCTAssertEqual(error as? NativeAccountDataError, .accountChanged)
+        }
+        XCTAssertEqual(fixture.log.requests.count, 1)
+    }
+
+    func testAccountSwitchAfterLeaseCreationStillFinishesWithOwnerToken() async throws {
+        let lease = UUID()
+        let fixture = try PhotoRepositoryFixture { request, storage in
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer photo-session-\(storage.originalUserID!.uuidString)")
+            if request.httpMethod == "HEAD" { return (404, Data()) }
+            if request.url!.path.hasSuffix("begin_account_media_upload") {
+                try storage.setUser(UUID())
+                return (200, Data("\"\(lease.uuidString)\"".utf8))
+            }
+            if request.url!.path.hasSuffix("finish_account_media_upload") {
+                let body = try JSONDecoder().decode([String: String].self, from: request.photoBody)
+                XCTAssertEqual(body["upload_id"]?.lowercased(), lease.uuidString.lowercased())
+                return (204, Data())
+            }
+            XCTFail("계정 변경 후 사진 업로드를 진행하면 안 됩니다.")
+            return (500, Data())
+        }
+        let owner = fixture.userID.uuidString.lowercased()
+        let filename = "\(UUID().uuidString.lowercased()).jpg"
+        try DiningReflectionPhotoStore.restore(jpeg(), filename: filename, ownerScope: owner)
+        defer { DiningReflectionPhotoStore.remove(filename: filename, ownerScope: owner) }
+        do {
+            try await fixture.repository.backup(filenames: [filename], userID: owner)
+            XCTFail("계정 변경 후 백업이 성공하면 안 됩니다.")
+        } catch {
+            XCTAssertEqual(error as? NativeAccountDataError, .accountChanged)
+        }
+        let requests = fixture.log.requests
+        XCTAssertEqual(requests.count, 3)
+        XCTAssertTrue(requests.last?.url?.path.hasSuffix("finish_account_media_upload") == true)
+    }
+
+    func testRestoreDoesNotReuseAnotherAccountsSameFilename() async throws {
+        let otherOwner = UUID().uuidString.lowercased(), filename = "\(UUID().uuidString.lowercased()).jpg"
+        let remoteBytes = try jpeg(red: 1), otherBytes = try jpeg(red: 0)
+        try DiningReflectionPhotoStore.restore(otherBytes, filename: filename, ownerScope: otherOwner)
+        let fixture = try PhotoRepositoryFixture { _, _ in (200, remoteBytes) }
+        let owner = fixture.userID.uuidString.lowercased()
+        defer {
+            DiningReflectionPhotoStore.remove(filename: filename, ownerScope: owner)
+            DiningReflectionPhotoStore.remove(filename: filename, ownerScope: otherOwner)
+        }
+        try await fixture.repository.restore(filenames: [filename], userID: owner)
+        XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: filename, ownerScope: owner), remoteBytes)
+        XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: filename, ownerScope: otherOwner), otherBytes)
+        XCTAssertEqual(fixture.log.requests.count, 1)
+    }
+
+    func testAccountSourceRequestsUseOwnerTokenAndRejectLateResponseAfterAccountSwitch() async throws {
+        let fixture = try PhotoRepositoryFixture { request, storage in
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer photo-session-\(storage.originalUserID!.uuidString)")
+            try storage.setUser(UUID())
+            return (200, Data("[]".utf8))
+        }
+        do {
+            _ = try await fixture.dataRepository.fetch(userID: fixture.userID.uuidString)
+            XCTFail("계정 변경 뒤 완료된 원문 응답을 사용하면 안 됩니다.")
+        } catch { XCTAssertEqual(error as? NativeAccountDataError, .accountChanged) }
+        XCTAssertEqual(fixture.log.requests.count, 1)
+    }
+
+    func testAccountSourceSaveRejectsWrongAccountWithoutSendingAndUsesExpectedRevision() async throws {
+        let fixture = try PhotoRepositoryFixture { request, storage in
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer photo-session-\(storage.originalUserID!.uuidString)")
+            let body = try JSONSerialization.jsonObject(with: request.photoBody) as! [String: Any]
+            XCTAssertEqual(body["p_expected_revision"] as? Int, 4)
+            try storage.setUser(UUID())
+            return (200, Data("5".utf8))
+        }
+        do {
+            _ = try await fixture.dataRepository.save(.init(), userID: UUID().uuidString, expectedRevision: 4)
+            XCTFail("다른 계정으로 쓰기 요청을 보내면 안 됩니다.")
+        } catch { XCTAssertEqual(error as? NativeAccountDataError, .accountChanged) }
+        XCTAssertTrue(fixture.log.requests.isEmpty)
+        do {
+            _ = try await fixture.dataRepository.save(.init(), userID: fixture.userID.uuidString, expectedRevision: 4)
+            XCTFail("계정 변경 뒤 완료된 쓰기 응답을 현재 계정에 적용하면 안 됩니다.")
+        } catch { XCTAssertEqual(error as? NativeAccountDataError, .accountChanged) }
+        XCTAssertEqual(fixture.log.requests.count, 1)
+    }
+
     func testBackupUploadsExactOriginalOnceAndFinishesUploadLease() async throws {
         let original = try jpeg(), filename = try DiningReflectionPhotoStore.save(original, entryID: UUID())
         defer { DiningReflectionPhotoStore.remove(filename: filename) }
@@ -64,6 +327,8 @@ final class NativeAccountPhotoRepositoryTests: XCTestCase {
             XCTAssertEqual(request.value(forHTTPHeaderField: "Cache-Control"), "max-age=0")
             return (200, Data(#"{"Id":"photo-id","Key":"native-dining-photos/photo.jpg"}"#.utf8))
         }
+        try DiningReflectionPhotoStore.copyPhotos(filenames: [filename], from: "guest", to: fixture.userID.uuidString.lowercased())
+        defer { DiningReflectionPhotoStore.remove(filename: filename, ownerScope: fixture.userID.uuidString.lowercased()) }
         try await fixture.repository.backup(filenames: [filename, filename], userID: fixture.userID.uuidString)
         let requests = fixture.log.requests
         XCTAssertEqual(requests.count, 4)
@@ -98,6 +363,8 @@ final class NativeAccountPhotoRepositoryTests: XCTestCase {
             if request.url!.path.hasSuffix("finish_account_media_upload") { return (204, Data()) }
             return (500, Data())
         }
+        try DiningReflectionPhotoStore.copyPhotos(filenames: [filename], from: "guest", to: fixture.userID.uuidString.lowercased())
+        defer { DiningReflectionPhotoStore.remove(filename: filename, ownerScope: fixture.userID.uuidString.lowercased()) }
         do {
             try await fixture.repository.backup(filenames: [filename], userID: fixture.userID.uuidString)
             XCTFail("업로드 실패를 성공으로 처리하면 안 됩니다.")
@@ -117,8 +384,10 @@ final class NativeAccountPhotoRepositoryTests: XCTestCase {
             if request.url!.lastPathComponent == switched { try storage.setUser(UUID()) }
             return (200, original)
         }
+        let scope = fixture.userID.uuidString.lowercased()
+        defer { [restored, invalid, switched].forEach { DiningReflectionPhotoStore.remove(filename: $0, ownerScope: scope) } }
         try await fixture.repository.restore(filenames: [restored], userID: fixture.userID.uuidString)
-        XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: restored), original)
+        XCTAssertEqual(try DiningReflectionPhotoStore.originalData(for: restored, ownerScope: scope), original)
         // 이미 유효한 로컬 원본은 다시 다운로드하지 않는다.
         try await fixture.repository.restore(filenames: [restored], userID: fixture.userID.uuidString)
         XCTAssertEqual(fixture.log.requests.count, 1)
@@ -130,8 +399,8 @@ final class NativeAccountPhotoRepositoryTests: XCTestCase {
             try await fixture.repository.restore(filenames: [switched], userID: fixture.userID.uuidString)
             XCTFail("계정이 바뀐 뒤 다운로드를 복원하면 안 됩니다.")
         } catch { guard case NativeAccountDataError.accountChanged = error else { return XCTFail("예상하지 못한 오류: \(error)") } }
-        XCTAssertNil(DiningReflectionPhotoStore.data(for: invalid))
-        XCTAssertNil(DiningReflectionPhotoStore.data(for: switched))
+        XCTAssertNil(DiningReflectionPhotoStore.data(for: invalid, ownerScope: scope))
+        XCTAssertNil(DiningReflectionPhotoStore.data(for: switched, ownerScope: scope))
     }
 
     func testInvalidFilenameAndOtherAccountNeverReachTheNetwork() async throws {
@@ -174,11 +443,13 @@ private final class PhotoAuthStorage: AuthLocalStorage, @unchecked Sendable {
     private let lock = NSLock()
     private var values: [String: Data] = [:]
     static let key = "native-photo-test-session"
+    private(set) var originalUserID: UUID?
 
     func store(key: String, value: Data) throws { lock.lock(); defer { lock.unlock() }; values[key] = value }
     func retrieve(key: String) throws -> Data? { lock.lock(); defer { lock.unlock() }; return values[key] }
     func remove(key: String) throws { lock.lock(); defer { lock.unlock() }; values.removeValue(forKey: key) }
     func setUser(_ userID: UUID) throws {
+        if originalUserID == nil { originalUserID = userID }
         let session = Session(accessToken: "photo-session-\(userID.uuidString)", tokenType: "bearer", expiresIn: 3_600,
             expiresAt: Date.now.timeIntervalSince1970 + 3_600, refreshToken: "photo-refresh",
             user: User(id: userID, appMetadata: [:], userMetadata: [:], aud: "authenticated", createdAt: .now, updatedAt: .now))
@@ -196,6 +467,7 @@ private final class PhotoRequestLog: @unchecked Sendable {
 private final class PhotoRepositoryFixture {
     let userID = UUID()
     let repository: SupabaseNativeAccountPhotoRepository
+    let dataRepository: SupabaseNativeAccountDataRepository
     let log = PhotoRequestLog()
     private let host = "photos-\(UUID().uuidString.lowercased()).invalid"
     private let session: URLSession
@@ -212,6 +484,7 @@ private final class PhotoRepositoryFixture {
             options: .init(auth: .init(storage: storage, storageKey: PhotoAuthStorage.key, autoRefreshToken: false, emitLocalSessionAsInitialSession: true),
                            global: .init(session: session)))
         repository = SupabaseNativeAccountPhotoRepository(client: client, configuration: configuration, httpSession: session)
+        dataRepository = SupabaseNativeAccountDataRepository(client: client, configuration: configuration, httpSession: session)
         PhotoHTTPProtocol.register(host: host) { [log] request in
             log.append(request)
             return try response(request, storage)

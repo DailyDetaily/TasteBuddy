@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M15.093592 3.072777C14.551477 4.534131 13.549742 5.535866 12.088388 6.077981C10.450258 6.443319 9.448523 7.445054 9.083185 9.083185C8.541069 10.544539 7.539335 11.546273 6.077981 12.088388C4.43985 12.453727 3.438115 13.455461 3.072777 15.093592L8.906408 20.927223C9.271746 19.289092 10.273481 18.287358 11.911612 17.922019C13.372966 17.379904 14.3747 16.378169 14.916815 14.916815C15.282154 13.278685 16.283889 12.27695 17.922019 11.911612C19.383373 11.369496 20.385108 10.367762 20.927223 8.906408Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M17.038136 5.017321C16.496021 6.478675 15.494286 7.480409 14.032932 8.022524C12.394801 8.387863 11.393067 9.389597 11.027728 11.027728C10.485613 12.489082 9.483878 13.490817 8.022524 14.032932C6.384394 14.39827 5.382659 15.400005 5.017321 17.038136" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M18.982679 6.961864C18.631899 7.907446 18.088683 8.660592 17.353031 9.221303M12.871833 13.225387C12.310715 14.549887 11.34246 15.46725 9.967068 15.977476C8.328937 16.342814 7.327203 17.344549 6.961864 18.982679" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M14.480807 10.59172h.01" />
+</vector>

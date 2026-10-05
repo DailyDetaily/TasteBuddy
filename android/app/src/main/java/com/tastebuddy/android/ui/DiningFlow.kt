@@ -34,6 +34,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -672,9 +673,19 @@ private fun DetailSelections(vm: AppViewModel, entry: DiningEntry) {
                 }
             }
         }
-    Section("음식 종류") {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            vm.catalogs.dining.dishKindOptions.forEach { kind ->
+    Section("음식 종류와 특성") {
+        val options = vm.catalogs.dining.dishKindOptions + vm.catalogs.dining.legacyDishKindOptions.filter { it.id in entry.dishKindIDs }
+        options.groupBy { it.group }.forEach { (group, kinds) ->
+            Text(when (group) {
+                "ingredient" -> "주요 재료"
+                "form" -> "요리 형태"
+                "method" -> "조리·처리"
+                "attribute" -> "특성"
+                else -> "이전에 선택한 분류"
+            }, style = MaterialTheme.typography.labelSmall)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            kinds.forEach { kind ->
+                val icon = DishKindIcons.resource(kind.id)
                 FilterChip(
                     kind.id in entry.dishKindIDs,
                     {
@@ -691,14 +702,19 @@ private fun DetailSelections(vm: AppViewModel, entry: DiningEntry) {
                         }
                     },
                     label = { Text(kind.label) },
+                    leadingIcon = if (icon != null) {
+                        { Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(16.dp)) }
+                    } else null,
                 )
             }
+        }
         }
     }
     vm.catalogs.dining.detailTagCategories.forEach { category ->
         Section(category.label) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                category.tags.forEach { tag ->
+                val suggested = entry.dishKindIDs.flatMap { vm.catalogs.dining.dishKindDetailRecommendations[it].orEmpty() }.distinct()
+                category.tags.sortedBy { tag -> suggested.indexOf(tag.id).let { if (it < 0) Int.MAX_VALUE else it } }.forEach { tag ->
                     FilterChip(
                         picks.any { it.id == tag.id },
                         {

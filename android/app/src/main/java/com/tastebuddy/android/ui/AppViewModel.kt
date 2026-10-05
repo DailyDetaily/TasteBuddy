@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class AppViewModel(application: Application) : AndroidViewModel(application) {
     val app = application as TasteBuddyApplication
     val repo = app.repository
@@ -21,7 +21,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val photos = app.photos
     val backend = app.backend
     val state = repo.state
-    val ready = repo.ready
+    private val initialized = MutableStateFlow(false)
+    val ready = combine(repo.ready, initialized) { loaded, started -> loaded && started }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
     val loadError = repo.error
     val route = MutableStateFlow("main")
     val busy = MutableStateFlow(false)
@@ -37,6 +39,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val stack = mutableListOf<String>()
     private var deletedEntry: DiningEntry? = null
     private val editMutex = Mutex()
+    private val accountSync = AndroidAccountSync(repo, photos)
+    val backupMessage = MutableStateFlow("Android 기록은 기기에 보관되어 있어요.")
+    val backupConflict = MutableStateFlow(false)
     private val analyzer = SensoryAnalyzer(catalogs.sensory, catalogs.preferenceQuestions)
     val analysisUpdating = MutableStateFlow(false)
     val analysisError = MutableStateFlow<String?>(null)
@@ -72,39 +77,93 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch {
-            repo.load()
-            runCatching { backend.restore() }
-                .onFailure { message.value = "계정 연결을 다시 확인해 주세요. 저장된 기록은 그대로 있어요." }
-            if (repo.ready.value) photos.cleanup(state.value)
+            editMutex.withLock {
+                runCatching { backend.restore() }
+                    .onFailure { message.value = "계정 연결을 다시 확인해 주세요. 저장된 기록은 그대로 있어요." }
+                repo.load(backend.sessionState.value?.user?.takeUnless { it.isAnonymous }?.id?.lowercase() ?: AppRepository.GUEST)
+                initialized.value = true
+            }
+            if (repo.ready.value && backend.sessionState.value?.user?.isAnonymous == false) synchronizeCurrent()
+        }
+        viewModelScope.launch {
+            repo.state.drop(1).debounce(1_500).collect {
+                val owner = repo.owner.value
+                if (initialized.value && repo.ready.value && owner != AppRepository.GUEST &&
+                    backend.sessionState.value?.user?.isAnonymous == false &&
+                    runCatching { repo.account(owner).dirty }.getOrDefault(false)) synchronizeCurrent()
+            }
         }
     }
 
-    fun task(block: suspend () -> Unit) {
+    fun task(requireReady: Boolean = true, block: suspend () -> Unit) {
         if (busy.value) return
+        val expectedOwner = repo.owner.value
+        busy.value = true
         viewModelScope.launch {
-            busy.value = true
             try {
-                editMutex.withLock { block() }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Exception) {
-                message.value =
-                    error.message?.takeIf { it.any { c -> c in '가'..'힣' } }
-                        ?: "작업을 완료하지 못했어요. 다시 시도해 주세요."
-            } finally {
-                busy.value = false
-            }
+                editMutex.withLock {
+                    if (requireReady) repo.account(expectedOwner)
+                    else check(repo.owner.value == expectedOwner) { "계정이 바뀌어 작업을 멈췄어요." }
+                    block()
+                }
+            } catch (error: CancellationException) { throw error }
+            catch (error: Exception) {
+                message.value = error.message?.takeIf { it.any { c -> c in '가'..'힣' } }
+                    ?: "작업을 완료하지 못했어요. 다시 시도해 주세요."
+            } finally { busy.value = false }
         }
     }
 
     fun update(transform: (AppState) -> AppState) {
+        val expectedOwner = repo.owner.value
         viewModelScope.launch {
-            try {
-                editMutex.withLock { repo.update(transform) }
-            } catch (e: Exception) {
-                message.value = "기록을 저장하지 못했어요. 다시 시도해 주세요."
+            try { editMutex.withLock { repo.update(expectedOwner, transform) } }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (e: Exception) { message.value = "계정과 기록을 확인한 뒤 다시 저장해 주세요. 원래 기록은 보관되어 있어요." }
+        }
+    }
+
+    fun synchronize(resolution: BackupResolution? = null) = task(
+        requireReady = repo.ready.value || resolution != BackupResolution.ACCOUNT_BACKUP,
+    ) {
+        synchronizeCurrent(resolution)
+        if (!repo.ready.value) message.value = backupMessage.value
+    }
+
+    private suspend fun synchronizeCurrent(resolution: BackupResolution? = null) {
+        val owner = repo.owner.value
+        if (owner == AppRepository.GUEST || backend.sessionState.value?.user?.isAnonymous != false) return
+        fun stillActive() = repo.owner.value == owner && backend.sessionState.value?.user?.id?.lowercase() == owner
+        backupMessage.value = "Android 기록과 사진을 확인하고 있어요."
+        try {
+            val result = accountSync.synchronize(owner, backend.accountTransport(owner), resolution)
+            if (stillActive()) {
+                backupMessage.value = result
+                backupConflict.value = false
+            }
+        } catch (cancelled: CancellationException) { throw cancelled }
+        catch (error: Exception) {
+            if (stillActive()) {
+                backupConflict.value = error is AccountBackupConflict
+                backupMessage.value = error.message?.takeIf { it.any { c -> c in '가'..'힣' } }
+                    ?: "백업 연결을 확인해 주세요. 기기의 원본은 보존되어 있어요."
             }
         }
+    }
+
+    private fun clearAccountNavigation() {
+        deletedEntry = null
+        selectedEntryID.value = null
+        selectedRestaurant.value = null
+        selectedPerson.value = null
+        evidenceIDs.value = null
+        selectedListID.value = null
+        nearby.value = emptyList()
+        feedID.value = ""
+        backupConflict.value = false
+        backupMessage.value = "Android 기록은 기기에 보관되어 있어요."
+        stack.clear()
+        route.value = "main"
     }
 
     fun open(name: String) {
@@ -128,22 +187,27 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun authenticated() = task { finishAuthentication() }
 
-    suspend fun finishAuthentication() {
-        val identity = runCatching { backend.currentIdentity() }.getOrNull()
-        repo.update {
-            it.copy(
-                authEntryComplete = true,
-                identity =
-                    if (identity != null)
-                        it.identity.copy(
-                            name = identity.displayName ?: it.identity.name,
-                            nickname = identity.nickname ?: it.identity.nickname,
-                        )
-                    else it.identity,
-            )
+    suspend fun finishAuthentication(linkGuest: Boolean = false) {
+        val session = backend.session()
+        val owner = session.user.id.lowercase()
+        val guest = state.value.takeIf { linkGuest && repo.owner.value == AppRepository.GUEST }
+        clearAccountNavigation()
+        repo.load(owner)
+        repo.account(owner)
+        if (guest != null) {
+            if (!AndroidBackupContract.hasContent(state.value)) repo.update(owner) { guest.copy(authEntryComplete = true) }
+            else message.value = "계정에 기존 기록이 있어 게스트 기록은 별도로 보관했어요. 로그아웃 후 게스트로 다시 확인할 수 있어요."
         }
-        stack.clear()
-        route.value = "main"
+        repo.update(owner) { it.copy(authEntryComplete = true) }
+        synchronizeCurrent()
+        val identity = runCatching { backend.currentIdentity() }.getOrNull()
+        check(backend.sessionState.value?.user?.id?.lowercase() == owner) { "로그인 계정이 바뀌었어요." }
+        repo.update(owner) {
+            it.copy(authEntryComplete = true,
+                identity = if (identity != null) it.identity.copy(
+                    name = identity.displayName ?: it.identity.name,
+                    nickname = identity.nickname ?: it.identity.nickname) else it.identity)
+        }
     }
 
     fun callback(uri: Uri) {
@@ -410,15 +474,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun signOut() = task {
         backend.signOut()
-        repo.reset()
-        photos.clear()
-        main()
+        clearAccountNavigation()
+        repo.load(AppRepository.GUEST)
+        repo.update { it.copy(authEntryComplete = false) }
     }
 
     fun deleteAccount() = task {
-        backend.deleteAccount()
-        repo.reset()
-        photos.clear()
-        main()
+        val expectedOwner = repo.owner.value
+        backend.deleteAccount(expectedOwner)
+        repo.reset(expectedOwner)
+        clearAccountNavigation()
+        repo.load(AppRepository.GUEST)
+        repo.update { it.copy(authEntryComplete = false) }
     }
 }

@@ -16,7 +16,7 @@ const FEEDBACK_REFLECTION_PHOTO_QUALITY = 0.88;
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublicKey);
 
 export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabasePublicKey, {
+  ? createClient(supabaseUrl!, supabasePublicKey!, {
       auth: {
         autoRefreshToken: true,
         detectSessionInUrl: true,
@@ -1041,7 +1041,7 @@ export async function listSupabaseProfileAvatars() {
     };
   }
 
-  const avatars =
+  const avatars:unknown[] =
     data && typeof data === 'object' && 'avatars' in data && Array.isArray(data.avatars)
       ? data.avatars
       : [];

@@ -1,3 +1,10 @@
+export const DESIGN_SYSTEM = {
+  name: '플레이팅',
+  englishName: 'Plating',
+  product: 'Taste Buddy',
+  description: '맛의 경험을 담고, 관계를 정돈하고, 의미가 드러나는 순간을 설계한다.',
+} as const;
+
 export const SPACING_TOKENS = {
   2: '2px',
   4: '4px',
@@ -69,6 +76,7 @@ export const SHADOW_TOKENS = {
 
 export const MOTION_TOKENS = {
   durationMs: {
+    press: 120,
     fast: 180,
     normal: 300,
     medium: 500,
@@ -77,6 +85,7 @@ export const MOTION_TOKENS = {
     loopPulse: 1600,
     splash: 2500,
   },
+  staggerMs: 60,
   easing: {
     standard: 'ease',
     entrance: 'cubic-bezier(0.22, 1, 0.36, 1)',

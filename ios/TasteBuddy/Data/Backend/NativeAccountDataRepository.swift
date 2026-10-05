@@ -13,6 +13,7 @@ struct NativeAccountSnapshot: Codable, Equatable {
     var photoFilenames: [String] = []
 
     var isEmpty: Bool { values.isEmpty && !hasSeenOnboarding }
+    var hasSupportedSchema: Bool { [1, 2].contains(schemaVersion) }
 }
 
 struct NativeAccountArchive: Codable, Equatable {
@@ -60,38 +61,49 @@ struct UnavailableNativeAccountDataRepository: NativeAccountDataRepository {
 #if canImport(Supabase)
 struct SupabaseNativeAccountDataRepository: NativeAccountDataRepository {
     let client: SupabaseClient
+    let configuration: BackendConfiguration
+    var httpSession: URLSession = .shared
 
-    private func checkAccount(_ userID: String) async throws {
-        let session = try await client.auth.session
-        guard !session.user.isAnonymous, session.user.id.uuidString.lowercased() == userID.lowercased() else {
-            throw NativeAccountDataError.accountChanged
-        }
+    private var accountRequestContext: NativeAccountRequestContext {
+        NativeAccountRequestContext(
+            client: client, configuration: configuration, httpSession: httpSession)
+    }
+
+    private func checkAccount(_ userID: String) throws {
+        try accountRequestContext.checkAccount(userID)
+    }
+
+    private func requestClient(userID: String) async throws -> SupabaseClient {
+        try await accountRequestContext.requestClient(userID: userID)
     }
 
     func fetch(userID: String) async throws -> NativeAccountRemoteData? {
-        try await checkAccount(userID)
-        let rows: [NativeAccountRemoteData] = try await client.from("native_account_data")
+        let requests = try await requestClient(userID: userID)
+        let rows: [NativeAccountRemoteData] = try await requests.from("native_account_data")
             .select("payload,revision")
             .eq("user_id", value: userID)
             .limit(1)
             .execute().value
-        guard [1, 2].contains(rows.first?.payload.schemaVersion ?? 1) else {
+        try checkAccount(userID)
+        guard rows.first?.payload.hasSupportedSchema ?? true else {
             throw NativeAccountDataError.unsupportedVersion
         }
         return rows.first
     }
 
     func save(_ snapshot: NativeAccountSnapshot, userID: String, expectedRevision: Int) async throws -> Int {
-        try await checkAccount(userID)
+        let requests = try await requestClient(userID: userID)
         struct Parameters: Encodable {
             let p_user_id: String
             let p_payload: NativeAccountSnapshot
             let p_expected_revision: Int
         }
         // 기기 간 변경 충돌은 자동 병합하지 않는다. 비교 후 쓰기로 양쪽 원본을 보존한다.
-        return try await client.rpc("save_native_account_data", params: Parameters(
+        let revision: Int = try await requests.rpc("save_native_account_data", params: Parameters(
             p_user_id: userID, p_payload: snapshot, p_expected_revision: expectedRevision
         )).execute().value
+        try checkAccount(userID)
+        return revision
     }
 }
 #endif
@@ -100,7 +112,8 @@ enum NativeAccountDataRepositoryFactory {
     static func makeDefault(bundle: Bundle = .main) -> any NativeAccountDataRepository {
         #if canImport(Supabase)
         if let configuration = try? BackendConfiguration.load(bundle: bundle) {
-            return SupabaseNativeAccountDataRepository(client: SupabaseClientProvider(configuration: configuration).makeClient())
+            return SupabaseNativeAccountDataRepository(
+                client: SupabaseClientProvider(configuration: configuration).makeClient(), configuration: configuration)
         }
         #endif
         return UnavailableNativeAccountDataRepository()

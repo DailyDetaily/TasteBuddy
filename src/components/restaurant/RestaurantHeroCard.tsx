@@ -1,9 +1,8 @@
+import RecordActions from "../system/plating/RecordActions";
 import { useState } from 'react';
 import {
-  Bookmark,
   ChevronDown,
   ChevronUp,
-  CirclePlus,
   Clock,
   MapPin,
   Phone,
@@ -18,6 +17,7 @@ import { ICON_TOKENS } from '../../constants/designTokens';
 import type { RestaurantScoreTag } from './RestaurantScoreSummaryCard';
 
 export interface RestaurantHeroViewModel {
+  scoresUnavailable?: boolean;
   category: string;
   chef: {
     avatarUrl?: string | null;
@@ -222,35 +222,12 @@ export default function RestaurantHeroCard({
                 </p>
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-1">
-              {onVisitedClick ? (
-                <button
-                  type="button"
-                  aria-label="먹어본 식당 피드백 남기기"
-                  title="먹어본 식당"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onVisitedClick();
-                  }}
-                  className="flex size-[32px] items-center justify-center text-[var(--tb-color-text-secondary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
-                >
-                  <CirclePlus aria-hidden="true" size={ICON_TOKENS.size.xl} strokeWidth={1.8} />
-                </button>
-              ) : null}
-              <button
-                type="button"
-                aria-label="북마크"
-                title="북마크"
-                onClick={onBookmarkClick}
-                className={`flex size-[32px] items-center justify-center transition-colors hover:text-[var(--tb-color-text-primary)] ${
-                  isBookmarked
-                    ? 'text-[var(--tb-color-text-primary)] [&>svg]:fill-current'
-                    : 'text-[var(--tb-color-text-secondary)]'
-                }`}
-              >
-                <Bookmark aria-hidden="true" size={ICON_TOKENS.size.xl} strokeWidth={1.8} />
-              </button>
-            </div>
+            <RecordActions
+              isBookmarked={isBookmarked}
+              recordLabel="먹어본 식당 피드백 남기기"
+              onRecord={onVisitedClick ? event => { event.stopPropagation(); onVisitedClick(); } : undefined}
+              onBookmark={onBookmarkClick ? event => { event.stopPropagation(); onBookmarkClick(); } : undefined}
+            />
           </div>
 
           <p className="text-[12px] font-normal leading-relaxed text-[var(--tb-color-text-muted)]">
@@ -321,7 +298,7 @@ export default function RestaurantHeroCard({
               {tasteTags.map((tag) => (
                 <TasteChip
                   key={tag.id}
-                  taste={TASTE_AXIS_LABEL[tag.tasteAxis]}
+                  taste={TASTE_AXIS_LABEL[tag.tasteAxis!]}
                   value={tag.label}
                 />
               ))}
@@ -350,7 +327,7 @@ export default function RestaurantHeroCard({
               className="min-w-0 px-2 py-1 text-center"
             >
               <p className="text-[18px] font-bold leading-tight text-[var(--tb-color-text-primary)]">
-                {item.value}
+                {restaurant.scoresUnavailable ? '—' : item.value}
               </p>
               <p className="mt-1 text-[10px] font-semibold leading-snug text-[var(--tb-color-text-muted)]">
                 {item.label}

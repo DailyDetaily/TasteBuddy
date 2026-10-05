@@ -15,7 +15,7 @@ import {
 } from '../../src/constants/quickTasteCalibrationData';
 import { diningDetailTagCategories } from '../../src/constants/diningDetailTags';
 import { DINING_FEEDBACK_SCENARIOS } from '../../src/constants/diningFeedbackData';
-import { DISH_KIND_OPTIONS } from '../../src/constants/dishKindTags';
+import { DISH_KIND_OPTIONS, LEGACY_DISH_KIND_OPTIONS, DISH_KIND_ALIASES, DISH_KIND_TAXONOMY_VERSION, DISH_KIND_DETAIL_RECOMMENDATIONS } from '../../src/constants/dishKindTags';
 import { tasteExperienceAxes } from '../../src/components/reservation/DiningFeedbackFlow';
 import { TASTE_IDS } from '../../src/constants/designTokens';
 import {
@@ -505,6 +505,10 @@ export function buildContractFixtures() {
       scenario: DINING_FEEDBACK_SCENARIOS[3],
       detailTagCategories: diningDetailTagCategories,
       dishKindOptions: DISH_KIND_OPTIONS,
+      legacyDishKindOptions: LEGACY_DISH_KIND_OPTIONS,
+      dishKindAliases: DISH_KIND_ALIASES,
+      dishKindTaxonomyVersion: DISH_KIND_TAXONOMY_VERSION,
+      dishKindDetailRecommendations: DISH_KIND_DETAIL_RECOMMENDATIONS,
       tasteExperienceAxes,
     },
     tbaDiningAnalysis: {

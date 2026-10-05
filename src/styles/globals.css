@@ -499,8 +499,7 @@ html {
 
 .dining-result-card-bloom {
   isolation: isolate;
-  transform-origin: 50% 58%;
-  animation: dining-result-card-bloom-enter 860ms cubic-bezier(0.18, 0.92, 0.2, 1) 120ms both;
+  /* Plating owns the unchanged entrance keyframes in plating-motion.css. */
   will-change: opacity, transform, filter;
 }
 
@@ -535,30 +534,6 @@ html {
   transform: scale(0.56) rotate(-12deg);
   animation: dining-result-card-bloom-halo 980ms cubic-bezier(0.18, 0.92, 0.2, 1) 80ms both;
   will-change: opacity, transform, filter;
-}
-
-@keyframes dining-result-card-bloom-enter {
-  0% {
-    opacity: 0;
-    filter: blur(8px);
-    transform: translate3d(0, 24px, 0) scale(0.88);
-  }
-
-  46% {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, -4px, 0) scale(1.018);
-  }
-
-  72% {
-    transform: translate3d(0, 1px, 0) scale(0.996);
-  }
-
-  100% {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0) scale(1);
-  }
 }
 
 @keyframes dining-result-card-bloom-halo {

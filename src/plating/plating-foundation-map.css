@@ -1,0 +1,245 @@
+.pl-foundations {
+  margin-top: clamp(100px, 10vw, 160px);
+}
+
+.pl-foundations-heading,
+.pl-foundations-caption {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+.plating-site .pl-foundations-heading h2 {
+  font-size: clamp(27px, 2.7vw, 38px);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.045em;
+}
+
+.pl-foundations-frame {
+  position: relative;
+  height: clamp(760px, 64vw, 1040px);
+  margin-top: 40px;
+  overflow: hidden;
+}
+
+.pl-foundations-viewport {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.pl-foundations-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.plating-site .pl-foundations-viewport:focus-visible {
+  outline-offset: -4px;
+}
+
+.pl-foundations-space,
+.pl-foundations-plane {
+  position: relative;
+}
+
+.pl-foundations-space {
+  overflow: clip;
+}
+
+.pl-foundations-plane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.plating-site .pl-foundation-bubble {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(
+    in srgb,
+    var(--bubble-fill) var(--bubble-strength, 100%),
+    #fff
+  );
+  color: color-mix(
+    in srgb,
+    var(--bubble-ink) var(--bubble-strength, 100%),
+    #fff
+  );
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+  text-align: center;
+  cursor: grab;
+  transform-origin: center;
+  -webkit-user-drag: none;
+  transition:
+    width 220ms ease,
+    height 220ms ease,
+    left 220ms ease,
+    top 220ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.pl-foundation-bubble > span {
+  padding: 18px;
+  pointer-events: none;
+}
+
+.plating-site .pl-foundation-bubble:focus-visible {
+  background: var(--bubble-fill);
+  color: var(--bubble-ink);
+  outline-color: var(--bubble-ink);
+  outline-offset: -5px;
+}
+
+.pl-foundations-viewport[data-dragging="true"],
+.pl-foundations-viewport[data-dragging="true"] .pl-foundation-bubble {
+  cursor: grabbing;
+}
+
+.pl-foundations-caption {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
+  margin-top: 16px;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.pl-foundations-caption > button {
+  flex-shrink: 0;
+  min-height: 44px;
+  border: 0;
+  padding: 8px 0 8px 12px;
+  background: none;
+  color: #333;
+}
+
+.pl-foundations-edges,
+.pl-foundations-edges > span,
+.pl-foundations-edges::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pl-foundations-edges > span {
+  --edge-x: clamp(72px, 12vw, 190px);
+  --edge-y: 140px;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  -webkit-mask-image:
+    linear-gradient(
+      90deg,
+      #000,
+      transparent var(--edge-x),
+      transparent calc(100% - var(--edge-x)),
+      #000
+    ),
+    linear-gradient(
+      0deg,
+      #000,
+      transparent var(--edge-y),
+      transparent calc(100% - var(--edge-y)),
+      #000
+    );
+  mask-image:
+    linear-gradient(
+      90deg,
+      #000,
+      transparent var(--edge-x),
+      transparent calc(100% - var(--edge-x)),
+      #000
+    ),
+    linear-gradient(
+      0deg,
+      #000,
+      transparent var(--edge-y),
+      transparent calc(100% - var(--edge-y)),
+      #000
+    );
+}
+
+.pl-foundations-edges > span:nth-child(2) {
+  --edge-x: clamp(48px, 8vw, 125px);
+  --edge-y: 95px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.pl-foundations-edges > span:nth-child(3) {
+  --edge-x: clamp(24px, 4vw, 64px);
+  --edge-y: 48px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.pl-foundations-edges::after {
+  content: "";
+  background:
+    linear-gradient(
+      90deg,
+      #fff,
+      #ffffffc7 3%,
+      #ffffff00 15%,
+      #ffffff00 85%,
+      #ffffffc7 97%,
+      #fff
+    ),
+    linear-gradient(
+      0deg,
+      #fff,
+      #ffffffc7 32px,
+      #ffffff00 160px,
+      #ffffff00 calc(100% - 160px),
+      #ffffffc7 calc(100% - 32px),
+      #fff
+    );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .plating-site .pl-foundation-bubble:hover {
+    background: var(--bubble-fill);
+    color: var(--bubble-ink);
+  }
+  .pl-foundations-caption > button:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pl-foundations {
+    margin-top: 88px;
+  }
+  .pl-foundations-frame {
+    height: 640px;
+    margin-top: 28px;
+  }
+  .pl-foundations-caption {
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-foundation-bubble {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -3,7 +3,7 @@ import SwiftUI
 struct AnalysisView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var appModel: AppModel
-    @State private var selectedSheet: SensoryAnalysisSheetSelection?
+    @State private var selectedDetail: TasteCardDetailRoute?
     @State private var pendingPersonalTasteQuestion: PersonalTasteQuestionResponseContext?
     @State private var showsPreferenceIntake = false
     @StateObject private var personalTasteQuestionErrorToast = TBToastPresenter()
@@ -37,9 +37,7 @@ struct AnalysisView: View {
             .tbInlineNavigationTitle()
             .toolbar(.hidden, for: .navigationBar)
             .tbPageBackground()
-            .sheet(item: $selectedSheet) { selection in
-                analysisSheet(selection)
-            }
+            .tasteDetail($selectedDetail)
         }
         .ignoresSafeArea(.container, edges: systemTopChrome == nil ? [] : .top)
         .fullScreenCover(item: $pendingPersonalTasteQuestion) { context in
@@ -90,23 +88,12 @@ struct AnalysisView: View {
                 TasteSurveyEvidenceCard(submission: submission)
             }
         }
-        TBPageSection(title: "내가 알려준 선호") {
-            PreferenceIntakeEvidenceCard(evidence: appModel.sensoryAnalysis.statedPreferences,
-                                        hasLegacyProfile: appModel.preferenceProfile != nil) { showsPreferenceIntake = true }
-        }
     }
 
     @ViewBuilder
     private func readyContent(_ snapshot: SensoryAnalysisSnapshot) -> some View {
         TBPageSection(title: "나의 입맛") {
             SensoryAnalysisHeroCard(snapshot: snapshot)
-
-            SensoryEvidenceSummaryCard(
-                observationCount: snapshot.observations.count,
-                unresolvedCount: snapshot.unresolved.count
-            ) {
-                selectedSheet = .evidence
-            }
 
             if snapshot.needsMeaningReview || !snapshot.unresolved.isEmpty {
                 InterpretationCard(
@@ -115,7 +102,7 @@ struct AnalysisView: View {
                     supportingText: "원문은 보존하고, 의미가 분명해지기 전에는 입맛 사실로 확정하지 않아요.",
                     detailLabel: "표현 보기",
                     accentColor: TBColor.textDisabled,
-                    onExpand: { selectedSheet = .evidence }
+                    onExpand: { selectedDetail = .sensory(.evidence) }
                 )
             }
         }
@@ -133,7 +120,7 @@ struct AnalysisView: View {
                             supportingText: candidate.body,
                             detailLabel: "근거 보기",
                             accentColor: TBColor.textDisabled,
-                            onExpand: { selectedSheet = .personalCandidate(candidate.id) }
+                            onExpand: { selectedDetail = .sensory(.personalCandidate(candidate.id)) }
                         )
                         .accessibilityIdentifier("taste-candidate-\(candidate.id)")
                     }
@@ -159,7 +146,7 @@ struct AnalysisView: View {
                             supportingText: insight.body,
                             detailLabel: "근거 보기",
                             accentColor: TBColor.textDisabled,
-                            onExpand: { selectedSheet = .insight(insight.id) }
+                            onExpand: { selectedDetail = .sensory(.insight(insight.id)) }
                         )
                     }
                 }
@@ -179,28 +166,11 @@ struct AnalysisView: View {
                                 supportingText: group.body,
                                 detailLabel: "근거 보기",
                                 accentColor: TBColor.textDisabled,
-                                onExpand: { selectedSheet = .personalInsight(group.id) }
+                                onExpand: { selectedDetail = .sensory(.personalInsight(group.id)) }
                             )
                         }
                     }
                 }
-            }
-        }
-
-        if let question = visibleNextSelection(in: snapshot) {
-            TBPageSection(title: "다음 선택") {
-                PersonalTasteNextQuestionCard(
-                    selection: question,
-                    sourceSelectionLabel: snapshot.observations.first {
-                        $0.id == question.responseSourceID
-                    }?.selectionEvidence?.labelSnapshot,
-                    onStartNewRecord: {
-                        pendingPersonalTasteQuestion = appModel.personalTasteQuestionResponseContext(
-                            for: question
-                        )
-                    }
-                )
-
             }
         }
 
@@ -238,59 +208,6 @@ struct AnalysisView: View {
     }
 
     @ViewBuilder
-    private func analysisSheet(_ selection: SensoryAnalysisSheetSelection) -> some View {
-        switch selection {
-        case .evidence:
-            SensoryEvidenceDetailSheet(
-                observations: appModel.sensoryAnalysis.observations,
-                unresolved: appModel.sensoryAnalysis.unresolved
-            )
-        case .insight(let id):
-            if let insight=appModel.sensoryAnalysis.insights.first(where: { $0.id == id }) {
-                let evidenceIDs=Set(insight.evidenceIDs)
-                SensoryInsightDetailSheet(
-                    insight: insight,
-                    observations: appModel.sensoryAnalysis.observations.filter { evidenceIDs.contains($0.id) },
-                    unresolved: [],
-                    limits: appModel.sensoryAnalysis.limits
-                )
-            }
-        case .personalCandidate(let id):
-            if let model = appModel.sensoryAnalysis.personalModel,
-               let group = PersonalTasteCandidatePresentation.groups(model.candidates)
-                .first(where: { $0.id == id }) {
-                PersonalTasteCandidateDetailSheet(
-                    group: group,
-                    observations: appModel.sensoryAnalysis.observations,
-                    entries: appModel.diningEntries,
-                    limits: model.limits + appModel.sensoryAnalysis.limits,
-                    unresolved: appModel.sensoryAnalysis.unresolved
-                )
-            }
-        case .personalInsight(let id):
-            if let group = PersonalTasteInsightPresentation.groups(appModel.sensoryAnalysis.personalModel)
-                .first(where: { $0.id == id }) {
-                PersonalTasteInsightDetailSheet(
-                    group: group,
-                    observations: appModel.sensoryAnalysis.observations,
-                    entries: appModel.diningEntries
-                )
-            }
-        case .questionEvidence(let id):
-            if let selection = appModel.sensoryAnalysis.personalModel?.nextSelection,
-               selection.id == id {
-                let evidenceIDs = Set(selection.evidenceIDs)
-                SensoryEvidenceDetailSheet(
-                    observations: appModel.sensoryAnalysis.observations.filter {
-                        evidenceIDs.contains($0.id)
-                    },
-                    unresolved: []
-                )
-            }
-        }
-    }
-
-    @ViewBuilder
     private func personalTasteQuestionFeedback(
         _ context: PersonalTasteQuestionResponseContext
     ) -> some View {
@@ -322,24 +239,6 @@ struct AnalysisView: View {
             context: context
         ) {
             personalTasteQuestionErrorToast.present(policy: .copyConfirmation)
-        }
-    }
-}
-
-private enum SensoryAnalysisSheetSelection: Identifiable {
-    case evidence
-    case insight(String)
-    case personalCandidate(String)
-    case personalInsight(String)
-    case questionEvidence(String)
-
-    var id: String {
-        switch self {
-        case .evidence: "evidence"
-        case .insight(let id): "insight:\(id)"
-        case .personalCandidate(let id): "personal-candidate:\(id)"
-        case .personalInsight(let id): "personal-insight:\(id)"
-        case .questionEvidence(let id): "question-evidence:\(id)"
         }
     }
 }

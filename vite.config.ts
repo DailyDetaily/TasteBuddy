@@ -42,6 +42,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,json}'],
+        globIgnores: ['**/ocr/**'],
+        runtimeCaching: [{urlPattern: /\/ocr\/v7\//, handler: 'CacheFirst', options: {cacheName:'tastebuddy-ocr-v7',expiration:{maxEntries:20,maxAgeSeconds:31536000},cacheableResponse:{statuses:[200]}}}],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },
       devOptions: {
@@ -100,6 +102,18 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
+    rollupOptions: {
+      output: {
+        // Statically loaded vector data stays cacheable without inflating the
+        // main app chunk beyond the existing PWA precache size limit.
+        manualChunks(id) {
+          if (id.endsWith('/splashLogoVector.json')) return 'splash-vector';
+          // Current and archived sensory wording share one versioned catalog.
+          // Keep it in its own cacheable chunk rather than increasing the PWA limit.
+          if (id.endsWith('/dining-sensory-v2.json')) return 'sensory-catalog';
+        },
+      },
+    },
   },
   server: {
     host: '0.0.0.0',

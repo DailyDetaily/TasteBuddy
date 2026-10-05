@@ -28,7 +28,12 @@ struct PersonalTasteModelRecord: Codable, Equatable, Sendable {
     }
 }
 struct PersonalTasteCondition: Codable, Equatable, Hashable, Sendable { let dimension: String; let value: String }
-struct PersonalTasteDistribution: Codable, Equatable, Sendable { var positive: Int; var neutral: Int; var negative: Int; var mixed: Int; var mealCount: Int }
+struct PersonalTasteDistribution: Codable, Equatable, Sendable {
+    var positive: Int; var neutral: Int; var negative: Int; var mixed: Int; var mealCount: Int
+    func count(for direction: String) -> Int {
+        switch direction { case "positive": positive; case "neutral": neutral; case "negative": negative; default: 0 }
+    }
+}
 struct PersonalTasteStability: Codable, Equatable, Sendable { let evaluatedMealCount: Int; let unchangedCount: Int; let stable: Bool }
 struct PersonalTasteConditionSource: Codable, Equatable, Sendable { let dimension: String; let value: String; let sourceField: String; let labelSnapshot: String? }
 struct PersonalTasteEvidence: Codable, Equatable, Sendable { let id: String; let mealID: String; let phrase: String; let sourceSpans: [SensorySourceSpan]; var selectionEvidence: SensorySelectionEvidence? = nil; var conditionSources: [PersonalTasteConditionSource] = [] }
@@ -140,9 +145,7 @@ enum PersonalTasteModelBuilder {
     }
     private struct Rated { let record: PersonalTasteModelRecord; let intensity: String?; let conflict: Bool; let intensityRows: [PersonalTasteModelRecord] }
     static func sameSelection(_ a: PersonalTasteModelRecord, _ b: PersonalTasteModelRecord) -> Bool {
-        guard let x = a.selectionEvidence else { return b.selectionEvidence == nil }
-        guard let y = b.selectionEvidence else { return false }
-        return x.selectionID == y.selectionID && x.type == y.type && x.catalogVersion == y.catalogVersion && x.relatedBubbleID == y.relatedBubbleID
+        SensoryEvidenceLinkage.sameSelection(a.selectionEvidence, b.selectionEvidence)
     }
     private static func subtract(_ d: PersonalTasteDistribution, _ value: String) -> PersonalTasteDistribution {
         var next = d; next.mealCount -= 1
@@ -151,7 +154,7 @@ enum PersonalTasteModelBuilder {
     }
     struct Question { let attribute: String; let reference: String?; let label: String; let facet: String; let reason: String; var score: Int; var evidenceIDs: [String]; var mealIDs: [String]; let target: String; let phase: String; var intent: String = "clarification"; var proposedCondition: PersonalTasteCondition? = nil; var responseSourceID: String? = nil; var impact: PersonalTasteQuestionImpact? = nil }
 
-    static func buildRecords(records: [PersonalTasteModelRecord], userID: String, asOf: Date? = nil, policy: PersonalTastePolicy = .init(), suppressedQuestionIDs: [String] = [], assessQuestions: Bool = true, includeEvidence: Bool = true, individualQuestions: Bool = false, nativeAnswerOptions: ((PersonalTasteModelRecord, String) -> [String])? = nil) -> PersonalTasteModelSnapshot {
+    static func buildRecords(records: [PersonalTasteModelRecord], userID: String, asOf: Date? = nil, policy: PersonalTastePolicy = .init(), suppressedQuestionIDs: [String] = [], assessQuestions: Bool = true, includeEvidence: Bool = true, individualQuestions: Bool = false, nativeAnswerOptions: ((PersonalTasteModelRecord, String) -> [String])? = nil, validatedIntensityLinks: [String: Set<String>] = [:]) -> PersonalTasteModelSnapshot {
         precondition(policy.minMeals >= 2 && policy.minConditionMeals >= 2 && policy.maxConditionDimensions == 2)
         var excluded: [PersonalTasteExcludedEvidence] = []; var included: [PersonalTasteModelRecord] = []; var missingKnownAtCount = 0
         let byID = Dictionary(grouping: records, by: \.observationId)
@@ -178,7 +181,10 @@ enum PersonalTasteModelBuilder {
             else if !outcomes.contains(r.value.text) || r.scale != "attribute-three-category-v1" { reason = "unsupported_liking" }
             else if (scopeGroups[scope(r)] ?? []).contains(where: { $0.kind == "sensory_presence" && $0.value == .flag(false) && sameSelection($0, r) }) { reason = "absence_qualified" }
             if let reason { excluded.append(.init(id: r.observationId, reason: reason)); continue }
-            let intensityRows = (scopeGroups[scope(r)] ?? []).filter { $0.kind == "sensory_intensity" && $0.scale == "expression-strength-v1" && sameSelection($0, r) }
+            let intensityRows = (scopeGroups[scope(r)] ?? []).filter {
+                $0.kind == "sensory_intensity" && $0.scale == "expression-strength-v1"
+                    && (sameSelection($0, r) || validatedIntensityLinks[r.observationId]?.contains($0.observationId) == true)
+            }
             let levels = unique(intensityRows.map { $0.value.text })
             let intensity = levels.count == 1 && ["weak", "medium", "strong"].contains(levels[0]) ? levels[0] : nil
             let key = json([userID, r.mealId, r.attribute!, nullable(r.reference), r.target, r.phase, nullable(intensity), r.dishKindIDs])
@@ -221,14 +227,18 @@ enum PersonalTasteModelBuilder {
                 let first = selected[0], conditionText = conditions.map(conditionLabel).joined(separator: " · ")
                 let title = conditions.isEmpty ? "\(first.label)에 남긴 평가" : "\(first.label), \(conditionText)에서 남긴 평가"
                 let body: String
-                if let direction { body = "\(meals.count)번의 식사에서 \(direction == "positive" ? "호감" : direction == "negative" ? "아쉬움" : "중립") 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요." }
+                if let direction {
+                    let count = distribution.count(for: direction)
+                    let coverage = count == meals.count ? "\(meals.count)번의 식사에서" : "\(meals.count)번의 식사 중 \(count)번에서"
+                    body = "\(coverage) \(direction == "positive" ? "호감" : direction == "negative" ? "아쉬움" : "중립") 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요."
+                }
                 else { body = "\(meals.count)번의 식사를 비교했어요. 반례나 부족한 조건을 확인하며 판단을 유보해요." }
                 var evidenceByID: [String: PersonalTasteEvidence] = [:]; for item in selected.flatMap(\.evidence) { evidenceByID[item.id] = item }
                 candidates.append(.init(id: identifier("candidate", [userID, key, conditionKey]), attribute: first.attribute, reference: first.reference, label: first.label, conditions: conditions, title: title, body: body, status: status, direction: direction, distribution: distribution, baselineDistribution: base, supportMealIDs: rawDirection.map { value in meals.filter { $0.1 == value }.map { $0.0 } } ?? [], counterMealIDs: counter, neutralMealIDs: meals.filter { $0.1 == "neutral" }.map { $0.0 }, mixedMealIDs: meals.filter { $0.1 == "mixed" }.map { $0.0 }, evidenceIDs: unique(selected.flatMap(\.evidenceIDs)), evidence: evidenceByID.keys.sorted().compactMap { evidenceByID[$0] }, abstainReasons: reasons, stability: .init(evaluatedMealCount: meals.count, unchangedCount: unchanged, stable: stable), contrastsWithBaseline: direction != nil && leader(base) != direction))
             }
         }
         candidates.sort { $0.id < $1.id }
-        let fitPatterns = buildFitPatterns(included, userID: userID, policy: policy, includeEvidence: includeEvidence)
+        let fitPatterns = buildFitPatterns(included, userID: userID, policy: policy, includeEvidence: includeEvidence, validatedIntensityLinks: validatedIntensityLinks)
         let overallPatterns = buildOverallPatterns(included, userID: userID, includeEvidence: includeEvidence)
         let overallByExperience = Dictionary(grouping: included.filter { $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1" }, by: \.experienceId)
         let overallAssociations: [PersonalTasteOverallAssociation] = (includeEvidence ? units : []).compactMap { unit in
@@ -282,7 +292,7 @@ enum PersonalTasteModelBuilder {
                 return answers(source, question.facet)
             }
         }
-        if assessQuestions { questionGroups = assessQuestionGroups(questionGroups, included: included, userID: userID, policy: policy, candidates: candidates, fitPatterns: fitPatterns, overallPatterns: overallPatterns, assessmentLimit: individualQuestions ? 12 : nil, answerOptions: answerOptions) }
+        if assessQuestions { questionGroups = assessQuestionGroups(questionGroups, included: included, userID: userID, policy: policy, candidates: candidates, fitPatterns: fitPatterns, overallPatterns: overallPatterns, assessmentLimit: individualQuestions ? 12 : nil, answerOptions: answerOptions, validatedIntensityLinks: validatedIntensityLinks) }
         let ranked = questionGroups.keys.sorted { a,b in
             let left = questionGroups[a]!, right = questionGroups[b]!
             let leftImpact = left.impact?.changedInterpretationCount ?? 0, rightImpact = right.impact?.changedInterpretationCount ?? 0

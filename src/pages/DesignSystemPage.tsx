@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ElementType } from "react";
 
@@ -31,6 +32,8 @@ import AppMenuDrawer from "../components/AppMenuDrawer";
 import BottomTabBar, { type TabType } from "../components/BottomTabBar";
 import AnchoredFlowCtaPreview from "../components/design-system/AnchoredFlowCtaPreview";
 import CardGallery from "../components/design-system/CardGallery";
+import PlatingMotionSection from "../components/design-system/PlatingMotionSection";
+import { DESIGN_SYSTEM } from "../constants/designTokens";
 import ComponentStyleSpecCard from "../components/design-system/ComponentStyleSpecCard";
 import CurrentHomeCardArchive from "../components/design-system/CurrentHomeCardArchive";
 import LegacyHomeCardArchive from "../components/design-system/LegacyHomeCardArchive";
@@ -90,9 +93,9 @@ import TasteChip from "../components/system/TasteChip";
 import PalateBloomAvatar, {
   getPalateBloomShapeCounts,
   PALATE_BLOOM_SHAPE_COUNT_LIMITS,
-  type PalateBloomCoreShape,
+  type PalateBloomPistilShape,
   type PalateBloomPetalShape,
-  type PalateBloomStarShape,
+  type PalateBloomStamenShape,
 } from "../components/system/PalateBloomAvatar";
 import PalateSignatureAvatar, {
   type PalateSignatureAvatarVariant,
@@ -205,8 +208,9 @@ type GenericButtonSize = "default" | "sm" | "lg" | "icon";
 type AppStatus = "upcoming" | "preparing" | "ready" | "completed";
 
 const SECTION_NAV = [
-  { id: "audit", label: "점검" },
+  { id: "motion", label: "모션" },
   { id: "components", label: "컴포넌트" },
+  { id: "audit", label: "점검" },
   { id: "colors", label: "컬러" },
   { id: "typography", label: "타이포" },
   { id: "spacing", label: "간격" },
@@ -388,6 +392,7 @@ function getNotificationPanelPreviewNotifications(): AppNotification[] {
     {
       id: "preview-notification-guidance-ready",
       type: "guidance_ready",
+      payload: {},
       title: "셰프 가이드 준비",
       body: "예약 프로필이 셰프가 참고할 수 있는 보정 가이드로 정리되었습니다.",
       createdAt: new Date(now - 5 * 60 * 1000).toISOString(),
@@ -396,6 +401,7 @@ function getNotificationPanelPreviewNotifications(): AppNotification[] {
     {
       id: "preview-notification-follower-added",
       type: "follower_added",
+      payload: {},
       title: "새 팔로워",
       body: "민서님이 당신의 다이닝 기록을 팔로우하기 시작했습니다.",
       createdAt: new Date(now - 30 * 60 * 1000).toISOString(),
@@ -404,6 +410,7 @@ function getNotificationPanelPreviewNotifications(): AppNotification[] {
     {
       id: "preview-notification-reservation-confirmed",
       type: "reservation_confirmed",
+      payload: {},
       title: "예약 개인화 진행",
       body: "다음 다이닝을 위해 현재 프로필 기준의 개인화 준비가 시작되었습니다.",
       createdAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
@@ -412,6 +419,7 @@ function getNotificationPanelPreviewNotifications(): AppNotification[] {
     {
       id: "preview-notification-feedback-request",
       type: "feedback_request",
+      payload: {},
       title: "식후 피드백 반영",
       body: "남긴 피드백이 다음 다이닝 기준을 더 섬세하게 만드는 데 쓰입니다.",
       createdAt: new Date(now - 24 * 60 * 60 * 1000).toISOString(),
@@ -440,24 +448,24 @@ const AVATAR_TASTE_DEFAULTS: Record<TasteId, number> = {
 };
 const BLOOM_SHAPE_COUNT_DEFAULT = 4;
 const BLOOM_PETAL_SHAPE_DEFAULT: PalateBloomPetalShape = "roundPetal";
-const BLOOM_STAR_SHAPE_DEFAULT: PalateBloomStarShape = "thinStar";
-const BLOOM_CORE_SHAPE_DEFAULT: PalateBloomCoreShape = "solidCore";
+const BLOOM_STAMEN_SHAPE_DEFAULT: PalateBloomStamenShape = "thinStamen";
+const BLOOM_PISTIL_SHAPE_DEFAULT: PalateBloomPistilShape = "solidPistil";
 const BLOOM_PETAL_SHAPE_OPTIONS = [
   { value: "roundPetal", label: "roundPetal" },
   { value: "capsulePetal", label: "capsulePetal" },
   { value: "softDiamondPetal", label: "softDiamondPetal" },
   { value: "serratedTipPetal", label: "serratedTipPetal" },
 ] satisfies ReadonlyArray<{ value: PalateBloomPetalShape; label: string }>;
-const BLOOM_STAR_SHAPE_OPTIONS = [
-  { value: "thinStar", label: "thinStar" },
-  { value: "roundedSpokeStar", label: "roundedSpokeStar" },
-  { value: "dottedRayStar", label: "dottedRayStar" },
-] satisfies ReadonlyArray<{ value: PalateBloomStarShape; label: string }>;
-const BLOOM_CORE_SHAPE_OPTIONS = [
-  { value: "solidCore", label: "solidCore" },
-  { value: "diamondCore", label: "diamondCore" },
+const BLOOM_STAMEN_SHAPE_OPTIONS = [
+  { value: "thinStamen", label: "thinStamen" },
+  { value: "roundedSpokeStamen", label: "roundedSpokeStamen" },
+  { value: "dottedRayStamen", label: "dottedRayStamen" },
+] satisfies ReadonlyArray<{ value: PalateBloomStamenShape; label: string }>;
+const BLOOM_PISTIL_SHAPE_OPTIONS = [
+  { value: "solidPistil", label: "solidPistil" },
+  { value: "diamondPistil", label: "diamondPistil" },
   { value: "seedCluster", label: "seedCluster" },
-] satisfies ReadonlyArray<{ value: PalateBloomCoreShape; label: string }>;
+] satisfies ReadonlyArray<{ value: PalateBloomPistilShape; label: string }>;
 const PALATE_SIGNATURE_LIVE_PREVIEWS = [
   { initials: "S", size: "sm", variant: "soft" },
   { initials: "M", size: "md", variant: "soft" },
@@ -1030,6 +1038,11 @@ function dedupeInventoryEntries<T extends { name: string }>(entries: readonly T[
 }
 
 export default function DesignSystemPage() {
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = `${DESIGN_SYSTEM.name} · ${DESIGN_SYSTEM.englishName} — Taste Buddy Design System`;
+    return () => { document.title = previousTitle; };
+  }, []);
   const initialRuntimeTokenState = useMemo(() => loadPersistedDesignTokenRuntimeState(), []);
   const previewableTsxFiles = useMemo(
     () => getFilePreviewEntries().filter((entry) => entry.file.endsWith(".tsx")),
@@ -1155,10 +1168,10 @@ export default function DesignSystemPage() {
   const [bloomShapeCount, setBloomShapeCount] = useState(BLOOM_SHAPE_COUNT_DEFAULT);
   const [bloomPetalShape, setBloomPetalShape] =
     useState<PalateBloomPetalShape>(BLOOM_PETAL_SHAPE_DEFAULT);
-  const [bloomStarShape, setBloomStarShape] =
-    useState<PalateBloomStarShape>(BLOOM_STAR_SHAPE_DEFAULT);
-  const [bloomCoreShape, setBloomCoreShape] =
-    useState<PalateBloomCoreShape>(BLOOM_CORE_SHAPE_DEFAULT);
+  const [bloomStamenShape, setBloomStamenShape] =
+    useState<PalateBloomStamenShape>(BLOOM_STAMEN_SHAPE_DEFAULT);
+  const [bloomPistilShape, setBloomPistilShape] =
+    useState<PalateBloomPistilShape>(BLOOM_PISTIL_SHAPE_DEFAULT);
   const [statusKey, setStatusKey] = useState<AppStatus>("preparing");
   const [ctaTone, setCtaTone] = useState<"neutral" | "alert">("alert");
   const [improveAccuracyStage, setImproveAccuracyStage] = useState<
@@ -1243,8 +1256,8 @@ export default function DesignSystemPage() {
     setAvatarTasteValues(AVATAR_TASTE_DEFAULTS);
     setBloomShapeCount(BLOOM_SHAPE_COUNT_DEFAULT);
     setBloomPetalShape(BLOOM_PETAL_SHAPE_DEFAULT);
-    setBloomStarShape(BLOOM_STAR_SHAPE_DEFAULT);
-    setBloomCoreShape(BLOOM_CORE_SHAPE_DEFAULT);
+    setBloomStamenShape(BLOOM_STAMEN_SHAPE_DEFAULT);
+    setBloomPistilShape(BLOOM_PISTIL_SHAPE_DEFAULT);
   };
   const currentRuntimeTokenState = useMemo<DesignTokenRuntimeState>(
     () => ({
@@ -1878,7 +1891,7 @@ export default function DesignSystemPage() {
           <div className="grid gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.9fr)] lg:px-8">
             <div className="flex flex-col gap-4">
               <div className="inline-flex w-fit items-center rounded-full border border-[var(--tb-color-border-default)] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--tb-color-text-tertiary)]">
-                Internal Route / Design Inventory
+                Taste Buddy / Plating Design System
               </div>
               <div className="flex flex-wrap gap-2">
                 <a
@@ -1896,10 +1909,11 @@ export default function DesignSystemPage() {
               </div>
               <div className="max-w-[780px]">
                 <h1 className="text-[18px] font-bold leading-tight tracking-tight">
-                  Design System / UI Playground
+                  {DESIGN_SYSTEM.name} · {DESIGN_SYSTEM.englishName}
                 </h1>
                 <p className="mt-3 text-[15px] leading-relaxed text-[var(--tb-color-text-body)]">
-                  현재 앱에 실제로 존재하는 토큰, 컴포넌트, 화면 패턴을 한 페이지에 모았습니다.
+                  Taste Buddy의 디자인 시스템, 플레이팅. {DESIGN_SYSTEM.description}{" "}
+                  현재 앱의 토큰, 컴포넌트, 모션과 화면 패턴을 한 페이지에 모았습니다.
                   오른쪽 하단 플로팅 컨트롤에서 값을 조절하면 각 섹션 preview가 즉시 반영되고, 우측 하단 플로팅 메뉴의
                   <span className="font-semibold"> 수정 사항 반영</span> 버튼으로 현재 앱 런타임에도 바로 적용할 수 있습니다.
                   코드 기준 영구 반영은 여전히 <span className="font-mono">src/styles/design-system.css</span> 와{" "}
@@ -2044,6 +2058,8 @@ export default function DesignSystemPage() {
           activeSectionId={activeLiveControlSectionId}
           portalRootElement={liveControlsPortalRootElement}
         >
+          <PlatingMotionSection />
+
           <PlaygroundSection
             id="components"
             title="Component Architecture"
@@ -3960,7 +3976,7 @@ export default function DesignSystemPage() {
                           Bloom shared count
                         </p>
                         <p className="mt-1 text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                          하나의 공통 개수로 꽃잎 수와 별 꼭짓점 수를 맞춥니다.
+                          하나의 공통 개수로 꽃잎 수와 수술의 방사 요소 수를 맞춥니다.
                         </p>
                       </div>
                       <span className="shrink-0 rounded-full bg-white px-2 py-1 font-mono text-[11px] text-[var(--tb-color-text-muted)]">
@@ -3983,18 +3999,18 @@ export default function DesignSystemPage() {
                         options={BLOOM_PETAL_SHAPE_OPTIONS}
                       />
                     </ControlBlock>
-                    <ControlBlock label="별 형태" hint={bloomStarShape}>
+                    <ControlBlock label="수술 형태" hint={bloomStamenShape}>
                       <SegmentedControl
-                        value={bloomStarShape}
-                        onChange={setBloomStarShape}
-                        options={BLOOM_STAR_SHAPE_OPTIONS}
+                        value={bloomStamenShape}
+                        onChange={setBloomStamenShape}
+                        options={BLOOM_STAMEN_SHAPE_OPTIONS}
                       />
                     </ControlBlock>
-                    <ControlBlock label="코어 형태" hint={bloomCoreShape}>
+                    <ControlBlock label="암술 형태" hint={bloomPistilShape}>
                       <SegmentedControl
-                        value={bloomCoreShape}
-                        onChange={setBloomCoreShape}
-                        options={BLOOM_CORE_SHAPE_OPTIONS}
+                        value={bloomPistilShape}
+                        onChange={setBloomPistilShape}
+                        options={BLOOM_PISTIL_SHAPE_OPTIONS}
                       />
                     </ControlBlock>
                   </div>
@@ -4241,7 +4257,7 @@ export default function DesignSystemPage() {
                             PalateBloomAvatar
                           </p>
                           <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-                            미각 우선순위를 꽃잎과 이중 별 레이어로 쌓아 프로필용 Palate Bloom mark로 번역합니다.
+                            미각 우선순위를 꽃잎과 이중 수술 레이어로 쌓아 프로필용 Palate Bloom mark로 번역합니다.
                           </p>
                         </div>
                         <SourceFileLink
@@ -4258,12 +4274,12 @@ export default function DesignSystemPage() {
                           >
                             <div className={avatarPreviewVisualClass}>
                               <PalateBloomAvatar
-                                coreShape={bloomCoreShape}
+                                pistilShape={bloomPistilShape}
                                 petalShape={bloomPetalShape}
                                 profile={livePalateAvatarProfile}
                                 shapeCountOverride={bloomShapeCount}
                                 size={size}
-                                starShape={bloomStarShape}
+                                stamenShape={bloomStamenShape}
                               />
                             </div>
                             <div className={avatarPreviewMetaClass}>
@@ -4271,7 +4287,7 @@ export default function DesignSystemPage() {
                                 {size} · {PROFILE_AVATAR_SIZE_TOKENS[size]}px
                               </p>
                               <p className={avatarPreviewDescriptionClass}>
-                                하나의 seed count로 꽃잎과 이중 별 개수가 함께 바뀝니다.
+                                하나의 seed count로 꽃잎과 이중 수술 개수가 함께 바뀝니다.
                               </p>
                             </div>
                             <div className={avatarPreviewChipRowClass}>
@@ -4290,13 +4306,13 @@ export default function DesignSystemPage() {
                         <div className="flex flex-wrap items-center gap-3">
                           {PROFILE_AVATAR_SIZE_KEYS.map((size) => (
                             <PalateBloomAvatar
-                              coreShape={bloomCoreShape}
+                              pistilShape={bloomPistilShape}
                               petalShape={bloomPetalShape}
                               key={`palate-bloom-token-row-${size}`}
                               profile={livePalateAvatarProfile}
                               shapeCountOverride={bloomShapeCount}
                               size={size}
-                              starShape={bloomStarShape}
+                              stamenShape={bloomStamenShape}
                             />
                           ))}
                           <p className="min-w-[160px] flex-1 text-[11px] leading-relaxed text-[var(--tb-color-text-subtle)]">
@@ -4307,8 +4323,8 @@ export default function DesignSystemPage() {
                           {[
                             { count: livePalateBloomShapeCounts.largePetal, label: "2순위 꽃잎" },
                             { count: livePalateBloomShapeCounts.smallPetal, label: "3순위 꽃잎" },
-                            { count: livePalateBloomShapeCounts.largeStar, label: "4순위 별" },
-                            { count: livePalateBloomShapeCounts.smallStar, label: "5순위 별" },
+                            { count: livePalateBloomShapeCounts.largeStamen, label: "4순위 수술" },
+                            { count: livePalateBloomShapeCounts.smallStamen, label: "5순위 수술" },
                           ].map(({ count, label }) => (
                             <div
                               key={`palate-bloom-shape-count-${label}`}

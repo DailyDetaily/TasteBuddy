@@ -255,22 +255,26 @@ struct CompactCardIconActionButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            LucideIcon(
-                symbol,
-                size: actionIconSize,
-                strokeWidth: TBIcon.Stroke.regular,
-                filled: filled || isActive
+        if symbol == .bookmark {
+            IconActionButton(
+                kind: .bookmark,
+                isActive: filled || isActive,
+                activeColor: TBColor.textSecondary,
+                buttonSize: actionButtonSize,
+                iconSize: actionIconSize,
+                accessibilityLabel: accessibilityLabel,
+                action: action
             )
-            .tasteBloomReplace(value: filled || isActive)
-            .frame(
-                width: actionButtonSize,
-                height: actionButtonSize
-            )
-            .foregroundStyle(TBColor.textSecondary)
-            .contentShape(Rectangle())
+        } else {
+            Button(action: action) {
+                LucideIcon(symbol, size: actionIconSize, strokeWidth: TBIcon.Stroke.regular, filled: filled || isActive)
+                    .tasteBloomReplace(value: filled || isActive)
+                    .frame(width: actionButtonSize, height: actionButtonSize)
+                    .foregroundStyle(TBColor.textSecondary)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(TBTokenButtonStyle())
+            .accessibilityLabel(accessibilityLabel)
         }
-        .buttonStyle(TBTokenButtonStyle())
-        .accessibilityLabel(accessibilityLabel)
     }
 }

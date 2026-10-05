@@ -447,38 +447,12 @@ private struct RestaurantHeroNativeDetailCard: View {
 
                         Spacer(minLength: 8)
 
-                        HStack(spacing: CompactCardMetrics.actionGap) {
-                            if let onVisitedTap {
-                                Button(action: onVisitedTap) {
-                                    LucideIcon(
-                                        .circlePlus,
-                                        size: TBIcon.Size.large,
-                                        strokeWidth: TBIcon.Stroke.regular
-                                    )
-                                    .frame(width: 32, height: 32)
-                                    .foregroundStyle(TBColor.textSecondary)
-                                    .contentShape(Rectangle())
-                                }
-                                .buttonStyle(TBTokenButtonStyle())
-                                .accessibilityLabel("먹어본 식당 피드백 남기기")
-                            }
-
-                            Button(action: onBookmarkTap) {
-                                LucideIcon(
-                                    .bookmark,
-                                    size: TBIcon.Size.large,
-                                    strokeWidth: TBIcon.Stroke.regular,
-                                    filled: isBookmarked
-                                )
-                                .tasteBloomReplace(value: isBookmarked)
-                                .frame(width: 32, height: 32)
-                                .foregroundStyle(isBookmarked ? TBColor.textPrimary : TBColor.textSecondary)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(TBTokenButtonStyle())
-                            .tasteBloomMotion(.feedback, value: isBookmarked)
-                            .accessibilityLabel(isBookmarked ? "북마크 편집" : "북마크")
-                        }
+                        RecordActions(
+                            isBookmarked: isBookmarked,
+                            recordLabel: "먹어본 식당 피드백 남기기",
+                            onRecord: onVisitedTap,
+                            onBookmark: onBookmarkTap
+                        )
                     }
 
                     VStack(alignment: .leading, spacing: 4) {

@@ -13,32 +13,26 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
       "fermented_jang",
-      "grilled_smoked",
-      "broth"
+      "grilled"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:91511",
     "ingredientSignalIds": [
       "ingredient:pork",
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가례불고기",
     "lexiconIds": [
       "lexicon:pork-savory-fat",
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
       "lexicon:charred-aroma",
       "lexicon:roasted-aroma",
-      "lexicon:charcoal-grilled",
-      "lexicon:clear-umami"
+      "lexicon:charcoal-grilled"
     ],
     "nativeFoodIds": [
       "91511"
@@ -46,9 +40,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "processSignalIds": [
       "process:fermented",
       "process:grilled",
-      "process:charcoal",
-      "process:broth",
-      "process:boiled"
+      "process:charcoal"
     ],
     "sourceRefs": [
       {
@@ -74,7 +66,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
       "fermented_jang",
       "broth"
     ],
@@ -83,7 +74,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "id": "tba-food:native:91391",
     "ingredientSignalIds": [
       "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -91,7 +81,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
@@ -130,25 +119,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "broth"
+      "broth",
+      "egg"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:90400",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:noodle",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "가리탕(갈비탕)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
@@ -186,30 +170,21 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가마니떡(밀주머니떡)",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "broth"
+      "nut_seed"
     ],
     "foodGroup": "지지는 떡",
     "foodOnIds": [],
     "id": "tba-food:native:91242",
     "ingredientSignalIds": [
-      "ingredient:crustacean"
+      "ingredient:nut-seed"
     ],
     "kind": "native-dish",
     "koName": "가마니떡(밀주머니떡)",
-    "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "91242"
     ],
-    "processSignalIds": [
-      "process:broth",
-      "process:boiled"
-    ],
+    "processSignalIds": [],
     "sourceRefs": [
       {
         "id": "91242",
@@ -234,22 +209,19 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
       "broth"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:91392",
     "ingredientSignalIds": [
-      "ingredient:shellfish",
-      "ingredient:noodle"
+      "ingredient:shellfish"
     ],
     "kind": "native-dish",
     "koName": "가물치곰국",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:chewy-resistance",
       "lexicon:clear-umami",
       "lexicon:deep-umami"
     ],
@@ -284,26 +256,19 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
       "broth"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:92092",
     "ingredientSignalIds": [
-      "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle"
+      "ingredient:shellfish"
     ],
     "kind": "native-dish",
     "koName": "가물치곰탕",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:clear-umami",
       "lexicon:deep-umami"
     ],
@@ -336,29 +301,14 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "canonicalName": "가시리묵",
     "confidence": 0.65,
-    "dishKindIds": [
-      "seafood",
-      "grain_noodle",
-      "dessert"
-    ],
+    "dishKindIds": [],
     "foodGroup": "묵",
     "foodOnIds": [],
     "id": "tba-food:native:91917",
-    "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:noodle",
-      "ingredient:fruit"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "가시리묵",
-    "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "91917"
     ],
@@ -387,40 +337,30 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "beverage_pairing",
-      "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "broth"
+      "seaweed",
+      "steamed"
     ],
     "foodGroup": "약주 및 탁주류",
     "foodOnIds": [],
     "id": "tba-food:native:89892",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:seaweed"
     ],
     "kind": "native-dish",
     "koName": "가야곡왕주",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "89892"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -447,8 +387,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "meat",
-      "grain_noodle",
-      "fermented_jang"
+      "fermented_jang",
+      "steamed"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
@@ -456,7 +396,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "ingredientSignalIds": [
       "ingredient:poultry",
       "ingredient:shellfish",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -465,7 +404,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:poultry-clean-meat",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -474,7 +412,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "91579"
     ],
     "processSignalIds": [
-      "process:fermented"
+      "process:fermented",
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -502,7 +441,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "seafood",
       "meat",
       "fermented_jang",
-      "broth"
+      "steamed"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
@@ -510,7 +449,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "ingredientSignalIds": [
       "ingredient:poultry",
       "ingredient:shellfish",
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -519,20 +457,16 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:poultry-clean-meat",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91580"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -559,9 +493,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "meat",
-      "grain_noodle",
       "fermented_jang",
-      "broth"
+      "steamed"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
@@ -569,8 +502,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "ingredientSignalIds": [
       "ingredient:poultry",
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -579,21 +510,16 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:poultry-clean-meat",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91148"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -619,28 +545,29 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "meat"
+      "meat",
+      "steamed"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:89806",
     "ingredientSignalIds": [
       "ingredient:poultry",
-      "ingredient:shellfish",
-      "ingredient:crustacean"
+      "ingredient:shellfish"
     ],
     "kind": "native-dish",
     "koName": "가오리찜(갱개미찜)",
     "lexiconIds": [
       "lexicon:poultry-clean-meat",
       "lexicon:shellfish-sweetness",
-      "lexicon:briny-sea",
-      "lexicon:seafood-aroma"
+      "lexicon:briny-sea"
     ],
     "nativeFoodIds": [
       "89806"
     ],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:steamed"
+    ],
     "sourceRefs": [
       {
         "id": "89806",
@@ -666,9 +593,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "meat",
-      "grain_noodle",
-      "fermented_jang",
-      "broth"
+      "fermented_jang"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
@@ -676,8 +601,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "ingredientSignalIds": [
       "ingredient:poultry",
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -686,21 +609,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:poultry-clean-meat",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "89817"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -727,9 +644,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "meat",
-      "grain_noodle",
-      "fermented_jang",
-      "broth"
+      "fermented_jang"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
@@ -737,8 +652,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "ingredientSignalIds": [
       "ingredient:poultry",
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -747,21 +660,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:poultry-clean-meat",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "92413"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -787,7 +694,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
       "fermented_jang",
       "broth"
     ],
@@ -796,8 +702,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "id": "tba-food:native:91445",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -805,8 +709,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
@@ -846,14 +748,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "fermented_jang",
-      "broth"
+      "seaweed"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:91176",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:seaweed"
     ],
     "kind": "native-dish",
     "koName": "가자미무침회",
@@ -862,17 +765,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:briny-sea",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91176"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -897,7 +796,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가자미미역국",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
+      "seaweed",
       "fermented_jang",
       "broth"
     ],
@@ -905,7 +804,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "foodOnIds": [],
     "id": "tba-food:native:91013",
     "ingredientSignalIds": [
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:seaweed"
     ],
     "kind": "native-dish",
     "koName": "가자미미역국",
@@ -947,8 +847,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가자미미역국",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
+      "seaweed",
       "fermented_jang",
       "broth"
     ],
@@ -956,13 +855,12 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "foodOnIds": [],
     "id": "tba-food:native:91393",
     "ingredientSignalIds": [
-      "ingredient:noodle",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:seaweed"
     ],
     "kind": "native-dish",
     "koName": "가자미미역국",
     "lexiconIds": [
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
@@ -1000,21 +898,17 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가자미식해",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
       "fermented_jang"
     ],
     "foodGroup": "식해",
     "foodOnIds": [],
     "id": "tba-food:native:91233",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가자미식해",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -1048,21 +942,17 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가자미식해",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
       "fermented_jang"
     ],
     "foodGroup": "식해",
     "foodOnIds": [],
     "id": "tba-food:native:91670",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가자미식해",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -1096,33 +986,23 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가자미식해 [방법1]",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
-      "fermented_jang",
-      "beverage_pairing"
+      "rice_grain",
+      "fermented_jang"
     ],
     "foodGroup": "식해",
     "foodOnIds": [],
     "id": "tba-food:native:91926",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:grain",
-      "ingredient:noodle",
-      "ingredient:soy-jang",
-      "ingredient:tea"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가자미식해 [방법1]",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91926"
@@ -1153,24 +1033,17 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가자미식해 [방법2]",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
       "fermented_jang"
     ],
     "foodGroup": "식해",
     "foodOnIds": [],
     "id": "tba-food:native:91927",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가자미식해 [방법2]",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -1205,17 +1078,14 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "grilled_smoked"
+      "grilled"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:90491",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -1223,8 +1093,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
@@ -1263,14 +1131,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "fermented_jang",
-      "broth"
+      "braised"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:90839",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -1278,20 +1145,16 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "90839"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:braised"
     ],
     "sourceRefs": [
       {
@@ -1317,14 +1180,14 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "fermented_jang"
+      "fermented_jang",
+      "braised"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:91526",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -1332,7 +1195,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -1341,7 +1203,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "91526"
     ],
     "processSignalIds": [
-      "process:fermented"
+      "process:fermented",
+      "process:braised"
     ],
     "sourceRefs": [
       {
@@ -1368,14 +1231,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "fermented_jang",
-      "broth"
+      "braised"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:91111",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -1383,20 +1245,16 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91111"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:braised"
     ],
     "sourceRefs": [
       {
@@ -1421,39 +1279,30 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가죽무침(나물)",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
       "vegetable_herb",
-      "fermented_jang",
-      "broth"
+      "fermented_jang"
     ],
     "foodGroup": "생채",
     "foodOnIds": [],
     "id": "tba-food:native:91474",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:leafy-green",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가죽무침(나물)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91474"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -1479,7 +1328,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "grain_noodle",
       "fermented_jang"
     ],
     "foodGroup": "채소류",
@@ -1487,7 +1335,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "id": "tba-food:native:90256",
     "ingredientSignalIds": [
       "ingredient:leafy-green",
-      "ingredient:grain",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -1495,7 +1342,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
-      "lexicon:savory-depth",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -1529,28 +1375,19 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가죽부각(가죽자반)",
     "confidence": 0.65,
     "dishKindIds": [
-      "vegetable_herb",
-      "seafood",
-      "grain_noodle"
+      "vegetable_herb"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:91629",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:leafy-green",
-      "ingredient:grain",
-      "ingredient:noodle"
+      "ingredient:leafy-green"
     ],
     "kind": "native-dish",
     "koName": "가죽부각(가죽자반)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance"
+      "lexicon:leafy-green-bitterness"
     ],
     "nativeFoodIds": [
       "91629"
@@ -1580,42 +1417,29 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood",
-      "grain_noodle",
-      "fermented_jang",
-      "broth"
+      "fermented_jang"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:91184",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:leafy-green",
-      "ingredient:grain",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가죽부각(가죽자반튀김)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91184"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -1694,29 +1518,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood",
-      "grain_noodle",
       "fermented_jang"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:89602",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:leafy-green",
-      "ingredient:grain",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가죽잎부각",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -1751,29 +1566,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood",
-      "grain_noodle",
       "fermented_jang"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:90582",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:leafy-green",
-      "ingredient:grain",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가죽잎부각",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -1808,33 +1614,26 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood",
-      "broth"
+      "egg",
+      "pancake"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:91546",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:leafy-green"
+      "ingredient:leafy-green",
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "가죽잎전",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:leafy-green-bitterness"
     ],
     "nativeFoodIds": [
       "91546"
     ],
-    "processSignalIds": [
-      "process:broth",
-      "process:boiled"
-    ],
+    "processSignalIds": [],
     "sourceRefs": [
       {
         "id": "91546",
@@ -1907,7 +1706,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "fermented_jang"
+      "fermented_jang",
+      "pancake"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
@@ -1954,21 +1754,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가죽장아찌(참죽장아찌)",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "fermented_jang"
+      "fermented_jang",
+      "pickled"
     ],
     "foodGroup": "고추장에 담근 것",
     "foodOnIds": [],
     "id": "tba-food:native:91217",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가죽장아찌(참죽장아찌)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -1977,7 +1774,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "91217"
     ],
     "processSignalIds": [
-      "process:fermented"
+      "process:fermented",
+      "process:pickled"
     ],
     "sourceRefs": [
       {
@@ -2003,22 +1801,19 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood",
-      "fermented_jang"
+      "fermented_jang",
+      "pancake"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:89586",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:leafy-green",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가죽전(가죽잎부침개)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
       "lexicon:fermented-umami",
@@ -2055,35 +1850,31 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood",
+      "mushroom",
+      "fermented_jang",
       "broth",
-      "grain_noodle",
-      "fermented_jang"
+      "steamed"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:91014",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:mushroom",
       "ingredient:leafy-green",
-      "ingredient:grain",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가지가루찜(가지가루찜국)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:mushroom-earthy-umami",
       "lexicon:earthy-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
-      "lexicon:fermented-aroma"
+      "lexicon:fermented-aroma",
+      "lexicon:rounded-salinity",
+      "lexicon:clear-umami",
+      "lexicon:deep-umami"
     ],
     "nativeFoodIds": [
       "91014"
@@ -2091,7 +1882,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "processSignalIds": [
       "process:fermented",
       "process:broth",
-      "process:boiled"
+      "process:boiled",
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -2117,16 +1909,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
-      "fermented_jang",
-      "broth"
+      "fermented_jang"
     ],
     "foodGroup": "과채류",
     "foodOnIds": [],
     "id": "tba-food:native:90194",
     "ingredientSignalIds": [
       "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -2134,20 +1923,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "90194"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -2173,7 +1957,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "fermented_jang"
+      "fermented_jang",
+      "steamed"
     ],
     "foodGroup": "숙채",
     "foodOnIds": [],
@@ -2195,7 +1980,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "92357"
     ],
     "processSignalIds": [
-      "process:fermented"
+      "process:fermented",
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -2220,7 +2006,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가지나물",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
       "vegetable_herb",
       "fermented_jang"
     ],
@@ -2228,15 +2013,12 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "foodOnIds": [],
     "id": "tba-food:native:92646",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:leafy-green",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가지나물",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
       "lexicon:fermented-umami",
@@ -2274,35 +2056,34 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "vegetable_herb",
       "meat",
-      "seafood",
+      "mushroom",
+      "fermented_jang",
       "broth",
-      "grain_noodle",
-      "fermented_jang"
+      "egg"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:90551",
     "ingredientSignalIds": [
       "ingredient:beef",
-      "ingredient:crustacean",
       "ingredient:mushroom",
       "ingredient:leafy-green",
-      "ingredient:noodle",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "가지선",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
       "lexicon:meaty-aroma",
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:mushroom-earthy-umami",
       "lexicon:earthy-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
-      "lexicon:chewy-resistance",
-      "lexicon:fermented-umami"
+      "lexicon:fermented-umami",
+      "lexicon:fermented-aroma",
+      "lexicon:rounded-salinity",
+      "lexicon:clear-umami"
     ],
     "nativeFoodIds": [
       "90551"
@@ -2335,42 +2116,28 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가지장아찌",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "broth",
-      "beverage_pairing"
+      "pickled"
     ],
     "foodGroup": "소금물에 담근 것",
     "foodOnIds": [],
     "id": "tba-food:native:92596",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:noodle",
-      "ingredient:soy-jang",
-      "ingredient:tea"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가지장아찌",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "92596"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:pickled"
     ],
     "sourceRefs": [
       {
@@ -2395,35 +2162,28 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가지장아찌(가지지)",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
       "fermented_jang",
-      "broth"
+      "pickled"
     ],
     "foodGroup": "간장에 담근 것",
     "foodOnIds": [],
     "id": "tba-food:native:92706",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가지장아찌(가지지)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "92706"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:pickled"
     ],
     "sourceRefs": [
       {
@@ -2449,27 +2209,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood",
-      "grain_noodle",
       "fermented_jang"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:91120",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:leafy-green",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "가지적",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -2504,25 +2257,19 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood",
-      "grain_noodle"
+      "pancake"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:90522",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:leafy-green",
-      "ingredient:noodle"
+      "ingredient:leafy-green"
     ],
     "kind": "native-dish",
     "koName": "가지전",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
-      "lexicon:chewy-resistance"
+      "lexicon:leafy-green-bitterness"
     ],
     "nativeFoodIds": [
       "90522"
@@ -2553,32 +2300,32 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "vegetable_herb",
       "meat",
-      "seafood",
       "fermented_jang",
-      "broth"
+      "broth",
+      "egg",
+      "steamed"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:90552",
     "ingredientSignalIds": [
       "ingredient:beef",
-      "ingredient:crustacean",
       "ingredient:leafy-green",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "가지찜",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
       "lexicon:meaty-aroma",
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
-      "lexicon:clear-umami"
+      "lexicon:clear-umami",
+      "lexicon:deep-umami"
     ],
     "nativeFoodIds": [
       "90552"
@@ -2586,7 +2333,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "processSignalIds": [
       "process:fermented",
       "process:broth",
-      "process:boiled"
+      "process:boiled",
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -2611,34 +2359,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "각색산자",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
-      "broth"
+      "steamed"
     ],
     "foodGroup": "유밀과",
     "foodOnIds": [],
     "id": "tba-food:native:90311",
-    "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "각색산자",
-    "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "90311"
     ],
     "processSignalIds": [
-      "process:broth",
-      "process:boiled"
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -2664,34 +2398,34 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "vegetable_herb",
-      "broth",
+      "mushroom",
       "fermented_jang",
-      "grilled_smoked"
+      "grilled",
+      "broth",
+      "egg"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:90441",
     "ingredientSignalIds": [
       "ingredient:beef",
-      "ingredient:crustacean",
       "ingredient:mushroom",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "각색전골",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
       "lexicon:meaty-aroma",
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:mushroom-earthy-umami",
       "lexicon:earthy-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
-      "lexicon:charred-aroma"
+      "lexicon:charred-aroma",
+      "lexicon:roasted-aroma",
+      "lexicon:clear-umami"
     ],
     "nativeFoodIds": [
       "90441"
@@ -2725,38 +2459,26 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "각색편(백편, 꿀편, 승검초편)",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "vegetable_herb",
-      "broth",
-      "grain_noodle"
+      "mushroom",
+      "steamed"
     ],
     "foodGroup": "찌는 떡",
     "foodOnIds": [],
     "id": "tba-food:native:90630",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:mushroom",
-      "ingredient:grain",
-      "ingredient:noodle"
+      "ingredient:mushroom"
     ],
     "kind": "native-dish",
     "koName": "각색편(백편, 꿀편, 승검초편)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:earthy-aroma"
     ],
     "nativeFoodIds": [
       "90630"
     ],
     "processSignalIds": [
-      "process:broth",
-      "process:boiled"
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -2782,8 +2504,10 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
-      "broth"
+      "broth",
+      "seaweed",
+      "steamed",
+      "spicy"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
@@ -2791,8 +2515,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "ingredientSignalIds": [
       "ingredient:white-fish",
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle"
+      "ingredient:seaweed"
     ],
     "kind": "native-dish",
     "koName": "간국",
@@ -2801,8 +2524,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:deep-umami"
     ],
     "nativeFoodIds": [
@@ -2810,7 +2531,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "processSignalIds": [
       "process:broth",
-      "process:boiled"
+      "process:boiled",
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -2836,24 +2558,21 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "grain_noodle"
+      "rice_grain",
+      "egg",
+      "pancake"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:92475",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:grain",
-      "ingredient:noodle"
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "간랍(전유아, 전유어)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance"
+      "lexicon:savory-depth"
     ],
     "nativeFoodIds": [
       "92475"
@@ -2882,36 +2601,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "간장",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
-      "fermented_jang",
-      "dessert",
-      "beverage_pairing"
+      "fermented_jang"
     ],
     "foodGroup": "간장류",
     "foodOnIds": [],
     "id": "tba-food:native:92391",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle",
-      "ingredient:soy-jang",
-      "ingredient:fruit",
-      "ingredient:tea"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "간장",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "92391"
@@ -2943,26 +2646,23 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "broth"
+      "broth",
+      "nut_seed"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:92093",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:grain",
-      "ingredient:noodle",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:nut-seed"
     ],
     "kind": "native-dish",
     "koName": "간재미탕<방법1>",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
@@ -3001,13 +2701,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "broth"
+      "broth",
+      "seaweed"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:92094",
     "ingredientSignalIds": [
-      "ingredient:shellfish"
+      "ingredient:shellfish",
+      "ingredient:seaweed"
     ],
     "kind": "native-dish",
     "koName": "간재미탕<방법2>",
@@ -3048,42 +2750,29 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
-      "fermented_jang",
-      "broth",
-      "dessert"
+      "fermented_jang"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:92198",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle",
-      "ingredient:soy-jang",
-      "ingredient:fruit"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "간재미회(간재미무침)",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami",
-      "lexicon:fruit-aroma"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "92198"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -3109,44 +2798,30 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "grilled_smoked",
-      "broth",
-      "dessert"
+      "grilled"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:92169",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:noodle",
-      "ingredient:soy-jang",
-      "ingredient:fruit"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "갈비구이",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
       "lexicon:charred-aroma",
-      "lexicon:roasted-aroma",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:roasted-aroma"
     ],
     "nativeFoodIds": [
       "92169"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:grilled",
-      "process:broth",
-      "process:boiled"
+      "process:grilled"
     ],
     "sourceRefs": [
       {
@@ -3172,34 +2847,29 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "grain_noodle",
       "fermented_jang",
       "broth",
-      "dessert"
+      "fruit",
+      "braised"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:92518",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:noodle",
       "ingredient:soy-jang",
       "ingredient:fruit"
     ],
     "kind": "native-dish",
     "koName": "갈비찜",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
       "lexicon:clear-umami",
       "lexicon:deep-umami",
       "lexicon:fruit-aroma",
-      "lexicon:bright-acidity"
+      "lexicon:bright-acidity",
+      "lexicon:clean-sweetness"
     ],
     "nativeFoodIds": [
       "92518"
@@ -3207,7 +2877,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "processSignalIds": [
       "process:fermented",
       "process:broth",
-      "process:boiled"
+      "process:boiled",
+      "process:braised"
     ],
     "sourceRefs": [
       {
@@ -3233,31 +2904,26 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "vegetable_herb",
-      "broth",
-      "grain_noodle",
+      "mushroom",
       "fermented_jang",
-      "dessert"
+      "broth",
+      "egg",
+      "steamed",
+      "braised"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:90885",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:mushroom",
-      "ingredient:noodle",
       "ingredient:soy-jang",
-      "ingredient:fruit"
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "갈비찜(가리찜)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:mushroom-earthy-umami",
       "lexicon:earthy-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
@@ -3270,7 +2936,9 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "processSignalIds": [
       "process:fermented",
       "process:broth",
-      "process:boiled"
+      "process:boiled",
+      "process:steamed",
+      "process:braised"
     ],
     "sourceRefs": [
       {
@@ -3296,10 +2964,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "vegetable_herb",
-      "broth",
+      "mushroom",
       "fermented_jang",
-      "dessert"
+      "egg",
+      "steamed",
+      "braised"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
@@ -3307,7 +2976,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "ingredientSignalIds": [
       "ingredient:mushroom",
       "ingredient:soy-jang",
-      "ingredient:fruit"
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "갈비찜(가리찜)",
@@ -3316,20 +2985,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:earthy-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "90553"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:steamed",
+      "process:braised"
     ],
     "sourceRefs": [
       {
@@ -3405,25 +3069,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "broth"
+      "broth",
+      "egg"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:92346",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:noodle",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "갈비탕",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
@@ -3462,29 +3121,21 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
-      "grilled_smoked",
-      "dessert"
+      "grilled"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:92359",
     "ingredientSignalIds": [
-      "ingredient:shellfish",
-      "ingredient:noodle",
-      "ingredient:fruit"
+      "ingredient:shellfish"
     ],
     "kind": "native-dish",
     "koName": "갈치구이",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:chewy-resistance",
       "lexicon:charred-aroma",
-      "lexicon:roasted-aroma",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:roasted-aroma"
     ],
     "nativeFoodIds": [
       "92359"
@@ -3516,28 +3167,21 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grilled_smoked",
-      "dessert"
+      "grilled"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:91512",
     "ingredientSignalIds": [
-      "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:fruit"
+      "ingredient:shellfish"
     ],
     "kind": "native-dish",
     "koName": "갈치구이",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
       "lexicon:charred-aroma",
-      "lexicon:roasted-aroma",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:roasted-aroma"
     ],
     "nativeFoodIds": [
       "91512"
@@ -3568,36 +3212,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "갈치김치",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
-      "fermented_jang",
-      "dessert",
-      "beverage_pairing"
+      "fermented_jang"
     ],
     "foodGroup": "배추류",
     "foodOnIds": [],
     "id": "tba-food:native:91065",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle",
-      "ingredient:soy-jang",
-      "ingredient:fruit",
-      "ingredient:tea"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "갈치김치",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91065"
@@ -3628,21 +3256,17 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "갈치내장김치(갈치순태김치)",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
       "fermented_jang"
     ],
     "foodGroup": "무류",
     "foodOnIds": [],
     "id": "tba-food:native:91453",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "갈치내장김치(갈치순태김치)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -3676,35 +3300,26 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "갈치섞박지",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "fermented_jang",
-      "broth"
+      "fermented_jang"
     ],
     "foodGroup": "무류",
     "foodOnIds": [],
     "id": "tba-food:native:91452",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "갈치섞박지",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91452"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -3729,40 +3344,29 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "갈치식해",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
-      "fermented_jang",
-      "broth"
+      "rice_grain",
+      "fermented_jang"
     ],
     "foodGroup": "식해",
     "foodOnIds": [],
     "id": "tba-food:native:91672",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
       "ingredient:grain",
-      "ingredient:noodle",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "갈치식해",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91672"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -3788,42 +3392,31 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "broth",
-      "dessert"
+      "braised"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:90840",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle",
-      "ingredient:soy-jang",
-      "ingredient:fruit"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "갈치조림(갈치무조림)",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami",
-      "lexicon:fruit-aroma"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "90840"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:braised"
     ],
     "sourceRefs": [
       {
@@ -3850,14 +3443,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "fermented_jang",
-      "broth"
+      "braised"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:90032",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
       "ingredient:soy-jang"
     ],
     "kind": "native-dish",
@@ -3865,20 +3457,16 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "90032"
     ],
     "processSignalIds": [
       "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:braised"
     ],
     "sourceRefs": [
       {
@@ -3951,34 +3539,26 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "grain_noodle",
       "fermented_jang",
-      "broth",
-      "dessert"
+      "broth"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:89953",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
-      "ingredient:noodle",
-      "ingredient:soy-jang",
-      "ingredient:fruit"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "갈치호박국(갈치국)",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
       "lexicon:clear-umami",
-      "lexicon:deep-umami",
-      "lexicon:fruit-aroma"
+      "lexicon:deep-umami"
     ],
     "nativeFoodIds": [
       "89953"
@@ -4013,15 +3593,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "fermented_jang",
-      "broth",
-      "dessert"
+      "fruit"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
     "id": "tba-food:native:91610",
     "ingredientSignalIds": [
       "ingredient:shellfish",
-      "ingredient:crustacean",
       "ingredient:soy-jang",
       "ingredient:fruit"
     ],
@@ -4030,22 +3608,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami",
       "lexicon:fruit-aroma",
-      "lexicon:bright-acidity"
+      "lexicon:bright-acidity",
+      "lexicon:clean-sweetness"
     ],
     "nativeFoodIds": [
       "91610"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -4070,7 +3644,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "갈파래국",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
+      "seaweed",
       "meat",
       "fermented_jang",
       "broth"
@@ -4080,7 +3654,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "id": "tba-food:native:92095",
     "ingredientSignalIds": [
       "ingredient:pork",
-      "ingredient:soy-jang"
+      "ingredient:soy-jang",
+      "ingredient:seaweed"
     ],
     "kind": "native-dish",
     "koName": "갈파래국",
@@ -4123,25 +3698,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감경단",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
       "broth"
     ],
     "foodGroup": "삶는 떡(경단류)",
     "foodOnIds": [],
     "id": "tba-food:native:91243",
-    "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "감경단",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:clear-umami",
       "lexicon:deep-umami"
     ],
@@ -4175,34 +3740,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감고지떡",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
-      "broth"
+      "steamed"
     ],
     "foodGroup": "찌는 떡",
     "foodOnIds": [],
     "id": "tba-food:native:92260",
-    "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "감고지떡",
-    "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "92260"
     ],
     "processSignalIds": [
-      "process:broth",
-      "process:boiled"
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -4227,30 +3778,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감고지떡(감모름떡)",
     "confidence": 0.65,
     "dishKindIds": [
-      "grain_noodle",
-      "broth"
+      "steamed"
     ],
     "foodGroup": "찌는 떡",
     "foodOnIds": [],
     "id": "tba-food:native:91244",
-    "ingredientSignalIds": [
-      "ingredient:grain",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "감고지떡(감모름떡)",
-    "lexiconIds": [
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "91244"
     ],
     "processSignalIds": [
-      "process:broth",
-      "process:boiled"
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -4275,39 +3816,26 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감김치",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "fermented_jang",
-      "broth",
-      "beverage_pairing"
+      "fermented_jang"
     ],
     "foodGroup": "기타",
     "foodOnIds": [],
     "id": "tba-food:native:91461",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:soy-jang",
-      "ingredient:tea"
+      "ingredient:soy-jang"
     ],
     "kind": "native-dish",
     "koName": "감김치",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91461"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -4333,8 +3861,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "seafood",
-      "fermented_jang",
-      "broth"
+      "fermented_jang"
     ],
     "foodGroup": "기타",
     "foodOnIds": [],
@@ -4352,17 +3879,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [
       "91066"
     ],
     "processSignalIds": [
-      "process:fermented",
-      "process:broth",
-      "process:boiled"
+      "process:fermented"
     ],
     "sourceRefs": [
       {
@@ -4387,30 +3910,20 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감단자",
     "confidence": 0.65,
     "dishKindIds": [
-      "grain_noodle",
-      "broth"
+      "steamed"
     ],
     "foodGroup": "치는 떡",
     "foodOnIds": [],
     "id": "tba-food:native:91698",
-    "ingredientSignalIds": [
-      "ingredient:grain",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "감단자",
-    "lexiconIds": [
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "91698"
     ],
     "processSignalIds": [
-      "process:broth",
-      "process:boiled"
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -4435,25 +3948,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감단자",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle",
       "broth"
     ],
     "foodGroup": "떡류",
     "foodOnIds": [],
     "id": "tba-food:native:92537",
-    "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "감단자",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:clear-umami",
       "lexicon:deep-umami"
     ],
@@ -4487,29 +3990,21 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감단자 [방법 1]",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "grain_noodle"
+      "steamed"
     ],
     "foodGroup": "떡류",
     "foodOnIds": [],
     "id": "tba-food:native:92261",
-    "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:grain",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "감단자 [방법 1]",
-    "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "92261"
     ],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:steamed"
+    ],
     "sourceRefs": [
       {
         "id": "92261",
@@ -4533,42 +4028,31 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감단자 [방법 2]",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
-      "vegetable_herb",
+      "mushroom",
       "broth",
-      "grain_noodle",
-      "dessert"
+      "steamed"
     ],
     "foodGroup": "떡류",
     "foodOnIds": [],
     "id": "tba-food:native:92262",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:mushroom",
-      "ingredient:grain",
-      "ingredient:noodle",
-      "ingredient:fruit"
+      "ingredient:mushroom"
     ],
     "kind": "native-dish",
     "koName": "감단자 [방법 2]",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:mushroom-earthy-umami",
       "lexicon:earthy-aroma",
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance",
       "lexicon:clear-umami",
-      "lexicon:deep-umami",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity"
+      "lexicon:deep-umami"
     ],
     "nativeFoodIds": [
       "92262"
     ],
     "processSignalIds": [
       "process:broth",
-      "process:boiled"
+      "process:boiled",
+      "process:steamed"
     ],
     "sourceRefs": [
       {
@@ -4593,33 +4077,28 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "감동젓무김치",
     "confidence": 0.65,
     "dishKindIds": [
-      "seafood",
       "fermented_jang",
       "broth",
-      "dessert"
+      "fruit"
     ],
     "foodGroup": "무류",
     "foodOnIds": [],
     "id": "tba-food:native:90458",
     "ingredientSignalIds": [
-      "ingredient:shellfish",
-      "ingredient:crustacean",
       "ingredient:soy-jang",
       "ingredient:fruit"
     ],
     "kind": "native-dish",
     "koName": "감동젓무김치",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:briny-sea",
-      "lexicon:seafood-aroma",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity",
       "lexicon:clear-umami",
       "lexicon:deep-umami",
       "lexicon:fruit-aroma",
-      "lexicon:bright-acidity"
+      "lexicon:bright-acidity",
+      "lexicon:clean-sweetness"
     ],
     "nativeFoodIds": [
       "90458"
@@ -4653,28 +4132,22 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.65,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "vegetable_herb",
-      "broth",
-      "grilled_smoked",
-      "dessert"
+      "mushroom",
+      "grilled",
+      "broth"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:90442",
     "ingredientSignalIds": [
       "ingredient:beef",
-      "ingredient:crustacean",
-      "ingredient:mushroom",
-      "ingredient:fruit"
+      "ingredient:mushroom"
     ],
     "kind": "native-dish",
     "koName": "감동젓찌개(곤쟁이젓찌개)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
       "lexicon:meaty-aroma",
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:mushroom-earthy-umami",
       "lexicon:earthy-aroma",
       "lexicon:charred-aroma",
@@ -4714,20 +4187,19 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.64,
     "dishKindIds": [
       "vegetable_herb",
-      "seafood"
+      "egg",
+      "pancake"
     ],
     "foodGroup": "채소류",
     "foodOnIds": [],
     "id": "tba-food:native:92473",
     "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:leafy-green"
+      "ingredient:leafy-green",
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "가지전",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:green-freshness",
       "lexicon:leafy-green-bitterness"
     ],
@@ -4759,20 +4231,15 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.64,
     "dishKindIds": [
       "meat",
-      "seafood",
-      "grilled_smoked"
+      "grilled"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:92510",
-    "ingredientSignalIds": [
-      "ingredient:crustacean"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "갈비구이(생갈비구이)",
     "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
       "lexicon:charred-aroma",
       "lexicon:roasted-aroma"
     ],
@@ -4806,7 +4273,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.64,
     "dishKindIds": [
       "seafood",
-      "grilled_smoked"
+      "grilled"
     ],
     "foodGroup": "어패류",
     "foodOnIds": [],
@@ -4851,7 +4318,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가죽장아찌",
     "confidence": 0.625,
     "dishKindIds": [
-      "fermented_jang"
+      "fermented_jang",
+      "pickled"
     ],
     "foodGroup": "간장에 담근 것",
     "foodOnIds": [],
@@ -4870,7 +4338,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "91651"
     ],
     "processSignalIds": [
-      "process:fermented"
+      "process:fermented",
+      "process:pickled"
     ],
     "sourceRefs": [
       {
@@ -4938,24 +4407,14 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "canonicalName": "각색정과(도라지정과, 연근정과, 우엉정과, 잣정과)",
     "confidence": 0.625,
-    "dishKindIds": [
-      "seafood",
-      "grain_noodle"
-    ],
+    "dishKindIds": [],
     "foodGroup": "정과",
     "foodOnIds": [],
     "id": "tba-food:native:91292",
-    "ingredientSignalIds": [
-      "ingredient:crustacean",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "각색정과(도라지정과, 연근정과, 우엉정과, 잣정과)",
-    "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "91292"
     ],
@@ -5204,14 +4663,17 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.61,
     "dishKindIds": [
       "meat",
-      "grain_noodle"
+      "rice_grain",
+      "egg",
+      "pancake"
     ],
     "foodGroup": "육류",
     "foodOnIds": [],
     "id": "tba-food:native:90039",
     "ingredientSignalIds": [
       "ingredient:pork",
-      "ingredient:grain"
+      "ingredient:grain",
+      "ingredient:egg"
     ],
     "kind": "native-dish",
     "koName": "간전",
@@ -5245,22 +4707,14 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "canonicalName": "감꽃부각(감잎부각)",
     "confidence": 0.61,
-    "dishKindIds": [
-      "grain_noodle"
-    ],
+    "dishKindIds": [],
     "foodGroup": "기타",
     "foodOnIds": [],
     "id": "tba-food:native:91185",
-    "ingredientSignalIds": [
-      "ingredient:grain",
-      "ingredient:noodle"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "감꽃부각(감잎부각)",
-    "lexiconIds": [
-      "lexicon:savory-depth",
-      "lexicon:chewy-resistance"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "91185"
     ],
@@ -5288,24 +4742,21 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "가평송화다식",
     "confidence": 0.595,
     "dishKindIds": [
-      "seafood"
+      "steamed"
     ],
     "foodGroup": "다식",
     "foodOnIds": [],
     "id": "tba-food:native:90670",
-    "ingredientSignalIds": [
-      "ingredient:crustacean"
-    ],
+    "ingredientSignalIds": [],
     "kind": "native-dish",
     "koName": "가평송화다식",
-    "lexiconIds": [
-      "lexicon:shellfish-sweetness",
-      "lexicon:seafood-aroma"
-    ],
+    "lexiconIds": [],
     "nativeFoodIds": [
       "90670"
     ],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:steamed"
+    ],
     "sourceRefs": [
       {
         "id": "90670",
@@ -5329,8 +4780,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "09400 - fermented or pickled vegetables (efsa foodex2)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
-      "fermented_jang"
+      "fermented_jang",
+      "pickled"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -5338,21 +4789,19 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03540940",
     "ingredientSignalIds": [
-      "ingredient:leafy-green",
       "ingredient:soy-jang"
     ],
     "kind": "process",
     "koName": "09400 - fermented or pickled vegetables (efsa foodex2)",
     "lexiconIds": [
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [
-      "process:fermented"
+      "process:fermented",
+      "process:pickled"
     ],
     "sourceRefs": [
       {
@@ -5377,7 +4826,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "09410 - fermented vegetables (efsa foodex2)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
       "fermented_jang"
     ],
     "foodGroup": "",
@@ -5386,14 +4834,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03540941",
     "ingredientSignalIds": [
-      "ingredient:leafy-green",
       "ingredient:soy-jang"
     ],
     "kind": "process",
     "koName": "09410 - fermented vegetables (efsa foodex2)",
     "lexiconIds": [
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
       "lexicon:rounded-salinity"
@@ -5425,8 +4870,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "10000588 - non grape fermented alcoholic beverages - still (gs1 gpc)",
     "confidence": 0.85,
     "dishKindIds": [
-      "fermented_jang",
-      "beverage_pairing"
+      "fermented_jang"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -5434,17 +4878,14 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03400890",
     "ingredientSignalIds": [
-      "ingredient:soy-jang",
-      "ingredient:tea"
+      "ingredient:soy-jang"
     ],
     "kind": "process",
     "koName": "10000588 - non grape fermented alcoholic beverages - still (gs1 gpc)",
     "lexiconIds": [
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [
@@ -5473,8 +4914,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "10003689 - non grape fermented alcoholic beverages - sparkling (gs1 gpc)",
     "confidence": 0.85,
     "dishKindIds": [
-      "fermented_jang",
-      "beverage_pairing"
+      "fermented_jang"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -5482,17 +4922,14 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03400889",
     "ingredientSignalIds": [
-      "ingredient:soy-jang",
-      "ingredient:tea"
+      "ingredient:soy-jang"
     ],
     "kind": "process",
     "koName": "10003689 - non grape fermented alcoholic beverages - sparkling (gs1 gpc)",
     "lexiconIds": [
       "lexicon:fermented-umami",
       "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:rounded-salinity"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [
@@ -5522,7 +4959,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "fermented_jang",
-      "dessert"
+      "fruit"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -5718,7 +5155,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "34440 - tea leaves and stalks with fruit and flavours (efsa foodex2)",
     "confidence": 0.85,
     "dishKindIds": [
-      "dessert",
+      "fruit",
       "beverage_pairing"
     ],
     "foodGroup": "",
@@ -5916,7 +5353,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "seafood",
       "vegetable_herb",
-      "grain_noodle"
+      "rice_grain"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -5962,7 +5399,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "39950 - mushroom soup, dry (efsa foodex2)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -6009,7 +5446,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "40110 - mushroom soup (efsa foodex2)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -6151,7 +5588,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grilled_smoked"
+      "grilled"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -6293,7 +5730,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -6343,7 +5780,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -6675,7 +6112,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -6772,10 +6209,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beefsteak morel",
     "confidence": 0.85,
     "dishKindIds": [
-      "meat",
-      "vegetable_herb",
-      "broth",
-      "beverage_pairing"
+      "mushroom"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -6783,19 +6217,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03412446",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:mushroom",
-      "ingredient:tea"
+      "ingredient:mushroom"
     ],
     "kind": "ingredient",
     "koName": "beefsteak morel",
     "lexiconIds": [
-      "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
       "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:earthy-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -6870,7 +6298,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "brown rice miso",
     "confidence": 0.85,
     "dishKindIds": [
-      "grain_noodle",
+      "rice_grain",
       "fermented_jang"
     ],
     "foodGroup": "",
@@ -6917,9 +6345,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "chicken and noodles with vegetables",
     "confidence": 0.85,
     "dishKindIds": [
-      "meat",
-      "vegetable_herb",
-      "grain_noodle"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -6927,17 +6353,12 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03304772",
     "ingredientSignalIds": [
-      "ingredient:poultry",
-      "ingredient:leafy-green",
-      "ingredient:noodle"
+      "ingredient:poultry"
     ],
     "kind": "ingredient",
     "koName": "chicken and noodles with vegetables",
     "lexiconIds": [
-      "lexicon:poultry-clean-meat",
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
-      "lexicon:chewy-resistance"
+      "lexicon:poultry-clean-meat"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -6965,7 +6386,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -7014,7 +6435,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -7063,7 +6484,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -7113,7 +6534,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "meat",
       "seafood",
-      "grain_noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -7123,8 +6543,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "id": "tba-food:foodon:foodon_03306945",
     "ingredientSignalIds": [
       "ingredient:poultry",
-      "ingredient:crustacean",
-      "ingredient:noodle"
+      "ingredient:crustacean"
     ],
     "kind": "ingredient",
     "koName": "chicken shrimp soup with noodles",
@@ -7132,7 +6551,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:poultry-clean-meat",
       "lexicon:shellfish-sweetness",
       "lexicon:seafood-aroma",
-      "lexicon:chewy-resistance",
       "lexicon:clear-umami",
       "lexicon:deep-umami"
     ],
@@ -7165,7 +6583,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grilled_smoked"
+      "grilled"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -7213,7 +6631,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "meat",
       "vegetable_herb",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -7365,7 +6783,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grain_noodle",
+      "rice_grain",
       "broth"
     ],
     "foodGroup": "",
@@ -7414,7 +6832,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "meat",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -7464,7 +6882,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "dishKindIds": [
       "meat",
       "vegetable_herb",
-      "grain_noodle",
+      "noodle",
       "broth"
     ],
     "foodGroup": "",
@@ -7515,7 +6933,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "cream of mushroom soup",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -7610,7 +7028,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "distilled fermented grain beverage",
     "confidence": 0.85,
     "dishKindIds": [
-      "grain_noodle",
+      "rice_grain",
       "fermented_jang",
       "beverage_pairing"
     ],
@@ -7951,7 +7369,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "fermented_jang",
-      "dessert"
+      "fruit"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -7999,7 +7417,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "fermented grain beverage",
     "confidence": 0.85,
     "dishKindIds": [
-      "grain_noodle",
+      "rice_grain",
       "fermented_jang",
       "beverage_pairing"
     ],
@@ -8099,7 +7517,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "fermented_jang",
-      "dessert",
+      "fruit",
       "beverage_pairing"
     ],
     "foodGroup": "",
@@ -8151,7 +7569,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "fermented rice beverage",
     "confidence": 0.85,
     "dishKindIds": [
-      "grain_noodle",
+      "rice_grain",
       "fermented_jang",
       "beverage_pairing"
     ],
@@ -8395,7 +7813,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "fermented_jang",
-      "dessert"
+      "fruit"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -8540,9 +7958,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "mushroom fruitbody",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
-      "broth",
-      "dessert"
+      "mushroom"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -8550,17 +7966,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_00003528",
     "ingredientSignalIds": [
-      "ingredient:mushroom",
-      "ingredient:fruit"
+      "ingredient:mushroom"
     ],
     "kind": "ingredient",
     "koName": "mushroom fruitbody",
     "lexiconIds": [
       "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:earthy-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -8588,9 +8000,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "mushroom fruitbody (dried)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
-      "broth",
-      "dessert"
+      "mushroom"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -8598,17 +8008,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03310082",
     "ingredientSignalIds": [
-      "ingredient:mushroom",
-      "ingredient:fruit"
+      "ingredient:mushroom"
     ],
     "kind": "ingredient",
     "koName": "mushroom fruitbody (dried)",
     "lexiconIds": [
       "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:earthy-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -8636,9 +8042,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "mushroom fruitbody (raw)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
-      "broth",
-      "dessert"
+      "mushroom",
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -8646,20 +8051,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03301303",
     "ingredientSignalIds": [
-      "ingredient:mushroom",
-      "ingredient:fruit"
+      "ingredient:mushroom"
     ],
     "kind": "ingredient",
     "koName": "mushroom fruitbody (raw)",
     "lexiconIds": [
       "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:earthy-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_03301303",
@@ -8683,7 +8086,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "mushroom soup (canned)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -8730,7 +8133,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "mushroom soup (liquid)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -8777,7 +8180,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "mushroom soup food product",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -8824,7 +8227,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "mushroom soup mix",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -8871,7 +8274,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "mushroom stock cube",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -8918,7 +8321,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "nonfermented plant derived beverage product",
     "confidence": 0.85,
     "dishKindIds": [
-      "fermented_jang",
       "beverage_pairing"
     ],
     "foodGroup": "",
@@ -8927,22 +8329,16 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_00001255",
     "ingredientSignalIds": [
-      "ingredient:soy-jang",
       "ingredient:tea"
     ],
     "kind": "process",
     "koName": "nonfermented plant derived beverage product",
     "lexiconIds": [
-      "lexicon:fermented-umami",
-      "lexicon:fermented-aroma",
-      "lexicon:rounded-salinity",
       "lexicon:clean-bitterness",
       "lexicon:aroma-lift"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [
-      "process:fermented"
-    ],
+    "processSignalIds": [],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_00001255",
@@ -9063,7 +8459,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "red yeast rice supplement",
     "confidence": 0.85,
     "dishKindIds": [
-      "grain_noodle",
+      "rice_grain",
       "fermented_jang"
     ],
     "foodGroup": "",
@@ -9110,7 +8506,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "rice (fermented)",
     "confidence": 0.85,
     "dishKindIds": [
-      "grain_noodle",
+      "rice_grain",
       "fermented_jang"
     ],
     "foodGroup": "",
@@ -9158,7 +8554,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.85,
     "dishKindIds": [
       "fermented_jang",
-      "dessert"
+      "fruit"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -9214,15 +8610,12 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03411059",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish",
       "ingredient:crustacean"
     ],
     "kind": "ingredient",
     "koName": "shellfish or crustacean",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea",
       "lexicon:seafood-aroma"
@@ -9440,7 +8833,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "tender mushroom soup",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
+      "mushroom",
       "broth"
     ],
     "foodGroup": "",
@@ -9539,9 +8932,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "wild mushroom fruitbody (raw)",
     "confidence": 0.85,
     "dishKindIds": [
-      "vegetable_herb",
-      "broth",
-      "dessert"
+      "mushroom",
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -9549,20 +8941,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03306538",
     "ingredientSignalIds": [
-      "ingredient:mushroom",
-      "ingredient:fruit"
+      "ingredient:mushroom"
     ],
     "kind": "ingredient",
     "koName": "wild mushroom fruitbody (raw)",
     "lexiconIds": [
       "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma",
-      "lexicon:fruit-aroma",
-      "lexicon:bright-acidity",
-      "lexicon:clean-sweetness"
+      "lexicon:earthy-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_03306538",
@@ -9586,7 +8976,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "0600000 - 6. tea, coffee, herbal infusions and cocoa (ec)",
     "confidence": 0.84,
     "dishKindIds": [
-      "vegetable_herb",
       "beverage_pairing"
     ],
     "foodGroup": "",
@@ -9595,14 +8984,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401241",
     "ingredientSignalIds": [
-      "ingredient:leafy-green",
       "ingredient:tea"
     ],
     "kind": "ingredient",
     "koName": "0600000 - 6. tea, coffee, herbal infusions and cocoa (ec)",
     "lexiconIds": [
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
       "lexicon:clean-bitterness",
       "lexicon:aroma-lift"
     ],
@@ -9626,59 +9012,12 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
   },
   {
     "aliases": [
-      "06350 - beefsteak tomato (efsa foodex2)"
-    ],
-    "canonicalName": "06350 - beefsteak tomato (efsa foodex2)",
-    "confidence": 0.84,
-    "dishKindIds": [
-      "meat",
-      "beverage_pairing"
-    ],
-    "foodGroup": "",
-    "foodOnIds": [
-      "foodon:FOODON_03540635"
-    ],
-    "id": "tba-food:foodon:foodon_03540635",
-    "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
-    ],
-    "kind": "ingredient",
-    "koName": "06350 - beefsteak tomato (efsa foodex2)",
-    "lexiconIds": [
-      "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
-    ],
-    "nativeFoodIds": [],
-    "processSignalIds": [],
-    "sourceRefs": [
-      {
-        "id": "http://purl.obolibrary.org/obo/FOODON_03540635",
-        "source": "foodon-taxonomy"
-      }
-    ],
-    "status": "active",
-    "surfaces": {
-      "taste-bubble": true,
-      "detail-tag": true,
-      "dining-note": true,
-      "recommendation": true,
-      "chef-guide": true,
-      "tcs": true
-    }
-  },
-  {
-    "aliases": [
       "07930 - pearl oyster mushrooms (efsa foodex2)"
     ],
     "canonicalName": "07930 - pearl oyster mushrooms (efsa foodex2)",
     "confidence": 0.84,
     "dishKindIds": [
-      "seafood",
-      "vegetable_herb",
-      "broth"
+      "seafood"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -9686,16 +9025,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03540793",
     "ingredientSignalIds": [
-      "ingredient:shellfish",
-      "ingredient:mushroom"
+      "ingredient:shellfish"
     ],
     "kind": "ingredient",
     "koName": "07930 - pearl oyster mushrooms (efsa foodex2)",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
-      "lexicon:briny-sea",
-      "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma"
+      "lexicon:briny-sea"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -9730,14 +9066,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401154",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "process",
     "koName": "10000019 - shellfish - unprepared/unprocessed (perishable) (gs1 gpc)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -9774,14 +9107,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401153",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "process",
     "koName": "10000020 - shellfish - unprepared/unprocessed (frozen) (gs1 gpc)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -9818,14 +9148,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401155",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "process",
     "koName": "10000021 - shellfish - unprepared/unprocessed (shelf stable) (gs1 gpc)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -9862,14 +9189,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401149",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "process",
     "koName": "10000256 - shellfish prepared/processed (frozen) (gs1 gpc)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -9906,14 +9230,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401150",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "process",
     "koName": "10000257 - shellfish prepared/processed (perishable) (gs1 gpc)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -9950,14 +9271,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401151",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "process",
     "koName": "10000258 - shellfish prepared/processed (shelf stable) (gs1 gpc)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -10250,9 +9568,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "10006031 - oyster mushrooms (gs1 gpc)",
     "confidence": 0.84,
     "dishKindIds": [
-      "seafood",
-      "vegetable_herb",
-      "broth"
+      "seafood"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -10260,16 +9576,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401556",
     "ingredientSignalIds": [
-      "ingredient:shellfish",
-      "ingredient:mushroom"
+      "ingredient:shellfish"
     ],
     "kind": "ingredient",
     "koName": "10006031 - oyster mushrooms (gs1 gpc)",
     "lexiconIds": [
       "lexicon:shellfish-sweetness",
-      "lexicon:briny-sea",
-      "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma"
+      "lexicon:briny-sea"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -10291,58 +9604,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
   },
   {
     "aliases": [
-      "26230 - stockfish (efsa foodex2)"
-    ],
-    "canonicalName": "26230 - stockfish (efsa foodex2)",
-    "confidence": 0.84,
-    "dishKindIds": [
-      "seafood",
-      "broth"
-    ],
-    "foodGroup": "",
-    "foodOnIds": [
-      "foodon:FOODON_03542623"
-    ],
-    "id": "tba-food:foodon:foodon_03542623",
-    "ingredientSignalIds": [
-      "ingredient:white-fish"
-    ],
-    "kind": "ingredient",
-    "koName": "26230 - stockfish (efsa foodex2)",
-    "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
-      "lexicon:deep-umami"
-    ],
-    "nativeFoodIds": [],
-    "processSignalIds": [
-      "process:broth",
-      "process:boiled"
-    ],
-    "sourceRefs": [
-      {
-        "id": "http://purl.obolibrary.org/obo/FOODON_03542623",
-        "source": "foodon-taxonomy"
-      }
-    ],
-    "status": "active",
-    "surfaces": {
-      "taste-bubble": true,
-      "detail-tag": true,
-      "dining-note": true,
-      "recommendation": true,
-      "chef-guide": true,
-      "tcs": true
-    }
-  },
-  {
-    "aliases": [
       "34030 - ingredients for coffee, cocoa, tea, and herbal infusions (efsa foodex2)"
     ],
     "canonicalName": "34030 - ingredients for coffee, cocoa, tea, and herbal infusions (efsa foodex2)",
     "confidence": 0.84,
     "dishKindIds": [
-      "vegetable_herb",
       "beverage_pairing"
     ],
     "foodGroup": "",
@@ -10351,14 +9617,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03543403",
     "ingredientSignalIds": [
-      "ingredient:leafy-green",
       "ingredient:tea"
     ],
     "kind": "ingredient",
     "koName": "34030 - ingredients for coffee, cocoa, tea, and herbal infusions (efsa foodex2)",
     "lexiconIds": [
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
       "lexicon:clean-bitterness",
       "lexicon:aroma-lift"
     ],
@@ -10387,7 +9650,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "36990 - derivatives of coffee, cocoa, tea, herbal infusion materials and similar rpcs (efsa foodex2)",
     "confidence": 0.84,
     "dishKindIds": [
-      "vegetable_herb",
       "beverage_pairing"
     ],
     "foodGroup": "",
@@ -10396,14 +9658,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03543699",
     "ingredientSignalIds": [
-      "ingredient:leafy-green",
       "ingredient:tea"
     ],
     "kind": "ingredient",
     "koName": "36990 - derivatives of coffee, cocoa, tea, herbal infusion materials and similar rpcs (efsa foodex2)",
     "lexiconIds": [
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
       "lexicon:clean-bitterness",
       "lexicon:aroma-lift"
     ],
@@ -10432,7 +9691,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "37000 - hot drinks and similar (coffee, cocoa, tea and herbal infusions) (efsa foodex2)",
     "confidence": 0.84,
     "dishKindIds": [
-      "vegetable_herb",
       "beverage_pairing"
     ],
     "foodGroup": "",
@@ -10441,14 +9699,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03543700",
     "ingredientSignalIds": [
-      "ingredient:leafy-green",
       "ingredient:tea"
     ],
     "kind": "ingredient",
     "koName": "37000 - hot drinks and similar (coffee, cocoa, tea and herbal infusions) (efsa foodex2)",
     "lexiconIds": [
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
       "lexicon:clean-bitterness",
       "lexicon:aroma-lift"
     ],
@@ -10477,7 +9732,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "37300 - herbal and other non-tea infusions (efsa foodex2)",
     "confidence": 0.84,
     "dishKindIds": [
-      "vegetable_herb",
       "beverage_pairing"
     ],
     "foodGroup": "",
@@ -10486,14 +9740,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03543730",
     "ingredientSignalIds": [
-      "ingredient:leafy-green",
       "ingredient:tea"
     ],
     "kind": "ingredient",
     "koName": "37300 - herbal and other non-tea infusions (efsa foodex2)",
     "lexiconIds": [
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
       "lexicon:clean-bitterness",
       "lexicon:aroma-lift"
     ],
@@ -10522,8 +9773,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "38690 - fish and vegetables meal (efsa foodex2)",
     "confidence": 0.84,
     "dishKindIds": [
-      "seafood",
-      "vegetable_herb"
+      "seafood"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -10531,16 +9781,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03543869",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
-      "ingredient:leafy-green"
+      "ingredient:white-fish"
     ],
     "kind": "ingredient",
     "koName": "38690 - fish and vegetables meal (efsa foodex2)",
     "lexiconIds": [
       "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness"
+      "lexicon:clear-umami"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -10567,22 +9814,17 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "39110 - mixed vegetables, grilled (efsa foodex2)",
     "confidence": 0.84,
     "dishKindIds": [
-      "vegetable_herb",
-      "grilled_smoked"
+      "grilled"
     ],
     "foodGroup": "",
     "foodOnIds": [
       "foodon:FOODON_03543911"
     ],
     "id": "tba-food:foodon:foodon_03543911",
-    "ingredientSignalIds": [
-      "ingredient:leafy-green"
-    ],
+    "ingredientSignalIds": [],
     "kind": "process",
     "koName": "39110 - mixed vegetables, grilled (efsa foodex2)",
     "lexiconIds": [
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness",
       "lexicon:charred-aroma",
       "lexicon:roasted-aroma"
     ],
@@ -10638,51 +9880,6 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_03543927",
-        "source": "foodon-taxonomy"
-      }
-    ],
-    "status": "active",
-    "surfaces": {
-      "taste-bubble": true,
-      "detail-tag": true,
-      "dining-note": true,
-      "recommendation": true,
-      "chef-guide": true,
-      "tcs": true
-    }
-  },
-  {
-    "aliases": [
-      "39360 - pizza and similar with cheese, meat, mushrooms, and vegetables (efsa foodex2)"
-    ],
-    "canonicalName": "39360 - pizza and similar with cheese, meat, mushrooms, and vegetables (efsa foodex2)",
-    "confidence": 0.84,
-    "dishKindIds": [
-      "vegetable_herb",
-      "broth"
-    ],
-    "foodGroup": "",
-    "foodOnIds": [
-      "foodon:FOODON_03543936"
-    ],
-    "id": "tba-food:foodon:foodon_03543936",
-    "ingredientSignalIds": [
-      "ingredient:mushroom",
-      "ingredient:leafy-green"
-    ],
-    "kind": "ingredient",
-    "koName": "39360 - pizza and similar with cheese, meat, mushrooms, and vegetables (efsa foodex2)",
-    "lexiconIds": [
-      "lexicon:mushroom-earthy-umami",
-      "lexicon:earthy-aroma",
-      "lexicon:green-freshness",
-      "lexicon:leafy-green-bitterness"
-    ],
-    "nativeFoodIds": [],
-    "processSignalIds": [],
-    "sourceRefs": [
-      {
-        "id": "http://purl.obolibrary.org/obo/FOODON_03543936",
         "source": "foodon-taxonomy"
       }
     ],
@@ -10796,7 +9993,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "seafood",
-      "vegetable_herb"
+      "vegetable_herb",
+      "egg"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -10805,7 +10003,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "id": "tba-food:foodon:foodon_03544030",
     "ingredientSignalIds": [
       "ingredient:white-fish",
-      "ingredient:leafy-green"
+      "ingredient:leafy-green",
+      "ingredient:egg"
     ],
     "kind": "ingredient",
     "koName": "40300 - prepared mixed egg/meat/fish/vegetable salad (efsa foodex2)",
@@ -10894,14 +10093,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401152",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "process",
     "koName": "50121700 - shellfish unprepared/unprocessed (gs1 gpc)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -10938,14 +10134,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03401148",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "process",
     "koName": "50122100 - shellfish prepared/processed (gs1 gpc)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -11026,14 +10219,11 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03411142",
     "ingredientSignalIds": [
-      "ingredient:white-fish",
       "ingredient:shellfish"
     ],
     "kind": "ingredient",
     "koName": "aquatic invertebrate animal (excluding shellfish)",
     "lexiconIds": [
-      "lexicon:white-fish-clean",
-      "lexicon:clear-umami",
       "lexicon:shellfish-sweetness",
       "lexicon:briny-sea"
     ],
@@ -11063,7 +10253,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "grilled_smoked"
+      "grilled"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11108,8 +10298,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef (steak, freeze-dried)",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11117,16 +10306,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_03304435",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef (steak, freeze-dried)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11154,8 +10340,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef 7-bone chuck steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11163,16 +10348,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000095",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef 7-bone chuck steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11200,7 +10382,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11208,19 +10390,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000096",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef 7-bone chuck steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000096",
@@ -11246,8 +10427,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef blade chuck steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11255,16 +10435,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000099",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef blade chuck steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11292,7 +10469,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11300,19 +10477,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000100",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef blade chuck steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000100",
@@ -11336,8 +10512,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef bottom round steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11345,16 +10520,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000004",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef bottom round steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11382,7 +10554,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11390,19 +10562,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000007",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef bottom round steak (boneless, raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000007",
@@ -11426,8 +10597,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef bottom round steak (boneless)",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11435,16 +10605,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000006",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef bottom round steak (boneless)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11472,7 +10639,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11480,19 +10647,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000005",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef bottom round steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000005",
@@ -11516,8 +10682,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef chuck arm steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11525,16 +10690,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000109",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef chuck arm steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11562,7 +10724,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11570,19 +10732,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000110",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef chuck arm steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000110",
@@ -11608,8 +10769,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef chuck eye steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11617,16 +10777,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000058",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef chuck eye steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11654,7 +10811,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11662,19 +10819,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000059",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef chuck eye steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000059",
@@ -11699,8 +10855,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef chuck steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11708,16 +10863,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000105",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef chuck steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11745,7 +10897,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11753,19 +10905,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000106",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef chuck steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000106",
@@ -11790,8 +10941,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef chuck tender steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11799,16 +10949,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000048",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef chuck tender steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11836,7 +10983,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11844,19 +10991,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000049",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef chuck tender steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000049",
@@ -11880,8 +11026,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef cowboy steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11889,16 +11034,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000233",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef cowboy steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -11926,7 +11068,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11934,19 +11076,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000234",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef cowboy steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000234",
@@ -11971,8 +11112,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef culotte steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -11980,16 +11120,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000157",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef culotte steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12017,7 +11154,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12025,19 +11162,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000158",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef culotte steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000158",
@@ -12063,8 +11199,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef denver steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12072,16 +11207,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000065",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef denver steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12109,7 +11241,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12117,19 +11249,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000066",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef denver steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000066",
@@ -12153,8 +11284,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef eye of round steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12162,16 +11292,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000043",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef eye of round steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12199,7 +11326,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12207,19 +11334,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000044",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef eye of round steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000044",
@@ -12243,8 +11369,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef flank steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12252,16 +11377,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000177",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef flank steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12289,7 +11411,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12297,19 +11419,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000178",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef flank steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000178",
@@ -12333,8 +11454,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef flat iron steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12342,16 +11462,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000087",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef flat iron steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12379,7 +11496,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12387,19 +11504,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000088",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef flat iron steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000088",
@@ -12423,8 +11539,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef hanger steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12432,16 +11547,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000185",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef hanger steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12469,7 +11581,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12477,19 +11589,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000186",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef hanger steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000186",
@@ -12513,8 +11624,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef inside skirt steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12522,16 +11632,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000181",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef inside skirt steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12559,7 +11666,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12567,19 +11674,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000182",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef inside skirt steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000182",
@@ -12603,8 +11709,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef outside skirt steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12612,16 +11717,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000183",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef outside skirt steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12649,7 +11751,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12657,19 +11759,18 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000184",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef outside skirt steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_02000184",
@@ -12694,8 +11795,8 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "vegetable_herb",
-      "broth"
+      "mushroom",
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12715,7 +11816,9 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
       "lexicon:earthy-aroma"
     ],
     "nativeFoodIds": [],
-    "processSignalIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
     "sourceRefs": [
       {
         "id": "http://purl.obolibrary.org/obo/FOODON_03310592",
@@ -12741,8 +11844,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "canonicalName": "beef petite sirloin steak",
     "confidence": 0.84,
     "dishKindIds": [
-      "meat",
-      "beverage_pairing"
+      "meat"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12750,16 +11852,13 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000167",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef petite sirloin steak",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
@@ -12787,7 +11886,7 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     "confidence": 0.84,
     "dishKindIds": [
       "meat",
-      "beverage_pairing"
+      "raw"
     ],
     "foodGroup": "",
     "foodOnIds": [
@@ -12795,22 +11894,148 @@ export const TBA_FOOD_KNOWLEDGE_RUNTIME_ENTRIES = [
     ],
     "id": "tba-food:foodon:foodon_02000168",
     "ingredientSignalIds": [
-      "ingredient:beef",
-      "ingredient:tea"
+      "ingredient:beef"
     ],
     "kind": "ingredient",
     "koName": "beef petite sirloin steak (raw)",
     "lexiconIds": [
       "lexicon:beef-fat-depth",
-      "lexicon:meaty-aroma",
-      "lexicon:clean-bitterness",
-      "lexicon:aroma-lift"
+      "lexicon:meaty-aroma"
+    ],
+    "nativeFoodIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
+    "sourceRefs": [
+      {
+        "id": "http://purl.obolibrary.org/obo/FOODON_02000168",
+        "source": "foodon-taxonomy"
+      }
+    ],
+    "status": "active",
+    "surfaces": {
+      "taste-bubble": true,
+      "detail-tag": true,
+      "dining-note": true,
+      "recommendation": true,
+      "chef-guide": true,
+      "tcs": true
+    }
+  },
+  {
+    "aliases": [
+      "beef porterhouse steak",
+      "beef loin porterhouse steak bone in"
+    ],
+    "canonicalName": "beef porterhouse steak",
+    "confidence": 0.84,
+    "dishKindIds": [
+      "meat"
+    ],
+    "foodGroup": "",
+    "foodOnIds": [
+      "foodon:FOODON_00003305"
+    ],
+    "id": "tba-food:foodon:foodon_00003305",
+    "ingredientSignalIds": [
+      "ingredient:beef"
+    ],
+    "kind": "ingredient",
+    "koName": "beef porterhouse steak",
+    "lexiconIds": [
+      "lexicon:beef-fat-depth",
+      "lexicon:meaty-aroma"
     ],
     "nativeFoodIds": [],
     "processSignalIds": [],
     "sourceRefs": [
       {
-        "id": "http://purl.obolibrary.org/obo/FOODON_02000168",
+        "id": "http://purl.obolibrary.org/obo/FOODON_00003305",
+        "source": "foodon-taxonomy"
+      }
+    ],
+    "status": "active",
+    "surfaces": {
+      "taste-bubble": true,
+      "detail-tag": true,
+      "dining-note": true,
+      "recommendation": true,
+      "chef-guide": true,
+      "tcs": true
+    }
+  },
+  {
+    "aliases": [
+      "beef porterhouse steak (raw)"
+    ],
+    "canonicalName": "beef porterhouse steak (raw)",
+    "confidence": 0.84,
+    "dishKindIds": [
+      "meat",
+      "raw"
+    ],
+    "foodGroup": "",
+    "foodOnIds": [
+      "foodon:FOODON_02000401"
+    ],
+    "id": "tba-food:foodon:foodon_02000401",
+    "ingredientSignalIds": [
+      "ingredient:beef"
+    ],
+    "kind": "ingredient",
+    "koName": "beef porterhouse steak (raw)",
+    "lexiconIds": [
+      "lexicon:beef-fat-depth",
+      "lexicon:meaty-aroma"
+    ],
+    "nativeFoodIds": [],
+    "processSignalIds": [
+      "process:raw"
+    ],
+    "sourceRefs": [
+      {
+        "id": "http://purl.obolibrary.org/obo/FOODON_02000401",
+        "source": "foodon-taxonomy"
+      }
+    ],
+    "status": "active",
+    "surfaces": {
+      "taste-bubble": true,
+      "detail-tag": true,
+      "dining-note": true,
+      "recommendation": true,
+      "chef-guide": true,
+      "tcs": true
+    }
+  },
+  {
+    "aliases": [
+      "beef ranch steak"
+    ],
+    "canonicalName": "beef ranch steak",
+    "confidence": 0.84,
+    "dishKindIds": [
+      "meat"
+    ],
+    "foodGroup": "",
+    "foodOnIds": [
+      "foodon:FOODON_02000077"
+    ],
+    "id": "tba-food:foodon:foodon_02000077",
+    "ingredientSignalIds": [
+      "ingredient:beef"
+    ],
+    "kind": "ingredient",
+    "koName": "beef ranch steak",
+    "lexiconIds": [
+      "lexicon:beef-fat-depth",
+      "lexicon:meaty-aroma"
+    ],
+    "nativeFoodIds": [],
+    "processSignalIds": [],
+    "sourceRefs": [
+      {
+        "id": "http://purl.obolibrary.org/obo/FOODON_02000077",
         "source": "foodon-taxonomy"
       }
     ],

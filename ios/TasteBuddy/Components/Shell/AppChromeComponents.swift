@@ -478,8 +478,8 @@ struct TBCollapsingTopChromeScrollView<PinnedHeader: View, Content: View>: View 
 
                 // Keep the backdrop between the scroll body and all foreground controls.
                 // A full-header modifier here would also bring its elevated z-index.
+                // Keep header and status-bar blur present even before the first scroll.
                 TBTopChromeBackdrop(fallback: TBColor.page)
-                    .opacity(TBTopChromeCollapseMetrics.progress(travel: travel, headerHeight: TBSpacing.x8))
                     .frame(height: visibleChromeHeight)
                     .offset(x: -contentOffset)
                     .zIndex(1)
@@ -751,6 +751,7 @@ struct TopAppBar: View {
             }
         }
         .zIndex(20)
+        .platingLayoutFrame("top-bar")
     }
 
     @ViewBuilder
@@ -1002,7 +1003,7 @@ private extension View {
 struct BottomTabBar: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var activeTab: MainTab
-    var onCreateDishMemory: () -> Void = {}
+    var onCreateDishMemory: (TasteBeamLaunchState) -> Void = { _ in }
     @State private var isCenterButtonPressing = false
 
     private var leadingTabs: [MainTab] {
@@ -1048,6 +1049,7 @@ struct BottomTabBar: View {
                 .opacity(isCenterButtonPressing ? 0 : 1)
                 .animation(TasteBloomMotion.animation(.press, reduceMotion: reduceMotion), value: isCenterButtonPressing)
         }
+        .platingLayoutFrame("bottom-tab")
     }
 }
 

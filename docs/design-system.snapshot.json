@@ -333,5 +333,21 @@
       "docs/AI_DESIGN_SYSTEM.md",
       "docs/design-system.snapshot.json"
     ]
+  },
+  "design_system": {
+    "name": "플레이팅",
+    "englishName": "Plating",
+    "product": "Taste Buddy",
+    "namingUpdatedAt": "2026-09-30",
+    "motionName": "Plating Motion",
+    "motionSource": "src/constants/platingMotion.ts",
+    "motionCss": "src/styles/plating-motion.css",
+    "motionGuide": "docs/design/motion-system.md",
+    "motionPreview": "/design-system#motion",
+    "compatibility": [
+      "TB*",
+      "--tb-*",
+      "TasteBloomMotion"
+    ]
   }
 }

@@ -16,7 +16,7 @@ const wrapIcon = (IconComponent: React.ElementType) => {
     <IconComponent
       {...props}
       className={className}
-      style={{ fontSize: size ?? fontSize, width: size ?? fontSize, height: size ?? fontSize, ...style }}
+      style={{ fontSize: size ?? 20, width: size ?? 20, height: size ?? 20, ...style }}
     />
   );
 };
@@ -29,27 +29,20 @@ const Star = wrapIcon(StarIcon);
 const UserPlus = wrapIcon(UserPlusIcon);
 
 import PageSection from '../components/system/PageSection';
+import NativeProfileActivity from '../components/profile/NativeProfileActivity';
 import DiningFriendActionButton from '../components/profile/DiningFriendActionButton';
 import PalateBloomAvatar, {
   createPalateBloomProfileFromMeasurementSnapshot,
+  createPalateBloomFallbackProfile,
   type TasteProfile as PalateBloomTasteProfile,
 } from '../components/system/PalateBloomAvatar';
 import SummaryMetricCard from '../components/system/SummaryMetricCard';
 import DiningFriendProfileCard from '../components/profile/DiningFriendProfileCard';
 import { ICON_TOKENS } from '../constants/designTokens';
-import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
 import {
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
 import { type RestaurantReadyGuidance } from '../constants/quickTasteCalibrationData';
-import {
-  hydrateRecentMeasurementSnapshots,
-  hydrateReservationPageData,
-} from '../lib/tasteBuddySupabase';
-import {
-  loadRestaurantBookmarks,
-  RESTAURANT_BOOKMARKS_CHANGED_EVENT,
-} from '../components/restaurant/RestaurantBookmarkSheet';
 import { resolvePublicMediaPath } from '../lib/mediaAssets';
 import type {
   DiningFriendProfile,
@@ -66,8 +59,8 @@ interface ProfileStat {
 export interface ProfileIdentityData {
   avatarImageDataUrl?: string | null;
   displayName?: string | null;
-  followerCount?: number;
-  followingCount?: number;
+  followerCount?: number | null;
+  followingCount?: number | null;
   nickname?: string | null;
   palateBloomProfile?: PalateBloomTasteProfile;
   palateBloomShapeSeed?: string;
@@ -88,21 +81,7 @@ const DEFAULT_PROFILE_IDENTITY: Required<Pick<ProfileIdentityData, 'displayName'
 };
 
 function formatSocialCount(count: number | null | undefined) {
-  return Math.max(0, count ?? 0).toLocaleString('ko-KR');
-}
-
-function deriveProfileStats(
-  measurementSnapshots: TasteMeasurementSnapshot[],
-  feedbackCount: number,
-  savedListCount: number,
-  averageRating: number | null,
-): ProfileStat[] {
-  return deriveProfileStatsFromCounts({
-    averageRating,
-    feedbackCount,
-    measurementCount: measurementSnapshots.length,
-    savedListCount,
-  });
+  return count == null ? '—' : Math.max(0, count).toLocaleString('ko-KR');
 }
 
 function deriveProfileStatsFromCounts({
@@ -148,38 +127,11 @@ function deriveProfileStatsFromCounts({
   ];
 }
 
-function getActualMeasurementSnapshots(
-  hydratedSnapshots: TasteMeasurementSnapshot[],
-  currentSnapshot: TasteMeasurementSnapshot,
-) {
-  if (hydratedSnapshots.length === 0) {
-    return [currentSnapshot];
-  }
-
-  const seenMeasuredAt = new Set<string>();
-  return [...hydratedSnapshots, currentSnapshot].filter((snapshot) => {
-    if (seenMeasuredAt.has(snapshot.measuredAt)) {
-      return false;
-    }
-
-    seenMeasuredAt.add(snapshot.measuredAt);
-    return true;
-  });
-}
-
-function getAverageFeedbackRating(feedbackEntries: DiningFeedbackDraft[]) {
-  if (feedbackEntries.length === 0) {
-    return null;
-  }
-
-  return (
-    feedbackEntries.reduce((sum, feedback) => sum + feedback.overallRating, 0) /
-    feedbackEntries.length
-  );
-}
-
 interface ProfilePageProps {
-  measurementSnapshot: TasteMeasurementSnapshot;
+  owner?: string;
+  active?: boolean;
+  onFindBuddy?: () => void;
+  measurementSnapshot?: TasteMeasurementSnapshot | null;
   starterGuidance?: RestaurantReadyGuidance | null;
   profileIdentity?: ProfileIdentityData;
   onOpenSupportPanel?: (panel: AppMenuSupportPanel) => void;
@@ -205,6 +157,9 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({
+  owner = 'guest',
+  active = true,
+  onFindBuddy,
   measurementSnapshot,
   profileIdentity,
   onOpenProfileSettings,
@@ -217,88 +172,19 @@ export default function ProfilePage({
   onSelectedConnectionProfileChange,
   onLoadConnections,
 }: ProfilePageProps) {
-  const displayName = profileIdentity?.displayName?.trim() || DEFAULT_PROFILE_IDENTITY.displayName;
-  const nickname = profileIdentity?.nickname?.trim() ?? '';
-  const nicknameLabel = nickname ? `@${nickname}` : '버디네임 미설정';
-  const followerCount = profileIdentity?.followerCount ?? DEFAULT_PROFILE_IDENTITY.followerCount;
-  const followingCount = profileIdentity?.followingCount ?? DEFAULT_PROFILE_IDENTITY.followingCount;
-  const palateBloomShapeSeed = profileIdentity?.palateBloomShapeSeed;
+  const displayName = profileIdentity?.displayName?.trim() || 'Taste Buddy Guest';
+  const nickname = profileIdentity?.nickname?.trim().replace(/^@+|@+$/g, '') ?? '';
+  const nicknameLabel = nickname ? `@${nickname}` : '@tastebuddy';
+  const followerCount = profileIdentity?.followerCount;
+  const followingCount = profileIdentity?.followingCount;
+  const palateBloomShapeSeed = profileIdentity?.palateBloomShapeSeed ?? 'current-user';
   const palateBloomProfile =
     profileIdentity?.palateBloomProfile ??
-    createPalateBloomProfileFromMeasurementSnapshot(
-      measurementSnapshot,
-      nickname || displayName || 'taste-buddy-profile',
-    );
+    (measurementSnapshot ? createPalateBloomProfileFromMeasurementSnapshot(measurementSnapshot, nickname || displayName) : createPalateBloomFallbackProfile('current-user'));
   const [connectionProfiles, setConnectionProfiles] = useState<DiningFriendProfile[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
   const [updatingConnectionId, setUpdatingConnectionId] = useState<string | null>(null);
-  const [stats, setStats] = useState<ProfileStat[]>(() =>
-    deriveProfileStats([measurementSnapshot], 0, loadRestaurantBookmarks().length, null),
-  );
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    void (async () => {
-      const [hydratedData, hydratedMeasurements] = await Promise.all([
-        hydrateReservationPageData(),
-        hydrateRecentMeasurementSnapshots(100),
-      ]);
-
-      if (isCancelled) {
-        return;
-      }
-
-      const feedbackEntries = Object.values(hydratedData.feedbackByReservationId);
-      const actualMeasurements = getActualMeasurementSnapshots(
-        hydratedMeasurements,
-        measurementSnapshot,
-      );
-      const averageRating = getAverageFeedbackRating(feedbackEntries);
-      const savedListCount = loadRestaurantBookmarks().length;
-
-      setStats(
-        deriveProfileStats(
-          actualMeasurements,
-          feedbackEntries.length,
-          savedListCount,
-          averageRating,
-        ),
-      );
-    })();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [measurementSnapshot]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const syncSavedListCount = () => {
-      const savedListCount = loadRestaurantBookmarks().length;
-
-      setStats((currentStats) =>
-        currentStats.map((stat) =>
-          stat.label === '테이스트 리스트'
-            ? { ...stat, value: `${savedListCount}곳` }
-            : stat,
-        ),
-      );
-    };
-
-    window.addEventListener(RESTAURANT_BOOKMARKS_CHANGED_EVENT, syncSavedListCount);
-    window.addEventListener('storage', syncSavedListCount);
-
-    return () => {
-      window.removeEventListener(RESTAURANT_BOOKMARKS_CHANGED_EVENT, syncSavedListCount);
-      window.removeEventListener('storage', syncSavedListCount);
-    };
-  }, []);
-
   useEffect(() => {
     if (!activeConnectionView || !onLoadConnections) {
       return;
@@ -547,45 +433,45 @@ export default function ProfilePage({
                 <Settings size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-primary)]" />
               </button>
               <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-4 pr-12">
+                <div className="flex items-center gap-[14px] pr-12">
                   <PalateBloomAvatar
                     ariaLabel={displayName}
-                    imageSrc={profileIdentity?.avatarImageDataUrl}
+                    imageSrc={profileIdentity?.avatarImageDataUrl ?? undefined}
                     profile={palateBloomProfile}
                     shapeSeed={palateBloomShapeSeed}
-                    size="lg"
+                    size={64}
                   />
-                  <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <span className="truncate text-[16px] font-bold text-[var(--tb-color-text-primary)]">{displayName}</span>
-                    <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                    <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
                       {nicknameLabel}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-[18px]">
                   <button
                     type="button"
                     onClick={() => openConnectionView('followers')}
-                    className="flex min-w-[64px] flex-col rounded-[8px] text-left transition-colors]"
+                    className="flex min-w-[64px] flex-col gap-[3px] rounded-[8px] text-left transition-colors"
                   >
                     <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                       {formatSocialCount(followerCount)}
                     </span>
-                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로워</span>
+                    <span className="text-[12px] text-[var(--tb-color-text-hint)]">팔로워</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => openConnectionView('following')}
-                    className="flex min-w-[64px] flex-col rounded-[8px] text-left transition-colors]"
+                    className="flex min-w-[64px] flex-col gap-[3px] rounded-[8px] text-left transition-colors"
                   >
                     <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                       {formatSocialCount(followingCount)}
                     </span>
-                    <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로잉</span>
+                    <span className="text-[12px] text-[var(--tb-color-text-hint)]">팔로잉</span>
                   </button>
                   <button
                     type="button"
-                    onClick={onOpenProfileSettings}
+                    onClick={onFindBuddy}
                     className="ml-auto flex h-9 items-center gap-2 rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[12px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
                   >
                     <UserPlus size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
@@ -597,20 +483,7 @@ export default function ProfilePage({
 
           </div>
 
-          <PageSection title="활동 요약" titleSize="md">
-            <div className="grid grid-cols-2 gap-3">
-              {stats.map((stat) => (
-                <SummaryMetricCard
-                  key={stat.label}
-                  color={stat.color}
-                  icon={stat.icon}
-                  label={stat.label}
-                  onClick={stat.label === '테이스트 리스트' ? onOpenSavedList : undefined}
-                  value={stat.value}
-                />
-              ))}
-            </div>
-          </PageSection>
+          <NativeProfileActivity owner={owner} active={active} onOpenSavedList={onOpenSavedList} />
 
           <div className="h-6" />
         </div>

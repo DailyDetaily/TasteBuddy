@@ -7,6 +7,12 @@ struct DiningFeedbackFixtureContract: Codable, Equatable {
     let scenario: DiningFeedbackScenarioContract
     let detailTagCategories: [DiningFeedbackTagCategoryContract]
     let dishKindOptions: [DiningFeedbackDishKindContract]
+    var legacyDishKindOptions: [DiningFeedbackDishKindContract]? = nil
+    var dishKindAliases: [String: String]? = nil
+    var dishKindTaxonomyVersion: String? = nil
+    var dishKindDetailRecommendations: [String: [String]]? = nil
+
+    var allDishKindOptions: [DiningFeedbackDishKindContract] { dishKindOptions + (legacyDishKindOptions ?? []) }
     let tasteExperienceAxes: [TasteExperienceAxisContract]
 }
 
@@ -51,11 +57,27 @@ struct DiningFeedbackTagContract: Codable, Equatable, Identifiable {
     let label: String
 }
 
+enum DiningDishKindGroup: String, CaseIterable, Identifiable {
+    case ingredient, form, method, attribute, legacy
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .ingredient: return "주요 재료"
+        case .form: return "요리 형태"
+        case .method: return "조리·처리"
+        case .attribute: return "특성"
+        case .legacy: return "이전에 선택한 분류"
+        }
+    }
+}
+
 struct DiningFeedbackDishKindContract: Codable, Equatable, Identifiable {
     let id: String
     let label: String
     let keywords: [String]
+    var group: String? = nil
 }
+
 
 struct TasteExperienceAxisContract: Codable, Equatable, Identifiable {
     let id: TasteAxis
@@ -66,17 +88,18 @@ struct TasteExperienceAxisContract: Codable, Equatable, Identifiable {
 
 struct TasteExperienceWordContract: Codable, Equatable {
     let angleOffset: Double
-    let intensity: Int
+    let intensity: Int?
     let key: String
     let label: String
     let description: String
     let radiusOffset: Double?
+    var id: String? = nil
 }
 
 struct TasteExperience: Identifiable, Equatable {
     let id: String
     let axis: TasteAxis
-    let intensity: Int
+    let intensity: Int?
     let key: String
     let label: String
     let description: String
@@ -99,7 +122,7 @@ extension DiningFeedbackFixtureContract {
         tasteExperienceAxes.flatMap { axis in
             axis.words.map { word in
                 TasteExperience(
-                    id: "\(axis.id.rawValue)-\(word.key)",
+                    id: word.id ?? "\(axis.id.rawValue)-\(word.key)",
                     axis: axis.id,
                     intensity: word.intensity,
                     key: word.key,
@@ -114,7 +137,7 @@ extension DiningFeedbackFixtureContract {
 }
 
 enum TasteExperienceMapEngine {
-    static let mapSize: CGFloat = 1_680
+    static let mapSize: CGFloat = CGFloat(DiningSensoryV2Catalog.shared?.layout.mapSize ?? 1_680)
     static let mapCenter: CGFloat = mapSize / 2
     static let bubbleSize: CGFloat = 126
     static let selectedBubbleSize: CGFloat = 164
@@ -145,7 +168,7 @@ enum TasteExperienceMapEngine {
         let experiences = axes.flatMap { axis in
             axis.words.map { word in
                 TasteExperience(
-                    id: "\(axis.id.rawValue)-\(word.key)",
+                    id: word.id ?? "\(axis.id.rawValue)-\(word.key)",
                     axis: axis.id,
                     intensity: word.intensity,
                     key: word.key,
@@ -155,6 +178,21 @@ enum TasteExperienceMapEngine {
                     radiusOffset: word.radiusOffset
                 )
             }
+        }
+        if experiences.allSatisfy({ $0.id.hasPrefix("v2.bubble.") }), let layout = DiningSensoryV2Catalog.shared?.layout {
+            var offsets = [String: Int]()
+            let positions: [TasteExperienceBubblePosition] = experiences.compactMap { experience in
+                let axis = experience.axis.rawValue
+                let index = offsets[axis, default: 0]
+                offsets[axis] = index + 1
+                guard let slot = layout.slots.first(where: { $0.axis == axis && $0.index == index }) else { return nil }
+                return .init(experience: experience, size: bubbleSize, x: mapCenter + slot.x, y: mapCenter + slot.y)
+            }
+            guard positions.count == experiences.count else {
+                assertionFailure("Sensory v2 catalog and map slots must match")
+                return []
+            }
+            return positions
         }
         let points = hexGridPoints(pointCount: experiences.count, axes: axes)
         var pointsByAxis: [TasteAxis: [HexPoint]] = [:]
@@ -184,27 +222,7 @@ enum TasteExperienceMapEngine {
                 y: mapCenter + (point?.y ?? 0)
             )
         }
-        let positionByID = Dictionary(uniqueKeysWithValues: positions.map { ($0.id, $0) })
-        let slotTargets: [String: String] = [
-            "fat-coating": "sweet-finish-hold",
-            "umami-meaty": "fat-coating",
-            "bitter-dry-bitter": "umami-meaty",
-            "salty-fermented-salt": "bitter-dry-bitter",
-            "sour-vinegar": "salty-fermented-salt",
-            "sweet-finish-hold": "sour-vinegar",
-        ]
-
-        return positions.map { position in
-            guard let targetID = slotTargets[position.id],
-                  let target = positionByID[targetID] else {
-                return position
-            }
-
-            var corrected = position
-            corrected.x = target.x
-            corrected.y = target.y
-            return corrected
-        }
+        return positions
     }
 
     static func renderPositions(
@@ -324,7 +342,7 @@ enum TasteExperienceMapEngine {
         positions: [TasteExperienceBubblePosition]
     ) -> [String: TimeInterval] {
         let primaryIDs = axes.compactMap { axis in
-            axis.words.first.map { "\(axis.id.rawValue)-\($0.key)" }
+            axis.words.first.map { $0.id ?? "\(axis.id.rawValue)-\($0.key)" }
         }
         let primaryIDSet = Set(primaryIDs)
         let outerPositions = positions
@@ -359,11 +377,12 @@ enum TasteExperienceMapEngine {
     }
 
     static func mappedRating(for experience: TasteExperience) -> Int {
-        if experience.intensity >= 4 {
+        guard let intensity = experience.intensity else { return 0 }
+        if intensity >= 4 {
             return 2
         }
 
-        return experience.intensity == 3 ? 3 : 4
+        return intensity == 3 ? 3 : 4
     }
 
     private static func hexGridPoints(
@@ -461,12 +480,13 @@ enum DiningFeedbackFixtureLoader {
 }
 
 enum TasteExperienceCatalog {
-    static let axes: [TasteExperienceAxisContract] =
+    static let legacyAxes: [TasteExperienceAxisContract] =
         (try? DiningFeedbackFixtureLoader.load().tasteExperienceAxes) ?? []
-    static let experiences: [TasteExperience] = axes.flatMap { axis in
+    static let axes = DiningSensoryV2Catalog.shared?.axes ?? legacyAxes
+    static let experiences: [TasteExperience] = (legacyAxes + (DiningSensoryV2Catalog.shared?.axes ?? [])).flatMap { axis in
         axis.words.map { word in
             TasteExperience(
-                id: "\(axis.id.rawValue)-\(word.key)",
+                id: word.id ?? "\(axis.id.rawValue)-\(word.key)",
                 axis: axis.id,
                 intensity: word.intensity,
                 key: word.key,
@@ -502,29 +522,13 @@ enum DiningDetailTagCatalog {
         .umami: ["balance-umami-depth", "flow-deepens-late", "aroma-broth", "composition-connected"],
     ]
 
-    private static let recommendedByDishKind: [String: [String]] = [
-        "beverage_pairing": ["aroma-fruity", "flow-opens-next", "balance-aftertaste-light"],
-        "broth": ["aroma-broth", "flow-deepens-late", "flow-clean-finish"],
-        "cold": ["texture-cool-cleans", "flow-first-clear", "balance-aftertaste-light"],
-        "dairy_cheese": ["texture-coating", "texture-silky", "balance-finish-heavy"],
-        "dessert": ["balance-sweet-support", "aroma-fruity", "texture-silky"],
-        "dumpling_batter": ["texture-chewy", "composition-connected", "composition-sauce-leads"],
-        "fermented_jang": ["aroma-fermented", "balance-umami-depth", "flow-long-lasting"],
-        "fried_crispy": ["texture-crisp", "composition-cooking-strong", "balance-finish-heavy"],
-        "grain_noodle": ["texture-chewy", "texture-temperature-right", "composition-sauce-leads"],
-        "grilled_smoked": ["composition-fire-clear", "aroma-smoky", "composition-cook-point"],
-        "legume_tofu": ["texture-soft", "balance-umami-depth", "aroma-ingredient-clear"],
-        "meat": ["aroma-meaty", "composition-fat-supports", "texture-juicy"],
-        "raw_cured": ["flow-first-clear", "balance-acid-cleans", "texture-cool-cleans"],
-        "sauce_glaze": ["composition-sauce-leads", "balance-center-clear", "flow-long-lasting"],
-        "seafood": ["aroma-seafood", "balance-umami-depth", "flow-clean-finish"],
-        "spice_heat": ["aroma-spice", "balance-intensity-high", "flow-long-lasting"],
-        "steamed_braised": ["texture-soft", "flow-deepens-late", "balance-umami-depth"],
-        "stir_fried_wok": ["composition-cooking-strong", "aroma-roasted", "balance-intensity-high"],
-        "vegetable_herb": ["aroma-herbal", "aroma-ingredient-clear", "balance-aftertaste-light"],
-    ]
+    private static let recommendedByDishKind: [String: [String]] =
+        (try? DiningFeedbackFixtureLoader.load().dishKindDetailRecommendations) ?? [:]
 
     static func metadata(for id: String) -> DiningDetailTagMetadata? {
+        if let catalog = DiningSensoryV2Catalog.shared, let node = catalog.entry(id), let familyID = node.familyId {
+            return .init(id: id, label: node.label, categoryID: familyID, categoryLabel: catalog.families.first { $0.id == familyID }?.label ?? familyID)
+        }
         if id.hasPrefix("custom:") {
             let components = id.split(separator: ":", maxSplits: 2).map(String.init)
             guard components.count == 3,

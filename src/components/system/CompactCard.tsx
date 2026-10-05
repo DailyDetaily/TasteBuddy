@@ -68,7 +68,7 @@ export default function CompactCard({
   );
 
   if (as === 'div') {
-    const { type: _type, ...divProps } = props;
+    const divProps = props;
 
     return (
       <div className={cardClassName} {...divProps}>

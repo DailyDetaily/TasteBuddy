@@ -54,7 +54,11 @@ object SelectionParser {
                     RuleUnresolved(label, reason, spans, metadata(facet, response, "unresolved"))
             }
             if (selection.unparsedPayload != null) {
-                pending("unreadable_selection_payload", response = canonical(selection))
+                pending(
+                    if (selection.catalogVersion != "unknown" && selection.catalogVersion != catalog.version)
+                        "unknown_selection_catalog_version" else "unreadable_selection_payload",
+                    response = canonical(selection),
+                )
                 continue
             }
             if (selection.catalogVersion != catalog.version) {

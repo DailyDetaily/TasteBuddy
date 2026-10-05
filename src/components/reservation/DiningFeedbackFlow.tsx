@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { SENSORY_V2, sensoryV2Axes, type SensoryV2Presentation } from '../../lib/sensoryV2.mjs';
 import {
   ArrowRight as ArrowRightIcon,
   Camera as CameraIcon,
@@ -33,6 +34,8 @@ import ImageBox from '../system/ImageBox';
 import PageSection from '../system/PageSection';
 import SelectionCard from '../system/SelectionCard';
 import TasteChip from '../system/TasteChip';
+import DishKindIcon from '../system/DishKindIcon';
+import ChipGroup from '../system/plating/ChipGroup';
 import TasteWordSearch from '../search/TasteWordSearch';
 import {
   type DiningDishMetadata,
@@ -51,6 +54,9 @@ import {
 import {
   CUSTOM_DISH_KIND_PREFIX,
   DISH_KIND_OPTIONS,
+  DISH_KIND_GROUPS,
+  DISH_KIND_DETAIL_RECOMMENDATIONS,
+  getDishKindOptionsForSelection,
   getCustomDishKindId,
   getDishKindLabel,
   inferDishKindIds,
@@ -113,37 +119,17 @@ const RECOMMENDED_DETAIL_TAG_IDS_BY_TASTE_AXIS: Record<TasteAxisId, readonly str
   umami: ['balance-umami-depth', 'flow-deepens-late', 'aroma-broth', 'composition-connected'],
 };
 
-const RECOMMENDED_DETAIL_TAG_IDS_BY_DISH_KIND: Record<string, readonly string[]> = {
-  beverage_pairing: ['aroma-fruity', 'flow-opens-next', 'balance-aftertaste-light'],
-  broth: ['aroma-broth', 'flow-deepens-late', 'flow-clean-finish'],
-  cold: ['texture-cool-cleans', 'flow-first-clear', 'balance-aftertaste-light'],
-  dairy_cheese: ['texture-coating', 'texture-silky', 'balance-finish-heavy'],
-  dessert: ['balance-sweet-support', 'aroma-fruity', 'texture-silky'],
-  dumpling_batter: ['texture-chewy', 'composition-connected', 'composition-sauce-leads'],
-  fermented_jang: ['aroma-fermented', 'balance-umami-depth', 'flow-long-lasting'],
-  fried_crispy: ['texture-crisp', 'composition-cooking-strong', 'balance-finish-heavy'],
-  grain_noodle: ['texture-chewy', 'texture-temperature-right', 'composition-sauce-leads'],
-  grilled_smoked: ['composition-fire-clear', 'aroma-smoky', 'composition-cook-point'],
-  legume_tofu: ['texture-soft', 'balance-umami-depth', 'aroma-ingredient-clear'],
-  meat: ['aroma-meaty', 'composition-fat-supports', 'texture-juicy'],
-  raw_cured: ['flow-first-clear', 'balance-acid-cleans', 'texture-cool-cleans'],
-  sauce_glaze: ['composition-sauce-leads', 'balance-center-clear', 'flow-long-lasting'],
-  seafood: ['aroma-seafood', 'balance-umami-depth', 'flow-clean-finish'],
-  spice_heat: ['aroma-spice', 'balance-intensity-high', 'flow-long-lasting'],
-  steamed_braised: ['texture-soft', 'flow-deepens-late', 'balance-umami-depth'],
-  stir_fried_wok: ['composition-cooking-strong', 'aroma-roasted', 'balance-intensity-high'],
-  vegetable_herb: ['aroma-herbal', 'aroma-ingredient-clear', 'balance-aftertaste-light'],
-};
+const RECOMMENDED_DETAIL_TAG_IDS_BY_DISH_KIND = DISH_KIND_DETAIL_RECOMMENDATIONS;
 
 export interface TasteExperienceWord {
   angleOffset: number;
   axis: TasteAxisId;
   description: string;
   id: string;
-  intensity: 1 | 2 | 3 | 4;
+  intensity?: 1 | 2 | 3 | 4 | null;
   key: string;
   label: string;
-  radiusOffset?: number;
+  radiusOffset?: number | null;
 }
 
 export const tasteExperienceAxes: readonly {
@@ -321,6 +307,7 @@ function QuickOptionGroup<T extends number | string>({
 }
 
 function getExperienceMappedRating(experience: TasteExperienceWord) {
+  if (experience.intensity == null) return 0;
   if (experience.intensity >= 4) {
     return 2;
   }
@@ -372,6 +359,7 @@ function getSelectedTasteExperiences(
 }
 
 function findClosestDishChoice(dish: DiningDishMetadata, experience: TasteExperienceWord) {
+  if (experience.intensity == null) return undefined;
   const targetTaste = TASTE_AXIS_LABEL_BY_ID[experience.axis];
   const matchingChoices = dish.feedbackChoices.filter((choice) =>
     choice.affectedTastes.includes(targetTaste),
@@ -417,7 +405,7 @@ function getFallbackExperienceIdFromChoice(choice: DiningFeedbackChoice | undefi
 
 function getTasteExperienceStyle(
   axis: TasteAxisId,
-  intensity: number,
+  intensity: number | null | undefined,
   options: {
     distanceFromSelected?: number;
     isSelected?: boolean;
@@ -672,19 +660,19 @@ type TasteExperienceSnapTarget =
   | { kind: 'bubble'; position: TasteExperienceBubblePosition }
   | { kind: 'neutral'; position: typeof tasteExperienceNeutralBubblePosition };
 
-function getTasteExperienceBubbleRenderPositions(selectedExperienceIds: readonly string[]) {
+function getTasteExperienceBubbleRenderPositions(selectedExperienceIds: readonly string[], basePositions = tasteExperienceBubblePositions) {
   const selectedIdSet = new Set(selectedExperienceIds);
-  const selectedPositions = tasteExperienceBubblePositions.filter((position) =>
+  const selectedPositions = basePositions.filter((position) =>
     selectedIdSet.has(position.experience.id),
   );
   const primarySelectedPosition = selectedPositions[0];
 
   if (!primarySelectedPosition) {
-    return tasteExperienceBubblePositions;
+    return basePositions;
   }
 
   const selectedRadiusDelta = (SELECTED_BUBBLE_SIZE - BUBBLE_SIZE) / 2;
-  const expandedPositions = tasteExperienceBubblePositions.map((position) => {
+  const expandedPositions = basePositions.map((position) => {
     const isSelected = selectedIdSet.has(position.experience.id);
 
     if (isSelected) {
@@ -774,17 +762,46 @@ function BubbleLabel({
   );
 }
 
-function TasteExperienceMap({
+const legacyTasteMapData = {size:BUBBLE_MAP_SIZE,positions:tasteExperienceBubblePositions,neutral:tasteExperienceNeutralBubblePosition,find:findTasteExperience,introDelay:getTasteExperienceIntroDelay};
+
+function v2TasteMapData(presentation: SensoryV2Presentation, selections?: readonly Record<string, any>[]) {
+  const size = SENSORY_V2.layout.mapSize, center = size / 2;
+  const positions = sensoryV2Axes(presentation, selections).flatMap(axis => axis.words.map((word, index) => {
+    const slot = SENSORY_V2.layout.slots.find(s => s.axis === axis.id && s.index === index);
+    if (!slot) throw new Error('미각 지도 위치를 불러오지 못했어요.');
+    return {experience:{...word,axis:axis.id as TasteAxisId} as TasteExperienceWord,size:BUBBLE_SIZE,x:center+slot.x,y:center+slot.y};
+  }));
+  const delays = new Map(positions.map((p,index)=>[p.experience.id,Math.min(920,Math.hypot(p.x-center,p.y-center)/136*85+index%6*24)]));
+  return {size,positions,neutral:{size:BUBBLE_MAP_NEUTRAL_BUBBLE_SIZE,x:center,y:center},find:(id:string|null|undefined)=>positions.find(p=>p.experience.id===id)?.experience??null,introDelay:(id:string)=>delays.get(id)??0};
+}
+
+export type TasteMapViewportState = { x: number; y: number; zoom: number; focusedID: string | null };
+
+export function TasteExperienceMap({
   focusExperienceId,
   onConfirm,
   onToggleSelection,
   selectedExperienceIds,
+  sensoryPresentation,
+  sensorySelections,
+  viewportStateRef,
 }: {
   focusExperienceId?: string | null;
   onConfirm: (experience: TasteExperienceWord) => void;
   onToggleSelection?: (experience: TasteExperienceWord) => readonly string[] | void;
   selectedExperienceIds: readonly string[];
+  sensoryPresentation?: SensoryV2Presentation;
+  sensorySelections?: readonly Record<string, any>[];
+  viewportStateRef?: { current: TasteMapViewportState | null };
 }) {
+  const mapData = useMemo(() => sensoryPresentation ? v2TasteMapData(sensoryPresentation, sensorySelections) : legacyTasteMapData, [sensoryPresentation, sensorySelections]);
+  const BUBBLE_MAP_SIZE = mapData.size;
+  const BUBBLE_MAP_CENTER = BUBBLE_MAP_SIZE / 2;
+  const BUBBLE_MAP_NEUTRAL_POINT = {x:BUBBLE_MAP_CENTER,y:BUBBLE_MAP_CENTER};
+  const tasteExperienceBubblePositions = mapData.positions;
+  const tasteExperienceNeutralBubblePosition = mapData.neutral;
+  const findTasteExperience = mapData.find;
+  const getTasteExperienceIntroDelay = mapData.introDelay;
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const hasExploredMapRef = useRef(false);
   const hasInitializedMapRef = useRef(false);
@@ -795,7 +812,7 @@ function TasteExperienceMap({
   const isSnappingRef = useRef(false);
   const hasReleasedScrollRef = useRef(false);
   const suppressSnapUntilRef = useRef(0);
-  const mapZoomRef = useRef(BUBBLE_MAP_ENTRY_ZOOM);
+  const mapZoomRef = useRef(viewportStateRef?.current?.zoom ?? BUBBLE_MAP_ENTRY_ZOOM);
   const pinchGestureRef = useRef<{
     anchorX: number;
     anchorY: number;
@@ -807,9 +824,9 @@ function TasteExperienceMap({
   const settleAnimationFrameRef = useRef<number | null>(null);
   const zoomAnimationFrameRef = useRef<number | null>(null);
   const [draftSelectedExperienceId, setDraftSelectedExperienceId] = useState<string | null>(
-    selectedExperienceIds[0] ?? null,
+    viewportStateRef?.current?.focusedID ?? selectedExperienceIds[0] ?? null,
   );
-  const [mapZoom, setMapZoom] = useState(BUBBLE_MAP_ENTRY_ZOOM);
+  const [mapZoom, setMapZoom] = useState(viewportStateRef?.current?.zoom ?? BUBBLE_MAP_ENTRY_ZOOM);
   const [isFeedbackCardVisible, setIsFeedbackCardVisible] = useState(true);
   const selectedExperienceIdRef = useRef<string | null | undefined>(draftSelectedExperienceId);
   const resolvedSelectedExperience = findTasteExperience(draftSelectedExperienceId);
@@ -1072,8 +1089,8 @@ function TasteExperienceMap({
     const selectedBubble = tasteExperienceBubblePositions.find(
       (bubble) => bubble.experience.id === resolvedSelectedExperienceId,
     );
-    const targetX = selectedBubble?.x ?? BUBBLE_MAP_NEUTRAL_POINT.x;
-    const targetY = selectedBubble?.y ?? BUBBLE_MAP_NEUTRAL_POINT.y;
+    const targetX = viewportStateRef?.current?.x ?? selectedBubble?.x ?? BUBBLE_MAP_NEUTRAL_POINT.x;
+    const targetY = viewportStateRef?.current?.y ?? selectedBubble?.y ?? BUBBLE_MAP_NEUTRAL_POINT.y;
 
     viewport.scrollLeft = targetX * mapZoomRef.current;
     viewport.scrollTop = targetY * mapZoomRef.current;
@@ -1081,6 +1098,7 @@ function TasteExperienceMap({
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
         hasInitializedMapRef.current = true;
+        hasExpandedMapZoomRef.current = mapZoomRef.current > BUBBLE_MAP_ENTRY_ZOOM;
 
         if (selectedBubble) {
           selectClosestBubble();
@@ -1127,6 +1145,10 @@ function TasteExperienceMap({
       return;
     }
 
+    if (viewportStateRef && viewportRef.current) {
+      viewportStateRef.current = {x: viewportRef.current.scrollLeft / mapZoomRef.current, y: viewportRef.current.scrollTop / mapZoomRef.current, zoom: mapZoomRef.current, focusedID: selectedExperienceIdRef.current ?? null};
+    }
+
     hasExploredMapRef.current = true;
     if (isPinchingMapRef.current || isSnapSuppressed()) {
       return;
@@ -1149,14 +1171,14 @@ function TasteExperienceMap({
     scheduleSettledSnap();
   };
 
-  const getTouchDistance = (touches: TouchList) => {
+  const getTouchDistance = (touches: ArrayLike<Pick<Touch, 'clientX' | 'clientY'>>) => {
     const firstTouch = touches[0];
     const secondTouch = touches[1];
 
     return Math.hypot(firstTouch.clientX - secondTouch.clientX, firstTouch.clientY - secondTouch.clientY);
   };
 
-  const getTouchMidpoint = (touches: TouchList) => {
+  const getTouchMidpoint = (touches: ArrayLike<Pick<Touch, 'clientX' | 'clientY'>>) => {
     const firstTouch = touches[0];
     const secondTouch = touches[1];
 
@@ -1275,9 +1297,10 @@ function TasteExperienceMap({
   };
 
   const selectedExperience = resolvedSelectedExperience;
-  const renderedBubblePositions = getTasteExperienceBubbleRenderPositions(
-    enlargedExperienceIds,
-  );
+  const enlargedIDsKey = enlargedExperienceIds.join('|');
+  const renderedBubblePositions = useMemo(() => getTasteExperienceBubbleRenderPositions(
+    enlargedExperienceIds, tasteExperienceBubblePositions,
+  ), [enlargedIDsKey, tasteExperienceBubblePositions]);
   const selectedBubblePosition = renderedBubblePositions.find(
     (position) => position.experience.id === resolvedSelectedExperienceId,
   );
@@ -1830,11 +1853,12 @@ function DishKindTagSelector({
   const customInputRef = useRef<HTMLInputElement | null>(null);
   const selectedIdSet = new Set(selectedKindIds);
   const recommendedIdSet = new Set(recommendedKindIds);
+  const availableOptions = getDishKindOptionsForSelection(selectedKindIds);
   const orderedOptions = [
     ...recommendedKindIds
-      .map((kindId) => DISH_KIND_OPTIONS.find((option) => option.id === kindId))
+      .map((kindId) => availableOptions.find((option) => option.id === kindId))
       .filter((option): option is (typeof DISH_KIND_OPTIONS)[number] => Boolean(option)),
-    ...DISH_KIND_OPTIONS.filter((option) => !recommendedIdSet.has(option.id)),
+    ...availableOptions.filter((option) => !recommendedIdSet.has(option.id)),
   ];
   const customOptions = customLabels.map((label) => ({
     id: getCustomDishKindId(label),
@@ -1864,7 +1888,11 @@ function DishKindTagSelector({
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {orderedOptions.map((option) => {
+        {[...DISH_KIND_GROUPS, { id: 'legacy', label: '이전에 선택한 분류' }].map(group =>
+          orderedOptions.some(option => option.group === group.id) ? <div key={group.id} className="w-full">
+            <p className="mb-2 text-[11px] text-[var(--tb-color-text-subtle)]">{group.label}</p>
+            <div className="flex flex-wrap gap-2">
+        {orderedOptions.filter(option => option.group === group.id).map((option) => {
           const isSelected = selectedIdSet.has(option.id);
           const isRecommended = recommendedIdSet.has(option.id);
 
@@ -1872,9 +1900,10 @@ function DishKindTagSelector({
             <button
               key={option.id}
               type="button"
+              aria-pressed={isSelected}
               onClick={() => onToggleKind(option.id)}
               className={cn(
-                'rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors',
+                'inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors',
                 isSelected
                   ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
                   : isRecommended
@@ -1882,10 +1911,14 @@ function DishKindTagSelector({
                     : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-subtle)]',
               )}
             >
-              {option.label}
+              <DishKindIcon id={option.id} />
+              <span>{option.label}</span>
             </button>
           );
         })}
+            </div>
+          </div> : null,
+        )}
         {customOptions.map((option) => {
           const isSelected = selectedIdSet.has(option.id);
 
@@ -1973,136 +2006,22 @@ function DiningDetailTagSection({
 }) {
   const selectedTagIdSet = new Set(selectedTagIds);
   const recommendedTagIdSet = new Set(recommendedTagIds ?? []);
-  const customInputRef = useRef<HTMLInputElement | null>(null);
-  const standardTags = category.tags.map((tag) => ({ ...tag, custom: false }));
-  const customTagItems = customTags.map((label) => ({
-    custom: true,
-    id: getCustomDetailTagId(category.id, label),
-    label,
-  }));
-  const allTags = [...standardTags, ...customTagItems].sort((left, right) => {
-    const leftRecommended = recommendedTagIdSet.has(left.id);
-    const rightRecommended = recommendedTagIdSet.has(right.id);
-
-    if (leftRecommended !== rightRecommended) {
-      return leftRecommended ? -1 : 1;
-    }
-
-    return 0;
-  });
-  const tagRowBreakIndex = Math.ceil(allTags.length / 2);
-  const tagRows = [allTags.slice(0, tagRowBreakIndex), allTags.slice(tagRowBreakIndex)];
-  const renderTagButton = (tag: (typeof allTags)[number]) => {
-    const selected = selectedTagIdSet.has(tag.id);
-    const recommended = recommendedTagIdSet.has(tag.id);
-
-    return (
-      <button
-        key={tag.id}
-        type="button"
-        onClick={() => onToggleTag(tag.id)}
-        className={cn(
-          'shrink-0 rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors',
-          selected
-            ? ''
-            : recommended
-              ? 'border-[color-mix(in_srgb,var(--tb-user-accent-main)_46%,white)] bg-[color-mix(in_srgb,var(--tb-user-accent-main)_10%,white)] text-[var(--tb-user-accent-main)]'
-            : tag.custom
-              ? 'border-dashed border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-subtle)]'
-              : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-subtle)]',
-        )}
-        style={
-          selected
-            ? ({
-              backgroundColor: `var(--tb-taste-${accentAxis}-tint-surface)`,
-              borderColor: `var(--tb-taste-${accentAxis}-tint-soft-border)`,
-              color: `var(--tb-taste-${accentAxis}-tint-surface-text)`,
-            } as CSSProperties)
-            : undefined
-        }
-      >
-        {tag.label}
-      </button>
-    );
-  };
-  const customInputControl = isInputOpen ? (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onAddCustomTag();
-      }}
-      className={cn(
-        'inline-grid h-9 max-w-full shrink-0 items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)]',
-        inputValue ? 'min-w-9 grid-cols-[max-content] px-3' : 'w-9 grid-cols-[minmax(0,1fr)] px-3',
-      )}
-    >
-      {inputValue ? (
-        <span
-          className="invisible col-start-1 row-start-1 whitespace-pre text-[12px] font-semibold"
-          aria-hidden="true"
-        >
-          {inputValue}
-        </span>
-      ) : null}
-      <input
-        ref={customInputRef}
-        size={1}
-        value={inputValue}
-        onChange={(event) => onChangeInputValue(event.target.value)}
-        onBlur={() => {
-          if (!inputValue.trim()) {
-            onCloseInput();
-          }
-        }}
-        className="col-start-1 row-start-1 h-full w-full min-w-0 bg-transparent p-0 text-center text-[12px] font-semibold text-[var(--tb-color-text-primary)] caret-[var(--tb-color-text-primary)] outline-none"
-        enterKeyHint="done"
-        aria-label={`${category.label} 직접 입력`}
-      />
-    </form>
-  ) : (
-    <button
-      type="button"
-      onClick={onOpenInput}
-      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-muted)] transition-colors hover:text-[var(--tb-color-text-primary)]"
-      aria-label={`${category.label} 직접 입력`}
-    >
-      <Plus size={ICON_TOKENS.size.md} strokeWidth={1.8} />
-    </button>
+  const standardTags = category.tags.map(tag => ({ ...tag, custom: false }));
+  const customTagItems = customTags.map(label => ({ custom: true, id: getCustomDetailTagId(category.id, label), label }));
+  const allTags = [...standardTags, ...customTagItems].sort((left, right) =>
+    Number(recommendedTagIdSet.has(right.id)) - Number(recommendedTagIdSet.has(left.id)),
   );
-
-  useEffect(() => {
-    if (isInputOpen) {
-      customInputRef.current?.focus();
-    }
-  }, [isInputOpen]);
-
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
-          {category.label}
-        </h2>
-        <span className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">
-          선택사항
-        </span>
+        <h2 className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">{category.label}</h2>
+        <span className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">선택사항</span>
       </div>
-
-      <div className="relative -mx-5">
-        <div className="max-w-full overflow-x-auto overscroll-x-contain px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex w-max flex-col gap-2">
-            <div className="flex items-center gap-2">
-              {customInputControl}
-              {tagRows[0].map(renderTagButton)}
-            </div>
-            <div className="flex items-center gap-2">
-              {tagRows[1].map(renderTagButton)}
-            </div>
-          </div>
-        </div>
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-5 bg-gradient-to-r from-[var(--tb-color-bg-focus)] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-5 bg-gradient-to-l from-[var(--tb-color-bg-focus)] to-transparent" />
-      </div>
-
+      <ChipGroup variant="editable" label={category.label} axis={accentAxis}
+        items={allTags.map(tag => ({ ...tag, selected: selectedTagIdSet.has(tag.id), recommended: recommendedTagIdSet.has(tag.id) }))}
+        onToggle={onToggleTag}
+        input={{ open: isInputOpen, value: inputValue, onOpen: onOpenInput, onClose: onCloseInput,
+          onChange: onChangeInputValue, onSubmit: onAddCustomTag }} />
     </section>
   );
 }
@@ -2366,6 +2285,7 @@ export function DiningFeedbackScreen({
   submitErrorMessage,
 }: DiningFeedbackScreenProps) {
   const [feedbackStep, setFeedbackStep] = useState<DiningFeedbackStep>('menu-select');
+  const showLegacyMemo = feedbackStep === 'taste-checkin';
   const [selectedDishIndex, setSelectedDishIndex] = useState<number | null>(null);
   const [activeDishIndex, setActiveDishIndex] = useState(0);
   const [isTasteSearchOpen, setIsTasteSearchOpen] = useState(false);
@@ -3587,7 +3507,7 @@ export function DiningFeedbackScreen({
             </PageSection>
           )}
 
-          {feedbackStep === 'taste-checkin' ? (
+          {showLegacyMemo ? (
             <PageSection title="마지막 메모" titleSize="md">
               <SectionCard hoverEffect={false}>
                 <div className="w-full">

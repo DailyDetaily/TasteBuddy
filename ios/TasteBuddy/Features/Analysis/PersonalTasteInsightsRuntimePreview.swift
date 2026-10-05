@@ -14,7 +14,7 @@ struct PersonalTasteInsightsRuntimePreview: View {
             if let detailKind {
                 if let group = PersonalTasteInsightPresentation.groups(model.sensoryAnalysis.personalModel)
                     .first(where: { $0.kind == detailKind }) {
-                    PersonalTasteInsightDetailSheet(group: group, observations: model.sensoryAnalysis.observations, entries: model.diningEntries)
+                    PersonalTasteInsightDetailView(group: group, observations: model.sensoryAnalysis.observations, entries: model.diningEntries)
                 } else { ProgressView() }
             } else {
                 let archiveKind = ProcessInfo.processInfo.arguments.first { $0.hasPrefix("--home-insight=") }

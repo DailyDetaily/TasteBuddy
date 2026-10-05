@@ -2,6 +2,79 @@ import XCTest
 @testable import TasteBuddy
 
 final class AppModelPersistenceTests: XCTestCase {
+    func testBookmarkLegacyStorageShapeAndPickerValuesArePreserved() throws {
+        XCTAssertEqual(RestaurantBookmarkConstants.defaultListID, "default-saved")
+        XCTAssertEqual(BookmarkCoverIconID.allCases.map(\.rawValue), [
+            "beef", "cake-slice", "coffee", "cooking-pot", "croissant", "cup-soda",
+            "dessert", "egg-fried", "fish", "salad", "sandwich", "soup", "utensils", "wine"
+        ])
+        for icon in ["chefHat", "sparkles", "store"] {
+            let source = Data(#"""
+            {"lists":[{"id":"legacy","name":"saved","description":"","isPrivate":true,"coverIconID":"\#(icon)","coverTasteID":"sweet"}],"bookmarks":[{"chefName":"chef","listID":"legacy","restaurantID":"r","restaurantName":"name","savedAt":0}]}
+            """#.utf8)
+            let state = try JSONDecoder().decode(RestaurantBookmarkState.self, from: source)
+            let list = try XCTUnwrap(state.lists.first)
+            XCTAssertEqual(list.coverIconID.rawValue, icon)
+            XCTAssertFalse(BookmarkCoverIconID.allCases.contains(list.coverIconID))
+            XCTAssertEqual(state.bookmarks.first?.savedAt, Date(timeIntervalSinceReferenceDate: 0))
+            let original = try XCTUnwrap(JSONSerialization.jsonObject(with: source) as? NSDictionary)
+            let encoded = try JSONEncoder().encode(state)
+            XCTAssertEqual(try JSONSerialization.jsonObject(with: encoded) as? NSDictionary, original)
+        }
+        let source = Data(#"{"id":"p","kind":"removeBookmark","restaurantID":"r","createdAt":0}"#.utf8)
+        let mutation = try JSONDecoder().decode(RestaurantBookmarkPendingMutation.self, from: source)
+        XCTAssertNil(mutation.listID)
+        XCTAssertEqual(mutation.kind, .removeBookmark)
+        let encoded = try JSONEncoder().encode(mutation)
+        let original = try XCTUnwrap(JSONSerialization.jsonObject(with: source) as? NSDictionary)
+        XCTAssertEqual(try JSONSerialization.jsonObject(with: encoded) as? NSDictionary, original)
+    }
+
+    func testBookmarkMergePreservesEqualDatePrecedenceAndConflictCounting() {
+        let localList = RestaurantBookmarkList(
+            id: "same-list", name: "local", description: "", isPrivate: true,
+            coverIconID: .sparkles, coverTasteID: .sweet)
+        var remoteList = localList
+        remoteList.name = "remote"
+        let local = RestaurantBookmarkRecord(
+            chefName: "chef", listID: localList.id, restaurantID: "same",
+            restaurantName: "name", savedAt: Date(timeIntervalSince1970: 20))
+        var tiedRemote = local
+        tiedRemote.listID = "other-list"
+        let removed = RestaurantBookmarkRecord(
+            chefName: "chef", listID: "other-list", restaurantID: "removed",
+            restaurantName: "removed", savedAt: Date(timeIntervalSince1970: 30))
+        let resolution = RestaurantBookmarkSyncEngine.resolve(
+            local: .init(lists: [localList], bookmarks: [local]),
+            remote: .init(lists: [remoteList], bookmarks: [tiedRemote, tiedRemote, removed]),
+            pendingMutations: [.init(kind: .removeBookmark, restaurantID: "removed")])
+        XCTAssertEqual(resolution.state.lists, [localList])
+        XCTAssertEqual(resolution.state.bookmarks, [local])
+        // Count differing encounters, not unique conflicting restaurant IDs.
+        XCTAssertEqual(resolution.conflictCount, 2)
+        XCTAssertEqual(resolution.suppressedRemoteBookmarkCount, 1)
+        XCTAssertTrue(resolution.hasRemoteConflict)
+    }
+
+    func testBookmarkMergePrefersNewerDatesAndSortsDescending() {
+        let local = RestaurantBookmarkRecord(
+            chefName: "chef", listID: "local", restaurantID: "same",
+            restaurantName: "name", savedAt: Date(timeIntervalSince1970: 10))
+        let newer = RestaurantBookmarkRecord(
+            chefName: "chef", listID: "remote", restaurantID: "same",
+            restaurantName: "name", savedAt: Date(timeIntervalSince1970: 20))
+        let newest = RestaurantBookmarkRecord(
+            chefName: "chef", listID: "remote", restaurantID: "another",
+            restaurantName: "another", savedAt: Date(timeIntervalSince1970: 30))
+        let resolution = RestaurantBookmarkSyncEngine.resolve(
+            local: .init(lists: [], bookmarks: [local]),
+            remote: .init(lists: [], bookmarks: [newer, newest, newest]),
+            pendingMutations: [])
+        XCTAssertEqual(resolution.state.bookmarks, [newest, newer])
+        XCTAssertEqual(resolution.conflictCount, 1)
+        XCTAssertEqual(resolution.suppressedRemoteBookmarkCount, 0)
+    }
+
     @MainActor
     func testPreferenceSourcesRestoreAndKeepEditingHistorySeparateFromDining() async throws {
         let suiteName = "tastebuddy.preference.tests.\(UUID().uuidString)"
@@ -186,7 +259,19 @@ final class AppModelPersistenceTests: XCTestCase {
         let savedCompletedEntry = try XCTUnwrap(model.diningEntries.first)
         XCTAssertEqual(savedCompletedEntry.savedAt, savedAt)
         XCTAssertEqual(savedCompletedEntry.updatedAt, updatedAt)
-        try assertDiningSourceUnchangedByStorage(savedCompletedEntry, original: completedEntry)
+        XCTAssertEqual(savedCompletedEntry.memoryRevisionNumber, savedCapturedEntry.memoryRevisionNumber + 1)
+        XCTAssertEqual(savedCompletedEntry.memoryCorrections?.count, 1)
+        let correction = try XCTUnwrap(savedCompletedEntry.memoryCorrections?.last)
+        XCTAssertEqual(correction.revision, savedCompletedEntry.memoryRevisionNumber)
+        XCTAssertEqual(correction.changedAt, updatedAt)
+        XCTAssertEqual(correction.before["feedbackStatus"], .string("captured"))
+        XCTAssertEqual(correction.after["feedbackStatus"], .string("completed"))
+        XCTAssertEqual(correction.before["note"], .string(capturedEntry.note))
+        XCTAssertEqual(correction.after["note"], .string(completedEntry.note))
+        var completedSource = savedCompletedEntry
+        completedSource.memoryRevision = completedEntry.memoryRevision
+        completedSource.memoryCorrections = completedEntry.memoryCorrections
+        try assertDiningSourceUnchangedByStorage(completedSource, original: completedEntry)
         XCTAssertTrue(model.diningEntries[0].hasCompletedTasteFeedback)
         XCTAssertEqual(model.diningEntries[0].photoPalette, .neutralFallback)
         XCTAssertEqual(AppModel(defaults: defaults).diningEntries, [savedCompletedEntry])

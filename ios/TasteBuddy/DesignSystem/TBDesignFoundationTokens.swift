@@ -161,7 +161,10 @@ enum TBDesignFoundationTokens {
     }
 
     enum MotionTokens {
+        static let staggerMs = token("staggerMs", "60", .milliseconds(60), "--tb-motion-stagger")
+
         enum DurationMs {
+            static let press = token("durationMs.press", "120", .milliseconds(120), "--tb-motion-duration-press")
             static let fast = token("durationMs.fast", "180", .milliseconds(180), "--tb-motion-duration-fast")
             static let normal = token("durationMs.normal", "300", .milliseconds(300), "--tb-motion-duration-normal")
             static let medium = token("durationMs.medium", "500", .milliseconds(500), "--tb-motion-duration-medium")
@@ -170,7 +173,7 @@ enum TBDesignFoundationTokens {
             static let loopPulse = token("durationMs.loopPulse", "1600", .milliseconds(1600), "--tb-motion-duration-loop-pulse")
             static let splash = token("durationMs.splash", "2500", .milliseconds(2500), "--tb-motion-duration-splash")
 
-            static let all = [fast, normal, medium, slow, slowest, loopPulse, splash]
+            static let all = [press, fast, normal, medium, slow, slowest, loopPulse, splash]
         }
 
         enum Easing {
@@ -208,7 +211,7 @@ enum TBDesignFoundationTokens {
             static let all = [xSmall, small, medium, large, onboardingSwipe]
         }
 
-        static let all = DurationMs.all + Easing.all + Spring.all + Scale.all + Distance.all
+        static let all = DurationMs.all + [staggerMs] + Easing.all + Spring.all + Scale.all + Distance.all
 
         private static func token(
             _ path: String,
@@ -510,6 +513,8 @@ enum TBDesignFoundationTokens {
             static let all = [
                 css("--tb-font-family-sans", "\"Pretendard\", ui-sans-serif, system-ui, sans-serif", .text("\"Pretendard\", ui-sans-serif, system-ui, sans-serif")),
 
+                css("--tb-motion-duration-press", "120ms", .milliseconds(120)),
+                css("--tb-motion-stagger", "60ms", .milliseconds(60)),
                 css("--tb-motion-duration-fast", "180ms", .milliseconds(180)),
                 css("--tb-motion-duration-normal", "300ms", .milliseconds(300)),
                 css("--tb-motion-duration-medium", "500ms", .milliseconds(500)),

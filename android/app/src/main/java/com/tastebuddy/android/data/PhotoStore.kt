@@ -22,7 +22,7 @@ data class ImportedPhoto(
     val longitude: Double?,
 )
 
-class PhotoStore(private val context: Context) {
+class PhotoStore(private val context: Context) : AccountPhotoStorage {
     private val directory = File(context.filesDir, "photos").apply { mkdirs() }
 
     fun file(filename: String?): File? =
@@ -163,6 +163,28 @@ class PhotoStore(private val context: Context) {
                 }
                 ?.forEach { it.delete() }
         }
+
+    override suspend fun readOriginal(filename: String): ByteArray? = withContext(Dispatchers.IO) {
+        file(filename)?.takeIf { it.exists() }?.readBytes()
+    }
+
+    override suspend fun restoreOriginal(filename: String, bytes: ByteArray) = withContext(Dispatchers.IO) {
+        require(AndroidBackupContract.photoPattern.matches(filename) && bytes.size in 4..6_291_456 &&
+            bytes[0] == 0xff.toByte() && bytes[1] == 0xd8.toByte()) { "사진 원본을 확인하지 못해 복원을 멈췄어요." }
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        require(bounds.outWidth > 0 && bounds.outHeight > 0 && bounds.outMimeType == "image/jpeg") { "사진 원본을 읽지 못해 복원을 멈췄어요." }
+        val destination = file(filename) ?: error("사진 이름을 확인하지 못했어요.")
+        if (destination.exists()) {
+            require(destination.readBytes().contentEquals(bytes)) { "같은 이름의 다른 사진이 있어 복원을 멈췄어요." }
+        } else {
+            val atomic = android.util.AtomicFile(destination)
+            val stream = atomic.startWrite()
+            try { stream.write(bytes); atomic.finishWrite(stream) }
+            catch (error: Exception) { atomic.failWrite(stream); throw error }
+        }
+        Unit
+    }
 
     suspend fun clear() =
         withContext(Dispatchers.IO) {

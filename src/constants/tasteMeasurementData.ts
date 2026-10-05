@@ -25,14 +25,14 @@ export interface TasteMeasurementEntry {
   valueMm: number;
 }
 
-export const DEFAULT_TASTE_MEASUREMENT_RESULTS: TasteMeasurementResults = {
+export const DEFAULT_TASTE_MEASUREMENT_RESULTS = {
   sweet: 8.5,
   sour: 7.4,
   bitter: 4.0,
   salty: 6.0,
   umami: 3.0,
   fat: 5.5,
-};
+} satisfies TasteMeasurementResults;
 
 export const TASTE_MEASUREMENT_AVERAGES: Record<TasteId, number> = {
   sweet: 5.0,

@@ -4,7 +4,7 @@ import { cn } from '../ui/utils';
 
 import SectionTitle from './SectionTitle';
 
-interface PageSectionProps extends HTMLAttributes<HTMLDivElement> {
+interface PageSectionProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   children: ReactNode;
   contentClassName?: string;
   title?: ReactNode;

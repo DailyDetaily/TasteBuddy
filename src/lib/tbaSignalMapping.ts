@@ -2,7 +2,7 @@ import {
   TBA_SIGNAL_BY_ID,
   TBA_SIGNAL_TAXONOMY,
 } from '../constants/tbaSignalTaxonomy';
-import { getDishKindLabel } from '../constants/dishKindTags';
+import { getDishKindLabel, LEGACY_DISH_KIND_OPTIONS, matchesDishKindKeyword } from '../constants/dishKindTags';
 import type {
   TbaMappedSignal,
   TbaSignalDefinition,
@@ -85,10 +85,10 @@ function getSignalTextScore(definition: TbaSignalDefinition, value: string): Tba
   }
 
   const containmentMatch = labels.find((candidate) => (
-    normalizedValue.includes(candidate.normalized) ||
-    candidate.normalized.includes(normalizedValue) ||
-    compactValue.includes(candidate.compact) ||
-    candidate.compact.includes(compactValue)
+    matchesDishKindKeyword(normalizedValue, candidate.normalized) ||
+    matchesDishKindKeyword(candidate.normalized, normalizedValue) ||
+    matchesDishKindKeyword(compactValue, candidate.compact) ||
+    matchesDishKindKeyword(candidate.compact, compactValue)
   ));
 
   if (containmentMatch) {
@@ -233,7 +233,7 @@ export function mapDishKindTagsToTbaSignals(dishKindIds: readonly string[]): Tba
     .forEach((kindId) => {
       const definition = getTbaSignalById(`dish-kind:${kindId}`);
 
-      if (!definition || definition.status === 'retired') {
+      if (!definition || (definition.status === 'retired' && !LEGACY_DISH_KIND_OPTIONS.some(option => option.id === kindId))) {
         unmappedTags.push({
           source: 'dish-kind-tag',
           value: getDishKindLabel(kindId),

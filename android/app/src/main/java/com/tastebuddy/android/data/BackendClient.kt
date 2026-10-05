@@ -20,6 +20,8 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 data class BackendConfig(
     val url: String = BuildConfig.TB_SUPABASE_URL,
@@ -116,20 +118,36 @@ class BackendClient(
     private val mutableSession = MutableStateFlow<AuthSession?>(null)
     val sessionState = mutableSession.asStateFlow()
     private val refreshMutex = Mutex()
+    private val sessionMutationMutex = Mutex()
+    private var sessionGeneration = 0L // Accessed only while holding sessionMutationMutex.
     private val oauthMutex = Mutex()
 
     suspend fun restore(): AuthSession? =
         withContext(Dispatchers.IO) {
-            storage.read()?.let { mutableSession.value = AppJson.decodeFromString<AuthSession>(it) }
+            val restoredGeneration = sessionMutationMutex.withLock {
+                storage.read()?.let { raw ->
+                    val restored = AppJson.decodeFromString<AuthSession>(raw)
+                    if (mutableSession.value != restored) {
+                        sessionGeneration++
+                        mutableSession.value = restored
+                    }
+                }
+                sessionGeneration
+            }
             if (mutableSession.value == null || !config.configured)
                 return@withContext mutableSession.value
             try {
                 session()
             } catch (error: ApiException) {
                 if (error.status == 400 || error.status == 401) {
-                    storage.write(null)
-                    mutableSession.value = null
-                    null
+                    sessionMutationMutex.withLock {
+                        if (sessionGeneration == restoredGeneration) {
+                            storage.write(null)
+                            sessionGeneration++
+                            mutableSession.value = null
+                        }
+                        mutableSession.value
+                    }
                 } else throw error
             }
         }
@@ -151,8 +169,8 @@ class BackendClient(
         return builder.method(method, body?.requestBody()).build()
     }
 
-    private suspend fun accept(raw: JsonElement): AuthSession =
-        withContext(Dispatchers.IO) {
+    private suspend fun accept(raw: JsonElement, expectedSession: AuthSession? = null): AuthSession =
+        withContext(Dispatchers.IO) { sessionMutationMutex.withLock {
             val root = raw.jsonObject
             val user = root.obj("user")
             val session =
@@ -176,24 +194,25 @@ class BackendClient(
             ) {
                 "계정 응답을 확인하지 못했어요."
             }
+            if (expectedSession != null) check(mutableSession.value == expectedSession) { "로그인 계정이 바뀌어 세션 갱신을 멈췄어요." }
             storage.write(AppJson.encodeToString(session))
+            sessionGeneration++
             mutableSession.value = session
             session
-        }
+        } }
 
     suspend fun session(): AuthSession = refreshMutex.withLock {
         val current = mutableSession.value ?: error("Taste Buddy 계정에 로그인해 주세요.")
         if (current.expiresAt > Instant.now().epochSecond + 60) current
-        else
-            accept(
-                http.json(
-                    request(
-                        "/auth/v1/token?grant_type=refresh_token",
-                        "POST",
-                        buildJsonObject { put("refresh_token", current.refreshToken) },
-                    )
-                )
-            )
+        else {
+            val refreshed = http.json(request(
+                "/auth/v1/token?grant_type=refresh_token", "POST",
+                buildJsonObject { put("refresh_token", current.refreshToken) },
+            ))
+            check(mutableSession.value == current) { "로그인 계정이 바뀌어 세션 갱신을 멈췄어요." }
+            require(refreshed.jsonObject.obj("user").string("id") == current.user.id) { "세션 갱신 응답의 계정이 달라 저장하지 않았어요." }
+            accept(refreshed, expectedSession = current)
+        }
     }
 
     suspend fun ensureAnonymousSession(): AuthSession {
@@ -323,7 +342,7 @@ class BackendClient(
     }
 
     suspend fun signOut() {
-        val current = mutableSession.value
+        val (current, expectedGeneration) = sessionMutationMutex.withLock { mutableSession.value to sessionGeneration }
         if (current != null && config.configured)
             runCatching {
                 http.json(
@@ -335,23 +354,31 @@ class BackendClient(
                     )
                 )
             }
-        withContext(Dispatchers.IO) {
-            storage.write(null)
-            oauthStorage.write(null)
-        }
-        mutableSession.value = null
+        clearSession(expectedGeneration)
     }
 
-    suspend fun deleteAccount() {
+    suspend fun deleteAccount(expectedOwner: String? = null) {
         val current = session()
+        val expectedGeneration = sessionMutationMutex.withLock {
+            check(mutableSession.value == current && (expectedOwner == null || current.user.id.equals(expectedOwner, ignoreCase = true))) {
+                "로그인 계정이 바뀌어 계정 삭제를 멈췄어요."
+            }
+            sessionGeneration
+        }
         http.json(
             request("/functions/v1/delete-account", "POST", buildJsonObject {}, current.accessToken)
         )
-        withContext(Dispatchers.IO) {
+        clearSession(expectedGeneration)
+    }
+
+    private suspend fun clearSession(expectedGeneration: Long) = withContext(Dispatchers.IO) {
+        sessionMutationMutex.withLock {
+            check(sessionGeneration == expectedGeneration) { "로그인 세션이 바뀌어 현재 계정의 기기 기록은 변경하지 않았어요." }
             storage.write(null)
             oauthStorage.write(null)
+            sessionGeneration++
+            mutableSession.value = null
         }
-        mutableSession.value = null
     }
 
     suspend fun updateIdentity(identity: ProfileIdentity) {
@@ -461,6 +488,85 @@ class BackendClient(
                 token = current.accessToken,
             )
         )
+    }
+
+    suspend fun accountTransport(expectedOwner: String): NativeAccountTransport {
+        val pinned = session()
+        require(pinned.user.id.lowercase() == expectedOwner && !pinned.user.isAnonymous) {
+            "로그인한 계정에서 Android 기록 백업을 사용할 수 있어요."
+        }
+        return object : NativeAccountTransport {
+            override fun checkOwner() {
+                check(mutableSession.value?.user?.id?.lowercase() == expectedOwner && mutableSession.value?.user?.isAnonymous == false) {
+                    "계정이 바뀌어 백업을 멈췄어요. 원래 계정의 기록은 보관되어 있어요."
+                }
+            }
+            private fun admitted(path: String, method: String = "GET", body: JsonElement? = null): Request {
+                checkOwner()
+                return request(path, method, body, pinned.accessToken)
+            }
+            override suspend fun fetch(): NativeRemoteArchive? {
+                val rows = http.json(admitted("/rest/v1/native_account_data?select=user_id,payload,revision&user_id=eq.$expectedOwner&limit=1")).jsonArray
+                checkOwner()
+                val row = rows.firstOrNull()?.jsonObject ?: return null
+                require(row.string("user_id").lowercase() == expectedOwner) { "다른 계정의 응답이어서 복원을 멈췄어요." }
+                val revision = row.getValue("revision").jsonPrimitive.long
+                require(revision > 0)
+                return NativeRemoteArchive(row.getValue("payload").jsonObject, revision)
+            }
+            override suspend fun downloadPhoto(filename: String): ByteArray = withContext(Dispatchers.IO) {
+                require(AndroidBackupContract.photoPattern.matches(filename))
+                http.newCall(admitted("/storage/v1/object/authenticated/native-dining-photos/$expectedOwner/$filename")).execute().use { response ->
+                    check(response.isSuccessful) { "사진 원본을 불러오지 못했어요. 기기 기록은 보존되어 있어요." }
+                    require((response.body?.contentLength() ?: 0) <= 6_291_456) { "사진 원본의 용량을 확인하지 못했어요." }
+                    val source = response.body?.byteStream() ?: error("사진 원본을 읽지 못했어요.")
+                    val output = java.io.ByteArrayOutputStream()
+                    val buffer = ByteArray(16_384)
+                    while (true) {
+                        val count = source.read(buffer)
+                        if (count < 0) break
+                        require(output.size() + count <= 6_291_456) { "사진 원본의 용량을 확인하지 못했어요." }
+                        output.write(buffer, 0, count)
+                    }
+                    val bytes = output.toByteArray()
+                    require(bytes.size in 4..6_291_456)
+                    checkOwner()
+                    bytes
+                }
+            }
+            override suspend fun uploadPhoto(filename: String, bytes: ByteArray) {
+                require(AndroidBackupContract.photoPattern.matches(filename) && bytes.size in 4..6_291_456)
+                val lease = http.json(admitted("/rest/v1/rpc/begin_account_media_upload", "POST", buildJsonObject {})).jsonPrimitive.content
+                try {
+                    val upload = admitted("/storage/v1/object/native-dining-photos/$expectedOwner/$filename")
+                        .newBuilder().post(bytes.toRequestBody("image/jpeg".toMediaType())).header("x-upsert", "false").build()
+                    try { http.json(upload) }
+                    catch (error: ApiException) {
+                        if (error.status !in listOf(400, 409)) throw error
+                        val existing = downloadPhoto(filename)
+                        require(existing.contentEquals(bytes)) { "같은 이름의 다른 사진이 있어 백업을 멈췄어요." }
+                    }
+                } finally {
+                    // Finish using the pinned credential, even after UI sign-out. No token is taken from a new owner.
+                    http.json(request("/rest/v1/rpc/finish_account_media_upload", "POST", buildJsonObject { put("upload_id", lease) }, pinned.accessToken))
+                }
+                checkOwner()
+            }
+            override suspend fun save(snapshot: JsonObject, expectedRevision: Long): Long {
+                val response = try {
+                    http.json(admitted("/rest/v1/rpc/save_native_account_data", "POST", buildJsonObject {
+                        put("p_user_id", expectedOwner); put("p_payload", snapshot); put("p_expected_revision", expectedRevision)
+                    }))
+                } catch (error: ApiException) {
+                    if (error.code == "40001") throw AccountBackupConflict()
+                    throw error
+                }
+                checkOwner()
+                val revision = response.jsonPrimitive.long
+                require(revision == expectedRevision + 1) { "백업 저장 결과를 확인하지 못했어요. 원본은 기기에 보존되어 있어요." }
+                return revision
+            }
+        }
     }
 
     companion object {

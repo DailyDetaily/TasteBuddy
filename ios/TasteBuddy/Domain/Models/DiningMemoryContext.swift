@@ -42,7 +42,7 @@ struct DiningMemoryCorrection: Codable, Equatable, Identifiable, Sendable {
     static func label(_ field: String) -> String {
         ["note": "회고", "restaurant": "식당", "restaurantID": "식당 연결", "menu": "메뉴", "menuItemID": "메뉴 연결",
          "sensorySelections": "감각 응답", "overallEvaluation": "음식 전체 평가", "mealTime": "식사 시점",
-         "observedAt": "저장된 날짜", "dishKindIDs": "음식 분류", "tasteExperienceIDs": "미각 선택", "detailTagIDs": "디테일 선택", "feedbackStatus": "기록 상태"][field] ?? field
+         "observedAt": "저장된 날짜", "foodSource": "음식 출처·요리 연결", "dishKindIDs": "음식 분류", "tasteExperienceIDs": "미각 선택", "detailTagIDs": "디테일 선택", "feedbackStatus": "기록 상태"][field] ?? field
     }
 }
 
@@ -57,7 +57,7 @@ extension DiningEntry {
             try JSONDecoder().decode(DiningSelectionJSON.self, from: JSONEncoder().encode(value))
         }
         return try ["restaurant": json(restaurant), "restaurantID": json(restaurantID), "menu": json(menu), "menuItemID": json(menuItemID),
-                    "note": json(note), "observedAt": json(observedAt), "mealTime": json(mealTime),
+                    "note": json(note), "observedAt": json(observedAt), "mealTime": json(mealTime), "foodSource": json(foodSource),
                     "sensorySelections": json(sensorySelections), "overallEvaluation": json(overallEvaluation),
                     "tasteExperienceIDs": json(tasteExperienceIDs), "detailTagIDs": json(detailTagIDs),
                     "dishKindIDs": json(dishKindIDs), "feedbackStatus": json(feedbackStatus)]
@@ -94,7 +94,7 @@ extension DiningEntry {
     }
 
     /// 다른 감각이나 메모만 수정했다고 이 응답을 다시 한 것으로 세지 않는다.
-    func knownAt(sourceField: String, phrase: String? = nil) -> Date? {
+    func knownAt(sourceField: String, phrase: String? = nil, selectionInstanceID: String? = nil) -> Date? {
         let key = sourceField.hasPrefix("sensorySelections:") ? "sensorySelections" : sourceField.hasPrefix("overallEvaluation:") ? "overallEvaluation" : sourceField
         func facet(_ value: DiningSelectionJSON?) -> DiningSelectionJSON? {
             if key == "note", let phrase, case .string(let note) = value {
@@ -110,7 +110,9 @@ extension DiningEntry {
             guard parts.count == 4, case .array(let selections) = value else { return value }
             let choice = selections.first { raw in
                 guard case .object(let fields) = raw else { return false }
-                return fields["type"] == .string(parts[1]) && fields["id"] == .string(parts[2])
+                guard fields["type"] == .string(parts[1]), fields["id"] == .string(parts[2]) else { return false }
+                guard let selectionInstanceID else { return true }
+                return fields["selectionInstanceID"] == .string(selectionInstanceID)
             }
             guard case .object(let fields) = choice else { return nil }
             if parts[3] == "selection" { return .object(fields.filter { !["liking", "intensity", "preferenceFit"].contains($0.key) }) }

@@ -1,0 +1,42 @@
+.pl-type-role-board { display: grid; margin: 24px 0; border: 1px solid var(--pl-line); border-radius: 12px; overflow: hidden; }
+.pl-type-role { display: grid; grid-template-columns: minmax(160px, .8fr) minmax(0, 1.4fr); align-items: center; gap: 24px; padding: 24px; }
+.pl-type-role + .pl-type-role { border-top: 1px solid var(--pl-line); }
+.pl-type-role-meta { display: grid; gap: 6px; min-width: 0; font-size: 12px; }
+.pl-type-role-meta h3 { margin: 0 0 3px; font-size: 15px; font-weight: 600; }
+.pl-type-role-meta code, .pl-type-role-meta span { color: var(--pl-sub); font-size: 11px; overflow-wrap: anywhere; }
+.pl-type-role-image { min-width: 0; }
+.pl-type-role-image img { display: block; width: 100%; height: auto; max-width: 390px; margin: auto; border-radius: 8px; }
+.pl-type-role-image small { display: block; margin-top: 8px; color: var(--pl-sub); font-size: 10px; text-align: right; }
+.pl-type-table { overflow-x: auto; border: 1px solid var(--pl-line); border-radius: 12px; margin: 24px 0; }
+.pl-type-table table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+.pl-type-table caption { padding: 16px; text-align: left; color: var(--pl-sub); }
+.pl-type-table th, .pl-type-table td { padding: 14px; white-space: nowrap; border-top: 1px solid var(--pl-line); }
+.pl-type-table td code { font-size: 11px; }
+.pl-type-usage-list { display: grid; gap: 44px; }
+.pl-type-usage > h3 { margin: 0 0 10px; font-size: 17px; font-weight: 600; }
+.pl-type-usage > p { color: var(--pl-sub); font-size: 13px; line-height: 1.8; }
+.pl-type-usage-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); gap: 24px; align-items: start; margin-top: 20px; }
+.pl-type-usage-layout figure { min-width: 0; margin: 0; }
+.pl-type-usage-layout img { display: block; width: 100%; height: auto; max-width: 390px; border-radius: 10px; }
+.pl-type-usage-layout figcaption { display: grid; gap: 5px; margin-top: 12px; font-size: 11px; color: var(--pl-sub); overflow-wrap: anywhere; }
+.pl-type-recipe-rows > div { display: grid; grid-template-columns: minmax(90px, .8fr) minmax(0, 1fr); gap: 5px 12px; padding: 13px 0; border-bottom: 1px solid var(--pl-line); font-size: 12px; }
+.pl-type-recipe-rows > div:first-child { padding-top: 0; }
+.pl-type-recipe-rows code, .pl-type-recipe-rows small { color: var(--pl-sub); font-size: 10px; overflow-wrap: anywhere; }
+.pl-type-recipe-rows small { grid-column: 1 / -1; line-height: 1.7; }
+.pl-type-sources { color: var(--pl-sub); font-size: 11px; }
+.pl-type-sources summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+.pl-type-sources p { overflow-wrap: anywhere; line-height: 1.8; }
+.pl-type-dynamic-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; margin: 24px 0; }
+.pl-type-dynamic-grid figure { min-width: 0; margin: 0; }
+.pl-type-dynamic-grid figcaption { display: grid; gap: 5px; min-height: 48px; margin-bottom: 12px; font-size: 13px; }
+.pl-type-dynamic-grid figcaption code, .pl-type-dynamic-grid small { color: var(--pl-sub); font-size: 10px; }
+.pl-type-dynamic-grid img { display: block; width: 100%; height: auto; border-radius: 8px; }
+.pl-type-dynamic-grid small { display: block; margin-top: 10px; line-height: 1.7; }
+.pl-type-wrap-rules { line-height: 1.9; color: var(--pl-sub); font-size: 13px; }
+.pl-type-fonts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.pl-type-fonts > div { display: grid; gap: 7px; padding: 20px; border: 1px solid var(--pl-line); border-radius: 10px; font-size: 13px; overflow-wrap: anywhere; }
+.pl-type-fonts span, .pl-type-fonts small { color: var(--pl-sub); font-size: 11px; }
+.pl-type-browser-preview { margin-top: 30px; }
+.pl-type-browser-preview > summary { padding: 14px 0; cursor: pointer; font-size: 13px; color: var(--pl-sub); }
+@media (max-width: 700px) { .pl-type-role { grid-template-columns: 1fr; gap: 16px; padding: 18px; } .pl-type-role-image img { margin-left: 0; } .pl-type-role-image small { text-align: left; } .pl-type-usage-layout { grid-template-columns: 1fr; } .pl-type-fonts { grid-template-columns: 1fr; } }
+@media (max-width: 540px) { .pl-type-dynamic-grid { grid-template-columns: 1fr; gap: 30px; } .pl-type-dynamic-grid img { max-width: 390px; } }

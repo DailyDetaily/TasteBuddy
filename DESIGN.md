@@ -1,4 +1,15 @@
-# Taste Buddy Design System
+# 플레이팅 · Plating
+
+Taste Buddy의 디자인 시스템 이름은 **플레이팅(Plating)**이다. 맛의 경험을 담고, 관계를 정돈하고, 의미가 드러나는 순간을 설계한다. 접시 위에서 재료의 위치·간격·순서가 하나의 경험을 만들듯, 화면의 정보·컴포넌트·움직임을 같은 기준으로 구성한다.
+
+- **Plating Foundations**: 색상, 글자, 간격, 형태, 레이어의 기본 값.
+- **Plating Brand Assets**: Remotion Studio에서 제작한 로고, 브랜드 그래픽, 키네틱 타이포, 이미지와 연출 자산.
+- **Plating Components**: 버튼, 칩, 카드, 시트 등 재사용하는 부품과 상태.
+- **Plating Motion**: 시간, 이징, 키프레임, 순서와 브랜드 연출의 규칙.
+
+공식 한글 표기는 `플레이팅`, 영문 표기는 `Plating`이다. `Quiet Hospitality Intelligence`는 기존 시각 방향으로 유지한다. 코드의 `TB*`, `--tb-*`, `/design-system` 경로는 호환성을 위해 유지하며, 이름 변경으로 기존 제품의 색상·형태·데이터 의미를 바꾸지 않는다. 표기 원본은 `src/constants/designTokens.ts`의 `DESIGN_SYSTEM`이다.
+
+현재 사이트·Figma v1의 범위, 실제 연결, 플랫폼 차이와 검증 근거는 [Plating v1](docs/design/plating-v1.md)에 정리한다. 사이트 영문 디스플레이는 Kalice, 한글·본문은 Pretendard를 사용한다. 홈은 라이트, 문서 화면은 다크이며 제품 프리뷰의 라이트 규격은 별도로 유지한다.
 
 ## 문서 목적
 
@@ -13,6 +24,24 @@
 
 1. Taste Buddy가 어떤 미감과 제품 톤을 유지해야 하는지 설명한다.
 2. 현재 프리뷰에 정리된 토큰, 컴포넌트, 규칙, 불일치 항목을 다시 문서화한다.
+
+## 재구축의 기준 자료
+
+플레이팅 재구축은 네이티브 제품, 기존 문서, Remotion의 BX 자산을 함께 읽는다. 각 자료는 아래 영역의 근거다.
+
+| 자료 | 담당하는 기준 |
+| --- | --- |
+| 현재 `ios/TasteBuddy/`와 [네이티브 디자인 시스템](ios/DESIGN_SYSTEM.md) | 실제 제품 UI, 사용자 흐름, 상태, 문구, 제스처와 피드백 |
+| 제품 경험 지침과 기존 디자인 시스템 문서 | 제품 의도, 브랜드 방향, 의미와 사용 규칙 |
+| [Remotion Studio 소스](brand-launch/README.md), `brand-launch/src/Root.tsx` 및 하위 컴포지션 | BX·브랜딩 에이전시 스타일로 제작한 브랜드 에셋, 조형, 구도, 타이포그래피, 연출과 시그니처 모션 |
+
+`brand-launch`는 로고·꽃잎, 키네틱 타이포, Taste Bloom, 카테고리 그래픽, 음식 이미지, 카드·그래프 연출 등을 포함하는 브랜드 자산 제작 공간이다. 전체 등록은 `Root.tsx`와 하위 등록 파일을 함께 확인하며, 재구축 조사에는 실제 Studio 재생과 대표 정지 프레임의 시각 검토도 포함한다.
+
+- Figma와 문서 사이트에는 **브랜드 에셋** 영역을 두고, 원본·사용 목적·조형 및 구도·색과 타이포·모션 규칙·예시를 연결한다.
+- 브랜드용 디스플레이 타이포와 구도, 영상의 연출 시간은 해당 매체의 기준으로 보존한다. 제품 UI에 적용할 때는 읽기, 사용 빈도, 응답성, 접근성을 확인해 파생 규칙을 기록한다.
+- 에셋마다 원본 경로, 컴포지션 ID, 비율·해상도·fps·길이, 조절 가능한 속성, Figma·제품·사이트의 사용처를 추적한다.
+- 현재 등록, 비교·실험, 보관, 제품 적용 여부를 구분한다. Studio 등록이나 렌더 파일의 존재만으로 최종 채택·네이티브 적용·검증 완료를 판단하지 않는다.
+- BX 기획과 채택 근거는 `output/branding/tasks.json` 및 관련 산출물을 함께 확인한다. 원본과 변형의 관계를 남기고 기존 자산을 보존한다.
 
 ---
 
@@ -494,10 +523,14 @@ warmth는 taste palette보다 앞에 나오면 안 된다.
 
 ## 모션, 아이콘, 데이터 시각화
 
+**Plating Motion**의 역할·키프레임·사용처·구현 목록은 [플레이팅 모션 시스템](docs/design/motion-system.md)에서 관리한다. 웹 키프레임 원본은 `src/constants/platingMotion.ts`이고 CSS는 `npm run design:motion`으로 생성한다. `/design-system#motion`에서 재생·일시정지·탐색·동작 줄이기를 확인한다. iOS 공통 스프링과 Remotion 시퀀스는 같은 역할 언어를 공유하되 각각의 모델을 유지한다.
+
 ### Motion Tokens
 
 | Token | Value |
 | --- | --- |
+| `--tb-motion-duration-press` | `120ms` |
+| `--tb-motion-stagger` | `60ms` |
 | `--tb-motion-duration-fast` | `180ms` |
 | `--tb-motion-duration-normal` | `300ms` |
 | `--tb-motion-duration-medium` | `500ms` |
@@ -524,7 +557,9 @@ Scale:
 
 - 대부분의 인터랙션 피드백은 `180ms` 에서 `300ms`
 - 화면 전환이나 큰 shell 변화는 `500ms` 에서 `620ms`
-- bounce는 쓰지 않는다
+- 웹 일반 UI는 단조로운 이징을 기본으로 한다. iOS의 작은 스프링 봉우리와 결과 카드·소스 스플래터처럼 명시된 연출은 [모션 계약](docs/design/motion-system.md)을 따른다.
+- 원본 키프레임에 이징을 한 번만 적용하며, 이미 계산한 타임라인 전체를 다시 이징하지 않는다.
+- 동작 줄이기는 이동·블러·스태거를 생략하고 동일한 최종 상태를 즉시 제공한다.
 - 반복 애니메이션은 device state나 taste activity를 설명할 때만 허용
 
 ### Icon Rules

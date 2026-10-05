@@ -1,6 +1,5 @@
+import SocialActions from "../system/plating/SocialActions";
 import {
-  Heart,
-  MessageCircle,
   MoreHorizontal,
   Pencil,
   Send,
@@ -927,41 +926,12 @@ export default function DishFeedbackCard({
       <DiningNotePreview summary={card.synthesisSummary} />
 
       <div className="flex w-full items-center gap-2 border-t border-[rgba(15,15,15,0.08)] pt-[12px]">
-        <button
-          type="button"
-          aria-label={isLiked ? '좋아요 취소' : '좋아요'}
-          aria-pressed={isLiked}
-          className={`flex size-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-muted)] ${
-            isLiked ? 'text-[var(--tb-user-accent-main)]' : 'text-[var(--tb-color-text-muted)]'
-          }`}
-          onClick={handleLikeClick}
-        >
-          <Heart
-            fill={isLiked ? 'currentColor' : 'none'}
-            size={ICON_TOKENS.size.md}
-            strokeWidth={ICON_TOKENS.strokeWidth.regular}
-          />
-        </button>
-        <button
-          type="button"
-          aria-label="댓글"
-          className={`flex size-8 items-center justify-center rounded-full transition-colors hover:bg-[var(--tb-color-surface-muted)] ${
-            commentCount > 0
-              ? 'text-[var(--tb-color-text-primary)]'
-              : 'text-[var(--tb-color-text-muted)]'
-          }`}
-          onClick={handleCommentClick}
-        >
-          <MessageCircle size={ICON_TOKENS.size.md} strokeWidth={ICON_TOKENS.strokeWidth.regular} />
-        </button>
-        <button
-          type="button"
-          aria-label="공유"
-          className="flex size-8 items-center justify-center rounded-full text-[var(--tb-color-text-muted)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
-          onClick={handleShareClick}
-        >
-          <Send size={ICON_TOKENS.size.md} strokeWidth={ICON_TOKENS.strokeWidth.regular} />
-        </button>
+        <SocialActions
+          isLiked={isLiked}
+          onLike={handleLikeClick}
+          onComment={handleCommentClick}
+          onShare={handleShareClick}
+        />
         <span className="ml-auto shrink-0 whitespace-nowrap text-right text-[11px] font-normal text-[var(--tb-color-text-muted)]">
           {card.absoluteDateLabel}
         </span>

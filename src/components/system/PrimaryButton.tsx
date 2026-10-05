@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
+import { forwardRef, type ButtonHTMLAttributes } from 'react';
 
 import { cn } from '../ui/utils';
 
@@ -8,7 +8,7 @@ interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   visualDisabled?: boolean;
 }
 
-export default function PrimaryButton({
+const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(function PrimaryButton({
   children,
   className,
   disabled = false,
@@ -17,9 +17,10 @@ export default function PrimaryButton({
   type = 'button',
   visualDisabled = false,
   ...props
-}: PrimaryButtonProps) {
+}, ref) {
   return (
     <button
+      ref={ref}
       type={type}
       disabled={disabled}
       className={cn(
@@ -34,4 +35,6 @@ export default function PrimaryButton({
       {children}
     </button>
   );
-}
+});
+
+export default PrimaryButton;

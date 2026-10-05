@@ -158,7 +158,7 @@ A row cannot be marked Complete when the native screen is only functionally equi
 | `EmptyState` | `EmptyState` | centered 48x24pt padding block, optional 32pt icon container, 16pt title, 13pt description, compact CTA | Complete; Home search no-result state now uses it |
 | `HospitalityEmptyState` | `HospitalityEmptyState` | momentum-oriented empty state with interpretation icon and optional CTA | Complete for file-preview catalog |
 | `TasteProfileAvatar`, `PalateSignatureAvatar`, `PalateOrbAvatar` | same SwiftUI names | profile gradient avatar, halo signature, segmented orb avatar | Complete for design-system catalog |
-| `PalateBloomAvatar` | `PalateBloomAvatar` | React-equivalent FNV-1a profile fallback, shape-seeded petals/stars/core, image fallback, 32pt and 64pt simulator verification | Complete |
+| `PalateBloomAvatar` | `PalateBloomAvatar` | React-equivalent FNV-1a profile fallback, shape-seeded petals/stamens/pistil, image fallback, 32pt and 64pt simulator verification | Complete |
 | `TopAppBar` | `TopAppBar` | 32pt bloom/back mode, optional centered title, 40pt actions, unread badge, measurement/search switch, typed right actions | Complete |
 | `BottomTabBar` | `BottomTabBar` | four-tab order, custom Home/Analysis paths, Lucide 24pt icons, 10pt labels, selected semantics | Complete |
 | `ProfileConfidenceCard` | `ProfileConfidenceCard` | three stages and copy, measurement age/count, strongest/weakest axis, stale state | Complete |

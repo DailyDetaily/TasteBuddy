@@ -1,8 +1,10 @@
-# AI Design System Guide
+# 플레이팅 · AI Design System Guide
 
-이 문서는 다른 AI 에이전트와 새 기여자가 Taste Buddy의 디자인 시스템을 가장 빠르게 파악하기 위한 진입 문서다.
+이 문서는 다른 AI 에이전트와 새 기여자가 Taste Buddy의 디자인 시스템 **플레이팅(Plating)**을 가장 빠르게 파악하기 위한 진입 문서다. 모션 영역의 이름은 **Plating Motion**이다. `TB*`·`--tb-*`는 기존 코드 식별자로 유지한다.
 
 긴 문서 전체를 바로 읽기 전에, 이 파일로 먼저 "무엇이 진짜 기준인지", "무슨 용어를 써야 하는지", "어떤 조합을 반복해야 하는지"를 잡는다.
+
+현재 사이트와 전용 Figma 라이브러리의 범위·연결·한계는 [Plating v1](design/plating-v1.md)을 확인한다. 새 문서 사이트의 카탈로그는 `src/plating/catalog.ts`, 실제 Figma 노드 대응은 `src/plating/figma-map.json`이다. 기존 프리뷰 인벤토리는 별도 호환 자료로 유지한다.
 
 ## Read Order
 
@@ -14,6 +16,10 @@
 4. CSS 변수 미러: [`../src/styles/design-system.css`](../src/styles/design-system.css)
 5. 프리뷰 인벤토리와 상태: [`../src/components/design-system/inventory.ts`](../src/components/design-system/inventory.ts)
 6. 컴포넌트 스타일 스냅샷: [`../src/components/design-system/componentStyleSpecs.ts`](../src/components/design-system/componentStyleSpecs.ts)
+
+모션을 다룰 때는 [Plating Motion](design/motion-system.md)과 [`platingMotion.ts`](../src/constants/platingMotion.ts)를 추가로 읽는다. 웹 CSS 키프레임은 직접 중복 작성하지 않고 `npm run design:motion`으로 생성한다. iOS는 `TasteBloomMotion` 또는 같은 타입의 별칭 `PlatingMotion`을 사용한다. Remotion 독립 연출의 물리식·타이밍은 원본 소스가 기준이다.
+
+플레이팅을 재구축할 때는 [Remotion BX·브랜드 에셋 스튜디오](../brand-launch/README.md)도 반드시 조사한다. 현재 등록은 `brand-launch/src/Root.tsx`와 하위 컴포지션 등록 파일에서 찾고, Studio 재생·대표 프레임을 확인한다. 여기서 만든 로고, 조형, 구도, 키네틱 타이포, 그래픽, 이미지와 브랜드 모션을 Figma 및 문서 사이트의 **브랜드 에셋** 영역에 연결한다. 소스 열람, 시각 검토, 최종 채택, 제품 적용 상태는 각각 구분한다.
 
 ## Fast Mental Model
 
@@ -42,6 +48,8 @@ Taste Buddy의 최우선 목표는 사용자의 취향을 이해하고 다양한
 2. 시각 규칙과 해석: [`../DESIGN.md`](../DESIGN.md)
 3. 실제 토큰 값: [`../src/constants/designTokens.ts`](../src/constants/designTokens.ts), [`../src/styles/design-system.css`](../src/styles/design-system.css)
 4. 프리뷰 인벤토리와 감사 메모: [`../src/components/design-system/inventory.ts`](../src/components/design-system/inventory.ts)
+
+위 목록의 웹 구현 기준과 별도로, **제품 UI·UX는 현재 네이티브 구현**, **BX·브랜드 표현은 Remotion 제작 원본과 관련 브랜드 문서**를 근거로 삼는다. 브랜드 연출을 제품 피드백으로 확장할 때는 사용 목적·시간·접근성에 맞춘 파생 규칙을 남긴다. 영역별 자료가 다르면 현재 구현과 설계 의도를 함께 기록하고 기준을 정한다.
 
 토큰 값을 바꿀 때 `DESIGN.md`만 바꾸면 안 되고, 해당 플랫폼의 구현 토큰도 함께 바꿔야 한다. iOS의 현재 값은 `ios/TasteBuddy/DesignSystem/TBTheme.swift`, 미각 팔레트는 `ios/TasteBuddy/Models/TasteModels.swift`다. 네이티브만 수정할 때 웹 토큰을 자동으로 변경하지 않는다. 플랫폼별 현재 차이는 [iOS 디자인 시스템](../ios/DESIGN_SYSTEM.md)에 기록한다.
 

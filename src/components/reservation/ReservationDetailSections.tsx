@@ -28,7 +28,7 @@ import TasteChip from '../system/TasteChip';
 import { reservationStatusConfig } from './reservationStatusConfig';
 
 const wrapIcon = (IconComponent: React.ElementType) => {
-  return ({ size, style, className, ...props }: any) => (
+  return ({ size, fontSize, style, className, ...props }: any) => (
     <IconComponent
       {...props}
       className={className}

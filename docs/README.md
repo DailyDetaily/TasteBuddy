@@ -14,6 +14,9 @@ The important thing to know is that some of the most important docs live at the 
 - Visual design system: [`../DESIGN.md`](../DESIGN.md)
 - Product UX guideline: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
 - AI-friendly design system guide: [`AI_DESIGN_SYSTEM.md`](./AI_DESIGN_SYSTEM.md)
+- Plating site and Figma v1 delivery: [`design/plating-v1.md`](./design/plating-v1.md)
+- Plating / Montage component coverage audit: [`design/plating-component-coverage.md`](./design/plating-component-coverage.md)
+- SEED / Montage / Plating role comparison: [`design/plating-seed-coverage.md`](./design/plating-seed-coverage.md)
 - Machine-readable design snapshot: [`design-system.snapshot.json`](./design-system.snapshot.json)
 - App/service summary: [`TASTE_BUDDY_APP_SUMMARY.md`](./TASTE_BUDDY_APP_SUMMARY.md)
 
@@ -51,6 +54,7 @@ The important thing to know is that some of the most important docs live at the 
 
 ### Design
 
+- Motion system and inventory: [`design/motion-system.md`](./design/motion-system.md)
 - AI entry guide: [`AI_DESIGN_SYSTEM.md`](./AI_DESIGN_SYSTEM.md)
 - Machine-readable snapshot: [`design-system.snapshot.json`](./design-system.snapshot.json)
 - Design note: [`design/analysis-page-direction-replan.md`](./design/analysis-page-direction-replan.md)
@@ -69,6 +73,8 @@ The important thing to know is that some of the most important docs live at the 
 - Supabase setup: [`operations/supabase-connect-and-seed.md`](./operations/supabase-connect-and-seed.md)
 - Cloudflare R2 media storage: [`operations/cloudflare-r2-media-storage.md`](./operations/cloudflare-r2-media-storage.md)
 - Native photo performance: [`operations/native-photo-performance.md`](./operations/native-photo-performance.md)
+- Record backup and restore release manifest: [`operations/record-sync-release-20261002.md`](./operations/record-sync-release-20261002.md)
+- Record, analysis, sync and restore validation: [`qa/record-sync-release-20261002.md`](./qa/record-sync-release-20261002.md)
 
 ## Notes
 

@@ -1,0 +1,9 @@
+.tb-chip-group { position: relative; min-width: 0; width: 100%; }
+.tb-chip-group-items { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tb-chip-group-items.is-collapsed { flex-wrap: nowrap; }
+.tb-chip-group-add, .tb-chip-group-more { display: flex; min-width: 0; flex-shrink: 0; max-width: 100%; }
+.tb-chip-group-add { max-width: min(220px, calc(100% - 64px)); }
+.tb-chip-group-empty { margin: 0; color: var(--tb-color-text-body); font-size: 12px; }
+.tb-chip-group-measure-clip { position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden; pointer-events: none; }
+.tb-chip-group-measures { display: flex; width: max-content; }
+.tb-chip-group-measures > span { display: inline-flex; flex-shrink: 0; }

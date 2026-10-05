@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
@@ -59,7 +60,7 @@ fun TastePerceptionCards(vm: AppViewModel) {
     fun dateLabel(value: Long) = formatter.format(Instant.ofEpochMilli(value))
     val periodLabel = if (dates.isEmpty()) { if (showPrevious) "이전 기록" else "최근 기록" }
         else if (dateLabel(dates.min()) == dateLabel(dates.max())) dateLabel(dates.min()) else "${dateLabel(dates.min())} – ${dateLabel(dates.max())}"
-    Section("맛을 느끼는 경향") {
+    Section("감각 패턴") {
         CardBox(Modifier.testTag("taste-perception-radar")) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 IconButton({ showPrevious = true }, enabled = !showPrevious && hasPrevious) { Icon(Icons.Outlined.KeyboardArrowRight, "이전 기간 보기", Modifier.rotate(180f)) }
@@ -92,9 +93,6 @@ fun TastePerceptionCards(vm: AppViewModel) {
             Text(model.changes.firstOrNull()?.let { "${it.axis.label}을 느낀 강도가 달라졌어요" }
                 ?: if (surveyChanges.isNotEmpty()) "기준 음식에서 기억한 강도가 달라졌어요" else "아직 변화없음", style = MaterialTheme.typography.titleMedium)
             if (!hasComparison) TasteChangeEmptySummary()
-            Text(model.changes.firstOrNull()?.let { "${it.conditionLabel} · 이전 ${it.previous.mealIDs.size}번과 최근 ${it.recent.mealIDs.size}번의 식사" }
-                ?: if (surveyChanges.isNotEmpty()) "같은 음식·조건·척도로 남긴 이전·최근 회상 응답을 비교했어요."
-                else if (hasComparison) "비교한 기록에서는 같은 강도로 남겼어요." else "비교할 기록이 더 필요해요.", color = TB.body)
             TextButton({ vm.open("tasteChange") }) { Text("기록 비교") }
         }
         CardBox {
@@ -190,11 +188,14 @@ private fun PerceptionRadar(values: Map<TasteAxis, Float>, maximum: Float, refer
                 val angle = Math.PI / 3 * index - Math.PI / 2 - Math.PI / 6
                 return center + Offset((cos(angle) * radius * factor).toFloat(), (sin(angle) * radius * factor).toFloat())
             }
+            val gridColor = Color(0xFFF8F8F8)
             listOf(.25f, .5f, .75f, 1f).forEach { level ->
                 val path = Path().apply { axes.indices.forEach { index -> val p = point(index, level * 100); if (index == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y) }; close() }
-                drawPath(path, Color(0xFFF3F3F3), style = Stroke(factor))
+                drawPath(path, gridColor, style = Stroke(factor, pathEffect = PathEffect.cornerPathEffect(8f * factor)))
             }
-            listOf(0 to 3, 1 to 4, 2 to 5).forEach { (a, b) -> drawLine(Color(0xFFF3F3F3), point(a, 100f), point(b, 100f), factor) }
+            // 둥근 정육각형 모서리의 중점까지 방사형 가이드를 줄인다.
+            val guideRadius = 100f - 8f / 4f
+            listOf(0 to 3, 1 to 4, 2 to 5).forEach { (a, b) -> drawLine(gridColor, point(a, guideRadius), point(b, guideRadius), factor) }
             if (reference.size == axes.size) {
                 val path = Path().apply { axes.forEachIndexed { index, axis -> val p = point(index, reference.getValue(axis) / maximum * 100f); if (index == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y) }; close() }
                 drawPath(path, Color(0xFFD0D0D0), style = Stroke(1.5f * factor))

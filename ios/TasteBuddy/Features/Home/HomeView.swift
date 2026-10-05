@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum HomeRecommendationContentState: Equatable {
     case populated
@@ -132,6 +133,7 @@ struct HomeView: View {
                             socialArchiveContent
                         }
                     }
+                    .platingLayoutFrame("content")
                     .padding(.horizontal, TBSpacing.page)
                     .padding(.top, TBSpacing.pageTop)
                     .padding(.bottom, TBSpacing.mainTabContentBottom)
@@ -379,6 +381,7 @@ struct HomeSearchSheet: View {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @State private var query: String
     @State private var recentSearches: [String]
     @State private var recordedResultIDs: Set<String> = []
@@ -387,9 +390,14 @@ struct HomeSearchSheet: View {
     @State private var friendResults: [HomeSearchResultItem] = []
     @State private var kakaoPhase: HomeSearchAsyncPhase = .idle
     @State private var friendPhase: HomeSearchAsyncPhase = .idle
-    @State private var searchesPersonalMemory = true
+    @State private var searchesPersonalMemory = false
     @State private var pendingPersonalQuery: String?
+    @State private var selectedRecommendation: HomeSearchRecommendationIntent?
+    @State private var recommendationMessage: String?
+    @State private var recommendationReferenceDate: Date
     private let repository: any HomeSearchRepository
+    private let recommendationCatalog: HomeSearchRecommendationCatalog
+    private let recommendationNow: () -> Date
     private let placeholder: String
     private let scope: HomeSearchScope
     private let onCloseRequest: (() -> Void)?
@@ -402,6 +410,8 @@ struct HomeSearchSheet: View {
         placeholder: String = "레스토랑, 메뉴, 셰프, 버디 검색",
         scope: HomeSearchScope = .all,
         repository: any HomeSearchRepository = LiveHomeSearchRepository(),
+        recommendationCatalog: HomeSearchRecommendationCatalog = .bundled,
+        recommendationNow: @escaping () -> Date = Date.init,
         onCloseRequest: (() -> Void)? = nil,
         onOpenRoute: ((AppRoute) -> Void)? = nil,
         onOpenBookmarkSheet: ((RestaurantSummary) -> Void)? = nil,
@@ -409,7 +419,10 @@ struct HomeSearchSheet: View {
     ) {
         _query = State(initialValue: initialQuery)
         _recentSearches = State(initialValue: HomeSearchEngine.loadRecentSearches())
+        _recommendationReferenceDate = State(initialValue: recommendationNow())
         self.repository = repository
+        self.recommendationCatalog = recommendationCatalog
+        self.recommendationNow = recommendationNow
         self.placeholder = placeholder
         self.scope = scope
         self.onCloseRequest = onCloseRequest
@@ -426,20 +439,20 @@ struct HomeSearchSheet: View {
             onClose: closeSearch
         ) {
             VStack(alignment: .leading, spacing: TBSpacing.x16) {
-                if scope.allowsRestaurantResults {
+                if let recommendationMessage {
+                    Text(recommendationMessage)
+                        .font(TBFont.regular(12)).foregroundStyle(TBColor.textSubtle)
+                        .accessibilityIdentifier("search-recommendation-update")
+                }
+                if scope.allowsRestaurantResults && searchesPersonalMemory {
                     Picker("검색 범위", selection: $searchesPersonalMemory) {
                         Text("내 기록").tag(true)
                         Text("공개 장소·버디").tag(false)
                     }.pickerStyle(.segmented)
-                        .onChange(of: searchesPersonalMemory) { _, _ in
-                            query = pendingPersonalQuery ?? ""
-                            pendingPersonalQuery = nil
-                            resetRemoteSearch()
-                        }
                 }
                 if scope.allowsRestaurantResults && searchesPersonalMemory {
                     FoodMemoryResultsView(query: query)
-                } else if scope.allowsRestaurantResults && FoodMemoryPrivacy.isPersonalQuery(query) {
+                } else if selectedRecommendation == nil && scope.allowsRestaurantResults && FoodMemoryPrivacy.isPersonalQuery(query) {
                     Text("개인 경험을 찾는 문장이에요. ‘내 기록’에서 검색해 주세요. 외부로 전송하지 않았어요.")
                         .font(TBFont.regular(14)).foregroundStyle(TBColor.textSecondary)
                     Button("내 기록에서 찾기") {
@@ -471,16 +484,135 @@ struct HomeSearchSheet: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .onChange(of: searchesPersonalMemory) { _, _ in
+                selectedRecommendation = nil
+                recommendationMessage = nil
+                query = pendingPersonalQuery ?? ""
+                pendingPersonalQuery = nil
+                resetRemoteSearch()
+            }
             .tasteBloomMotion(.content, value: trimmedQuery.isEmpty)
             .tasteBloomMotion(.content, value: filteredSections.isEmpty)
         }
         .sheet(item: $bookmarkTarget) { restaurant in
             RestaurantBookmarkNativeSheet(restaurant: restaurant)
         }
-        .task(id: trimmedQuery + "|" + String(searchesPersonalMemory) + appModel.memoryGeneration.uuidString) {
+        .task(id: trimmedQuery + "|" + String(searchesPersonalMemory) + appModel.memoryGeneration.uuidString + (selectedRecommendation?.id ?? "")) {
             await refreshRemoteSearch(for: trimmedQuery)
         }
-        .onChange(of: appModel.memoryAccountGeneration) { _, _ in query = ""; resetRemoteSearch() }
+        .task(id: selectedRecommendation) {
+            guard let intent = selectedRecommendation else { return }
+            let delay = max(0, intent.expiresAt.timeIntervalSince(recommendationNow()))
+            try? await Task.sleep(nanoseconds: UInt64(min(delay, HomeSearchRecommendationEngine.intentLifetime) * 1_000_000_000))
+            guard !Task.isCancelled, selectedRecommendation == intent else { return }
+            invalidateRecommendation(message: "추천 정보를 다시 확인해 주세요.")
+        }
+        .onChange(of: query) { _, value in
+            if let selectedRecommendation, value != selectedRecommendation.label {
+                self.selectedRecommendation = nil
+                recommendationMessage = nil
+                resetRemoteSearch()
+            }
+        }
+        .onChange(of: appModel.memoryGeneration) { _, _ in
+            invalidateRecommendationIfSelected()
+        }
+        .onChange(of: appModel.sensoryAnalysisIsUpdating) { _, _ in
+            invalidateRecommendationIfSelected()
+        }
+        .onChange(of: appModel.sensoryAnalysisError) { _, _ in
+            invalidateRecommendationIfSelected()
+        }
+        .onChange(of: appModel.memoryAccountGeneration) { _, _ in
+            selectedRecommendation = nil
+            recommendationMessage = nil
+            recommendationReferenceDate = recommendationNow()
+            query = ""
+            resetRemoteSearch()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            recommendationReferenceDate = recommendationNow()
+            if let selectedRecommendation,
+               HomeSearchRecommendationEngine.execute(
+                selectedRecommendation, catalog: recommendationCatalog,
+                context: recommendationContext, savedPlaces: recommendationSavedPlaces,
+                now: recommendationNow()
+               ).status == .stale {
+                invalidateRecommendation(message: "추천 정보를 다시 확인해 주세요.")
+            }
+        }
+    }
+
+    private var recommendationContext: HomeSearchRecommendationContext {
+        .init(accountGeneration: appModel.memoryAccountGeneration,
+              evidenceGeneration: appModel.memoryGeneration, profileUserID: "local-owner",
+              analysisReady: !appModel.sensoryAnalysisIsUpdating && appModel.sensoryAnalysisError == nil)
+    }
+
+    private var recommendationSavedPlaces: [HomeSearchRecommendationSavedPlace] {
+        let bookmarks = appModel.restaurantBookmarks.map {
+            HomeSearchRecommendationSavedPlace(id: $0.restaurantID, name: $0.restaurantName)
+        }
+        let knownIDs = Set(bookmarks.map(\.id))
+        let legacy = RestaurantCatalog.restaurants.filter {
+            appModel.savedRestaurantIDs.contains($0.id) && !knownIDs.contains($0.id)
+        }.map { HomeSearchRecommendationSavedPlace(id: $0.id, name: $0.name) }
+        return bookmarks + legacy
+    }
+
+    private var searchRecommendations: [HomeSearchRecommendationIntent] {
+        HomeSearchRecommendationEngine.suggestions(
+            catalog: recommendationCatalog, profile: appModel.sensoryAnalysis.personalModel,
+            context: recommendationContext, savedPlaces: recommendationSavedPlaces,
+            now: recommendationReferenceDate
+        )
+    }
+
+    private var recommendationExecution: HomeSearchRecommendationExecution? {
+        guard let selectedRecommendation, scope.allowsRestaurantResults, !searchesPersonalMemory else { return nil }
+        return HomeSearchRecommendationEngine.execute(
+            selectedRecommendation, catalog: recommendationCatalog,
+            context: recommendationContext, savedPlaces: recommendationSavedPlaces,
+            now: recommendationNow()
+        )
+    }
+
+    private func selectRecommendation(_ intent: HomeSearchRecommendationIntent) {
+        recommendationReferenceDate = recommendationNow()
+        guard let fresh = searchRecommendations.first(where: { $0.id == intent.id }) else {
+            invalidateRecommendation(message: "추천 정보가 바뀌었어요. 다시 골라 주세요.")
+            return
+        }
+        resetRemoteSearch()
+        recommendationMessage = nil
+        selectedRecommendation = fresh
+        query = fresh.label
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        // The display label is not a free-text query or an entry in external/recent-search history.
+    }
+
+    private func invalidateRecommendation(message: String?) {
+        selectedRecommendation = nil
+        recommendationMessage = message
+        recommendationReferenceDate = recommendationNow()
+        query = ""
+        resetRemoteSearch()
+    }
+
+    private func invalidateRecommendationIfSelected() {
+        recommendationReferenceDate = recommendationNow()
+        if selectedRecommendation != nil {
+            invalidateRecommendation(message: "기록이 바뀌어 추천을 새로 준비했어요.")
+        }
+    }
+
+    private func findRecommendedRestaurant(_ name: String) {
+        selectedRecommendation = nil
+        recommendationMessage = nil
+        resetRemoteSearch()
+        query = name
+        commitRecentSearch(name)
     }
 
     private var searchResults: some View {
@@ -513,6 +645,7 @@ struct HomeSearchSheet: View {
                                 isBookmarked: item.bookmarkRestaurantID.map {
                                     appModel.isRestaurantSaved(id: $0)
                                 } ?? false,
+                                allowsRecordActions: selectedRecommendation == nil,
                                 onSelectResult: openResult,
                                 onRecordResult: recordResult,
                                 onBookmarkResult: toggleBookmark
@@ -532,7 +665,10 @@ struct HomeSearchSheet: View {
     }
 
     private var filteredSections: [HomeSearchResultSection] {
-        HomeSearchEngine.mergedSections(
+        if let recommendationExecution {
+            return recommendationExecution.searchSections.filter { scope.includes(section: $0) }
+        }
+        return HomeSearchEngine.mergedSections(
             matching: query,
             localSections: localSections,
             kakaoResults: scope.allowsRestaurantResults ? kakaoResults : [],
@@ -571,7 +707,10 @@ struct HomeSearchSheet: View {
     }
 
     private var resultSummaryLabel: String {
-        switch scope {
+        if selectedRecommendation != nil {
+            return filteredSections.map(\.title).joined(separator: " · ")
+        }
+        return switch scope {
         case .all:
             "레스토랑 · 버디 함께 정렬"
         case .friendsOnly:
@@ -580,7 +719,10 @@ struct HomeSearchSheet: View {
     }
 
     private var emptyStateDescription: String {
-        switch scope {
+        if selectedRecommendation != nil {
+            return "이 조건에 맞는 결과가 없어요. 검색어를 바꾸거나 추천 탐색에서 다시 선택해 보세요."
+        }
+        return switch scope {
         case .all:
             "레스토랑 이름, 셰프 이름, 코스명, 버디 이름이나 버디네임으로 다시 시도해보세요. 추천 탐색 키워드로 시작해도 좋아요."
         case .friendsOnly:
@@ -617,31 +759,44 @@ struct HomeSearchSheet: View {
 
             SearchSuggestionSection {
                 VStack(alignment: .leading, spacing: SearchSuggestionMetrics.titleDescriptionGap) {
-                    SearchSuggestionTitle(scope.suggestionTitle)
-                    Text(scope.suggestionDescription)
+                    SearchSuggestionTitle(scope.allowsRestaurantResults ? "추천 탐색" : scope.suggestionTitle)
+                    Text(scope.allowsRestaurantResults ? "기록과 연결되는 음식과 저장한 식당을 살펴보세요." : scope.suggestionDescription)
                         .font(TBFont.regular(12))
                         .foregroundStyle(TBColor.textSubtle)
                         .lineSpacing(3)
                 }
             } chips: {
-                ForEach(scope.suggestedQueries) { suggestion in
-                    Button {
-                        selectSuggestion(suggestion.label)
-                    } label: {
-                        SearchSuggestionChip(label: suggestion.label)
+                if scope.allowsRestaurantResults {
+                    ForEach(searchRecommendations) { suggestion in
+                        SearchSuggestionChip(label: suggestion.label, onSelect: { selectRecommendation(suggestion) })
+                            .accessibilityHint(suggestion.reason)
+                            .accessibilityIdentifier("search-recommendation-chip-\(suggestion.basis.rawValue)")
                     }
-                    .buttonStyle(.plain)
+                    if searchRecommendations.isEmpty {
+                        Text("음식이나 식당 이름으로 탐색을 시작해 보세요.")
+                            .font(TBFont.regular(12)).foregroundStyle(TBColor.textSubtle)
+                    }
+                } else {
+                    ForEach(scope.suggestedQueries) { suggestion in
+                        SearchSuggestionChip(label: suggestion.label, onSelect: { selectSuggestion(suggestion.label) })
+                    }
                 }
             }
         }
     }
 
     private func selectSuggestion(_ value: String) {
+        selectedRecommendation = nil
+        recommendationMessage = nil
         query = value
         commitRecentSearch(value)
     }
 
     private func submitSearch() {
+        if selectedRecommendation != nil {
+            if let firstResult = visibleItems.first { openResult(firstResult) }
+            return
+        }
         guard !(scope.allowsRestaurantResults && searchesPersonalMemory), !FoodMemoryPrivacy.isPersonalQuery(query) else { return }
         guard !trimmedQuery.isEmpty else {
             return
@@ -656,6 +811,14 @@ struct HomeSearchSheet: View {
     }
 
     private func openResult(_ item: HomeSearchResultItem) {
+        if selectedRecommendation != nil {
+            guard let restaurantQuery = recommendationExecution?.restaurantQuery(forResultID: item.id) else {
+                invalidateRecommendation(message: "추천 정보가 바뀌었어요. 다시 골라 주세요.")
+                return
+            }
+            findRecommendedRestaurant(restaurantQuery)
+            return
+        }
         commitRecentSearch(HomeSearchEngine.recentSearchValue(for: item, query: trimmedQuery))
 
         if let route = item.route {
@@ -710,6 +873,7 @@ struct HomeSearchSheet: View {
 
     @MainActor
     private func refreshRemoteSearch(for rawQuery: String) async {
+        guard selectedRecommendation == nil else { resetRemoteSearch(); return }
         guard !(scope.allowsRestaurantResults && searchesPersonalMemory), !FoodMemoryPrivacy.isPersonalQuery(rawQuery) else {
             resetRemoteSearch(); return
         }
@@ -898,6 +1062,7 @@ private struct SearchResultRow: View {
     let item: HomeSearchResultItem
     let isRecorded: Bool
     let isBookmarked: Bool
+    var allowsRecordActions = true
     let onSelectResult: (HomeSearchResultItem) -> Void
     let onRecordResult: (HomeSearchResultItem) -> Void
     let onBookmarkResult: (HomeSearchResultItem) -> Void
@@ -911,32 +1076,13 @@ private struct SearchResultRow: View {
         ) {
             SearchResultMedia(item: item)
         } actions: {
-            HStack(spacing: CompactCardMetrics.actionGap) {
-                if item.supportsDiningRecordAction {
-                    CompactCardIconActionButton(
-                        symbol: isRecorded ? .circleCheck : .circlePlus,
-                        isActive: isRecorded,
-                        accessibilityLabel: isRecorded ? "내 기록에 추가됨" : "내 기록에 추가",
-                        actionButtonSize: SearchResultCompactCardMetrics.actionButtonSize,
-                        actionIconSize: SearchResultCompactCardMetrics.actionIconSize,
-                        action: { onRecordResult(item) }
-                    )
-                }
-
-                if item.supportsBookmarkAction {
-                    CompactCardIconActionButton(
-                        symbol: .bookmark,
-                        isActive: isBookmarked,
-                        filled: isBookmarked,
-                        accessibilityLabel: isBookmarked
-                            ? "나중에 갈 레스토랑에서 제거"
-                            : "나중에 갈 레스토랑에 추가",
-                        actionButtonSize: SearchResultCompactCardMetrics.actionButtonSize,
-                        actionIconSize: SearchResultCompactCardMetrics.actionIconSize,
-                        action: { onBookmarkResult(item) }
-                    )
-                }
-            }
+            RecordActions(
+                isRecorded: isRecorded,
+                isBookmarked: isBookmarked,
+                activeColor: TBColor.textSecondary,
+                onRecord: allowsRecordActions && item.supportsDiningRecordAction ? { onRecordResult(item) } : nil,
+                onBookmark: allowsRecordActions && item.supportsBookmarkAction ? { onBookmarkResult(item) } : nil
+            )
         }
         .accessibilityHint(item.detail)
     }

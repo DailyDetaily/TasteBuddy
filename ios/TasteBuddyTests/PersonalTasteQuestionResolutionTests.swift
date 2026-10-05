@@ -5,6 +5,38 @@ import XCTest
 /// AM-15/18/20/27/28/29/30의 기존 기대를 유지한다.
 final class PersonalTasteQuestionResolutionTests: XCTestCase {
     @MainActor
+    func testDifferentV2InstanceCannotResolveOriginalQuestionThroughSave() async throws {
+        let suite = "tastebuddy.inference-instance.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let model = AppModel(defaults: defaults, authRepository: FixtureBackendAuthRepository())
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("TasteBuddy/Resources/TBA/dining-sensory-v2.json")
+        let catalog = try DiningSensoryV2Catalog.load(from: url)
+        var a = try XCTUnwrap(catalog.selection("v2.bubble.sour.basic", instanceID: "A"))
+        a.liking = .liked; a.target = .sauce; a.phase = .afterSwallow; a.scopeKind = "component"
+        var b = try XCTUnwrap(catalog.selection("v2.bubble.sour.basic", instanceID: "B"))
+        b.liking = .liked; b.target = .sauce; b.phase = .afterSwallow; b.scopeKind = "component"
+        model.addDiningEntry(entry(selections: [a, b]))
+        try await waitForAnalysis(model)
+        @MainActor func originalQuestion() throws -> PersonalTasteNextSelection {
+            let observationIDs = Set(model.sensoryAnalysis.observations.filter { $0.selectionEvidence?.selectionInstanceID == "A" }.map(\.id))
+            return try XCTUnwrap(model.sensoryAnalysis.personalModel?.availableSelections.first { $0.facet == "intensity" && observationIDs.contains($0.responseSourceID ?? "") })
+        }
+        let question = try originalQuestion()
+        let context = try XCTUnwrap(model.personalTasteQuestionResponseContext(for: question))
+        let before = try XCTUnwrap(model.diningEntries.first)
+        b.intensity = .strong
+        let edited = entry(id: before.id, mealID: before.mealID, selections: [a, b])
+        assertSaved(model.savePersonalTasteQuestionResponse(edited, context: context), resolved: false)
+        try await waitForAnalysis(model)
+        let remaining = try originalQuestion()
+        XCTAssertEqual(remaining.id, question.id)
+        let refreshed = try XCTUnwrap(model.personalTasteQuestionResponseContext(for: remaining))
+        let source = try XCTUnwrap(model.diningEntries.first)
+        let completed = try XCTUnwrap(PersonalTasteInlineAnswer.applying("strong", to: source, context: refreshed))
+        assertSaved(model.savePersonalTasteQuestionResponse(completed, context: refreshed), resolved: true)
+    }
+    @MainActor
     func testHomeKeepsEveryRemainingQuestionAfterAnswering() async throws {
         let fixture = try await makeFixture()
         defer { fixture.defaults.removePersistentDomain(forName: fixture.suite) }

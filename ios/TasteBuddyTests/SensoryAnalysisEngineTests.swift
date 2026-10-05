@@ -2,6 +2,18 @@ import XCTest
 @testable import TasteBuddy
 
 final class SensoryAnalysisEngineTests: XCTestCase {
+    func testLossEvaluationDoesNotBecomeDislikeThroughNativeAnalysis() throws {
+        let contract = try contract()
+        for text in ["처음엔 좋았는데 소스를 묻히니 바삭함이 죽어서 아쉬웠다.", "바삭함이 사라져서 아쉬웠어요.", "바삭함이 줄었고 아쉬웠어요.", "소스를 찍으니 바삭함이 좋았어요."] {
+            let result = try SensoryAnalysisEngine.analyze(entries: (0..<3).map { _ in entry(text) }, contract: contract)
+            XCTAssertTrue(result.observations.isEmpty, text)
+            XCTAssertTrue(result.personalModel?.units.isEmpty == true, text)
+            XCTAssertTrue(result.unresolved.contains { $0.reason == "unresolved_sensory_change_or_condition" }, text)
+        }
+        let independent = try SensoryAnalysisEngine.analyze(entries: [entry("바삭함이 줄어서 아쉬웠어요. 소스의 단맛은 좋았어요.")], contract: contract)
+        XCTAssertFalse(independent.observations.contains { $0.attribute == "texture.crisp" })
+        XCTAssertTrue(independent.observations.contains { $0.attribute == "taste.sweet" && $0.kind == "attribute_liking" && $0.value == .text("positive") })
+    }
     private func contract() throws -> SensoryNativeContract {
         let source = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("TasteBuddy/Resources/TBA/tba-sensory-contract.json")
@@ -162,6 +174,147 @@ final class SensoryAnalysisEngineTests: XCTestCase {
         }
         let ambiguous = try SensoryAnalysisEngine.analyze(entries: [entry("단맛이 강했어요. 단맛이 약했어요. 단맛이 좋았어요.")], contract: contract())
         XCTAssertFalse(ambiguous.insights.contains { $0.kind == "intensity_and_liking" })
+    }
+
+    // Regression coverage for the native evidence boundary (tba-native-sensory/4).
+    private func boundaryChoices() throws -> [DiningSensorySelection] {
+        let definitions = try contract().selectionCatalog.entries.filter {
+            $0.type == "bubble" && $0.attribute == "taste.sweet" && $0.intrinsicIntensity == nil
+                && $0.intrinsicTarget == nil && $0.intrinsicPhase == nil
+        }.sorted { $0.id < $1.id }
+        XCTAssertGreaterThanOrEqual(definitions.count, 2)
+        return definitions.prefix(2).map {
+            .init(id: $0.id, type: .bubble, labelSnapshot: $0.label, target: .wholeDish)
+        }
+    }
+
+    private func boundaryEntry(_ selections: [DiningSensorySelection], mealID: UUID = UUID(), note: String = "") -> DiningEntry {
+        .init(mealID: mealID, restaurant: "경계 검증 식당", menu: "경계 검증 요리", rating: 5,
+              note: note, sensorySelections: selections)
+    }
+
+    func testDifferentChoicesDoNotJoinIntensityAndLikingOrCreateMaximalistSupport() throws {
+        var choices = try boundaryChoices()
+        guard choices.count == 2 else { return }
+        choices[0].intensity = .strong
+        choices[1].liking = .liked
+        let records = (0..<2).map { _ in boundaryEntry(choices) }
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: records, contract: contract())
+        XCTAssertFalse(snapshot.insights.contains { $0.kind == "intensity_and_liking" })
+        XCTAssertEqual(snapshot.mainWing.candidates.first { $0.id == "maximalist" }?.supportExperienceCount, 0)
+        XCTAssertEqual(snapshot.mainWing.candidates.first { $0.id == "romantic" }?.supportExperienceCount, 2)
+        XCTAssertEqual(snapshot.mainWing.main?.id, "romantic")
+        let model = try XCTUnwrap(snapshot.personalModel)
+        XCTAssertEqual(model.units.count, 2)
+        XCTAssertTrue(model.units.allSatisfy { $0.intensity == nil })
+    }
+
+    func testSameChoiceStillJoinsIntensityAndLikingForInsightsAndProfile() throws {
+        var choice = try XCTUnwrap(boundaryChoices().first)
+        choice.intensity = .strong; choice.liking = .liked
+        let records = (0..<2).map { _ in boundaryEntry([choice]) }
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: records, contract: contract())
+        let insights = snapshot.insights.filter { $0.kind == "intensity_and_liking" }
+        XCTAssertEqual(insights.count, 2)
+        XCTAssertEqual(snapshot.mainWing.candidates.first { $0.id == "maximalist" }?.supportExperienceCount, 2)
+        for insight in insights {
+            let sources = snapshot.observations.filter { insight.evidenceIDs.contains($0.id) }
+            XCTAssertEqual(Set(sources.compactMap { $0.selectionEvidence?.selectionID }), [choice.id])
+            XCTAssertEqual(Set(sources.map(\.kind)), ["attribute_liking", "sensory_intensity"])
+        }
+    }
+
+    func testTwoChoicesKeepTheirOwnIntensityPairsInsteadOfBecomingAnIntensityConflict() throws {
+        var choices = try boundaryChoices()
+        guard choices.count == 2 else { return }
+        choices[0].intensity = .strong; choices[0].liking = .liked
+        choices[1].intensity = .light; choices[1].liking = .liked
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: [boundaryEntry(choices)], contract: contract())
+        let insights = snapshot.insights.filter { $0.kind == "intensity_and_liking" }
+        XCTAssertEqual(insights.count, 2)
+        for insight in insights {
+            let sources = snapshot.observations.filter { insight.evidenceIDs.contains($0.id) }
+            XCTAssertEqual(Set(sources.compactMap { $0.selectionEvidence?.selectionID }).count, 1)
+        }
+        XCTAssertEqual(snapshot.mainWing.candidates.first { $0.id == "maximalist" }?.supportExperienceCount, 1)
+    }
+
+    func testNoteIntensityDoesNotFillAnUnansweredChoiceIntensity() throws {
+        var choice = try XCTUnwrap(boundaryChoices().first)
+        choice.liking = .liked
+        let snapshot = try SensoryAnalysisEngine.analyze(
+            entries: [boundaryEntry([choice], note: "단맛이 강했어요.")], contract: contract())
+        XCTAssertTrue(snapshot.observations.contains { $0.sourceField == "note" && $0.kind == "sensory_intensity" })
+        XCTAssertFalse(snapshot.insights.contains { $0.kind == "intensity_and_liking" })
+        XCTAssertEqual(snapshot.mainWing.candidates.first { $0.id == "maximalist" }?.supportExperienceCount, 0)
+    }
+
+    func testNoteAbsenceDoesNotEraseLikingFromAnotherExplicitChoice() throws {
+        var choice = try XCTUnwrap(boundaryChoices().first)
+        choice.liking = .liked
+        let snapshot = try SensoryAnalysisEngine.analyze(
+            entries: [boundaryEntry([choice], note: "단맛이 없어서 좋았습니다.")], contract: contract())
+        let direct = try XCTUnwrap(snapshot.observations.first {
+            $0.kind == "attribute_liking" && $0.selectionEvidence?.selectionID == choice.id
+        })
+        XCTAssertEqual(snapshot.mainWing.candidates.first { $0.id == "romantic" }?.supportExperienceCount, 1)
+        XCTAssertTrue(snapshot.insights.contains { $0.kind == "scoped_preference" && $0.evidenceIDs.contains(direct.id) })
+        let qualified = try XCTUnwrap(snapshot.insights.first { $0.kind == "qualified_preference" })
+        XCTAssertFalse(qualified.evidenceIDs.contains(direct.id))
+        XCTAssertTrue(snapshot.observations.filter { qualified.evidenceIDs.contains($0.id) }.allSatisfy { $0.sourceField == "note" })
+    }
+
+    func testTwoDishesInOneMealRemainScopedAndPreserveBothOriginals() throws {
+        let meal = UUID()
+        let records = (0..<2).map { _ in boundaryEntry([], mealID: meal, note: "단맛이 좋았습니다.") }
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: records, contract: contract())
+        XCTAssertFalse(snapshot.insights.contains { $0.kind == "repeated_preference" })
+        let insight = try XCTUnwrap(snapshot.insights.first { $0.kind == "scoped_preference" })
+        XCTAssertEqual(Set(insight.experienceIDs), Set(records.map(\.id)))
+        XCTAssertEqual(insight.experienceCount, 2)
+        XCTAssertTrue(insight.body.contains("1번의 식사에 남긴 2개 기록"))
+        XCTAssertEqual(snapshot.mainWing.candidates.first { $0.id == "romantic" }?.supportExperienceCount, 1)
+        XCTAssertNil(snapshot.mainWing.main)
+        let replay = try SensoryAnalysisEngine.analyze(entries: records.reversed() + [records[0]], contract: contract())
+        XCTAssertEqual(snapshot, replay)
+    }
+
+    func testTwoIndependentMealsStillProduceRepeatedPreference() throws {
+        let records = (0..<2).map { _ in boundaryEntry([], note: "단맛이 좋았습니다.") }
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: records, contract: contract())
+        let insight = try XCTUnwrap(snapshot.insights.first { $0.kind == "repeated_preference" })
+        XCTAssertEqual(Set(insight.experienceIDs), Set(records.map(\.id)))
+        XCTAssertTrue(insight.body.contains("2번의 식사에 남긴 2개 기록"))
+        XCTAssertEqual(snapshot.mainWing.candidates.first { $0.id == "romantic" }?.supportExperienceCount, 2)
+    }
+
+    func testMixedResponsesWithinOneMealDoNotBecomeRepeatedPreference() throws {
+        let meal = UUID()
+        let records = [boundaryEntry([], mealID: meal, note: "단맛이 좋았습니다."),
+                       boundaryEntry([], mealID: meal, note: "단맛이 아쉬웠습니다.")]
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: records, contract: contract())
+        XCTAssertFalse(snapshot.insights.contains { $0.kind == "repeated_preference" })
+        XCTAssertNil(snapshot.mainWing.main)
+        XCTAssertTrue(snapshot.personalModel?.candidates.contains { $0.distribution.mealCount == 1 && $0.distribution.mixed == 1 } ?? false)
+    }
+
+    func testSharedSelectionIdentitySeparatesTypesVersionsParentsAndMissingIdentities() {
+        func evidence(id: String = "choice", type: String = "bubble", version: String = "catalog/1",
+                      parent: String? = nil, facet: String = "liking") -> SensorySelectionEvidence {
+            .init(selectionID: id, type: type, catalogVersion: version, labelSnapshot: "검증 선택", facet: facet,
+                  labelValue: "검증 응답", responseValue: nil, relatedBubbleID: parent, relatedBubbleLabel: nil, resolution: "resolved")
+        }
+        let original = evidence()
+        XCTAssertTrue(SensoryEvidenceLinkage.sameSelection(original, evidence(facet: "intensity")))
+        for other in [evidence(id: "other"), evidence(type: "detailTag"), evidence(version: "catalog/2"), evidence(parent: "parent")] {
+            XCTAssertFalse(SensoryEvidenceLinkage.sameSelection(original, other))
+        }
+        for invalid in [evidence(id: ""), evidence(type: ""), evidence(version: "")] {
+            XCTAssertFalse(SensoryEvidenceLinkage.sameSelection(invalid, invalid))
+        }
+        XCTAssertTrue(SensoryEvidenceLinkage.sameSelection(nil, nil))
+        XCTAssertFalse(SensoryEvidenceLinkage.sameSelection(original, nil))
+        XCTAssertFalse(SensoryEvidenceLinkage.sameSelection(nil, original))
     }
 
     func testMissingContractThrowsInsteadOfReturningEmptySuccess() {

@@ -8,7 +8,7 @@ struct TastePerceptionCards: View {
     @State private var showMeals = false
     @State private var sourceWasChosen = false
     @State var showPrevious = false
-    @State private var detail: PerceptionDetail?
+    @State private var detail: TasteCardDetailRoute?
 
     private var survey: [SurveyPerceptionPoint] { SurveyPerception.points(submissions: submissions) }
     private var model: TastePerceptionSnapshot { snapshot.perception }
@@ -41,12 +41,11 @@ struct TastePerceptionCards: View {
         return Calendar.current.isDate(start, inSameDayAs: end) ? label : label + " – " + end.formatted(.dateTime.month(.twoDigits).day(.twoDigits).locale(Locale(identifier: "ko_KR")))
     }
     private func openRadarEvidence(reference: Bool = false) {
-        detail = showMeals ? .meal(currentPatterns.filter { !reference || $0.previousLevel != nil })
-            : .survey(survey.filter { !reference || $0.previousValue != nil })
+        detail = .perception(showMeals ? .meal(referenceOnly: reference) : .survey(referenceOnly: reference))
     }
 
     var body: some View {
-        TBPageSection(title: "맛을 느끼는 경향") {
+        TBPageSection(title: "감각 패턴") {
             SectionCard {
                 VStack(spacing: 0) {
                     HStack {
@@ -73,23 +72,19 @@ struct TastePerceptionCards: View {
                             .transition(.opacity)
                     }
                     .tasteBloomMotion(.content, value: [showMeals, showPrevious])
-                    Text(showMeals ? "약·중·강의 직접 보고 · 호감 점수 아님" : "기준 음식 회상 0–4 척도 · 호감 점수 아님")
-                        .font(TBFont.regular(11)).foregroundStyle(TBColor.textHint)
-                    Text("실선·채운 점: 선택한 기록 / 점선·빈 점: 비교 가능한 이전 기록 / —: 미확인")
-                        .font(TBFont.regular(10)).foregroundStyle(TBColor.textHint).fixedSize(horizontal: false, vertical: true)
                     HStack(alignment: .bottom, spacing: 4) {
                         Button { openRadarEvidence() } label: {
                             VStack(spacing: 4) {
                                 Text(showPrevious ? "이전 기록" : "현재 기록").font(TBFont.regular(10)).foregroundStyle(TBColor.textHint)
                                 RadarComparisonValueBadge(count(previous: showPrevious) == 0 ? "기록 없음" : showMeals ? "식사 \(count(previous: showPrevious))회" : "회상 \(count(previous: showPrevious))개")
-                            }.frame(minHeight: 44)
+                            }.frame(minHeight: 44, alignment: .bottom)
                         }.buttonStyle(.plain).accessibilityHint("적용 조건과 원본 기록 보기")
                         RadarComparisonArrowBadge()
                         Button { openRadarEvidence(reference: true) } label: {
                             VStack(spacing: 4) {
                                 Text("비교할 이전 기록").font(TBFont.regular(10)).foregroundStyle(TBColor.textHint)
                                 RadarComparisonValueBadge(!showPrevious && !values(previous: true).isEmpty ? "이전 기록" : "아직 없음")
-                            }.frame(minHeight: 44)
+                            }.frame(minHeight: 44, alignment: .bottom)
                         }.buttonStyle(.plain).disabled(showPrevious || values(previous: true).isEmpty)
                     }.padding(.top, 8)
                 }
@@ -102,15 +97,13 @@ struct TastePerceptionCards: View {
                 onTap: onOpenTasteChange
             ) {
                 if !hasComparison { TasteChangeEmptySummary() }
-                Text(hasChanges ? changeSummary : hasComparison ? "비교한 기록에서는 같은 강도로 남겼어요." : "비교할 기록이 더 필요해요.")
-                    .font(TBFont.regular(13)).foregroundStyle(TBColor.textBody).lineSpacing(4)
             }
             .accessibilityIdentifier("taste-perception-change")
 
             TasteInsightSummaryCardLayout(
                 indicatorColors: model.contrasts.map(\.first.axis.mainColor),
                 sectionLabel: "특이사항", actionLabel: "조건과 근거", title: model.contrasts.isEmpty ? "조건별 차이는 확인 중" : "같은 음식도 조건에 따라 다르게 느꼈어요",
-                onTap: { detail = .conditions }
+                onTap: { detail = .perception(.conditions) }
             ) {
                 Text(model.contrasts.first.map { "\($0.first.conditionLabel) · \($0.second.conditionLabel) — 근거 \($0.mealIDs.count)번의 식사" }
                      ?? "같은 음식의 부위나 시점을 다르게 남긴 반복 기록을 살펴봐요.")
@@ -122,9 +115,7 @@ struct TastePerceptionCards: View {
             detail = nil
             if !sourceWasChosen { showMeals = TasteAxis.allCases.contains { model.current(for: $0)?.currentLevel != nil } }
         }
-        .sheet(item: $detail) { selection in
-            TastePerceptionDetailSheet(selection: selection, model: model, survey: survey, observations: snapshot.observations, entries: entries)
-        }
+        .tasteDetail($detail)
     }
 
     private func radarNavigationButton(_ symbol: String, label: String, enabled: Bool, action: @escaping () -> Void) -> some View {
@@ -146,93 +137,90 @@ struct TastePerceptionCards: View {
     }
 }
 
-private enum PerceptionDetail: Identifiable {
-    case meal([TastePerceptionPattern]), survey([SurveyPerceptionPoint]), conditions
-    var id: String {
-        switch self { case .meal: "meal"; case .survey: "survey"; case .conditions: "conditions" }
+struct TastePerceptionDetailView: View {
+    @EnvironmentObject private var appModel: AppModel
+    let request: TastePerceptionDetailRequest
+    @State private var selectedAxis: TasteAxis?
+    private var model: TastePerceptionSnapshot { appModel.sensoryAnalysis.perception }
+    private var observations: [SensoryObservation] { appModel.sensoryAnalysis.observations }
+    private var entries: [DiningEntry] { appModel.diningEntries }
+    private var survey: [SurveyPerceptionPoint] {
+        SurveyPerception.points(submissions: ([appModel.profile].compactMap { $0 } + appModel.profileHistory).compactMap(\.surveySubmission))
     }
-}
-
-private struct TastePerceptionDetailSheet: View {
-    let selection: PerceptionDetail
-    let model: TastePerceptionSnapshot
-    let survey: [SurveyPerceptionPoint]
-    let observations: [SensoryObservation]
-    let entries: [DiningEntry]
-    @Environment(\.dismiss) private var dismiss
-    @State private var originalEntry: DiningEntry?
     private var patterns: [TastePerceptionPattern] {
-        switch selection {
-        case .meal(let rows): rows
+        switch request {
+        case .meal(let reference): TasteAxis.allCases.compactMap { model.current(for: $0) }.filter { !reference || $0.previousLevel != nil }
         case .conditions: model.contrasts.flatMap { [$0.first, $0.second] }
         case .survey: []
         }
     }
     private var points: [SurveyPerceptionPoint] {
-        switch selection { case .survey(let rows): rows; default: [] }
+        switch request { case .survey(let reference): survey.filter { !reference || $0.previousValue != nil }; default: [] }
+    }
+    private var visiblePatterns: [TastePerceptionPattern] {
+        Array(Dictionary(grouping: patterns.filter { selectedAxis == nil || $0.axis == selectedAxis }, by: \.id)
+            .values.compactMap(\.first)).sorted { $0.id < $1.id }
+    }
+    private var visiblePoints: [SurveyPerceptionPoint] {
+        points.filter { selectedAxis == nil || $0.axis == selectedAxis }
     }
     var body: some View {
-        BottomSheetShell(
-            headerStart: AnyView(BottomSheetCloseButton { dismiss() }),
-            headerCenter: AnyView(Text("강도 기록과 적용 조건").tbTextStyle(.sheetTitle)),
-            stageMode: .auto(maxHeightRatio: 1), usesNativeSheetChrome: true, surfaceBackground: TBColor.page
-        ) {
-            BottomSheetScrollView {
-                VStack(alignment: .leading, spacing: TBSpacing.section) {
-                    if patterns.isEmpty && points.isEmpty {
-                        SectionCard { Text("비교할 기록이 더 필요해요. 음식·부위·시점과 직접 느낀 강도를 함께 남겨주세요.").font(TBFont.regular(13)) }
+        TasteDetailPage(title: request == .conditions ? "조건별 차이" : "감각 패턴") {
+            Picker("감각", selection: $selectedAxis) {
+                Text("전체 감각").tag(nil as TasteAxis?)
+                ForEach(TasteAxis.allCases, id: \.self) { axis in Text(axis.label).tag(Optional(axis)) }
+            }.pickerStyle(.menu).frame(maxWidth: .infinity, minHeight: 48).tint(TBColor.textPrimary)
+                .accessibilityIdentifier("taste-perception-detail-axis")
+        } content: {
+            VStack(alignment: .leading, spacing: TBSpacing.x20) {
+                if visiblePatterns.isEmpty && visiblePoints.isEmpty {
+                    Text("기록 없음").font(TBFont.regular(13)).foregroundStyle(TBColor.textHint)
+                        .frame(maxWidth: .infinity, minHeight: 180)
+                }
+                ForEach(visiblePatterns) { pattern in
+                    TasteDetailChartPanel {
+                        Text(pattern.axis.label).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
+                        TasteDetailScope(text: pattern.conditionLabel)
+                        TasteDetailScope(text: "식사 \(pattern.recent.mealIDs.count)회 · \(dateRange(pattern.recent))")
+                        TasteDetailBarPlot(points: pattern.counts.enumerated().map { index, count in
+                            .init(id: String(index), label: TastePerceptionEngine.levelLabels[index],
+                                  value: Double(count), valueLabel: "\(count)회")
+                        }, accent: pattern.axis.mainColor)
                     }
-                    ForEach(Array(Dictionary(grouping: patterns, by: \.id).values.compactMap(\.first)).sorted { $0.id < $1.id }) { pattern in
-                        TBPageSection(title: pattern.axis.label, subtitle: pattern.conditionLabel) {
-                            SectionCard {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("최근 \(pattern.recent.mealIDs.count)번의 식사 · \(dateRange(pattern.recent))").font(TBFont.semibold(13))
-                                    Text(pattern.currentLevel.map { "\(TastePerceptionEngine.levelLabels[$0]) 느낀 경향" } ?? "확인 중").font(TBFont.medium(13))
-                                    Text(pattern.counts.enumerated().filter { $0.element > 0 }.map { "\(TastePerceptionEngine.levelLabels[$0.offset]) \($0.element)번" }.joined(separator: " · ")).font(TBFont.regular(12))
-                                    if let previous = pattern.previousLevel {
-                                        Text("이전 \(pattern.previous.mealIDs.count)번 · \(dateRange(pattern.previous)) · \(TastePerceptionEngine.levelLabels[previous])").font(TBFont.regular(12))
-                                    }
-                                    if pattern.conflictCount > 0 { Text("같은 식사에서 강도 응답이 나뉜 기록 \(pattern.conflictCount)개").font(TBFont.regular(12)) }
-                                    Text("기록된 음식·부위·시점 안에서만 비교해요. 조리 상태와 온도 등 기록하지 않은 조건이나 변화의 원인은 알 수 없어요.").font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
-                                }.foregroundStyle(TBColor.textBody)
-                            }
-                            let ids = Set(pattern.recent.evidenceIDs + pattern.previous.evidenceIDs)
-                            SensoryEvidenceList(observations: observations.filter { ids.contains($0.id) }, unresolved: [])
-                            ForEach(entries.filter { (pattern.recent.experienceIDs + pattern.previous.experienceIDs).contains($0.id) }) { entry in
-                                Button { originalEntry = entry } label: {
-                                    Label("\(entry.menu) · \(entry.observedAt.formatted(date: .abbreviated, time: .omitted)) 원래 기록 보기", systemImage: "arrow.up.right")
-                                        .font(TBFont.medium(12)).frame(minHeight: 44)
-                                }.tint(TBColor.textSecondary)
-                            }
+                    TasteDetailGroup {
+                        TasteDetailValueRow(title: "최근 강도", value: pattern.currentLevel.map { TastePerceptionEngine.levelLabels[$0] } ?? "—", showsDivider: false)
+                        TasteDetailValueRow(title: "이전 강도", value: pattern.previousLevel.map { TastePerceptionEngine.levelLabels[$0] } ?? "—")
+                        if pattern.conflictCount > 0 { TasteDetailValueRow(title: "응답 나뉨", value: "\(pattern.conflictCount)개") }
+                    }.padding(.horizontal, TBSpacing.page)
+                    TasteDetailDisclosure("기록") {
+                        if pattern.previousLevel != nil { Text("이전 · \(dateRange(pattern.previous)) · 식사 \(pattern.previous.mealIDs.count)회") }
+                        let ids = Set(pattern.recent.evidenceIDs + pattern.previous.evidenceIDs)
+                        SensoryEvidenceList(observations: observations.filter { ids.contains($0.id) }, unresolved: [])
+                    }.padding(.horizontal, TBSpacing.page)
+                }
+                ForEach(visiblePoints) { point in
+                    if let item = point.item, let submission = point.submission {
+                        TasteDetailChartPanel {
+                            Text(point.axis.label).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
+                            TasteDetailScope(text: item.anchor.label + " · 회상 강도 0–4")
                         }
-                    }
-                    ForEach(points) { point in
-                        if let item = point.item, let submission = point.submission {
-                            TBPageSection(title: point.axis.label, subtitle: item.anchor.label) {
-                                SectionCard {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text("최근 · \(submission.recordedAt.prefix(10)) · \(submission.responseLabel(for: item.id))").font(TBFont.semibold(13))
-                                        if let previous = point.previousSubmission {
-                                            Text("이전 · \(previous.recordedAt.prefix(10)) · \(previous.responseLabel(for: item.id))").font(TBFont.regular(13))
-                                        }
-                                        Text(item.prompt).font(TBFont.regular(13))
-                                        ForEach(item.anchor.conditions, id: \.self) { Text($0).font(TBFont.regular(12)) }
-                                        Text("회상 응답은 실제 식사 횟수에 포함하지 않아요.").font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
-                                    }
-                                }
+                        TasteDetailGroup {
+                            TasteDetailValueRow(title: "최근 · \(submission.recordedAt.prefix(10))", value: submission.responseLabel(for: item.id), showsDivider: false)
+                            if let previous = point.previousSubmission {
+                                TasteDetailValueRow(title: "이전 · \(previous.recordedAt.prefix(10))", value: previous.responseLabel(for: item.id))
                             }
-                        }
+                        }.padding(.horizontal, TBSpacing.page)
+                        TasteDetailDisclosure("응답 조건") {
+                            Text(item.prompt)
+                            ForEach(item.anchor.conditions, id: \.self) { Text($0) }
+                        }.padding(.horizontal, TBSpacing.page)
                     }
-                }.tbPageContentPadding()
-            }
-        }
-        .presentationDetents([.large]).presentationDragIndicator(.hidden)
-        .sheet(item: $originalEntry) { entry in
-            DishFeedbackDetailSheet(item: .fromDiningEntry(entry, analysis: nil))
+                }
+            }.padding(.bottom, TBSpacing.page)
         }
     }
     private func dateRange(_ period: TastePerceptionPeriod) -> String {
-        guard let start = period.start, let end = period.end else { return "시점 확인 중" }
+        guard let start = period.start, let end = period.end else { return "날짜 미확인" }
         return "\(start.formatted(date: .abbreviated, time: .omitted))–\(end.formatted(date: .abbreviated, time: .omitted))"
     }
 }

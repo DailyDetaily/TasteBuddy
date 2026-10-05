@@ -46,7 +46,7 @@ export type SortedTasteProfileEntry = {
 export type PalateBloomAvatarProps = {
   ariaLabel?: string;
   className?: string;
-  coreShape?: PalateBloomCoreShape;
+  pistilShape?: PalateBloomPistilShape;
   imageSrc?: string | null;
   petalShape?: PalateBloomPetalShape;
   profile: TasteProfile;
@@ -54,10 +54,10 @@ export type PalateBloomAvatarProps = {
   shapeSeed?: string;
   showFrame?: boolean;
   size?: ProfileAvatarSizeValue;
-  starShape?: PalateBloomStarShape;
+  stamenShape?: PalateBloomStamenShape;
 };
 
-export type PalateBloomShapeCountKey = 'largePetal' | 'smallPetal' | 'largeStar' | 'smallStar';
+export type PalateBloomShapeCountKey = 'largePetal' | 'smallPetal' | 'largeStamen' | 'smallStamen';
 
 export type PalateBloomShapeCounts = Record<PalateBloomShapeCountKey, number>;
 
@@ -67,14 +67,14 @@ export type PalateBloomPetalShape =
   | 'softDiamondPetal'
   | 'serratedTipPetal';
 
-export type PalateBloomStarShape = 'thinStar' | 'roundedSpokeStar' | 'dottedRayStar';
+export type PalateBloomStamenShape = 'thinStamen' | 'roundedSpokeStamen' | 'dottedRayStamen';
 
-export type PalateBloomCoreShape = 'solidCore' | 'diamondCore' | 'seedCluster';
+export type PalateBloomPistilShape = 'solidPistil' | 'diamondPistil' | 'seedCluster';
 
 export type PalateBloomShapeVariant = {
-  coreShape: PalateBloomCoreShape;
+  pistilShape: PalateBloomPistilShape;
   petalShape: PalateBloomPetalShape;
-  starShape: PalateBloomStarShape;
+  stamenShape: PalateBloomStamenShape;
 };
 
 type RankedBloomLayer = SortedTasteProfileEntry & {
@@ -97,16 +97,19 @@ type PetalLayerOptions = {
   shape?: PalateBloomPetalShape | 'ellipse';
 };
 
-type StarLayerOptions = {
+type StamenLayerOptions = {
   color: string;
   count: number;
   innerRadius: number;
   keyPrefix: string;
   outerRadius: number;
   rotation: number;
-  shape: PalateBloomStarShape;
+  shape: PalateBloomStamenShape;
 };
 
+// Persisted avatar identity uses these historical hash salts; terminology must
+// not select a different shape for the same user/profile.
+const BLOOM_SHAPE_SEED_SALTS = { stamen: 'starShape', pistil: 'coreShape' } as const;
 const CENTER = 50;
 const BACKGROUND_RADIUS = 48.5;
 const DEFAULT_SIZE: ProfileAvatarSize = 'md';
@@ -122,16 +125,16 @@ export const PALATE_BLOOM_PETAL_SHAPES = [
   'softDiamondPetal',
   'serratedTipPetal',
 ] as const satisfies readonly PalateBloomPetalShape[];
-export const PALATE_BLOOM_STAR_SHAPES = [
-  'thinStar',
-  'roundedSpokeStar',
-  'dottedRayStar',
-] as const satisfies readonly PalateBloomStarShape[];
-export const PALATE_BLOOM_CORE_SHAPES = [
-  'solidCore',
-  'diamondCore',
+export const PALATE_BLOOM_STAMEN_SHAPES = [
+  'thinStamen',
+  'roundedSpokeStamen',
+  'dottedRayStamen',
+] as const satisfies readonly PalateBloomStamenShape[];
+export const PALATE_BLOOM_PISTIL_SHAPES = [
+  'solidPistil',
+  'diamondPistil',
   'seedCluster',
-] as const satisfies readonly PalateBloomCoreShape[];
+] as const satisfies readonly PalateBloomPistilShape[];
 const TASTE_KEYS: TasteKey[] = ['sweet', 'sour', 'bitter', 'salty', 'umami', 'fat'];
 
 export const DEFAULT_PALATE_BLOOM_PROFILE: TasteProfile = {
@@ -275,9 +278,9 @@ export function getPalateBloomShapeVariant(
   const seed = createPalateBloomSeed(profile, shapeSeed);
 
   return {
-    coreShape: getSeededShapeOption(PALATE_BLOOM_CORE_SHAPES, seed, 'coreShape'),
+    pistilShape: getSeededShapeOption(PALATE_BLOOM_PISTIL_SHAPES, seed, BLOOM_SHAPE_SEED_SALTS.pistil),
     petalShape: getSeededShapeOption(PALATE_BLOOM_PETAL_SHAPES, seed, 'petalShape'),
-    starShape: getSeededShapeOption(PALATE_BLOOM_STAR_SHAPES, seed, 'starShape'),
+    stamenShape: getSeededShapeOption(PALATE_BLOOM_STAMEN_SHAPES, seed, BLOOM_SHAPE_SEED_SALTS.stamen),
   };
 }
 
@@ -294,9 +297,9 @@ export function getPalateBloomShapeCounts(
 
   return {
     largePetal: sharedShapeCount,
-    largeStar: sharedShapeCount,
+    largeStamen: sharedShapeCount,
     smallPetal: sharedShapeCount,
-    smallStar: sharedShapeCount,
+    smallStamen: sharedShapeCount,
   };
 }
 
@@ -354,7 +357,7 @@ export function mapRange(
   return outMin + ((value - inMin) / (inMax - inMin)) * (outMax - outMin);
 }
 
-export function createStarPoints(
+export function createStamenPoints(
   cx: number,
   cy: number,
   outerRadius: number,
@@ -502,7 +505,7 @@ export function renderPetalLayer({
   });
 }
 
-function createRoundedSpokeStarPath(cx: number, cy: number, outerRadius: number) {
+function createRoundedSpokeStamenPath(cx: number, cy: number, outerRadius: number) {
   const baseRadius = Math.max(0.9, outerRadius * 0.05);
   const baseHalfWidth = Math.max(0.24, outerRadius * 0.014);
   const neckHalfWidth = Math.max(0.42, outerRadius * 0.026);
@@ -520,14 +523,14 @@ function createRoundedSpokeStarPath(cx: number, cy: number, outerRadius: number)
   ].join(' ');
 }
 
-function renderDottedRayStar({
+function renderDottedRayStamen({
   color,
   count,
   innerRadius,
   keyPrefix,
   outerRadius,
   rotation,
-}: Omit<StarLayerOptions, 'shape'>) {
+}: Omit<StamenLayerOptions, 'shape'>) {
   const rayStartRadius = Math.max(innerRadius * 0.75, outerRadius * 0.08);
   const dotRadius = Math.max(0.85, outerRadius * 0.07);
   const rayEndRadius = outerRadius - dotRadius * 0.78;
@@ -569,7 +572,7 @@ function renderDottedRayStar({
   );
 }
 
-function renderStarLayer({
+function renderStamenLayer({
   color,
   count,
   innerRadius,
@@ -577,9 +580,9 @@ function renderStarLayer({
   outerRadius,
   rotation,
   shape,
-}: StarLayerOptions) {
-  if (shape === 'roundedSpokeStar') {
-    const spokePath = createRoundedSpokeStarPath(CENTER, CENTER, outerRadius);
+}: StamenLayerOptions) {
+  if (shape === 'roundedSpokeStamen') {
+    const spokePath = createRoundedSpokeStamenPath(CENTER, CENTER, outerRadius);
 
     return (
       <g>
@@ -599,8 +602,8 @@ function renderStarLayer({
     );
   }
 
-  if (shape === 'dottedRayStar') {
-    return renderDottedRayStar({
+  if (shape === 'dottedRayStamen') {
+    return renderDottedRayStamen({
       color,
       count,
       innerRadius,
@@ -613,7 +616,7 @@ function renderStarLayer({
   return (
     <polygon
       fill={color}
-      points={createStarPoints(
+      points={createStamenPoints(
         CENTER,
         CENTER,
         outerRadius,
@@ -625,21 +628,21 @@ function renderStarLayer({
   );
 }
 
-function renderCoreLayer({
+function renderPistilLayer({
   color,
-  coreRadius,
+  pistilRadius,
   seedCount,
   shape,
 }: {
   color: string;
-  coreRadius: number;
+  pistilRadius: number;
   seedCount: number;
-  shape: PalateBloomCoreShape;
+  shape: PalateBloomPistilShape;
 }) {
-  const roundedCoreRadius = roundSvgValue(coreRadius);
+  const roundedPistilRadius = roundSvgValue(pistilRadius);
 
-  if (shape === 'diamondCore') {
-    const squareSide = coreRadius * 1.55;
+  if (shape === 'diamondPistil') {
+    const squareSide = pistilRadius * 1.55;
 
     return (
       <rect
@@ -655,8 +658,8 @@ function renderCoreLayer({
 
   if (shape === 'seedCluster') {
     const outerSeedCount = Math.min(6, Math.max(4, seedCount));
-    const seedRadius = Math.max(1.1, coreRadius * 0.34);
-    const seedDistance = coreRadius * 0.78;
+    const seedRadius = Math.max(1.1, pistilRadius * 0.34);
+    const seedDistance = pistilRadius * 0.78;
 
     return (
       <g>
@@ -667,7 +670,7 @@ function renderCoreLayer({
 
           return (
             <circle
-              key={`core-seed-${index}`}
+              key={`pistil-seed-${index}`}
               cx={roundSvgValue(seedCx)}
               cy={roundSvgValue(seedCy)}
               fill={color}
@@ -690,7 +693,7 @@ function renderCoreLayer({
       cx={CENTER}
       cy={CENTER}
       fill={color}
-      r={roundedCoreRadius}
+      r={roundedPistilRadius}
     />
   );
 }
@@ -723,7 +726,7 @@ function buildBloomLayers(profile: TasteProfile): RankedBloomLayer[] {
 export default function PalateBloomAvatar({
   ariaLabel,
   className,
-  coreShape,
+  pistilShape,
   imageSrc,
   petalShape,
   profile,
@@ -731,7 +734,7 @@ export default function PalateBloomAvatar({
   shapeSeed,
   showFrame = true,
   size = DEFAULT_SIZE,
-  starShape,
+  stamenShape,
 }: PalateBloomAvatarProps) {
   const generatedId = useId().replace(/:/g, '');
   const clipId = `${generatedId}-palate-bloom-clip`;
@@ -739,10 +742,10 @@ export default function PalateBloomAvatar({
   const layers = buildBloomLayers(profile);
   const shapeVariant = getPalateBloomShapeVariant(profile, shapeSeed);
   const shapeCounts = getPalateBloomShapeCounts(profile, shapeCountOverride, shapeSeed);
-  const resolvedCoreShape = coreShape ?? shapeVariant.coreShape;
+  const resolvedPistilShape = pistilShape ?? shapeVariant.pistilShape;
   const resolvedPetalShape = petalShape ?? shapeVariant.petalShape;
-  const resolvedStarShape = starShape ?? shapeVariant.starShape;
-  const [backgroundLayer, largePetalLayer, smallPetalLayer, largeStarLayer, smallStarLayer, coreLayer] =
+  const resolvedStamenShape = stamenShape ?? shapeVariant.stamenShape;
+  const [backgroundLayer, largePetalLayer, smallPetalLayer, largeStamenLayer, smallStamenLayer, pistilLayer] =
     layers;
 
   const uniformRatio = 1 / TASTE_KEYS.length;
@@ -784,22 +787,22 @@ export default function PalateBloomAvatar({
     mapRange(smallPetalLayer.visualWeight, 0, 1, 4.5, 6.8) * dominantInnerLayerScale;
   const mainPetalLayerOuterRadius = largePetalDistance + largePetalRadius;
   const subPetalLayerOuterRadius = smallPetalDistance + smallPetalRadius;
-  const largeStarOuterRadius =
-    mainPetalLayerOuterRadius * mapRange(largeStarLayer.visualWeight, 0, 1, 0.66, 0.78);
-  const largeStarInnerRadius = Math.min(
-    largeStarOuterRadius * mapRange(largeStarLayer.visualWeight, 0, 1, 0.06, 0.11),
+  const largeStamenOuterRadius =
+    mainPetalLayerOuterRadius * mapRange(largeStamenLayer.visualWeight, 0, 1, 0.66, 0.78);
+  const largeStamenInnerRadius = Math.min(
+    largeStamenOuterRadius * mapRange(largeStamenLayer.visualWeight, 0, 1, 0.06, 0.11),
     smallPetalRadius * 0.6,
   );
-  const smallStarOuterRadius = Math.min(
-    subPetalLayerOuterRadius * mapRange(smallStarLayer.visualWeight, 0, 1, 0.78, 0.9),
-    largeStarOuterRadius - 2.8,
+  const smallStamenOuterRadius = Math.min(
+    subPetalLayerOuterRadius * mapRange(smallStamenLayer.visualWeight, 0, 1, 0.78, 0.9),
+    largeStamenOuterRadius - 2.8,
   );
-  const smallStarInnerRadius = Math.min(
-    smallStarOuterRadius * mapRange(smallStarLayer.visualWeight, 0, 1, 0.14, 0.22),
+  const smallStamenInnerRadius = Math.min(
+    smallStamenOuterRadius * mapRange(smallStamenLayer.visualWeight, 0, 1, 0.14, 0.22),
     smallPetalRadius * 0.92,
   );
-  const coreRadius =
-    mapRange(coreLayer.visualWeight, 0, 1, 3.2, 5.8) * Math.sqrt(dominantInnerLayerScale);
+  const pistilRadius =
+    mapRange(pistilLayer.visualWeight, 0, 1, 3.2, 5.8) * Math.sqrt(dominantInnerLayerScale);
 
   return (
     <span
@@ -865,29 +868,29 @@ export default function PalateBloomAvatar({
             })}
           </g>
 
-          {renderStarLayer({
-            color: largeStarLayer.color,
-            count: shapeCounts.largeStar,
-            innerRadius: largeStarInnerRadius,
-            keyPrefix: `${generatedId}-large-star`,
-            outerRadius: largeStarOuterRadius,
+          {renderStamenLayer({
+            color: largeStamenLayer.color,
+            count: shapeCounts.largeStamen,
+            innerRadius: largeStamenInnerRadius,
+            keyPrefix: `${generatedId}-large-stamen`,
+            outerRadius: largeStamenOuterRadius,
             rotation: 0,
-            shape: resolvedStarShape,
+            shape: resolvedStamenShape,
           })}
-          {renderStarLayer({
-            color: smallStarLayer.color,
-            count: shapeCounts.smallStar,
-            innerRadius: smallStarInnerRadius,
-            keyPrefix: `${generatedId}-small-star`,
-            outerRadius: smallStarOuterRadius,
-            rotation: 180 / shapeCounts.smallStar,
-            shape: resolvedStarShape,
+          {renderStamenLayer({
+            color: smallStamenLayer.color,
+            count: shapeCounts.smallStamen,
+            innerRadius: smallStamenInnerRadius,
+            keyPrefix: `${generatedId}-small-stamen`,
+            outerRadius: smallStamenOuterRadius,
+            rotation: 180 / shapeCounts.smallStamen,
+            shape: resolvedStamenShape,
           })}
-          {renderCoreLayer({
-            color: coreLayer.color,
-            coreRadius,
-            seedCount: shapeCounts.smallStar,
-            shape: resolvedCoreShape,
+          {renderPistilLayer({
+            color: pistilLayer.color,
+            pistilRadius,
+            seedCount: shapeCounts.smallStamen,
+            shape: resolvedPistilShape,
           })}
         </g>
         </svg>

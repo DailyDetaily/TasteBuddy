@@ -61,9 +61,7 @@ function pickBestPlace(
   if (expectedPlaceId) {
     const exactMatch = documents.find((document) => document.id === expectedPlaceId);
 
-    if (exactMatch) {
-      return exactMatch;
-    }
+    return exactMatch ?? null;
   }
 
   return (

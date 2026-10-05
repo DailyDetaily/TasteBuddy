@@ -3,6 +3,16 @@ import Foundation
 /// 고정 ID와 버전에 대응하는 의미만 읽는다. 선택 문구를 자유문장 파서로 전달하지 않는다.
 enum DiningSensorySelectionParser {
     static func parse(_ selections: [DiningSensorySelection], catalog: DiningSensoryCatalogContract) -> SensoryRuleResult {
+        let current = selections.filter { $0.catalogVersion == DiningSensorySelection.currentCatalogVersion }
+        var result = parseLegacy(selections.filter { $0.catalogVersion != DiningSensorySelection.currentCatalogVersion }, catalog: catalog)
+        guard !current.isEmpty else { return result }
+        let parsed = DiningSensoryV2Parser.parse(current, allSelections: selections, legacyCatalog: catalog)
+        result.observations += parsed.observations
+        result.unresolved += parsed.unresolved
+        return result
+    }
+
+    private static func parseLegacy(_ selections: [DiningSensorySelection], catalog: DiningSensoryCatalogContract) -> SensoryRuleResult {
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         func canonical(_ selection: DiningSensorySelection) -> String { String(data: (try? encoder.encode(selection)) ?? Data(), encoding: .utf8) ?? "" }
         var seen: Set<String> = []

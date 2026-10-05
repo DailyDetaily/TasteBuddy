@@ -2,11 +2,21 @@ import SwiftUI
 
 @main
 struct TasteBuddyApp: App {
-    @StateObject private var appModel = BrandVideoCaptureRuntime.makeAppModel()
+    @StateObject private var appModel = LayoutDocumentationRuntime.makeAppModel()
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            Group {
+                #if DEBUG
+                if LayoutDocumentationRuntime.isEnabled {
+                    LayoutDocumentationPreview()
+                } else {
+                    RootView()
+                }
+                #else
+                RootView()
+                #endif
+            }
                 .ignoresSafeArea(.keyboard, edges: .bottom)
                 .environmentObject(appModel)
                 .tint(TBColor.textPrimary)
@@ -40,7 +50,7 @@ private struct RootView: View {
     )
     private let showsSplashPreview = ProcessInfo.processInfo.arguments.contains(
         "--splash-preview"
-    )
+    ) || ProcessInfo.processInfo.arguments.contains("--splash-motion-preview")
     private let showsAuthEntryPreview = ProcessInfo.processInfo.arguments.contains(
         "--auth-entry-preview"
     )
@@ -114,6 +124,10 @@ private struct RootView: View {
     private var sensoryRuntimePreview: AnyView? {
         #if DEBUG || targetEnvironment(simulator)
         let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("--search-recommendation-qa") { return AnyView(HomeSearchRecommendationRuntimePreview()) }
+        if arguments.contains("--sensory-v2-qa") { return AnyView(SensoryV2RuntimePreview()) }
+        if arguments.contains("--gastronomy-qa") { return AnyView(GastronomyRuntimePreview()) }
+        if arguments.contains("--food-memory-detail-qa") { return AnyView(FoodMemoryDetailRuntimePreview()) }
         if arguments.contains("--food-memory-qa") { return AnyView(FoodMemoryRuntimePreview()) }
         if arguments.contains("--taste-perception-qa") {
             return AnyView(TastePerceptionRuntimePreview())
@@ -185,7 +199,7 @@ private struct RootView: View {
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsSplashPreview {
-                SplashView(autoplays: false, onComplete: {})
+                SplashView(autoplays: ProcessInfo.processInfo.arguments.contains("--splash-motion-preview"), onComplete: {})
             } else if showsAuthEntryPreview {
                 AuthEntryPreviewHost()
             } else if showsOnboardingPreview {
@@ -270,15 +284,15 @@ private struct RootView: View {
         .preferredColorScheme(usesDarkStatusBar ? .dark : .light)
         .onAppear(perform: applyLaunchResetIfNeeded)
         .onOpenURL { url in
-            guard !BrandVideoCaptureRuntime.isEnabled else { return }
+            guard !BrandVideoCaptureRuntime.isEnabled, !LayoutDocumentationRuntime.isEnabled else { return }
             BackendAuthRepositoryFactory.handleRedirectURL(url)
         }
         .task {
-            guard !BrandVideoCaptureRuntime.isEnabled else { return }
+            guard !BrandVideoCaptureRuntime.isEnabled, !LayoutDocumentationRuntime.isEnabled else { return }
             await appModel.restoreBackendSessionIfNeeded()
         }
         .onChange(of: scenePhase) { _, phase in
-            guard phase == .active, !BrandVideoCaptureRuntime.isEnabled else { return }
+            guard phase == .active, !BrandVideoCaptureRuntime.isEnabled, !LayoutDocumentationRuntime.isEnabled else { return }
             Task { await appModel.syncAccountData() }
         }
     }
@@ -334,7 +348,7 @@ private struct RootView: View {
     }
 
     private func applyLaunchResetIfNeeded() {
-        guard resetsAppState, !hasAppliedLaunchReset else {
+        guard resetsAppState, !hasAppliedLaunchReset, !LayoutDocumentationRuntime.isEnabled else {
             return
         }
 
@@ -960,7 +974,7 @@ private struct SensoryAdvancedDetailRuntimePreview: View {
         Group {
             if let personalModel = model.sensoryAnalysis.personalModel,
                let group = PersonalTasteCandidatePresentation.groups(personalModel.candidates).first {
-                PersonalTasteCandidateDetailSheet(
+                PersonalTasteCandidateDetailView(
                     group: group,
                     observations: model.sensoryAnalysis.observations,
                     entries: model.diningEntries,

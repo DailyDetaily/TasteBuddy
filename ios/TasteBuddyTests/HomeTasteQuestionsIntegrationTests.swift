@@ -18,6 +18,18 @@ final class HomeTasteQuestionsIntegrationTests: XCTestCase {
         return try JSONDecoder().decode(DiningEntry.self, from: JSONSerialization.data(withJSONObject: fields))
     }
 
+    /// v2 keeps plain repeat counts in measurements; lifecycle checks use a relation candidate.
+    private func discoverySources() throws -> [DiningEntry] {
+        try (0..<3).flatMap { _ -> [DiningEntry] in
+            let meal = UUID()
+            return try ["menu-a", "menu-b"].map { menu in
+                var entry = try replacing(source(meal: meal), "restaurantID", with: "verified-restaurant")
+                entry = try replacing(entry, "menuItemID", with: menu)
+                return try replacing(entry, "menu", with: menu)
+            }
+        }
+    }
+
     @MainActor private func wait(_ model: AppModel) async throws {
         for _ in 0..<600 {
             if !model.sensoryAnalysisIsUpdating { XCTAssertNil(model.sensoryAnalysisError); return }
@@ -527,8 +539,8 @@ final class HomeTasteQuestionsIntegrationTests: XCTestCase {
     }
 
     @MainActor func testDiscoveryReadStatePersistsWithoutCreatingQuestionOrTasteEvidence() async throws {
-        let (model, defaults) = try await app([source(), source(), source()])
-        let card = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .repeatedMenu })
+        let (model, defaults) = try await app(discoverySources())
+        let card = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .menuCooccurrence })
         let originals = model.diningEntries
         let observations = model.sensoryAnalysis.observations
         let questions = model.personalTasteQuestionProgressByUser
@@ -546,8 +558,8 @@ final class HomeTasteQuestionsIntegrationTests: XCTestCase {
     }
 
     @MainActor func testDiscoveryRecomputesOnEditAndDisappearsAfterDeletionDropsBelowThreshold() async throws {
-        let (model, _) = try await app([source(), source(), source()])
-        let before = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .repeatedMenu })
+        let (model, _) = try await app(discoverySources())
+        let before = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .menuCooccurrence })
         model.suppressHomeDiscovery(id: before.id)
         var changed = try XCTUnwrap(model.diningEntries.first)
         changed.note = "사용자가 직접 바꾼 회고"
@@ -566,8 +578,8 @@ final class HomeTasteQuestionsIntegrationTests: XCTestCase {
     }
 
     @MainActor func testDiscoverySnoozeSurvivesSourceEditAndRelaunch() async throws {
-        let (model, defaults) = try await app([source(), source(), source()])
-        let before = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .repeatedMenu })
+        let (model, defaults) = try await app(discoverySources())
+        let before = try XCTUnwrap(model.visibleHomeDiscoveries.first { $0.kind == .menuCooccurrence })
         model.suppressHomeDiscovery(id: before.id)
         var edited = try XCTUnwrap(model.diningEntries.first)
         edited.note = "명시적으로 미룬 뒤 수정한 회고"

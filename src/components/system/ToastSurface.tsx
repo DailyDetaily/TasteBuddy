@@ -4,12 +4,14 @@ import { cn } from '../ui/utils';
 
 interface ToastSurfaceProps extends HTMLAttributes<HTMLDivElement> {
   actionLabel?: string;
+  onAction?: () => void;
   media?: ReactNode;
   message: ReactNode;
 }
 
 export default function ToastSurface({
   actionLabel,
+  onAction,
   className,
   media,
   message,
@@ -20,17 +22,21 @@ export default function ToastSurface({
       role="status"
       aria-live="polite"
       className={cn(
-        'flex w-full items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-muted)] px-3 py-3 text-[var(--tb-color-text-inverse)] shadow-[var(--tb-shadow-strong)]',
+        'flex w-full items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-muted)] px-3 py-3 text-[var(--tb-color-text-primary)] shadow-[var(--tb-shadow-strong)]',
         className,
       )}
       {...props}
     >
       {media ? <span className="shrink-0">{media}</span> : null}
-      <p className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-snug">
+      <p className="min-w-0 flex-1 break-words text-[13px] font-semibold leading-snug">
         {message}
       </p>
-      {actionLabel ? (
-        <span className="shrink-0 text-[12px] font-bold leading-none text-[var(--tb-user-accent-main,var(--tb-taste-sweet-accent))]">
+      {actionLabel && onAction ? (
+        <button type="button" onClick={onAction} className="min-h-[44px] shrink-0 rounded-lg px-2 text-[12px] font-bold leading-none text-[var(--tb-color-text-primary)] focus-visible:outline focus-visible:outline-2">
+          {actionLabel}
+        </button>
+      ) : actionLabel ? (
+        <span className="shrink-0 text-[12px] font-bold leading-none text-[var(--tb-color-text-primary)]">
           {actionLabel}
         </span>
       ) : null}

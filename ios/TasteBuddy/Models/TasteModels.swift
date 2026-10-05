@@ -391,14 +391,24 @@ struct DiningEntry: Identifiable, Codable, Equatable {
     let detailTagIDs: [String]
     /// nil은 이전 ID 기록, 빈 배열은 새 선택을 모두 해제한 기록이다.
     let sensorySelections: [DiningSensorySelection]?
+    var sensoryPresentation: DiningSelectionJSON?
     let overallEvaluation: DiningOverallEvaluation?
     let dishKindIDs: [String]
     let reflectionPhotoFilename: String?
+    /// Additional photos of this exact food record, in display order.
+    let additionalPhotoFilenames: [String]
+
+    var allReflectionPhotoFilenames: [String] {
+        var seen = Set<String>()
+        return ([reflectionPhotoFilename].compactMap { $0 } + additionalPhotoFilenames)
+            .filter { seen.insert($0).inserted }
+    }
     var tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot?
     let feedbackStatus: DiningEntryFeedbackStatus
     let photoPalette: DiningPhotoPalette?
 
     var mealTime: DiningMealTime?
+    var foodSource: DiningFoodSource?
     var memoryRevision: Int?
     var memoryCorrections: [DiningMemoryCorrection]?
 
@@ -422,13 +432,16 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         tasteExperienceIDs: [String] = [],
         detailTagIDs: [String] = [],
         sensorySelections: [DiningSensorySelection]? = nil,
+        sensoryPresentation: DiningSelectionJSON? = nil,
         overallEvaluation: DiningOverallEvaluation? = nil,
         dishKindIDs: [String] = [],
         reflectionPhotoFilename: String? = nil,
+        additionalPhotoFilenames: [String] = [],
         tbaAnalysisSnapshot: TasteBuddyAgentDiningAnalysisSnapshot? = nil,
         feedbackStatus: DiningEntryFeedbackStatus = .completed,
         photoPalette: DiningPhotoPalette? = nil,
         mealTime: DiningMealTime? = nil,
+        foodSource: DiningFoodSource? = nil,
         memoryRevision: Int? = nil,
         memoryCorrections: [DiningMemoryCorrection]? = nil
     ) {
@@ -448,13 +461,16 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         self.tasteExperienceIDs = Array(tasteExperienceIDs.prefix(3))
         self.detailTagIDs = detailTagIDs
         self.sensorySelections = sensorySelections
+        self.sensoryPresentation = sensoryPresentation
         self.overallEvaluation = overallEvaluation
         self.dishKindIDs = dishKindIDs
         self.reflectionPhotoFilename = reflectionPhotoFilename
+        self.additionalPhotoFilenames = additionalPhotoFilenames
         self.tbaAnalysisSnapshot = tbaAnalysisSnapshot
         self.feedbackStatus = feedbackStatus
         self.photoPalette = photoPalette
         self.mealTime = mealTime
+        self.foodSource = foodSource
         self.memoryRevision = memoryRevision
         self.memoryCorrections = memoryCorrections
     }
@@ -475,13 +491,15 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         case tasteExperienceIDs
         case detailTagIDs
         case sensorySelections
+        case sensoryPresentation
         case overallEvaluation
         case dishKindIDs
         case reflectionPhotoFilename
+        case additionalPhotoFilenames
         case tbaAnalysisSnapshot
         case feedbackStatus
         case photoPalette
-        case mealTime, memoryRevision, memoryCorrections
+        case mealTime, foodSource, memoryRevision, memoryCorrections
     }
 
     init(from decoder: Decoder) throws {
@@ -504,12 +522,14 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         ).prefix(3).map(\.self)
         detailTagIDs = try container.decodeIfPresent([String].self, forKey: .detailTagIDs) ?? []
         sensorySelections = try container.decodeIfPresent([DiningSensorySelection].self, forKey: .sensorySelections)
+        sensoryPresentation = try container.decodeIfPresent(DiningSelectionJSON.self, forKey: .sensoryPresentation)
         overallEvaluation = try container.decodeIfPresent(DiningOverallEvaluation.self, forKey: .overallEvaluation)
         dishKindIDs = try container.decodeIfPresent([String].self, forKey: .dishKindIDs) ?? []
         reflectionPhotoFilename = try container.decodeIfPresent(
             String.self,
             forKey: .reflectionPhotoFilename
         )
+        additionalPhotoFilenames = try container.decodeIfPresent([String].self, forKey: .additionalPhotoFilenames) ?? []
         tbaAnalysisSnapshot = try container.decodeIfPresent(
             TasteBuddyAgentDiningAnalysisSnapshot.self,
             forKey: .tbaAnalysisSnapshot
@@ -523,6 +543,7 @@ struct DiningEntry: Identifiable, Codable, Equatable {
             forKey: .photoPalette
         )
         mealTime = try container.decodeIfPresent(DiningMealTime.self, forKey: .mealTime)
+        foodSource = try container.decodeIfPresent(DiningFoodSource.self, forKey: .foodSource)
         memoryRevision = try container.decodeIfPresent(Int.self, forKey: .memoryRevision)
         memoryCorrections = try container.decodeIfPresent([DiningMemoryCorrection].self, forKey: .memoryCorrections)
     }
@@ -544,16 +565,21 @@ struct DiningEntry: Identifiable, Codable, Equatable {
         try container.encode(tasteExperienceIDs, forKey: .tasteExperienceIDs)
         try container.encode(detailTagIDs, forKey: .detailTagIDs)
         try container.encodeIfPresent(sensorySelections, forKey: .sensorySelections)
+        try container.encodeIfPresent(sensoryPresentation, forKey: .sensoryPresentation)
         try container.encodeIfPresent(overallEvaluation, forKey: .overallEvaluation)
         try container.encode(dishKindIDs, forKey: .dishKindIDs)
         try container.encodeIfPresent(
             reflectionPhotoFilename,
             forKey: .reflectionPhotoFilename
         )
+        if !additionalPhotoFilenames.isEmpty {
+            try container.encode(additionalPhotoFilenames, forKey: .additionalPhotoFilenames)
+        }
         try container.encodeIfPresent(tbaAnalysisSnapshot, forKey: .tbaAnalysisSnapshot)
         try container.encode(feedbackStatus, forKey: .feedbackStatus)
         try container.encodeIfPresent(photoPalette, forKey: .photoPalette)
         try container.encodeIfPresent(mealTime, forKey: .mealTime)
+        try container.encodeIfPresent(foodSource, forKey: .foodSource)
         try container.encodeIfPresent(memoryRevision, forKey: .memoryRevision)
         try container.encodeIfPresent(memoryCorrections, forKey: .memoryCorrections)
     }
@@ -594,7 +620,8 @@ struct DiningEntry: Identifiable, Codable, Equatable {
             note: "",
             sensorySelections: [],
             feedbackStatus: .captured,
-            mealTime: mealTime
+            mealTime: mealTime,
+            foodSource: foodSource.map { value in var next = value; next.homeCookingID = nil; return next }
         )
     }
 
@@ -618,13 +645,16 @@ struct DiningEntry: Identifiable, Codable, Equatable {
             tasteExperienceIDs: tasteExperienceIDs,
             detailTagIDs: detailTagIDs,
             sensorySelections: sensorySelections,
+            sensoryPresentation: sensoryPresentation,
             overallEvaluation: overallEvaluation,
             dishKindIDs: dishKindIDs,
             reflectionPhotoFilename: reflectionPhotoFilename,
+            additionalPhotoFilenames: additionalPhotoFilenames,
             tbaAnalysisSnapshot: tbaAnalysisSnapshot,
             feedbackStatus: feedbackStatus,
             photoPalette: photoPalette,
             mealTime: mealTime,
+            foodSource: foodSource,
             memoryRevision: memoryRevision,
             memoryCorrections: memoryCorrections
         )
@@ -639,8 +669,11 @@ struct DiningEntry: Identifiable, Codable, Equatable {
 }
 
 enum DiningReflectionPhotoStore {
+    static let didChangeNotification = Notification.Name("tastebuddy.dining-photos.changed")
     private static let directoryName = "DiningFeedbackPhotos"
     private static let thumbnailCache = ThumbnailCache()
+    private static let accountScope = AccountScope()
+    static var currentOwnerScope: String { accountScope.current }
     // ponytail: 사진 변경을 직렬화한다. 대량 병렬 복원이 필요하면 파일별 잠금으로 분리한다.
     private static let fileMutationLock = NSLock()
     static let maximumOriginalByteCount = 6 * 1_024 * 1_024
@@ -668,9 +701,9 @@ enum DiningReflectionPhotoStore {
     }
 
     /// 백업 원본을 그대로 읽는다. 누락과 손상은 구분하며 파일 경로를 외부로 확장하지 않는다.
-    static func originalData(for filename: String) throws -> Data? {
+    static func originalData(for filename: String, ownerScope: String? = nil) throws -> Data? {
         guard isValidFilename(filename) else { throw PhotoError.invalidFilename }
-        let url = directoryURL.appendingPathComponent(filename)
+        let url = directoryURL(for: ownerScope ?? accountScope.current).appendingPathComponent(filename)
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
         guard values.isRegularFile == true, values.isSymbolicLink != true else { throw PhotoError.invalidImage }
@@ -681,19 +714,21 @@ enum DiningReflectionPhotoStore {
     }
 
     /// 원본 파일명을 유지하며 검증을 통과한 바이트만 원자적으로 복원한다.
-    static func restore(_ data: Data, filename: String) throws {
+    static func restore(_ data: Data, filename: String, ownerScope: String? = nil) throws {
         guard isValidFilename(filename) else { throw PhotoError.invalidFilename }
         try validateOriginal(data)
+        let scope = ownerScope ?? accountScope.current
+        let directoryURL = directoryURL(for: scope)
         fileMutationLock.lock()
         defer { fileMutationLock.unlock() }
         let url = directoryURL.appendingPathComponent(filename)
         if FileManager.default.fileExists(atPath: url.path) {
-            guard try originalData(for: filename) == data else { throw PhotoError.conflictingOriginal }
+            guard try originalData(for: filename, ownerScope: scope) == data else { throw PhotoError.conflictingOriginal }
             return
         }
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
         try data.write(to: url, options: .atomic)
-        thumbnailCache.invalidate()
+        invalidateThumbnails()
     }
 
     private static func validateOriginal(_ data: Data) throws {
@@ -737,6 +772,7 @@ enum DiningReflectionPhotoStore {
     static func thumbnail(
         for filename: String?, data: Data? = nil, fillingSquareOf pixels: Int
     ) async -> CGImage? {
+        let scope = accountScope.current
         let worker = Task.detached(priority: .userInitiated) {
             guard !Task.isCancelled else { return nil as CGImage? }
             let result: CGImage?
@@ -745,7 +781,7 @@ enum DiningReflectionPhotoStore {
                     squareFillThumbnail($0, pixels: pixels)
                 }
             } else if let filename {
-                result = cachedThumbnail(for: filename, pixels: pixels)
+                result = cachedThumbnail(for: filename, pixels: pixels, ownerScope: scope)
             } else {
                 result = nil
             }
@@ -756,10 +792,11 @@ enum DiningReflectionPhotoStore {
         } onCancel: {
             worker.cancel()
         }
-        return Task.isCancelled ? nil : result
+        return Task.isCancelled || accountScope.current != scope ? nil : result
     }
 
-    static func save(_ data: Data, entryID: UUID) throws -> String {
+    static func save(_ data: Data, entryID: UUID, ownerScope: String? = nil) throws -> String {
+        let directoryURL = directoryURL(for: ownerScope ?? accountScope.current)
         fileMutationLock.lock()
         defer { fileMutationLock.unlock() }
         // A replacement must also change the SwiftUI image task's identity.
@@ -769,29 +806,29 @@ enum DiningReflectionPhotoStore {
             withIntermediateDirectories: true
         )
         try data.write(to: directoryURL.appendingPathComponent(filename), options: .atomic)
-        thumbnailCache.invalidate()
+        invalidateThumbnails()
         return filename
     }
 
-    static func data(for filename: String?) -> Data? {
+    static func data(for filename: String?, ownerScope: String? = nil) -> Data? {
         guard let filename, isValidFilename(filename) else { return nil }
-        let url = directoryURL.appendingPathComponent(filename)
+        let url = directoryURL(for: ownerScope ?? accountScope.current).appendingPathComponent(filename)
         guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]),
               values.isRegularFile == true, values.isSymbolicLink != true else { return nil }
         return try? Data(contentsOf: url)
     }
 
-    static func remove(filename: String?) {
+    static func remove(filename: String?, ownerScope: String? = nil) {
         guard let filename, isValidFilename(filename) else { return }
         fileMutationLock.lock()
         defer { fileMutationLock.unlock() }
-        let url = directoryURL.appendingPathComponent(filename)
+        let url = directoryURL(for: ownerScope ?? accountScope.current).appendingPathComponent(filename)
         guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]),
               values.isRegularFile == true, values.isSymbolicLink != true else { return }
         try? FileManager.default.removeItem(
             at: url
         )
-        thumbnailCache.invalidate()
+        invalidateThumbnails()
     }
 
     private static func imageSource(data: Data) -> CGImageSource? {
@@ -831,12 +868,12 @@ enum DiningReflectionPhotoStore {
         )
     }
 
-    private static func cachedThumbnail(for filename: String, pixels: Int) -> CGImage? {
+    private static func cachedThumbnail(for filename: String, pixels: Int, ownerScope: String) -> CGImage? {
         guard isValidFilename(filename) else { return nil }
-        let url = directoryURL.appendingPathComponent(filename)
+        let url = directoryURL(for: ownerScope).appendingPathComponent(filename)
         guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]),
               values.isRegularFile == true, values.isSymbolicLink != true else { return nil }
-        let key = "\(filename)#\(pixels)"
+        let key = "\(ownerScope)#\(filename)#\(pixels)"
         while !Task.isCancelled {
             let cached = thumbnailCache.lookup(key)
             if let image = cached.image { return image }
@@ -920,7 +957,87 @@ enum DiningReflectionPhotoStore {
         }
     }
 
-    private static var directoryURL: URL {
+    static func activateAccountScope(_ scope: String) {
+        accountScope.set(scope)
+        invalidateThumbnails()
+    }
+
+    /// Only the caller's unambiguous legacy references may be assigned to an account.
+    /// The original bytes stay in place, and an ownership receipt prevents later reassignment.
+    static func migrateLegacyPhotos(filenames: [String], ownerScope: String) throws {
+        fileMutationLock.lock()
+        defer { fileMutationLock.unlock() }
+        let root = legacyDirectoryURL, destination = directoryURL(for: ownerScope)
+        let receiptURL = root.appendingPathComponent("legacy-photo-owners.json")
+        var owners: [String: String] = [:]
+        if FileManager.default.fileExists(atPath: receiptURL.path) {
+            owners = try JSONDecoder().decode([String: String].self, from: Data(contentsOf: receiptURL))
+        }
+        for filename in Set(filenames) where isValidFilename(filename) {
+            guard owners[filename] == nil || owners[filename] == ownerScope else { continue }
+            let source = root.appendingPathComponent(filename), target = destination.appendingPathComponent(filename)
+            guard let values = try? source.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]),
+                  values.isRegularFile == true, values.isSymbolicLink != true else { continue }
+            let data = try Data(contentsOf: source)
+            try validateOriginal(data)
+            let targetExists = FileManager.default.fileExists(atPath: target.path)
+            if targetExists {
+                guard try originalData(for: filename, ownerScope: ownerScope) == data else { continue }
+            }
+            // Reserve ownership before copying so interruption cannot assign the same legacy bytes twice.
+            owners[filename] = ownerScope
+            try JSONEncoder().encode(owners).write(to: receiptURL, options: .atomic)
+            if !targetExists {
+                try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+                try data.write(to: target, options: .atomic)
+            }
+        }
+        invalidateThumbnails()
+    }
+
+    static func copyPhotos(filenames: [String], from sourceScope: String, to destinationScope: String) throws {
+        for filename in Set(filenames) {
+            guard let data = try originalData(for: filename, ownerScope: sourceScope) else { throw PhotoError.missingOriginal }
+            try restore(data, filename: filename, ownerScope: destinationScope)
+        }
+    }
+
+    static func removeLegacyPhotoIfOwned(filename: String, ownerScope: String) {
+        guard isValidFilename(filename) else { return }
+        fileMutationLock.lock()
+        defer { fileMutationLock.unlock() }
+        let receiptURL = legacyDirectoryURL.appendingPathComponent("legacy-photo-owners.json")
+        guard let data = try? Data(contentsOf: receiptURL),
+              var owners = try? JSONDecoder().decode([String: String].self, from: data),
+              owners[filename] == ownerScope else { return }
+        do {
+            let url = legacyDirectoryURL.appendingPathComponent(filename)
+            if FileManager.default.fileExists(atPath: url.path) { try FileManager.default.removeItem(at: url) }
+            owners.removeValue(forKey: filename)
+            try JSONEncoder().encode(owners).write(to: receiptURL, options: .atomic)
+        } catch { /* Keep the ownership receipt when cleanup cannot finish. */ }
+    }
+
+    private final class AccountScope: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value = "guest"
+        var current: String { lock.lock(); defer { lock.unlock() }; return value }
+        func set(_ scope: String) { lock.lock(); defer { lock.unlock() }; value = scope }
+    }
+
+    private static func invalidateThumbnails() {
+        thumbnailCache.invalidate()
+        DispatchQueue.main.async { NotificationCenter.default.post(name: didChangeNotification, object: nil) }
+    }
+
+    private static func directoryURL(for scope: String) -> URL {
+        // Scope is encoded rather than interpolated as a path component.
+        let component = Data(scope.utf8).map { String(format: "%02x", $0) }.joined()
+        return legacyDirectoryURL.appendingPathComponent("accounts", isDirectory: true)
+            .appendingPathComponent(component, isDirectory: true)
+    }
+
+    private static var legacyDirectoryURL: URL {
         let baseURL =
             FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
@@ -1203,9 +1320,9 @@ struct DiningDishFeedbackItem: Identifiable, Equatable {
     ) -> DiningDishFeedbackItem {
         let trimmedMenu = entry.menu.trimmingCharacters(in: .whitespacesAndNewlines)
         let subject = trimmedMenu.isEmpty ? entry.restaurant : trimmedMenu
-        let images = entry.reflectionPhotoFilename.map { filename in
-            [Image(id: "\(entry.id.uuidString)-reflection-photo", alt: "\(subject) 식사 기록 사진", localPhotoFilename: filename)]
-        } ?? []
+        let images = entry.allReflectionPhotoFilenames.enumerated().map { index, filename in
+            Image(id: filename, alt: "\(subject) 식사 기록 사진 \(index + 1)", localPhotoFilename: filename)
+        }
         let observations = entry.hasCompletedTasteFeedback
             ? analysis?.observations.filter { $0.experienceID == entry.id } ?? [] : []
         let pending = entry.hasCompletedTasteFeedback

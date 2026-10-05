@@ -1,4 +1,4 @@
-import { DISH_KIND_OPTIONS } from '../constants/dishKindTags';
+import { ALL_DISH_KIND_OPTIONS, DISH_KIND_ALIASES } from '../constants/dishKindTags';
 import { TBA_CORE_TASTE_LEXICON } from '../constants/tbaCoreTasteLexicon';
 import { TASTE_IDS, type TasteId } from '../constants/designTokens';
 import type {
@@ -22,55 +22,9 @@ import { rankTbaFoodKnowledgeEntries } from './tbaFoodKnowledgeDataset';
 import { mapFoodOnBridgeInput } from './tbaFoodOnMapping';
 import { mapFeedbackInputToTbaSignals } from './tbaSignalMapping';
 
-const CANONICAL_DISH_KIND_IDS = new Set(DISH_KIND_OPTIONS.map((option) => option.id));
+const CANONICAL_DISH_KIND_IDS = new Set(ALL_DISH_KIND_OPTIONS.map((option) => option.id));
 
-const DISH_KIND_ALIAS_TO_CANONICAL: Record<string, TbaCanonicalDishKindId> = {
-  beef: 'meat',
-  beverage: 'beverage_pairing',
-  braised: 'steamed_braised',
-  bread: 'grain_noodle',
-  broth: 'broth',
-  chocolate: 'dessert',
-  crustacean: 'seafood',
-  cured: 'raw_cured',
-  dairy: 'dairy_cheese',
-  dessert: 'dessert',
-  dumpling: 'dumpling_batter',
-  fermented: 'fermented_jang',
-  fish: 'seafood',
-  foam: 'dessert',
-  fried: 'fried_crispy',
-  fruit: 'dessert',
-  garnish: 'vegetable_herb',
-  grain: 'grain_noodle',
-  grilled: 'grilled_smoked',
-  herb: 'vegetable_herb',
-  leafyGreen: 'vegetable_herb',
-  meat: 'meat',
-  mushroom: 'vegetable_herb',
-  noodle: 'grain_noodle',
-  nut: 'dessert',
-  pickled: 'raw_cured',
-  pork: 'meat',
-  poultry: 'meat',
-  powder: 'dessert',
-  roasted: 'grilled_smoked',
-  rootVegetable: 'vegetable_herb',
-  salad: 'vegetable_herb',
-  sauce: 'sauce_glaze',
-  scallop: 'seafood',
-  seafood: 'seafood',
-  seaweed: 'seafood',
-  shellfish: 'seafood',
-  smoked: 'grilled_smoked',
-  soy: 'legume_tofu',
-  spice: 'spice_heat',
-  steamed: 'steamed_braised',
-  tea: 'beverage_pairing',
-  tofu: 'legume_tofu',
-  vegetable: 'vegetable_herb',
-  wine: 'beverage_pairing',
-};
+
 
 function clamp(value: number, min = 0, max = 1) {
   return Math.min(max, Math.max(min, value));
@@ -85,7 +39,7 @@ function getCanonicalDishKindId(kindId: string): TbaCanonicalDishKindId | null {
     return kindId as TbaCanonicalDishKindId;
   }
 
-  return DISH_KIND_ALIAS_TO_CANONICAL[kindId] ?? null;
+  return (DISH_KIND_ALIASES[kindId] as TbaCanonicalDishKindId | undefined) ?? null;
 }
 
 function getStatusHumanReviewConfidence(entry: TbaCoreTasteLexiconEntry) {

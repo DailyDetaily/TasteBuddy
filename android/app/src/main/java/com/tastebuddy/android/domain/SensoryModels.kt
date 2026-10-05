@@ -3,6 +3,8 @@ package com.tastebuddy.android.domain
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
+private val SourceSelectionJson = Json(AppJson) { ignoreUnknownKeys = false }
+
 @Serializable data class SourceSpan(val start: Int, val end: Int, val quote: String)
 
 @Serializable
@@ -80,7 +82,7 @@ data class SensorySelection(
                     obj[it] is JsonPrimitive && obj[it]!!.jsonPrimitive.isString
                 }
             )
-            AppJson.decodeFromJsonElement<SensorySelection>(raw)
+            SourceSelectionJson.decodeFromJsonElement<SensorySelection>(raw)
         }
             .getOrElse {
                 val obj = raw as? JsonObject ?: JsonObject(emptyMap())
@@ -263,7 +265,7 @@ data class OverallEvaluation(
                     )
                     .all { obj[it] is JsonPrimitive && obj[it]!!.jsonPrimitive.isString }
             )
-            AppJson.decodeFromJsonElement<OverallEvaluation>(raw)
+            SourceSelectionJson.decodeFromJsonElement<OverallEvaluation>(raw)
         }
             .getOrElse {
                 val obj = raw as? JsonObject ?: JsonObject(emptyMap())

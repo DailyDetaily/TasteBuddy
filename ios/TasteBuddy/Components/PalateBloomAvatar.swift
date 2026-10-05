@@ -84,6 +84,9 @@ struct PalateBloomProfile: Equatable {
 }
 
 enum PalateBloomHash {
+    // Keep historical salts so terminology changes never alter an existing avatar.
+    static let stamenShapeSalt = "starShape"
+    static let pistilShapeSalt = "coreShape"
     static func fnv1a(_ value: String) -> UInt32 {
         var hash: UInt32 = 2_166_136_261
         for codeUnit in value.utf16 {
@@ -101,22 +104,22 @@ enum PalateBloomPetalShape: String, CaseIterable {
     case serratedTipPetal
 }
 
-enum PalateBloomStarShape: String, CaseIterable {
-    case thinStar
-    case roundedSpokeStar
-    case dottedRayStar
+enum PalateBloomStamenShape: String, CaseIterable {
+    case thinStamen
+    case roundedSpokeStamen
+    case dottedRayStamen
 }
 
-enum PalateBloomCoreShape: String, CaseIterable {
-    case solidCore
-    case diamondCore
+enum PalateBloomPistilShape: String, CaseIterable {
+    case solidPistil
+    case diamondPistil
     case seedCluster
 }
 
 struct PalateBloomShapeVariant: Equatable {
-    let coreShape: PalateBloomCoreShape
+    let pistilShape: PalateBloomPistilShape
     let petalShape: PalateBloomPetalShape
-    let starShape: PalateBloomStarShape
+    let stamenShape: PalateBloomStamenShape
 }
 
 struct PalateBloomLayout {
@@ -128,11 +131,11 @@ struct PalateBloomLayout {
     let largePetalRadius: Double
     let smallPetalDistance: Double
     let smallPetalRadius: Double
-    let largeStarOuterRadius: Double
-    let largeStarInnerRadius: Double
-    let smallStarOuterRadius: Double
-    let smallStarInnerRadius: Double
-    let coreRadius: Double
+    let largeStamenOuterRadius: Double
+    let largeStamenInnerRadius: Double
+    let smallStamenOuterRadius: Double
+    let smallStamenInnerRadius: Double
+    let pistilRadius: Double
 
     struct Layer {
         let axis: TasteAxis
@@ -150,20 +153,20 @@ struct PalateBloomLayout {
         let shapeCount = shapeCountOverride.map { min(8, max(4, $0)) }
             ?? (4 + Int(PalateBloomHash.fnv1a("\(bloomSeed)|sharedShapeCount") % 5))
         let variant = PalateBloomShapeVariant(
-            coreShape: seededOption(
-                PalateBloomCoreShape.allCases,
+            pistilShape: seededOption(
+                PalateBloomPistilShape.allCases,
                 seed: bloomSeed,
-                salt: "coreShape"
+                salt: PalateBloomHash.pistilShapeSalt
             ),
             petalShape: seededOption(
                 PalateBloomPetalShape.allCases,
                 seed: bloomSeed,
                 salt: "petalShape"
             ),
-            starShape: seededOption(
-                PalateBloomStarShape.allCases,
+            stamenShape: seededOption(
+                PalateBloomStamenShape.allCases,
                 seed: bloomSeed,
-                salt: "starShape"
+                salt: PalateBloomHash.stamenShapeSalt
             )
         )
         let layers = buildLayers(profile: profile)
@@ -229,15 +232,15 @@ struct PalateBloomLayout {
             outMin: 4.5,
             outMax: 6.8
         ) * innerLayerScale
-        let largeStarOuterRadius = (largePetalDistance + largePetalRadius) * mapRange(
+        let largeStamenOuterRadius = (largePetalDistance + largePetalRadius) * mapRange(
             layers[3].visualWeight,
             inMin: 0,
             inMax: 1,
             outMin: 0.66,
             outMax: 0.78
         )
-        let largeStarInnerRadius = min(
-            largeStarOuterRadius * mapRange(
+        let largeStamenInnerRadius = min(
+            largeStamenOuterRadius * mapRange(
                 layers[3].visualWeight,
                 inMin: 0,
                 inMax: 1,
@@ -246,7 +249,7 @@ struct PalateBloomLayout {
             ),
             smallPetalRadius * 0.6
         )
-        let smallStarOuterRadius = min(
+        let smallStamenOuterRadius = min(
             (smallPetalDistance + smallPetalRadius) * mapRange(
                 layers[4].visualWeight,
                 inMin: 0,
@@ -254,10 +257,10 @@ struct PalateBloomLayout {
                 outMin: 0.78,
                 outMax: 0.9
             ),
-            largeStarOuterRadius - 2.8
+            largeStamenOuterRadius - 2.8
         )
-        let smallStarInnerRadius = min(
-            smallStarOuterRadius * mapRange(
+        let smallStamenInnerRadius = min(
+            smallStamenOuterRadius * mapRange(
                 layers[4].visualWeight,
                 inMin: 0,
                 inMax: 1,
@@ -266,7 +269,7 @@ struct PalateBloomLayout {
             ),
             smallPetalRadius * 0.92
         )
-        let coreRadius = mapRange(
+        let pistilRadius = mapRange(
             layers[5].visualWeight,
             inMin: 0,
             inMax: 1,
@@ -283,11 +286,11 @@ struct PalateBloomLayout {
             largePetalRadius: largePetalRadius,
             smallPetalDistance: smallPetalDistance,
             smallPetalRadius: smallPetalRadius,
-            largeStarOuterRadius: largeStarOuterRadius,
-            largeStarInnerRadius: largeStarInnerRadius,
-            smallStarOuterRadius: smallStarOuterRadius,
-            smallStarInnerRadius: smallStarInnerRadius,
-            coreRadius: coreRadius
+            largeStamenOuterRadius: largeStamenOuterRadius,
+            largeStamenInnerRadius: largeStamenInnerRadius,
+            smallStamenOuterRadius: smallStamenOuterRadius,
+            smallStamenInnerRadius: smallStamenInnerRadius,
+            pistilRadius: pistilRadius
         )
     }
 
@@ -385,8 +388,8 @@ struct PalateBloomAvatar: View {
     let showFrame: Bool
     let shapeCountOverride: Int?
     let petalShapeOverride: PalateBloomPetalShape?
-    let starShapeOverride: PalateBloomStarShape?
-    let coreShapeOverride: PalateBloomCoreShape?
+    let stamenShapeOverride: PalateBloomStamenShape?
+    let pistilShapeOverride: PalateBloomPistilShape?
 
     init(
         size: CGFloat = 40,
@@ -396,8 +399,8 @@ struct PalateBloomAvatar: View {
         showFrame: Bool = true,
         shapeCountOverride: Int? = nil,
         petalShape: PalateBloomPetalShape? = nil,
-        starShape: PalateBloomStarShape? = nil,
-        coreShape: PalateBloomCoreShape? = nil
+        stamenShape: PalateBloomStamenShape? = nil,
+        pistilShape: PalateBloomPistilShape? = nil
     ) {
         self.size = size
         self.bloomProfile = bloomProfile
@@ -406,8 +409,8 @@ struct PalateBloomAvatar: View {
         self.showFrame = showFrame
         self.shapeCountOverride = shapeCountOverride
         self.petalShapeOverride = petalShape
-        self.starShapeOverride = starShape
-        self.coreShapeOverride = coreShape
+        self.stamenShapeOverride = stamenShape
+        self.pistilShapeOverride = pistilShape
     }
 
     init(
@@ -482,8 +485,8 @@ struct PalateBloomAvatar: View {
             shapeCountOverride: shapeCountOverride
         )
         let petalShape = petalShapeOverride ?? layout.shapeVariant.petalShape
-        let starShape = starShapeOverride ?? layout.shapeVariant.starShape
-        let coreShape = coreShapeOverride ?? layout.shapeVariant.coreShape
+        let stamenShape = stamenShapeOverride ?? layout.shapeVariant.stamenShape
+        let pistilShape = pistilShapeOverride ?? layout.shapeVariant.pistilShape
 
         return Canvas(opaque: false, colorMode: .nonLinear, rendersAsynchronously: false) {
             context,
@@ -518,30 +521,30 @@ struct PalateBloomAvatar: View {
                 rotationOffset: 180 / Double(layout.shapeCount),
                 shape: petalShape
             )
-            drawStar(
+            drawStamen(
                 in: &context,
                 color: layout.layers[3].axis.bloomColor,
                 count: layout.shapeCount,
-                outerRadius: layout.largeStarOuterRadius,
-                innerRadius: layout.largeStarInnerRadius,
+                outerRadius: layout.largeStamenOuterRadius,
+                innerRadius: layout.largeStamenInnerRadius,
                 rotation: 0,
-                shape: starShape
+                shape: stamenShape
             )
-            drawStar(
+            drawStamen(
                 in: &context,
                 color: layout.layers[4].axis.bloomColor,
                 count: layout.shapeCount,
-                outerRadius: layout.smallStarOuterRadius,
-                innerRadius: layout.smallStarInnerRadius,
+                outerRadius: layout.smallStamenOuterRadius,
+                innerRadius: layout.smallStamenInnerRadius,
                 rotation: 180 / Double(layout.shapeCount),
-                shape: starShape
+                shape: stamenShape
             )
-            drawCore(
+            drawPistil(
                 in: &context,
                 color: layout.layers[5].axis.bloomColor,
-                radius: layout.coreRadius,
+                radius: layout.pistilRadius,
                 seedCount: layout.shapeCount,
-                shape: coreShape
+                shape: pistilShape
             )
         }
     }
@@ -652,18 +655,18 @@ struct PalateBloomAvatar: View {
         }
     }
 
-    private func drawStar(
+    private func drawStamen(
         in context: inout GraphicsContext,
         color: Color,
         count: Int,
         outerRadius: Double,
         innerRadius: Double,
         rotation: Double,
-        shape: PalateBloomStarShape
+        shape: PalateBloomStamenShape
     ) {
         switch shape {
-        case .thinStar:
-            var star = Path()
+        case .thinStamen:
+            var stamen = Path()
             for index in 0..<(count * 2) {
                 let radius = index.isMultiple(of: 2) ? outerRadius : innerRadius
                 let radians = (rotation - 90 + Double(index) * (180 / Double(count)))
@@ -672,11 +675,11 @@ struct PalateBloomAvatar: View {
                     x: 50 + cos(radians) * radius,
                     y: 50 + sin(radians) * radius
                 )
-                index == 0 ? star.move(to: point) : star.addLine(to: point)
+                index == 0 ? stamen.move(to: point) : stamen.addLine(to: point)
             }
-            star.closeSubpath()
-            context.fill(star, with: .color(color))
-        case .roundedSpokeStar:
+            stamen.closeSubpath()
+            context.fill(stamen, with: .color(color))
+        case .roundedSpokeStamen:
             let spoke = roundedSpokePath(outerRadius: outerRadius)
             for index in 0..<count {
                 let angle = rotation + (360 / Double(count)) * Double(index)
@@ -685,7 +688,7 @@ struct PalateBloomAvatar: View {
                     with: .color(color)
                 )
             }
-        case .dottedRayStar:
+        case .dottedRayStamen:
             let rayStartRadius = max(innerRadius * 0.75, outerRadius * 0.08)
             let dotRadius = max(0.85, outerRadius * 0.07)
             let rayEndRadius = outerRadius - dotRadius * 0.78
@@ -729,15 +732,15 @@ struct PalateBloomAvatar: View {
         }
     }
 
-    private func drawCore(
+    private func drawPistil(
         in context: inout GraphicsContext,
         color: Color,
         radius: Double,
         seedCount: Int,
-        shape: PalateBloomCoreShape
+        shape: PalateBloomPistilShape
     ) {
         switch shape {
-        case .solidCore:
+        case .solidPistil:
             context.fill(
                 Path(
                     ellipseIn: CGRect(
@@ -749,7 +752,7 @@ struct PalateBloomAvatar: View {
                 ),
                 with: .color(color)
             )
-        case .diamondCore:
+        case .diamondPistil:
             let side = radius * 1.55
             let square = Path(
                 CGRect(

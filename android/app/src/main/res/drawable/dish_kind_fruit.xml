@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M12 20.9400010108948C13.5 20.9400010108948 14.75 21.9999995231628 16 21.9999995231628C19 21.9999995231628 22 13.9999995231628 22 9.77999973297119C21.9659196287394 8.48472321033478 21.4212234020233 7.25542658567429 20.4846343994141 6.36004745960236C19.5480453968048 5.46466833353043 18.2954988479614 4.97580123692751 17 5.00000006519258C14.7799999713898 5.00000006519258 13 6.43999999761581 12 7C11 6.43999999761581 9.22000002861023 5.00000006519258 7 5.00000006519258C5.70375061035156 4.97315824963152 4.44969916343689 5.46114838123322 3.51253008842468 6.35708200931549C2.57536101341248 7.25301563739777 2.03147380799055 8.48385453224182 2 9.77999973297119C2 13.9999995231628 5 21.9999995231628 8 21.9999995231628C9.25 21.9999995231628 10.5 20.9400010108948 12 20.9400010108948Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M10 2C11 2.5 12 4 12 7" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M14 13L14 14.0799999237061" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M10 13L10 14.0799999237061" />
+</vector>

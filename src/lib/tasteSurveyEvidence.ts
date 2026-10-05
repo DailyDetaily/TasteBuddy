@@ -122,7 +122,7 @@ export function readTasteSurveySubmission(value: unknown): TasteSurveySubmission
       || typeof item.anchor?.id !== 'string' || !item.anchor.id || typeof item.anchor.version !== 'string'
       || typeof item.anchor.label !== 'string' || typeof item.anchor.description !== 'string'
       || !['high', 'medium', 'low'].includes(item.anchor.stability)
-      || !Array.isArray(item.anchor.conditions) || !item.anchor.conditions.every((condition) => typeof condition === 'string')) return null;
+      || !Array.isArray(item.anchor.conditions) || !item.anchor.conditions.every((condition:unknown) => typeof condition === 'string')) return null;
     axes.add(item.tasteId); ids.add(item.id);
   }
   const context = record.respondentContext;

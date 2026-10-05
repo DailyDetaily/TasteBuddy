@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct FoodMemoryResultsView: View {
     @EnvironmentObject private var appModel: AppModel
@@ -72,7 +73,7 @@ struct FoodMemoryRow: View {
     let document: FoodMemoryDocument
     var showsConditions = false
     private static let dishKindLabels: [String: String] = Dictionary(uniqueKeysWithValues:
-        ((try? DiningFeedbackFixtureLoader.load())?.dishKindOptions ?? []).map { ($0.id, $0.label) })
+        ((try? DiningFeedbackFixtureLoader.load())?.allDishKindOptions ?? []).map { ($0.id, $0.label) })
     var body: some View {
         SectionCard {
             VStack(alignment: .leading, spacing: TBSpacing.x8) {
@@ -111,104 +112,680 @@ struct FoodMemoryDetailView: View {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
     let entryID: UUID
+    @State private var showsOptions = false
+    @State private var showsPhotoPicker = false
+    @State private var photoPickerItems: [PhotosPickerItem] = []
+    @State private var showsPhotoManager = false
+    @State private var isSavingPhoto = false
+    @State private var photoError: String?
     @State private var showsCorrection = false
     @State private var showsFullEditor = false
     @State private var showsComparison = false
+    @State private var showsHistory = false
+    @State private var showsLegacySummary = false
     @State private var showsDelete = false
-    @State private var actionMessage: String?
+    @State private var selectedTaste: FoodMemoryTaste?
     private var entry: DiningEntry? { appModel.diningEntry(id: entryID) }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: TBSpacing.x16) {
+            VStack(spacing: 0) {
+                TopAppBar(
+                    appearance: .solid,
+                    title: "음식 기억",
+                    showBack: true,
+                    showsDefaultActions: false,
+                    rightActions: entry == nil ? [] : [
+                        .init(id: "record-options", symbol: "ellipsis", accessibilityLabel: "기록 옵션") {
+                            showsOptions = true
+                        }
+                    ],
+                    onBack: { dismiss() }
+                )
+
+                ScrollView {
                     if let entry {
-                        Text(entry.menu.isEmpty ? "메뉴 미기록" : entry.menu).font(TBFont.bold(22))
-                        Text(entry.restaurant).font(TBFont.medium(15))
-                        Text(entry.memoryDateDescription).font(TBFont.regular(13)).foregroundStyle(TBColor.textSecondary)
-                        if let filename = entry.reflectionPhotoFilename,
-                           let data = try? DiningReflectionPhotoStore.originalData(for: filename), let image = UIImage(data: data) {
-                            Image(uiImage: image).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 16))
-                                .accessibilityLabel("저장한 음식 사진")
-                        } else if entry.reflectionPhotoFilename != nil {
-                            Text("사진 연결은 남아 있어요. 이 기기에서 사진 원본을 아직 읽지 못했어요.")
-                                .font(TBFont.regular(13)).foregroundStyle(TBColor.textSecondary)
-                        }
-                        SectionCard {
-                            VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                                Text("저장한 원문").font(TBFont.semibold(14))
-                                Text(entry.note.isEmpty ? "작성한 회고가 없어요." : entry.note).font(TBFont.regular(15)).textSelection(.enabled)
-                                Text("현재 원본 수정 \(entry.memoryRevisionNumber) · 식사 \(entry.mealID.uuidString.prefix(8))")
-                                    .font(TBFont.regular(11)).foregroundStyle(TBColor.textSecondary)
-                            }.frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        if let overall = entry.overallEvaluation {
-                            SectionCard {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text(overall.questionLabelSnapshot).font(TBFont.semibold(14))
-                                    Text(overall.responseLabelSnapshot).font(TBFont.regular(14))
-                                    Text("음식 전체 · 직접 응답").font(TBFont.regular(12))
-                                }
-                            }
-                        }
-                        if let selections = entry.sensorySelections {
-                            ForEach(Array(selections.enumerated()), id: \.offset) { _, selection in
-                                SectionCard {
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        Text(selection.labelSnapshot).font(TBFont.semibold(14))
-                                        Text("호감: \(selection.liking?.label ?? "미응답") · 강도: \(selection.intensity?.label ?? "미응답") · 알맞음: \(selection.preferenceFit?.label ?? "미응답")")
-                                        Text("대상: \(selection.target.label) · 시점: \(selection.phase.label)")
-                                    }.font(TBFont.regular(12))
-                                }
-                            }
-                        } else {
-                            Text("이전 선택 ID: \((entry.tasteExperienceIDs + entry.detailTagIDs).joined(separator: " · ")) · 당시 직접 응답은 미확인")
-                                .font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary)
-                        }
-                        if appModel.sensoryAnalysisIsUpdating { ProgressView("현재 원문으로 해석 갱신 중") }
-                        else {
-                            SensoryEvidenceList(observations: appModel.sensoryAnalysis.observations.filter { $0.experienceID == entryID }, unresolved: appModel.sensoryAnalysis.unresolved.filter { $0.experienceID == entryID }, showsMemoryActions: false)
-                        }
-                        Button("관련 경험과 비교") { showsComparison = true }
-                        Button("회고·식사 시점 바로잡기") { showsCorrection = true }
-                        Button("전체 기록·감각 응답 수정") { showsFullEditor = true }
-                        if let latest = entry.memoryCorrections?.last {
-                            SectionCard {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("이해를 바로잡은 기록").font(TBFont.semibold(14))
-                                    Text("\(latest.changedAt.formatted(date: .abbreviated, time: .shortened)) · \(latest.scopeLabel)")
-                                    Text("교정은 새 식사나 취향 전환으로 세지 않아요. 이전 원문은 현재 해석 근거로 사용하지 않아요.")
-                                    if case .string(let before) = latest.before["note"] { Text("이전 회고: \(before)") }
-                                    if case .string(let after) = latest.after["note"] { Text("현재 회고: \(after)") }
-                                    if !latest.before.isEmpty {
-                                        Button("이전 수정 되돌리기") {
-                                            actionMessage = appModel.undoMemoryCorrection(entryID: entryID) ? "수정을 되돌렸어요. 다시 누르면 재적용할 수 있어요." : "현재 원본을 확인한 뒤 다시 시도해 주세요."
-                                        }
-                                    }
-                                }.font(TBFont.regular(13))
-                            }
-                        }
-                        Button("내가 먹은 기록이 아님 · 삭제", role: .destructive) { showsDelete = true }
-                        if let actionMessage { Text(actionMessage).font(TBFont.regular(13)) }
-                        if let error = appModel.diningPersistenceError { Text(error).foregroundStyle(TBColor.textSecondary) }
-                        Text(appModel.memorySyncDescription).font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary)
+                        recordContent(entry)
                     } else {
-                        Text("삭제되었거나 현재 계정에서 볼 수 없는 기록이에요.").font(TBFont.regular(15))
+                        Text("삭제되었거나 현재 계정에서 볼 수 없는 기록이에요.")
+                            .font(TBFont.regular(15))
+                            .foregroundStyle(TBColor.textSecondary)
+                            .tbPageContentPadding()
                     }
-                }.foregroundStyle(TBColor.textPrimary).tbPageContentPadding()
-            }.tbPageBackground().navigationTitle("음식 기억").tbInlineNavigationTitle()
-                .toolbar { ToolbarItem(placement: .cancellationAction) { Button("닫기") { dismiss() } } }
+                }
+                .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
+            }
+            .tbScreenTopChrome()
+            .toolbar(.hidden, for: .navigationBar)
+            .tbPageBackground()
         }
-        .sheet(isPresented: $showsCorrection) { if let entry { FoodMemoryCorrectionSheet(original: entry) } }
+        .edgeSwipeBack { dismiss() }
+        .accessibilityAction(.escape) { dismiss() }
         .onChange(of: appModel.memoryAccountGeneration) { _, _ in dismiss() }
+        .confirmationDialog("기록 옵션", isPresented: $showsOptions, titleVisibility: .hidden) {
+            Button("기록 수정") { showsFullEditor = true }
+            Button("사진 추가") { showsPhotoPicker = true }
+                .disabled(isSavingPhoto || (entry?.allReflectionPhotoFilenames.count ?? 0) >= FoodMemoryDetailPresentation.maximumPhotoCount)
+            if !(entry?.allReflectionPhotoFilenames.isEmpty ?? true) {
+                Button("사진 관리") { showsPhotoManager = true }
+                    .disabled(isSavingPhoto)
+            }
+            Button("메모·날짜 수정") { showsCorrection = true }
+            Button("경험 비교") { showsComparison = true }
+            if let entry, FoodMemoryDetailPresentation(entry: entry).isGeneratedNote {
+                Button("이전 요약 보기") { showsLegacySummary = true }
+            }
+            if !(entry?.memoryCorrections?.isEmpty ?? true) {
+                Button("수정 이력") { showsHistory = true }
+            }
+            Button("기록 삭제", role: .destructive) { showsDelete = true }
+            Button("취소", role: .cancel) {}
+        }
+        .photosPicker(isPresented: $showsPhotoPicker, selection: $photoPickerItems,
+                      maxSelectionCount: max(1, FoodMemoryDetailPresentation.maximumPhotoCount - (entry?.allReflectionPhotoFilenames.count ?? 0)),
+                      selectionBehavior: .ordered, matching: .images)
+        .onChange(of: showsPhotoPicker) { _, isPresented in
+            if isPresented { photoPickerItems = [] }
+        }
+        .task(id: photoPickerItems) { await savePhotos(photoPickerItems) }
+        .sheet(isPresented: $showsPhotoManager) {
+            FoodMemoryPhotoManager(entryID: entryID, pickerItems: $photoPickerItems, isSaving: $isSavingPhoto,
+                                   importError: $photoError, onRemove: removePhoto)
+        }
+        .sheet(isPresented: $showsCorrection) {
+            if let entry { FoodMemoryCorrectionSheet(original: entry) }
+        }
         .fullScreenCover(isPresented: $showsFullEditor) {
-            if let entry { DiningFeedbackSheet(entry: entry) { appModel.updateDiningEntry($0, expected: entry) } }
+            if let entry {
+                DiningFeedbackSheet(entry: entry) { appModel.updateDiningEntry($0, expected: entry) }
+            }
         }
         .sheet(isPresented: $showsComparison) { FoodMemoryComparisonView(scope: .related(entryID)) }
+        .sheet(isPresented: $showsHistory) { FoodMemoryHistorySheet(entryID: entryID) }
+        .sheet(isPresented: $showsLegacySummary) {
+            if let entry { FoodMemoryStoredNoteSheet(note: entry.note) }
+        }
+        .sheet(item: $selectedTaste) { FoodMemoryTasteSheet(taste: $0) }
         .alert("이 기록을 삭제할까요?", isPresented: $showsDelete) {
             Button("취소", role: .cancel) {}
             Button("삭제", role: .destructive) { appModel.removeDiningEntry(id: entryID) }
-        } message: { Text("원문과 교정 이력, 검색·분석 근거에서 제거해요. 원격 백업 삭제는 동기화가 완료되면 반영돼요.") }
+        } message: { Text("사진과 기록이 함께 삭제돼요.") }
+    }
+
+    @MainActor
+    private func savePhotos(_ items: [PhotosPickerItem]) async {
+        guard let original = entry, !items.isEmpty else { return }
+        let accountGeneration = appModel.memoryAccountGeneration
+        let ownerScope = DiningReflectionPhotoStore.currentOwnerScope
+        var staged: [String] = []
+        var committed = false
+        var palette = original.photoPalette
+        isSavingPhoto = true
+        photoError = nil
+        defer {
+            if !committed { staged.forEach { DiningReflectionPhotoStore.remove(filename: $0, ownerScope: ownerScope) } }
+            if photoPickerItems == items { isSavingPhoto = false }
+        }
+        guard items.count <= max(0, FoodMemoryDetailPresentation.maximumPhotoCount - original.allReflectionPhotoFilenames.count) else {
+            photoError = "사진은 10장까지 추가할 수 있어요."
+            return
+        }
+        do {
+            for item in items {
+                guard let data = try await item.loadTransferable(type: Data.self),
+                      let normalized = await DiningReflectionPhotoStore.normalizedJPEGDataInBackground(data) else {
+                    if !Task.isCancelled { photoError = "사진을 불러올 수 없어요." }
+                    return
+                }
+                if original.allReflectionPhotoFilenames.isEmpty && staged.isEmpty {
+                    palette = await DiningPhotoPalette.extractInBackground(from: normalized)
+                }
+                guard !Task.isCancelled, accountGeneration == appModel.memoryAccountGeneration else { return }
+                guard appModel.diningEntry(id: entryID) == original else {
+                    photoError = "기록이 바뀌었어요. 사진을 다시 선택해 주세요."
+                    return
+                }
+                staged.append(try DiningReflectionPhotoStore.save(normalized, entryID: entryID, ownerScope: ownerScope))
+            }
+            guard !Task.isCancelled, accountGeneration == appModel.memoryAccountGeneration else { return }
+            let updated = try FoodMemoryDetailPresentation.settingPhotos(in: original, filenames: original.allReflectionPhotoFilenames + staged, palette: palette)
+            committed = appModel.updateDiningEntry(updated, expected: original)
+            if !committed { photoError = appModel.diningPersistenceError ?? "사진을 저장하지 못했어요." }
+        } catch {
+            if !Task.isCancelled, accountGeneration == appModel.memoryAccountGeneration {
+                photoError = "사진을 저장하지 못했어요. 다시 시도해 주세요."
+            }
+        }
+    }
+
+    private func removePhoto(_ filename: String, from original: DiningEntry) -> Bool {
+        guard original.id == entryID, original.allReflectionPhotoFilenames.contains(filename) else { return false }
+        do {
+            let filenames = original.allReflectionPhotoFilenames.filter { $0 != filename }
+            let palette = original.allReflectionPhotoFilenames.first == filename ? nil : original.photoPalette
+            let updated = try FoodMemoryDetailPresentation.settingPhotos(in: original, filenames: filenames, palette: palette)
+            return appModel.updateDiningEntry(updated, expected: original)
+        } catch {
+            return false
+        }
+    }
+
+    private func recordContent(_ entry: DiningEntry) -> some View {
+        let presentation = FoodMemoryDetailPresentation(entry: entry)
+        return VStack(alignment: .leading, spacing: 0) {
+            FoodMemoryPhotoCarousel(photos: presentation.photos, canAdd: presentation.photos.count < FoodMemoryDetailPresentation.maximumPhotoCount) {
+                showsPhotoPicker = true
+            }
+            .disabled(isSavingPhoto)
+            .overlay { if isSavingPhoto { ProgressView().padding(16).background(.regularMaterial, in: Circle()) } }
+
+            VStack(alignment: .leading, spacing: 28) {
+                identity(entry, date: presentation.dateLabel)
+
+                if !presentation.tastes.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("기억에 남은 맛")
+                            .font(TBFont.semibold(15))
+                        TBWrapLayout(spacing: 8) {
+                            ForEach(presentation.tastes) { taste in
+                                Button { selectedTaste = taste } label: {
+                                    TasteChip(
+                                        title: taste.label,
+                                        tone: taste.axis == nil ? .neutral : .taste,
+                                        colorAxis: taste.axis,
+                                        size: .sm
+                                    )
+                                    .frame(minHeight: 44)
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(TBTokenButtonStyle())
+                                .accessibilityLabel(taste.accessibilityLabel)
+                                .accessibilityHint("남긴 응답 보기")
+                            }
+                        }
+                    }
+                }
+
+                if !presentation.isGeneratedNote, !entry.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("메모")
+                                .font(TBFont.semibold(15))
+                            Spacer()
+                            Button { showsCorrection = true } label: {
+                                LucideIcon(.pencil, size: 16, strokeWidth: TBIcon.Stroke.regular)
+                                    .foregroundStyle(TBColor.iconPrimary)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(TBTokenButtonStyle())
+                            .accessibilityLabel("메모·날짜 수정")
+                        }
+                        .frame(height: 28)
+                        Text(entry.note)
+                            .font(TBFont.regular(15))
+                            .foregroundStyle(TBColor.textBody)
+                            .lineSpacing(5)
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                if let error = photoError ?? appModel.diningPersistenceError {
+                    Callout(message: error, tone: .critical)
+                }
+            }
+            .foregroundStyle(TBColor.textPrimary)
+            .padding(.horizontal, TBSpacing.page)
+            .padding(.top, 24)
+            .padding(.bottom, 36)
+        }
+    }
+
+    private func identity(_ entry: DiningEntry, date: String?) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(entry.menu.isEmpty ? "음식 기록" : entry.menu)
+                .font(TBFont.bold(26))
+                .fixedSize(horizontal: false, vertical: true)
+
+            if !entry.restaurant.isEmpty {
+                Text(entry.restaurant)
+                    .font(TBFont.medium(14))
+                    .foregroundStyle(TBColor.textSecondary)
+            }
+
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) {
+                    dateButton(date)
+                    Spacer(minLength: 12)
+                    overallEvaluation(entry)
+                }
+                VStack(alignment: .leading, spacing: 12) {
+                    dateButton(date)
+                    overallEvaluation(entry)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func dateButton(_ date: String?) -> some View {
+        if let date {
+            Button { showsCorrection = true } label: {
+                Text(date)
+                    .font(TBFont.regular(12))
+                    .foregroundStyle(TBColor.textSecondary)
+                    .frame(minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("\(date), 날짜 수정")
+        }
+    }
+
+    @ViewBuilder
+    private func overallEvaluation(_ entry: DiningEntry) -> some View {
+        if let evaluation = entry.overallEvaluation {
+            Text(evaluation.responseLabelSnapshot)
+                .font(TBFont.semibold(13))
+                .foregroundStyle(TBColor.textPrimary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .background(TBColor.mutedSurface, in: Capsule())
+                .accessibilityLabel("전체 평가, \(evaluation.responseLabelSnapshot)")
+        }
+    }
+}
+
+struct FoodMemoryPhoto: Identifiable, Equatable {
+    let entryID: UUID
+    let menu: String
+    let filename: String
+    var id: String { filename }
+}
+
+struct FoodMemoryTaste: Identifiable {
+    let id: String
+    let label: String
+    let axis: TasteAxis?
+    let selection: DiningSensorySelection?
+    var accessibilityLabel: String {
+        ([label] + [selection?.liking?.label, selection?.intensity?.label, selection?.preferenceFit?.label].compactMap { $0 }).joined(separator: ", ")
+    }
+}
+
+/// Reading-only presentation: absent responses stay absent; legacy IDs never become ratings.
+struct FoodMemoryDetailPresentation {
+    static let maximumPhotoCount = 10
+    let photos: [FoodMemoryPhoto]
+    let tastes: [FoodMemoryTaste]
+    let dateLabel: String?
+    let isGeneratedNote: Bool
+
+    static func settingPhotos(in entry: DiningEntry, filenames: [String], palette: DiningPhotoPalette?) throws -> DiningEntry {
+        guard filenames.allSatisfy(DiningReflectionPhotoStore.isValidFilename) else { throw DiningReflectionPhotoStore.PhotoError.invalidFilename }
+        var seen = Set<String>()
+        let ordered = filenames.filter { seen.insert($0).inserted }
+        let encoder = JSONEncoder(), decoder = JSONDecoder()
+        guard case .object(var fields) = try decoder.decode(DiningSelectionJSON.self, from: encoder.encode(entry)) else {
+            throw CocoaError(.coderInvalidValue)
+        }
+        fields["reflectionPhotoFilename"] = ordered.first.map(DiningSelectionJSON.string)
+        fields["additionalPhotoFilenames"] = .array(ordered.dropFirst().map(DiningSelectionJSON.string))
+        fields["photoPalette"] = try palette.map { try decoder.decode(DiningSelectionJSON.self, from: encoder.encode($0)) }
+        return try decoder.decode(DiningEntry.self, from: encoder.encode(DiningSelectionJSON.object(fields)))
+    }
+
+    init(entry: DiningEntry) {
+        photos = entry.allReflectionPhotoFilenames.filter(DiningReflectionPhotoStore.isValidFilename).map {
+            FoodMemoryPhoto(entryID: entry.id, menu: entry.menu, filename: $0)
+        }
+        if let selections = entry.sensorySelections {
+            tastes = selections.enumerated().map { index, selection in
+                FoodMemoryTaste(id: "\(index)-\(selection.stableID)", label: selection.labelSnapshot,
+                                axis: selection.type == .bubble ? TasteExperienceCatalog.experienceByID[selection.id]?.axis : nil,
+                                selection: selection)
+            }
+        } else {
+            tastes = entry.tasteExperienceIDs.enumerated().compactMap { index, id in
+                guard let taste = TasteExperienceCatalog.experienceByID[id] else { return nil }
+                return FoodMemoryTaste(id: "bubble-\(index)", label: taste.label, axis: taste.axis, selection: nil)
+            } + entry.detailTagIDs.enumerated().compactMap { index, id in
+                guard let tag = DiningDetailTagCatalog.metadata(for: id) else { return nil }
+                return FoodMemoryTaste(id: "detail-\(index)", label: tag.label, axis: nil, selection: nil)
+            }
+        }
+        isGeneratedNote = entry.note.hasPrefix("메인 미각 ") && entry.note.hasSuffix("으로 기억에 남은 식후 피드백입니다.")
+        let format: (Date) -> String = { $0.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ko_KR"))) }
+        if let time = entry.mealTime, let start = time.start {
+            switch time.source {
+            case .confirmed: dateLabel = format(start)
+            case .approximate: dateLabel = time.end.map { "\(format(start)) – \(format($0)) 무렵" } ?? "\(format(start)) 무렵"
+            case .photoCandidate: dateLabel = "\(format(start)) 촬영"
+            default: dateLabel = entry.savedAt.map { "\(format($0)) 기록" }
+            }
+        } else if let savedAt = entry.savedAt {
+            dateLabel = "\(format(savedAt)) 기록"
+        } else if entry.mealTime == nil {
+            dateLabel = "\(format(entry.date)) 기록"
+        } else {
+            dateLabel = nil
+        }
+    }
+}
+
+private struct FoodMemoryPhotoCarousel: View {
+    let photos: [FoodMemoryPhoto]
+    let canAdd: Bool
+    let onAddPhoto: () -> Void
+    @State private var selection = 0
+
+    var body: some View {
+        Group {
+            if photos.isEmpty {
+                Button(action: onAddPhoto) {
+                    VStack(spacing: 10) {
+                        LucideIcon(.image, size: 28, strokeWidth: TBIcon.Stroke.thin)
+                        Text("사진 추가").font(TBFont.medium(13))
+                    }
+                    .foregroundStyle(TBColor.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+                    .background(TBColor.mutedSurface)
+                }
+                .buttonStyle(.plain)
+            } else {
+                GeometryReader { proxy in
+                    TabView(selection: $selection) {
+                        ForEach(Array(photos.enumerated()), id: \.element.id) { index, photo in
+                            FoodMemoryPhotoPage(photo: photo, size: proxy.size)
+                                .tag(index)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .overlay(alignment: .topTrailing) {
+                        if canAdd {
+                            Button(action: onAddPhoto) {
+                                LucideIcon(.plus, size: 20, strokeWidth: TBIcon.Stroke.regular)
+                                    .foregroundStyle(.white)
+                                    .frame(width: 44, height: 44)
+                                    .background(.black.opacity(0.45), in: Circle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("사진 추가")
+                            .padding(16)
+                        }
+                    }
+                    .overlay(alignment: .bottom) {
+                        HStack(alignment: .bottom) {
+                            Spacer(minLength: 12)
+                            if photos.count > 1 {
+                                Text("\(selection + 1) / \(photos.count)")
+                                    .monospacedDigit()
+                                    .padding(.horizontal, 10).padding(.vertical, 7)
+                                    .background(.black.opacity(0.55), in: Capsule())
+                            }
+                        }
+                        .font(TBFont.medium(11)).foregroundStyle(.white)
+                        .padding(16)
+                        .allowsHitTesting(false)
+                    }
+                }
+                .aspectRatio(1.15, contentMode: .fit)
+                .clipped()
+                .onChange(of: photos) { _, _ in selection = 0 }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("food-memory-photos")
+            }
+        }
+    }
+}
+
+private struct FoodMemoryPhotoPage: View {
+    @Environment(\.displayScale) private var scale
+    let photo: FoodMemoryPhoto
+    let size: CGSize
+    @State private var image: CGImage?
+    @State private var loadedFilename: String?
+    @State private var finished = false
+    @State private var photoRevision = 0
+
+    var body: some View {
+        Group {
+            if loadedFilename == photo.filename, let image {
+                Image(decorative: image, scale: scale, orientation: .up)
+                    .resizable().scaledToFill()
+            } else if finished {
+                VStack(spacing: 8) {
+                    LucideIcon(.image, size: 24, strokeWidth: TBIcon.Stroke.regular)
+                    Text("사진을 불러올 수 없어요").font(TBFont.regular(12))
+                }
+                .foregroundStyle(TBColor.textSecondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .frame(width: size.width, height: size.height)
+        .background(TBColor.mutedSurface)
+        .clipped()
+        .accessibilityLabel("\(photo.menu) 사진")
+        .onReceive(NotificationCenter.default.publisher(for: DiningReflectionPhotoStore.didChangeNotification)) { _ in photoRevision &+= 1 }
+        .task(id: "\(photo.filename)-\(photoRevision)-\(Int(size.width * scale))") {
+            image = nil
+            finished = false
+            loadedFilename = photo.filename
+            let thumbnail = await DiningReflectionPhotoStore.thumbnail(for: photo.filename, fillingSquareOf: max(1, Int(size.width * scale)))
+            guard !Task.isCancelled else { return }
+            image = thumbnail
+            finished = true
+        }
+        .onDisappear { image = nil; loadedFilename = nil; finished = false }
+    }
+}
+
+private struct FoodMemoryPhotoManager: View {
+    @EnvironmentObject private var appModel: AppModel
+    @Environment(\.dismiss) private var dismiss
+    let entryID: UUID
+    @Binding var pickerItems: [PhotosPickerItem]
+    @Binding var isSaving: Bool
+    @Binding var importError: String?
+    let onRemove: (String, DiningEntry) -> Bool
+    @State private var showsPicker = false
+    @State private var pendingPhoto: FoodMemoryPhoto?
+    @State private var showsPhotoDelete = false
+    @State private var pendingEntry: DiningEntry?
+    @State private var pendingAccountGeneration: UUID?
+    private var entry: DiningEntry? { appModel.diningEntry(id: entryID) }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            TopAppBar(appearance: .solid, title: "사진", showBack: true, showsDefaultActions: false, onBack: { dismiss() })
+            ScrollView {
+                VStack(spacing: 20) {
+                    if let entry {
+                        let photos = FoodMemoryDetailPresentation(entry: entry).photos
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                            ForEach(Array(photos.enumerated()), id: \.element.id) { index, photo in
+                                photoTile(photo, index: index, entry: entry)
+                            }
+                        }
+                        if photos.count < FoodMemoryDetailPresentation.maximumPhotoCount {
+                            Button {
+                                pickerItems = []
+                                showsPicker = true
+                            } label: {
+                                HStack(spacing: 8) {
+                                    LucideIcon(.plus, size: 18, strokeWidth: TBIcon.Stroke.regular)
+                                    Text("사진 추가").font(TBFont.semibold(14))
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(TBColor.mutedSurface, in: Capsule())
+                            }
+                            .buttonStyle(TBTokenButtonStyle())
+                            .disabled(isSaving)
+                        }
+                    }
+                    if isSaving { ProgressView() }
+                    if let importError { Callout(message: importError, tone: .critical) }
+                }.padding(TBSpacing.page)
+            }
+        }
+        .foregroundStyle(TBColor.textPrimary)
+        .tbScreenTopChrome()
+        .tbPageBackground()
+        .presentationDragIndicator(.visible)
+        .photosPicker(isPresented: $showsPicker, selection: $pickerItems,
+                      maxSelectionCount: max(1, FoodMemoryDetailPresentation.maximumPhotoCount - (entry?.allReflectionPhotoFilenames.count ?? 0)),
+                      selectionBehavior: .ordered, matching: .images)
+        .onChange(of: appModel.memoryAccountGeneration) { _, _ in dismiss() }
+        .alert("이 사진을 삭제할까요?", isPresented: $showsPhotoDelete) {
+            Button("취소", role: .cancel) { pendingPhoto = nil }
+            Button("삭제", role: .destructive) {
+                if pendingAccountGeneration == appModel.memoryAccountGeneration,
+                   let photo = pendingPhoto, let original = pendingEntry {
+                    importError = nil
+                    if !onRemove(photo.filename, original) {
+                        importError = appModel.diningPersistenceError ?? "기록이 바뀌었어요. 다시 확인해 주세요."
+                    }
+                }
+                pendingPhoto = nil
+                pendingEntry = nil
+            }
+        }
+    }
+
+    private func photoTile(_ photo: FoodMemoryPhoto, index: Int, entry: DiningEntry) -> some View {
+        GeometryReader { proxy in
+            FoodMemoryPhotoPage(photo: photo, size: proxy.size)
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(alignment: .topTrailing) {
+            Button {
+                pendingEntry = entry
+                pendingAccountGeneration = appModel.memoryAccountGeneration
+                pendingPhoto = photo
+                showsPhotoDelete = true
+            } label: {
+                LucideIcon(.x, size: 16, strokeWidth: TBIcon.Stroke.regular)
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(.black.opacity(0.5), in: Circle())
+            }
+            .padding(6)
+            .buttonStyle(.plain)
+            .disabled(isSaving)
+            .accessibilityLabel("사진 \(index + 1) 삭제")
+        }
+        .overlay(alignment: .bottomLeading) {
+            if index == 0 {
+                Text("대표 사진")
+                    .font(TBFont.medium(10)).foregroundStyle(.white)
+                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .background(.black.opacity(0.5), in: Capsule())
+                    .padding(8)
+            }
+        }
+    }
+}
+
+private struct FoodMemoryTasteSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let taste: FoodMemoryTaste
+    var body: some View {
+        VStack(spacing: 0) {
+            TopAppBar(appearance: .solid, title: "남긴 맛", showBack: true, showsDefaultActions: false, onBack: { dismiss() })
+            VStack(alignment: .leading, spacing: 20) {
+                Text(taste.label).font(TBFont.bold(22))
+                if let selection = taste.selection {
+                    VStack(spacing: 16) {
+                        response("호감", selection.liking?.label)
+                        response("강도", selection.intensity?.label)
+                        response("알맞음", selection.preferenceFit?.label)
+                        response("대상", selection.target == .unspecified ? nil : selection.target.label)
+                        response("시점", selection.phase == .unspecified ? nil : selection.phase.label)
+                        response("함께 남긴 맛", selection.relatedBubbleLabelSnapshot)
+                    }
+                }
+            }
+            .padding(TBSpacing.page)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(TBColor.textPrimary)
+        .tbPageBackground()
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+    @ViewBuilder private func response(_ title: String, _ value: String?) -> some View {
+        if let value {
+            HStack(alignment: .top) {
+                Text(title).foregroundStyle(TBColor.textSecondary)
+                Spacer(minLength: 20)
+                Text(value).multilineTextAlignment(.trailing)
+            }.font(TBFont.regular(14))
+        }
+    }
+}
+
+private struct FoodMemoryStoredNoteSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let note: String
+    var body: some View {
+        VStack(spacing: 0) {
+            TopAppBar(appearance: .solid, title: "이전 요약", showBack: true, showsDefaultActions: false, onBack: { dismiss() })
+            ScrollView {
+                Text(note).font(TBFont.regular(15)).lineSpacing(5).textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading).padding(TBSpacing.page)
+            }
+        }
+        .foregroundStyle(TBColor.textPrimary)
+        .tbScreenTopChrome()
+        .tbPageBackground()
+        .presentationDragIndicator(.visible)
+    }
+}
+
+private struct FoodMemoryHistorySheet: View {
+    @EnvironmentObject private var appModel: AppModel
+    @Environment(\.dismiss) private var dismiss
+    let entryID: UUID
+    @State private var actionMessage: String?
+    var body: some View {
+        VStack(spacing: 0) {
+            TopAppBar(appearance: .solid, title: "수정 이력", showBack: true, showsDefaultActions: false, onBack: { dismiss() })
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    if let entry = appModel.diningEntry(id: entryID) {
+                        ForEach((entry.memoryCorrections ?? []).reversed()) { correction in
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(correction.changedAt.formatted(date: .abbreviated, time: .shortened))
+                                    .font(TBFont.medium(12)).foregroundStyle(TBColor.textSecondary)
+                                Text(correction.scopeLabel).font(TBFont.semibold(15))
+                                if case .string(let before) = correction.before["note"] { Text("이전: \(before)") }
+                                if case .string(let after) = correction.after["note"] { Text("변경: \(after)") }
+                            }
+                            .font(TBFont.regular(14))
+                            Divider()
+                        }
+                        if let latest = entry.memoryCorrections?.last, !latest.before.isEmpty {
+                            Button("이전 수정 되돌리기") {
+                                actionMessage = appModel.undoMemoryCorrection(entryID: entryID) ? "수정을 되돌렸어요." : "다시 시도해 주세요."
+                            }
+                            .font(TBFont.semibold(14)).frame(minHeight: 44)
+                        }
+                    }
+                    if let actionMessage { Text(actionMessage).font(TBFont.regular(13)) }
+                }.padding(TBSpacing.page)
+            }
+        }
+        .foregroundStyle(TBColor.textPrimary)
+        .tbScreenTopChrome()
+        .tbPageBackground()
+        .presentationDragIndicator(.visible)
     }
 }
 
@@ -216,8 +793,12 @@ struct FoodMemoryDetailView: View {
 struct MemoryRevisionDismissal: ViewModifier {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.tasteDetailChrome) private var detailChrome
     func body(content: Content) -> some View {
-        content.onChange(of: appModel.memoryGeneration) { _, _ in dismiss() }
+        content.onChange(of: appModel.memoryGeneration) { _, _ in
+            if let detailChrome { detailChrome.onBack() }
+            else { dismiss() }
+        }
     }
 }
 
@@ -317,33 +898,140 @@ struct DiningMealTimeEditor: View {
     }
 }
 
+/// Local editing state only. No source fields are mutated until the existing save succeeds.
+struct FoodMemoryCorrectionDraft: Equatable {
+    /// Retained with the draft for the lifetime of one editing presentation.
+    /// A parent refresh must not silently advance the optimistic-lock baseline.
+    let original: DiningEntry
+    var note: String
+    var mealTime: DiningMealTime?
+    var foodSource: DiningFoodSource?
+
+    init(_ original: DiningEntry) {
+        self.original = original
+        note = original.note
+        mealTime = original.mealTime
+        foodSource = original.foodSource
+    }
+
+    func hasChanges(comparedTo original: DiningEntry) -> Bool {
+        self != FoodMemoryCorrectionDraft(original)
+    }
+
+    func updating(_ original: DiningEntry) -> DiningEntry {
+        var edited = original
+        edited.note = note
+        edited.mealTime = mealTime
+        edited.foodSource = foodSource
+        if let date = mealTime?.confirmedDate {
+            edited.date = date
+            edited.observedAt = date
+        }
+        return edited
+    }
+}
+
 private struct FoodMemoryCorrectionSheet: View {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
-    let original: DiningEntry
-    @State private var note: String
-    @State private var mealTime: DiningMealTime?
-    init(original: DiningEntry) { self.original = original; _note = State(initialValue: original.note); _mealTime = State(initialValue: original.mealTime) }
+    @FocusState private var noteIsFocused: Bool
+    @AccessibilityFocusState private var errorIsFocused: Bool
+    @State private var draft: FoodMemoryCorrectionDraft
+    @State private var showsDiscardConfirmation = false
+    @State private var saveError: String?
+
+    init(original: DiningEntry) {
+        _draft = State(initialValue: FoodMemoryCorrectionDraft(original))
+    }
+
+    private var original: DiningEntry { draft.original }
+    private var hasChanges: Bool { draft.hasChanges(comparedTo: original) }
+
     var body: some View {
         NavigationStack {
-            Form {
-                Section("현재 회고") { TextEditor(text: $note).frame(minHeight: 180).accessibilityLabel("회고 원문 수정") }
-                Text("전체 평가·감각 응답은 별도로 유지해요. ‘앞으로 덜 달게’ 같은 목표는 과거 호감으로 바꾸지 않아요.")
-                DiningMealTimeEditor(value: $mealTime)
-                if let error = appModel.diningPersistenceError { Text(error) }
-            }.navigationTitle("기록 바로잡기")
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) { Button("취소") { dismiss() } }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("저장") {
-                            var edited = original; edited.note = note; edited.mealTime = mealTime
-                            if let date = mealTime?.confirmedDate { edited.date = date; edited.observedAt = date }
-                            if appModel.updateDiningEntry(edited, expected: original) { dismiss() }
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: TBSpacing.section) {
+                        if let saveError {
+                            Callout(message: saveError, title: "저장하지 못했어요", tone: .critical)
+                                .id("correction-save-error")
+                                .accessibilityElement(children: .combine)
+                                .accessibilityFocused($errorIsFocused)
+                        }
+                        TBTextArea(
+                            text: $draft.note,
+                            label: "현재 회고",
+                            placeholder: "기억에 남는 맛과 상황을 적어 주세요.",
+                            accessibilityName: "회고 원문 수정",
+                            helperText: "감각 응답과 음식 전체 평가는 그대로 유지돼요.",
+                            minimumHeight: 180,
+                            focus: $noteIsFocused
+                        )
+                        SectionCard {
+                            VStack(alignment: .leading, spacing: TBSpacing.x16) {
+                                DiningMealTimeEditor(value: $draft.mealTime)
+                                Divider().overlay(TBColor.borderSubtle)
+                                DiningFoodSourceEditor(value: $draft.foodSource)
+                            }
+                            .font(TBFont.regular(14))
+                            .foregroundStyle(TBColor.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
+                    .tbPageContentPadding()
                 }
+                .scrollDismissesKeyboard(.interactively)
+                .onChange(of: saveError) { _, message in
+                    if message != nil {
+                        proxy.scrollTo("correction-save-error", anchor: .top)
+                        errorIsFocused = true
+                    }
+                }
+            }
+            .tbPageBackground()
+            .navigationTitle("기록 바로잡기")
+            .tbInlineNavigationTitle()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("취소") {
+                        if hasChanges { showsDiscardConfirmation = true }
+                        else { dismiss() }
+                    }
+                    .font(TBFont.medium(14))
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("저장", action: save)
+                        .font(TBFont.semibold(14))
+                        .disabled(!hasChanges)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("키보드 닫기") { noteIsFocused = false }
+                        .font(TBFont.medium(14))
+                }
+            }
+        }
+        .interactiveDismissDisabled(hasChanges)
+        .alert("변경 내용을 버릴까요?", isPresented: $showsDiscardConfirmation) {
+            Button("계속 수정", role: .cancel) {}
+            Button("변경 내용 버리기", role: .destructive) { dismiss() }
+        } message: {
+            Text("저장하지 않은 수정만 사라져요. 기존 기록은 유지돼요.")
         }
         .onChange(of: appModel.memoryAccountGeneration) { _, _ in dismiss() }
+    }
+
+    private func save() {
+        guard hasChanges else { return }
+        noteIsFocused = false
+        saveError = nil
+        // Synchronous local persistence already rejects a changed/deleted original.
+        // Do not add artificial loading or claim that remote synchronization finished.
+        if appModel.updateDiningEntry(draft.updating(original), expected: original) {
+            dismiss()
+        } else {
+            saveError = appModel.diningPersistenceError ?? "기록을 저장하지 못했어요. 다시 시도해 주세요."
+        }
     }
 }
 
@@ -363,4 +1051,59 @@ struct FoodMemoryRuntimePreview: View {
         }.environmentObject(model)
     }
 }
+
+/// Isolated preview records. Optional local images are supplied only by the QA launch environment.
+struct FoodMemoryDetailRuntimePreview: View {
+    @StateObject private var model: AppModel
+    @State private var showsDetail = true
+    private static let mainID = UUID(uuidString: "AB41DDA0-8252-442B-B754-114A37F8BC31")!
+
+    init() {
+        let model = AppModel.preview(authEntryComplete: true, onboardingComplete: true, profile: .sample,
+                                     authRepository: FixtureBackendAuthRepository())
+        let empty = ProcessInfo.processInfo.arguments.contains("--food-memory-detail-empty-qa")
+        let directory = ProcessInfo.processInfo.environment["TB_FOOD_MEMORY_PREVIEW_PHOTOS"]
+        let files = ["hero-food.png", "second-food.png"]
+        var filenames: [String?] = []
+        for (index, file) in files.enumerated() {
+            if empty { filenames.append(nil); continue }
+            let supplied = directory.flatMap { try? Data(contentsOf: URL(fileURLWithPath: $0).appendingPathComponent(file)) }
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = 1
+            let fallback = UIGraphicsImageRenderer(size: CGSize(width: 600, height: 520), format: format).jpegData(withCompressionQuality: 0.8) { context in
+                (index == 0 ? UIColor.systemOrange : UIColor.systemGreen).setFill()
+                context.fill(CGRect(x: 0, y: 0, width: 600, height: 520))
+            }
+            let normalized = DiningReflectionPhotoStore.normalizedJPEGData(supplied ?? fallback)
+            filenames.append(normalized.flatMap { try? DiningReflectionPhotoStore.save($0, entryID: Self.mainID) })
+        }
+        let date = Calendar(identifier: .gregorian).date(from: DateComponents(timeZone: TimeZone(identifier: "Asia/Seoul"), year: 2026, month: 10, day: 4, hour: 19, minute: 30))!
+        var selections: [DiningSensorySelection] = []
+        for (axis, label) in [(TasteAxis.sweet, "퍼지는 달콤함"), (.bitter, "또렷한 쌉쌀함")] {
+            if let taste = TasteExperienceCatalog.experiences.first(where: { $0.axis == axis && $0.label == label }) {
+                selections.append(.init(id: taste.id, type: .bubble, catalogVersion: DiningSensorySelection.currentCatalogVersion,
+                                        labelSnapshot: taste.label, liking: .liked, intensity: .medium, preferenceFit: .justRight))
+            }
+        }
+        if let tag = DiningDetailTagCatalog.metadata(for: "aroma-roasted") {
+            selections.append(.init(id: tag.id, type: .detailTag, labelSnapshot: tag.label))
+        }
+        let main = DiningEntry(id: Self.mainID, restaurant: "온지음", menu: "구운 배", date: date, savedAt: date,
+                               rating: 0, note: empty ? "" : "겉은 살짝 바삭하고 속은 촉촉했다. 끝에 남는 은은한 단맛이 좋았다.",
+                               sensorySelections: empty ? [] : selections,
+                               overallEvaluation: empty ? nil : .init(response: .liked),
+                               reflectionPhotoFilename: filenames[0],
+                               additionalPhotoFilenames: filenames.dropFirst().compactMap { $0 },
+                               mealTime: .init(source: .confirmed, start: date))
+        model.addDiningEntry(main)
+        _model = StateObject(wrappedValue: model)
+    }
+
+    var body: some View {
+        DiningView()
+            .fullScreenCover(isPresented: $showsDetail) { FoodMemoryDetailView(entryID: Self.mainID) }
+            .environmentObject(model)
+    }
+}
+
 #endif

@@ -19,7 +19,7 @@ const BOTTOM_SHEET_STAGE_HEIGHT_CLASS =
 const BOTTOM_SHEET_HEADER_ICON_BUTTON_CLASS =
   "flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)] active:opacity-70";
 
-interface BottomSheetShellProps extends ComponentProps<typeof Drawer> {
+type BottomSheetShellProps = ComponentProps<typeof Drawer> & {
   bodyClassName?: string;
   children: ReactNode;
   contentClassName?: string;
@@ -31,6 +31,7 @@ interface BottomSheetShellProps extends ComponentProps<typeof Drawer> {
   headerEnd?: ReactNode;
   headerStart?: ReactNode;
   overlayClassName?: string;
+  trigger?: ReactNode;
 }
 
 interface BottomSheetCloseButtonProps
@@ -117,6 +118,7 @@ export default function BottomSheetShell({
   headerEnd,
   headerStart,
   overlayClassName,
+  trigger,
   ...drawerProps
 }: BottomSheetShellProps) {
   const showHeader =
@@ -124,6 +126,7 @@ export default function BottomSheetShell({
 
   return (
     <Drawer {...drawerProps}>
+      {trigger}
       <DrawerContent
         overlayClassName={cn("z-40 bg-[rgba(0,0,0,0.6)]", overlayClassName)}
         className={cn(

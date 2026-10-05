@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M8 3C9.10457 3 10 3.89543 10 5C10 5.8 9.5 6.2 9.5 7C9.5 7.8 10 8.2 10 9C10 9.8 9.5 10.2 9.5 11C9.5 11.8 10 12.2 10 13C10 13.8 9.5 14.2 9.5 15C9.5 15.8 10 16.2 10 17C10 18.1046 9.10457 19 8 19C6.89543 19 6 18.1046 6 17C6 16.2 6.5 15.8 6.5 15C6.5 14.2 6 13.8 6 13C6 12.2 6.5 11.8 6.5 11C6.5 10.2 6 9.8 6 9C6 8.2 6.5 7.8 6.5 7C6.5 6.2 6 5.8 6 5C6 3.89543 6.89543 3 8 3Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M16 7C17.1046 7 18 7.89543 18 9C18 9.8 17.5 10.2 17.5 11C17.5 11.8 18 12.2 18 13C18 13.8 17.5 14.2 17.5 15C17.5 15.8 18 16.2 18 17C18 18.1046 17.1046 19 16 19C14.8954 19 14 18.1046 14 17C14 16.2 14.5 15.8 14.5 15C14.5 14.2 14 13.8 14 13C14 12.2 14.5 11.8 14.5 11C14.5 10.2 14 9.8 14 9C14 7.89543 14.8954 7 16 7Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M8 19V21" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M16 19V21" />
+</vector>

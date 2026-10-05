@@ -1,258 +1,6 @@
 import Combine
 import Foundation
 
-enum RestaurantBookmarkConstants {
-    static let defaultListID = "default-saved"
-}
-
-enum BookmarkCoverIconID: String, CaseIterable, Codable, Identifiable {
-    case beef
-    case cakeSlice = "cake-slice"
-    case coffee
-    case cookingPot = "cooking-pot"
-    case croissant
-    case cupSoda = "cup-soda"
-    case dessert
-    case eggFried = "egg-fried"
-    case fish
-    case salad
-    case sandwich
-    case soup
-    case utensils
-    case wine
-
-    // Keep legacy values decodable for lists created before the Lucide food set shipped.
-    case chefHat
-    case sparkles
-    case store
-
-    static let allCases: [BookmarkCoverIconID] = [
-        .beef,
-        .cakeSlice,
-        .coffee,
-        .cookingPot,
-        .croissant,
-        .cupSoda,
-        .dessert,
-        .eggFried,
-        .fish,
-        .salad,
-        .sandwich,
-        .soup,
-        .utensils,
-        .wine
-    ]
-
-    var id: String { rawValue }
-
-    var icon: LucideIconName {
-        switch self {
-        case .beef: .beef
-        case .cakeSlice: .cakeSlice
-        case .coffee: .coffee
-        case .cookingPot: .cookingPot
-        case .croissant: .croissant
-        case .cupSoda: .cupSoda
-        case .dessert: .dessert
-        case .eggFried: .eggFried
-        case .fish: .fish
-        case .salad: .salad
-        case .sandwich: .sandwich
-        case .soup: .soup
-        case .utensils: .utensils
-        case .wine: .wine
-        case .chefHat: .chefHat
-        case .sparkles: .sparkles
-        case .store: .store
-        }
-    }
-}
-
-struct RestaurantBookmarkList: Identifiable, Codable, Equatable {
-    let id: String
-    var name: String
-    var description: String
-    var isPrivate: Bool
-    var coverIconID: BookmarkCoverIconID
-    var coverTasteID: TasteAxis
-
-    var visibilityLabel: String {
-        isPrivate ? "비밀 리스트" : "공개 리스트"
-    }
-}
-
-struct RestaurantBookmarkRecord: Identifiable, Codable, Equatable {
-    var id: String { restaurantID }
-    let chefName: String
-    var listID: String
-    let restaurantID: String
-    let restaurantName: String
-    let savedAt: Date
-}
-
-enum RestaurantBookmarkMutationKind: String, Codable, Equatable {
-    case createList
-    case saveBookmark
-    case removeBookmark
-}
-
-struct RestaurantBookmarkPendingMutation: Identifiable, Codable, Equatable {
-    let id: String
-    let kind: RestaurantBookmarkMutationKind
-    let restaurantID: String?
-    let listID: String?
-    let createdAt: Date
-
-    init(
-        id: String = UUID().uuidString,
-        kind: RestaurantBookmarkMutationKind,
-        restaurantID: String? = nil,
-        listID: String? = nil,
-        createdAt: Date = .now
-    ) {
-        self.id = id
-        self.kind = kind
-        self.restaurantID = restaurantID
-        self.listID = listID
-        self.createdAt = createdAt
-    }
-}
-
-struct RestaurantBookmarkState: Codable, Equatable {
-    let lists: [RestaurantBookmarkList]
-    let bookmarks: [RestaurantBookmarkRecord]
-}
-
-struct RestaurantBookmarkConflictResolution: Equatable {
-    let state: RestaurantBookmarkState
-    let conflictCount: Int
-    let suppressedRemoteBookmarkCount: Int
-
-    var hasRemoteConflict: Bool {
-        conflictCount > 0 || suppressedRemoteBookmarkCount > 0
-    }
-}
-
-enum RestaurantBookmarkSyncStatus: Equatable {
-    case idle
-    case pending(Int)
-    case syncing(Int)
-    case synced(Date)
-    case conflictResolved(Date, Int)
-    case failed(String, Int)
-
-    var isVisible: Bool {
-        switch self {
-        case .idle, .synced:
-            return false
-        case .pending, .syncing, .conflictResolved, .failed:
-            return true
-        }
-    }
-
-    var title: String {
-        switch self {
-        case .idle:
-            return "북마크 동기화"
-        case .pending:
-            return "동기화 대기"
-        case .syncing:
-            return "동기화 중"
-        case .synced:
-            return "동기화 완료"
-        case .conflictResolved:
-            return "동기화 정리됨"
-        case .failed:
-            return "동기화 보류"
-        }
-    }
-
-    var detail: String {
-        switch self {
-        case .idle:
-            return "로컬 상태"
-        case .pending(let count):
-            return "\(count)개 변경 대기"
-        case .syncing(let count):
-            return "\(count)개 전송 중"
-        case .synced:
-            return "최신 상태"
-        case .conflictResolved(_, let count):
-            return "\(count)개 충돌 반영"
-        case .failed(let message, let count):
-            return "\(message) · \(count)개 대기"
-        }
-    }
-}
-
-enum RestaurantBookmarkSyncEngine {
-    static func resolve(
-        local: RestaurantBookmarkState,
-        remote: RestaurantBookmarkState,
-        pendingMutations: [RestaurantBookmarkPendingMutation]
-    ) -> RestaurantBookmarkConflictResolution {
-        let locallyRemovedRestaurantIDs = Set(
-            pendingMutations
-                .filter { $0.kind == .removeBookmark }
-                .compactMap(\.restaurantID)
-        )
-
-        let resolvedLists = dedupedLists(local.lists + remote.lists)
-        let remoteBookmarks = remote.bookmarks.filter {
-            !locallyRemovedRestaurantIDs.contains($0.restaurantID)
-        }
-        let suppressedRemoteCount = remote.bookmarks.count - remoteBookmarks.count
-        let bookmarkResolution = dedupedBookmarks(local.bookmarks + remoteBookmarks)
-
-        return RestaurantBookmarkConflictResolution(
-            state: RestaurantBookmarkState(
-                lists: resolvedLists,
-                bookmarks: bookmarkResolution.bookmarks.sorted { $0.savedAt > $1.savedAt }
-            ),
-            conflictCount: bookmarkResolution.conflictCount,
-            suppressedRemoteBookmarkCount: suppressedRemoteCount
-        )
-    }
-
-    private static func dedupedLists(
-        _ lists: [RestaurantBookmarkList]
-    ) -> [RestaurantBookmarkList] {
-        var seenIDs: Set<String> = []
-        var nextLists: [RestaurantBookmarkList] = []
-
-        for list in lists where !seenIDs.contains(list.id) {
-            seenIDs.insert(list.id)
-            nextLists.append(list)
-        }
-
-        return nextLists
-    }
-
-    private static func dedupedBookmarks(
-        _ bookmarks: [RestaurantBookmarkRecord]
-    ) -> (bookmarks: [RestaurantBookmarkRecord], conflictCount: Int) {
-        var bookmarkByRestaurantID: [String: RestaurantBookmarkRecord] = [:]
-        var conflictCount = 0
-
-        for bookmark in bookmarks {
-            guard let existing = bookmarkByRestaurantID[bookmark.restaurantID] else {
-                bookmarkByRestaurantID[bookmark.restaurantID] = bookmark
-                continue
-            }
-
-            if existing != bookmark {
-                conflictCount += 1
-            }
-
-            if bookmark.savedAt > existing.savedAt {
-                bookmarkByRestaurantID[bookmark.restaurantID] = bookmark
-            }
-        }
-
-        return (Array(bookmarkByRestaurantID.values), conflictCount)
-    }
-}
-
 struct UserProfileIdentity: Codable, Equatable {
     var displayName: String
     var nickname: String
@@ -405,34 +153,10 @@ final class AppModel: ObservableObject {
     private var sensoryAnalysisTask: Task<Void, Never>?
     private var sensoryAnalysisRevision = 0
 
-    private enum Key {
-        static let authEntry = "tastebuddy.ios.auth-entry.v1"
-        static let onboarding = "tastebuddy.ios.onboarding.v1"
-        static let preferenceIntakeDraft = "tastebuddy.ios.preference-intake-draft.v1"
-        static let preferenceProfile = "tastebuddy.ios.preference-profile.v1"
-        static let profile = "tastebuddy.ios.profile.v1"
-        static let profileHistory = "tastebuddy.ios.profile-history.v1"
-        static let profileIdentity = "tastebuddy.ios.profile-identity.v1"
-        static let profileAvatarImageData = "tastebuddy.ios.profile-avatar-image-data.v1"
-        static let diningEntries = "tastebuddy.ios.dining-entries.v1"
-        static let tbaEvidenceEvents = "tastebuddy.ios.tba-evidence-events.v1"
-        static let tbaConfidenceStates = "tastebuddy.ios.tba-confidence-states.v1"
-        static let savedRestaurantIDs = "tastebuddy.ios.saved-restaurant-ids.v1"
-        static let bookmarkLists = "tastebuddy.ios.restaurant-bookmark-lists.v1"
-        static let restaurantBookmarks = "tastebuddy.ios.restaurant-bookmarks.v1"
-        static let pendingBookmarkMutations = "tastebuddy.ios.restaurant-bookmark-pending-mutations.v1"
-        static let dishFeedbackComments = "tastebuddy.ios.dish-feedback-comments.v1"
-        static let rememberedRestaurantMenus = "tastebuddy.ios.restaurant-remembered-menus.v1"
-        static let personalTasteQuestionProgress = "tastebuddy.ios.personal-taste-question-progress.v1"
-        // 열람 상태는 이 기기/계정에만 저장한다. 원본 백업이나 취향 증거에 섞지 않는다.
-        static let homeDiscoveryHistoryPrefix = "tastebuddy.ios.home-discovery-history.v1."
-        static let chatGPTExportReceipt = "tastebuddy.ios.chatgpt-export-receipt.v1"
-        static let activeAccount = "tastebuddy.ios.active-account.v1"
-        static let accountArchivePrefix = "tastebuddy.ios.account-archive.v1."
-        static let accountDataKeys = [preferenceIntakeDraft, preferenceProfile, profile, profileHistory,
-            profileIdentity, profileAvatarImageData, diningEntries, tbaEvidenceEvents, tbaConfidenceStates,
-            savedRestaurantIDs, bookmarkLists, restaurantBookmarks, pendingBookmarkMutations,
-            dishFeedbackComments, rememberedRestaurantMenus, personalTasteQuestionProgress, chatGPTExportReceipt]
+    private typealias Key = NativeAccountStorageKey
+
+    private var accountSnapshotPolicy: NativeAccountSnapshotPolicy {
+        NativeAccountSnapshotPolicy(decoder: decoder)
     }
 
     init(
@@ -459,6 +183,7 @@ final class AppModel: ObservableObject {
         defaults.set(activeAccountScope, forKey: Key.activeAccount)
         reloadPersistedAccountData()
         persistAccountArchive(scheduleSync: false)
+        configureLocalPhotoScope()
     }
 
     private func reloadPersistedAccountData() {
@@ -468,11 +193,18 @@ final class AppModel: ObservableObject {
             .flatMap { try? decoder.decode([String: Date].self, from: $0) } ?? [:]
         chatGPTExportReceipt = defaults.data(forKey: Key.chatGPTExportReceipt).flatMap { try? decoder.decode(ChatGPTExportReceipt.self, from: $0) }
         diningPersistenceError = nil
-        invalidAccountDataKeys = unreadableKeys(in: currentAccountSnapshot())
+        let snapshot = currentAccountSnapshot()
+        invalidAccountDataKeys = unreadableKeys(in: snapshot)
+        if !snapshot.hasSupportedSchema {
+            invalidAccountDataKeys.formUnion(Key.accountDataKeys)
+            accountDataSyncError = NativeAccountDataError.unsupportedVersion.localizedDescription
+        }
         if invalidAccountDataKeys.contains(Key.diningEntries) {
             diningPersistenceError = "저장 자료를 읽지 못했어요. 원본은 보존되어 있으며 빈 기록으로 덮어쓰지 않아요. 계정 동기화 상태에서 복구를 확인해 주세요."
         }
-        if !invalidAccountDataKeys.isEmpty { accountDataSyncError = NativeAccountDataError.invalidSource.localizedDescription }
+        if !invalidAccountDataKeys.isEmpty, snapshot.hasSupportedSchema {
+            accountDataSyncError = NativeAccountDataError.invalidSource.localizedDescription
+        }
         preferenceIntakeDraft = nil
         preferenceProfile = nil
         profile = nil
@@ -481,14 +213,14 @@ final class AppModel: ObservableObject {
         personalTasteAnswerUndo = nil
         hasSeenOnboarding = defaults.bool(forKey: Key.onboarding)
 
-        if let draftData = defaults.data(forKey: Key.preferenceIntakeDraft) {
+        if !invalidAccountDataKeys.contains(Key.preferenceIntakeDraft), let draftData = defaults.data(forKey: Key.preferenceIntakeDraft) {
             preferenceIntakeDraft = try? decoder.decode(
                 PreferenceIntakeResponsesContract.self,
                 from: draftData
             )
         }
 
-        if let preferenceData = defaults.data(forKey: Key.preferenceProfile) {
+        if !invalidAccountDataKeys.contains(Key.preferenceProfile), let preferenceData = defaults.data(forKey: Key.preferenceProfile) {
             preferenceProfile = try? decoder.decode(
                 PreferenceIntakeProfileContract.self,
                 from: preferenceData
@@ -520,7 +252,7 @@ final class AppModel: ObservableObject {
 
         profileAvatarImageData = defaults.data(forKey: Key.profileAvatarImageData)
 
-        if let diningData = defaults.data(forKey: Key.diningEntries),
+        if !invalidAccountDataKeys.contains(Key.diningEntries), let diningData = defaults.data(forKey: Key.diningEntries),
            let decodedEntries = try? decoder.decode([DiningEntry].self, from: diningData) {
             diningEntries = decodedEntries.sorted { $0.observedAt > $1.observedAt }
         } else {
@@ -620,33 +352,57 @@ final class AppModel: ObservableObject {
     }
 
     private func currentAccountSnapshot() -> NativeAccountSnapshot {
-        var snapshot = NativeAccountSnapshot(values: Dictionary(uniqueKeysWithValues: Key.accountDataKeys.compactMap { key in
-            defaults.data(forKey: key).map { (key, $0) }
-        }), hasSeenOnboarding: defaults.bool(forKey: Key.onboarding))
-        snapshot.photoFilenames = photoFilenames(in: snapshot)
-        return snapshot
+        let archivedSnapshot = accountArchive(for: activeAccountScope)?.snapshot
+        if let archivedSnapshot, !archivedSnapshot.hasSupportedSchema { return archivedSnapshot }
+        var nativeValues: [String: Data] = [:]
+        for key in Key.accountDataKeys {
+            if let data = defaults.data(forKey: key) { nativeValues[key] = data }
+        }
+        return accountSnapshotPolicy.makeSnapshot(
+            archived: archivedSnapshot,
+            nativeValues: nativeValues,
+            hasSeenOnboarding: defaults.bool(forKey: Key.onboarding)
+        )
     }
 
-    private func setPersistedAccountValue(_ value: Any?, forKey key: String) {
-        guard !invalidAccountDataKeys.contains(key) else {
-            accountDataSyncError = NativeAccountDataError.invalidSource.localizedDescription
-            return
+    private func canPersistAccountValue(forKey key: String) -> Bool {
+        if let snapshot = accountArchive(for: activeAccountScope)?.snapshot, !snapshot.hasSupportedSchema {
+            accountDataSyncError = NativeAccountDataError.unsupportedVersion.localizedDescription
+            return false
         }
+        guard !invalidAccountDataKeys.contains(key), !invalidAccountDataKeys.contains(Key.androidArchive) else {
+            accountDataSyncError = NativeAccountDataError.invalidSource.localizedDescription
+            return false
+        }
+        return true
+    }
+
+    @discardableResult
+    private func setPersistedAccountValue(_ value: Any?, forKey key: String) -> Bool {
+        guard canPersistAccountValue(forKey: key) else { return false }
         defaults.set(value, forKey: key)
         persistAccountArchive()
+        return true
     }
 
-    private func removePersistedAccountValue(forKey key: String) {
-        guard !invalidAccountDataKeys.contains(key) else {
-            accountDataSyncError = NativeAccountDataError.invalidSource.localizedDescription
-            return
-        }
+    @discardableResult
+    private func removePersistedAccountValue(forKey key: String) -> Bool {
+        guard canPersistAccountValue(forKey: key) else { return false }
         defaults.removeObject(forKey: key)
         persistAccountArchive()
+        return true
     }
 
     private func persistAccountArchive(scheduleSync: Bool = true) {
         let snapshot = currentAccountSnapshot()
+        guard snapshot.hasSupportedSchema else {
+            accountDataSyncError = NativeAccountDataError.unsupportedVersion.localizedDescription
+            return
+        }
+        guard !unreadableKeys(in: snapshot).contains(Key.androidArchive) else {
+            accountDataSyncError = NativeAccountDataError.invalidSource.localizedDescription
+            return
+        }
         var archive = accountArchive(for: activeAccountScope) ?? NativeAccountArchive(snapshot: snapshot)
         archive.isDirty = archive.isDirty || archive.snapshot != snapshot || (archive.remoteRevision == 0 && !snapshot.isEmpty)
         archive.snapshot = snapshot
@@ -664,36 +420,11 @@ final class AppModel: ObservableObject {
     }
 
     private func unreadableKeys(in snapshot: NativeAccountSnapshot) -> Set<String> {
-        Set(snapshot.values.compactMap { key, data in
-            if [Key.preferenceIntakeDraft, Key.preferenceProfile, Key.profile].contains(key), data == Data("null".utf8) {
-                return nil
-            }
-            do {
-                switch key {
-                case Key.preferenceIntakeDraft: _ = try decoder.decode(PreferenceIntakeResponsesContract.self, from: data)
-                case Key.preferenceProfile: _ = try decoder.decode(PreferenceIntakeProfileContract.self, from: data)
-                case Key.profile: _ = try decoder.decode(TasteProfile.self, from: data)
-                case Key.profileHistory: _ = try decoder.decode([TasteProfile].self, from: data)
-                case Key.profileIdentity: _ = try decoder.decode(UserProfileIdentity.self, from: data)
-                case Key.diningEntries: _ = try decoder.decode([DiningEntry].self, from: data)
-                case Key.savedRestaurantIDs: _ = try decoder.decode([String].self, from: data)
-                case Key.bookmarkLists: _ = try decoder.decode([RestaurantBookmarkList].self, from: data)
-                case Key.restaurantBookmarks: _ = try decoder.decode([RestaurantBookmarkRecord].self, from: data)
-                case Key.pendingBookmarkMutations: _ = try decoder.decode([RestaurantBookmarkPendingMutation].self, from: data)
-                case Key.dishFeedbackComments: _ = try decoder.decode([String: [DishFeedbackComment]].self, from: data)
-                case Key.rememberedRestaurantMenus: _ = try decoder.decode([String: [String]].self, from: data)
-                case Key.personalTasteQuestionProgress: _ = try decoder.decode([String: [String: PersonalTasteQuestionProgress]].self, from: data)
-                default: break // 사진 바이트와 사용하지 않는 이전 분석 캐시는 원형 그대로 보존한다.
-                }
-                return nil
-            } catch { return key }
-        })
+        accountSnapshotPolicy.unreadableKeys(in: snapshot)
     }
 
     private func validateAccountSnapshot(_ snapshot: NativeAccountSnapshot) throws {
-        guard [1, 2].contains(snapshot.schemaVersion) else { throw NativeAccountDataError.unsupportedVersion }
-        guard unreadableKeys(in: snapshot).isEmpty else { throw NativeAccountDataError.invalidSource }
-        guard Set(snapshot.photoFilenames) == Set(photoFilenames(in: snapshot)) else { throw NativeAccountDataError.invalidSource }
+        try accountSnapshotPolicy.validate(snapshot)
     }
 
     private func activateAccountScope(_ scope: String, importingGuest: Bool = false) {
@@ -708,11 +439,39 @@ final class AppModel: ObservableObject {
         let archive = existing ?? guestArchive ?? NativeAccountArchive(snapshot: .init())
         activeAccountScope = scope
         defaults.set(scope, forKey: Key.activeAccount)
-        storeAccountArchive(archive, scope: scope)
+        if existing == nil { storeAccountArchive(archive, scope: scope) }
+        configureLocalPhotoScope()
+        var importedPhotos = true
+        if guestArchive != nil && existing == nil {
+            do { try DiningReflectionPhotoStore.copyPhotos(filenames: archive.snapshot.photoFilenames, from: "guest", to: scope) }
+            catch { importedPhotos = false }
+        }
         applyAccountSnapshot(archive.snapshot)
-        if guestArchive != nil && existing == nil { defaults.removeObject(forKey: Key.accountArchivePrefix + "guest") }
-        accountDataSyncError = invalidAccountDataKeys.isEmpty ? nil : NativeAccountDataError.invalidSource.localizedDescription
+        if guestArchive != nil && existing == nil && importedPhotos { defaults.removeObject(forKey: Key.accountArchivePrefix + "guest") }
+        accountDataSyncError = !archive.snapshot.hasSupportedSchema
+            ? NativeAccountDataError.unsupportedVersion.localizedDescription
+            : (invalidAccountDataKeys.isEmpty ? nil : NativeAccountDataError.invalidSource.localizedDescription)
         accountDataHasConflict = false
+        if !importedPhotos { accountDataSyncError = "기록은 계정에 보관했습니다. 일부 사진을 가져오지 못해 게스트 원본도 보존했습니다." }
+    }
+
+    private func configureLocalPhotoScope() {
+        DiningReflectionPhotoStore.activateAccountScope(activeAccountScope)
+        var owners: [String: Set<String>] = [:]
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Key.accountArchivePrefix) {
+            guard let data = defaults.data(forKey: key) else { continue }
+            let snapshot = (try? decoder.decode(NativeAccountArchive.self, from: data))?.snapshot
+                ?? (try? decoder.decode(NativeAccountRemoteData.self, from: data))?.payload
+            // Ambiguous legacy originals remain untouched until the owned remote photo is restored.
+            guard let snapshot else { return }
+            let scope = String(key.dropFirst(Key.accountArchivePrefix.count).split(separator: ".").first ?? "")
+            for filename in Set(snapshot.photoFilenames).union(photoFilenames(in: snapshot)) {
+                owners[filename, default: []].insert(scope)
+            }
+        }
+        let filenames = owners.compactMap { $0.value == [activeAccountScope] ? $0.key : nil }
+        do { try DiningReflectionPhotoStore.migrateLegacyPhotos(filenames: filenames, ownerScope: activeAccountScope) }
+        catch { accountDataSyncError = "이전 사진 원본을 보존했습니다. 계정 사진 복원을 다시 시도해 주세요." }
     }
 
     private func scheduleAccountDataSync() {
@@ -728,9 +487,7 @@ final class AppModel: ObservableObject {
     }
 
     private func photoFilenames(in snapshot: NativeAccountSnapshot) -> [String] {
-        guard let data = snapshot.values[Key.diningEntries],
-              let entries = try? decoder.decode([DiningEntry].self, from: data) else { return [] }
-        return Array(Set(entries.compactMap(\.reflectionPhotoFilename))).sorted()
+        accountSnapshotPolicy.photoFilenames(in: snapshot)
     }
 
     /// 로컬 저장이 항상 먼저다. 충돌 시 양쪽 원문을 보존하고 덮어쓰지 않는다.
@@ -754,7 +511,12 @@ final class AppModel: ObservableObject {
             guard activeAccountScope == scope, accountSyncID == operationID else { return }
             if let remote { try validateAccountSnapshot(remote.payload) }
             var archive = accountArchive(for: scope) ?? NativeAccountArchive(snapshot: .init())
-            try validateAccountSnapshot(archive.snapshot)
+            do { try validateAccountSnapshot(archive.snapshot) }
+            catch NativeAccountDataError.invalidSource where remote != nil {
+                accountDataHasConflict = true
+                accountDataSyncError = "이 기기의 원문을 읽지 못했습니다. 원본을 보존했으며 계정 보관본을 선택해 복구할 수 있습니다."
+                return
+            }
             if archive.isDirty, let remote, remote.payload == archive.snapshot {
                 // 이전 응답만 유실된 경우에도 같은 원문을 중복 전송하지 않는다.
                 archive.remoteRevision = remote.revision
@@ -764,15 +526,16 @@ final class AppModel: ObservableObject {
             if archive.isDirty {
                 guard (remote?.revision ?? 0) == archive.remoteRevision else { throw NativeAccountDataError.conflict }
                 let uploadedSnapshot = archive.snapshot
-                let filenames = photoFilenames(in: uploadedSnapshot)
+                let filenames = uploadedSnapshot.photoFilenames
                 try await accountPhotoRepository.backup(filenames: filenames, userID: scope)
                 guard activeAccountScope == scope, accountSyncID == operationID else { return }
-                let removedPhotos = Set(photoFilenames(in: remote?.payload ?? .init())).subtracting(filenames)
+                let removedPhotos = Set(remote?.payload.photoFilenames ?? []).subtracting(filenames)
                 if var pending = accountArchive(for: scope) {
                     pending.pendingPhotoDeletions = Array(Set(pending.pendingPhotoDeletions).union(removedPhotos)).sorted()
                     storeAccountArchive(pending, scope: scope)
                 }
                 let revision = try await accountDataRepository.save(uploadedSnapshot, userID: scope, expectedRevision: archive.remoteRevision)
+                guard activeAccountScope == scope, accountSyncID == operationID else { return }
                 // 저장을 기다리는 동안 추가된 로컬 변경은 다음 전송 대상으로 보존한다.
                 guard var latest = accountArchive(for: scope) else { return }
                 latest.remoteRevision = revision
@@ -782,19 +545,35 @@ final class AppModel: ObservableObject {
                 guard activeAccountScope == scope, accountSyncID == operationID else { return }
                 if latest.isDirty { scheduleAccountDataSync() }
             } else if let remote {
-                guard [1, 2].contains(remote.payload.schemaVersion) else { throw NativeAccountDataError.unsupportedVersion }
+                guard remote.payload.hasSupportedSchema else { throw NativeAccountDataError.unsupportedVersion }
+                var photoRestoreError: Error?
+                do { try await accountPhotoRepository.restore(filenames: remote.payload.photoFilenames, userID: scope) }
+                catch { photoRestoreError = error }
+                guard activeAccountScope == scope, accountSyncID == operationID,
+                      let latest = accountArchive(for: scope) else { return }
+                if let photoRestoreError {
+                    // Keep the readable local source active until every owned photo is available.
+                    // Retain the remote original separately for retry without claiming restoration succeeded.
+                    if let data = try? encoder.encode(remote) {
+                        defaults.set(data, forKey: Key.accountArchivePrefix + scope + ".restore-pending")
+                    }
+                    throw photoRestoreError
+                }
+                guard latest.snapshot == archive.snapshot else { throw NativeAccountDataError.conflict }
+                archive = latest
                 archive.snapshot = remote.payload
                 archive.remoteRevision = remote.revision
                 storeAccountArchive(archive, scope: scope)
+                // Publish restored records after their images are ready so image tasks do not cache an empty result.
                 applyAccountSnapshot(remote.payload)
-                // 사진 가져오기에 실패해도 복원된 원문 기록은 보존한다.
-                try await accountPhotoRepository.restore(filenames: photoFilenames(in: remote.payload), userID: scope)
+                defaults.removeObject(forKey: Key.accountArchivePrefix + scope + ".restore-pending")
             }
             guard activeAccountScope == scope, accountSyncID == operationID else { return }
             if let pending = accountArchive(for: scope), !pending.pendingPhotoDeletions.isEmpty {
                 do {
-                    let deletions = Set(pending.pendingPhotoDeletions).subtracting(photoFilenames(in: pending.snapshot))
+                    let deletions = Set(pending.pendingPhotoDeletions).subtracting(pending.snapshot.photoFilenames)
                     try await accountPhotoRepository.remove(filenames: Array(deletions).sorted(), userID: scope)
+                    guard activeAccountScope == scope, accountSyncID == operationID else { return }
                     guard var latest = accountArchive(for: scope) else { return }
                     latest.pendingPhotoDeletions.removeAll { pending.pendingPhotoDeletions.contains($0) }
                     storeAccountArchive(latest, scope: scope)
@@ -829,15 +608,25 @@ final class AppModel: ObservableObject {
             guard activeAccountScope == scope, accountSyncID == operationID,
                   var archive = accountArchive(for: scope) else { return }
             if let remote { try validateAccountSnapshot(remote.payload) }
-            try validateAccountSnapshot(archive.snapshot)
+            try validateAccountConflictSource(archive.snapshot, using: resolution)
             if let remote {
                 // 원격 원문을 선택하지 않더라도 충돌 보관본이 참조하는 사진까지 이 기기에 남긴다.
-                try await accountPhotoRepository.restore(filenames: photoFilenames(in: remote.payload), userID: scope)
+                do { try await accountPhotoRepository.restore(filenames: remote.payload.photoFilenames, userID: scope) }
+                catch {
+                    if activeAccountScope == scope, accountSyncID == operationID, let data = try? encoder.encode(remote) {
+                        defaults.set(data, forKey: Key.accountArchivePrefix + scope + ".restore-pending")
+                    }
+                    throw error
+                }
                 guard activeAccountScope == scope, accountSyncID == operationID else { return }
             }
             guard let latest = accountArchive(for: scope) else { return }
+            if case .accountBackup = resolution, latest.snapshot != archive.snapshot {
+                // The choice was made for an earlier local source. Keep edits entered while photos downloaded.
+                throw NativeAccountDataError.conflict
+            }
             archive = latest
-            try validateAccountSnapshot(archive.snapshot)
+            try validateAccountConflictSource(archive.snapshot, using: resolution)
             let recoveryScope = scope + ".conflict.\(UUID().uuidString)"
             let recoveryKey = Key.accountArchivePrefix + recoveryScope
             storeAccountArchive(archive, scope: recoveryScope)
@@ -851,9 +640,9 @@ final class AppModel: ObservableObject {
                 archive.snapshot = remote.payload
                 archive.remoteRevision = remote.revision
                 archive.isDirty = false
-                applyAccountSnapshot(remote.payload)
             }
             storeAccountArchive(archive, scope: scope)
+            if case .accountBackup = resolution { applyAccountSnapshot(archive.snapshot) }
             accountDataHasConflict = false
             accountSyncID = nil
             await syncAccountData()
@@ -862,6 +651,13 @@ final class AppModel: ObservableObject {
             accountDataSyncError = (error as? NativeAccountDataError)?.localizedDescription
                 ?? "양쪽 기록을 보존했습니다. 연결을 확인한 뒤 다시 선택해 주세요."
         }
+    }
+
+    private func validateAccountConflictSource(_ snapshot: NativeAccountSnapshot, using resolution: NativeAccountConflictResolution) throws {
+        guard snapshot.hasSupportedSchema else { throw NativeAccountDataError.unsupportedVersion }
+        if case .thisDevice = resolution { try validateAccountSnapshot(snapshot) }
+        // A readable account backup may replace corrupt bytes only after explicit selection.
+        // The original byte values are retained in the account's conflict archive first.
     }
 
     func restoreBackendSessionIfNeeded() async {
@@ -892,8 +688,8 @@ final class AppModel: ObservableObject {
     }
 
     func completeOnboarding() {
+        guard setPersistedAccountValue(true, forKey: Key.onboarding) else { return }
         hasSeenOnboarding = true
-        setPersistedAccountValue(true, forKey: Key.onboarding)
     }
 
     func completeAuthEntry() {
@@ -947,6 +743,7 @@ final class AppModel: ObservableObject {
         authenticationRevision += 1
         resetAll()
         activeAccountScope = "signed-out"
+        DiningReflectionPhotoStore.activateAccountScope(activeAccountScope)
         defaults.set(activeAccountScope, forKey: Key.activeAccount)
         backendSessionStatus = .signedOut
         hasRestoredBackendSession = true
@@ -973,21 +770,21 @@ final class AppModel: ObservableObject {
     }
 
     func returnToOnboarding() {
+        guard setPersistedAccountValue(false, forKey: Key.onboarding) else { return }
         hasSeenOnboarding = false
-        setPersistedAccountValue(false, forKey: Key.onboarding)
     }
 
     func savePreferenceIntakeDraft(_ responses: PreferenceIntakeResponsesContract) {
+        guard let data = try? encoder.encode(responses),
+              setPersistedAccountValue(data, forKey: Key.preferenceIntakeDraft) else { return }
         preferenceIntakeDraft = responses
-        setPersistedAccountValue(
-            try? encoder.encode(responses),
-            forKey: Key.preferenceIntakeDraft
-        )
     }
 
     @discardableResult
     func completePreferenceIntake(_ profile: PreferenceIntakeProfileContract) -> Bool {
-        guard let data = try? encoder.encode(profile) else { return false }
+        guard let data = try? encoder.encode(profile),
+              canPersistAccountValue(forKey: Key.preferenceProfile),
+              canPersistAccountValue(forKey: Key.preferenceIntakeDraft) else { return false }
         setPersistedAccountValue(data, forKey: Key.preferenceProfile)
         preferenceProfile = profile
         preferenceIntakeDraft = nil
@@ -997,6 +794,8 @@ final class AppModel: ObservableObject {
     }
 
     func returnToPreferenceIntake() {
+        guard canPersistAccountValue(forKey: Key.preferenceProfile),
+              canPersistAccountValue(forKey: Key.preferenceIntakeDraft) else { return }
         preferenceIntakeDraft = preferenceProfile
         preferenceProfile = nil
 
@@ -1011,21 +810,21 @@ final class AppModel: ObservableObject {
     }
 
     func saveProfile(_ profile: TasteProfile) {
+        guard let data = try? encoder.encode(profile), canPersistAccountValue(forKey: Key.profile),
+              canPersistAccountValue(forKey: Key.profileHistory) else { return }
         if let currentProfile = self.profile,
            currentProfile.createdAt != profile.createdAt {
             archiveProfile(currentProfile)
         }
         self.profile = profile
-        setPersistedAccountValue(try? encoder.encode(profile), forKey: Key.profile)
+        setPersistedAccountValue(data, forKey: Key.profile)
     }
 
     func saveProfileIdentity(_ identity: UserProfileIdentity) {
         let sanitizedIdentity = identity.sanitized
+        guard let data = try? encoder.encode(sanitizedIdentity),
+              setPersistedAccountValue(data, forKey: Key.profileIdentity) else { return }
         profileIdentity = sanitizedIdentity
-        setPersistedAccountValue(
-            try? encoder.encode(sanitizedIdentity),
-            forKey: Key.profileIdentity
-        )
     }
 
     @discardableResult
@@ -1051,6 +850,7 @@ final class AppModel: ObservableObject {
     }
 
     func saveProfileAvatarImageData(_ data: Data?) {
+        guard canPersistAccountValue(forKey: Key.profileAvatarImageData) else { return }
         profileAvatarImageData = data
 
         if let data {
@@ -1091,7 +891,9 @@ final class AppModel: ObservableObject {
             updated[index] = try entry.preparedForUpdate(previous: previous, at: now())
             guard updated[index] != previous else { diningPersistenceError = nil; return true }
             guard persistDiningEntries(updated) else { return false }
-            if previous.reflectionPhotoFilename != entry.reflectionPhotoFilename { DiningReflectionPhotoStore.remove(filename: previous.reflectionPhotoFilename) }
+            for filename in Set(previous.allReflectionPhotoFilenames).subtracting(entry.allReflectionPhotoFilenames) {
+                removeLocalPhotoIfUnreferenced(filename)
+            }
             return true
         } catch {
             diningPersistenceError = "기록을 저장하지 못했어요. 이전 원본을 유지했어요."
@@ -1104,14 +906,14 @@ final class AppModel: ObservableObject {
     @discardableResult
     func deleteDiningEntry(id: UUID) -> Bool {
         let removedEntry = diningEntries.first { $0.id == id }
-        let photoFilename = removedEntry?.reflectionPhotoFilename
+        let photoFilenames = removedEntry?.allReflectionPhotoFilenames ?? []
         guard persistDiningEntries(diningEntries.filter { $0.id != id }) else { return false }
         if personalTasteAnswerUndo?.before.id == id { personalTasteAnswerUndo = nil }
         for user in personalTasteQuestionProgressByUser.keys {
             personalTasteQuestionProgressByUser[user] = personalTasteQuestionProgressByUser[user]?.filter { $0.value.sourceEntryID != id }
         }
         persistPersonalTasteQuestionProgress()
-        DiningReflectionPhotoStore.remove(filename: photoFilename)
+        photoFilenames.forEach { removeLocalPhotoIfUnreferenced($0) }
         return true
     }
 
@@ -1638,7 +1440,7 @@ final class AppModel: ObservableObject {
         defaults.removeObject(forKey: Key.homeDiscoveryHistoryPrefix + scope)
         if scope == activeAccountScope { homeDiscoveryHiddenUntil = [:] }
         let archiveKey = Key.accountArchivePrefix + scope
-        var removedPhotos = scope == activeAccountScope ? Set(diningEntries.compactMap(\.reflectionPhotoFilename)) : []
+        var removedPhotos = scope == activeAccountScope ? Set(diningEntries.flatMap(\.allReflectionPhotoFilenames)) : []
         for key in defaults.dictionaryRepresentation().keys where key == archiveKey || key.hasPrefix(archiveKey + ".") {
             if let data = defaults.data(forKey: key) {
                 let snapshot = (try? decoder.decode(NativeAccountArchive.self, from: data))?.snapshot
@@ -1647,13 +1449,43 @@ final class AppModel: ObservableObject {
             }
             defaults.removeObject(forKey: key)
         }
+        let scopedPhotos = removedPhotos
+        var canCleanLegacyPhotos = true
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Key.accountArchivePrefix) {
             guard let data = defaults.data(forKey: key) else { continue }
             let snapshot = (try? decoder.decode(NativeAccountArchive.self, from: data))?.snapshot
                 ?? (try? decoder.decode(NativeAccountRemoteData.self, from: data))?.payload
-            if let snapshot { removedPhotos.subtract(photoFilenames(in: snapshot)) }
+            guard let snapshot else { canCleanLegacyPhotos = false; continue }
+            removedPhotos.subtract(snapshot.photoFilenames)
+            removedPhotos.subtract(photoFilenames(in: snapshot))
         }
-        for filename in removedPhotos { DiningReflectionPhotoStore.remove(filename: filename) }
+        for filename in scopedPhotos { DiningReflectionPhotoStore.remove(filename: filename, ownerScope: scope) }
+        if canCleanLegacyPhotos {
+            for filename in removedPhotos { DiningReflectionPhotoStore.removeLegacyPhotoIfOwned(filename: filename, ownerScope: scope) }
+        }
+    }
+
+    private func removeLocalPhotoIfUnreferenced(_ filename: String?) {
+        guard let filename, !diningEntries.contains(where: { $0.allReflectionPhotoFilenames.contains(filename) }) else { return }
+        var legacyStillReferenced = false
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Key.accountArchivePrefix) {
+            guard let data = defaults.data(forKey: key) else { continue }
+            let snapshot = (try? decoder.decode(NativeAccountArchive.self, from: data))?.snapshot
+                ?? (try? decoder.decode(NativeAccountRemoteData.self, from: data))?.payload
+            let scope = String(key.dropFirst(Key.accountArchivePrefix.count).split(separator: ".").first ?? "")
+            // An unreadable recovery copy may still own this photo; keep its owner's original.
+            guard let snapshot else {
+                if scope == activeAccountScope { return }
+                legacyStillReferenced = true
+                continue
+            }
+            if snapshot.photoFilenames.contains(filename) || photoFilenames(in: snapshot).contains(filename) {
+                if scope == activeAccountScope { return }
+                legacyStillReferenced = true
+            }
+        }
+        DiningReflectionPhotoStore.remove(filename: filename, ownerScope: activeAccountScope)
+        if !legacyStillReferenced { DiningReflectionPhotoStore.removeLegacyPhotoIfOwned(filename: filename, ownerScope: activeAccountScope) }
     }
 
     func resetAll() {
@@ -1719,8 +1551,8 @@ final class AppModel: ObservableObject {
     }
 
     private func persistDiningEntries(_ entries: [DiningEntry]) -> Bool {
-        guard !invalidAccountDataKeys.contains(Key.diningEntries) else {
-            diningPersistenceError = NativeAccountDataError.invalidSource.localizedDescription; return false
+        guard canPersistAccountValue(forKey: Key.diningEntries) else {
+            diningPersistenceError = accountDataSyncError; return false
         }
         do {
             let sorted = entries.sorted { $0.observedAt > $1.observedAt }
@@ -1805,7 +1637,7 @@ final class AppModel: ObservableObject {
                   before.note != entry.note || before.sensorySelections != entry.sensorySelections else { return false }
             return !parsed.unresolved.contains { unresolved in
                 if let source = context.sourceSelectionEvidence {
-                    return unresolved.selectionEvidence?.selectionID == source.selectionID && unresolved.selectionEvidence?.type == source.type
+                    return SensoryEvidenceLinkage.sameSelection(unresolved.selectionEvidence, source)
                 }
                 return unresolved.phrase == context.sourcePhrase && unresolved.reason == context.selection.reason
             }
@@ -1844,9 +1676,7 @@ final class AppModel: ObservableObject {
 
             if let source = context.sourceSelectionEvidence {
                 guard let response = observation.selectionEvidence,
-                      response.selectionID == source.selectionID,
-                      response.type == source.type,
-                      response.catalogVersion == source.catalogVersion,
+                      SensoryEvidenceLinkage.sameSelection(response, source),
                       response.labelSnapshot == source.labelSnapshot,
                       response.relatedBubbleID == source.relatedBubbleID else { return false }
             } else if observation.selectionEvidence != nil {
@@ -1994,6 +1824,24 @@ final class AppModel: ObservableObject {
             card, in: homeDiscoveryHiddenUntil, at: now()))
     }
 
+    /// A scoped category candidate is not necessarily in the home queue. Validate its originals
+    /// before writing the same account-local read/snooze history used by home discoveries.
+    func markGastronomyDiscoveryRead(_ card: HomeDiscoveryCard) {
+        guard gastronomyDiscoveryIsCurrent(card) else { return }
+        persistHomeDiscoveryHistory(HomeDiscoveryPresentationPolicy.recordingRead(card, in: homeDiscoveryHiddenUntil, at: now()))
+    }
+
+    func suppressGastronomyDiscovery(_ card: HomeDiscoveryCard) {
+        guard gastronomyDiscoveryIsCurrent(card) else { return }
+        persistHomeDiscoveryHistory(HomeDiscoveryPresentationPolicy.snoozing(card, in: homeDiscoveryHiddenUntil, at: now()))
+    }
+
+    private func gastronomyDiscoveryIsCurrent(_ card: HomeDiscoveryCard) -> Bool {
+        card.accountGeneration == memoryAccountGeneration && !card.sourceRevisions.isEmpty && card.sourceRevisions.allSatisfy { id, revision in
+            diningEntry(id: id)?.memoryRevisionNumber == revision
+        }
+    }
+
     /// 표시 이력의 상한만 관리하며 기록 원본이나 직접 평가에는 쓰지 않는다.
     private func persistHomeDiscoveryHistory(_ values: [String: Date]) {
         var history = values
@@ -2022,6 +1870,17 @@ final class AppModel: ObservableObject {
 
     func refreshSensoryAnalysis() {
         sensoryAnalysisRevision += 1
+        if invalidAccountDataKeys.contains(Key.diningEntries) || invalidAccountDataKeys.contains(Key.preferenceProfile) {
+            sensoryAnalysisTask?.cancel()
+            sensoryAnalysisTask = nil
+            sensoryAnalysis = .empty
+            foodMemoryIndex = .empty
+            homeArchivePresentation = nil
+            memorySourceFingerprint = ""
+            sensoryAnalysisIsUpdating = false
+            sensoryAnalysisError = accountDataSyncError ?? NativeAccountDataError.invalidSource.localizedDescription
+            return
+        }
         let revision = sensoryAnalysisRevision
         let entries = diningEntries
         let archiveReferenceDate = now()
@@ -2219,6 +2078,9 @@ final class AppModel: ObservableObject {
         sessionRepository: any BackendSessionRepository = FixtureBackendSessionRepository(status: .signedOut),
         authRepository: any BackendAuthRepository = BackendAuthRepositoryFactory.makeDefault(),
         publicProfileRepository: any BackendPublicProfileRepository = BackendPublicProfileRepositoryFactory.makeDefault(),
+        accountDataRepository: any NativeAccountDataRepository = NativeAccountDataRepositoryFactory.makeDefault(),
+        accountPhotoRepository: any NativeAccountPhotoRepository = NativeAccountPhotoRepositoryFactory.makeDefault(),
+        chatGPTExportRepository: any ChatGPTExportRepository = ChatGPTAnalysisRepository(),
         now: @escaping () -> Date = { .now }
     ) -> AppModel {
         let suiteName = "tastebuddy.preview.\(UUID().uuidString)"
@@ -2254,6 +2116,9 @@ final class AppModel: ObservableObject {
             authRepository: authRepository,
             sessionRepository: sessionRepository,
             publicProfileRepository: publicProfileRepository,
+            accountDataRepository: accountDataRepository,
+            accountPhotoRepository: accountPhotoRepository,
+            chatGPTExportRepository: chatGPTExportRepository,
             now: now
         )
         if authEntryComplete {

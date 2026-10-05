@@ -342,7 +342,7 @@ export const COLOR_GROUPS: Array<{
     {
       id: "taste",
       name: "맛 포인트 컬러",
-      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map<TokenSwatch>(
         ([tasteId, definition]) => ({
           name: tasteId,
           value: definition.palette.main,
@@ -363,7 +363,7 @@ export const COLOR_GROUPS: Array<{
     {
       id: "taste-tint-surface",
       name: "미각 틴트 서페이스",
-      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map<TokenSwatch>(
         ([tasteId, definition]) => ({
           name: tasteId,
           value: definition.palette.tintSurface,
@@ -384,7 +384,7 @@ export const COLOR_GROUPS: Array<{
     {
       id: "taste-tint-soft",
       name: "미각 틴트 소프트",
-      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map<TokenSwatch>(
         ([tasteId, definition]) => ({
           name: tasteId,
           value: definition.palette.tintSoft,
@@ -398,7 +398,7 @@ export const COLOR_GROUPS: Array<{
     {
       id: "taste-tint-soft-border",
       name: "미각 틴트 소프트 보더",
-      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map<TokenSwatch>(
         ([tasteId, definition]) => ({
           name: tasteId,
           value: definition.palette.tintSoftBorder,
@@ -412,7 +412,7 @@ export const COLOR_GROUPS: Array<{
     {
       id: "taste-tint-surface-text",
       name: "미각 틴트 서페이스 텍스트",
-      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map<TokenSwatch>(
         ([tasteId, definition]) => ({
           name: tasteId,
           value: definition.palette.tintSurfaceText,
@@ -426,7 +426,7 @@ export const COLOR_GROUPS: Array<{
     {
       id: "taste-tint-surface-sub-text",
       name: "미각 틴트 서페이스 보조 텍스트",
-      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map(
+      colors: (Object.entries(TASTE_TOKENS) as Array<[TasteId, (typeof TASTE_TOKENS)[TasteId]]>).map<TokenSwatch>(
         ([tasteId, definition]) => ({
           name: tasteId,
           value: definition.palette.tintSurfaceSubText,
@@ -622,7 +622,7 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
   {
     name: "PalateBloomAvatar",
     source: "src/components/system/PalateBloomAvatar.tsx",
-    note: "6가지 미각 우선순위를 꽃잎과 이중 별 구조로 번역하는 프로필용 Palate Bloom 아바타입니다.",
+    note: "6가지 미각 우선순위를 꽃잎과 이중 수술 구조로 번역하는 프로필용 Palate Bloom 아바타입니다.",
     status: "defined-only",
   },
   {

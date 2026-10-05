@@ -79,7 +79,7 @@ export default function BottomTabBar({ activeTab, onCenterAction, onTabChange }:
     >
       <div className="grid grid-cols-5 items-center px-2 py-1">
         {leadingTabs.map(renderTabButton)}
-        <BottomTabCenterButton onClick={onCenterAction} />
+        <BottomTabCenterButton onClick={onCenterAction} ariaLabel="미식 기록 시작" title="미식 기록" />
         {trailingTabs.map(renderTabButton)}
       </div>
     </div>

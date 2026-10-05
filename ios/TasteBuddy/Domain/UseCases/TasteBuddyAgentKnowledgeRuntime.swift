@@ -26,31 +26,7 @@ enum TasteBuddyAgentKnowledgeRuntime {
         let tasteVector: [String: Double]
     }
 
-    private static let canonicalDishKindAliases: [String: String] = [
-        "beef": "meat", "beverage": "beverage_pairing", "braised": "steamed_braised",
-        "bread": "grain_noodle", "broth": "broth", "chocolate": "dessert",
-        "crustacean": "seafood", "cured": "raw_cured", "dairy": "dairy_cheese",
-        "dessert": "dessert", "dumpling": "dumpling_batter", "fermented": "fermented_jang",
-        "fish": "seafood", "foam": "dessert", "fried": "fried_crispy",
-        "fruit": "dessert", "garnish": "vegetable_herb", "grain": "grain_noodle",
-        "grilled": "grilled_smoked", "herb": "vegetable_herb", "leafyGreen": "vegetable_herb",
-        "meat": "meat", "mushroom": "vegetable_herb", "noodle": "grain_noodle",
-        "nut": "dessert", "pickled": "raw_cured", "pork": "meat",
-        "poultry": "meat", "powder": "dessert", "roasted": "grilled_smoked",
-        "rootVegetable": "vegetable_herb", "salad": "vegetable_herb", "sauce": "sauce_glaze",
-        "scallop": "seafood", "seafood": "seafood", "seaweed": "seafood",
-        "shellfish": "seafood", "smoked": "grilled_smoked", "soy": "legume_tofu",
-        "spice": "spice_heat", "steamed": "steamed_braised",
-        "tea": "beverage_pairing", "tofu": "legume_tofu",
-        "vegetable": "vegetable_herb", "wine": "beverage_pairing",
-        "cold": "cold", "dairy_cheese": "dairy_cheese", "dumpling_batter": "dumpling_batter",
-        "fermented_jang": "fermented_jang", "fried_crispy": "fried_crispy",
-        "grain_noodle": "grain_noodle", "grilled_smoked": "grilled_smoked",
-        "legume_tofu": "legume_tofu", "raw_cured": "raw_cured",
-        "sauce_glaze": "sauce_glaze", "spice_heat": "spice_heat",
-        "steamed_braised": "steamed_braised", "stir_fried_wok": "stir_fried_wok",
-        "vegetable_herb": "vegetable_herb", "beverage_pairing": "beverage_pairing",
-    ]
+    private static let canonicalDishKindAliases = TasteBuddyAgent.dishKindAliases
 
     private static let surfaceThresholds: [TasteBuddyAgentKnowledgeSurface: Double] = [
         .tasteBubble: 0.45,
@@ -228,7 +204,7 @@ enum TasteBuddyAgentKnowledgeRuntime {
 
         for kindId in dishKindTags.map(trimmed).filter({ !$0.isEmpty }) {
             guard let definition = signal(byId: "dish-kind:\(kindId)"),
-                  definition.status != "retired" else {
+                  (definition.status != "retired" || TasteBuddyAgent.legacyDishKindIDs.contains(kindId)) else {
                 unmapped.append(.init(source: "dish-kind-tag", value: dishKindLabel(kindId)))
                 continue
             }
@@ -742,8 +718,10 @@ enum TasteBuddyAgentKnowledgeRuntime {
             return (exact.0, 1)
         }
         if let contained = candidates.first(where: {
-            normalizedValue.contains($0.1) || $0.1.contains(normalizedValue)
-                || compactValue.contains($0.2) || $0.2.contains(compactValue)
+            TasteBuddyAgent.matchesDishKindKeyword(normalizedValue, keyword: $0.1)
+                || TasteBuddyAgent.matchesDishKindKeyword($0.1, keyword: normalizedValue)
+                || TasteBuddyAgent.matchesDishKindKeyword(compactValue, keyword: $0.2)
+                || TasteBuddyAgent.matchesDishKindKeyword($0.2, keyword: compactValue)
         }) {
             return (contained.0, 0.86)
         }

@@ -12,7 +12,7 @@ struct HomeSensorySummarySection: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     var onOpenInsight: ((HomeArchiveCard.Kind) -> Void)? = nil
-    @State private var selectedDiscoveryID: String?
+    @State private var selectedDetail: TasteCardDetailRoute?
     @State private var showsAllStackCards = false
     @State private var isQuestionStackExpanded: Bool = {
         #if DEBUG || targetEnvironment(simulator)
@@ -25,22 +25,23 @@ struct HomeSensorySummarySection: View {
     }()
 
     var body: some View {
-        let cards = appModel.homeArchivePresentation?.summaries ?? []
         let pendingCards = appModel.homeJournalStackItems
         let stackCards = HomeJournalStackItem.preview(pendingCards, limit: isQuestionStackExpanded ? 3 : 1)
         TBPageSection(title: "인사이트 요약", titleSize: .medium) {
             CardScrollList(spacing: TBSpacing.x12) {
-                ForEach(cards) { card in
+                ForEach(TDCategory.allCases) { category in
                     HomeSummaryCard(
-                        label: card.kind.rawValue,
-                        value: card.value,
-                        detail: card.detail,
-                        axis: card.kind.axis,
-                        symbol: card.kind.symbol,
-                        onTap: onOpenInsight.map { open in { open(card.kind) } }
+                        label: category.rawValue,
+                        value: category.subtitle,
+                        detail: "미식 데이터 보기",
+                        axis: category.routeKind.axis,
+                        symbol: category.routeKind.symbol,
+                        onTap: onOpenInsight.map { open in { open(category.routeKind) } }
                     )
+                    .accessibilityIdentifier("home-category-" + category.id)
                 }
             }
+            .accessibilityIdentifier("home-gastronomy-categories")
 
             if isUpdating {
                 SensoryAnalysisStatusCard(state: .processing)
@@ -65,18 +66,17 @@ struct HomeSensorySummarySection: View {
         }
         .tasteBloomMotion(.content, value: isUpdating)
         .tasteBloomMotion(.content, value: pendingCards.map(\.id))
-        .sheet(isPresented: Binding(get: { selectedDiscoveryID != nil }, set: { if !$0 { selectedDiscoveryID = nil } })) {
-            if let selectedDiscoveryID { HomeDiscoveryDetailView(discoveryID: selectedDiscoveryID) }
-        }
+        .tasteDetail($selectedDetail)
         .sheet(isPresented: $showsAllStackCards) {
             HomeJournalStackListView(onStartNewRecord: onStartNewDining)
+                .environment(\.tasteDetailNavigate, nil)
         }
         .task { appModel.refreshHomeDiscoveriesIfNeeded() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { appModel.refreshHomeDiscoveriesIfNeeded() }
         }
         .onChange(of: appModel.memoryAccountGeneration) { _, _ in
-            selectedDiscoveryID = nil
+            selectedDetail = nil
             showsAllStackCards = false
             isQuestionStackExpanded = false
         }
@@ -103,7 +103,7 @@ struct HomeSensorySummarySection: View {
         case .discovery(let card):
             HomeDiscoveryStackCard(card: card, showsStack: !isQuestionStackExpanded && total > 1,
                 isStackExpanded: isQuestionStackExpanded, onToggleStack: toggle,
-                onOpen: { selectedDiscoveryID = card.id })
+                onOpen: { selectedDetail = .discovery(card.id) })
         }
     }
 
@@ -280,124 +280,14 @@ struct HomeInsightTintPreferenceKey: PreferenceKey {
     }
 }
 
-struct HomeArchiveDetailView: View {
-    @EnvironmentObject private var appModel: AppModel
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var backgroundTintProgress = 0.0
-    @State private var showsAllRecords = false
-    let kind: HomeArchiveCard.Kind
-    var bottomContentInset: CGFloat = 0
-
-    var body: some View {
-        let snapshot = appModel.sensoryAnalysis
-        let card = appModel.homeArchivePresentation?.summaries.first { $0.kind == kind } ?? .empty(kind)
-        let entries = appModel.diningEntries.filter { showsAllRecords || card.entryIDs.contains($0.id) }
-            .sorted { $0.observedAt > $1.observedAt }
-
-        let tasteDistribution = HomeInsightTasteDistribution.make(card: card, entries: entries, snapshot: snapshot)
-
-        GeometryReader { viewport in
-            let ringHeight = min(340, max(1, viewport.size.width - TBSpacing.page * 2))
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: TBSpacing.x24) {
-                    VStack(spacing: TBSpacing.x24) {
-                        GeometryReader { ring in
-                            let hidden = min(ringHeight, max(0, ring.bounds(of: .scrollView)?.minY ?? 0))
-                            let collapse = Double(hidden / ringHeight)
-                            HomeInsightDotRing(kind: kind, mealCount: Set(entries.map(\.mealID)).count,
-                                               reduceMotion: reduceMotion, tasteDistribution: tasteDistribution, collapseProgress: collapse)
-                                .frame(width: ring.size.width, height: ringHeight)
-                                .scaleEffect(1 - collapse, anchor: .top)
-                                .offset(y: hidden)
-                                .allowsHitTesting(collapse == 0)
-                                .accessibilityHidden(collapse == 1)
-                        }
-                        .frame(width: ringHeight, height: ringHeight)
-                        .onGeometryChange(for: Double.self) { proxy in
-                            let hiddenFraction = (proxy.bounds(of: .scrollView)?.minY ?? 0) / ringHeight
-                            // 링의 2/3 이후부터 스크롤 위치에 맞춰 색을 섞는다.
-                            return min(1, max(0, Double(hiddenFraction) * 3 - 2))
-                        } action: { progress in
-                            backgroundTintProgress = progress
-                        }
-                        .frame(maxWidth: .infinity)
-
-                        VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                            Text(card.value).tbTextStyle(.sectionTitle)
-                            Text(card.detail)
-                                .font(TBFont.semibold(14)).foregroundStyle(kind.axis.tintSurfaceTextColor)
-                            if !card.explanation.isEmpty {
-                                Text(card.explanation).tbTextStyle(.body)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .accessibilityElement(children: .combine)
-                    }
-
-                    HStack {
-                        Text(showsAllRecords ? "필터: 전체 기록" : "필터: \(kind.rawValue) · \(card.detail)")
-                            .fixedSize(horizontal: false, vertical: true)
-                        Spacer()
-                        Button(showsAllRecords ? "관련 기록만" : "필터 해제") { showsAllRecords.toggle() }
-                            .frame(minHeight: 44)
-                    }.font(TBFont.medium(12))
-                    if !entries.isEmpty {
-                        VStack(spacing: 0) {
-                            HStack(spacing: TBSpacing.x12) {
-                                LucideIcon(systemName: kind.symbol, size: 20, filled: true)
-                                    .accessibilityHidden(true)
-                                Text("관련 기록").font(TBFont.semibold(16))
-                                Spacer(minLength: TBSpacing.x8)
-                                Text("\(entries.count)개 · 최근순").font(TBFont.regular(12))
-                            }
-                            .foregroundStyle(TBColor.textPrimary)
-                            .padding(TBSpacing.x20)
-                            .background(kind.axis.mainColor)
-
-                            ForEach(entries) { entry in
-                                let evidence = snapshot.observations.filter {
-                                    $0.experienceID == entry.id && card.evidenceIDs.contains($0.id)
-                                }
-                                HomeInsightRecordRow(
-                                    entry: entry, evidence: evidence, axis: kind.axis,
-                                    showsNote: card.evidenceIDs.isEmpty
-                                )
-                                if entry.id != entries.last?.id {
-                                    Divider().overlay(TBColor.borderSubtle)
-                                        .padding(.horizontal, TBSpacing.x20)
-                                }
-                            }
-                        }
-                        .background(TBColor.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
-                    } else {
-                        SectionCard(showsBorder: false) {
-                            VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                                Text("관련 기록").tbTextStyle(.subsectionTitle)
-                                Text("연결할 기록이 아직 없어요").tbTextStyle(.body)
-                            }
-                            .padding(TBSpacing.x8)
-                        }
-                    }
-                }
-                .tbPageContentPadding(bottom: TBSpacing.page + bottomContentInset)
-                // 기록이 적어도 링을 완전히 접을 만큼의 스크롤 거리를 유지한다.
-                .frame(minHeight: viewport.size.height + ringHeight + TBSpacing.pageTop, alignment: .top)
-            }
-        }
-        .tbPageBackground(kind.backgroundColor(tintProgress: backgroundTintProgress))
-        .preference(key: HomeInsightTintPreferenceKey.self, value: [kind.rawValue: backgroundTintProgress])
-        .accessibilityIdentifier("home-insight-detail")
-    }
-}
-
 struct HomeInsightDotRing: View {
     let kind: HomeArchiveCard.Kind
     let mealCount: Int
     let reduceMotion: Bool
     var tasteDistribution: HomeInsightTasteDistribution = .empty
     var collapseProgress = 0.0
+    var countValue: String? = nil
+    var countLabel: String? = nil
     @Environment(\.scenePhase) private var scenePhase
     @State private var startedAt: Date?
     @State private var scrollStartedAt: Date?
@@ -434,11 +324,11 @@ struct HomeInsightDotRing: View {
                     .accessibilityHidden(true)
 
                 VStack(spacing: TBSpacing.x8) {
-                    Text(mealCount == 0 ? "—" : mealCount.formatted())
+                    Text(countValue ?? (mealCount == 0 ? "—" : mealCount.formatted()))
                         .font(.custom("Pretendard-Bold", size: 64, relativeTo: .largeTitle))
                         .monospacedDigit().minimumScaleFactor(0.5).lineLimit(1)
                         .foregroundStyle(TBColor.textPrimary)
-                    Text(mealCount == 0 ? "기록을 기다려요" : "번의 식사")
+                    Text(countLabel ?? (mealCount == 0 ? "기록을 기다려요" : "번의 식사"))
                         .font(TBFont.medium(13)).foregroundStyle(TBColor.textBody)
                     LucideIcon(systemName: kind.symbol, size: 20, filled: true)
                         .foregroundStyle(kind.axis.tintSurfaceTextColor)
@@ -483,7 +373,8 @@ struct HomeInsightDotRing: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(mealCount == 0 ? "연결된 식사 기록 없음" : "이 인사이트에 연결된 식사 \(mealCount)번")
+        .accessibilityLabel(countValue.map { $0 + " · " + (countLabel ?? "번의 식사") }
+            ?? (mealCount == 0 ? "연결된 식사 기록 없음" : "이 인사이트에 연결된 식사 \(mealCount)번"))
         .accessibilityValue(tasteDistribution.accessibilitySummary)
         .accessibilityIdentifier("home-insight-meal-count")
         .onGeometryChange(for: Bool.self) { proxy in

@@ -129,7 +129,7 @@ type HomeTrendDetail = {
   cue: string;
   detailLabel: string;
   detailTypeLabel?: string;
-  history: string[];
+  history: readonly string[];
   parentTaste: string;
   change: string;
   trend: "increase" | "decrease";
@@ -2372,8 +2372,8 @@ function getComparisonSummary(histories: any[]) {
   }
 
   const [firstHistory, secondHistory] = histories;
-  const firstMap = new Map(firstHistory.adjustments.map((adjustment: any) => [adjustment.taste, getAdjustmentSignedValue(adjustment.change)]));
-  const secondMap = new Map(secondHistory.adjustments.map((adjustment: any) => [adjustment.taste, getAdjustmentSignedValue(adjustment.change)]));
+  const firstMap = new Map<string,number>(firstHistory.adjustments.map((adjustment: any) => [adjustment.taste, getAdjustmentSignedValue(adjustment.change)]));
+  const secondMap = new Map<string,number>(secondHistory.adjustments.map((adjustment: any) => [adjustment.taste, getAdjustmentSignedValue(adjustment.change)]));
   const allTastes = Array.from(new Set([...firstMap.keys(), ...secondMap.keys()]));
 
   const sharedTastes = allTastes.filter((taste) => firstMap.has(taste) && secondMap.has(taste));
@@ -3487,7 +3487,7 @@ export default function Home({
   hasUnreadNotifications?: boolean;
 }) {
   const [featuredChefs, setFeaturedChefs] = useState<HomeChefCardData[]>([]);
-  const [reservationHint, setReservationHint] = useState(HOME_SPECIAL_NOTE_CARD.reservationHint);
+  const [reservationHint, setReservationHint] = useState<string>(HOME_SPECIAL_NOTE_CARD.reservationHint);
   const [adjustmentHistoryData, setAdjustmentHistoryData] = useState<HomeAdjustmentHistoryItem[]>();
   const [tasteProfileCard, setTasteProfileCard] = useState<HomeTasteProfileCardData>(() =>
     cloneHomeTasteProfileCardData(HOME_TASTE_PROFILE_CARD),

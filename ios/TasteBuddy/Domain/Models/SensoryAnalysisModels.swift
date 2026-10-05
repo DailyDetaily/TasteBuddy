@@ -35,6 +35,52 @@ struct SensorySelectionEvidence: Codable, Equatable, Sendable {
     let relatedBubbleID: String?
     let relatedBubbleLabel: String?
     let resolution: String
+    var selectionInstanceID: String? = nil
+    var definitionVersion: String? = nil
+    var bindingMode: String? = nil
+    var semanticFacets: DiningSelectionJSON? = nil
+}
+
+/// Shared provenance boundary for native observations and the personal taste model.
+/// A matching sensory attribute does not make two different choices the same evidence.
+enum SensoryEvidenceLinkage {
+    struct SelectionIdentity: Hashable {
+        let type: String
+        let selectionID: String
+        let catalogVersion: String
+        let relatedBubbleID: String?
+        var selectionInstanceID: String? = nil
+    }
+
+    static func identity(_ evidence: SensorySelectionEvidence?) -> SelectionIdentity? {
+        guard let evidence, !evidence.type.isEmpty, !evidence.selectionID.isEmpty,
+              !evidence.catalogVersion.isEmpty else { return nil }
+        return .init(type: evidence.type, selectionID: evidence.selectionID,
+                     catalogVersion: evidence.catalogVersion, relatedBubbleID: evidence.relatedBubbleID, selectionInstanceID: evidence.selectionInstanceID)
+    }
+
+    static func sameSelection(_ left: SensorySelectionEvidence?, _ right: SensorySelectionEvidence?) -> Bool {
+        if left == nil || right == nil { return left == nil && right == nil }
+        guard let leftID = identity(left), let rightID = identity(right) else { return false }
+        return leftID == rightID
+    }
+
+    static func scopeKey(_ observation: SensoryObservation) -> String {
+        var parts: [String?] = [observation.experienceID.uuidString, observation.attribute,
+                               observation.reference, observation.target, observation.phase]
+        if observation.selectionEvidence == nil {
+            parts += ["statement", observation.sourceField]
+        } else if let selection = identity(observation.selectionEvidence) {
+            parts += ["selection", selection.type, selection.selectionID,
+                      selection.catalogVersion, selection.relatedBubbleID]
+            if let instance = selection.selectionInstanceID { parts += [instance] }
+        } else {
+            // Malformed identities must not link otherwise unrelated observations.
+            parts += ["unlinked", observation.id]
+        }
+        // JSON preserves nil versus empty values and avoids delimiter collisions.
+        return String(decoding: (try? JSONEncoder().encode(parts)) ?? Data(), as: UTF8.self)
+    }
 }
 
 struct SensoryObservation: Identifiable, Equatable, Sendable {

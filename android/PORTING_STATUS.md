@@ -2,6 +2,20 @@
 
 기준: 2026-09-07 작업 시작 시점의 `ios/TasteBuddy`. 파일별 SHA-256은 `ios-source-baseline.json`에 보존합니다. 전체 이식 기준은 유지합니다. 이후 기준 음식 회상 설문 v2만 별도로 반영했으며 소스와 해시는 `onboarding-survey-reference-update.json`에 있습니다.
 
+## 기록·분석·계정 백업·복원 (2026-10-02)
+
+- 계정별 원자적 파일과 게스트 보관함을 분리했습니다. 로그아웃은 기록·사진을 보존하며, 이전 계정의 지연 편집·복원 응답은 새 계정에 적용하지 않습니다. 소유자를 알 수 없는 이전 버전 기록은 게스트 보관함에 남깁니다.
+- 전체 Android 원문을 공유 native 계정 스냅샷의 별도 base64 값으로 백업합니다. iOS·웹 원문은 그대로 보존합니다. 사진 업로드 후 revision 비교 저장, 사진 확보 후 복원, 충돌 시 양쪽 원문·사진 보관, 저장 응답 유실 확인, 로컬 편집 중 백업을 구현했습니다.
+- 마지막 기록 삭제를 수정으로 유지하며, 알 수 없는 감각 선택 필드를 원문으로 남깁니다. 로그아웃 후 늦은 세션 갱신과 다른 계정 ID의 갱신 응답을 차단합니다.
+- `:app:testDebugUnitTest --max-workers=1`: **533개 검사, 실패·오류·건너뜀 0개**. 계정·동기화 전용 26개, 백엔드 모의 서버 19개를 포함합니다. 최종 실행 49초. 관련 45개 회귀 검사를 먼저 별도로 통과했습니다.
+- `:app:assembleDebug --max-workers=1`: **통과**, 1분 18초. 기존 backend 공개 클라이언트 설정을 포함한 debug APK입니다. `apksigner verify`가 성공했으며 Android Debug 개발 서명을 확인했습니다.
+- 손상된 같은 버전의 기기 원문은 오류 화면에서 직접 계정 백업 복원을 선택할 수 있습니다. 원문 바이트를 그대로 별도 보관하고 사진을 먼저 확보하며, 원문 읽기·사진 준비 실패나 계정·원문 변경 시 교체하지 않습니다. 선언된 새 버전의 원문은 계속 차단합니다.
+- 삭제·로그아웃 응답이 늦게 도착해도 다른 계정이나 같은 계정의 새 로그인 세션을 초기화하지 못합니다. 기기 기록 초기화도 요청을 시작한 계정에만 적용합니다.
+- 실행 로그와 관련 XML: `output/qa/release-integrity-20261002/android/`.
+- 이번 변경의 실제 계정·기기 UI·두 Android 기기 왕복·실제 사진 네트워크·네트워크 단절·앱 종료는 **미검증**입니다. 운영 데이터 쓰기·migration 배포·에뮬레이터 초기화는 수행하지 않았습니다.
+- Android 기록과 분석을 iOS·웹 기록으로 변환하거나 합치는 기능은 포함하지 않습니다. 공유 사진 디렉터리는 파일명 충돌 시 다른 바이트를 덮어쓰지 않고 복원을 멈춥니다. 계정별 사진 디렉터리는 아직 없으며, 원본 정리를 보류해 다른 계정·복구본 사진을 보존합니다.
+- 상세 계약, 이전 기록 접근 방법, 실제 출시 조건: `ACCOUNT_BACKUP.md`.
+
 ## 구현 범위
 
 | 영역 | Android 구현 | 주요 파일 |
@@ -51,13 +65,15 @@
 
 실제 Google·이메일 로그인, 계정 삭제, 공급자 키의 Android 사용 제한, GPS·실물 카메라, Instagram 설치 기기 연결은 아직 실서비스에서 검증하지 않았습니다. 인증 요청과 실패 경계는 모의 서버 검사 결과입니다. ChatGPT 연결 URL은 현재 구성값이 비어 있어 카드가 숨겨집니다.
 
-식사·북마크·팔로우 선택·댓글은 iOS 기준의 로컬 저장 범위입니다. 예시 피드는 예시로 표시하고 개인 분석 근거에 포함하지 않습니다. 북마크 공개 설정은 서버 공개 기능으로 표시하지 않습니다. 식당의 개인 일치율은 근거가 연결되지 않은 상태에서 점수로 만들지 않습니다.
+식사·북마크·팔로우 선택·댓글은 계정별 로컬 저장과 Android 계정 백업 범위입니다. iOS·웹과의 기록 변환은 제공하지 않습니다. 예시 피드는 예시로 표시하고 개인 분석 근거에 포함하지 않습니다. 북마크 공개 설정은 서버 공개 기능으로 표시하지 않습니다. 식당의 개인 일치율은 근거가 연결되지 않은 상태에서 점수로 만들지 않습니다.
 
 ## 실행 산출물
 
 - 앱: `app/build/outputs/apk/debug/app-debug.apk`
-- 최종 앱 SHA-256: `2423d1696b5b597b297cc5d814513bc69e073b75acf0af7e5cf870e50cf60f09`
-- 기기 검사: `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`
+- 최종 보존 APK: `output/qa/release-integrity-20261002/android/tastebuddy-android-debug-20261002.apk` (프로젝트 루트 기준)
+- 서명·설정 유무·검증 메타데이터: `output/qa/release-integrity-20261002/android/verification.json`
+- 최종 앱 SHA-256: `cd515bc727e862a548313cab8366affbdf4604b363d7f89d05da8c2d7f9d925f`
+- 이전 기기 검사 APK (2026-10-02에 다시 빌드하지 않음): `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`
 - 단위 검사 보고서: `app/build/reports/tests/testDebugUnitTest/index.html`
 - 정적 분석 보고서: `app/build/reports/lint-results-debug.html`
 

@@ -74,7 +74,7 @@ fun HomeContent(vm: AppViewModel) {
 }
 
 @Composable
-fun AnalysisHero(snapshot: SensorySnapshot, onClick: (() -> Unit)? = null) {
+fun AnalysisHero(snapshot: SensorySnapshot, showRecordCounts: Boolean = true, onClick: (() -> Unit)? = null) {
     CardBox(
         if (onClick == null) Modifier else Modifier.clickable(onClick = onClick),
         color = TB.muted,
@@ -97,14 +97,10 @@ fun AnalysisHero(snapshot: SensorySnapshot, onClick: (() -> Unit)? = null) {
             }
         }
         Text(
-            when (snapshot.mainWing.status) {
-                "provisional_profile" -> "반복해서 나타난 직접 평가와 감각 기록을 바탕으로 한 현재 범위의 해석이에요."
-                "ambiguous_main" -> "서로 다른 상황의 기록이 함께 있어 한 가지 입맛으로 정하지 않고 있어요."
-                else -> "기록한 감각과 직접 평가를 쌓으며 좋아하는 조합과 부담스러운 조건을 확인하고 있어요."
-            },
+            tasteTypeDescription(snapshot.mainWing),
             color = TB.body,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (showRecordCounts) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 "완료 기록 ${snapshot.completedExperienceCount}개",
                 style = MaterialTheme.typography.bodyMedium,
@@ -114,6 +110,34 @@ fun AnalysisHero(snapshot: SensorySnapshot, onClick: (() -> Unit)? = null) {
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
+    }
+}
+
+private fun tasteTypeDescription(profile: MainWing): String {
+    fun trait(id: String): String? = when (id) {
+        "purist" -> "재료 본연의 맛을 즐기는"
+        "maximalist" -> "강하게 느껴지는 풍미를 즐기는"
+        "alchemist" -> "발효에서 오는 풍미를 즐기는"
+        "roaster" -> "구운 향이나 고소한 풍미를 즐기는"
+        "romantic" -> "달콤한 맛을 즐기는"
+        "texturalist" -> "씹을 때 느껴지는 식감을 즐기는"
+        "epicure" -> "감칠맛이나 진하고 풍부한 맛을 즐기는"
+        "refresher" -> "산뜻하고 상쾌한 맛을 즐기는"
+        "harmonist" -> "여러 맛이 어우러지는 조합을 즐기는"
+        else -> null
+    }
+    return when (profile.status) {
+        "provisional_profile" -> {
+            val mainTrait = profile.main?.let { trait(it.id) }
+                ?: return "현재 식사 기록에서 반복해서 나타난 취향을 요약한 타입이에요."
+            val description = "식사 기록에서 $mainTrait 성향이 보여요."
+            val wing = profile.wing
+            val wingTrait = wing?.let { trait(it.id) }
+            if (wingTrait != null) "$description $wingTrait 성향도 함께 나타나요."
+            else description
+        }
+        "ambiguous_main" -> "서로 다른 취향이 함께 나타나고 있어요. 기록을 더 모으며 두드러지는 성향을 살펴보고 있어요."
+        else -> "식사 기록을 모으며 어떤 맛과 식감을 좋아하는지 알아가고 있어요."
     }
 }
 
@@ -136,16 +160,7 @@ fun AnalysisContent(vm: AppViewModel) {
                     vm.startDining()
                 }
             else {
-                AnalysisHero(snapshot)
-                CardBox {
-                    NavigationRow(
-                        "기록 근거",
-                        "감각 관찰 ${snapshot.observations.size}개 · 확인 중인 표현 ${snapshot.unresolved.size}개",
-                    ) {
-                        vm.evidenceIDs.value = null
-                        vm.open("evidence")
-                    }
-                }
+                AnalysisHero(snapshot, showRecordCounts = false)
                 if (snapshot.unresolved.isNotEmpty())
                     EmptyCard(
                         "아직 뜻을 확인 중인 표현이 있어요",
@@ -158,9 +173,6 @@ fun AnalysisContent(vm: AppViewModel) {
             }
         }
         TastePerceptionCards(vm)
-        Section("내가 알려준 선호") {
-            PreferenceIntakeEvidenceCard(snapshot.statedPreferences, state.preferenceProfile.isNotEmpty()) { vm.open("preferences") }
-        }
         state.profile?.surveySubmission?.let { submission ->
             Section("처음 남긴 맛의 단서") { SurveyEvidenceCard(submission) }
         }
@@ -188,7 +200,6 @@ fun AnalysisContent(vm: AppViewModel) {
                         }
                 }
             }
-            NextQuestion(vm, snapshot)
             Section("현재 기록의 범위") {
                 CardBox {
                     NavigationRow("상황에 따라 달랐던 기록", "명시된 음식·부위·시점 범위 안에서만 비교해요.") {

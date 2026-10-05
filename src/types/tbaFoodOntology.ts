@@ -85,7 +85,7 @@ export interface FoodOnTaxonomyEntry {
 export interface NativeFoodCatalogEntry {
   cookingMethodPath: readonly string[];
   foodTypePath: readonly string[];
-  imageUrls: readonly Array<{
+  imageUrls: ReadonlyArray<{
     typeCode: string;
     url: string;
   }>;

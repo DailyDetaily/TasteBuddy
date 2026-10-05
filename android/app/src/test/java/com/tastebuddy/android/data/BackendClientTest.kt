@@ -231,4 +231,153 @@ class BackendClientTest {
             BackendConfig(chatGPTEntryURL = "https://chatgpt.com/plugins/test").validChatGPTURL()
         )
     }
+    private suspend fun restoreOwner(id: String = "owner", anonymous: Boolean = false) {
+        session.value = AppJson.encodeToString(AuthSession("pinned-access", "refresh", Instant.now().epochSecond + 3600,
+            AuthUser(id, "owner@example.com", anonymous)))
+        backend.restore()
+    }
+
+    @Test fun nativeBackupUsesPinnedOwnerAndCasRevision() = runBlocking {
+        restoreOwner()
+        val transport = backend.accountTransport("owner")
+        val payload = AndroidBackupContract.replacingAndroid(null, AppState())
+        server.enqueue(response("""[{"user_id":"owner","payload":$payload,"revision":3}]"""))
+        assertEquals(3L, transport.fetch()!!.revision)
+        val fetch = request()
+        assertTrue(fetch.path!!.contains("user_id=eq.owner"))
+        assertEquals("Bearer pinned-access", fetch.getHeader("Authorization"))
+        server.enqueue(response("4"))
+        assertEquals(4L, transport.save(payload, 3))
+        val save = request()
+        val body = AppJson.parseToJsonElement(save.body.readUtf8()).jsonObject
+        assertEquals("owner", body.string("p_user_id"))
+        assertEquals(3L, body.getValue("p_expected_revision").jsonPrimitive.long)
+        assertEquals("Bearer pinned-access", save.getHeader("Authorization"))
+    }
+
+    @Test fun nativeBackupRejectsWrongAccountAndAnonymousBeforeNetwork() = runBlocking {
+        restoreOwner()
+        assertTrue(runCatching { backend.accountTransport("other") }.isFailure)
+        restoreOwner(anonymous = true)
+        assertTrue(runCatching { backend.accountTransport("owner") }.isFailure)
+        assertEquals(0, server.requestCount)
+    }
+
+    @Test fun nativeBackupRejectsAccountChangedWhileFetchIsInFlight() = runBlocking {
+        restoreOwner()
+        val transport = backend.accountTransport("owner")
+        val payload = AndroidBackupContract.replacingAndroid(null, AppState())
+        val accountSwitched = java.util.concurrent.CountDownLatch(1)
+        server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse {
+                if (request.path!!.startsWith("/rest/v1/native_account_data")) {
+                    check(accountSwitched.await(10, TimeUnit.SECONDS))
+                    return response("""[{"user_id":"owner","payload":$payload,"revision":1}]""")
+                }
+                return response(authBody("other"))
+            }
+        }
+        val pending = async { runCatching { transport.fetch() } }
+        kotlinx.coroutines.yield()
+        request()
+        backend.verifyOTP("other@example.com", "123456")
+        request()
+        accountSwitched.countDown()
+        assertTrue(pending.await().isFailure)
+        assertEquals("other", backend.sessionState.value!!.user.id)
+    }
+
+    @Test fun nativePhotoUploadCompletesLeaseAndNeverOverwritesObject() = runBlocking {
+        restoreOwner()
+        val transport = backend.accountTransport("owner")
+        server.enqueue(response("\"lease-id\""))
+        server.enqueue(response("{}"))
+        server.enqueue(response("{}"))
+        transport.uploadPhoto("photo_sample.jpg", byteArrayOf(0xff.toByte(), 0xd8.toByte(), 0xff.toByte(), 0xd9.toByte()))
+        assertEquals("/rest/v1/rpc/begin_account_media_upload", request().path)
+        val upload = request()
+        assertEquals("/storage/v1/object/native-dining-photos/owner/photo_sample.jpg", upload.path)
+        assertEquals("false", upload.getHeader("x-upsert"))
+        assertEquals("Bearer pinned-access", upload.getHeader("Authorization"))
+        val finish = request()
+        assertEquals("/rest/v1/rpc/finish_account_media_upload", finish.path)
+        assertEquals("lease-id", AppJson.parseToJsonElement(finish.body.readUtf8()).jsonObject.string("upload_id"))
+    }
+
+    @Test fun nativeCasConflictIsSurfacedWithoutRetryingOverwrite() = runBlocking {
+        restoreOwner()
+        val transport = backend.accountTransport("owner")
+        server.enqueue(response("""{"code":"40001"}""", 409))
+        assertTrue(runCatching { transport.save(AndroidBackupContract.replacingAndroid(null, AppState()), 3) }.exceptionOrNull() is AccountBackupConflict)
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test fun lateTokenRefreshCannotRestoreSessionAfterLogout() = runBlocking {
+        session.value = AppJson.encodeToString(AuthSession("expired", "refresh", 1, AuthUser("owner")))
+        val logoutFinished = java.util.concurrent.CountDownLatch(1)
+        server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse {
+                if (request.path!!.contains("grant_type=refresh_token")) {
+                    check(logoutFinished.await(10, TimeUnit.SECONDS))
+                    return response(authBody("owner"))
+                }
+                return response("{}")
+            }
+        }
+        val pending = async { runCatching { backend.restore() } }
+        kotlinx.coroutines.yield()
+        request()
+        backend.signOut()
+        request()
+        logoutFinished.countDown()
+        assertTrue(pending.await().isFailure)
+        assertNull(backend.sessionState.value)
+        assertNull(session.value)
+    }
+
+    @Test fun tokenRefreshCannotChangeAccountIdentity() = runBlocking {
+        session.value = AppJson.encodeToString(AuthSession("expired", "refresh", 1, AuthUser("owner")))
+        server.enqueue(response(authBody("other")))
+        assertTrue(runCatching { backend.restore() }.isFailure)
+        assertEquals("owner", backend.sessionState.value!!.user.id)
+        assertEquals("expired", AppJson.decodeFromString<AuthSession>(session.value!!).accessToken)
+    }
+
+    @Test fun delayedDeletionAndLogoutPreserveNewAccountAndSameAccountRelogin() = runBlocking {
+        for (deleting in listOf(true, false)) for (replacementID in listOf("other", "owner")) {
+            val expires = Instant.now().epochSecond + 3600
+            session.value = AppJson.encodeToString(AuthSession("test-access", "test-refresh", expires,
+                AuthUser("owner", "sample@example.com", false, "2026-01-01T00:00:00Z")))
+            backend.restore()
+            val original = backend.sessionState.value
+            val reauthenticated = java.util.concurrent.CountDownLatch(1)
+            server.dispatcher = object : okhttp3.mockwebserver.Dispatcher() {
+                override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse {
+                    if (request.path!!.contains("delete-account") || request.path!!.startsWith("/auth/v1/logout")) {
+                        check(reauthenticated.await(10, TimeUnit.SECONDS))
+                        return response("{}")
+                    }
+                    return response(authBody(replacementID, expires))
+                }
+            }
+            val pending = async { runCatching { if (deleting) backend.deleteAccount("owner") else backend.signOut() } }
+            kotlinx.coroutines.yield()
+            request()
+            backend.verifyOTP("sample@example.com", "123456")
+            request()
+            if (replacementID == "owner") assertEquals(original, backend.sessionState.value)
+            reauthenticated.countDown()
+            assertTrue("deleting=$deleting replacement=$replacementID", pending.await().isFailure)
+            assertEquals(replacementID, backend.sessionState.value!!.user.id)
+            assertEquals(replacementID, AppJson.decodeFromString<AuthSession>(session.value!!).user.id)
+        }
+    }
+
+    @Test fun accountDeletionChecksExpectedOwnerBeforeSendingRequest() = runBlocking {
+        restoreOwner()
+        assertTrue(runCatching { backend.deleteAccount("other") }.isFailure)
+        assertEquals(0, server.requestCount)
+        assertEquals("owner", backend.sessionState.value!!.user.id)
+    }
+
 }

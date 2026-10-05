@@ -63,12 +63,14 @@ extension PersonalTasteModelBuilder {
     }
 
     // 소유자·시점·중복 ID 검사를 통과한 관찰에서 같은 선택의 강도만 연결한다.
-    private static func scopedRatings(_ records: [PersonalTasteModelRecord], kind: String, scale: String, values: [String]) -> [InsightRating] {
+    private static func scopedRatings(_ records: [PersonalTasteModelRecord], kind: String, scale: String, values: [String], validatedIntensityLinks: [String: Set<String>] = [:]) -> [InsightRating] {
         let scopes = Dictionary(grouping: records, by: scope)
         return records.compactMap { row in
             guard row.kind == kind, row.scale == scale, values.contains(row.value.text),
                   let attribute = row.attribute, !attribute.hasSuffix(".unspecified") else { return nil }
-            let related = (scopes[scope(row)] ?? []).filter { sameSelection(row, $0) }
+            let related = (scopes[scope(row)] ?? []).filter {
+                sameSelection(row, $0) || ($0.kind == "sensory_intensity" && validatedIntensityLinks[row.observationId]?.contains($0.observationId) == true)
+            }
             guard !related.contains(where: { $0.kind == "sensory_presence" && $0.value == .flag(false) }) else { return nil }
             let intensities = related.filter { $0.kind == "sensory_intensity" && $0.scale == "expression-strength-v1" }
             let levels = unique(intensities.map { $0.value.text })
@@ -98,8 +100,8 @@ extension PersonalTasteModelBuilder {
         return sets.keys.sorted().map { ($0, sets[$0]!) }
     }
 
-    static func buildFitPatterns(_ records: [PersonalTasteModelRecord], userID: String, policy: PersonalTastePolicy, includeEvidence: Bool = true) -> [PersonalTasteFitPattern] {
-        let ratings = scopedRatings(records, kind: "preference_fit", scale: "preference-fit-v1", values: fitValues)
+    static func buildFitPatterns(_ records: [PersonalTasteModelRecord], userID: String, policy: PersonalTastePolicy, includeEvidence: Bool = true, validatedIntensityLinks: [String: Set<String>] = [:]) -> [PersonalTasteFitPattern] {
+        let ratings = scopedRatings(records, kind: "preference_fit", scale: "preference-fit-v1", values: fitValues, validatedIntensityLinks: validatedIntensityLinks)
         let attributes = Dictionary(grouping: ratings) { insightAttributeKey($0.record) }
         var patterns: [PersonalTasteFitPattern] = []
         for key in attributes.keys.sorted() {

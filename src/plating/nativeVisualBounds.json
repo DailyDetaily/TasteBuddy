@@ -1,0 +1,650 @@
+{
+  "primary-button--default.png": {
+    "x": 0.0,
+    "y": 30.67,
+    "width": 390.0,
+    "height": 114.67
+  },
+  "primary-button--busy.png": {
+    "x": 12.0,
+    "y": 48.0,
+    "width": 366.0,
+    "height": 64.0
+  },
+  "primary-button--disabled.png": {
+    "x": 12.0,
+    "y": 48.0,
+    "width": 366.0,
+    "height": 64.0
+  },
+  "primary-button--intrinsic.png": {
+    "x": 149.0,
+    "y": 52.0,
+    "width": 92.33,
+    "height": 56.0
+  },
+  "primary-button--selected.png": {
+    "x": 12.0,
+    "y": 52.0,
+    "width": 366.0,
+    "height": 56.0
+  },
+  "primary-button--tint.png": {
+    "x": 12.0,
+    "y": 48.0,
+    "width": 366.0,
+    "height": 64.0
+  },
+  "primary-button--visual-disabled.png": {
+    "x": 12.0,
+    "y": 48.0,
+    "width": 366.0,
+    "height": 64.0
+  },
+  "icon-button--default.png": {
+    "x": 180.0,
+    "y": 65.0,
+    "width": 30.0,
+    "height": 30.0
+  },
+  "text-input--default.png": {
+    "x": 11.33,
+    "y": 59.33,
+    "width": 367.33,
+    "height": 101.0
+  },
+  "text-input--auth.png": {
+    "x": 11.33,
+    "y": 57.33,
+    "width": 367.33,
+    "height": 105.0
+  },
+  "text-input--disabled.png": {
+    "x": 11.33,
+    "y": 59.33,
+    "width": 367.33,
+    "height": 101.0
+  },
+  "text-input--error.png": {
+    "x": 11.33,
+    "y": 59.33,
+    "width": 367.33,
+    "height": 101.0
+  },
+  "text-input--selected.png": {
+    "x": 11.33,
+    "y": 59.33,
+    "width": 367.33,
+    "height": 101.0
+  },
+  "search-field--default.png": {
+    "x": 31.33,
+    "y": 0.0,
+    "width": 326.0,
+    "height": 89.67
+  },
+  "selection-card--default.png": {
+    "x": 11.33,
+    "y": 39.67,
+    "width": 367.33,
+    "height": 80.67
+  },
+  "selection-card--checkbox.png": {
+    "x": 11.33,
+    "y": 39.67,
+    "width": 367.33,
+    "height": 80.67
+  },
+  "selection-card--disabled.png": {
+    "x": 11.33,
+    "y": 39.67,
+    "width": 367.33,
+    "height": 80.67
+  },
+  "selection-card--selected.png": {
+    "x": 0.0,
+    "y": 33.0,
+    "width": 390.0,
+    "height": 110.0
+  },
+  "selection-card--single-line.png": {
+    "x": 11.33,
+    "y": 46.33,
+    "width": 367.33,
+    "height": 67.33
+  },
+  "chip--default.png": {
+    "x": 135.33,
+    "y": 33.67,
+    "width": 119.0,
+    "height": 92.0
+  },
+  "chip--disabled.png": {
+    "x": 135.33,
+    "y": 33.67,
+    "width": 119.0,
+    "height": 92.0
+  },
+  "chip--selected.png": {
+    "x": 135.33,
+    "y": 33.67,
+    "width": 119.0,
+    "height": 92.0
+  },
+  "chip--size-md.png": {
+    "x": 152.33,
+    "y": 55.0,
+    "width": 85.67,
+    "height": 50.0
+  },
+  "chip--size-sm.png": {
+    "x": 156.0,
+    "y": 57.67,
+    "width": 78.0,
+    "height": 44.67
+  },
+  "chip--size-xs.png": {
+    "x": 160.0,
+    "y": 60.33,
+    "width": 70.33,
+    "height": 39.33
+  },
+  "chip--variant-outline.png": {
+    "x": 156.0,
+    "y": 57.67,
+    "width": 78.0,
+    "height": 44.67
+  },
+  "chip--variant-soft.png": {
+    "x": 156.0,
+    "y": 57.67,
+    "width": 78.0,
+    "height": 44.67
+  },
+  "chip--variant-solid.png": {
+    "x": 156.0,
+    "y": 57.67,
+    "width": 78.0,
+    "height": 44.67
+  },
+  "chip--variant-text.png": {
+    "x": 166.67,
+    "y": 66.67,
+    "width": 56.33,
+    "height": 26.0
+  },
+  "checkbox--default.png": {
+    "x": 136.33,
+    "y": 62.33,
+    "width": 116.0,
+    "height": 35.33
+  },
+  "checkbox--unchecked.png": {
+    "x": 136.33,
+    "y": 62.33,
+    "width": 116.0,
+    "height": 35.33
+  },
+  "radio--default.png": {
+    "x": 161.67,
+    "y": 49.33,
+    "width": 65.0,
+    "height": 61.67
+  },
+  "radio--first.png": {
+    "x": 161.67,
+    "y": 49.0,
+    "width": 65.0,
+    "height": 61.67
+  },
+  "switch--default.png": {
+    "x": 165.0,
+    "y": 59.0,
+    "width": 60.0,
+    "height": 42.0
+  },
+  "switch--off.png": {
+    "x": 165.0,
+    "y": 59.0,
+    "width": 60.0,
+    "height": 42.0
+  },
+  "top-bar--default.png": {
+    "x": 24.0,
+    "y": 61.0,
+    "width": 347.0,
+    "height": 38.0
+  },
+  "top-bar--appearance-default.png": {
+    "x": 24.0,
+    "y": 61.0,
+    "width": 347.0,
+    "height": 38.0
+  },
+  "top-bar--appearance-solid.png": {
+    "x": 24.0,
+    "y": 61.0,
+    "width": 347.0,
+    "height": 38.0
+  },
+  "top-bar--appearance-transparent.png": {
+    "x": 24.0,
+    "y": 61.0,
+    "width": 347.0,
+    "height": 38.0
+  },
+  "bottom-tab--default.png": {
+    "x": 0.0,
+    "y": 42.0,
+    "width": 390.0,
+    "height": 70.0
+  },
+  "bottom-tab--analysis.png": {
+    "x": 0.0,
+    "y": 42.0,
+    "width": 390.0,
+    "height": 70.0
+  },
+  "bottom-tab--dining.png": {
+    "x": 0.0,
+    "y": 42.0,
+    "width": 390.0,
+    "height": 70.0
+  },
+  "bottom-tab--profile.png": {
+    "x": 0.0,
+    "y": 42.0,
+    "width": 390.0,
+    "height": 70.0
+  },
+  "back-button--default.png": {
+    "x": 24.0,
+    "y": 61.0,
+    "width": 347.0,
+    "height": 38.0
+  },
+  "step-indicator--default.png": {
+    "x": 155.0,
+    "y": 69.0,
+    "width": 80.0,
+    "height": 22.0
+  },
+  "step-indicator--first.png": {
+    "x": 155.0,
+    "y": 69.0,
+    "width": 80.0,
+    "height": 22.0
+  },
+  "step-indicator--last.png": {
+    "x": 155.0,
+    "y": 69.0,
+    "width": 80.0,
+    "height": 22.0
+  },
+  "card--default.png": {
+    "x": 12.0,
+    "y": 40.0,
+    "width": 366.0,
+    "height": 80.0
+  },
+  "card--selected.png": {
+    "x": 12.0,
+    "y": 40.0,
+    "width": 366.0,
+    "height": 80.0
+  },
+  "list-row--default.png": {
+    "x": 28.0,
+    "y": 0.0,
+    "width": 334.0,
+    "height": 95.0
+  },
+  "list-row--large.png": {
+    "x": 28.0,
+    "y": 105.0,
+    "width": 334.0,
+    "height": 94.0
+  },
+  "list-row--plain.png": {
+    "x": 28.0,
+    "y": 0.0,
+    "width": 334.0,
+    "height": 95.0
+  },
+  "badge--default.png": {
+    "x": 162.67,
+    "y": 64.0,
+    "width": 65.0,
+    "height": 32.0
+  },
+  "avatar--default.png": {
+    "x": 162.33,
+    "y": 47.33,
+    "width": 65.33,
+    "height": 65.33
+  },
+  "avatar--size-32.png": {
+    "x": 170.33,
+    "y": 55.33,
+    "width": 49.33,
+    "height": 49.33
+  },
+  "avatar--size-48.png": {
+    "x": 162.33,
+    "y": 47.33,
+    "width": 65.33,
+    "height": 65.33
+  },
+  "avatar--size-64.png": {
+    "x": 154.33,
+    "y": 39.33,
+    "width": 81.33,
+    "height": 81.33
+  },
+  "divider--default.png": {
+    "x": 12.0,
+    "y": 46.0,
+    "width": 366.0,
+    "height": 68.0
+  },
+  "toast--default.png": {
+    "x": 0.0,
+    "y": 22.33,
+    "width": 390.0,
+    "height": 123.67
+  },
+  "toast--plain.png": {
+    "x": 0.0,
+    "y": 22.33,
+    "width": 390.0,
+    "height": 123.67
+  },
+  "inline-error--default.png": {
+    "x": 11.33,
+    "y": 59.33,
+    "width": 367.33,
+    "height": 101.0
+  },
+  "empty-state--default.png": {
+    "x": 112.67,
+    "y": 91.67,
+    "width": 165.0,
+    "height": 167.0
+  },
+  "progress--default.png": {
+    "x": 12.0,
+    "y": 68.0,
+    "width": 366.0,
+    "height": 24.0
+  },
+  "bottom-sheet--default.png": {
+    "x": 0.0,
+    "y": 0.0,
+    "width": 390.0,
+    "height": 520.0
+  },
+  "dialog--default.png": {
+    "x": 0.0,
+    "y": 0.0,
+    "width": 390.0,
+    "height": 520.0
+  },
+  "taste-chip--default.png": {
+    "x": 155.0,
+    "y": 46.0,
+    "width": 80.0,
+    "height": 68.0
+  },
+  "taste-chip--neutral.png": {
+    "x": 170.33,
+    "y": 62.0,
+    "width": 49.33,
+    "height": 36.0
+  },
+  "taste-chip--selected.png": {
+    "x": 155.0,
+    "y": 46.0,
+    "width": 80.0,
+    "height": 68.0
+  },
+  "taste-chip--size-md.png": {
+    "x": 164.67,
+    "y": 57.0,
+    "width": 61.0,
+    "height": 46.33
+  },
+  "taste-chip--size-sm.png": {
+    "x": 167.33,
+    "y": 59.33,
+    "width": 55.33,
+    "height": 41.33
+  },
+  "taste-chip--size-xs.png": {
+    "x": 170.33,
+    "y": 62.0,
+    "width": 49.33,
+    "height": 36.0
+  },
+  "taste-chip--value.png": {
+    "x": 165.0,
+    "y": 62.0,
+    "width": 60.0,
+    "height": 36.0
+  },
+  "taste-bloom--default.png": {
+    "x": 86.33,
+    "y": 66.33,
+    "width": 217.33,
+    "height": 217.33
+  },
+  "interpretation-card--default.png": {
+    "x": 11.67,
+    "y": 31.0,
+    "width": 366.67,
+    "height": 98.33
+  },
+  "taste-graph--default.png": {
+    "x": 87.0,
+    "y": 70.33,
+    "width": 216.0,
+    "height": 209.67
+  },
+  "segmented-control--default.png": {
+    "x": 132.33,
+    "y": 48.0,
+    "width": 110.67,
+    "height": 48.0
+  },
+  "period-tabs--default.png": {
+    "x": 50.33,
+    "y": 48.0,
+    "width": 288.33,
+    "height": 48.0
+  },
+  "text-action--default.png": {
+    "x": 133.0,
+    "y": 66.67,
+    "width": 123.67,
+    "height": 27.0
+  },
+  "toggle-action--default.png": {
+    "x": 159.0,
+    "y": 64.33,
+    "width": 72.0,
+    "height": 31.33
+  },
+  "notification-badge--default.png": {
+    "x": 11.33,
+    "y": 55.33,
+    "width": 359.67,
+    "height": 49.33
+  },
+  "skeleton--default.png": {
+    "x": 12.0,
+    "y": 36.0,
+    "width": 366.0,
+    "height": 88.0
+  },
+  "image-frame--default.png": {
+    "x": 139.0,
+    "y": 52.0,
+    "width": 112.0,
+    "height": 56.0
+  },
+  "disclosure--default.png": {
+    "x": 12.33,
+    "y": 66.0,
+    "width": 365.0,
+    "height": 28.0
+  },
+  "scope-label--default.png": {
+    "x": 89.33,
+    "y": 66.67,
+    "width": 210.67,
+    "height": 26.0
+  },
+  "tag-group--default.png": {
+    "x": 11.33,
+    "y": 57.67,
+    "width": 235.33,
+    "height": 44.67
+  },
+  "flow-loading--default.png": {
+    "x": 12.0,
+    "y": 0.0,
+    "width": 366.0,
+    "height": 160.0
+  },
+  "flow-retry--default.png": {
+    "x": 10.0,
+    "y": 0.0,
+    "width": 370.0,
+    "height": 350.0
+  },
+  "action-area--default.png": {
+    "x": 10.0,
+    "y": 43.33,
+    "width": 369.67,
+    "height": 166.0
+  },
+  "callout--default.png": {
+    "x": 12.0,
+    "y": 47.0,
+    "width": 366.0,
+    "height": 66.0
+  },
+  "callout--actionable.png": {
+    "x": 12.0,
+    "y": 39.33,
+    "width": 366.0,
+    "height": 81.67
+  },
+  "callout--anatomy.png": {
+    "x": 12.0,
+    "y": 39.33,
+    "width": 366.0,
+    "height": 81.67
+  },
+  "callout--critical.png": {
+    "x": 12.0,
+    "y": 47.0,
+    "width": 366.0,
+    "height": 66.0
+  },
+  "callout--dismissible.png": {
+    "x": 12.0,
+    "y": 39.33,
+    "width": 366.0,
+    "height": 81.67
+  },
+  "callout--informative.png": {
+    "x": 12.0,
+    "y": 47.0,
+    "width": 366.0,
+    "height": 66.0
+  },
+  "callout--large.png": {
+    "x": 12.0,
+    "y": 72.33,
+    "width": 366.0,
+    "height": 175.67
+  },
+  "callout--positive.png": {
+    "x": 12.0,
+    "y": 47.0,
+    "width": 366.0,
+    "height": 66.0
+  },
+  "callout--warning.png": {
+    "x": 12.0,
+    "y": 47.0,
+    "width": 366.0,
+    "height": 66.0
+  },
+  "icon-action-button--default.png": {
+    "x": 94.67,
+    "y": 69.0,
+    "width": 205.0,
+    "height": 22.0
+  },
+  "icon-action-button--selected.png": {
+    "x": 94.67,
+    "y": 69.0,
+    "width": 205.0,
+    "height": 22.0
+  },
+  "icon-action-button--disabled.png": {
+    "x": 94.67,
+    "y": 69.0,
+    "width": 205.0,
+    "height": 22.0
+  },
+  "icon-action-button--no-count.png": {
+    "x": 88.0,
+    "y": 69.0,
+    "width": 211.0,
+    "height": 22.0
+  },
+  "record-actions--default.png": {
+    "x": 168.0,
+    "y": 69.0,
+    "width": 51.0,
+    "height": 22.0
+  },
+  "record-actions--selected.png": {
+    "x": 168.0,
+    "y": 69.0,
+    "width": 51.0,
+    "height": 22.0
+  },
+  "record-actions--disabled.png": {
+    "x": 168.0,
+    "y": 69.0,
+    "width": 51.0,
+    "height": 22.0
+  },
+  "social-actions--default.png": {
+    "x": 146.33,
+    "y": 72.33,
+    "width": 97.33,
+    "height": 16.0
+  },
+  "social-actions--selected.png": {
+    "x": 146.33,
+    "y": 72.33,
+    "width": 97.33,
+    "height": 16.0
+  },
+  "social-actions--disabled.png": {
+    "x": 146.33,
+    "y": 72.33,
+    "width": 97.33,
+    "height": 16.0
+  },
+  "social-actions--no-count.png": {
+    "x": 146.67,
+    "y": 72.33,
+    "width": 96.33,
+    "height": 16.0
+  }
+}

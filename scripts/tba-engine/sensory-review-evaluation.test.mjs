@@ -4,6 +4,30 @@ import { readFileSync } from 'node:fs';
 import { reviewSuite, verifySuite, scoreReviewCase, evaluateSensoryReview } from './sensory-review-evaluation.mjs';
 const fixture = reviewSuite.cases[0];
 const atom = {kind:'sensory_detail',scale:'sensory-detail-v1',attribute:'taste.unspecified',value:fixture.text,sourceSpans:[{start:0,end:fixture.text.length,quote:fixture.text}]};
+test('관계 채점은 감각 오귀속·반대 호감 추가·발명한 대상과 시점을 모두 거부한다',()=>{
+ const c=reviewSuite.cases.find(c=>c.id==='SR-003');
+ const scope={attribute:'taste.bitter',target:'whole_dish',phase:'unspecified',sourceSpans:[{start:0,end:c.text.length,quote:c.text}]};
+ const detail={...scope,kind:'sensory_detail',scale:'sensory-detail-v1',value:'자몽 속껍질 같은 쓴맛'};
+ const liking={...scope,kind:'attribute_liking',scale:'attribute-three-category-v1',value:'positive'};
+ const score=observations=>scoreReviewCase(c,{observations,unresolved:[],needsAI:false});
+ assert.equal(score([detail,liking]).semanticSuccess,true);
+ for(const wrong of [
+  [detail,{...liking,attribute:'taste.sour'}],
+  [{...detail,attribute:'taste.sweet'},liking],
+  [detail,liking,{...liking,value:'negative'}],
+  [{...detail,target:'sauce',phase:'late_meal'},{...liking,target:'sauce',phase:'late_meal'}],
+  [detail,{...liking,kind:'overall_liking',attribute:null,scale:'overall-three-category-v1'}],
+ ]) {const r=score(wrong);assert.equal(r.semanticSuccess,false);assert.equal(r.relations.passed,false);}
+ const equivalent={...scope,kind:'sensory_presence',scale:'presence-v1',value:true};
+ assert.equal(score([equivalent,liking]).semanticSuccess,true,'detail 중복 없이 동등한 감각 존재와 직접 호감도 허용');
+ assert.equal(score([detail]).semanticSuccess,false,'호감 관계가 빠지면 성공 아님');
+});
+test('관계 기준이 없는 문장은 부분 검사 통과를 의미 성공으로 승격하지 않는다',()=>{
+ const c=reviewSuite.cases.find(c=>c.id==='SR-002');
+ const a={kind:'sensory_detail',scale:'sensory-detail-v1',attribute:'taste.salty',value:c.text,sourceSpans:[{start:0,end:c.text.length,quote:c.text}]};
+ const r=scoreReviewCase(c,{observations:[a],unresolved:[],needsAI:false});
+ assert.equal(r.partialChecksPassed,true);assert.equal(r.relations.assessed,false);assert.equal(r.semanticSuccess,false);
+});
 test('독립 fixture는 동결 해시와 50개 고유 ID를 유지한다',()=>{
  assert.equal(verifySuite(),true); assert.equal(new Set(reviewSuite.cases.map(c=>c.id)).size,50);
  const copy=structuredClone(reviewSuite);copy.cases[0].text+='변경';assert.equal(verifySuite(copy),false);

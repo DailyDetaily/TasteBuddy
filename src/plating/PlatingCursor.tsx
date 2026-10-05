@@ -1,0 +1,133 @@
+import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+
+// Original symbol.svg paths, clockwise from the top petal.
+const petals = [
+  "M32.1612 31.917C35.9095 24.2691 38.0297 15.9396 38.3326 7.45868C38.484 3.36967 35.228 1.52588e-05 31.139 1.52588e-05C27.0499 1.52588e-05 23.7939 3.36967 23.9453 7.45868C24.2482 15.9396 26.3684 24.2691 30.1167 31.917C30.5331 32.75 31.7447 32.75 32.1612 31.917Z",
+  "M34.1678 34.2644C42.6488 33.6965 50.9025 31.3491 58.4369 27.3736C62.0337 25.4806 63.3588 20.9372 61.3143 17.4161C59.2698 13.895 54.7265 12.7592 51.2432 14.9173C44.0496 19.4228 37.8782 25.4427 33.1456 32.4849C32.6155 33.28 33.2213 34.3022 34.1678 34.2644Z",
+  "M33.1456 37.1797C37.8782 44.2598 44.0496 50.2418 51.2432 54.7473C54.6886 56.9054 59.2698 55.7696 61.3143 52.2485C63.3588 48.7274 62.0337 44.1841 58.4369 42.291C50.9404 38.3156 42.6488 35.9682 34.1678 35.4002C33.2213 35.3245 32.6155 36.3846 33.1456 37.1797Z",
+  "M30.1167 37.7477C26.3684 45.3956 24.2482 53.7251 23.9453 62.206C23.7939 66.295 27.0499 69.6647 31.139 69.6647C35.228 69.6647 38.484 66.295 38.3326 62.206C38.0297 53.7251 35.9095 45.3956 32.1612 37.7477C31.7447 36.9147 30.5331 36.9147 30.1167 37.7477Z",
+  "M28.1101 35.4003C19.6291 35.9682 11.3754 38.3156 3.84099 42.291C0.244178 44.1841 -1.08096 48.7274 0.96355 52.2485C3.00806 55.7696 7.55139 56.9054 11.0346 54.7473C18.2283 50.2418 24.3996 44.2219 29.1323 37.1797C29.6623 36.3846 29.0566 35.3624 28.1101 35.4003Z",
+  "M29.1323 32.4849C24.3996 25.4048 18.2283 19.4228 11.0346 14.9173C7.58925 12.7592 3.00806 13.895 0.96355 17.4161C-1.08096 20.9372 0.244178 25.4806 3.84099 27.3736C11.3375 31.3491 19.6291 33.6965 28.1101 34.2644C29.0566 34.3401 29.6623 33.28 29.1323 32.4849Z",
+];
+
+export default function PlatingCursor() {
+  const cursor = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const overlay = cursor.current;
+    if (!overlay) return;
+    const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
+    let point: { x: number; y: number } | null = null;
+    let marked: Element | null = null;
+    let watched: Element | null = null;
+    let hitTarget: Element | null = null;
+    let frame = 0;
+
+    const schedule = () => {
+      if (point && !frame) frame = requestAnimationFrame(update);
+    };
+    const invalidateHit = () => {
+      hitTarget = null;
+      schedule();
+    };
+    const observer = new MutationObserver(invalidateHit);
+    const watch = (target: Element) => {
+      if (target === watched) return;
+      watched = target;
+      observer.disconnect();
+      // Observe only the hovered branch, avoiding unrelated page animations.
+      for (let node: Element | null = target; node; node = node.parentElement) {
+        observer.observe(node, {
+          attributes: true,
+          attributeFilter: ["disabled", "aria-disabled", "aria-busy", "class", "style"],
+          childList: true,
+        });
+      }
+    };
+    const reset = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      point = null;
+      marked?.removeAttribute("data-pl-busy-cursor");
+      marked = null;
+      watched = null;
+      hitTarget = null;
+      observer.disconnect();
+      overlay.hidden = true;
+    };
+    const update = () => {
+      frame = 0;
+      // Restore the target's own CSS before detecting wait/progress cursors.
+      marked?.removeAttribute("data-pl-busy-cursor");
+      marked = null;
+      if (!point || !finePointer.matches) {
+        reset();
+        return;
+      }
+      // Pointer events already carry the hit element. Re-test layout only
+      // after scrolling, resizing or a mutation beneath a stationary cursor.
+      const target = hitTarget?.isConnected ? hitTarget : document.elementFromPoint(point.x, point.y);
+      if (!target) {
+        reset();
+        return;
+      }
+      hitTarget = target;
+      watch(target);
+      const nativeCursor = getComputedStyle(target).cursor.split(",").at(-1)?.trim();
+      const busy = target.closest(":disabled, [aria-disabled='true'], [aria-busy='true']") ||
+        ["wait", "progress", "not-allowed"].includes(nativeCursor ?? "");
+      overlay.hidden = !busy;
+      if (busy) {
+        target.setAttribute("data-pl-busy-cursor", "");
+        marked = target;
+        overlay.style.transform = `translate3d(${point.x - 18}px, ${point.y - 20}px, 0)`;
+      }
+    };
+    const move = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") {
+        reset();
+        return;
+      }
+      point = { x: event.clientX, y: event.clientY };
+      hitTarget = event.target instanceof Element ? event.target : null;
+      schedule();
+    };
+    const leave = (event: PointerEvent) => {
+      if (!event.relatedTarget) reset();
+    };
+    const visibility = () => {
+      if (document.hidden) reset();
+    };
+    document.addEventListener("pointermove", move, true);
+    document.addEventListener("pointerover", move, true);
+    document.addEventListener("pointerout", leave, true);
+    document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("scroll", invalidateHit, true);
+    window.addEventListener("resize", invalidateHit);
+    window.addEventListener("blur", reset);
+    finePointer.addEventListener("change", reset);
+    return () => {
+      reset();
+      document.removeEventListener("pointermove", move, true);
+      document.removeEventListener("pointerover", move, true);
+      document.removeEventListener("pointerout", leave, true);
+      document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("scroll", invalidateHit, true);
+      window.removeEventListener("resize", invalidateHit);
+      window.removeEventListener("blur", reset);
+      finePointer.removeEventListener("change", reset);
+    };
+  }, []);
+
+  return createPortal(
+    <div ref={cursor} className="pl-busy-cursor" hidden aria-hidden="true">
+      <svg viewBox="-2 -2 68 76" fill="#0f0f0f" stroke="#fff" strokeWidth="2" paintOrder="stroke">
+        {[2, 3, 4, 5, 0, 1].map((petal, index) => (
+          <path key={petal} d={petals[petal]} style={{ animationDelay: `${index * 120}ms` }} />
+        ))}
+      </svg>
+    </div>,
+    document.body,
+  );
+}

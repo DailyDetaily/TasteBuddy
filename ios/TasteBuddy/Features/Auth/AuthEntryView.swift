@@ -411,6 +411,7 @@ struct AuthEntrySheet: View {
     private var footer: some View {
         VStack(spacing: AuthEntrySheetMetrics.secondaryActionGap) {
             primaryActionButton
+                .platingLayoutFrame("auth-primary-action")
                 .offset(y: primaryActionKeyboardOffset)
                 .animation(.easeOut(duration: 0.24), value: keyboard.visibleHeight)
                 .zIndex(1)

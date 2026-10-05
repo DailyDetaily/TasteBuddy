@@ -236,28 +236,46 @@ struct CardScrollList<Content: View>: View {
     var spacing: CGFloat
     var horizontalPadding: CGFloat
     var fullBleed: Bool
+    var snapsToCards: Bool
+    var trailingContentPadding: CGFloat
     private let content: Content
 
     init(
         spacing: CGFloat = 10,
         horizontalPadding: CGFloat = TBSpacing.page,
         fullBleed: Bool = true,
+        snapsToCards: Bool = false,
+        trailingContentPadding: CGFloat = 0,
         @ViewBuilder content: () -> Content
     ) {
         self.spacing = spacing
         self.horizontalPadding = horizontalPadding
         self.fullBleed = fullBleed
+        self.snapsToCards = snapsToCards
+        self.trailingContentPadding = trailingContentPadding
         self.content = content()
     }
 
+    @ViewBuilder
     var body: some View {
+        if snapsToCards {
+            scrollView.scrollTargetBehavior(.viewAligned)
+        } else {
+            scrollView
+        }
+    }
+
+    private var scrollView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .top, spacing: spacing) {
                 content
             }
-            .padding(.horizontal, fullBleed ? horizontalPadding : 0)
+            .scrollTargetLayout(isEnabled: snapsToCards)
+            .padding(.horizontal, fullBleed && !snapsToCards ? horizontalPadding : 0)
+            .padding(.trailing, trailingContentPadding)
             .padding(.vertical, 2)
         }
+        .contentMargins(.horizontal, fullBleed && snapsToCards ? horizontalPadding : 0, for: .scrollContent)
         .padding(.horizontal, fullBleed ? -horizontalPadding : 0)
     }
 }
@@ -366,7 +384,7 @@ struct ReservationCard: View {
                 HStack {
                     SectionTitle(title: restaurantName, size: .medium)
                     Spacer()
-                    StatusChip(title: status, backgroundColor: TBColor.successSoft, foregroundColor: TBColor.success)
+                    StatusChip(title: status, backgroundColor: TBColor.successSoft, foregroundColor: TBColor.successText)
                 }
                 Text(description)
                     .font(TBFont.regular(13))
@@ -472,13 +490,13 @@ struct TBUIButton: View {
 
         switch variant {
         case .primary:
-            return TBColor.textPrimary
+            return TBColor.actionPrimary
         case .secondary:
             return TBColor.mutedSurface
         case .outline, .ghost, .link:
             return .clear
         case .destructive:
-            return TBColor.destructive.opacity(0.12)
+            return TBColor.destructiveSoft
         }
     }
 
@@ -489,9 +507,9 @@ struct TBUIButton: View {
 
         switch variant {
         case .primary:
-            return TBColor.textInverse
+            return TBColor.actionOnPrimary
         case .destructive:
-            return TBColor.destructive
+            return TBColor.destructiveText
         case .link:
             return TBColor.textPrimary
         default:
@@ -628,16 +646,16 @@ struct TBUICheckbox: View {
     var body: some View {
         HStack(spacing: 8) {
             RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(isChecked ? TBColor.textPrimary : .clear)
+                .fill(isChecked ? TBColor.selectionSurface : .clear)
                 .frame(width: 18, height: 18)
                 .overlay {
                     RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .stroke(isChecked ? TBColor.textPrimary : TBColor.borderDisabled)
+                        .stroke(isChecked ? TBColor.selectionSurface : TBColor.borderDisabled)
                 }
                 .overlay {
                     if isChecked {
                         LucideIcon(.check, size: TBIcon.Size.xSmall, strokeWidth: TBIcon.Stroke.medium)
-                            .foregroundStyle(TBColor.textInverse)
+                            .foregroundStyle(TBColor.selectionText)
                     }
                 }
 
@@ -657,11 +675,11 @@ struct TBUIRadioGroup: View {
             ForEach(Array(options.enumerated()), id: \.offset) { index, option in
                 HStack(spacing: 8) {
                     Circle()
-                        .stroke(index == selectedIndex ? TBColor.textPrimary : TBColor.borderDisabled, lineWidth: index == selectedIndex ? 2 : 1)
+                        .stroke(index == selectedIndex ? TBColor.selectionSurface : TBColor.borderDisabled, lineWidth: index == selectedIndex ? 2 : 1)
                         .frame(width: 18, height: 18)
                         .overlay {
                             if index == selectedIndex {
-                                Circle().fill(TBColor.textPrimary).frame(width: 8, height: 8)
+                                Circle().fill(TBColor.selectionSurface).frame(width: 8, height: 8)
                             }
                         }
                     Text(option)
@@ -678,7 +696,7 @@ struct TBUISwitch: View {
 
     var body: some View {
         Capsule()
-            .fill(isOn ? TBColor.textPrimary : TBColor.borderStrong)
+            .fill(isOn ? TBColor.selectionSurface : TBColor.borderStrong)
             .frame(width: 44, height: 26)
             .overlay(alignment: isOn ? .trailing : .leading) {
                 Circle()
@@ -698,10 +716,10 @@ struct TBUITabs: View {
             ForEach(Array(tabs.enumerated()), id: \.offset) { index, tab in
                 Text(tab)
                     .font(TBFont.semibold(12))
-                    .foregroundStyle(index == selectedIndex ? TBColor.textInverse : TBColor.textSecondary)
+                    .foregroundStyle(index == selectedIndex ? TBColor.selectionText : TBColor.textSecondary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 36)
-                    .background(index == selectedIndex ? TBColor.textPrimary : TBColor.mutedSurface)
+                    .background(index == selectedIndex ? TBColor.selectionSurface : TBColor.mutedSurface)
                     .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
             }
         }
@@ -754,7 +772,7 @@ struct TBUISkeleton: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-            .fill(TBColor.disabledSurface)
+            .fill(TBColor.placeholderSurface)
             .frame(height: height)
             .overlay {
                 LinearGradient(
@@ -831,7 +849,7 @@ struct TBUITooltipContent: View {
             .foregroundStyle(TBColor.textInverse)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(TBColor.textPrimary)
+            .background(TBColor.inverseSurface)
             .clipShape(RoundedRectangle(cornerRadius: TBRadius.icon, style: .continuous))
     }
 }
@@ -873,7 +891,7 @@ struct TBUIDrawerContent<Content: View>: View {
             .background(TBColor.focus)
             .shadow(color: Color.black.opacity(0.24), radius: 60, x: -12, y: 0)
         }
-        .background(Color.black.opacity(0.35))
+        .background(TBColor.scrimSubtle)
     }
 }
 
@@ -1117,6 +1135,7 @@ enum NativeDesignSystemInventory {
 
 enum NativeComponentUsage: String, CaseIterable {
     case production = "제품 사용"
+    case library = "공용 라이브러리"
     case visualReference = "시각 참고"
     case migrationReference = "이식 참고"
     case outOfScope = "현재 제품 범위 밖"
@@ -1134,6 +1153,8 @@ struct NativeComponentCatalogEntry: Identifiable {
 /// Curated native registry; registration identifies usage, not parity completion.
 enum NativeProductComponentCatalog {
     static let entries: [NativeComponentCatalogEntry] = [
+        .init(swiftType: "Callout", sourceFile: "Components/Callout.swift", usage: .production,
+              note: "회고 수정의 저장 실패에 critical 표시형 사용. 다른 톤·전체 클릭·닫기는 라이브러리 옵션이며 호출부가 상태와 초점을 관리."),
         .init(swiftType: "PrimaryButton", sourceFile: "Components/TBComponents.swift", usage: .production,
               note: "48pt 기본·40pt compact, 실제 disabled, 미각 tint, 공용 눌림 반응"),
         .init(swiftType: "SectionCard", sourceFile: "Components/TBComponents.swift", usage: .production,
@@ -1144,8 +1165,32 @@ enum NativeProductComponentCatalog {
               note: "라벨 전용은 읽기용 미각색, 숫자형은 중립 라벨과 미각 시그널"),
         .init(swiftType: "BottomSheetShell", sourceFile: "Components/SystemCoreComponents.swift", usage: .production,
               note: "공용 제목·닫기·grabber·footer; 용도별 stage와 native chrome 옵션"),
+        .init(swiftType: "TasteDetailPage", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "미각변화에서 추출한 전체 화면 상세; 접히는 헤더·고정 조작부·카드별 본문"),
+        .init(swiftType: "TasteDetailSectionPicker", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "해석/근거처럼 역할이 다른 상세 모드에만 사용; 큰 글자는 메뉴로 전환"),
+        .init(swiftType: "TasteDetailPeriodPicker", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "측정 상세의 1개월·3개월·6개월·1년·전체 기간 탭; 기간 변경 시 같은 범위로 재집계"),
+        .init(swiftType: "TasteDetailMetric", sourceFile: "Components/TasteDetailPage.swift", usage: .visualReference,
+              note: "기존 숫자 타일 참고; 현재 상세 수치는 TasteDetailValueRow 사용"),
+        .init(swiftType: "TasteDetailNote", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "해석·적용 조건·빈 상태를 담는 공통 설명 영역"),
+        .init(swiftType: "TasteDetailChartPanel", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "상세의 흰색 전폭 시각화 영역; 기간·단위 라벨과 실제 데이터만 배치"),
+        .init(swiftType: "TasteDetailGroup", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "관련 수치를 하나의 중립 카드로 묶음"),
+        .init(swiftType: "TasteDetailValueRow", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "라벨·값·선택적 이동 표시; 큰 글자는 세로 배치"),
+        .init(swiftType: "TasteDetailBarPlot", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "분포와 동일 조건의 기간 비교; 미확인과 0 분리"),
+        .init(swiftType: "TasteDetailScope", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "기간·출처·척도·불충분 상태의 간결한 라벨"),
+        .init(swiftType: "TasteDetailDisclosure", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
+              note: "원본과 세부 조건을 필요할 때 펼치는 영역"),
         .init(swiftType: "TBTextInput", sourceFile: "Components/NativeInputComponents.swift", usage: .production,
               note: "다이닝·인증 입력의 라벨, 포커스, 오류, disabled 계약"),
+        .init(swiftType: "TBTextArea", sourceFile: "Components/NativeInputComponents.swift", usage: .production,
+              note: "다이닝 추가 메모·회고 수정의 레이블, 포커스, 오류, 비활성, 글자 배율 대응. 저장·취소는 사용처 소유"),
         .init(swiftType: "TBSelectableChip", sourceFile: "Components/NativeInputComponents.swift", usage: .production,
               note: "다이닝·식당 정보 수정 선택형 칩의 상태와 접근성"),
         .init(swiftType: "TBWrapLayout", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
@@ -1169,7 +1214,7 @@ enum NativeProductComponentCatalog {
         .init(swiftType: "TBUIButton", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .visualReference,
               note: "웹 variant 외형 견본; 제품 기본 액션에는 PrimaryButton 사용"),
         .init(swiftType: "InterpretationDetailDrawer", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .migrationReference,
-              note: "이식 참조 wrapper; 현재 분석 상세는 BottomSheetShell 조합 사용"),
+              note: "이식 참조 wrapper; 현재 분석 카드 상세는 TasteDetailPage 사용"),
         .init(swiftType: "ReservationCard", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .outOfScope,
               note: "예약은 네이티브 제품 범위 밖. 카탈로그 참고만 유지"),
         .init(swiftType: "ReservationConfirmationPanel", sourceFile: "Components/DesignSystemFullComponents.swift", usage: .outOfScope,

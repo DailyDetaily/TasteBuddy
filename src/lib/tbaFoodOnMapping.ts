@@ -1,7 +1,7 @@
 import {
   TBA_FOODON_BRIDGE_ENTRIES,
 } from '../constants/tbaFoodOnBridge';
-import { getDishKindLabel } from '../constants/dishKindTags';
+import { getDishKindLabel, matchesDishKindKeyword } from '../constants/dishKindTags';
 import { getTbaSignalById } from './tbaSignalMapping';
 import type {
   TbaFoodOntologyBridgeEntry,
@@ -74,10 +74,10 @@ function getEntryTextScore(entry: TbaFoodOntologyBridgeEntry, value: string): Tb
   }
 
   const containmentMatch = labels.find((candidate) => (
-    normalizedValue.includes(candidate.normalized) ||
-    candidate.normalized.includes(normalizedValue) ||
-    compactValue.includes(candidate.compact) ||
-    candidate.compact.includes(compactValue)
+    matchesDishKindKeyword(normalizedValue, candidate.normalized) ||
+    matchesDishKindKeyword(candidate.normalized, normalizedValue) ||
+    matchesDishKindKeyword(compactValue, candidate.compact) ||
+    matchesDishKindKeyword(candidate.compact, compactValue)
   ));
 
   if (containmentMatch) {

@@ -130,7 +130,7 @@ function mockEntry(overrides: Partial<TbaFoodKnowledgeEntry>): TbaFoodKnowledgeE
   const nativeBridge = findBridge('가례불고기');
   assert.ok(nativeBridge, '가례불고기 should have a TBA bridge entry');
   assert.ok(nativeBridge!.dishKindIds.includes('meat'));
-  assert.ok(nativeBridge!.dishKindIds.includes('grilled_smoked'));
+  assert.ok(nativeBridge!.dishKindIds.includes('grilled'));
   assert.ok(nativeBridge!.dishKindIds.includes('fermented_jang'));
 }
 
@@ -188,7 +188,7 @@ function mockEntry(overrides: Partial<TbaFoodKnowledgeEntry>): TbaFoodKnowledgeE
     '평양냉면',
   );
 
-  assert.ok(inferredColdNoodles.dishKindIds.includes('grain_noodle'));
+  assert.ok(inferredColdNoodles.dishKindIds.includes('noodle'));
   assert.ok(inferredColdNoodles.dishKindIds.includes('cold'));
   assert.ok(inferredColdNoodles.ingredients.includes('면'));
   assert.ok(inferredColdNoodles.techniques.includes('차갑게'));

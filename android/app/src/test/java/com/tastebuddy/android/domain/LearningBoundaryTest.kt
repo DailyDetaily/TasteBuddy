@@ -98,6 +98,7 @@ class LearningBoundaryTest {
             put("extra", 123)
         }
         val selection = SensorySelection.fromRaw(raw)
+        assertEquals(raw, selection.unparsedPayload)
         val result = SelectionParser.parse(listOf(selection), contract.selectionCatalog)
         assertTrue(result.observations.isEmpty())
         assertEquals("unknown_selection_catalog_version", result.unresolved.single().reason)

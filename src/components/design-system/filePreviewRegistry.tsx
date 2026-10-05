@@ -1,3 +1,4 @@
+import {ICON_TOKENS} from '../../constants/designTokens';
 import { useMemo, useState, type ReactNode } from 'react';
 
 import {
@@ -920,7 +921,7 @@ function TastePointArrowBoxFilePreview() {
                   <TastePointArrowBox
                     parentTaste={TASTE_TOKENS[item.tasteId].label}
                     size={item.size}
-                    trend={item.trend}
+                    trend={item.trend as "increase" | "decrease" | "neutral"}
                   />
                 </div>
                 <span className="text-center text-[11px] font-medium text-[var(--tb-color-text-subtle)]">

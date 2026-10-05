@@ -1,7 +1,8 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
-@import "tailwindcss";
+@import "tailwindcss" source("./");
 @import "./styles/globals.css";
 @import "./styles/design-system.css";
+@import "./styles/plating-motion.css";
 
 @theme {
   --font-sans: "Pretendard", ui-sans-serif, system-ui, sans-serif;

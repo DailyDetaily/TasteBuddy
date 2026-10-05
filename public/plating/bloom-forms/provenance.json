@@ -1,0 +1,56 @@
+[
+  {
+    "id": "round-four",
+    "source": "brand-launch/public/brand/taste-bloom/round-four.svg",
+    "sourceSha256": "1426d342a720c7cfc584172500e418141c4ff0aca6e651a03a097d71a0a48efe",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  },
+  {
+    "id": "round-six",
+    "source": "brand-launch/public/brand/taste-bloom/round-six.svg",
+    "sourceSha256": "b3896569f4cc7e0ea91fed92d7aceed02cd740a56e6df673f35a84e739aa31a1",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  },
+  {
+    "id": "round-eight",
+    "source": "brand-launch/public/brand/taste-bloom/round-eight.svg",
+    "sourceSha256": "9af8b52f0df431cd7f8e2589dd273f2e2e166c362dd576c7b5f9099e98bb1960",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  },
+  {
+    "id": "capsule-five",
+    "source": "brand-launch/public/brand/taste-bloom/capsule-five.svg",
+    "sourceSha256": "b3c47fc63e3d0e09d5431616912c845aa8ca491e22d45f2c7aeacc29133552c9",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  },
+  {
+    "id": "capsule-seven",
+    "source": "brand-launch/public/brand/taste-bloom/capsule-seven.svg",
+    "sourceSha256": "f6f0a83911a2ec15a6b21b8a4d3c76946b6ced8886ba893a3c4da073ff0644c2",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  },
+  {
+    "id": "diamond-four",
+    "source": "brand-launch/public/brand/taste-bloom/diamond-four.svg",
+    "sourceSha256": "3d2634055ba3608164d6c6f36eb3662f367bcca1d6f96e9cb6e33c6a3b89c896",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  },
+  {
+    "id": "diamond-six",
+    "source": "brand-launch/public/brand/taste-bloom/diamond-six.svg",
+    "sourceSha256": "813e9ce90c3309cc0f967639e9050dd78de97b566b873631f099d9f8d6583c71",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  },
+  {
+    "id": "serrated-five",
+    "source": "brand-launch/public/brand/taste-bloom/serrated-five.svg",
+    "sourceSha256": "fb3b2fb4bd9692075abab5927b4b5bc73327da0ce1ac73efc57b0b39284478ff",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  },
+  {
+    "id": "serrated-eight",
+    "source": "brand-launch/public/brand/taste-bloom/serrated-eight.svg",
+    "sourceSha256": "2e0c363d8d4a566e4d1701b07ccc997061e1322858d33b10538e5bc52a967d3a",
+    "derivation": "Removed background circle only for the decorative home strip; original preserved."
+  }
+]

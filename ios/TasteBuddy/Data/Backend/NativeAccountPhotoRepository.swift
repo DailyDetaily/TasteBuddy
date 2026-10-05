@@ -41,23 +41,17 @@ struct SupabaseNativeAccountPhotoRepository: NativeAccountPhotoRepository {
         return id.uuidString.lowercased()
     }
 
+    private var accountRequestContext: NativeAccountRequestContext {
+        NativeAccountRequestContext(
+            client: client, configuration: configuration, httpSession: httpSession)
+    }
+
     private func checkAccount(_ userID: String) throws {
-        try Task.checkCancellation()
-        guard let session = client.auth.currentSession, !session.user.isAnonymous,
-              session.user.id == UUID(uuidString: userID) else { throw NativeAccountDataError.accountChanged }
+        try accountRequestContext.checkAccount(userID)
     }
 
     private func requestClient(userID: String) async throws -> SupabaseClient {
-        try checkAccount(userID)
-        let session = try await client.auth.session
-        try checkAccount(userID)
-        guard !session.user.isAnonymous, session.user.id == UUID(uuidString: userID) else {
-            throw NativeAccountDataError.accountChanged
-        }
-        // SDK가 전송 직전에 새 계정 토큰으로 교체하지 않도록 작업 소유자의 토큰을 고정한다.
-        return SupabaseClient(supabaseURL: configuration.supabaseURL, supabaseKey: configuration.supabasePublishableKey,
-            options: .init(auth: .init(autoRefreshToken: false, accessToken: { session.accessToken }),
-                           global: .init(session: httpSession)))
+        try await accountRequestContext.requestClient(userID: userID)
     }
 
     private func finishUpload(_ uploadID: UUID, client: SupabaseClient) async throws {
@@ -80,7 +74,7 @@ struct SupabaseNativeAccountPhotoRepository: NativeAccountPhotoRepository {
             let exists = try await bucket.exists(path: path)
             try checkAccount(userID)
             if exists { continue }
-            guard let data = try DiningReflectionPhotoStore.originalData(for: filename) else {
+            guard let data = try DiningReflectionPhotoStore.originalData(for: filename, ownerScope: userID) else {
                 throw DiningReflectionPhotoStore.PhotoError.missingOriginal
             }
             try checkAccount(userID)
@@ -106,10 +100,10 @@ struct SupabaseNativeAccountPhotoRepository: NativeAccountPhotoRepository {
         let bucket = requests.storage.from(Self.bucket)
         for filename in filenames {
             try checkAccount(userID)
-            if try DiningReflectionPhotoStore.originalData(for: filename) != nil { continue }
+            if try DiningReflectionPhotoStore.originalData(for: filename, ownerScope: userID) != nil { continue }
             let data = try await bucket.download(path: "\(userID.lowercased())/\(filename)")
             try checkAccount(userID)
-            try DiningReflectionPhotoStore.restore(data, filename: filename)
+            try DiningReflectionPhotoStore.restore(data, filename: filename, ownerScope: userID)
         }
     }
 

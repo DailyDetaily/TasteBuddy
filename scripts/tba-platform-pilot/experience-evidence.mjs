@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { parseByRules, LEXICON_VERSION, RULE_VERSION } from './rules.mjs';
 import { parseByRules as parseByRulesV3, LEXICON_VERSION as LEXICON_VERSION_V3, RULE_VERSION as RULE_VERSION_V3 } from './rules-v3.mjs';
 import { parseByRules as parseByRulesV4, LEXICON_VERSION as LEXICON_VERSION_V4, RULE_VERSION as RULE_VERSION_V4 } from './rules-v4.mjs';
+import { parseByRules as parseByRulesV5, LEXICON_VERSION as LEXICON_VERSION_V5, RULE_VERSION as RULE_VERSION_V5 } from './rules-v5.mjs';
 import { resolveWithAI, rawAnswerHash, atomKey, validateStoredAIArtifact, purgeAICache } from './ai-extraction.mjs';
 
 export const FIXTURE_TIME = '2026-09-06T12:00:00.000Z';
@@ -23,6 +24,7 @@ const ruleParserForVersions=versions=>{
   if(stable(versions)===stable({lexicon:LEXICON_VERSION,rules:RULE_VERSION})||stable(versions)===stable({lexicon:'1',rules:'1'})) return parseByRules;
   if(stable(versions)===stable({lexicon:LEXICON_VERSION_V3,rules:RULE_VERSION_V3})) return parseByRulesV3;
   if(stable(versions)===stable({lexicon:LEXICON_VERSION_V4,rules:RULE_VERSION_V4})) return parseByRulesV4;
+  if(stable(versions)===stable({lexicon:LEXICON_VERSION_V5,rules:RULE_VERSION_V5})) return parseByRulesV5;
   fail('UNKNOWN_RULE_ARTIFACT_VERSION');
 };
 export function validateStoredRuleArtifact(artifact,{answer,context}) {

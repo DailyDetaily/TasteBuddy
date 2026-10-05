@@ -1,6 +1,7 @@
 import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from 'react';
 
 import SearchOverlayShell from './SearchOverlayShell';
+import { sensoryV2MatchesQuery } from '../../lib/sensoryV2.mjs';
 
 type TasteAxisId = 'sweet' | 'sour' | 'salty' | 'bitter' | 'umami' | 'fat';
 
@@ -13,7 +14,7 @@ interface TasteWordSearchWord {
   axis: TasteAxisId;
   description: string;
   id: string;
-  intensity: number;
+  intensity?: number | null;
   label: string;
 }
 
@@ -54,7 +55,7 @@ export default function TasteWordSearch({
     const matchesQuery = normalizedQuery
       ? normalizeSearchValue(`${word.label} ${word.description} ${getAxisLabel(axes, word.axis)}`).includes(
           normalizedQuery,
-        )
+        ) || sensoryV2MatchesQuery(word.id, normalizedQuery)
       : true;
 
     return matchesAxis && matchesQuery;

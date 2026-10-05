@@ -3,7 +3,7 @@ import test from 'node:test';
 import { createTestSupabaseDb } from './utils/test-supabase-db.mjs';
 
 test('native account snapshots enforce ownership, revisions, payload shape and deletion boundaries', async () => {
-  const db = await createTestSupabaseDb({ through: '20260908105000' });
+  const db = await createTestSupabaseDb({ through: '99999999999999' });
   const userA = '11111111-1111-4111-8111-111111111111';
   const userB = '22222222-2222-4222-8222-222222222222';
   const payload = JSON.stringify({ schemaVersion: 1, values: {}, hasSeenOnboarding: true, photoFilenames: [] });

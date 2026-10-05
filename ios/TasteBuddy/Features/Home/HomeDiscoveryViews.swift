@@ -31,7 +31,7 @@ struct HomeJournalStackListView: View {
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
     var onStartNewRecord: ((PersonalTasteNextSelection) -> Void)?
-    @State private var selectedDiscoveryID: String?
+    @State private var selectedDetail: TasteCardDetailRoute?
     @State private var displayLimit = 24
 
     var body: some View {
@@ -51,7 +51,7 @@ struct HomeJournalStackListView: View {
                                     onStartNewRecord: { onStartNewRecord?(question) },
                                     stackAccessibilityLabel: "질문과 발견 카드")
                             case .discovery(let card):
-                                HomeDiscoveryStackCard(card: card, onOpen: { selectedDiscoveryID = card.id })
+                                HomeDiscoveryStackCard(card: card, onOpen: { selectedDetail = .discovery(card.id) })
                             }
                         }
                         if items.count > displayLimit {
@@ -69,9 +69,7 @@ struct HomeJournalStackListView: View {
             .tbInlineNavigationTitle()
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("닫기") { dismiss() } } }
         }
-        .sheet(isPresented: Binding(get: { selectedDiscoveryID != nil }, set: { if !$0 { selectedDiscoveryID = nil } })) {
-            if let selectedDiscoveryID { HomeDiscoveryDetailView(discoveryID: selectedDiscoveryID) }
-        }
+        .tasteDetail($selectedDetail)
         .modifier(PersonalTasteAnswerToast(bottomPadding: TBSpacing.x12))
         .onChange(of: appModel.memoryAccountGeneration) { _, _ in dismiss() }
         .accessibilityIdentifier("home-journal-stack-list")
@@ -81,68 +79,71 @@ struct HomeJournalStackListView: View {
 /// 카드 ID로 현재 후보를 다시 찾는다. 수정/삭제 후 옛 원본 묶음을 계속 보여주지 않는다.
 struct HomeDiscoveryDetailView: View {
     @EnvironmentObject private var appModel: AppModel
-    @Environment(\.dismiss) private var dismiss
     let discoveryID: String
-    @State private var selectedEntryID: UUID?
-    @State private var showsComparison = false
-    @State private var displayLimit = 40
-    private var card: HomeDiscoveryCard? { appModel.homeDiscovery(id: discoveryID) }
+    @State private var selectedPeriod: TasteDetailPeriod = .all
+    private var referenceDate: Date { appModel.homeArchivePresentation?.referenceDay ?? .now }
+    private var periodEntries: [DiningEntry] {
+        HomeArchiveIdentity.entries(appModel.diningEntries, asOf: referenceDate).filter { entry in
+            guard selectedPeriod != .all else { return true }
+            guard let date = entry.confirmedMealDate else { return false }
+            return selectedPeriod.contains(date, referenceDate: referenceDate, calendar: .current)
+        }
+    }
+    private var card: HomeDiscoveryCard? {
+        guard selectedPeriod != .all else { return appModel.homeDiscovery(id: discoveryID) }
+        var candidate = HomeDiscoveryEngine.cards(entries: periodEntries, snapshot: appModel.sensoryAnalysis,
+                                                  referenceDate: referenceDate, calendar: .current)
+            .first { $0.id == discoveryID }
+        let window = selectedPeriod.tdWindow(referenceDate: referenceDate, calendar: .current)
+        candidate?.dataScope = .selectedPeriod(window)
+        if candidate?.evidenceBundle != nil { candidate?.evidenceBundle?.period = window }
+        return candidate
+    }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: TBSpacing.x16) {
-                    if appModel.sensoryAnalysisIsUpdating {
-                        ProgressView("현재 기록에서 발견을 갱신하고 있어요")
-                    } else if let card {
-                        Text(card.kind.label).font(TBFont.medium(12)).foregroundStyle(TBColor.textSecondary)
-                        Text(card.title).font(TBFont.bold(20)).accessibilityIdentifier("home-discovery-detail-title")
-                        Text(card.detail).font(TBFont.regular(13)).foregroundStyle(TBColor.textSecondary)
-                        Text(card.explanation).font(TBFont.regular(13)).foregroundStyle(TBColor.textSecondary)
-                        if !card.evidenceSummary.isEmpty {
-                            Text("계산에 사용한 직접 응답").font(TBFont.medium(13))
-                            Text(card.evidenceSummary).font(TBFont.regular(13)).foregroundStyle(TBColor.textSecondary)
-                                .accessibilityIdentifier("home-discovery-evidence-summary")
-                        }
-                        if !card.limitations.isEmpty {
-                            Text("이 발견을 읽을 때").font(TBFont.medium(13))
-                            ForEach(Array(card.limitations.enumerated()), id: \.offset) { _, limitation in
-                                Text(limitation).font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary)
-                            }
-                        }
-                        let documents = appModel.foodMemoryIndex.documents.filter { card.entryIDs.contains($0.id) }
-                            .sorted { $0.entry.observedAt > $1.entry.observedAt }
-                        Text("연결된 음식 기록 \(documents.count)개 · 식사 \(Set(documents.map { $0.entry.mealID }).count)번")
-                            .font(TBFont.medium(13))
-                        if Set(documents.map { $0.entry.mealID }).count > 1 {
-                            Button("이 기록들 비교하기") { showsComparison = true }.frame(minHeight: 44)
-                        }
-                        ForEach(Array(documents.prefix(displayLimit))) { document in
-                            Button { selectedEntryID = document.id } label: {
-                                FoodMemoryRow(document: document)
-                            }.buttonStyle(.plain)
-                        }
-                        if documents.count > displayLimit {
-                            Button("연결된 기록 더 보기") { displayLimit += 40 }.frame(minHeight: 44)
-                        }
-                    } else {
-                        Text(appModel.sensoryAnalysisError ?? "기록이 바뀌어 이 발견은 더 이상 표시하지 않아요.")
-                            .font(TBFont.regular(14)).foregroundStyle(TBColor.textSecondary)
-                    }
-                }.tbPageContentPadding()
+        TasteDetailPage(title: "발견") {
+            TasteDetailPeriodPicker(selection: $selectedPeriod)
+        } content: {
+            if appModel.sensoryAnalysisIsUpdating {
+                ProgressView("불러오는 중").frame(maxWidth: .infinity, minHeight: 180)
+            } else if let card {
+                TasteDiscoverySummary(card: card)
+            } else {
+                Text(appModel.sensoryAnalysisError ?? "이 기간의 발견이 없어요").tbTextStyle(.body).padding(TBSpacing.page)
             }
-            .tbPageBackground()
-            .navigationTitle("발견 카드")
-            .tbInlineNavigationTitle()
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("닫기") { dismiss() } } }
         }
         .task(id: card?.semanticKey) { appModel.markHomeDiscoveryRead(id: discoveryID) }
-        .sheet(isPresented: Binding(get: { selectedEntryID != nil }, set: { if !$0 { selectedEntryID = nil } })) {
-            if let selectedEntryID { FoodMemoryDetailView(entryID: selectedEntryID) }
-        }
-        .sheet(isPresented: $showsComparison) {
-            if let card { FoodMemoryComparisonView(scope: .entries(card.entryIDs.sorted { $0.uuidString < $1.uuidString })) }
-        }
-        .onChange(of: appModel.memoryAccountGeneration) { _, _ in dismiss() }
+    }
+}
+
+/// The same hierarchy is used for discoveries opened from Home and a category.
+struct TasteDiscoverySummary: View {
+    @EnvironmentObject private var appModel: AppModel
+    let card: HomeDiscoveryCard
+    private var entries: [DiningEntry] { appModel.diningEntries.filter { card.entryIDs.contains($0.id) } }
+    var body: some View {
+        VStack(alignment: .leading, spacing: TBSpacing.x20) {
+            TasteDetailChartPanel {
+                TasteDetailScope(text: card.kind.label)
+                Text(card.title).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true).accessibilityIdentifier("home-discovery-detail-title")
+                if !card.detail.isEmpty && card.detail != card.title {
+                    Text(card.detail).font(TBFont.regular(13)).foregroundStyle(TBColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                TasteDetailScope(text: card.dataScope.label(calendar: .current))
+            }
+            TasteDetailGroup {
+                TasteDetailValueRow(title: "관련 식사", value: "\(Set(entries.map(\.mealID)).count)회", showsDivider: false)
+                TasteDetailValueRow(title: "요리 기록", value: "\(entries.count)개")
+            }.padding(.horizontal, TBSpacing.page)
+            TasteDetailDisclosure() {
+                if !card.evidenceSummary.isEmpty {
+                    Text(card.evidenceSummary).accessibilityIdentifier("home-discovery-evidence-summary")
+                }
+                if !card.explanation.isEmpty { Text(card.explanation) }
+                ForEach(card.limitations, id: \.self) { Text($0) }
+            }.padding(.horizontal, TBSpacing.page)
+        }.padding(.bottom, TBSpacing.page)
     }
 }

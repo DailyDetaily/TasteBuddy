@@ -7,6 +7,7 @@ struct HomeDiscoveryCard: Identifiable, Equatable {
         case timeGap, repeatedMenu, restaurantCollection, repeatedGoodEvaluation, lastYear
         case commonPreference, preferredIntensity, conditionalContrast, patternException
         case overallContrast, revisitComparison, periodChange, familiarTasteInNewMenu
+        case menuCooccurrence, foodKindAcrossRestaurants, newMenuAtKnownRestaurant, sensoryCooccurrence, sensoryPeriodChange, fitPeriodChange
 
         var label: String {
             switch self {
@@ -20,7 +21,14 @@ struct HomeDiscoveryCard: Identifiable, Equatable {
             case .familiarTasteInNewMenu: "새 메뉴와 익숙한 취향"
             case .timeGap, .lastYear: "기억 연결"
             case .repeatedGoodEvaluation: "반복된 만족"
-            case .restaurantCollection, .repeatedMenu: "기록의 이정표"
+            case .restaurantCollection: "한 식당, 여러 메뉴"
+            case .repeatedMenu: "기록의 이정표"
+            case .menuCooccurrence: "함께 기록한 메뉴"
+            case .foodKindAcrossRestaurants: "여러 식당의 음식 종류"
+            case .newMenuAtKnownRestaurant: "익숙한 식당의 새 메뉴"
+            case .sensoryCooccurrence: "함께 느낀 감각"
+            case .sensoryPeriodChange: "감각 기록 비중의 차이"
+            case .fitPeriodChange: "기간별 알맞음 차이"
             }
         }
 
@@ -32,6 +40,8 @@ struct HomeDiscoveryCard: Identifiable, Equatable {
             case .repeatedGoodEvaluation: 3
             case .timeGap, .lastYear: 4
             case .restaurantCollection, .repeatedMenu: 5
+            case .menuCooccurrence, .foodKindAcrossRestaurants, .newMenuAtKnownRestaurant, .sensoryCooccurrence: 2
+            case .sensoryPeriodChange, .fitPeriodChange: 0
             }
         }
     }
@@ -53,6 +63,9 @@ struct HomeDiscoveryCard: Identifiable, Equatable {
     var relevance: Int = 0
     var evidenceSummary: String = ""
     var limitations: [String] = []
+    var dataScope: TDDiscoveryScope = .wholeArchive
+    var evidenceBundle: TDEvidenceBundle? = nil
+    var accountGeneration: UUID? = nil
     var semanticKey: String { meaningKey.isEmpty ? id : meaningKey }
 
     static func digest(_ value: String) -> String {
@@ -70,7 +83,7 @@ enum HomeDiscoveryEngine {
     }
 
     static func cards(sources: HomeArchiveSources, referenceDate: Date,
-                      calendar: Calendar = .current) -> [HomeDiscoveryCard] {
+                      calendar: Calendar = .current, comparisonWindow: TDWindow? = nil) -> [HomeDiscoveryCard] {
         let today = calendar.startOfDay(for: referenceDate)
         let allMeals = Dictionary(grouping: sources.entries, by: \.mealID)
         let futureMeals = Set(allMeals.filter { _, rows in
@@ -85,7 +98,8 @@ enum HomeDiscoveryEngine {
         let meals = Dictionary(grouping: entries, by: \.mealID)
         let dates = allMeals.compactMapValues { rows -> Date? in
             let values = Set(rows.compactMap(\.confirmedMealDate).map { calendar.startOfDay(for: $0) })
-            guard values.count == 1, let date = values.first, date <= today else { return nil }
+            guard values.count == 1, let date = values.first, date <= today,
+                  !sources.strictMealDates || rows.allSatisfy({ $0.confirmedMealDate != nil }) else { return nil }
             return date
         }
         let evaluation = HomeArchiveVisualizationEngine.overall(entries: entries, observations: sources.observations)
@@ -116,6 +130,10 @@ enum HomeDiscoveryEngine {
             let id = HomeDiscoveryCard.digest("\(version)|\(kind.rawValue)|\(subject)")
             let revisions = ordered.map { "\($0.id.uuidString):\($0.memoryRevisionNumber)" }.sorted()
             let revisionKey = HomeDiscoveryCard.digest(([id, title, detail] + revisions + evidenceIDs.sorted()).joined(separator: "|"))
+            var proof = TDEvidenceBundle()
+            let ids = TDEvidenceIDs(entryIDs: Set(ordered.map { $0.id.uuidString }), mealIDs: Set(ordered.map { $0.mealID.uuidString }), observationIDs: evidenceIDs)
+            proof.add(.numerator, ids); proof.add(.denominator, ids)
+            proof.sourceRevisions = Dictionary(uniqueKeysWithValues: ordered.map { ($0.id.uuidString, $0.memoryRevisionNumber) })
             candidates.append(.init(
                 id: id, revisionKey: revisionKey, kind: kind, subjectID: subject,
                 title: title, detail: detail, explanation: explanation,
@@ -125,7 +143,7 @@ enum HomeDiscoveryEngine {
                 sortDate: ordered[0].observedAt,
                 meaningKey: HomeDiscoveryCard.digest(id + "|" + meaning),
                 relevance: kind == .repeatedGoodEvaluation ? 35 : 10,
-                limitations: ["기록한 식사의 범위이며 실제 모든 식사나 고정된 취향을 뜻하지 않아요."]
+                limitations: ["기록한 식사의 범위이며 실제 모든 식사나 고정된 취향을 뜻하지 않아요."], evidenceBundle: proof
             ))
         }
 
@@ -188,7 +206,7 @@ enum HomeDiscoveryEngine {
 
         for (identity, rows) in restaurants {
             let named = rows.filter { HomeArchiveIdentity.hasMenu($0) }
-            let menuCount = Set(named.map(HomeArchiveIdentity.menu)).count
+            let menuCount = Set(named.compactMap { sources.menuKeyByEntry[$0.id] }).count
             let mealCount = Set(named.map(\.mealID)).count
             guard menuCount >= 3, mealCount >= 2, let first = named.first,
                   !first.restaurant.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
@@ -211,7 +229,7 @@ enum HomeDiscoveryEngine {
                     explanation: "지난해 오늘 전후 7일에 해당하는, 식사일이 확인된 기록이에요.", rows: rows)
             }
         }
-        let relations = HomeDiscoveryRelations.cards(sources: sources, referenceDate: referenceDate, calendar: calendar)
+        let relations = HomeDiscoveryRelations.cards(sources: sources, referenceDate: referenceDate, calendar: calendar, comparisonWindow: comparisonWindow)
         // 같은 두 식사의 평가 비교가 있으면 간격만 다시 말하는 카드는 만들지 않는다.
         let comparedSubjects = Set(relations.filter { $0.kind == .revisitComparison }.map(\.subjectID))
         candidates.removeAll { $0.kind == .timeGap && comparedSubjects.contains($0.subjectID) }
@@ -323,16 +341,22 @@ private enum HomeDiscoveryRelations {
         let entries: [DiningEntry]
         let byID: [String: DiningEntry]
         let menus: [String: [DiningEntry]]
+        let menuKeyByEntry: [String: String]
         let dates: [String: Date]
         let records: [PersonalTasteModelRecord]
+        let recordsByID: [String: PersonalTasteModelRecord]
         let units: [PersonalTasteUnit]
         let overall: [String: PersonalTasteModelRecord]
         let referenceDate: Date
         let calendar: Calendar
         let today: Date
+        let comparisonWindow: TDWindow?
+        let validatedIntensityLinks: [String: Set<String>]
 
-        init(sources: HomeArchiveSources, referenceDate: Date, calendar: Calendar) {
+        init(sources: HomeArchiveSources, referenceDate: Date, calendar: Calendar, comparisonWindow: TDWindow? = nil) {
             self.referenceDate = referenceDate; self.calendar = calendar
+            self.comparisonWindow = comparisonWindow
+            validatedIntensityLinks = sources.validatedIntensityLinks
             today = calendar.startOfDay(for: referenceDate)
             let today = calendar.startOfDay(for: referenceDate)
             let allMeals = Dictionary(grouping: sources.entries, by: \.mealID)
@@ -342,11 +366,13 @@ private enum HomeDiscoveryRelations {
             entries = sources.entries.filter { !future.contains($0.mealID) }
             let entriesByID = Dictionary(uniqueKeysWithValues: entries.map { (recordID($0.id), $0) })
             byID = entriesByID
-            menus = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasMenu), by: HomeArchiveIdentity.menu)
+            menus = sources.menus.mapValues { $0.filter { entriesByID[recordID($0.id)] != nil } }.filter { !$0.value.isEmpty }
+            menuKeyByEntry = Dictionary(uniqueKeysWithValues: sources.menuKeyByEntry.map { (recordID($0.key), $0.value) })
             dates = Dictionary(uniqueKeysWithValues: allMeals.compactMap { meal, rows -> (String, Date)? in
                 let dates = Set(rows.compactMap(\.confirmedMealDate).map { calendar.startOfDay(for: $0) })
                 guard dates.count == 1, let date = dates.first, date <= today,
-                      !rows.contains(where: { ($0.mealTime?.confirmedAt ?? .distantPast) > referenceDate }) else { return nil }
+                      !rows.contains(where: { ($0.mealTime?.confirmedAt ?? .distantPast) > referenceDate }),
+                      !sources.strictMealDates || rows.allSatisfy({ $0.confirmedMealDate != nil }) else { return nil }
                 return (recordID(meal), date)
             })
 
@@ -386,9 +412,10 @@ private enum HomeDiscoveryRelations {
                     confirmationStatus: "explicit_user_choice", selectionEvidence: observation.selectionEvidence)
             }.sorted { $0.observationId < $1.observationId }
             self.records = records
+            recordsByID = Dictionary(uniqueKeysWithValues: records.map { ($0.observationId, $0) })
             // 기존 모델의 식사별 병합/부재 응답/척도 검증을 재사용하되 질문 영향 재계산은 하지 않는다.
             units = PersonalTasteModelBuilder.buildRecords(records: records, userID: "home-discovery-owner",
-                assessQuestions: false).units
+                assessQuestions: false, validatedIntensityLinks: sources.validatedIntensityLinks).units
             overall = Dictionary(grouping: records.filter {
                 $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1"
                     && $0.selectionEvidence?.type == "overallEvaluation"
@@ -412,7 +439,7 @@ private enum HomeDiscoveryRelations {
             return targetLabel + " · " + phaseLabel
         }
         func menuKeys(_ unit: PersonalTasteUnit) -> Set<String> {
-            Set(unit.experienceIDs.compactMap { byID[$0] }.filter(HomeArchiveIdentity.hasMenu).map(HomeArchiveIdentity.menu))
+            Set(unit.experienceIDs.compactMap { menuKeyByEntry[$0] })
         }
         func namedMenu(_ identity: String) -> String {
             guard let entry = menus[identity]?.first else { return "메뉴" }
@@ -431,6 +458,33 @@ private enum HomeDiscoveryRelations {
             let age = calendar.dateComponents([.day], from: date, to: today).day ?? Int.max
             return (0...90).contains(age)
         }
+
+        func refs(_ ids: Set<String>) -> TDEvidenceIDs {
+            let selected = ids.compactMap { recordsByID[$0] }
+            return .init(entryIDs: Set(selected.compactMap { uuid($0.experienceId)?.uuidString }),
+                         mealIDs: Set(selected.compactMap { uuid($0.mealId)?.uuidString }), observationIDs: ids)
+        }
+
+        func proof(numerator: Set<String>, denominator: Set<String>, groups: [String: Set<String>] = [:]) -> TDEvidenceBundle {
+            var value = TDEvidenceBundle(timeZone: calendar.timeZone.identifier)
+            value.add(.numerator, refs(numerator)); value.add(.denominator, refs(denominator))
+            for (name, ids) in groups { value.groups[name] = refs(ids) }
+            let rows = denominator.compactMap { recordsByID[$0] }
+            for (role, values) in [(TDEvidenceRole.supporting, ["positive", "very_positive", "just_right"]),
+                                   (.counter, ["negative", "very_negative", "below_preferred", "above_preferred"]), (.neutral, ["neutral"])] {
+                value.add(role, refs(Set(rows.filter { values.contains($0.value.text) }.map(\.observationId))))
+            }
+            value.sourceRevisions = Dictionary(uniqueKeysWithValues: entries.filter { value.all.entryIDs.contains($0.id.uuidString) }.map { ($0.id.uuidString, $0.memoryRevisionNumber) })
+            let attributes = Set(rows.compactMap(\.attribute)), scales = Set(rows.map(\.scale))
+            if attributes.count == 1 { value.attribute = attributes.first }
+            if scales.count == 1 { value.scale = scales.first }
+            if let first = rows.first {
+                value.reference = first.reference
+                if Set(rows.map(\.target)).count == 1 { value.conditions["target"] = first.target }
+                if Set(rows.map(\.phase)).count == 1 { value.conditions["phase"] = first.phase }
+            }
+            return value
+        }
     }
 
     struct Builder {
@@ -439,7 +493,7 @@ private enum HomeDiscoveryRelations {
 
         mutating func add(_ kind: HomeDiscoveryCard.Kind, subject: String, scope: String, title: String,
                           detail: String, explanation: String, rows: [DiningEntry], evidenceIDs: Set<String>,
-                          meaning: String, strength: Int, summary: String, limits: [String] = []) {
+                          meaning: String, strength: Int, summary: String, proof: TDEvidenceBundle? = nil, limits: [String] = []) {
             let unique = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             let ordered = unique.values.sorted {
                 if $0.observedAt != $1.observedAt { return $0.observedAt > $1.observedAt }
@@ -449,6 +503,14 @@ private enum HomeDiscoveryRelations {
             let id = HomeDiscoveryCard.digest(key([HomeDiscoveryEngine.version, kind.rawValue, subject, scope]))
             let sourceKeys = ordered.map { "\($0.id):\($0.memoryRevisionNumber):\($0.reflectionPhotoFilename ?? "")" }.sorted()
             let revision = HomeDiscoveryCard.digest(key([id, title, detail, explanation, summary] + sourceKeys + evidenceIDs.sorted()))
+            var currentProof = proof
+            if var value = currentProof {
+                let referenced = value.all.entryIDs
+                let extra = ordered.filter { !referenced.contains($0.id.uuidString) }
+                value.add(.contextOnly, .init(entryIDs: Set(extra.map { $0.id.uuidString }), mealIDs: Set(extra.map { $0.mealID.uuidString })))
+                value.sourceRevisions.merge(Dictionary(uniqueKeysWithValues: extra.map { ($0.id.uuidString, $0.memoryRevisionNumber) })) { _, latest in latest }
+                currentProof = value
+            }
             candidates.append(.init(id: id, revisionKey: revision, kind: kind, subjectID: subject,
                 title: title, detail: detail, explanation: explanation, entryIDs: Set(ordered.map(\.id)),
                 evidenceIDs: evidenceIDs,
@@ -458,7 +520,7 @@ private enum HomeDiscoveryRelations {
                 meaningKey: HomeDiscoveryCard.digest(key([id, meaning])), relevance: strength,
                 evidenceSummary: summary,
                 limitations: limits + ["기록하고 직접 평가한 범위만 설명해요. 미응답은 호감·중립·불호로 바꾸지 않아요.",
-                    "식사별 반복을 센 초기 표시 정책이며 통계적 유의성이나 미래 예측 확률이 아니에요."]))
+                    "식사별 반복을 센 초기 표시 정책이며 통계적 유의성이나 미래 예측 확률이 아니에요."], evidenceBundle: currentProof))
         }
 
         mutating func sensoryRelations() {
@@ -478,7 +540,8 @@ private enum HomeDiscoveryRelations {
                         explanation: "\(evidence.scopeLabel(first)) 범위에서 감각 자체에 남긴 직접 호감을 식사별로 묶었어요. 감각 태그의 등장이나 음식 전체 평가로 호감을 추정하지 않아요.",
                         rows: rows, evidenceIDs: Set(units.flatMap(\.evidenceIDs)),
                         meaning: "positive|counter:" + votes.counterKey(to: "positive"),
-                        strength: 55 + min(votes.count("positive"), 10), summary: votes.summary)
+                        strength: 55 + min(votes.count("positive"), 10), summary: votes.summary,
+                        proof: evidence.proof(numerator: Set(positiveUnits.flatMap(\.evidenceIDs)), denominator: Set(units.flatMap(\.evidenceIDs))))
                 }
                 conditionalContrast(units, scope: scope, subject: subject)
                 exception(units, scope: scope, subject: subject)
@@ -508,6 +571,11 @@ private enum HomeDiscoveryRelations {
                         rows: evidence.rows(a + b), evidenceIDs: Set((a + b).flatMap(\.evidenceIDs)),
                         meaning: key([dx, dy, x.counterKey(to: dx), y.counterKey(to: dy)]),
                         strength: 68 + min(x.total + y.total, 12), summary: "왼쪽: \(x.summary)\n오른쪽: \(y.summary)",
+                        proof: evidence.proof(numerator: Set((left.filter { x.values[$0.mealID] == dx } + right.filter { y.values[$0.mealID] == dy }).flatMap(\.evidenceIDs)),
+                            denominator: Set((left + right).flatMap(\.evidenceIDs)), groups: [
+                                "조건 A 기준 · " + evidence.namedMenu(keys[i]): Set(left.flatMap(\.evidenceIDs)),
+                                "조건 B 기준 · " + evidence.namedMenu(keys[j]): Set(right.flatMap(\.evidenceIDs)),
+                                "독립 비교에서 제외한 공통 식사": Set((a + b).filter { shared.contains($0.mealID) }.flatMap(\.evidenceIDs))]),
                         limits: ["양쪽 메뉴를 함께 기록한 식사 \(shared.count)번은 독립 집단 비교에서 제외했어요.",
                             "강도·조리 상태 등 다른 조건도 달랐을 수 있어요. 메뉴가 평가 차이의 원인이라는 뜻은 아니에요."])
                 }
@@ -531,6 +599,8 @@ private enum HomeDiscoveryRelations {
                 rows: evidence.rows(units), evidenceIDs: Set(dated.flatMap(\.evidenceIDs)),
                 meaning: key([direction, currentDirection] + current.values.keys.sorted()),
                 strength: 75, summary: "이전: \(baseline.summary)\n최근: \(current.summary)",
+                proof: evidence.proof(numerator: Set(latest.flatMap(\.evidenceIDs)), denominator: Set(previous.flatMap(\.evidenceIDs)),
+                                      groups: ["앞선 반복 평가": Set(previous.flatMap(\.evidenceIDs)), "최근 한 식사": Set(latest.flatMap(\.evidenceIDs))]),
                 limits: ["한 번의 다른 경험이며 취향 변화나 새로운 반복 취향의 확정이 아니에요.",
                     "현재 유효한 원본으로 과거 식사를 비교했어요. 당시 알고 있던 모델 상태를 복원한 것은 아니에요.",
                     "식사일 미확인 근거는 선후 비교에서 제외했어요. 음식·강도 등 다른 조건도 달랐을 수 있어요."])
@@ -545,7 +615,8 @@ private enum HomeDiscoveryRelations {
             var seenMenus = Set<String>()
             for unit in latest {
                 for entry in evidence.rows([unit]) where HomeArchiveIdentity.hasMenu(entry) {
-                    let menu = HomeArchiveIdentity.menu(entry), meal = recordID(entry.mealID)
+                    guard let menu = evidence.menuKeyByEntry[recordID(entry.id)] else { continue }
+                    let meal = recordID(entry.mealID)
                     guard seenMenus.insert(menu).inserted, let overall = evidence.overall[recordID(entry.id)],
                           ["positive", "very_positive"].contains(overall.value.text),
                           let menuRows = evidence.menus[menu],
@@ -564,6 +635,7 @@ private enum HomeDiscoveryRelations {
                         rows: rows, evidenceIDs: Set((prior + [unit]).flatMap(\.evidenceIDs) + [overall.observationId]),
                         meaning: key([meal, priorVotes.counterKey(to: "positive")]), strength: 65,
                         summary: "\(evidence.scopeLabel(unit))\n이전: \(priorVotes.summary)\n이번: 직접 호감 1번",
+                        proof: evidence.proof(numerator: Set(unit.evidenceIDs + [overall.observationId]), denominator: Set(prior.flatMap(\.evidenceIDs))),
                         limits: ["아카이브에서 확인 가능한 첫 기록이며 처음 먹은 음식이라는 뜻은 아니에요.",
                             "이 감각 때문에 음식 전체가 좋았다는 인과 해석은 하지 않아요."])
                 }
@@ -573,13 +645,13 @@ private enum HomeDiscoveryRelations {
         mutating func fitRelations() {
             let sensory = evidence.records.filter { $0.attribute != nil }
             let groups = Dictionary(grouping: sensory) { record in
-                key([evidence.context(record), evidence.byID[record.experienceId].map(HomeArchiveIdentity.menu) ?? ""])
+                key([evidence.context(record), evidence.menuKeyByEntry[record.experienceId] ?? ""])
             }
             for scope in groups.keys.sorted() {
                 let records = groups[scope]!
                 guard let first = records.first(where: { $0.kind == "preference_fit" }),
-                      let entry = evidence.byID[first.experienceId], HomeArchiveIdentity.hasMenu(entry) else { continue }
-                let patterns = PersonalTasteModelBuilder.buildFitPatterns(records, userID: "home-discovery-owner", policy: .init())
+                      let entry = evidence.byID[first.experienceId], evidence.menuKeyByEntry[first.experienceId] != nil else { continue }
+                let patterns = PersonalTasteModelBuilder.buildFitPatterns(records, userID: "home-discovery-owner", policy: .init(), validatedIntensityLinks: evidence.validatedIntensityLinks)
                     .filter { $0.conditions.count == 1 && $0.conditions[0].dimension == "intensity" && $0.status == "repeated_fit" }
                     .sorted { $0.conditions[0].value < $1.conditions[0].value }
                 guard !patterns.isEmpty else { continue }
@@ -593,14 +665,20 @@ private enum HomeDiscoveryRelations {
                 let detail = selected.map { "\(intensityLabel($0.conditions[0].value)): \(fitLabel($0.repeatedValue ?? "")) \($0.distribution.mealCount)번" }.joined(separator: "\n")
                 let directIDs = Set(records.map(\.observationId))
                 let rows = Set(records.map(\.experienceId)).sorted().compactMap { evidence.byID[$0] }
+                let selectedIDs = Set(selected.flatMap(\.evidenceIDs))
+                var fitProof = evidence.proof(numerator: selectedIDs, denominator: selectedIDs,
+                    groups: Dictionary(uniqueKeysWithValues: selected.map { (intensityLabel($0.conditions[0].value) + " · " + fitLabel($0.repeatedValue ?? ""), Set($0.evidenceIDs)) }))
+                let other = evidence.proof(numerator: directIDs.subtracting(selectedIDs), denominator: [])
+                fitProof.add(.contextOnly, other.roles[.numerator] ?? .empty)
                 add(.preferredIntensity, subject: "sense:" + key([first.attribute!, first.reference ?? ""]), scope: scope,
                     title: "\(entry.menu)의 \(PersonalTasteModelBuilder.label(first))\n" + (preferred.repeatedValue == "just_right"
                         ? "알맞았던 강도가 보여요" : "이 강도는 ‘\(fitLabel(preferred.repeatedValue ?? ""))’으로 남겼어요"),
                     detail: detail,
-                    explanation: "\(evidence.scopeLabel(target: first.target, phase: first.phase))에서 같은 선택의 강도와 알맞음만 연결했어요. 선택한 각 강도에서 같은 응답이 서로 다른 식사 3번 이상 반복됐어요.",
+                    explanation: "\(evidence.scopeLabel(target: first.target, phase: first.phase))에서 같은 선택 또는 검증된 부모 선택의 강도와 알맞음을 연결했어요. 선택한 각 강도에서 같은 응답이 서로 다른 식사 3번 이상 반복됐어요.",
                     rows: rows, evidenceIDs: directIDs,
                     meaning: key(selected.map { $0.conditions[0].value + ":" + ($0.repeatedValue ?? "") }),
                     strength: comparison == nil ? 50 : 68, summary: detail,
+                    proof: fitProof,
                     limits: ["알맞음·과함·부족함은 호감과 별개예요. 물리적인 최적 강도나 음식 자체의 호불호로 해석하지 않아요.",
                         "비교 강도는 겹치지 않는 식사로 구성했으며, 응답이 다른 다른 강도의 기록도 아래 원본에 남겨요."])
             }
@@ -634,6 +712,8 @@ private enum HomeDiscoveryRelations {
                     meaning: key([cell.overallValue, cell.attributeValue, count >= 3 ? "repeated" : "example"]),
                     strength: count >= 3 ? 73 : 42,
                     summary: "\(pattern.cells.map { "전체 \(overallLabel($0.overallValue)) / 감각 \(directionLabel($0.attributeValue)): \($0.mealIDs.count)번" }.joined(separator: "\n"))\n한 식사 내 서로 다른 평가 쌍: \(pattern.mixedMealIDs.count)번",
+                    proof: evidence.proof(numerator: Set(cell.evidenceIDs), denominator: Set(pattern.evidenceIDs),
+                        groups: Dictionary(uniqueKeysWithValues: pattern.cells.map { ("전체 " + overallLabel($0.overallValue) + " · 감각 " + directionLabel($0.attributeValue), Set($0.evidenceIDs)) })),
                     limits: ["두 평가가 함께 있었다는 뜻이며 다른 감각이 아쉬움을 보완했다는 원인 해석은 아니에요.",
                         "3회 미만은 반복 취향이 아니라 개별 경험으로 표시해요."])
             }
@@ -661,13 +741,18 @@ private enum HomeDiscoveryRelations {
                     explanation: "같은 식당의 같은 메뉴에 남긴 최근 두 식사의 직접 전체 평가를 비교했어요. 두 기록은 확인된 서로 다른 식사일에 해당해요.",
                     rows: selected, evidenceIDs: ids, meaning: key([previous.0, latest.0, a, b]),
                     strength: 63, summary: "직접 전체 평가가 있는 식사 2번",
+                    proof: evidence.proof(numerator: ids, denominator: ids,
+                        groups: [evidence.dateText(previous.1): Set((meals[previous.0] ?? []).compactMap { evidence.overall[recordID($0.id)]?.observationId }),
+                                 evidence.dateText(latest.1): Set((meals[latest.0] ?? []).compactMap { evidence.overall[recordID($0.id)]?.observationId })]),
                     limits: ["두 기록의 차이이며 메뉴 품질이나 입맛이 변했다는 확정이 아니에요."])
             }
         }
 
         mutating func periodRelations() {
-            guard let recentStart = evidence.calendar.date(byAdding: .day, value: -89, to: evidence.today),
-                  let previousStart = evidence.calendar.date(byAdding: .day, value: -90, to: recentStart) else { return }
+            let window = evidence.comparisonWindow ?? TDWindow.recent(90, now: evidence.referenceDate, calendar: evidence.calendar)
+            let previousWindow = window.previous(calendar: evidence.calendar)
+            guard let recentStart = window.start, let recentEnd = window.end, let previousStart = previousWindow.start else { return }
+            let days = evidence.calendar.dateComponents([.day], from: recentStart, to: recentEnd).day ?? 90
             var groups: [String: [PersonalTasteUnit]] = [:]
             var menus: [String: String] = [:]
             for unit in evidence.units where !unit.intensityConflict {
@@ -679,7 +764,7 @@ private enum HomeDiscoveryRelations {
             for scope in groups.keys.sorted() {
                 let units = groups[scope]!, first = units[0]
                 let previous = units.filter { evidence.dates[$0.mealID].map { $0 >= previousStart && $0 < recentStart } ?? false }
-                let recent = units.filter { evidence.dates[$0.mealID].map { $0 >= recentStart && $0 <= evidence.today } ?? false }
+                let recent = units.filter { evidence.dates[$0.mealID].map { $0 >= recentStart && $0 < recentEnd } ?? false }
                 let a = Votes(previous), b = Votes(recent)
                 guard a.total >= 5, b.total >= 5,
                       Set(previous.compactMap { evidence.dates[$0.mealID] }).count >= 2,
@@ -696,13 +781,16 @@ private enum HomeDiscoveryRelations {
                 }
                 guard stableA && stableB, let menu = menus[scope] else { continue }
                 let selected = previous + recent
-                add(.periodChange, subject: "menu:" + menu, scope: scope,
+                add(.periodChange, subject: "menu:" + menu, scope: evidence.comparisonWindow == nil ? scope : key([scope, window.label]),
                     title: "\(evidence.menus[menu]?.first?.menu ?? "같은 메뉴")의 \(first.label)\n두 기간의 긍정 평가가 달랐어요",
-                    detail: "이전 90일: 호감 \(a.count("positive"))/\(a.total)번\n최근 90일: 호감 \(b.count("positive"))/\(b.total)번",
-                    explanation: "같은 식당·메뉴·감각·대상·시점·기록된 강도 범위에서 비교했어요. 이전 기간은 \(evidence.dateText(previousStart))부터 최근 기간 시작 전까지, 최근 기간은 \(evidence.dateText(recentStart))부터 \(evidence.dateText(evidence.today))까지예요. 각 5회 이상, 40퍼센트포인트 이상 차이가 있고 식사 하나를 제외해도 차이의 방향이 유지돼요.",
+                    detail: "이전 \(days)일: 호감 \(a.count("positive"))/\(a.total)번\n최근 \(days)일: 호감 \(b.count("positive"))/\(b.total)번",
+                    explanation: "같은 식당·메뉴·감각·대상·시점·기록된 강도 범위에서 비교했어요. 이전 \(previousWindow.range(calendar: evidence.calendar)), 최근 \(window.range(calendar: evidence.calendar)). 각 5회 이상, 40퍼센트포인트 이상 차이가 있고 식사 하나를 제외해도 차이의 방향이 유지돼요.",
                     rows: evidence.rows(units), evidenceIDs: Set(selected.flatMap(\.evidenceIDs)),
                     meaning: delta > 0 ? "positive-increase" : "positive-decrease", strength: 78,
                     summary: "\(evidence.scopeLabel(first)) · 강도 \(intensityLabel(first.intensity ?? "unspecified"))\n이전: \(a.summary)\n최근: \(b.summary)",
+                    proof: evidence.proof(numerator: Set(recent.filter { b.values[$0.mealID] == "positive" }.flatMap(\.evidenceIDs)), denominator: Set(recent.flatMap(\.evidenceIDs)),
+                        groups: ["이전 기간 긍정 근거": Set(previous.filter { a.values[$0.mealID] == "positive" }.flatMap(\.evidenceIDs)),
+                                 "이전 기간 전체 기준": Set(previous.flatMap(\.evidenceIDs)), "최근 기간 전체 기준": Set(recent.flatMap(\.evidenceIDs))]),
                     limits: ["확인된 식사일만 사용했어요. 날짜 미확인·기간 밖 기록은 분모에서 제외하고 원본에는 남겨요.",
                         "서로 다른 메뉴 구성을 합쳐 전체 입맛의 변화로 해석하지 않아요. 알려지지 않은 조리 상태 등은 다를 수 있어요.",
                         "현재 수정본의 비교이며 당시 알고 있던 응답 상태의 완전한 재현은 아니에요."])
@@ -724,8 +812,8 @@ private enum HomeDiscoveryRelations {
         }
     }
 
-    static func cards(sources: HomeArchiveSources, referenceDate: Date, calendar: Calendar) -> [HomeDiscoveryCard] {
-        var builder = Builder(evidence: Evidence(sources: sources, referenceDate: referenceDate, calendar: calendar))
+    static func cards(sources: HomeArchiveSources, referenceDate: Date, calendar: Calendar, comparisonWindow: TDWindow? = nil) -> [HomeDiscoveryCard] {
+        var builder = Builder(evidence: Evidence(sources: sources, referenceDate: referenceDate, calendar: calendar, comparisonWindow: comparisonWindow))
         builder.sensoryRelations()
         builder.fitRelations()
         builder.overallRelations()

@@ -67,7 +67,7 @@ fun AuthScreen(vm: AppViewModel, linking: Boolean = false) {
                     vm.task {
                         if (sent) {
                             vm.backend.verifyOTP(email, code, linking)
-                            vm.finishAuthentication()
+                            vm.finishAuthentication(linkGuest = linking)
                         } else {
                             vm.backend.sendOTP(email, linking)
                             sent = true

@@ -86,13 +86,98 @@ enum PrimaryButtonSize: Equatable {
 
 /// Disabled appearance belongs to the label's color tokens, never whole-button opacity.
 struct TBTokenButtonStyle: ButtonStyle {
+    enum Feedback {
+        case legacy, surface
+    }
+
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.tbControlFeedbackReduceMotion) private var reduceControlMotion
+    private let feedback: Feedback
 
+    init(feedback: Feedback = .legacy) {
+        self.feedback = feedback
+    }
+
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(isEnabled && configuration.isPressed && !reduceMotion ? TasteBloomMotion.Scale.press : 1)
-            .animation(TasteBloomMotion.animation(.press, reduceMotion: reduceMotion), value: configuration.isPressed)
+        switch feedback {
+        case .legacy:
+            configuration.label
+                .scaleEffect(isEnabled && configuration.isPressed && !reduceMotion ? TasteBloomMotion.Scale.press : 1)
+                .animation(TasteBloomMotion.animation(.press, reduceMotion: reduceMotion), value: configuration.isPressed)
+        case .surface:
+            TBControlFeedbackLabel(
+                label: configuration.label, isPressed: configuration.isPressed,
+                isEnabled: isEnabled, reduceMotion: reduceMotion || reduceControlMotion
+            )
+        }
+    }
+}
+
+private struct TBControlPressedKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+private struct TBControlFeedbackReduceMotionKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    /// Preview override for opted-in control press feedback; system accessibility settings still take precedence.
+    var tbControlFeedbackReduceMotion: Bool {
+        get { self[TBControlFeedbackReduceMotionKey.self] }
+        set { self[TBControlFeedbackReduceMotionKey.self] = newValue }
+    }
+}
+
+private extension EnvironmentValues {
+    var tbControlPressed: Bool {
+        get { self[TBControlPressedKey.self] }
+        set { self[TBControlPressedKey.self] = newValue }
+    }
+}
+
+private struct TBControlFeedbackLabel<Label: View>: View {
+    let label: Label
+    let isPressed: Bool
+    let isEnabled: Bool
+    let reduceMotion: Bool
+    @State private var size: CGSize = .zero
+
+    var body: some View {
+        let response = TBControlFeedback.response(
+            size: size, isPressed: isPressed, isEnabled: isEnabled, reduceMotion: reduceMotion
+        )
+        label
+            .environment(\.tbControlPressed, response.showsPressedSurface)
+            .onGeometryChange(for: CGSize.self) { proxy in
+                proxy.size
+            } action: { size = $0 }
+            .scaleEffect(response.scale)
+            .animation(
+                isEnabled ? TasteBloomMotion.animation(.press, reduceMotion: reduceMotion) : nil,
+                value: response
+            )
+    }
+}
+
+private struct TBPressedSurface: ViewModifier {
+    @Environment(\.tbControlPressed) private var isPressed
+    let base: Color
+    let tone: TBControlFeedback.SurfaceTone
+
+    func body(content: Content) -> some View {
+        content.background {
+            base.overlay(tone.color.opacity(isPressed ? tone.opacity : 0))
+                .allowsHitTesting(false)
+        }
+    }
+}
+
+private extension View {
+    func tbPressedSurface(base: Color, tone: TBControlFeedback.SurfaceTone = .neutral) -> some View {
+        modifier(TBPressedSurface(base: base, tone: tone))
     }
 }
 
@@ -102,14 +187,14 @@ enum PrimaryButtonAppearance {
 
     var foreground: Color {
         switch self {
-        case .primary: TBColor.textInverse
+        case .primary: TBColor.actionOnPrimary
         case .tasteTint(let axis): axis.tintTextColor
         }
     }
 
     var background: Color {
         switch self {
-        case .primary: TBColor.textPrimary
+        case .primary: TBColor.actionPrimary
         case .tasteTint(let axis): axis.tintColor
         }
     }
@@ -117,6 +202,11 @@ enum PrimaryButtonAppearance {
     var hasShadow: Bool {
         if case .primary = self { return true }
         return false
+    }
+
+    var pressedSurfaceTone: TBControlFeedback.SurfaceTone {
+        if case .primary = self { return .primary }
+        return .neutral
     }
 }
 
@@ -140,8 +230,12 @@ struct PrimaryButton: View {
                 .frame(maxWidth: fullWidth ? .infinity : nil)
                 .frame(minHeight: size.height)
                 .foregroundStyle(appearsDisabled ? TBColor.textDisabled : appearance.foreground)
-                .background(appearsDisabled ? TBColor.disabledSurface : appearance.background)
+                .tbPressedSurface(
+                    base: appearsDisabled ? TBColor.disabledSurface : appearance.background,
+                    tone: appearsDisabled ? .neutral : appearance.pressedSurfaceTone
+                )
                 .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
+                .contentShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
                 .shadow(
                     color: (!appearsDisabled && size == .default && appearance.hasShadow)
                         ? Color.black.opacity(0.10) : .clear,
@@ -150,7 +244,7 @@ struct PrimaryButton: View {
                     y: 8
                 )
         }
-        .buttonStyle(TBTokenButtonStyle())
+        .buttonStyle(TBTokenButtonStyle(feedback: .surface))
         .disabled(!isEnabled)
         .tasteBloomMotion(.feedback, value: appearsDisabled)
     }
@@ -182,7 +276,7 @@ struct TBSkeletonBlock: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(TBColor.disabledSurface)
+            .fill(TBColor.placeholderSurface)
             .overlay {
                 LinearGradient(
                     colors: [.clear, Color.white.opacity(0.54), .clear],
@@ -335,14 +429,15 @@ struct TBFlowBottomCTA: View {
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: actionSize.height)
                 .foregroundStyle(appearsDisabled ? TBColor.textDisabled : TBColor.textTertiary)
-                .background(appearsDisabled ? TBColor.disabledSurface : Color.clear)
+                .tbPressedSurface(base: appearsDisabled ? TBColor.disabledSurface : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
+                .contentShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
                         .stroke(appearsDisabled ? TBColor.borderDisabled : TBColor.borderStrong)
                 }
         }
-        .buttonStyle(TBTokenButtonStyle())
+        .buttonStyle(TBTokenButtonStyle(feedback: .surface))
         .disabled(!isEnabled)
     }
 }
@@ -556,7 +651,7 @@ struct TBSelectionCard: View {
             }
             .padding(SelectionCardMetrics.padding)
             .frame(maxWidth: .infinity, minHeight: singleLine ? 44 : nil, alignment: .leading)
-            .background(isEffectivelyEnabled ? TBColor.surface : TBColor.disabledSurface)
+            .tbPressedSurface(base: isEffectivelyEnabled ? TBColor.surface : TBColor.disabledSurface)
             .clipShape(RoundedRectangle(cornerRadius: SelectionCardMetrics.cardRadius, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: SelectionCardMetrics.cardRadius, style: .continuous)
@@ -573,7 +668,7 @@ struct TBSelectionCard: View {
             )
             .contentShape(RoundedRectangle(cornerRadius: SelectionCardMetrics.cardRadius, style: .continuous))
         }
-        .buttonStyle(TBTokenButtonStyle())
+        .buttonStyle(TBTokenButtonStyle(feedback: .surface))
         .disabled(!isEnabled)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .tasteBloomMotion(.feedback, value: isSelected)
@@ -600,7 +695,7 @@ struct TBSelectionCard: View {
                         size: TBIcon.Size.xSmall,
                         strokeWidth: TBIcon.Stroke.medium
                     )
-                        .foregroundStyle(TBColor.textInverse)
+                        .foregroundStyle(TBColor.selectionText)
                 }
             }
             .frame(width: SelectionCardMetrics.indicatorSize, height: SelectionCardMetrics.indicatorSize)
@@ -624,7 +719,7 @@ struct TBSelectionCard: View {
     }
 
     private var selectionControlColor: Color {
-        isEffectivelyEnabled ? TBColor.textPrimary : TBColor.textDisabled
+        isEffectivelyEnabled ? TBColor.selectionSurface : TBColor.textDisabled
     }
 
     private var selectionCardBorderColor: Color {
@@ -636,7 +731,7 @@ struct TBSelectionCard: View {
             return .clear
         }
 
-        return isSelected ? TBColor.textPrimary : TBColor.border
+        return isSelected ? TBColor.selectionSurface : TBColor.border
     }
 }
 
@@ -1004,52 +1099,19 @@ struct NativeDishFeedbackCard: View {
                 .frame(height: 1)
 
             HStack(spacing: DishFeedbackCardMetrics.actionGap) {
-                Button {
-                    isLiked.toggle()
-                    if isLiked {
-                        onLike?()
-                    }
-                } label: {
-                    HStack(spacing: DishFeedbackCardMetrics.actionCountGap) {
-                        LucideIcon(
-                            .heart,
-                            size: DishFeedbackCardMetrics.heartActionIconSize,
-                            strokeWidth: TBIcon.Stroke.regular,
-                            filled: isLiked
-                        )
-                        .tasteBloomReplace(value: isLiked)
-                        .frame(
-                            width: DishFeedbackCardMetrics.actionIconFrameWidth,
-                            height: DishFeedbackCardMetrics.actionButtonSize
-                        )
-                        .foregroundStyle(isLiked ? primaryAxis.mainColor : TBColor.textHint)
-
-                        actionCountText(displayedLikeCount)
-                            .contentTransition(.opacity)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(TBTokenButtonStyle())
-                .tasteBloomMotion(.feedback, value: isLiked)
-                .accessibilityLabel(isLiked ? "좋아요 \(displayedLikeCount)개, 좋아요 취소" : "좋아요 \(displayedLikeCount)개")
-
-                if let onCommentsTap {
-                    Button(action: onCommentsTap) {
-                        commentActionLabel
-                    }
-                    .buttonStyle(TBTokenButtonStyle())
-                    .accessibilityLabel("댓글 \(item.commentCount)개 보기")
-                } else {
-                    commentActionLabel
-                }
-
-                Button {
-                    onShare?()
-                } label: {
-                    shareActionLabel
-                }
-                .buttonStyle(TBTokenButtonStyle())
-                .accessibilityLabel("공유 \(displayedShareCount)개")
+                SocialActions(
+                    isLiked: isLiked,
+                    likeCount: displayedLikeCount,
+                    commentCount: item.commentCount,
+                    shareCount: displayedShareCount,
+                    accentColor: primaryAxis.mainColor,
+                    onLike: {
+                        isLiked.toggle()
+                        if isLiked { onLike?() }
+                    },
+                    onComment: onCommentsTap,
+                    onShare: { onShare?() }
+                )
 
                 Spacer()
 
@@ -1069,53 +1131,7 @@ struct NativeDishFeedbackCard: View {
         0
     }
 
-    private var commentActionLabel: some View {
-        HStack(spacing: DishFeedbackCardMetrics.actionCountGap) {
-            commentIcon
-            actionCountText(item.commentCount)
-        }
-        .contentShape(Rectangle())
-    }
 
-    private var shareActionLabel: some View {
-        HStack(spacing: DishFeedbackCardMetrics.actionCountGap) {
-            LucideIcon(
-                .send,
-                size: DishFeedbackCardMetrics.shareActionIconSize,
-                strokeWidth: TBIcon.Stroke.regular
-            )
-            .frame(
-                width: DishFeedbackCardMetrics.actionIconFrameWidth,
-                height: DishFeedbackCardMetrics.actionButtonSize
-            )
-            .foregroundStyle(TBColor.textHint)
-
-            actionCountText(displayedShareCount)
-        }
-        .contentShape(Rectangle())
-    }
-
-    private var commentIcon: some View {
-        LucideIcon(
-            .messageCircle,
-            size: DishFeedbackCardMetrics.commentActionIconSize,
-            strokeWidth: TBIcon.Stroke.regular
-        )
-        .frame(
-            width: DishFeedbackCardMetrics.actionIconFrameWidth,
-            height: DishFeedbackCardMetrics.actionButtonSize
-        )
-        .foregroundStyle(TBColor.textHint)
-        .contentShape(Circle())
-    }
-
-    private func actionCountText(_ count: Int) -> some View {
-        Text("\(count)")
-            .font(TBFont.regular(12))
-            .foregroundStyle(TBColor.textMuted)
-            .lineLimit(1)
-            .monospacedDigit()
-    }
 }
 
 enum DishFeedbackCardMetrics {
@@ -1449,12 +1465,14 @@ private struct DishFeedbackImageTile: View {
     @State private var loadedRequest: Request?
     @State private var loadGeneration = UUID()
     @State private var didFinishLoading = false
+    @State private var photoRevision = 0
     private let tileSize: CGFloat = 144
 
     private struct Request: Equatable {
         let filename: String?
         let data: Data?
         let pixels: Int
+        let photoRevision: Int
 
         var hasLocalSource: Bool { filename != nil || data != nil }
     }
@@ -1463,13 +1481,17 @@ private struct DishFeedbackImageTile: View {
         let request = Request(
             filename: image.localPhotoFilename,
             data: image.imageData,
-            pixels: max(1, Int(ceil(tileSize * displayScale)))
+            pixels: max(1, Int(ceil(tileSize * displayScale))),
+            photoRevision: photoRevision
         )
         imageContent(for: request)
             .frame(width: tileSize, height: tileSize)
             .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
             .clipped()
             .accessibilityLabel(image.alt)
+            .onReceive(NotificationCenter.default.publisher(for: DiningReflectionPhotoStore.didChangeNotification)) { _ in
+                photoRevision &+= 1
+            }
             .task(id: request) {
                 let generation = UUID()
                 loadGeneration = generation
@@ -1529,12 +1551,12 @@ private struct DishFeedbackImageTile: View {
         ProgressView()
             .tint(TBColor.textHint)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(TBColor.disabledSurface)
+            .background(TBColor.placeholderSurface)
     }
 
     private var feedbackImagePlaceholder: some View {
         ZStack {
-            TBColor.disabledSurface
+            TBColor.placeholderSurface
             LucideIcon(
                 .camera,
                 size: TBIcon.Size.large,
@@ -1641,19 +1663,27 @@ struct StatusRow: View {
 
         var foreground: Color {
             switch self {
-            case .neutral: TBColor.textSecondary
-            case .success: TBColor.success
+            case .neutral: TBColor.neutral
+            case .success: TBColor.successText
+            case .warning: TBColor.warningText
+            case .destructive: TBColor.destructiveText
+            }
+        }
+
+        var iconForeground: Color {
+            switch self {
             case .warning: TBColor.warning
             case .destructive: TBColor.destructive
+            default: foreground
             }
         }
 
         var background: Color {
             switch self {
-            case .neutral: TBColor.mutedSurface
+            case .neutral: TBColor.neutralSoft
             case .success: TBColor.successSoft
             case .warning: TBColor.warningSoft
-            case .destructive: TBColor.destructive.opacity(0.10)
+            case .destructive: TBColor.destructiveSoft
             }
         }
     }
@@ -1671,7 +1701,7 @@ struct StatusRow: View {
                 strokeWidth: TBIcon.Stroke.regular
             )
                 .frame(width: 32, height: 32)
-                .foregroundStyle(tone.foreground)
+                .foregroundStyle(tone.iconForeground)
                 .background(tone.background)
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 

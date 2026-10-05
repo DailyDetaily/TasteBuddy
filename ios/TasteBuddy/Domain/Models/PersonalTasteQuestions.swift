@@ -53,12 +53,12 @@ extension PersonalTasteModelBuilder {
         copy.scale = question.facet == "liking" ? "attribute-three-category-v1" : "expression-strength-v1"
         copy.value = .text(answer); copy.phrase = ""; copy.sourceSpans = []; copy.conditionSources = []
         if let selection = source.selectionEvidence {
-            copy.selectionEvidence = .init(selectionID: selection.selectionID, type: selection.type, catalogVersion: selection.catalogVersion, labelSnapshot: selection.labelSnapshot, facet: question.facet, labelValue: "", responseValue: answer, relatedBubbleID: selection.relatedBubbleID, relatedBubbleLabel: selection.relatedBubbleLabel, resolution: selection.resolution)
+            copy.selectionEvidence = .init(selectionID: selection.selectionID, type: selection.type, catalogVersion: selection.catalogVersion, labelSnapshot: selection.labelSnapshot, facet: question.facet, labelValue: "", responseValue: answer, relatedBubbleID: selection.relatedBubbleID, relatedBubbleLabel: selection.relatedBubbleLabel, resolution: selection.resolution, selectionInstanceID: selection.selectionInstanceID, definitionVersion: selection.definitionVersion, bindingMode: selection.bindingMode, semanticFacets: selection.semanticFacets)
         }
         return records + [copy]
     }
 
-    static func assessQuestionGroups(_ questions: [String: Question], included: [PersonalTasteModelRecord], userID: String, policy: PersonalTastePolicy, candidates: [PersonalTasteCandidate], fitPatterns: [PersonalTasteFitPattern], overallPatterns: [PersonalTasteOverallPattern], assessmentLimit: Int? = nil, answerOptions: [String: [String]]? = nil) -> [String: Question] {
+    static func assessQuestionGroups(_ questions: [String: Question], included: [PersonalTasteModelRecord], userID: String, policy: PersonalTastePolicy, candidates: [PersonalTasteCandidate], fitPatterns: [PersonalTasteFitPattern], overallPatterns: [PersonalTasteOverallPattern], assessmentLimit: Int? = nil, answerOptions: [String: [String]]? = nil, validatedIntensityLinks: [String: Set<String>] = [:]) -> [String: Question] {
         struct Baseline { let records: [PersonalTasteModelRecord]; let relevant: [PersonalTasteModelRecord]; let states: [String: String] }
         var baselines: [String: Baseline] = [:], result: [String: Question] = [:]
         for (index, key) in questions.keys.sorted(by: {
@@ -98,7 +98,7 @@ extension PersonalTasteModelBuilder {
             if relevantRatingMeals + 1 >= min(policy.minMeals, policy.minConditionMeals) {
                 for answer in answers {
                     guard let hypothetical = hypotheticalRecords(baseline.records, question: question, source: source, answer: answer) else { continue }
-                    let model = buildRecords(records: hypothetical, userID: userID, policy: policy, assessQuestions: false, includeEvidence: false)
+                    let model = buildRecords(records: hypothetical, userID: userID, policy: policy, assessQuestions: false, includeEvidence: false, validatedIntensityLinks: validatedIntensityLinks)
                     states.append(decisionStates(policy: model.policy, candidates: model.candidates, fitPatterns: model.fitPatterns, overallPatterns: model.overallPatterns))
                     alternativeCount += 1
                 }

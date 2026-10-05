@@ -1,9 +1,14 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import NativePreferenceIntake from './components/profile/NativePreferenceIntake';
+import {useNativePreferences} from './lib/gastronomy/useNativePreferences';
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, Menu as MenuIcon, UserPlus, X } from 'lucide-react';
 
-import Home from './pages/HomePage';
+const Home = lazy(() => import('./pages/HomePage'));
+const NativeDiningHome = lazy(() => import('./components/dining-native/NativeDiningHome'));
+const NativeDiningCapture = lazy(() => import('./components/dining-native/NativeDiningCapture'));
+import type { NativeCaptureRequest } from './components/dining-native/NativeDiningCapture';
 import AnalysisPage from './pages/AnalysisPage';
-import DesignSystemPage from './pages/DesignSystemPage';
+const PlatingSite = lazy(() => import('./plating/PlatingSite'));
 import DesignSystemPreviewPage from './pages/DesignSystemPreviewPage';
 import FigmaWorksPreviewPage from './pages/FigmaWorksPreviewPage';
 import TbaAdminPage from './pages/TbaAdminPage';
@@ -13,12 +18,19 @@ import RestaurantDetailPage, {
   createRestaurantDetailFromMenuRecommendation,
   createRestaurantDetailFromReservation,
   createRestaurantDetailFromSearchResult,
+  createRestaurantDetailFromSavedPlace,
   type RestaurantDetailInitialView,
   type RestaurantDetailViewModel,
   type RestaurantFeedbackSubmission,
 } from './pages/RestaurantDetailPage';
 import DiningPage, { type DiningPageExternalFeedbackSubmission } from './pages/DiningPage';
 import ProfilePage from './pages/ProfilePage';
+import { nativeProfileSummary } from './lib/gastronomy/nativeProfile';
+import { useNativeProfileIdentity } from './lib/gastronomy/useNativeProfileIdentity';
+import { prepareNativeProfileAvatar } from './lib/gastronomy/nativeProfileIdentity';
+import { publishNativeProfileIdentity } from './lib/gastronomy/nativeProfilePublish';
+import { DrawerTitle, DrawerDescription } from './components/ui/drawer';
+import NativeSavedRestaurantList from './components/profile/NativeSavedRestaurantList';
 import SavedRestaurantListPage from './pages/SavedRestaurantListPage';
 import SplashScreen from './pages/SplashScreen';
 import { AuthEntryForm } from './pages/AuthEntryScreen';
@@ -898,6 +910,7 @@ function MainApp() {
     shouldStartFromOnboarding ? 'onboarding' : 'splash',
   );
   const [activeTab, setActiveTab] = useState<TabType>('home');
+  const [nativeCapture,setNativeCapture]=useState<NativeCaptureRequest|null>(null);
   const [tabResetKeys, setTabResetKeys] = useState<Record<TabType, number>>({
     analysis: 0,
     home: 0,
@@ -970,6 +983,16 @@ function MainApp() {
   );
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
+  const nativeProfileOwner = supabaseSession?.user.id ?? 'guest';
+  const belongsToCurrentAccount = (submission: Pick<DiningPageExternalFeedbackSubmission, 'ownerUserId'>) => submission.ownerUserId ? submission.ownerUserId === supabaseSession?.user.id : !supabaseSession || isAnonymousSupabaseSession(supabaseSession);
+  const nativePreferences = useNativePreferences(nativeProfileOwner,hasHydratedRemoteMeasurement);
+  const nativeProfile = useNativeProfileIdentity(nativeProfileOwner, hasHydratedRemoteMeasurement);
+  const profileOwnerRef = useRef(nativeProfileOwner); profileOwnerRef.current = nativeProfileOwner;
+  const hydratedProfileOwnerRef = useRef<string | null>(null);
+  const legacyAvatarOwnerRef = useRef<string>('guest');
+  const profileEditExpectedRef = useRef<string | null>(null);
+  const [profileEditSession, setProfileEditSession] = useState(0);
+
   const [hydratedProfileDisplayName, setHydratedProfileDisplayName] = useState<string | null>(null);
   const [hydratedProfileNickname, setHydratedProfileNickname] = useState<string | null>(null);
   const [isAuthProfileOpen, setIsAuthProfileOpen] = useState(false);
@@ -1012,6 +1035,7 @@ function MainApp() {
   const [selectedConnectionProfile, setSelectedConnectionProfile] =
     useState<DiningFriendProfile | null>(null);
   const [isSavedRestaurantListOpen, setIsSavedRestaurantListOpen] = useState(false);
+  const [nativeSavedNavigation,setNativeSavedNavigation] = useState<{owner:string;listID:string|null;restaurantID:string|null}|null>(null);
 
   // Overlay states
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -1224,8 +1248,8 @@ function MainApp() {
   const currentUserEmail = getSessionEmail(supabaseSession);
   const sessionDisplayName = getSessionDisplayName(supabaseSession);
   const sessionNickname = getSessionNickname(supabaseSession);
-  const currentUserDisplayName = hydratedProfileDisplayName ?? sessionDisplayName;
-  const currentUserNickname = hydratedProfileNickname ?? sessionNickname;
+  const currentUserDisplayName = nativeProfile.data?.identity?.displayName ?? (hydratedProfileOwnerRef.current === nativeProfileOwner ? hydratedProfileDisplayName : null) ?? sessionDisplayName;
+  const currentUserNickname = nativeProfile.data?.identity?.nickname ?? (hydratedProfileOwnerRef.current === nativeProfileOwner ? hydratedProfileNickname : null) ?? sessionNickname;
   const currentUserProfileLabel = currentUserNickname ?? currentUserDisplayName;
   const isAnonymousUser = isSupabaseConfigured
     ? isAnonymousSupabaseSession(supabaseSession) || !currentUserEmail
@@ -1369,6 +1393,15 @@ function MainApp() {
     };
   }, [currentUserEmail]);
 
+  const nativeIdentity = nativeProfile.data?.identity;
+  const effectiveProfileContext = useMemo(() => nativeIdentity ? sanitizeTasteSurveyRespondentContext({birthDate:nativeIdentity.birthDate ?? undefined, sexContext:nativeIdentity.sexContext, smokingStatus:nativeIdentity.smokingStatus}) : nativeProfileOwner === 'guest' ? tasteSurveyRespondentContext : {}, [nativeIdentity, nativeProfileOwner, tasteSurveyRespondentContext]);
+  const effectiveProfileBirthDate = nativeIdentity ? nativeIdentity.birthDate ?? null : nativeProfileOwner === 'guest' ? profileBirthDate : null;
+  const accountPreferenceProfile = nativePreferences.error ? null : nativePreferences.data?.present ? nativePreferences.data.profile : nativeProfileOwner === 'guest' ? latestPreferenceIntakeProfile : null;
+  const effectivePreferenceProfile = useMemo(() => nativeIdentity ? {...(accountPreferenceProfile ?? {allergies:[],avoidedSignals:[],explorationStyle:null,flavorIntensityPreference:null,preferredCuisineTypes:[],sharePreferenceWithRestaurant:null}),dietaryRestrictions:nativeIdentity.dietaryRestrictions} : accountPreferenceProfile, [nativeIdentity,accountPreferenceProfile]);
+  useEffect(() => {
+    setIsPreferenceIntakeSheetOpen(false);setIsProfileEditSheetOpen(false);setIsProfileIdentitySheetOpen(false);setProfileEditMessage(null);setProfileEditStatus('idle');profileEditExpectedRef.current=null;
+  }, [nativeProfileOwner]);
+
   const hasCommittedPalateBloomMeasurement = Boolean(
     palateBloomAvatarSnapshot &&
       !isBroadStarterMeasurementSnapshot(palateBloomAvatarSnapshot),
@@ -1393,8 +1426,8 @@ function MainApp() {
     [palateBloomAvatarSnapshot, userPalateBloomIdentitySeed],
   );
   const profileAvatarImageSrc = useMemo(
-    () => resolvePublicMediaPath(profileAvatarPath) ?? profileAvatarDataUrl,
-    [profileAvatarDataUrl, profileAvatarPath],
+    () => nativeProfile.data?.present ? nativeProfile.data.avatarDataUrl : nativeProfile.ready && legacyAvatarOwnerRef.current === nativeProfileOwner ? resolvePublicMediaPath(profileAvatarPath) ?? profileAvatarDataUrl : null,
+    [nativeProfile.data, nativeProfile.ready, nativeProfileOwner, profileAvatarDataUrl, profileAvatarPath],
   );
   const canApplyCurrentTasteToPalateBloomAvatar = Boolean(
     latestTasteMeasurementSnapshot &&
@@ -1419,6 +1452,7 @@ function MainApp() {
           return;
         }
 
+        legacyAvatarOwnerRef.current = localAvatarOwnerId;
         setProfileAvatarDataUrl((currentUrl) => {
           if (currentUrl?.startsWith('blob:')) {
             URL.revokeObjectURL(currentUrl);
@@ -1452,9 +1486,11 @@ function MainApp() {
         return;
       }
 
+      hydratedProfileOwnerRef.current = supabaseSession.user.id;
+      legacyAvatarOwnerRef.current = supabaseSession.user.id;
       setProfileAvatarPath(result.avatarPath);
-      setHydratedProfileDisplayName(result.displayName);
-      setHydratedProfileNickname(result.nickname);
+      setHydratedProfileDisplayName(result.displayName ?? null);
+      setHydratedProfileNickname(result.nickname ?? null);
       if (result.avatarPath) {
         setProfileAvatarDataUrl(null);
       }
@@ -1627,7 +1663,7 @@ function MainApp() {
           active_tab: activeTab,
           restaurant_id: selectedRestaurantDetail.id,
           restaurant_name: selectedRestaurantDetail.name,
-          chef_name: selectedRestaurantDetail.chefName,
+          chef_name: selectedRestaurantDetail.chef.name,
         },
       );
       return;
@@ -1825,7 +1861,7 @@ function MainApp() {
       initial_view: initialView,
       restaurant_id: restaurant.id,
       restaurant_name: restaurant.name,
-      chef_name: restaurant.chefName,
+      chef_name: restaurant.chef.name,
     });
     pushCurrentMainNavigationLocation();
     setIsHomeRootView(true);
@@ -1882,7 +1918,10 @@ function MainApp() {
   };
 
   const handleOpenProfileEditSheet = () => {
+    if (!nativeProfile.ready) return;
     trackEvent('profile_edit_open');
+    profileEditExpectedRef.current=nativeProfile.data?.signature ?? null;
+    setProfileEditSession(value=>value+1);
     setProfileEditStatus('idle');
     setProfileEditMessage(null);
     setIsProfileAvatarPreparing(false);
@@ -1929,99 +1968,29 @@ function MainApp() {
       has_nickname: Boolean(input.nickname.trim()),
     });
 
-    const sanitizedContext = sanitizeTasteSurveyRespondentContext(input.respondentContext);
-    const nextDisplayName = input.displayName.trim();
-    const nextNickname = input.nickname.trim();
-    const currentDisplayName = currentUserDisplayName ?? '';
-    const currentNickname = currentUserNickname ?? '';
-    let nextAvatarPath = input.shouldRemoveAvatar ? null : profileAvatarPath;
-    let nextLocalAvatarUrl: string | null = input.shouldRemoveAvatar ? null : profileAvatarDataUrl;
-    let shouldSyncAvatarPath = input.shouldRemoveAvatar;
-
-    if (input.shouldRemoveAvatar) {
-      try {
-        await deleteLocalProfileAvatar(localAvatarOwnerId);
-      } catch (error) {
-        console.warn('Failed to delete local profile avatar.', error);
+    const owner = nativeProfileOwner, expected = profileEditExpectedRef.current;
+    try {
+      if (!nativeProfile.ready || expected === null) throw Error(nativeProfile.error ?? '프로필을 불러온 뒤 편집을 다시 열어 주세요.');
+      let avatar: string | null | undefined = input.shouldRemoveAvatar ? null : undefined;
+      if (input.avatarFile) avatar = await prepareNativeProfileAvatar(input.avatarFile);
+      else if (!input.shouldRemoveAvatar && !nativeProfile.data?.present && profileAvatarImageSrc) {
+        const response = await fetch(profileAvatarImageSrc);
+        if (!response.ok) throw Error('기존 프로필 사진을 불러오지 못했어요. 사진을 다시 선택해 주세요.');
+        avatar = await prepareNativeProfileAvatar(await response.blob());
       }
+      if (profileOwnerRef.current !== owner) throw Error('계정이 바뀌어 저장을 멈췄어요.');
+      const next = await nativeProfile.save({displayName:input.displayName,nickname:input.nickname,birthDate:input.birthDate,sexContext:input.respondentContext.sexContext ?? null,smokingStatus:input.respondentContext.smokingStatus ?? null,dietaryRestrictions:input.preferenceProfile.dietaryRestrictions},expected,avatar);
+      if (profileOwnerRef.current !== owner) return;
+      profileEditExpectedRef.current = next.signature;
+      await publishNativeProfileIdentity(owner,next.identity!.displayName,next.identity!.nickname);
+      if (profileOwnerRef.current !== owner) return;
+      setProfileEditMessage(null);setIsProfileAvatarPreparing(false);setIsProfileEditSheetOpen(false);setIsProfileIdentitySheetOpen(true);
+      trackEvent('profile_edit_complete');
+    } catch (error) {
+      if (profileOwnerRef.current === owner) setProfileEditMessage(error instanceof Error ? error.message : '프로필을 저장하지 못했어요. 작성한 내용은 그대로 있어요.');
+    } finally {
+      if (profileOwnerRef.current === owner) setProfileEditStatus('idle');
     }
-
-    if (input.avatarFile) {
-      const avatarUploadResult = await uploadSupabaseProfileAvatar(input.avatarFile);
-
-      if (avatarUploadResult.ok && avatarUploadResult.avatarPath) {
-        nextAvatarPath = avatarUploadResult.avatarPath;
-        nextLocalAvatarUrl = null;
-        shouldSyncAvatarPath = true;
-        try {
-          await deleteLocalProfileAvatar(localAvatarOwnerId);
-        } catch (error) {
-          console.warn('Failed to clear local profile avatar fallback.', error);
-        }
-      } else {
-        try {
-          nextLocalAvatarUrl = await saveLocalProfileAvatar(input.avatarFile, localAvatarOwnerId);
-          nextAvatarPath = null;
-          shouldSyncAvatarPath = false;
-          trackEvent('profile_edit_avatar_local_fallback', {
-            reason: avatarUploadResult.message ?? 'edge_function_unavailable',
-          });
-        } catch (error) {
-          trackEvent('profile_edit_error', { reason: 'avatar_local_fallback' });
-          setProfileEditMessage(
-            error instanceof Error
-              ? error.message
-              : '프로필 사진을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.',
-          );
-          setProfileEditStatus('idle');
-          return;
-        }
-      }
-    }
-
-    if (
-      nextDisplayName !== currentDisplayName ||
-      nextNickname !== currentNickname ||
-      shouldSyncAvatarPath
-    ) {
-      const result = await updateSupabaseProfileIdentity({
-        ...(shouldSyncAvatarPath ? { avatarPath: nextAvatarPath } : {}),
-        displayName: nextDisplayName,
-        nickname: nextNickname,
-      });
-
-      if (!result.ok) {
-        trackEvent('profile_edit_error', { reason: 'identity_update' });
-        setProfileEditMessage(
-          result.message || '프로필 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.',
-        );
-        setProfileEditStatus('idle');
-        return;
-      }
-
-      const session = await getCurrentSupabaseSession();
-      setSupabaseSession(session);
-      setHydratedProfileDisplayName(nextDisplayName || nextNickname || null);
-      setHydratedProfileNickname(nextNickname || null);
-    }
-
-    setProfileAvatarDataUrl((currentUrl) => {
-      if (currentUrl?.startsWith('blob:') && currentUrl !== nextLocalAvatarUrl) {
-        URL.revokeObjectURL(currentUrl);
-      }
-
-      return nextLocalAvatarUrl;
-    });
-    setProfileAvatarPath(nextAvatarPath);
-    setProfileBirthDate(input.birthDate);
-    setTasteSurveyRespondentContext(sanitizedContext);
-    setLatestPreferenceIntakeProfile(input.preferenceProfile);
-    setProfileEditStatus('idle');
-    setProfileEditMessage(null);
-    setIsProfileAvatarPreparing(false);
-    setIsProfileEditSheetOpen(false);
-    setIsProfileIdentitySheetOpen(true);
-    trackEvent('profile_edit_complete');
   };
 
   const handleLinkCurrentProfileEmail = () => {
@@ -2287,8 +2256,8 @@ function MainApp() {
 
     if (identityResult.ok) {
       setProfileAvatarPath(identityResult.avatarPath);
-      setHydratedProfileDisplayName(identityResult.displayName);
-      setHydratedProfileNickname(identityResult.nickname);
+      setHydratedProfileDisplayName(identityResult.displayName ?? null);
+      setHydratedProfileNickname(identityResult.nickname ?? null);
 
       if (identityResult.avatarPath) {
         setProfileAvatarDataUrl(null);
@@ -2564,16 +2533,8 @@ function MainApp() {
     setIsTasteSurveySheetOpen(true);
   };
 
-  const savePreferenceIntakeProfile = (profile: PreferenceIntakeProfile) => {
-    const stored = window.localStorage.getItem(USER_STATE_STORAGE_KEY);
-    const previous = stored ? JSON.parse(stored) : {};
-    if (!previous || typeof previous !== 'object' || Array.isArray(previous)) throw new Error('INVALID_USER_STATE');
-    window.localStorage.setItem(USER_STATE_STORAGE_KEY, JSON.stringify({ ...previous, latestPreferenceIntakeProfile: profile }));
-    setLatestPreferenceIntakeProfile(profile);
-  };
-
   const handleCompletePreferenceIntakeSheet = (profile: PreferenceIntakeProfile) => {
-    savePreferenceIntakeProfile(profile);
+    if(nativeProfileOwner === 'guest') setLatestPreferenceIntakeProfile(profile);
     trackEvent('preference_intake_complete', {
       preference_count: profile.submissions?.at(-1)?.responses.filter(row => row.state === 'answered').length ?? 0,
     });
@@ -2622,6 +2583,8 @@ function MainApp() {
     resetTasteSurveyFlow(shouldClearResponses);
     setAppState('calibration');
   };
+
+  useEffect(() => { setNativeCapture(null); }, [supabaseSession?.user.id]);
 
   const handleStartMeasurementFromMain = (originTab: TabType) => {
     trackEvent('measurement_start', { origin_tab: originTab, mode: 'new' });
@@ -2906,6 +2869,7 @@ function MainApp() {
     trackEvent('delete_account_confirm');
     setIsDeletingAccount(true);
 
+    const deletedNativeOwner = supabaseSession?.user.id;
     const result = await deleteCurrentSupabaseAccount();
     trackEvent(result.ok ? 'delete_account_success' : 'delete_account_error');
 
@@ -2920,6 +2884,13 @@ function MainApp() {
       return;
     }
 
+    if (deletedNativeOwner) {
+      try {
+        const [{ deleteNativeLocalAccount }, { withJournalLock }] = await Promise.all([import('./lib/gastronomy/nativeStorage'), import('./lib/gastronomy/nativeRuntime')]);
+        await withJournalLock(deletedNativeOwner, () => deleteNativeLocalAccount(deletedNativeOwner));
+        window.localStorage.removeItem(`tastebuddy-discoveries-v1:${deletedNativeOwner}`);
+      } catch { setAuthProfileStatus('error'); setAuthProfileMessage('계정은 삭제되었지만 이 브라우저의 기록 정리가 끝나지 않았어요. 브라우저의 사이트 데이터를 지워주세요.'); setIsAuthProfileOpen(true); return; }
+    }
     await resetLocalAccountState();
   };
 
@@ -3135,12 +3106,11 @@ function MainApp() {
           <OnboardingScreen onComplete={handleStartInitialMeasurementFlow} />
         )}
         {appState === 'intake' && (
-          <PreferenceIntakeScreen
-            initialProfile={latestPreferenceIntakeProfile}
-            userID={supabaseSession?.user.id ?? 'local-owner'}
+          <NativePreferenceIntake
+            key={nativeProfileOwner} owner={nativeProfileOwner} legacyProfile={nativeProfileOwner === 'guest' ? latestPreferenceIntakeProfile : null}
             onBack={() => setAppState('onboarding')}
             onComplete={(profile) => {
-              savePreferenceIntakeProfile(profile);
+              if(nativeProfileOwner === 'guest') setLatestPreferenceIntakeProfile(profile);
               handleEnterTasteSurveyFlow(true);
             }}
           />
@@ -3345,7 +3315,7 @@ function MainApp() {
                 <div className="pointer-events-auto w-full max-w-[1440px]">
                   <BottomTabBar
                     activeTab={activeTab}
-                    onCenterAction={() => handleStartMeasurementFromMain(activeTab)}
+                    onCenterAction={() => setNativeCapture({})}
                     onTabChange={handleTabChange}
                   />
                 </div>
@@ -3367,23 +3337,32 @@ function MainApp() {
         >
           {selectedRestaurantDetail ? (
             <RestaurantDetailPage
+              key={`${supabaseSession?.user.id ?? 'guest'}:${selectedRestaurantDetail.id}`}
+              nativeOwner={supabaseSession?.user.id ?? 'guest'}
               initialView={selectedRestaurantDetailInitialView}
               measurementSnapshot={latestTasteMeasurementSnapshot}
               restaurant={selectedRestaurantDetail}
               onBack={() => goBackToPreviousMainLocation()}
               onFeedbackMapViewChange={setIsRestaurantDetailFeedbackMapView}
               onFeedbackSubmitComplete={handleRestaurantFeedbackSubmitComplete}
+              onStartNativeDining={menu => setNativeCapture({seed:{restaurant:selectedRestaurantDetail.name,menu:menu??'',restaurantID:selectedRestaurantDetail.info.kakaoPlaceId??selectedRestaurantDetail.nativeBookmarkID??null,foodSource:{kind:'restaurant',restaurantNamespace:selectedRestaurantDetail.info.kakaoPlaceId?'kakao':undefined,version:1}}})}
             />
           ) : (
             <>
               <div className={activeTab === 'home' ? 'h-full w-full' : 'hidden'}>
+                <Suspense fallback={<div role="status" className="p-5 text-[13px]">홈을 불러오고 있어요.</div>}>
                 <Home
-                  key={`home-${tabResetKeys.home}`}
+                  key={`home-${supabaseSession?.user.id ?? 'guest'}-${tabResetKeys.home}`}
+                  ownerID={supabaseSession?.user.id ?? 'guest'}
+                  feedbackSubmissions={externalDiningFeedbackSubmissions.filter(submission => submission.ownerUserId ? submission.ownerUserId === supabaseSession?.user.id : !supabaseSession || isAnonymousSupabaseSession(supabaseSession))}
+                  onOpenJournal={() => navigateToTab('reservation')}
+                  onEditRecord={entryID => setNativeCapture({entryID})}
+                  onOpenGlobalSearch={handleOpenGlobalSearch}
                   disableHydration={activeTab !== 'home'}
                   hasMeasurementData={hasMeasurementData}
                   measurementSnapshot={latestTasteMeasurementSnapshot}
                   starterGuidance={latestRestaurantReadyGuidance}
-                  onStartMeasurement={() => handleStartMeasurementFromMain('home')}
+                  onStartMeasurement={() => setNativeCapture({})}
                   onStartRemeasurement={() => handleStartRemeasurementFromMain('home')}
                   onOpenRestaurantDetail={(chef) =>
                     openRestaurantDetail(createRestaurantDetailFromChefMatch(chef))
@@ -3391,11 +3370,7 @@ function MainApp() {
                   onOpenRestaurantDetailFromSearch={(result) =>
                     openRestaurantDetail(createRestaurantDetailFromSearchResult(result))
                   }
-                  onStartDiningFeedbackFromSearch={(result) =>
-                    openRestaurantDetail(createRestaurantDetailFromSearchResult(result), {
-                      initialView: 'feedback',
-                    })
-                  }
+                  onStartDiningFeedbackFromSearch={result => setNativeCapture({seed:{restaurant:result.restaurant,menu:result.type==='menu'?result.label:'',restaurantID:result.place?.placeId??null,foodSource:{kind:'restaurant',restaurantNamespace:result.place?.placeId?'kakao':undefined,version:1}}})}
                   onOpenTasteBuddyProfile={handleOpenTasteBuddyProfile}
                   onAddFriend={handleAddDiningFriend}
                   onRemoveFriend={handleRemoveDiningFriend}
@@ -3407,6 +3382,7 @@ function MainApp() {
                   userPalateBloomShapeSeed={userPalateBloomShapeSeed}
                   {...overlayProps}
                 />
+                </Suspense>
               </div>
               <div
                 className={
@@ -3415,19 +3391,21 @@ function MainApp() {
                     : 'hidden'
                 }
               >
+                {nativePreferences.error && <p role="alert" className="p-4 text-sm">{nativePreferences.error}</p>}
                 {latestTasteMeasurementSnapshot ? (
                   <AnalysisPage
                     key={`analysis-${supabaseSession?.user.id ?? 'guest'}-${tabResetKeys.analysis}`}
                     isActive={activeTab === 'analysis'}
-                    preferenceProfile={latestPreferenceIntakeProfile}
-                    preferenceUserID={supabaseSession?.user.id ?? 'local-owner'}
+                    preferenceProfile={accountPreferenceProfile}
+                    preferenceUserID="local-owner"
+                    nativeOwnerID={nativeProfileOwner}
                     onEditPreferences={() => {
                       setIsEditingPreferencesFromAnalysis(true);
                       setIsPreferenceIntakeSheetOpen(true);
                     }}
                     surveyHistory={referenceSurveyHistory}
                     feedbackSubmissions={externalDiningFeedbackSubmissions.filter(submission =>
-                      !submission.ownerUserId || submission.ownerUserId === supabaseSession?.user.id,
+                      belongsToCurrentAccount(submission),
                     )}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     onOpenRestaurantDetail={(menu) =>
@@ -3446,16 +3424,18 @@ function MainApp() {
                 }
               >
                 {latestTasteMeasurementSnapshot ? (
+                  <Suspense fallback={<div role="status" className="p-5 text-[13px]">기록을 불러오고 있어요.</div>}>
+                  <NativeDiningHome key={supabaseSession?.user.id ?? 'guest'} owner={supabaseSession?.user.id ?? 'guest'} active={activeTab === 'reservation'} onCreate={() => setNativeCapture({})} onEdit={entryID => setNativeCapture({entryID})} onAddMenu={mealEntryID => setNativeCapture({mealEntryID})} onRootViewChange={setIsReservationRootView}>
                   <DiningPage
                     key={`reservation-${supabaseSession?.user.id ?? 'guest'}-${tabResetKeys.reservation}`}
                     disableHydration={activeTab !== 'reservation'}
                     externalFeedbackSubmissions={externalDiningFeedbackSubmissions.filter((submission) =>
-                      !submission.ownerUserId || submission.ownerUserId === supabaseSession?.user.id,
+                      belongsToCurrentAccount(submission),
                     )}
                     onExternalFeedbackSaved={(submissionId, draft, scenario, remoteId) => {
                       setExternalDiningFeedbackSubmissions((current) => current.map((submission) =>
                         submission.submissionId === submissionId &&
-                          (!submission.ownerUserId || submission.ownerUserId === supabaseSession?.user.id)
+                          (belongsToCurrentAccount(submission))
                           ? {
                             ...submission,
                             draft,
@@ -3484,29 +3464,40 @@ function MainApp() {
                     onOpenSearch={handleOpenGlobalSearch}
                     {...overlayProps}
                   />
+                  </NativeDiningHome>
+                  </Suspense>
                 ) : null}
               </div>
               <div
                 className={
-                  activeTab === 'profile' && latestTasteMeasurementSnapshot
+                  activeTab === 'profile'
                     ? 'h-full w-full animate-fadeIn'
                     : 'hidden'
                 }
               >
-                {latestTasteMeasurementSnapshot && isSavedRestaurantListOpen ? (
+                {isSavedRestaurantListOpen ? (
+                  <NativeSavedRestaurantList key={supabaseSession?.user.id ?? 'guest'} owner={supabaseSession?.user.id ?? 'guest'}
+                    catalog={globalSearchCatalog} reservations={globalSearchReservations}
+                    navigation={nativeSavedNavigation?.owner === (supabaseSession?.user.id ?? 'guest') ? nativeSavedNavigation : undefined}
+                    onNavigationChange={value=>setNativeSavedNavigation({...value,owner:supabaseSession?.user.id ?? 'guest'})}
+                    onOpenPlace={place=>openRestaurantDetail(createRestaurantDetailFromSavedPlace(place))}>
                   <SavedRestaurantListPage
                     catalog={globalSearchCatalog}
                     onOpenRestaurant={handleOpenSavedRestaurantDetail}
                   />
-                ) : latestTasteMeasurementSnapshot ? (
+                  </NativeSavedRestaurantList>
+                ) : (
                   <ProfilePage
-                    key={`profile-${tabResetKeys.profile}`}
+                    key={`profile-${supabaseSession?.user.id ?? 'guest'}-${tabResetKeys.profile}`}
+                    owner={supabaseSession?.user.id ?? 'guest'}
+                    active={activeTab === 'profile'}
+                    onFindBuddy={handleOpenGlobalSearch}
                     measurementSnapshot={latestTasteMeasurementSnapshot}
                     profileIdentity={{
                       avatarImageDataUrl: profileAvatarImageSrc,
                       displayName: userDisplayLabel,
-                      followerCount: profileFollowerCount,
-                      followingCount: profileFollowingCount,
+                      followerCount: null,
+                      followingCount: null,
                       nickname: currentUserNickname ?? currentUserDisplayName,
                       palateBloomProfile: userPalateBloomProfile,
                       palateBloomShapeSeed: userPalateBloomShapeSeed,
@@ -3529,15 +3520,21 @@ function MainApp() {
                     onOpenProfileSettings={handleOpenProfileIdentitySheet}
                     {...overlayProps}
                   />
-                ) : null}
+                )}
               </div>
             </>
           )}
         </div>
 
+        {nativeCapture && appState === 'main' && <Suspense fallback={<div role="status" className="fixed inset-0 z-[80] grid place-items-center bg-white">기록을 준비하고 있어요.</div>}>
+          <NativeDiningCapture key={supabaseSession?.user.id ?? 'guest'} owner={supabaseSession?.user.id ?? 'guest'} request={nativeCapture} onClose={() => setNativeCapture(null)} onSaved={() => { setNativeCapture(null); setSelectedRestaurantDetail(null); setSelectedRestaurantDetailInitialView('detail'); setIsRestaurantDetailFeedbackMapView(false); setActiveTab('reservation'); setIsReservationRootView(true); setIsHomeRootView(true); }} />
+        </Suspense>}
+
         {/* Global Overlays */}
         {appState === 'main' ? (
           <HomeUnifiedSearch
+            key={supabaseSession?.user.id ?? 'guest'}
+            nativeOwner={supabaseSession?.user.id ?? 'guest'}
             catalog={globalSearchCatalog}
             closeTrigger={globalSearchCloseTrigger}
             onAddFriend={handleAddDiningFriend}
@@ -3546,11 +3543,7 @@ function MainApp() {
             onOpenRestaurantDetail={(result) =>
               openRestaurantDetail(createRestaurantDetailFromSearchResult(result))
             }
-            onStartDiningFeedback={(result) =>
-              openRestaurantDetail(createRestaurantDetailFromSearchResult(result), {
-                initialView: 'feedback',
-              })
-            }
+            onStartDiningFeedback={result => setNativeCapture({seed:{restaurant:result.restaurant,menu:result.type==='menu'?result.label:'',restaurantID:result.place?.placeId??null,foodSource:{kind:'restaurant',restaurantNamespace:result.place?.placeId?'kakao':undefined,version:1}}})}
             onSearchFriends={handleSearchDiningFriends}
             openTrigger={globalSearchTrigger}
             reservations={globalSearchReservations}
@@ -3604,22 +3597,29 @@ function MainApp() {
             applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
           contentClassName={`${BOTTOM_SHEET_STAGE_HEIGHT_CLASS} bg-[var(--tb-color-bg-page)]`}
-          bodyClassName="px-5 pb-1 pt-2"
+          bodyClassName="px-5 pb-6 pt-5"
           headerCenter={
-            <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+            <DrawerTitle className="text-[15px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
               프로필
-            </h2>
+            </DrawerTitle>
           }
-          headerEnd={<BottomSheetCloseButton />}
+          headerStart={<BottomSheetCloseButton />}
         >
+          <DrawerDescription className="sr-only">내 프로필 요약과 계정 연결</DrawerDescription>
+          {(nativeProfile.error || nativeProfile.backupError || !nativeProfile.ready || nativeProfile.dirty) && <div role="status" className="mb-3 rounded-[12px] bg-white p-3 text-[12px]">
+            {nativeProfile.error ?? nativeProfile.backupError ?? (!nativeProfile.ready ? '프로필을 불러오고 있어요.' : nativeProfile.remoteEnabled ? '기기에 저장했어요. 계정 백업을 확인하고 있어요.' : '프로필은 이 기기에 저장되어 있어요.')}
+            <button className="ml-2 min-h-11 underline" onClick={() => {nativeProfile.retry();if(nativeProfile.ready&&!nativeProfile.error)void nativeProfile.sync();}}>다시 확인</button>
+          </div>}
+          {nativeProfile.data?.unsupportedAvatar && <p role="status" className="mb-3 text-[12px]">현재 사진 형식은 이 브라우저에서 미리 볼 수 없어요. 원본은 보관되어 있어요.</p>}
           <ProfileIdentitySheetContent
-            birthDate={profileBirthDate}
+            summaryOverride={nativeIdentity ? nativeProfileSummary(nativeIdentity, nativeIdentity.dietaryRestrictions) : undefined}
+            birthDate={effectiveProfileBirthDate}
             displayName={userDisplayLabel}
             email={currentUserEmail}
             isAnonymous={isAnonymousUser}
             nickname={currentUserNickname}
-            preferenceProfile={latestPreferenceIntakeProfile}
-            respondentContext={tasteSurveyRespondentContext}
+            preferenceProfile={effectivePreferenceProfile}
+            respondentContext={effectiveProfileContext}
             userAvatarImageSrc={profileAvatarImageSrc}
             userPalateBloomProfile={userPalateBloomProfile}
             userPalateBloomShapeSeed={userPalateBloomShapeSeed}
@@ -3668,9 +3668,9 @@ function MainApp() {
             isProfileAvatarEditorOpen
               ? undefined
               : (
-                <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+                <DrawerTitle className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
                   프로필 편집
-                </h2>
+                </DrawerTitle>
               )
           }
           headerStart={
@@ -3703,7 +3703,7 @@ function MainApp() {
                   </Button>
                   <Button
                     className="h-12 w-full rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] hover:bg-[var(--tb-color-text-secondary)]"
-                    disabled={profileEditStatus === 'submitting' || isProfileAvatarPreparing}
+                    disabled={!nativeProfile.ready || profileEditStatus === 'submitting' || isProfileAvatarPreparing}
                     form="profile-edit-sheet-form"
                     type="submit"
                   >
@@ -3738,16 +3738,21 @@ function MainApp() {
             ) : undefined
           }
         >
+          {isProfileAvatarEditorOpen && <DrawerTitle className="sr-only">프로필 사진 편집</DrawerTitle>}
+          <DrawerDescription className="sr-only">프로필 이름과 기준 정보 편집</DrawerDescription>
+          {nativeProfile.data?.unsupportedAvatar && <p className="mb-3 text-[12px]">사진 원본은 보관되어 있어요. 미리보기가 지원되지 않아 새 사진으로 바꾸거나 삭제할 수 있어요.</p>}
           <ProfileEditSheetContent
+            hasStoredAvatar={nativeProfile.data?.avatar !== undefined}
+            resetKey={`${nativeProfileOwner}:${profileEditSession}`}
             avatarImageDataUrl={profileAvatarImageSrc}
-            birthDate={profileBirthDate}
+            birthDate={effectiveProfileBirthDate}
             canApplyCurrentTasteAvatar={canApplyCurrentTasteToPalateBloomAvatar}
             displayName={currentUserDisplayName}
             formId="profile-edit-sheet-form"
             isSubmitting={profileEditStatus === 'submitting'}
             nickname={currentUserNickname}
-            preferenceProfile={latestPreferenceIntakeProfile}
-            respondentContext={tasteSurveyRespondentContext}
+            preferenceProfile={effectivePreferenceProfile}
+            respondentContext={effectiveProfileContext}
             statusMessage={profileEditMessage}
             userPalateBloomProfile={userPalateBloomProfile}
             userPalateBloomShapeSeed={userPalateBloomShapeSeed}
@@ -3954,9 +3959,9 @@ function MainApp() {
           contentClassName={BOTTOM_SHEET_STAGE_HEIGHT_CLASS}
           bodyClassName="p-0"
         >
-          <PreferenceIntakeScreen
-            initialProfile={latestPreferenceIntakeProfile}
-            userID={supabaseSession?.user.id ?? 'local-owner'}
+          <DrawerTitle className="sr-only">사전 조사</DrawerTitle><DrawerDescription className="sr-only">피해야 할 재료와 식사 선호를 알려주세요.</DrawerDescription>
+          {isPreferenceIntakeSheetOpen && <NativePreferenceIntake
+            key={nativeProfileOwner} owner={nativeProfileOwner} legacyProfile={nativeProfileOwner === 'guest' ? latestPreferenceIntakeProfile : null}
             onBack={() => {
               setIsPreferenceIntakeSheetOpen(false);
               if (isEditingPreferencesFromAnalysis) {
@@ -3966,7 +3971,7 @@ function MainApp() {
               setIsTasteSurveyIntroSheetOpen(true);
             }}
             onComplete={handleCompletePreferenceIntakeSheet}
-          />
+          />}
         </BottomSheetShell>
 
         <BottomSheetShell
@@ -4253,7 +4258,7 @@ function getInternalRoute(): InternalRoute {
   const previewMode = searchParams.get('preview');
   const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
 
-  if (previewMode === 'design-system' || normalizedPath === '/design-system') {
+  if (previewMode === 'design-system' || normalizedPath === '/design-system' || normalizedPath.startsWith('/design-system/')) {
     return 'design-system';
   }
 
@@ -4298,7 +4303,7 @@ export default function App() {
   }, [internalRoute]);
 
   if (internalRoute === 'design-system') {
-    return <DesignSystemPage />;
+    return <Suspense fallback={<div role="status" style={{padding: 32}}>플레이팅을 불러오고 있어요.</div>}><PlatingSite /></Suspense>;
   }
 
   if (internalRoute === 'design-system-updates') {

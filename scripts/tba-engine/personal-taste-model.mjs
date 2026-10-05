@@ -1,12 +1,13 @@
-import { createHash } from 'node:crypto';
+import { sha256 } from './sha256.mjs';
 import { buildFitPatterns, buildOverallPatterns, sameSelection, scopedRatings, FIT_VALUES } from './personal-taste-insights.mjs';
 import { assessQuestion, questionPrecedes } from './personal-taste-questions.mjs';
+import { individualQuestionGroups, questionFamilyKey } from './personal-taste-question-instances.mjs';
 
 export const PERSONAL_TASTE_MODEL_VERSION = 'tba-personal-taste-model/2';
 export const PERSONAL_TASTE_POLICY = Object.freeze({minMeals:3,minConditionMeals:3,maxConditionDimensions:2});
 const sorted=values=>[...new Set(values)].sort();
 const canonical=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a<b?-1:a>b?1:0)):x);
-const identifier=(type,parts)=>`${type}:${createHash('sha256').update(canonical(parts)).digest('hex').slice(0,20)}`;
+const identifier=(type,parts)=>`${type}:${sha256(canonical(parts)).slice(0,20)}`;
 const confirmed=r=>['explicit_user_choice','rule_extracted_statement'].includes(r.confirmationStatus);
 const own=(r,key,fallback)=>r[key]??fallback;
 const semanticScope=r=>canonical([r.experienceId,r.attribute,r.reference??null,r.target??'unspecified',r.phase??'unspecified']);
@@ -26,7 +27,7 @@ function conditionList(unit){return ['target','phase','intensity'].flatMap(d=>un
 function sourceEvidence(rows){return [...new Map(rows.map(r=>[r.observationId,{id:r.observationId,mealID:r.mealId??r.experienceId,phrase:r.phrase??'',sourceSpans:r.sourceSpans??r.sourceAnswerRefs?.flatMap(ref=>ref.sourceSpans??[])??[],selectionEvidence:r.selectionEvidence??null,conditionSources:r.conditionSources??[]}])).values()].sort((a,b)=>a.id<b.id?-1:1);}
 
 /** 사용자별 직접 평가의 명시 조건을 비교한다. 분포는 관측 식사 수이며 개인 미래 확률이 아니다. */
-export function buildPersonalTasteModel(normalized,{asOf=null,policy:inputPolicy={},suppressedQuestionIDs=[],_assessQuestions=true,_includeEvidence=true}={}){
+export function buildPersonalTasteModel(normalized,{asOf=null,policy:inputPolicy={},suppressedQuestionIDs=[],_assessQuestions=true,_includeEvidence=true,individualQuestions=false,nativeAnswerOptions,validatedIntensityLinks={}}={}){
  const policy={...PERSONAL_TASTE_POLICY,...inputPolicy};
  if(!Number.isInteger(policy.minMeals)||policy.minMeals<2||!Number.isInteger(policy.minConditionMeals)||policy.minConditionMeals<2||policy.maxConditionDimensions!==2)throw new Error('INVALID_PERSONAL_TASTE_POLICY');
  const userID=normalized.userId??normalized.userID??'';
@@ -52,7 +53,7 @@ export function buildPersonalTasteModel(normalized,{asOf=null,policy:inputPolicy
   else if(!outcomeValues.includes(r.value)||r.scale!=='attribute-three-category-v1')reason='unsupported_liking';
   else if((scopeGroups.get(semanticScope(r))??[]).some(other=>other.kind==='sensory_presence'&&other.value===false&&sameSelection(other,r)))reason='absence_qualified';
   if(reason){excludedEvidence.push({id:r.observationId,reason});continue;}
-  const intensityRows=(scopeGroups.get(semanticScope(r))??[]).filter(other=>other.kind==='sensory_intensity'&&other.scale==='expression-strength-v1'&&sameSelection(other,r));
+  const intensityRows=(scopeGroups.get(semanticScope(r))??[]).filter(other=>other.kind==='sensory_intensity'&&other.scale==='expression-strength-v1'&&(sameSelection(other,r)||validatedIntensityLinks[r.observationId]?.includes(other.observationId)));
   const levels=sorted(intensityRows.map(other=>other.value));
   const intensity=levels.length===1&&['weak','medium','strong'].includes(levels[0])?levels[0]:null;
   const key=canonical([userID,r.mealId,r.attribute,r.reference??null,r.target,r.phase,intensity,r.dishKindIDs]);
@@ -85,13 +86,13 @@ export function buildPersonalTasteModel(normalized,{asOf=null,policy:inputPolicy
    const first=selected[0],conditionText=conditions.map(conditionLabel).join(' · ');
    candidates.push({id:identifier('candidate',[userID,key,conditionKey]),attribute:first.attribute,reference:first.reference,label:first.label,conditions,
     title:conditions.length?`${first.label}, ${conditionText}에서 남긴 평가`:`${first.label}에 남긴 평가`,
-    body:direction?`${meals.length}번의 식사에서 ${direction==='positive'?'호감':direction==='negative'?'아쉬움':'중립'} 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.`:`${meals.length}번의 식사를 비교했어요. 반례나 부족한 조건을 확인하며 판단을 유보해요.`,
+    body:direction?`${distribution[direction]===meals.length?`${meals.length}번의 식사에서`:`${meals.length}번의 식사 중 ${distribution[direction]}번에서`} ${direction==='positive'?'호감':direction==='negative'?'아쉬움':'중립'} 방향이 반복됐어요. 관찰한 조건의 기록이며 원인을 뜻하지 않아요.`:`${meals.length}번의 식사를 비교했어요. 반례나 부족한 조건을 확인하며 판단을 유보해요.`,
     status,direction,distribution,baselineDistribution:base.distribution,supportMealIDs:rawDirection?meals.filter(m=>m.value===rawDirection).map(m=>m.mealID):[],counterMealIDs,neutralMealIDs:meals.filter(m=>m.value==='neutral').map(m=>m.mealID),mixedMealIDs:meals.filter(m=>m.value==='mixed').map(m=>m.mealID),evidenceIDs:sorted(selected.flatMap(u=>u.evidenceIDs)),evidence:[...new Map(selected.flatMap(u=>u.evidence).map(e=>[e.id,e])).values()].sort((a,b)=>a.id<b.id?-1:1),abstainReasons,stability:{evaluatedMealCount:meals.length,unchangedCount,stable},contrastsWithBaseline:direction!==null&&leader(base.distribution)!==direction,
    });
   }
  }
  candidates.sort((a,b)=>a.id<b.id?-1:1);
- const fitPatterns=buildFitPatterns(included,userID,policy,{includeEvidence:_includeEvidence});
+ const fitPatterns=buildFitPatterns(included,userID,policy,{includeEvidence:_includeEvidence,validatedIntensityLinks});
  const overallPatterns=buildOverallPatterns(included,userID,{includeEvidence:_includeEvidence});
  const overallAssociations=[];
  for(const u of (_includeEvidence?units:[])){const overall=included.filter(r=>r.kind==='overall_liking'&&u.experienceIDs.includes(r.experienceId)&&r.scale==='overall-five-category-v1');if(overall.length)overallAssociations.push({unitID:u.id,mealID:u.mealID,attribute:u.attribute,individualValue:u.liking,overallValues:sorted(overall.map(r=>r.value)),evidenceIDs:sorted([...u.evidenceIDs,...overall.map(r=>r.observationId)]),causalClaim:null});}
@@ -113,24 +114,41 @@ export function buildPersonalTasteModel(normalized,{asOf=null,policy:inputPolicy
   const proposed=['weak','medium','strong'].find(value=>!known.includes(value));if(!proposed)continue;
   const first=rows[0];questions.push({attribute:first.attribute,reference:first.reference,label:first.label,facet:'intensity',reason:'unobserved_intensity_comparison',score:10,evidenceIDs:sorted(rows.flatMap(u=>u.evidenceIDs)),mealIDs:sorted(rows.map(u=>u.mealID)),target:'unspecified',phase:'unspecified',intent:'exploration',proposedCondition:{dimension:'intensity',value:proposed}});
  }
- const questionGroups=new Map();for(const q of questions){const key=canonical([q.attribute,q.reference,q.facet,q.target,q.phase,q.intent??'clarification',q.proposedCondition??null]);const previous=questionGroups.get(key);questionGroups.set(key,previous?{...previous,score:Math.max(previous.score,q.score),evidenceIDs:sorted([...previous.evidenceIDs,...q.evidenceIDs]),mealIDs:sorted([...previous.mealIDs,...q.mealIDs])}:q);}
+ let questionGroups=new Map();for(const q of questions){const key=canonical([q.attribute,q.reference,q.facet,q.target,q.phase,q.intent??'clarification',q.proposedCondition??null]);const previous=questionGroups.get(key);questionGroups.set(key,previous?{...previous,score:Math.max(previous.score,q.score),evidenceIDs:sorted([...previous.evidenceIDs,...q.evidenceIDs]),mealIDs:sorted([...previous.mealIDs,...q.mealIDs])}:q);}
+ if(individualQuestions)questionGroups=individualQuestionGroups(questions,included);
+ const questionID=(key,q)=>identifier(individualQuestions&&q.intent!=='exploration'?'question-instance-v2':'next-selection',[userID,key]);
+ const byID=new Map(included.map(r=>[r.observationId,r]));
+ const safeOptions=new Map([...questionGroups].map(([key,q])=>[key,nativeAnswerOptions&&q.intent!=='exploration'?(byID.has(q.responseSourceID)?nativeAnswerOptions(byID.get(q.responseSourceID),q.facet):[]):undefined]));
  const suppressedIDs=new Set(suppressedQuestionIDs), baselines=new Map();
- const ranked=[...questionGroups].filter(([key])=>!suppressedIDs.has(identifier('next-selection',[userID,key]))).map(([key,q])=>{
+ const ranked=[...questionGroups].filter(([key,q])=>!suppressedIDs.has(questionID(key,q))).sort(([a,x],[b,y])=>y.score-x.score||(a<b?-1:1)).map(([key,q],index)=>{
+  if(individualQuestions&&(index>=12||(q.intent!=='exploration'&&safeOptions.get(key)?.length===0)))return [key,{...q,key}];
   const attribute=canonical([q.attribute,q.reference]);
   if(!baselines.has(attribute)){
    const attributeRecords=included.filter(r=>attributeKey(r)===attribute);
    const experiences=new Set(attributeRecords.map(r=>r.experienceId));
    const records=[...attributeRecords,...included.filter(r=>r.kind==='overall_liking'&&experiences.has(r.experienceId))];
-   const project=records=>buildPersonalTasteModel({userId:userID,records},{policy,_assessQuestions:false,_includeEvidence:false});
+   const project=records=>buildPersonalTasteModel({userId:userID,records},{policy,_assessQuestions:false,_includeEvidence:false,validatedIntensityLinks});
    const sameAttribute=row=>canonical([row.attribute,row.reference])===attribute;
    baselines.set(attribute,{records,project,model:{policy,candidates:candidates.filter(sameAttribute),fitPatterns:fitPatterns.filter(sameAttribute),overallPatterns:overallPatterns.filter(sameAttribute)}});
   }
   const baseline=baselines.get(attribute);
-  return [key,assessQuestion({...q,key,intent:q.intent??'clarification'},baseline.records,baseline.project,baseline.model)];
- }).sort(([,a],[,b])=>questionPrecedes(a,b)?-1:1);
- const suppressed=new Set(suppressedQuestionIDs);const chosen=ranked.find(([key])=>!suppressed.has(identifier('next-selection',[userID,key])));const nextSelection=chosen?{id:identifier('next-selection',[userID,chosen[0]]),attribute:chosen[1].attribute,label:chosen[1].label,facet:chosen[1].facet,question:chosen[1].intent==='exploration'?`다음 식사에서 ${conditionLabel(chosen[1].proposedCondition)}로 느낀 ${chosen[1].label}는 어떤지 확인해 볼까요?`:({liking:`${chosen[1].label} 자체는 어땠나요?`,intensity:`${chosen[1].label}는 어느 정도로 느껴졌나요?`,target:`${chosen[1].label}는 어느 부분에서 느껴졌나요?`,phase:`${chosen[1].label}는 언제 느껴졌나요?`}[chosen[1].facet]),reason:chosen[1].reason,evidenceIDs:sorted(chosen[1].evidenceIDs),mealIDs:sorted(chosen[1].mealIDs),createsEvidence:false,intent:chosen[1].intent??'clarification',proposedCondition:chosen[1].proposedCondition??null,unobserved:chosen[1].intent==='exploration'}:null;
- if(nextSelection){nextSelection.responseSourceID=chosen[1].responseSourceID??null;nextSelection.impact=chosen[1].impact??null;}
- return snapshot(nextSelection);
+  return [key,assessQuestion({...q,key,intent:q.intent??'clarification'},baseline.records,baseline.project,baseline.model,safeOptions.get(key))];
+ }).sort(([ka,a],[kb,b])=>{
+  if(!individualQuestions)return questionPrecedes(a,b)?-1:1;
+  if((a.intent==='clarification')!==(b.intent==='clarification'))return a.intent==='clarification'?-1:1;
+  if(nativeAnswerOptions&&a.intent==='clarification'&&b.intent==='clarification'){
+   const left=!!safeOptions.get(ka)?.length,right=!!safeOptions.get(kb)?.length;if(left!==right)return left?-1:1;
+  }
+  return b.score-a.score||((b.impact?.changedInterpretationCount??0)-(a.impact?.changedInterpretationCount??0))||b.mealIDs.length-a.mealIDs.length||(ka<kb?-1:1);
+ });
+ const selections=ranked.map(([key,q])=>({id:questionID(key,q),attribute:q.attribute,label:q.label,facet:q.facet,
+  question:q.intent==='exploration'?`다음 식사에서 ${conditionLabel(q.proposedCondition)}로 느낀 ${q.label}는 어떤지 확인해 볼까요?`:({liking:`${q.label} 자체는 어땠나요?`,intensity:`${q.label}는 어느 정도로 느껴졌나요?`,target:`${q.label}는 어느 부분에서 느껴졌나요?`,phase:`${q.label}는 언제 느껴졌나요?`}[q.facet]),
+  reason:q.reason,evidenceIDs:sorted(q.evidenceIDs),mealIDs:sorted(q.mealIDs),createsEvidence:false,intent:q.intent??'clarification',proposedCondition:q.proposedCondition??null,unobserved:q.intent==='exploration',responseSourceID:q.responseSourceID??null,impact:q.impact??null,
+  ...(individualQuestions?{familyID:identifier('next-selection',[userID,questionFamilyKey(q)]),sourceExperienceID:byID.get(q.responseSourceID)?.experienceId??null}:{})
+ }));
+ const result=snapshot(selections[0]??null);
+ if(individualQuestions)result.queuedSelections=selections;
+ return result;
 }
 
 export function predictPersonalTaste(model,query){

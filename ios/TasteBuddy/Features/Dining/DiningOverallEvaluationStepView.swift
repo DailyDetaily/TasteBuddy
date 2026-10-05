@@ -11,6 +11,7 @@ struct DiningOverallEvaluationStepView: View {
                 TBFlowTopBar(
                     title: "전체 평가",
                     leadingAccessibilityLabel: "메뉴 선택으로 돌아가기",
+                    showsDivider: false,
                     backgroundColor: TBColor.page,
                     leadingAction: onBack
                 )
@@ -34,6 +35,7 @@ struct DiningOverallEvaluationStepView: View {
                                     indicator: .radio,
                                     isSelected: DiningSensoryRecommendationPolicy.isSupported(evaluation)
                                         && evaluation?.responseValue == response,
+                                    singleLine: true,
                                     showsUnselectedBorder: false
                                 ) {
                                     evaluation = DiningOverallEvaluation(response: response)
@@ -41,6 +43,7 @@ struct DiningOverallEvaluationStepView: View {
                             }
                         }
                     }
+                    .padding(.top, 16)
                     .tbPageContentPadding(bottom: TBSpacing.page + 148)
                 }
                 .scrollIndicators(.hidden)

@@ -60,6 +60,7 @@ import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reserv
 import TasteChangePage, { TasteChangeEvidencePage, type TasteChangeSeries } from './TasteChangePage';
 
 const RADAR_CHART = DATA_VIZ_TOKENS.radar;
+const NativeAnalysisOverview = React.lazy(() => import('../components/analysis-native/NativeAnalysisOverview'));
 const TastePerceptionCards = React.lazy(() => import('../components/analysis/TastePerceptionCards'));
 const TREND_TINT_LINE_STROKE_WIDTH = 12;
 const TREND_LINE_STROKE_WIDTH = 2;
@@ -116,6 +117,7 @@ function deriveProfileConfidenceStage(measurementCount: number): ProfileConfiden
   return 'Starter';
 }
 
+type ProfileTrendTaste = '단맛' | '신맛' | '쓴맛' | '짠맛' | '감칠맛' | '지방맛';
 type ProfileChangeTrendPoint = {
   event: string;
   isVisible: boolean;
@@ -392,8 +394,8 @@ function WeeklyTrendTooltip({
 
   const uniqueEntries = visibleTasteLabels.map((taste) => ({
     dataKey: taste,
-    value: activeDatum[taste],
-  })).filter((entry): entry is { dataKey: string; value: number | string } =>
+    value: activeDatum[taste as ProfileTrendTaste],
+  })).filter((entry): entry is { dataKey: string; value: number } =>
     typeof entry.value !== 'undefined',
   );
 
@@ -1255,7 +1257,7 @@ function buildTasteTrendDetailInfo({
       accentTaste: selectedTaste,
       currentLabel: '현재 기준',
       deltaLabel: '기준 형성 중',
-      endScore: selectedTaste === '모든맛' ? undefined : lastPoint?.[selectedTaste],
+      endScore: selectedTaste === '모든맛' ? undefined : lastPoint?.[selectedTaste as ProfileTrendTaste],
       eyebrow: '첫 기준',
       meaning:
         '아직 변화폭을 단정하기보다는 이번 값을 다음 식사를 맞추는 시작 기준으로 보는 단계예요.',
@@ -1269,8 +1271,8 @@ function buildTasteTrendDetailInfo({
   }
 
   if (selectedTaste !== '모든맛') {
-    const startScore = firstPoint[selectedTaste];
-    const endScore = lastPoint[selectedTaste];
+    const startScore = firstPoint[selectedTaste as ProfileTrendTaste];
+    const endScore = lastPoint[selectedTaste as ProfileTrendTaste];
     const delta = endScore - startScore;
     const directionPhrase =
       Math.abs(delta) < 1
@@ -1378,7 +1380,7 @@ function createTrendPoint(
   };
 
   for (const entry of getTasteMeasurementEntries(snapshot)) {
-    point[entry.label] = entry.score;
+    point[entry.label as ProfileTrendTaste] = entry.score;
   }
 
   return point;
@@ -1510,6 +1512,7 @@ function buildProfileChangeTrendData(
 }
 
 interface AnalysisPageProps {
+  nativeOwnerID?: string;
   preferenceProfile?: PreferenceIntakeProfile | null;
   preferenceUserID?: string;
   onEditPreferences?: () => void;
@@ -1527,30 +1530,19 @@ interface AnalysisPageProps {
 
 export default function AnalysisPage(props: AnalysisPageProps) {
   const [changeSeries, setChangeSeries] = useState<TasteChangeSeries[] | null>(null);
+  // The legacy preference form names its guest owner "local-owner"; native journals use "guest".
+  const journalOwner = props.nativeOwnerID ?? (props.preferenceUserID === 'local-owner' ? 'guest' : props.preferenceUserID ?? 'guest');
   if (changeSeries !== null) return <TasteChangeEvidencePage series={changeSeries} onBack={() => setChangeSeries(null)} onOpenMenu={props.onOpenMenu} />;
-  if (props.measurementSnapshot.source === 'recalled-intensity') {
-    return <main className="flex h-full flex-col overflow-y-auto bg-[var(--tb-color-bg-page)] px-5 pt-5 pb-20">
-      <React.Suspense fallback={<SectionCard><p>미각변화를 불러오고 있어요.</p></SectionCard>}>
-        <TastePerceptionCards {...props} onOpenTasteChange={setChangeSeries} />
-      </React.Suspense>
-      <PageSection title="내가 알려준 선호" className="mt-6">
-        <PreferenceIntakeEvidenceCard profile={props.preferenceProfile} userID={props.preferenceUserID} onEdit={props.onEditPreferences} />
-      </PageSection>
-      <PageSection title="처음 남긴 맛의 단서" className="mt-6">
-        {props.measurementSnapshot.surveySubmission ? (
-          <TasteSurveyEvidencePanel submission={props.measurementSnapshot.surveySubmission} />
-        ) : <p className="text-[13px] text-[var(--tb-color-text-muted)]">기준 음식의 응답을 다시 남겨주세요.</p>}
-        <SectionCard>
-          <p className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">다음 식사에서 이어서 살펴봐요</p>
-          <p className="mt-2 text-[13px] text-[var(--tb-color-text-subtle)]">실제 음식에서 느낀 강도와 좋아하는 정도가 쌓이면 더 구체적으로 해석할 수 있어요.</p>
-        </SectionCard>
-        <button type="button" className="min-h-[44px] rounded-[14px] bg-white px-4 text-[13px] font-semibold" onClick={props.onStartMeasurement}>
-          기준 음식 다시 기록하기
-        </button>
-      </PageSection>
-    </main>;
-  }
-  return <LegacyMeasurementAnalysisPage {...props} onOpenTasteChange={setChangeSeries} />;
+  return <main className="flex h-full flex-col gap-6 overflow-y-auto bg-[var(--tb-color-bg-page)] px-5 pt-5 pb-24">
+    <React.Suspense fallback={<SectionCard><p role="status">기록을 다시 읽고 있어요</p></SectionCard>}>
+      <NativeAnalysisOverview key={journalOwner} owner={journalOwner} active={props.isActive ?? true}/>
+      <TastePerceptionCards {...props} nativeOwnerID={journalOwner} onOpenTasteChange={setChangeSeries} />
+    </React.Suspense>
+    {props.measurementSnapshot.surveySubmission && <PageSection title="처음 남긴 맛의 단서">
+      <TasteSurveyEvidencePanel submission={props.measurementSnapshot.surveySubmission}/>
+      <button type="button" className="mt-3 min-h-11 rounded-full bg-white px-4 text-[13px] font-semibold" onClick={props.onStartMeasurement}>기준 음식 다시 기록하기</button>
+    </PageSection>}
+  </main>;
 }
 
 function LegacyMeasurementAnalysisPage({
@@ -1618,6 +1610,7 @@ function LegacyMeasurementAnalysisPage({
     'to bottom',
   );
   const chefTranslationInsight: AnalysisInsight = {
+    supportingText: CHEF_TRANSLATION_COPY,
     description: CHEF_TRANSLATION_COPY,
     eyebrow: '셰프 참고 가이드',
     id: 'chef-translation',
@@ -2362,7 +2355,7 @@ function LegacyMeasurementAnalysisPage({
                         stroke={getTasteColor(taste)}
                         strokeWidth={TREND_LINE_STROKE_WIDTH}
                         dot={(props) => <WeeklyTrendDot {...props} taste={taste} />}
-                        activeDot={(props) => <WeeklyTrendActiveDot {...props} taste={taste} />}
+                        activeDot={(props:WeeklyTrendActiveDotProps) => <WeeklyTrendActiveDot {...props} taste={taste} />}
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         isAnimationActive={false}
@@ -2512,7 +2505,7 @@ function LegacyMeasurementAnalysisPage({
             />
 
             <React.Suspense fallback={<SectionCard><p>미각변화를 불러오고 있어요.</p></SectionCard>}>
-              <TastePerceptionCards measurementSnapshot={measurementSnapshot} surveyHistory={surveyHistory}
+              <TastePerceptionCards preferenceUserID={preferenceUserID} measurementSnapshot={measurementSnapshot} surveyHistory={surveyHistory}
                 feedbackSubmissions={feedbackSubmissions} isActive={isActive} onOpenTasteChange={onOpenTasteChange} />
             </React.Suspense>
 

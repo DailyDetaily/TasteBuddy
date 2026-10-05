@@ -5,10 +5,17 @@ import UIKit
 enum TBTextInputVariant {
     case dining
     case auth
+    case profile
 
     var minimumHeight: CGFloat { self == .dining ? 44 : 48 }
     var cornerRadius: CGFloat { self == .dining ? TBRadius.control : TBRadius.row }
-    var font: Font { self == .dining ? TBFont.semibold(13) : TBFont.regular(14) }
+    var font: Font {
+        switch self {
+        case .dining: return TBFont.semibold(13)
+        case .auth: return TBFont.regular(14)
+        case .profile: return TBFont.semibold(14)
+        }
+    }
 }
 
 /// An editable field; validation, keyboard choice and submission belong to the caller.
@@ -37,7 +44,7 @@ struct TBTextInput: View {
     private var borderColor: Color {
         if !isEffectivelyEnabled { return TBColor.borderDisabled }
         if errorText != nil { return TBColor.destructive }
-        return isFocused ? TBColor.textSecondary : TBColor.border
+        return isFocused ? TBColor.focusRing : TBColor.border
     }
 
     @ViewBuilder
@@ -89,11 +96,166 @@ struct TBTextInput: View {
             .onSubmit(onSubmit)
             .accessibilityLabel(accessibilityName ?? label ?? placeholder)
             .accessibilityHint(errorText.map { "오류: \($0)" } ?? helperText ?? "")
+            .platingLayoutFrame("sheet-input", when: variant == .auth && keyboardType == .emailAddress)
 
             if let message {
                 Text(message)
+                    .font(TBFont.regular(variant == .profile ? 11 : 12))
+                    .foregroundStyle(errorText == nil ? (variant == .profile ? TBColor.textFaint : TBColor.textBody) : TBColor.destructive)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+/// A field-shaped trigger. The screen supplies its date, single- or multiple-choice picker.
+struct TBSelectField: View {
+    @Environment(\.isEnabled) private var environmentIsEnabled
+    let label: String
+    var value: String? = nil
+    var placeholder = "선택해 주세요"
+    var helperText: String? = nil
+    var errorText: String? = nil
+    var isEnabled = true
+    var isExpanded = false
+    let action: () -> Void
+
+    private var isEffectivelyEnabled: Bool { isEnabled && environmentIsEnabled }
+    private var selectedValue: String? {
+        value.flatMap { $0.isEmpty || $0 == placeholder ? nil : $0 }
+    }
+    private var borderColor: Color {
+        if !isEffectivelyEnabled { return TBColor.borderDisabled }
+        if errorText != nil { return TBColor.destructive }
+        return isExpanded ? TBColor.focusRing : TBColor.border
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: TBSpacing.x8) {
+            Text(label)
+                .font(TBFont.semibold(12))
+                .foregroundStyle(TBColor.textMuted)
+                .accessibilityHidden(true)
+
+            Button(action: action) {
+                HStack(spacing: TBSpacing.x12) {
+                    Text(selectedValue ?? placeholder)
+                        .font(TBTextInputVariant.profile.font)
+                        .foregroundStyle(isEffectivelyEnabled
+                            ? (selectedValue == nil ? TBColor.textHint : TBColor.textPrimary)
+                            : TBColor.textDisabled)
+                        .lineLimit(1)
+                    Spacer()
+                    LucideIcon(.chevronDown, size: TBIcon.Size.small, strokeWidth: TBIcon.Stroke.strong)
+                        .foregroundStyle(isEffectivelyEnabled ? TBColor.iconPrimary : TBColor.textDisabled)
+                        .accessibilityHidden(true)
+                }
+                .padding(.horizontal, TBSpacing.x12)
+                .frame(minHeight: TBTextInputVariant.profile.minimumHeight)
+                .background(isEffectivelyEnabled ? TBColor.surface : TBColor.disabledSurface)
+                .clipShape(RoundedRectangle(cornerRadius: TBTextInputVariant.profile.cornerRadius, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: TBTextInputVariant.profile.cornerRadius, style: .continuous)
+                        .stroke(borderColor, lineWidth: 1)
+                        .allowsHitTesting(false)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(!isEnabled)
+            .accessibilityLabel(label)
+            .accessibilityValue(selectedValue ?? placeholder)
+            .accessibilityHint(errorText.map { "오류: \($0)" } ?? helperText ?? "선택창 열기")
+
+            if let message = errorText ?? helperText {
+                Text(message)
+                    .font(TBFont.regular(11))
+                    .foregroundStyle(errorText == nil ? TBColor.textFaint : TBColor.destructive)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+/// Bounded native multiline editing. The caller owns validation and persistence.
+/// Reuses the dining memo's 20pt surface; large text expands the editing viewport.
+enum TBTextAreaMetrics {
+    static func height(minimum: CGFloat, scale: CGFloat) -> CGFloat {
+        let base = minimum.isFinite && minimum > 0 ? minimum : 156
+        let factor = scale.isFinite && scale > 0 ? max(1, scale) : 1
+        return base * factor
+    }
+}
+
+struct TBTextArea: View {
+    @Environment(\.isEnabled) private var environmentIsEnabled
+    @FocusState private var internalFocus: Bool
+    @ScaledMetric(relativeTo: .body) private var editorScale: CGFloat = 1
+
+    @Binding var text: String
+    let label: String
+    var placeholder = ""
+    var accessibilityName: String? = nil
+    var helperText: String? = nil
+    var errorText: String? = nil
+    var minimumHeight: CGFloat = 156
+    var isEnabled = true
+    var focus: FocusState<Bool>.Binding? = nil
+
+    private var isEffectivelyEnabled: Bool { isEnabled && environmentIsEnabled }
+    private var isFocused: Bool { focus?.wrappedValue ?? internalFocus }
+    private var borderColor: Color {
+        if !isEffectivelyEnabled { return TBColor.borderDisabled }
+        if errorText != nil { return TBColor.destructive }
+        return isFocused ? TBColor.focusRing : TBColor.border
+    }
+
+    @ViewBuilder
+    private var editor: some View {
+        if let focus { TextEditor(text: $text).focused(focus) }
+        else { TextEditor(text: $text).focused($internalFocus) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: TBSpacing.x8) {
+            Text(label)
+                .font(TBFont.semibold(14))
+                .foregroundStyle(TBColor.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityHidden(true)
+            ZStack(alignment: .topLeading) {
+                editor
+                    .font(TBFont.regular(13))
+                    .foregroundStyle(isEffectivelyEnabled ? TBColor.textPrimary : TBColor.textDisabled)
+                    .scrollContentBackground(.hidden)
+                    .tint(TBColor.textPrimary)
+                    .accessibilityLabel(accessibilityName ?? label)
+                    .accessibilityHint(errorText.map { "오류: \($0)" } ?? helperText ?? "")
+                if text.isEmpty && !placeholder.isEmpty {
+                    Text(placeholder)
+                        .font(TBFont.regular(13))
+                        .foregroundStyle(isEffectivelyEnabled ? TBColor.textHint : TBColor.textDisabled)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, TBSpacing.x8)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+            .frame(height: TBTextAreaMetrics.height(minimum: minimumHeight, scale: editorScale))
+            .padding(TBSpacing.x10)
+            .background(isEffectivelyEnabled ? TBColor.surface : TBColor.disabledSurface,
+                        in: RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
+                    .strokeBorder(borderColor, lineWidth: isEffectivelyEnabled && isFocused ? 2 : 1)
+                    .allowsHitTesting(false)
+            }
+            .disabled(!isEnabled)
+            if let message = errorText ?? helperText {
+                Text(message)
                     .font(TBFont.regular(12))
-                    .foregroundStyle(errorText == nil ? TBColor.textBody : TBColor.destructive)
+                    .foregroundStyle(errorText == nil ? TBColor.textBody : TBColor.destructiveText)
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -109,14 +271,16 @@ enum TBSelectableChipVariant {
     var border: Color { self == .dining ? TBColor.border : TBColor.borderSubtle }
 }
 
-/// Selection behavior around the existing neutral Chip color and type vocabulary.
+/// Shared selection behavior with neutral defaults and optional taste-axis colors.
 struct TBSelectableChip: View {
     @Environment(\.isEnabled) private var environmentIsEnabled
 
     let title: String
     var iconName: String? = nil
+    var iconAssetName: String? = nil
     var isSelected = false
     var variant: TBSelectableChipVariant = .dining
+    var accentAxis: TasteAxis? = nil
     var isEnabled = true
     let action: () -> Void
 
@@ -129,18 +293,36 @@ struct TBSelectableChip: View {
                 foreground: TBColor.textDisabled
             )
         }
-        if isSelected { return ChipStyle.resolve(tone: .neutral, variant: .solid) }
+        if isSelected {
+            if let accentAxis {
+                return ChipStyle(
+                    background: accentAxis.tintColor,
+                    border: accentAxis.mainColor.opacity(0.28),
+                    foreground: accentAxis.mainColor
+                )
+            }
+            return ChipStyle.resolve(tone: .neutral, variant: .solid)
+        }
         return ChipStyle(
             background: variant.background,
             border: variant.border,
-            foreground: ChipStyle.resolve(tone: .neutral, variant: .soft).foreground
+            foreground: accentAxis == nil
+                ? ChipStyle.resolve(tone: .neutral, variant: .soft).foreground
+                : TBColor.textSubtle
         )
     }
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                if let iconName {
+                if let iconAssetName {
+                    Image(iconAssetName)
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .accessibilityHidden(true)
+                } else if let iconName {
                     LucideIcon(
                         systemName: iconName,
                         size: 14,

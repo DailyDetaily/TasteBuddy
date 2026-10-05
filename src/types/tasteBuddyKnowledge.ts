@@ -53,7 +53,26 @@ export type TbaCanonicalDishKindId =
   | 'spice_heat'
   | 'dessert'
   | 'cold'
-  | 'beverage_pairing';
+  | 'beverage_pairing'
+  | 'egg'
+  | 'mushroom'
+  | 'fruit'
+  | 'nut_seed'
+  | 'seaweed'
+  | 'spice'
+  | 'noodle'
+  | 'rice_grain'
+  | 'bread'
+  | 'dumpling'
+  | 'pancake'
+  | 'grilled'
+  | 'smoked'
+  | 'steamed'
+  | 'braised'
+  | 'raw'
+  | 'pickled'
+  | 'cured'
+  | 'spicy';
 
 export type TbaLexiconDishKindAffinity = Partial<Record<TbaCanonicalDishKindId, number>>;
 

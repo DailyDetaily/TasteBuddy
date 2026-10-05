@@ -7,6 +7,8 @@ import PageSection from '../components/system/PageSection';
 import { ICON_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
 import { getTasteColor, getTasteTint } from '../constants/tasteColors';
 import { tasteChangeLabel } from '../lib/tastePerception.mjs';
+import PeriodPicker, { type TasteDetailPeriod } from '../components/system/plating/PeriodPicker';
+import { tasteChangeBounds } from '../lib/tasteChangePeriod.mjs';
 
 interface TasteChangePageProps {
   children: ReactNode;
@@ -30,29 +32,25 @@ export function TasteChangeEvidencePage({ series, onBack, onOpenMenu }: {
 }) {
   const first = series.find(row => !['비교 부족', '같은 강도'].includes(tasteChangeLabel(row.points))) ?? series[0];
   const [axisIndex, setAxisIndex] = useState(Math.max(0, TASTE_IDS.indexOf(first?.axis)));
-  const [selectedID, setSelectedID] = useState(first?.id);
-  const [days, setDays] = useState(0);
+  const [selectedID, setSelectedID] = useState<string | undefined>(first?.id);
+  const [period, setPeriod] = useState<TasteDetailPeriod>(0);
   const [offset, setOffset] = useState(0);
   const axis = TASTE_IDS[axisIndex], label = TASTE_TOKENS[axis].label;
   const choices = series.filter(row => row.axis === axis);
   const selected = choices.find(row => row.id === selectedID) ?? choices[0];
   const points = selected?.points ?? [];
-  const latest = points.length ? Math.max(...points.map(point => point.date)) : Date.now();
-  const end = latest + offset * days * 86400000;
-  const start = days ? end - days * 86400000 : points.length ? Math.min(...points.map(point => point.start)) : end;
+  const { start, end } = tasteChangeBounds(points, period, offset);
   const visible = points.filter(point => point.date >= start && point.date <= end);
   const shortLabel = (point?: TasteChangePoint) => point ? selected?.maximum === 4 ? `${point.value}단계` : ['약함', '중간', '강함'][point.value] : '기록 없음';
   const color = getTasteColor(label), tint = getTasteTint(label, .18);
   const dateLabel = (value: number) => new Date(value).toLocaleDateString('ko-KR');
   const move = (direction: number) => { setAxisIndex((axisIndex + direction + TASTE_IDS.length) % TASTE_IDS.length); setSelectedID(undefined); setOffset(0); };
-  const rangeTabs = <div className="flex justify-center gap-2">{[[7, '주'], [31, '달'], [92, '분기'], [366, '년'], [0, '전부']].map(([value, name]) =>
-    <button key={value} type="button" className="min-h-11 rounded-full px-[14px] text-[13px] font-semibold" aria-pressed={days === value}
-      style={days === value ? { color, backgroundColor: tint } : { color: 'var(--tb-color-text-tertiary)' }} onClick={() => { setDays(Number(value)); setOffset(0); }}>{name}</button>)}</div>;
+  const rangeTabs = <PeriodPicker value={period} axis={axis} onValueChange={value => { setPeriod(value); setOffset(0); }} />;
   return <TasteChangePage onBack={onBack} onOpenMenu={onOpenMenu} topSlot={rangeTabs}>
     <div data-testid="taste-change-screen" className="tb-section-stack">
       <SectionCard className="!rounded-none" hoverEffect={false}>
         <div className="grid w-full grid-cols-[40px_minmax(0,1fr)_40px] items-center gap-3">
-          <button type="button" aria-label="이전 기간 보기" disabled={!days || !points.some(point => point.date < start)} onClick={() => setOffset(offset - 1)} className="flex size-10 items-center justify-center rounded-full border disabled:opacity-30"><ChevronLeft size={16} /></button>
+          <button type="button" aria-label="이전 기간 보기" disabled={!period || !points.some(point => point.date < start)} onClick={() => setOffset(offset - 1)} className="flex size-10 items-center justify-center rounded-full border disabled:opacity-30"><ChevronLeft size={16} /></button>
           <p className="text-center text-[15px] font-semibold">{selected ? `${dateLabel(start)} – ${dateLabel(end)}` : '기록 대기'}</p>
           <button type="button" aria-label="다음 기간 보기" disabled={offset >= 0} onClick={() => setOffset(offset + 1)} className="flex size-10 items-center justify-center rounded-full border disabled:opacity-30"><ChevronRight size={16} /></button>
         </div>
@@ -70,7 +68,7 @@ export function TasteChangeEvidencePage({ series, onBack, onOpenMenu }: {
               <CartesianGrid stroke="#E6E8ED" strokeDasharray="3 4" />
               <XAxis hide={!visible.length} type="number" dataKey="date" domain={start === end ? [start - 86400000, end + 86400000] : [start, end]} ticks={visible.map(point => point.date)} interval={0} tickFormatter={value => new Date(value).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })} axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
               <YAxis orientation="right" domain={[0, selected?.maximum ?? 4]} ticks={Array.from({ length: (selected?.maximum ?? 4) + 1 }, (_, i) => i)} tickFormatter={value => selected?.maximum === 2 ? ['약함', '중간', '강함'][value] : `${value}단계`} width={42} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
-              <Tooltip payloadUniqBy="dataKey" labelFormatter={value => dateLabel(Number(value))} formatter={(_value, _name, item) => [item.payload.label, item.payload.id]} />
+              <Tooltip labelFormatter={value => dateLabel(Number(value))} formatter={(_value, _name, item) => [item.payload.label, item.payload.id]} />
               <Line type="linear" dataKey="value" stroke={tint} strokeWidth={12} strokeLinecap="round" dot={false} activeDot={false} tooltipType="none" isAnimationActive={false} />
               <Line type="linear" dataKey="value" stroke={color} strokeWidth={2} dot={{ r: 6, fill: color, strokeWidth: 0 }} activeDot={{ r: 8 }} isAnimationActive={false} />
             </LineChart>

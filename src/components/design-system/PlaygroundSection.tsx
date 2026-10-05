@@ -139,7 +139,7 @@ export default function PlaygroundSection({
             </div>
           ) : null}
         </div>,
-        liveControlsContext.portalRootElement,
+        liveControlsContext.portalRootElement!,
       )
     : null;
 

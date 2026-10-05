@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';
+const path=process.argv[2];
+const current=JSON.parse(await fs.readFile('output/plating/figma/state.json','utf8'));
+const result=JSON.parse(await fs.readFile(path,'utf8'));
+for(const key of ['components','defaults','variables','pages','styles','iconPrimitives'])current[key]={...current[key],...result[key]};
+for(const key of ['createdNodeIds','mutatedNodeIds','reviews'])current[key]=[...(current[key]??[]),...(result[key]??[])];
+current.reviewFrames={...current.reviewFrames,...(result.page&&result.review?{[result.page]:result.review}:{})};
+current.phase=path;
+await fs.writeFile('output/plating/figma/state.json',JSON.stringify(current,null,2)+'\n');
+await fs.writeFile('src/plating/figma-map.json',JSON.stringify({fileKey:current.fileKey,pages:current.pages,components:current.components,variables:current.variables,verification:'구조 생성 · 시각 검토 진행'},null,2)+'\n');
+console.log(Object.keys(current.components??{}).length+' component sets mapped');

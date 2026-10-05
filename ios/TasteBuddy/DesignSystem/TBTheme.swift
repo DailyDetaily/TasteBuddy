@@ -8,6 +8,8 @@ enum TBColor {
     static let mutedSurface = Color(hex: 0xF7F7F7)
     static let elevatedSurface = Color(hex: 0xFCFCFC)
     static let disabledSurface = Color(hex: 0xEFEFEF)
+    static let placeholderSurface = Color(hex: 0xEFEFEF)
+    static let inverseSurface = Color(hex: 0x0F0F0F)
     static let overlaySurface = Color.white.opacity(0.8)
     static let textPrimary = Color(hex: 0x0F0F0F)
     static let textSecondary = Color(hex: 0x3F3F3F)
@@ -15,7 +17,7 @@ enum TBColor {
     static let textBody = Color(hex: 0x666666)
     /// Readable auxiliary actions; disabled controls keep their separate state color.
     static let textAction = textBody
-    static let textHint = Color(hex: 0x888888)
+    static let textHint = Color(hex: 0x6F6F6F)
     static let textDisabled = Color(hex: 0xAFAFAF)
     static let textSubtle = Color(hex: 0x0F0F0F, alpha: 0.60)
     static let textMuted = Color(hex: 0x0F0F0F, alpha: 0.50)
@@ -31,11 +33,32 @@ enum TBColor {
     static let iconPrimary = Color(hex: 0x3F3F3F)
     static let iconHover = Color(hex: 0x6F6F6F)
     static let iconMuted = Color(hex: 0xAFAFAF)
+    static let neutral = Color(hex: 0x3F3F3F)
+    static let neutralSoft = Color(hex: 0xEFEFEF)
+    static let informative = Color(hex: 0x3F3F3F)
+    static let informativeSoft = Color(hex: 0xF7F7F7)
     static let success = Color(hex: 0x2F8F5B)
+    static let successText = Color(hex: 0x236B45)
+    static let successStrong = Color(hex: 0x236B45)
     static let successSoft = Color(hex: 0xE6F4EC)
     static let warning = Color(hex: 0xA8661A)
+    static let warningText = Color(hex: 0x875014)
+    static let warningStrong = Color(hex: 0x875014)
     static let warningSoft = Color(hex: 0xFFF1DE)
     static let destructive = Color(hex: 0xD4183D)
+    static let destructiveText = Color(hex: 0xB31333)
+    static let destructiveSoft = Color(hex: 0xFCEDEF)
+    static let actionPrimary = Color(hex: 0x0F0F0F)
+    static let actionOnPrimary = Color.white
+    static let selectionSurface = Color(hex: 0x0F0F0F)
+    static let selectionText = Color.white
+    static let focusRing = Color(hex: 0x3F3F3F)
+    static let hoverOverlay = Color.black.opacity(0.04)
+    static let pressedOverlay = Color.black.opacity(0.06)
+    static let pressedInverseOverlay = Color.white.opacity(0.10)
+    static let scrimSubtle = Color.black.opacity(0.35)
+    static let scrimDefault = Color.black.opacity(0.50)
+    static let scrimStrong = Color.black.opacity(0.60)
 }
 
 enum TBSpacing {

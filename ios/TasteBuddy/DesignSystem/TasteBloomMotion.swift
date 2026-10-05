@@ -1,7 +1,39 @@
 import SwiftUI
 import UIKit
 
-/// Taste Buddy의 동작 규칙. 화면은 속도나 곡선 대신 동작의 역할을 선택한다.
+/// Opt-in press feedback for a control with one continuous surface.
+enum TBControlFeedback {
+    static let pressDistance: CGFloat = 1
+    static let widthBasisDivisor: CGFloat = 4
+    static let minimumBasis: CGFloat = 24
+
+    enum SurfaceTone {
+        case primary, neutral
+
+        var color: Color { self == .primary ? .white : .black }
+        var opacity: Double { self == .primary ? 0.10 : 0.06 }
+    }
+
+    struct Response: Equatable {
+        let showsPressedSurface: Bool
+        let scale: CGFloat
+    }
+
+    static func response(
+        size: CGSize, isPressed: Bool, isEnabled: Bool, reduceMotion: Bool
+    ) -> Response {
+        let pressed = isEnabled && isPressed
+        guard pressed, !reduceMotion,
+              size.width.isFinite, size.height.isFinite,
+              size.width > 0, size.height > 0 else {
+            return Response(showsPressedSurface: pressed, scale: 1)
+        }
+        let basis = max(size.height, size.width / widthBasisDivisor, minimumBasis)
+        return Response(showsPressedSurface: true, scale: 1 - pressDistance / basis)
+    }
+}
+
+/// 플레이팅(Plating)의 iOS 모션. 화면은 속도나 곡선 대신 동작의 역할을 선택한다.
 enum TasteBloomMotion {
     enum Role: CaseIterable {
         case press, feedback, content, sheet, bloom
@@ -122,6 +154,9 @@ enum TasteBloomMotion {
         static let onboardingSwipe: CGFloat = 100
     }
 }
+
+/// 시스템 이름을 쓰는 새 호출부도 같은 네이티브 스프링을 사용한다.
+typealias PlatingMotion = TasteBloomMotion
 
 private struct TasteBloomMotionModifier<Value: Equatable>: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

@@ -1,4 +1,6 @@
-import { Camera, ChevronDown, X } from 'lucide-react';
+import TextInput from "./system/TextInput";
+import SelectField from "./system/SelectField";
+import { Camera, X } from 'lucide-react';
 import {
   ChangeEvent,
   FormEvent,
@@ -41,7 +43,9 @@ import type {
 } from '../types/tasteSurvey';
 
 interface ProfileEditSheetContentProps {
+  resetKey?: string;
   avatarImageDataUrl: string | null;
+  hasStoredAvatar?: boolean;
   birthDate: string | null;
   canApplyCurrentTasteAvatar?: boolean;
   displayName: string | null;
@@ -327,10 +331,10 @@ function getDietarySummary(profile: PreferenceIntakeProfile) {
   }
 
   const selectedLabels = profile.dietaryRestrictions
-    .map((restriction) =>
-      dietaryQuestion.options.find((option) => option.id === restriction)?.label,
-    )
+    .map((restriction) => dietaryQuestion.options.find((option) => option.id === restriction)?.label)
     .filter(Boolean);
+  const unknownCount = profile.dietaryRestrictions.filter(restriction => !dietaryQuestion.options.some(option => option.id === restriction)).length;
+  if (unknownCount) selectedLabels.push(`확인 필요 ${unknownCount}개`);
 
   if (selectedLabels.length === 0) {
     return '식이제한 없음';
@@ -344,6 +348,8 @@ function getDietarySummary(profile: PreferenceIntakeProfile) {
 }
 
 export default function ProfileEditSheetContent({
+  resetKey,
+  hasStoredAvatar = false,
   avatarImageDataUrl,
   birthDate,
   canApplyCurrentTasteAvatar = false,
@@ -513,15 +519,7 @@ export default function ProfileEditSheetContent({
     setDraftNickname(nickname ?? '');
     setDraftContext(respondentContext);
     setDraftPreferenceProfile(getInitialPreferenceProfile(preferenceProfile));
-  }, [
-    avatarImageDataUrl,
-    birthDate,
-    displayName,
-    nickname,
-    onAvatarPreparationChange,
-    preferenceProfile,
-    respondentContext,
-  ]);
+  }, [resetKey, resetKey === undefined ? avatarImageDataUrl : null, resetKey === undefined ? birthDate : null, resetKey === undefined ? displayName : null, resetKey === undefined ? nickname : null, resetKey === undefined ? preferenceProfile : null, resetKey === undefined ? respondentContext : null, onAvatarPreparationChange]);
 
   useEffect(
     () => () => {
@@ -552,7 +550,7 @@ export default function ProfileEditSheetContent({
 
       setStoredAvatarItems(
         result.avatarPaths
-          .map((path) => {
+          .map((path: string) => {
             const src = resolvePublicMediaPath(path);
 
             return src
@@ -563,7 +561,7 @@ export default function ProfileEditSheetContent({
               }
               : null;
           })
-          .filter((item): item is StoredAvatarItem => Boolean(item)),
+          .filter((item: StoredAvatarItem | null): item is StoredAvatarItem => Boolean(item)),
       );
     })();
 
@@ -685,15 +683,7 @@ export default function ProfileEditSheetContent({
       }
       : null,
   ].filter(
-    (item): item is {
-      id: string;
-      isEditing?: boolean;
-      isRemovable?: boolean;
-      label: string;
-      onRemove?: () => void;
-      onSelect?: () => void;
-      src: string;
-    } => Boolean(item),
+    (item): item is NonNullable<typeof item> => item !== null,
   );
   const avatarHistoryItems = [
     draftAvatarPreviewUrl
@@ -1134,7 +1124,7 @@ export default function ProfileEditSheetContent({
                 type="file"
               />
             </label>
-            {draftAvatarImageSrc || avatarCropState ? (
+            {draftAvatarImageSrc || avatarCropState || (hasStoredAvatar && !shouldRemoveAvatar) ? (
               <button
                 type="button"
                 className="px-1 py-1 text-[12px] font-semibold text-[var(--tb-color-text-faint)]"
@@ -1209,43 +1199,47 @@ export default function ProfileEditSheetContent({
         </div>
 
         <div className="flex flex-col gap-4">
-          <ProfileEditTextField
+          <TextInput
             label="이름"
             placeholder="이름을 입력해 주세요"
             value={draftDisplayName}
-            onChange={setDraftDisplayName}
+            onChange={event => setDraftDisplayName(event.target.value)}
           />
-          <ProfileEditTextField
+          <TextInput
             label="버디네임"
             placeholder="Taste Buddy에서 사용할 이름"
             helperText="친구가 나를 찾는 고유 버디네임입니다."
             value={draftNickname}
-            onChange={setDraftNickname}
+            onChange={event => setDraftNickname(event.target.value)}
           />
-          <ProfileEditSelectField
+          <SelectField
             label="생년월일"
             value={getBirthDateLabel(draftBirthDate)}
+            aria-expanded={activePicker === 'birthDate'}
             onClick={() => setActivePicker('birthDate')}
           />
-          <ProfileEditSelectField
+          <SelectField
             label="성별"
             value={resolveOptionLabel(
               TASTE_SURVEY_CONTEXT_OPTIONS.sexContext,
               draftContext.sexContext,
             )}
+            aria-expanded={activePicker === 'sexContext'}
             onClick={() => setActivePicker('sexContext')}
           />
-          <ProfileEditSelectField
+          <SelectField
             label="흡연유무"
             value={resolveOptionLabel(
               TASTE_SURVEY_CONTEXT_OPTIONS.smokingStatus,
               draftContext.smokingStatus,
             )}
+            aria-expanded={activePicker === 'smokingStatus'}
             onClick={() => setActivePicker('smokingStatus')}
           />
-          <ProfileEditSelectField
+          <SelectField
             label="식이제한"
             value={getDietarySummary(draftPreferenceProfile)}
+            aria-expanded={activePicker === 'dietaryRestrictions'}
             onClick={() => setActivePicker('dietaryRestrictions')}
           />
         </div>
@@ -1320,74 +1314,6 @@ export default function ProfileEditSheetContent({
         </div>
       ) : null}
     </>
-  );
-}
-
-function ProfileEditTextField({
-  helperText,
-  label,
-  onChange,
-  placeholder,
-  value,
-}: {
-  helperText?: string;
-  label: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  value: string;
-}) {
-  return (
-    <label className="flex flex-col gap-2">
-      <span className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-        {label}
-      </span>
-      <input
-        className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-white px-3 text-[14px] font-semibold text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:font-medium placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        type="text"
-        value={value}
-      />
-      {helperText ? (
-        <span className="text-[11px] leading-relaxed text-[var(--tb-color-text-faint)]">
-          {helperText}
-        </span>
-      ) : null}
-    </label>
-  );
-}
-
-function ProfileEditSelectField({
-  label,
-  onClick,
-  value,
-}: {
-  label: string;
-  onClick: () => void;
-  value: string;
-}) {
-  const isEmpty = value === '선택해 주세요';
-
-  return (
-    <div className="flex flex-col gap-2">
-      <span className="text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
-        {label}
-      </span>
-      <button
-        type="button"
-        className={`flex h-12 w-full items-center justify-between gap-3 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-white px-3 text-left text-[14px] font-semibold outline-none transition-colors active:scale-[0.995] ${
-          isEmpty ? 'text-[var(--tb-color-text-hint)]' : 'text-[var(--tb-color-text-primary)]'
-        }`}
-        onClick={onClick}
-      >
-        <span className="truncate">{value}</span>
-        <ChevronDown
-          aria-hidden="true"
-          className="size-4 shrink-0 text-[var(--tb-color-icon-secondary)]"
-          strokeWidth={2.2}
-        />
-      </button>
-    </div>
   );
 }
 

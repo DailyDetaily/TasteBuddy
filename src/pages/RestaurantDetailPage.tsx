@@ -1,3 +1,6 @@
+import type {SavedPlace} from '../lib/gastronomy/nativeSavedPlace';
+import NativeBookmarkSheet from '../components/restaurant/NativeBookmarkSheet';
+import {useNativeBookmarks} from '../lib/gastronomy/useNativeBookmarks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Ellipsis,
@@ -49,6 +52,9 @@ interface RestaurantNavigationLocation {
 }
 
 export type RestaurantDetailViewModel = {
+  nativeBookmarkID?: string;
+  savedSourceOnly?: boolean;
+  scoresUnavailable?: boolean;
   id: string;
   category: string;
   chef: {
@@ -1210,8 +1216,28 @@ export function createRestaurantDetailFromReservation(
   };
 }
 
+export function createRestaurantDetailFromSavedPlace(place: SavedPlace): RestaurantDetailViewModel {
+  return {
+    id: `saved-${place.restaurantID}`, nativeBookmarkID: place.restaurantID, savedSourceOnly: true,
+    name: place.name, category: place.source === 'kakao' ? '카카오 장소 정보' : '저장한 식당',
+    chef: {name:place.chefName, avatarUrl:null, displayLabel:place.chefName || '셰프 정보 미확인'},
+    heroImageUrl:null, mediaStatus:'placeholder', locationLabel:place.place?.address ?? '',
+    info:place.place ? createMapBackedRestaurantInfo({...place.place,lat:null,lng:null}, '') : {address:'',hours:''},
+    memorableDishes:[], scoresUnavailable:true, scores:{personalMatchRate:0,palateFriendsAverageScore:0,overallScore:0},
+    confidenceLabel:'더 확인 필요', fitSummary:'', mainRisk:'', decisionReason:'',
+    summaryLine:place.source === 'kakao' ? '보관된 장소 정보예요. 현재 영업 정보는 지도에서 확인해 주세요.' : '저장한 식당과 연결된 정보예요. 매칭률과 평점은 아직 확인되지 않았어요.',
+    tags:[],
+  };
+}
+
+export function nativeBookmarkSeedForRestaurant(detail: RestaurantDetailViewModel) {
+  return {restaurantID: detail.nativeBookmarkID ?? detail.info.kakaoPlaceId ?? detail.id, restaurantName: detail.name, chefName: detail.savedSourceOnly ? detail.chef.name : detail.mediaStatus === 'placeholder' ? '' : detail.chef.name};
+}
+
 interface RestaurantDetailPageProps {
+  nativeOwner?: string;
   initialView?: RestaurantDetailInitialView;
+  onStartNativeDining?: (menu?:string) => void;
   measurementSnapshot?: TasteMeasurementSnapshot | null;
   onBack: () => void;
   onFeedbackMapViewChange?: (isMapView: boolean) => void;
@@ -1226,6 +1252,8 @@ export interface RestaurantFeedbackSubmission {
 }
 
 export default function RestaurantDetailPage({
+  nativeOwner,
+  onStartNativeDining,
   initialView = 'detail',
   measurementSnapshot,
   onBack,
@@ -1252,6 +1280,8 @@ export default function RestaurantDetailPage({
     }),
     [placeInfo, resolvedInfo, sourceDetail],
   );
+  const nativeBookmarks = useNativeBookmarks(nativeOwner ?? 'guest', nativeOwner !== undefined);
+  const nativeBookmarkSeed = nativeBookmarkSeedForRestaurant(sourceDetail);
   const feedbackScenario = useMemo(() => createRestaurantFeedbackScenario(detail), [detail]);
   const [selectedView, setSelectedView] = useState<RestaurantDetailView>(initialView);
   const [selectedMenuDetail, setSelectedMenuDetail] =
@@ -1324,6 +1354,7 @@ export default function RestaurantDetailPage({
         : null,
     );
 
+    if (sourceDetail.savedSourceOnly) return;
     void (async () => {
       const hydratedPlaceInfo = await hydrateRestaurantPlaceInfo(sourceDetail.name);
 
@@ -1337,7 +1368,7 @@ export default function RestaurantDetailPage({
     return () => {
       isCancelled = true;
     };
-  }, [sourceDetail.name]);
+  }, [sourceDetail.name, sourceDetail.id, sourceDetail.savedSourceOnly]);
 
   useEffect(() => {
     const syncBookmarkState = () => {
@@ -1419,7 +1450,7 @@ export default function RestaurantDetailPage({
       <RestaurantMenuDetailView
         menu={selectedMenuDetail}
         onBack={goBackToPreviousRestaurantLocation}
-        onRecordDishMemory={() =>
+        onRecordDishMemory={() => onStartNativeDining ? onStartNativeDining(selectedMenuDetail.title) :
           navigateToRestaurantLocation({
             selectedMenuDetail,
             selectedView: 'feedback',
@@ -1460,13 +1491,13 @@ export default function RestaurantDetailPage({
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="tb-section-stack p-5 pb-10">
           <RestaurantHeroCard
-            isBookmarked={isBookmarked}
+            isBookmarked={nativeOwner !== undefined ? !!nativeBookmarks.state?.ids.includes(nativeBookmarkSeed.restaurantID) : isBookmarked}
             quickInfo={detail.info}
             restaurant={detail}
             onBookmarkClick={() => setIsBookmarkSheetOpen(true)}
             onVisitedClick={
-              detail.memorableDishes.length > 0 || isKakaoPlaceOnlyDetail
-                ? () =>
+              detail.memorableDishes.length > 0 || isKakaoPlaceOnlyDetail || detail.savedSourceOnly
+                ? () => onStartNativeDining ? onStartNativeDining() :
                   navigateToRestaurantLocation({
                     selectedMenuDetail: null,
                     selectedView: 'feedback',
@@ -1492,6 +1523,7 @@ export default function RestaurantDetailPage({
           <PageSection title="위치 및 정보" titleAs="h2" titleSize="md">
             <div className="flex flex-col items-center gap-2">
               <RestaurantInfoCard info={detail.info} />
+              {detail.savedSourceOnly && !detail.info.address && !detail.info.phone && <p className="text-[13px] text-[var(--tb-color-text-hint)]">위치와 연락처를 아직 확인하지 못했어요.</p>}
               <button
                 className="inline-flex items-center gap-1.5 self-center px-1 py-1 text-[12px] font-semibold text-[var(--tb-user-accent-main)] transition-colors hover:text-[var(--tb-user-accent-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-user-accent-tint-soft-border)]"
                 onClick={() => setIsInfoSuggestionSheetOpen(true)}
@@ -1507,12 +1539,12 @@ export default function RestaurantDetailPage({
         </div>
       </div>
 
-      <RestaurantBookmarkSheet
+      {nativeOwner !== undefined ? (isBookmarkSheetOpen && <NativeBookmarkSheet key={`${nativeOwner}:${nativeBookmarkSeed.restaurantID}`} controller={nativeBookmarks} seed={nativeBookmarkSeed} ensureOnOpen onClose={() => setIsBookmarkSheetOpen(false)}/>) : <RestaurantBookmarkSheet
         open={isBookmarkSheetOpen}
         onOpenChange={setIsBookmarkSheetOpen}
         onSaved={() => setIsBookmarked(true)}
         restaurant={detail}
-      />
+      />}
       <RestaurantInfoSuggestionSheet
         info={detail.info}
         open={isInfoSuggestionSheetOpen}

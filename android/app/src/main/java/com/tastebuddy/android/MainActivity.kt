@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tastebuddy.android.domain.*
+import com.tastebuddy.android.data.BackupResolution
 import com.tastebuddy.android.ui.*
 
 class MainActivity : ComponentActivity() {
@@ -48,6 +49,8 @@ fun TasteBuddyApp(vm: AppViewModel) {
     val view = LocalView.current
     val ready by vm.ready.collectAsStateWithLifecycle()
     val error by vm.loadError.collectAsStateWithLifecycle()
+    val session by vm.backend.sessionState.collectAsStateWithLifecycle()
+    var confirmBackupRecovery by remember { mutableStateOf<String?>(null) }
     val state by vm.state.collectAsStateWithLifecycle()
     val route by vm.route.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
@@ -83,7 +86,9 @@ fun TasteBuddyApp(vm: AppViewModel) {
                     if (error == null) CircularProgressIndicator()
                     else {
                         Text(error!!)
-                        TextButton({ vm.task { vm.repo.load() } }) { Text("다시 불러오기") }
+                        TextButton({ vm.task(requireReady = false) { vm.repo.load() } }) { Text("다시 불러오기") }
+                        if (session?.user?.isAnonymous == false && session?.user?.id?.lowercase() == vm.repo.owner.value)
+                            TextButton({ confirmBackupRecovery = vm.repo.owner.value }) { Text("계정 백업으로 복원") }
                     }
                 }
             route == "linkEmail" -> AuthScreen(vm, linking = true)
@@ -118,6 +123,19 @@ fun TasteBuddyApp(vm: AppViewModel) {
                     else -> MainShell(vm)
                 }
         }
+        val recoveryOwner = confirmBackupRecovery
+        if (recoveryOwner != null) AlertDialog(
+            onDismissRequest = { confirmBackupRecovery = null },
+            title = { Text("계정 백업으로 복원할까요?") },
+            text = { Text("읽지 못한 기기 원문은 복구본으로 보관한 뒤 계정 백업으로 바꿔요. 새 버전의 기록은 앱을 업데이트해야 해요.") },
+            confirmButton = { TextButton({
+                confirmBackupRecovery = null
+                if (vm.repo.owner.value == recoveryOwner && vm.backend.sessionState.value?.user?.id?.lowercase() == recoveryOwner)
+                    vm.synchronize(BackupResolution.ACCOUNT_BACKUP)
+                else vm.message.value = "계정이 바뀌어 복원을 멈췄어요."
+            }) { Text("복원") } },
+            dismissButton = { TextButton({ confirmBackupRecovery = null }) { Text("취소") } },
+        )
         SnackbarHost(
             snackbar,
             Modifier.align(Alignment.BottomCenter)

@@ -1,6 +1,10 @@
-# TasteBloomMotion
+# Plating Motion · iOS
+
+플레이팅의 네이티브 모션 구현은 `TasteBloomMotion`이다. 시스템 이름을 쓰는 `PlatingMotion`과 기존 `TBMotion`은 같은 타입의 별칭이며, `tasteBloomMotion(...)` modifier도 유지한다. 아래 시간과 스프링 동작은 네이밍 정리로 바뀌지 않는다.
 
 Taste Buddy의 모션은 **꽃잎이 피고 지는 부드러움, 끝에서 봉우리가 ‘뽕’ 하고 살짝 맺히는 텐션**을 모티브로 한다. 입력에는 빠르게 반응하고, 목표 위치 근처에서 작은 봉우리를 만들고 부드럽게 안착한다.
+
+이 문서는 iOS 기본 동작 역할과 스프링의 기준이다. **블룸 프레임**과 **소스 스플래터**의 이름·동작·적용 범위 및 현재 Remotion 목록은 [모션 시스템](motion-system.md)에서 관리한다. 두 패턴은 현재 Remotion 구현이며 아래 공통 역할의 네이티브 구현과 구분한다.
 
 ## iOS에서 참고한 원칙
 
@@ -25,7 +29,7 @@ SwiftUI의 `Animation.spring`, UIKit의 `UISpringTimingParameters`, Core Animati
 
 | 역할 | 체감 시간 | 적용 대상 | 움직임 |
 | --- | ---: | --- | --- |
-| `press` | 120ms | 버튼을 누르고 놓기, 짧은 마무리 | 기본 크기에서 0.98배로 눌린 뒤 복귀 |
+| `press` | 120ms | 버튼을 누르고 놓기, 짧은 마무리 | 기존 스타일은 0.98배. 주요 버튼·하단 보조 CTA·선택 카드는 `TBControlFeedback`의 크기 기반 축소와 표면색 적용 |
 | `feedback` | 180ms | 선택 표시, 칩, 탭 강조, 토스트 | 색상·테두리·투명도가 짧게 반응 |
 | `content` | 300ms | 카드 정리, 단계 이동, 기간 교체 | 작은 요소는 8pt 이동과 페이드, 전체 콘텐츠는 페이드 |
 | `sheet` | 500ms | 질문 펼침, 그래프 등장, 커스텀 시트, 뒤 배경, 미각 지도 초점 | 앞뒤 레이어가 함께 움직이고 안착 |
@@ -99,3 +103,9 @@ if isExpanded {
 `TasteBloomMotion.swift`의 SwiftUI Preview에서 캡슐 이동, 선택, 북마크 아이콘 교체, 펼침과 화살표 회전을 확인할 수 있다. 동작 줄이기는 시뮬레이터나 기기의 접근성 설정으로 확인한다. `TasteBloomMotionTests`는 정지 상태에서 출발하는 스프링의 작은 봉우리와 안착, 정확한 끝 위치, 역할별 시간, 동작 줄이기, 네이티브 스프링과 Canvas의 일치, UIKit 완료를 검사한다.
 
 화면에서 확인할 순서는 질문 펼침·답변 → 식사 기록 단계 → 버블 초점 이동과 중간 재입력 → 결과/블룸 닫힘 → 시트 드래그 → 동작 줄이기다. 빌드·단위 테스트와 실제 기기에서 느끼는 속도 검증은 구분한다.
+
+### 공통 컨트롤의 표면 피드백 (2026-10-01)
+
+`PrimaryButton`, `TBFlowBottomCTA`의 보조 버튼, `TBSelectionCard`는 `TBTokenButtonStyle(feedback: .surface)`를 선택한다. `TBControlFeedback.response`는 `max(height, width/4, 24)`를 기준으로 1pt 축소하며 가로 감소량은 최대 4pt다. 누름 표면은 어두운 primary에 흰색 10%, 중립·미각 tint에 검정 6%를 사용한다. 글자·선택 표시·경계는 덮지 않는다. 동작 줄이기에서는 축소·전환 없이 표면색만 바꾸고 실제 비활성에서는 표면색도 바꾸지 않는다. 기존 무인자 버튼 스타일의 다른 사용처는 유지한다.
+
+`--native-design-states-preview`에는 공통 컨트롤과 실행 횟수, 누름 전용 동작 줄이기 토글이 있다. 이 토글은 새 컨트롤의 QA 환경값만 바꾸며 시스템 접근성 설정 전체를 바꾸지 않는다.

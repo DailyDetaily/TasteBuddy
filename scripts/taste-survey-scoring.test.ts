@@ -233,7 +233,9 @@ const fatItem = TASTE_SURVEY_ITEMS.find((item) => item.tasteId === 'fat')!;
 
   assert.equal(mergedSeafood.seafood, 0.8);
   assert.equal(mergedVegetable.vegetable_herb, 0.7);
-  assert.equal(mergedGrilled.grilled_smoked, 0.85);
+  assert.equal(mergedGrilled.grilled, 0.85);
+  assert.equal(mergedGrilled.smoked, 0.72);
+  assert.equal(mergedGrilled.grilled_smoked, undefined);
 }
 
 {
@@ -564,7 +566,7 @@ const fatItem = TASTE_SURVEY_ITEMS.find((item) => item.tasteId === 'fat')!;
   assert.ok(foodOnAwareSnapshot.lexiconCandidateIds.includes('mushroom-earthy-umami'));
   assert.ok(foodKnowledgeAwareSnapshot.foodKnowledgeMatchIds.includes('tba-food:native:91511'));
   assert.ok(foodKnowledgeAwareSnapshot.tbaSignalIds.includes('ingredient:pork'));
-  assert.ok(foodKnowledgeAwareSnapshot.tbaSignalIds.includes('dish-kind:grilled_smoked'));
+  assert.ok(foodKnowledgeAwareSnapshot.tbaSignalIds.includes('dish-kind:grilled'));
   assert.ok(foodKnowledgeAwareSnapshot.lexiconCandidateIds.includes('pork-savory-fat'));
   assert.ok(backRibNote.detailTags.some((tag) => tag.label === '마무리가 무거움'));
   assert.equal(backRibNote.summary.includes('balance-finish-heavy'), false);

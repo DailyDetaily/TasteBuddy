@@ -1,9 +1,9 @@
+import RecordActions from "../system/plating/RecordActions";
+import NativeBookmarkSheet from '../restaurant/NativeBookmarkSheet';
+import {useNativeBookmarks} from '../../lib/gastronomy/useNativeBookmarks';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import {
-  Bookmark,
   ChefHat,
-  CircleCheck,
-  CirclePlus,
   Clock,
   Search,
   Sparkles,
@@ -35,8 +35,11 @@ import RestaurantBookmarkSheet, {
 import type { DiningFriendProfile } from '../../lib/supabase';
 import {
   createRestaurantDetailFromSearchResult,
+  nativeBookmarkSeedForRestaurant,
   getRestaurantInfo,
 } from '../../pages/RestaurantDetailPage';
+
+const isPersonalMemoryQuery = (query: string) => /내가|내 기록|내 입맛|먹었던|먹었|좋았|좋아했던|싫었던|기록한|기록했|남겼|회고|그때|예전과|요즘/.test(query);
 
 const HOME_RECENT_SEARCH_STORAGE_KEY = 'tastebuddy-home-recent-searches-v1';
 const HOME_KAKAO_SEARCH_CACHE_STORAGE_KEY = 'tastebuddy-home-kakao-search-cache-v1';
@@ -50,9 +53,6 @@ const SEARCH_BAR_ICON_BUTTON_CLASS_NAME =
   'flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[#303946] transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
 const APP_LUCIDE_ICON_SIZE_M = ICON_TOKENS.size.md;
 const SEARCH_BAR_ICON_SIZE = ICON_TOKENS.size.md;
-const SEARCH_RESULT_ACTION_BUTTON_SIZE = ICON_TOKENS.container.lg;
-const SEARCH_RESULT_ACTION_ICON_SIZE = ICON_TOKENS.size.lg;
-const SEARCH_RESULT_ACTIVE_RECORD_ICON_SIZE = 24;
 const SEARCH_FOCUS_CARD_CLASS_NAME =
   'rounded-[24px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)] p-4';
 const SEARCH_SECTION_TITLE_CLASS_NAME =
@@ -139,6 +139,7 @@ type SearchGroups = {
 };
 
 interface HomeUnifiedSearchProps {
+  nativeOwner?: string;
   catalog: RestaurantContentCatalog;
   closeTrigger?: number;
   onAddFriend?: (friend: DiningFriendProfile) => Promise<{ ok: boolean; message: string }>;
@@ -705,7 +706,7 @@ function buildSuggestedQueries(
   return Array.from(new Map(candidates.map((candidate) => [candidate.label, candidate])).values()).slice(0, 6);
 }
 
-function buildKakaoSearchResult(place: Awaited<ReturnType<typeof searchKakaoRestaurantPlaces>>[number]) {
+function buildKakaoSearchResult(place: Awaited<ReturnType<typeof searchKakaoRestaurantPlaces>>[number]): HomeSearchResult | null {
   const name = place.name?.trim();
 
   if (!name) {
@@ -930,6 +931,7 @@ function SearchFocusCard({ result }: { result: HomeSearchResult }) {
 }
 
 function SearchSection({
+  nativeBookmarkIDs,
   bookmarkedRestaurantKeys,
   onBookmarkToggle,
   onRecordToggle,
@@ -939,6 +941,7 @@ function SearchSection({
   selectedResultId,
   onSelect,
 }: {
+  nativeBookmarkIDs?: string[];
   bookmarkedRestaurantKeys: string[];
   onBookmarkToggle: (result: HomeSearchResult) => void;
   onRecordToggle: (result: HomeSearchResult) => void;
@@ -961,11 +964,9 @@ function SearchSection({
           const isSelected = selectedResultId === result.id;
           const isRecorded = recordedResultIds.includes(result.id);
           const restaurantKey = getRestaurantBookmarkKey(result.restaurant);
-          const isBookmarked =
-            bookmarkedRestaurantKeys.includes(restaurantKey) ||
-            isRestaurantBookmarked(result.restaurant);
-          const RecordIcon = isRecorded ? CircleCheck : CirclePlus;
-          const BookmarkIcon = Bookmark;
+          const isBookmarked = nativeBookmarkIDs !== undefined
+            ? nativeBookmarkIDs.includes(nativeBookmarkSeedForRestaurant(createRestaurantDetailFromSearchResult(result)).restaurantID)
+            : bookmarkedRestaurantKeys.includes(restaurantKey) || isRestaurantBookmarked(result.restaurant);
 
           return (
             <li
@@ -978,6 +979,7 @@ function SearchSection({
                 tabIndex={0}
                 onClick={() => onSelect(result)}
                 onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
                     onSelect(result);
@@ -1004,57 +1006,13 @@ function SearchSection({
                 headingClassName="font-semibold"
                 metadataClassName="font-normal"
                 actions={
-                  <div className="flex items-center justify-end gap-0">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onRecordToggle(result);
-                        }}
-                        aria-label="내 기록에 추가"
-                        title="내 기록에 추가"
-                        className={cn(
-                          'flex items-center justify-center rounded-full transition-colors',
-                          isRecorded
-                            ? 'text-[var(--tb-color-text-secondary)] [&>svg>circle]:fill-current [&>svg>path]:stroke-white'
-                            : 'text-[var(--tb-color-icon-muted)] hover:text-[var(--tb-color-text-primary)]',
-                        )}
-                        style={{
-                          width: SEARCH_RESULT_ACTION_BUTTON_SIZE,
-                          height: SEARCH_RESULT_ACTION_BUTTON_SIZE,
-                        }}
-                      >
-                        <RecordIcon
-                          strokeWidth={1.8}
-                          size={
-                            isRecorded
-                              ? SEARCH_RESULT_ACTIVE_RECORD_ICON_SIZE
-                              : SEARCH_RESULT_ACTION_ICON_SIZE
-                          }
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onBookmarkToggle(result);
-                        }}
-                        aria-label="나중에 갈 레스토랑에 추가"
-                        title="나중에 갈 레스토랑에 추가"
-                        className={cn(
-                          'flex items-center justify-center rounded-full transition-colors',
-                          isBookmarked
-                            ? 'text-[var(--tb-color-text-secondary)] [&>svg]:fill-current'
-                            : 'text-[var(--tb-color-icon-muted)] hover:text-[var(--tb-color-text-primary)]',
-                        )}
-                        style={{
-                          width: SEARCH_RESULT_ACTION_BUTTON_SIZE,
-                          height: SEARCH_RESULT_ACTION_BUTTON_SIZE,
-                        }}
-                      >
-                        <BookmarkIcon size={SEARCH_RESULT_ACTION_ICON_SIZE} strokeWidth={1.8} />
-                      </button>
-                  </div>
+                  <RecordActions
+                    isRecorded={isRecorded}
+                    isBookmarked={isBookmarked}
+                    activeColor="var(--tb-color-text-secondary)"
+                    onRecord={event => { event.stopPropagation(); onRecordToggle(result); }}
+                    onBookmark={event => { event.stopPropagation(); onBookmarkToggle(result); }}
+                  />
                 }
               />
             </li>
@@ -1116,7 +1074,23 @@ function FriendSearchSection({
   );
 }
 
+export function HomeSearchTrigger({ onOpen }: { onOpen: () => void }) {
+  return (
+    <div className="flex w-full items-center gap-2">
+      <button type="button" onClick={onOpen} aria-label="통합 검색 열기" className={SEARCH_BAR_FIELD_CLASS_NAME}>
+        <span className="truncate text-[13px] font-medium text-[var(--tb-color-text-muted)]">
+          레스토랑, 메뉴, 셰프, 버디 검색
+        </span>
+      </button>
+      <button type="button" onClick={onOpen} aria-label="통합 검색" className={SEARCH_BAR_ICON_BUTTON_CLASS_NAME}>
+        <Search size={SEARCH_BAR_ICON_SIZE} />
+      </button>
+    </div>
+  );
+}
+
 export default function HomeUnifiedSearch({
+  nativeOwner,
   catalog,
   closeTrigger,
   onAddFriend,
@@ -1129,6 +1103,7 @@ export default function HomeUnifiedSearch({
   reservations,
   showTrigger = true,
 }: HomeUnifiedSearchProps) {
+  const nativeBookmarks = useNativeBookmarks(nativeOwner ?? 'guest', nativeOwner !== undefined);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastCloseTriggerRef = useRef(closeTrigger);
   const lastOpenTriggerRef = useRef(openTrigger);
@@ -1151,6 +1126,7 @@ export default function HomeUnifiedSearch({
   const [, setBookmarkSyncIndex] = useState(0);
   const kakaoSearchCacheRef = useRef<Record<string, HomeSearchResult[]>>(loadKakaoSearchCache());
 
+  const isPersonalQuery = isPersonalMemoryQuery(query);
   const kakaoSearchCacheKey = getKakaoSearchCacheKey(query);
   const cachedKakaoResults = kakaoSearchCacheKey
     ? kakaoSearchCacheRef.current[kakaoSearchCacheKey] ?? []
@@ -1163,12 +1139,13 @@ export default function HomeUnifiedSearch({
   const chefResults = buildChefResults(catalog, reservations);
   const menuResults = buildMenuResults(catalog, reservations);
   const suggestions = buildSuggestedQueries(restaurantResults, chefResults, menuResults);
-  const filteredRestaurants = query.trim() ? filterResults(restaurantResults, query) : [];
-  const filteredChefs = query.trim() ? filterResults(chefResults, query) : [];
-  const filteredMenus = query.trim() ? filterResults(menuResults, query) : [];
+  const filteredRestaurants = !isPersonalQuery && query.trim() ? filterResults(restaurantResults, query) : [];
+  const filteredChefs = !isPersonalQuery && query.trim() ? filterResults(chefResults, query) : [];
+  const filteredMenus = !isPersonalQuery && query.trim() ? filterResults(menuResults, query) : [];
   const hasRestaurantResultsNeedingKakaoAddress =
     filteredRestaurants.some(needsKakaoAddressEnhancement);
   const shouldSearchKakao =
+    isOpen && !isPersonalQuery &&
     Boolean(query.trim()) &&
     hasSearchableCompleteCharacter(normalizeSearchValue(query)) &&
     (
@@ -1204,7 +1181,7 @@ export default function HomeUnifiedSearch({
 
   const updateRecentSearches = (value: string) => {
     const nextValue = value.trim();
-    if (!nextValue) {
+    if (!nextValue || isPersonalMemoryQuery(nextValue)) {
       return;
     }
 
@@ -1324,7 +1301,7 @@ export default function HomeUnifiedSearch({
   useEffect(() => {
     const nextQuery = query.trim();
 
-    if (!onSearchFriends || !isSearchableProfileIdentityQuery(nextQuery)) {
+    if (!isOpen || isPersonalQuery || !onSearchFriends || !isSearchableProfileIdentityQuery(nextQuery)) {
       setFriendResults([]);
       setFriendSearchMessage(null);
       setIsFriendSearching(false);
@@ -1352,7 +1329,7 @@ export default function HomeUnifiedSearch({
       isCancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [query]);
+  }, [query, isOpen, isPersonalQuery]);
 
   const handleSuggestionSelect = (value: string) => {
     setQuery(value);
@@ -1443,7 +1420,7 @@ export default function HomeUnifiedSearch({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextQuery = query.trim();
-    if (!nextQuery) {
+    if (!nextQuery || isPersonalQuery) {
       return;
     }
 
@@ -1531,28 +1508,7 @@ export default function HomeUnifiedSearch({
 
   return (
     <>
-      {showTrigger ? (
-        <div className="flex w-full items-center gap-2">
-          <button
-            type="button"
-            onClick={handleOpen}
-            aria-label="통합 검색 열기"
-            className={SEARCH_BAR_FIELD_CLASS_NAME}
-          >
-            <span className="truncate text-[13px] font-medium text-[var(--tb-color-text-muted)]">
-              레스토랑, 메뉴, 셰프, 버디 검색
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={handleOpen}
-            aria-label="통합 검색"
-            className={SEARCH_BAR_ICON_BUTTON_CLASS_NAME}
-          >
-            <Search size={SEARCH_BAR_ICON_SIZE} />
-          </button>
-        </div>
-      ) : null}
+      {showTrigger ? <HomeSearchTrigger onOpen={handleOpen} /> : null}
 
       {isOpen ? (
         <SearchOverlayShell
@@ -1567,6 +1523,7 @@ export default function HomeUnifiedSearch({
           query={query}
         >
                 <div className="tb-section-stack">
+                  {isPersonalQuery && <p role="status" className="rounded-[20px] bg-white p-4 text-[13px] leading-6">개인 경험을 찾는 문장이에요. 홈 아카이브의 ‘내 기록 검색’에서 찾아 주세요. 외부로 전송하지 않았어요.</p>}
                   {selectedResult ? <SearchFocusCard result={selectedResult} /> : null}
 
                   {!query.trim() ? (
@@ -1635,6 +1592,7 @@ export default function HomeUnifiedSearch({
                       {searchGroups.restaurants.length > 0 ? (
                         <SearchSection
                           bookmarkedRestaurantKeys={bookmarkedRestaurantKeys}
+                          nativeBookmarkIDs={nativeOwner !== undefined ? nativeBookmarks.state?.ids ?? [] : undefined}
                           onBookmarkToggle={toggleBookmarkedResult}
                           onRecordToggle={handleRecordResult}
                           recordedResultIds={recordedResultIds}
@@ -1648,6 +1606,7 @@ export default function HomeUnifiedSearch({
                       {searchGroups.chefs.length > 0 ? (
                         <SearchSection
                           bookmarkedRestaurantKeys={bookmarkedRestaurantKeys}
+                          nativeBookmarkIDs={nativeOwner !== undefined ? nativeBookmarks.state?.ids ?? [] : undefined}
                           onBookmarkToggle={toggleBookmarkedResult}
                           onRecordToggle={handleRecordResult}
                           recordedResultIds={recordedResultIds}
@@ -1676,6 +1635,7 @@ export default function HomeUnifiedSearch({
                       {searchGroups.menus.length > 0 ? (
                         <SearchSection
                           bookmarkedRestaurantKeys={bookmarkedRestaurantKeys}
+                          nativeBookmarkIDs={nativeOwner !== undefined ? nativeBookmarks.state?.ids ?? [] : undefined}
                           onBookmarkToggle={toggleBookmarkedResult}
                           onRecordToggle={handleRecordResult}
                           recordedResultIds={recordedResultIds}
@@ -1731,7 +1691,7 @@ export default function HomeUnifiedSearch({
         </SearchOverlayShell>
       ) : null
       }
-      {bookmarkSheetTargetResult ? (
+      {nativeOwner !== undefined ? (bookmarkSheetResult && <NativeBookmarkSheet key={`${nativeOwner}:${bookmarkSheetResult.id}`} controller={nativeBookmarks} seed={nativeBookmarkSeedForRestaurant(createRestaurantDetailFromSearchResult(bookmarkSheetResult))} ensureOnOpen onClose={() => setBookmarkSheetResult(null)}/>) : bookmarkSheetTargetResult ? (
         <RestaurantBookmarkSheet
           open={bookmarkSheetResult !== null}
           onOpenChange={(open) => {

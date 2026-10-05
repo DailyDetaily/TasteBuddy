@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.tastebuddy.android.BuildConfig
 import com.tastebuddy.android.data.BackendClient
+import com.tastebuddy.android.data.BackupResolution
 import com.tastebuddy.android.domain.*
 import java.time.LocalDate
 import kotlinx.serialization.json.*
@@ -90,6 +91,8 @@ fun Avatar(vm: AppViewModel, modifier: Modifier = Modifier) {
 fun SettingsScreen(vm: AppViewModel) {
     val state by vm.state.collectAsState()
     val session by vm.backend.sessionState.collectAsState()
+    val backupMessage by vm.backupMessage.collectAsState()
+    val backupConflict by vm.backupConflict.collectAsState()
     var confirm by remember { mutableStateOf<String?>(null) }
     Screen("프로필 설정", vm::back) { padding ->
         Page(Modifier.padding(padding)) {
@@ -106,7 +109,16 @@ fun SettingsScreen(vm: AppViewModel) {
                         fontWeight = FontWeight.SemiBold,
                     )
                     NavigationRow("현재 계정을 이메일에 연결") { vm.open("linkEmail") }
-                    Text("식사 기록과 사진은 현재 기기에 저장돼요.", color = TB.body)
+                    Text("기록은 계정별로 이 기기에 보관돼요. 변경 후와 로그인·앱 시작 시 Android 백업을 확인해요.", color = TB.body)
+                    if (session?.user?.isAnonymous == false) {
+                        Text(backupMessage, color = TB.body)
+                        NavigationRow("Android 기록 백업·복원", "다른 Android 기기에서 이어가기") { vm.synchronize() }
+                        if (backupConflict) {
+                            NavigationRow("이 기기 기록으로 백업", "기존 계정 백업은 이 기기에 복구본으로 보관") { confirm = "backupLocal" }
+                            NavigationRow("계정 백업으로 복원", "현재 기기 기록은 복구본으로 보관") { confirm = "backupRemote" }
+                        }
+                        Text("iOS·웹의 기록과 분석은 Android 기록에 합쳐지지 않아요.", color = TB.hint)
+                    }
                 }
             }
             CardBox {
@@ -124,19 +136,33 @@ fun SettingsScreen(vm: AppViewModel) {
     confirm?.let { action ->
         AlertDialog(
             onDismissRequest = { confirm = null },
-            title = { Text(if (action == "delete") "계정을 삭제할까요?" else "로그아웃할까요?") },
+            title = { Text(when(action) {
+                "delete" -> "계정을 삭제할까요?"
+                "backupLocal" -> "이 기기 기록으로 백업할까요?"
+                "backupRemote" -> "계정 백업으로 복원할까요?"
+                else -> "로그아웃할까요?"
+            }) },
             text = {
                 Text(
-                    if (action == "delete") "계정과 이 기기에 저장한 기록·사진이 삭제되며 되돌릴 수 없어요."
-                    else "이 기기에 저장한 기록·사진이 삭제돼요. 필요한 기록 카드를 먼저 저장해 주세요."
+                    when(action) {
+                        "delete" -> "계정과 현재 계정의 기록이 삭제돼요. 다른 계정과 게스트 기록은 보존돼요."
+                        "backupLocal" -> "다른 Android 기기에서 마지막으로 백업한 기록을 이 기기 기록으로 바꿔요. 이전 백업은 이 기기에 복구본으로 보관돼요."
+                        "backupRemote" -> "현재 화면의 Android 기록을 계정 백업으로 바꿔요. 현재 기기 기록은 복구본으로 보관돼요."
+                        else -> "이 계정의 기록·사진은 기기에 보관돼요. 같은 계정으로 로그인하면 이어갈 수 있어요."
+                    }
                 )
             },
             confirmButton = {
                 TextButton({
                     confirm = null
-                    if (action == "delete") vm.deleteAccount() else vm.signOut()
+                    when(action) {
+                        "delete" -> vm.deleteAccount()
+                        "backupLocal" -> vm.synchronize(BackupResolution.THIS_DEVICE)
+                        "backupRemote" -> vm.synchronize(BackupResolution.ACCOUNT_BACKUP)
+                        else -> vm.signOut()
+                    }
                 }) {
-                    Text(if (action == "delete") "계정 삭제" else "로그아웃")
+                    Text(when(action) { "delete" -> "계정 삭제"; "backupLocal" -> "백업"; "backupRemote" -> "복원"; else -> "로그아웃" })
                 }
             },
             dismissButton = { TextButton({ confirm = null }) { Text("취소") } },

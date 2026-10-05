@@ -66,3 +66,4 @@ for (const transportTest of ['taste-survey-storage', 'atomic-feedback-client']) 
 }
 await import(pathToFileURL(path.resolve('scripts/taste-perception.test.mjs')).href);
 await import(pathToFileURL(path.resolve('scripts/test-native-account-data.mjs')).href);
+await import(pathToFileURL(path.resolve('scripts/native-account-envelope.test.mjs')).href);

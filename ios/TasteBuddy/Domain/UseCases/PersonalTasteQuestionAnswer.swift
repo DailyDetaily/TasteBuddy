@@ -86,11 +86,13 @@ enum PersonalTasteInlineAnswer {
             return item.id == source.selectionID && item.type.rawValue == source.type
                 && item.catalogVersion == source.catalogVersion && item.labelSnapshot == source.labelSnapshot
                 && item.relatedBubbleID == source.relatedBubbleID && item.unparsedPayload == nil
+                && (source.selectionInstanceID == nil || item.selectionInstanceID == source.selectionInstanceID)
         }
         guard matches.count == 1, let index = matches.first else { return nil }
         func related(_ evidence: SensorySelectionEvidence?) -> Bool {
             evidence?.selectionID == source.selectionID && evidence?.type == source.type
                 && evidence?.catalogVersion == source.catalogVersion && evidence?.relatedBubbleID == source.relatedBubbleID
+                && (source.selectionInstanceID == nil || evidence?.selectionInstanceID == source.selectionInstanceID)
         }
         let parsed = DiningSensorySelectionParser.parse(selections, catalog: catalog)
         guard !parsed.unresolved.contains(where: { related($0.selectionEvidence) }),
@@ -124,10 +126,12 @@ enum PersonalTasteInlineAnswer {
             observedAt: entry.observedAt, savedAt: entry.savedAt, updatedAt: entry.updatedAt,
             rating: entry.rating, note: entry.note, tasteExperienceIDs: entry.tasteExperienceIDs,
             detailTagIDs: entry.detailTagIDs, sensorySelections: selections,
+            sensoryPresentation: entry.sensoryPresentation,
             overallEvaluation: entry.overallEvaluation, dishKindIDs: entry.dishKindIDs,
             reflectionPhotoFilename: entry.reflectionPhotoFilename,
+            additionalPhotoFilenames: entry.additionalPhotoFilenames,
             tbaAnalysisSnapshot: entry.tbaAnalysisSnapshot, feedbackStatus: entry.feedbackStatus,
-            photoPalette: entry.photoPalette, mealTime: entry.mealTime,
+            photoPalette: entry.photoPalette, mealTime: entry.mealTime, foodSource: entry.foodSource,
             memoryRevision: entry.memoryRevision, memoryCorrections: entry.memoryCorrections
         )
     }

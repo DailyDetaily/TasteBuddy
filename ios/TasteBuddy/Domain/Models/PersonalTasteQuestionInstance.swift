@@ -4,8 +4,10 @@ import Foundation
 extension PersonalTasteModelBuilder {
     static func questionSourceKey(_ source: PersonalTasteModelRecord) -> String {
         if let selected = source.selectionEvidence {
-            return json([source.experienceId, selected.type, selected.selectionID,
-                         selected.catalogVersion, selected.labelSnapshot, nullable(selected.relatedBubbleID)])
+            var parts: [Any] = [source.experienceId, selected.type, selected.selectionID,
+                                selected.catalogVersion, selected.labelSnapshot, nullable(selected.relatedBubbleID)]
+            if let instance = selected.selectionInstanceID { parts.append(instance) }
+            return json(parts)
         }
         // 원문은 위치와 인용을 함께 고정한다. 문장 위치가 바뀌면 다른 문장에 재연결하지 않는다.
         return json([source.experienceId, source.phrase, canonical(source.sourceSpans)])

@@ -14,12 +14,6 @@ function hexPoint(cx: number, cy: number, r: number, i: number): [number, number
   return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
 }
 
-function hexPolygon(cx: number, cy: number, r: number): string {
-  return Array.from({ length: 6 }, (_, i) => hexPoint(cx, cy, r, i))
-    .map(([x, y]) => `${x},${y}`)
-    .join(' ');
-}
-
 function hexagramPolygon(
   outerRadius: number,
   startAngleDeg: number,
@@ -483,7 +477,7 @@ function LegacyHexRadarChart({
   const cy = 145;
   const maxR = 100;
   const gridLevels = [0.25, 0.5, 0.75, 1];
-  const gridStrokeColor = mixHexColors(RADAR_CHART.gridColor, '#FFFFFF', 0.45);
+  const gridStrokeColor = mixHexColors(RADAR_CHART.gridColor, '#FFFFFF', 0.7);
   const profileAnimationDurationMs = (60 / 60) * 1000;
   const centerMaskRadius = 18 * (25 / 27);
   const centerHexagramMask = hexagramPolygon(centerMaskRadius, -90);
@@ -607,10 +601,14 @@ function LegacyHexRadarChart({
   }));
 
   // 대각선 (0-3, 1-4, 2-5)
+  // 둥근 정육각형 모서리의 중점까지 방사형 가이드를 줄인다.
+  const guidePoints = Array.from({ length: 6 }, (_, i) =>
+    hexPoint(cx, cy, maxR - NODE_RADIUS / 4, i),
+  );
   const diagonals = [
-    [vertices[0], vertices[3]],
-    [vertices[1], vertices[4]],
-    [vertices[2], vertices[5]],
+    [guidePoints[0], guidePoints[3]],
+    [guidePoints[1], guidePoints[4]],
+    [guidePoints[2], guidePoints[5]],
   ];
 
   return (
@@ -647,9 +645,12 @@ function LegacyHexRadarChart({
 
       {/* 배경 6각형 그리드 */}
       {gridLevels.map((level, idx) => (
-        <polygon
+        <path
           key={idx}
-          points={hexPolygon(cx, cy, maxR * level)}
+          d={buildRoundedClosedPath(
+            Array.from({ length: 6 }, (_, i) => hexPoint(cx, cy, maxR * level, i)),
+            NODE_RADIUS,
+          )}
           fill="none"
           stroke={gridStrokeColor}
           strokeWidth="1"
@@ -660,10 +661,10 @@ function LegacyHexRadarChart({
       {diagonals.map(([a, b], idx) => (
         <line
           key={idx}
-          x1={a.point[0]}
-          y1={a.point[1]}
-          x2={b.point[0]}
-          y2={b.point[1]}
+          x1={a[0]}
+          y1={a[1]}
+          x2={b[0]}
+          y2={b[1]}
           stroke={gridStrokeColor}
           strokeWidth="1"
         />

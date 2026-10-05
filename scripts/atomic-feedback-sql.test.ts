@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 import { parseFeedbackSelections } from '../src/lib/tastePersonalization';
 import { DEFAULT_FEEDBACK_TAG_DEFINITIONS } from '../src/constants/tastePersonalization';
 import { createTestSupabaseDb } from './utils/test-supabase-db.mjs';
 
-const db = await createTestSupabaseDb({ through: '20260903091000' });
+const db = await createTestSupabaseDb({ through: '99999999999999' });
 const owner = 'aaaaaaaa-1111-4111-8111-111111111111';
 const other = 'aaaaaaaa-2222-4222-8222-222222222222';
 const visit = 'bbbbbbbb-1111-4111-8111-111111111111';
@@ -65,7 +64,6 @@ async function currentVersion() {
 }
 
 try {
-  await db.exec(await readFile('supabase/migrations/20260908110000_atomic_feedback.sql', 'utf8'));
   await db.query("insert into auth.users(id,email) values ($1,'atomic@example.com'),($2,'other@example.com')", [owner, other]);
   const restaurant = 'cccccccc-1111-4111-8111-111111111111';
   await db.query("insert into public.restaurants(id,name,slug) values ($1,'Atomic fixture','atomic-fixture')", [restaurant]);

@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "platform": "iOS · SwiftUI",
+  "deviceID": "B25AEC3A-FDA5-4DAE-A549-23061D6E2EB9",
+  "sourceHashes": {
+    "ios/TasteBuddy/Features/DesignSystem/LayoutDocumentationPreview.swift": "51672a1eafa67f62f7cf18a4f3a5720b8c387aa9e2c89e44e42ab9363240277d",
+    "ios/TasteBuddy/App/TasteBuddyApp.swift": "9c5eed69218c4cbca2ec3b681279e71147be5e0273c17920a3fa891af6b8729f",
+    "ios/TasteBuddy/App/AppModel.swift": "8eed2d1208a7c3d37a9546cbb004b2e42938c8c1e21541175730d388ca5c462e",
+    "ios/TasteBuddy/Components/Shell/AppShellView.swift": "0a7867145799d00565eee16cb8122029d0070ae8345fb2a18ec44d969966af73",
+    "ios/TasteBuddy/Components/Shell/AppChromeComponents.swift": "ff288e36e2f8711fa151ad1debf0911f11cef89186defdbbb3dc20b0cf21346c",
+    "ios/TasteBuddy/Components/SystemCoreComponents.swift": "28b451a9775012d16ad61c7fb865e7bed6877a6d4a70ed0ab681b1e445447627",
+    "ios/TasteBuddy/Components/SystemParityComponents.swift": "7865d4d64eee67a0e4d1bb754c11beab6a5dc1c39a65071a75f352eb93874e87",
+    "ios/TasteBuddy/Components/NativeInputComponents.swift": "497cca01d8c73f2eed20e4a4df853841f0abdb8d8a774546f47978c65fb67126",
+    "ios/TasteBuddy/Features/Home/HomeView.swift": "f7bd300fd0eb125b71c603cf1a2f69d60834988b6b393f4154ff74d145541f30",
+    "ios/TasteBuddy/Features/Home/HomePeriodInsightComponents.swift": "a8a61c329f2c9ad65a35c676788d4379998b70985ba7a4f2f99d5156b24a6d64",
+    "ios/TasteBuddy/Features/Home/HomeSummaryComponents.swift": "9843a7ac80664db8f006ad17b69c196603c71c4a8e8258ae56ca1fb49eabd081",
+    "ios/TasteBuddy/Features/Dining/DiningView.swift": "cb7431c105c3c762cfab3dac7aac648e47fb5bee4ceade22b51b7efaf8ddb426",
+    "ios/TasteBuddy/Features/Auth/AuthEntryView.swift": "5d98d6bccbb513b6dd31dd2f71352383874f9f4caf575a152855b0fa963faa0c"
+  },
+  "captures": [
+    {
+      "dynamicType": "large",
+      "frames": {
+        "bottom-tab": {
+          "height": 60,
+          "width": 402,
+          "x": 0,
+          "y": 780
+        },
+        "content": {
+          "height": 901.6666666666665,
+          "width": 362,
+          "x": 20,
+          "y": 170
+        },
+        "home-card": {
+          "height": 132,
+          "width": 132,
+          "x": 20,
+          "y": 203.33333333333331
+        },
+        "home-card-content": {
+          "height": 108,
+          "width": 108,
+          "x": 32,
+          "y": 215.33333333333331
+        },
+        "home-section": {
+          "height": 449.66666666666663,
+          "width": 362,
+          "x": 20,
+          "y": 477.66666666666663
+        },
+        "top-bar": {
+          "height": 48,
+          "width": 402,
+          "x": 0,
+          "y": 54
+        }
+      },
+      "height": 874,
+      "id": "home-large",
+      "keyboardVisible": false,
+      "safeArea": {
+        "bottom": 34,
+        "left": 0,
+        "right": 0,
+        "top": 62
+      },
+      "schemaVersion": 1,
+      "screen": "home",
+      "source": "ios/TasteBuddy/Components/Shell/AppShellView.swift → HomeView",
+      "status": "ready",
+      "width": 402,
+      "file": "home-large.png",
+      "pixelWidth": 1206,
+      "pixelHeight": 2622,
+      "scale": 3,
+      "capturedAt": "2026-10-02T12:51:19.187Z",
+      "sha256": "b712f98cd66a4f51108526b36a2d44487d152036e687468e169c187846df77e9"
+    },
+    {
+      "dynamicType": "accessibility2",
+      "frames": {
+        "bottom-tab": {
+          "height": 60,
+          "width": 402,
+          "x": 0,
+          "y": 780
+        },
+        "content": {
+          "height": 1311.6666666666665,
+          "width": 362,
+          "x": 20,
+          "y": 170
+        },
+        "home-card": {
+          "height": 131.99999999999997,
+          "width": 132,
+          "x": 20,
+          "y": 218.66666666666666
+        },
+        "home-card-content": {
+          "height": 107.99999999999997,
+          "width": 108,
+          "x": 32,
+          "y": 230.66666666666666
+        },
+        "home-section": {
+          "height": 684.9999999999999,
+          "width": 362,
+          "x": 20,
+          "y": 564.6666666666666
+        },
+        "top-bar": {
+          "height": 48,
+          "width": 402,
+          "x": 0,
+          "y": 54
+        }
+      },
+      "height": 874,
+      "id": "home-accessibility2",
+      "keyboardVisible": false,
+      "safeArea": {
+        "bottom": 34,
+        "left": 0,
+        "right": 0,
+        "top": 62
+      },
+      "schemaVersion": 1,
+      "screen": "home",
+      "source": "ios/TasteBuddy/Components/Shell/AppShellView.swift → HomeView",
+      "status": "ready",
+      "width": 402,
+      "file": "home-accessibility2.png",
+      "pixelWidth": 1206,
+      "pixelHeight": 2622,
+      "scale": 3,
+      "capturedAt": "2026-10-02T12:51:38.203Z",
+      "sha256": "c6d61ac66de6f4b794ad42722a600d215a8142c86937bcdc6c7e38e6e0f3b1d4"
+    },
+    {
+      "dynamicType": "large",
+      "frames": {
+        "dining-content": {
+          "height": 838.3333333333333,
+          "width": 362,
+          "x": 20,
+          "y": 102
+        },
+        "dining-footer": {
+          "height": 140,
+          "width": 402,
+          "x": 0,
+          "y": 700
+        },
+        "dining-header": {
+          "height": 32,
+          "width": 402,
+          "x": 0,
+          "y": 62
+        }
+      },
+      "height": 874,
+      "id": "dining-large",
+      "keyboardVisible": false,
+      "safeArea": {
+        "bottom": 34,
+        "left": 0,
+        "right": 0,
+        "top": 62
+      },
+      "schemaVersion": 1,
+      "screen": "dining",
+      "source": "ios/TasteBuddy/Features/Dining/DiningView.swift → DiningFeedbackSheet.menu",
+      "status": "ready",
+      "width": 402,
+      "file": "dining-large.png",
+      "pixelWidth": 1206,
+      "pixelHeight": 2622,
+      "scale": 3,
+      "capturedAt": "2026-10-02T12:52:49.293Z",
+      "sha256": "3d145efeadc3788daa17b39cdf7ae68eb35113d2fd8a19062696e53bf9532f90"
+    },
+    {
+      "dynamicType": "accessibility2",
+      "frames": {
+        "dining-content": {
+          "height": 1484.6666666666665,
+          "width": 362,
+          "x": 20,
+          "y": 102
+        },
+        "dining-footer": {
+          "height": 140,
+          "width": 402,
+          "x": 0,
+          "y": 700
+        },
+        "dining-header": {
+          "height": 32,
+          "width": 402,
+          "x": 0,
+          "y": 62
+        }
+      },
+      "height": 874,
+      "id": "dining-accessibility2",
+      "keyboardVisible": false,
+      "safeArea": {
+        "bottom": 34,
+        "left": 0,
+        "right": 0,
+        "top": 62
+      },
+      "schemaVersion": 1,
+      "screen": "dining",
+      "source": "ios/TasteBuddy/Features/Dining/DiningView.swift → DiningFeedbackSheet.menu",
+      "status": "ready",
+      "width": 402,
+      "file": "dining-accessibility2.png",
+      "pixelWidth": 1206,
+      "pixelHeight": 2622,
+      "scale": 3,
+      "capturedAt": "2026-10-02T12:53:12.202Z",
+      "sha256": "ac7a9f6a7c3a7d02be0383ab3d326d35ee5f29c9923f029bc01dfe0b9f7a0ed2"
+    },
+    {
+      "dynamicType": "large",
+      "frames": {
+        "auth-primary-action": {
+          "height": 48,
+          "width": 362,
+          "x": 20,
+          "y": 793.3333333333333
+        },
+        "sheet-content": {
+          "height": 79.33333333333337,
+          "width": 402,
+          "x": 0,
+          "y": 698
+        },
+        "sheet-footer": {
+          "height": 98,
+          "width": 402,
+          "x": 0,
+          "y": 777.3333333333333
+        },
+        "sheet-header": {
+          "height": 64,
+          "width": 402,
+          "x": 0,
+          "y": 634
+        },
+        "sheet-input": {
+          "height": 48,
+          "width": 362,
+          "x": 20,
+          "y": 728.3333333333333
+        }
+      },
+      "height": 874,
+      "id": "sheet-large",
+      "keyboardVisible": false,
+      "safeArea": {
+        "bottom": 34,
+        "left": 0,
+        "right": 0,
+        "top": 62
+      },
+      "schemaVersion": 1,
+      "screen": "sheet",
+      "source": "ios/TasteBuddy/Components/Shell/AppShellView.swift → staged AuthEntrySheet.linkCurrentProfile",
+      "status": "ready",
+      "width": 402,
+      "file": "sheet-large.png",
+      "pixelWidth": 1206,
+      "pixelHeight": 2622,
+      "scale": 3,
+      "capturedAt": "2026-10-02T12:53:53.051Z",
+      "sha256": "72dad20f1bf20fc2c9424b8b9ef64c9fea5eaa0d586e2dc29bb1e6d579f71b99"
+    },
+    {
+      "dynamicType": "large",
+      "frames": {
+        "auth-primary-action": {
+          "height": 47.99999999999994,
+          "width": 362,
+          "x": 20,
+          "y": 507.3333333333333
+        },
+        "sheet-content": {
+          "height": 79.33333333333337,
+          "width": 402,
+          "x": 0,
+          "y": 698
+        },
+        "sheet-footer": {
+          "height": 98,
+          "width": 402,
+          "x": 0,
+          "y": 777.3333333333333
+        },
+        "sheet-header": {
+          "height": 64,
+          "width": 402,
+          "x": 0,
+          "y": 634
+        },
+        "sheet-input": {
+          "height": 48,
+          "width": 362,
+          "x": 20,
+          "y": 728.3333333333333
+        }
+      },
+      "height": 874,
+      "id": "sheet-keyboard",
+      "keyboardFrame": {
+        "height": 308,
+        "width": 402,
+        "x": 0,
+        "y": 566
+      },
+      "keyboardVisible": true,
+      "safeArea": {
+        "bottom": 34,
+        "left": 0,
+        "right": 0,
+        "top": 62
+      },
+      "schemaVersion": 1,
+      "screen": "sheet",
+      "source": "ios/TasteBuddy/Components/Shell/AppShellView.swift → staged AuthEntrySheet.linkCurrentProfile",
+      "status": "ready",
+      "width": 402,
+      "file": "sheet-keyboard.png",
+      "pixelWidth": 1206,
+      "pixelHeight": 2622,
+      "scale": 3,
+      "capturedAt": "2026-10-02T12:54:20.879Z",
+      "sha256": "34e81983542e7ef78609c852147f975dce3a90b72d3dadb221ec739f024c3fb5"
+    }
+  ]
+}

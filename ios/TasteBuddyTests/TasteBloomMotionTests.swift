@@ -4,6 +4,58 @@ import XCTest
 @testable import TasteBuddy
 
 final class TasteBloomMotionTests: XCTestCase {
+    func testControlPressKeepsTravelBoundedAcrossSmallAndWideSurfaces() {
+        let sizes = [
+            CGSize(width: 22, height: 22), CGSize(width: 44, height: 44),
+            CGSize(width: 120, height: 48), CGSize(width: 343, height: 48),
+            CGSize(width: 720, height: 48), CGSize(width: 2048, height: 48),
+            CGSize(width: 320, height: 120),
+        ]
+        for size in sizes {
+            let response = TBControlFeedback.response(
+                size: size, isPressed: true, isEnabled: true, reduceMotion: false
+            )
+            XCTAssertTrue(response.showsPressedSurface)
+            XCTAssertLessThan(response.scale, 1)
+            XCTAssertGreaterThanOrEqual(response.scale, 23.0 / 24)
+            XCTAssertLessThanOrEqual(size.width * (1 - response.scale), 4.000001)
+            XCTAssertLessThanOrEqual(size.height * (1 - response.scale), 1.000001)
+        }
+        let regular = TBControlFeedback.response(
+            size: CGSize(width: 120, height: 48), isPressed: true, isEnabled: true, reduceMotion: false
+        )
+        XCTAssertEqual(48 * (1 - regular.scale), 1, accuracy: 0.000001)
+    }
+
+    func testControlPressRetainsSurfaceUnderReducedMotionAndClearsOnReleaseOrDisable() {
+        let size = CGSize(width: 343, height: 48)
+        let reduced = TBControlFeedback.response(
+            size: size, isPressed: true, isEnabled: true, reduceMotion: true
+        )
+        XCTAssertTrue(reduced.showsPressedSurface, "동작 줄이기에서도 입력 도달은 표면색으로 알려야 한다")
+        XCTAssertEqual(reduced.scale, 1)
+        for reduceMotion in [false, true] {
+            for state in [(pressed: false, enabled: true), (pressed: true, enabled: false)] {
+                let response = TBControlFeedback.response(
+                    size: size, isPressed: state.pressed, isEnabled: state.enabled, reduceMotion: reduceMotion
+                )
+                XCTAssertFalse(response.showsPressedSurface, "놓기·취소·실제 비활성은 누름 표시를 없앤다")
+                XCTAssertEqual(response.scale, 1)
+            }
+        }
+    }
+
+    func testUnmeasuredOrInvalidControlSizeNeverProducesAnInvalidTransform() {
+        for size in [CGSize.zero, CGSize(width: -1, height: 48),
+                     CGSize(width: CGFloat.infinity, height: 48), CGSize(width: 48, height: CGFloat.nan)] {
+            let response = TBControlFeedback.response(
+                size: size, isPressed: true, isEnabled: true, reduceMotion: false
+            )
+            XCTAssertEqual(response.scale, 1)
+            XCTAssertTrue(response.showsPressedSurface, "크기를 알기 전에도 표면색은 입력에 반응한다")
+        }
+    }
+
     func testPetalCurveOpensSoftlyAndSettlesAfterOneSmallLateBud() {
         let samples = (0...1000).map { TasteBloomMotion.progress(Double($0) / 1000) }
         XCTAssertEqual(TasteBloomMotion.progress(-1), 0)

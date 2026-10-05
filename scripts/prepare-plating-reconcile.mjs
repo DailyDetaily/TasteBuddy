@@ -1,0 +1,35 @@
+import fs from 'node:fs/promises';
+const prefix=process.argv[2];
+const state=JSON.parse(await fs.readFile('output/plating/figma/state.json','utf8'));
+const registry=JSON.parse(await fs.readFile('output/plating/registry.json','utf8'));
+const pageName=Object.keys(state.pages).find(v=>v.startsWith(prefix));
+const groups={'02':['액션','입력·선택'],'03':['탐색','콘텐츠'],'04':['피드백','오버레이']};
+const items=registry.components.filter(c=>groups[prefix].includes(c.group));
+const slim={components:state.components,defaults:state.defaults,styles:state.styles,reviews:state.reviews};
+const code=`
+const state=${JSON.stringify(slim)},items=${JSON.stringify(items.map(({id,name,states})=>({id,name,states})))};
+await Promise.all(['Regular','Medium','Bold'].map(style=>figma.loadFontAsync({family:'Noto Sans KR',style})));
+const page=await figma.getNodeByIdAsync(${JSON.stringify(state.pages[pageName])});await figma.setCurrentPageAsync(page);
+const createdNodeIds=[],mutatedNodeIds=[],removedNodeIds=[],iconPrimitives={};const vars=Object.fromEntries((await figma.variables.getLocalVariablesAsync()).map(v=>[v.name,v]));
+const stroke=(node,variable)=>{for(const v of node.findAll(n=>'strokes' in n&&Array.isArray(n.strokes)&&n.strokes.length)){v.strokes=v.strokes.map(p=>p.type==='SOLID'?figma.variables.setBoundVariableForPaint(p,'color',vars[variable]):p);mutatedNodeIds.push(v.id);}};
+const paint=(n,variable)=>n.fills=[figma.variables.setBoundVariableForPaint({type:'SOLID',color:{r:1,g:1,b:1}},'color',vars[variable])];
+let iconSet={};
+if(${JSON.stringify(prefix)}==='02'){
+const paths={Close:'M6 6l12 12M18 6L6 18',Back:'M15 18l-6-6 6-6',Check:'M5 12l4 4L19 6',Search:'M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0'};
+for(const [kind,path] of Object.entries(paths)){const comp=figma.createComponent();comp.name='Icon/'+kind;comp.description='Shared 20px icon primitive. Used through instance swap in IconButton.';comp.resize(20,20);comp.layoutMode='HORIZONTAL';comp.primaryAxisSizingMode='FIXED';comp.counterAxisSizingMode='FIXED';comp.fills=[];comp.x=2500;comp.y=80+Object.keys(iconSet).length*80;const art=figma.createNodeFromSvg('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="'+path+'" fill="none" stroke="#0F0F0F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>');comp.appendChild(art);stroke(art,'color/text/primary');iconSet[kind]=comp;iconPrimitives[kind]=comp.id;createdNodeIds.push(comp.id,art.id,...art.findAll().map(n=>n.id));}
+}
+for(const item of items){const set=await figma.getNodeByIdAsync(state.components[item.id]);if(['primary-button','bottom-sheet'].includes(item.id))continue;const old=[...set.children];const keep=[];
+for(let i=0;i<item.states.length;i++){const target=item.states[i];let comp=old.find(c=>c.name==='State='+target&&!keep.includes(c));if(!comp)comp=old.find(c=>!keep.includes(c));if(!comp){comp=old[0].clone();createdNodeIds.push(comp.id,...comp.findAll().map(n=>n.id));set.appendChild(comp);}comp.name='State='+target;comp.opacity=target==='비활성'?.45:1;keep.push(comp);mutatedNodeIds.push(comp.id);}
+const removed=old.filter(c=>!keep.includes(c));for(const comp of removed){const reviewInfo=state.reviews.find(r=>r.component===item.id);if(reviewInfo){const review=await figma.getNodeByIdAsync(reviewInfo.id);for(const inst of review.findAll(n=>n.type==='INSTANCE'&&n.parent.type==='FRAME'&&n.parent.name.startsWith('Instance /'))){const main=await inst.getMainComponentAsync();if(main?.id===comp.id&&inst.parent.type==='FRAME'){removedNodeIds.push(inst.parent.id,...inst.parent.findAll().map(n=>n.id));inst.parent.remove();}}}removedNodeIds.push(comp.id,...comp.findAll().map(n=>n.id));comp.remove();}
+if(item.id==='icon-button'){const prop=set.addComponentProperty('Icon','INSTANCE_SWAP',iconSet.Close.id);for(const comp of keep){for(const child of [...comp.children]){removedNodeIds.push(child.id);child.remove();}const instance=iconSet.Close.createInstance();comp.appendChild(instance);instance.componentPropertyReferences={mainComponent:prop};createdNodeIds.push(instance.id,...instance.findAll().map(n=>n.id));}}
+if(item.id==='chip'){for(const comp of keep){const selected=comp.name.includes('선택');paint(comp,selected?'color/text/primary':'color/surface/muted');for(const t of comp.findAll(n=>n.type==='TEXT')){paint(t,selected?'color/surface/card':'color/text/body');mutatedNodeIds.push(t.id);}}}
+if(item.id==='step-indicator'){for(let i=0;i<keep.length;i++){const comp=keep[i];const nodes=comp.children.filter(n=>n.type==='RECTANGLE');nodes.forEach((node,index)=>{const active=index===[0,2,4][i];node.resize(active?16:6,6);paint(node,active?'color/text/primary':'color/border/default');mutatedNodeIds.push(node.id);});}}
+if(item.id==='bottom-tab'){for(let i=0;i<keep.length;i++)for(let index=0;index<keep[i].children.length;index++){const col=keep[i].children[index];for(const t of col.findAll(n=>n.type==='TEXT')){paint(t,index===i?'color/text/primary':'color/text/hint');mutatedNodeIds.push(t.id);}stroke(col,index===i?'color/text/primary':'color/text/hint');}}
+const reviewInfo=state.reviews.find(r=>r.component===item.id);if(reviewInfo){const review=await figma.getNodeByIdAsync(reviewInfo.id);const strip=review.findOne(n=>n.type==='FRAME'&&n.name==='State examples');const shown=new Set();for(const cell of strip.children){const instance=cell.children.find(n=>n.type==='INSTANCE');if(instance){const main=await instance.getMainComponentAsync();if(main){shown.add(main.id);const caption=cell.children.find(n=>n.type==='TEXT');if(caption){caption.characters=main.name;mutatedNodeIds.push(caption.id);}}}}
+for(const main of keep.filter(c=>!shown.has(c.id))){const cell=figma.createAutoLayout('VERTICAL');strip.appendChild(cell);cell.name='Instance / '+main.name;cell.resize(320,40);cell.primaryAxisSizingMode='AUTO';cell.counterAxisSizingMode='FIXED';cell.paddingTop=12;cell.paddingBottom=12;cell.paddingLeft=12;cell.paddingRight=12;cell.itemSpacing=12;paint(cell,'color/surface/base');const instance=main.createInstance();cell.appendChild(instance);if(instance.width>296)instance.resize(296,instance.height);const t=figma.createText();t.fontName={family:'Noto Sans KR',style:'Regular'};t.characters=main.name;await t.setTextStyleIdAsync(state.styles['Product/Caption']);cell.appendChild(t);paint(t,'color/text/body');createdNodeIds.push(cell.id,instance.id,t.id,...instance.findAll().map(n=>n.id));}}
+const cols=Math.min(3,keep.length),w=Math.max(...keep.map(c=>c.width))+32,h=Math.max(...keep.map(c=>c.height))+32;keep.forEach((c,i)=>{c.x=40+(i%cols)*w;c.y=50+Math.floor(i/cols)*h;});set.resizeWithoutConstraints(cols*w+48,Math.ceil(keep.length/cols)*h+70);mutatedNodeIds.push(set.id);
+}
+return{createdNodeIds,mutatedNodeIds,removedNodeIds,iconPrimitives,variantCounts:Object.fromEntries(await Promise.all(items.map(async item=>{const n=await figma.getNodeByIdAsync(state.components[item.id]);return [item.id,n.children.length]})))};
+`;
+new(Object.getPrototypeOf(async function(){}).constructor)(code);
+await fs.writeFile('output/plating/figma/reconcile-'+prefix+'.js',code);

@@ -120,7 +120,7 @@ const SIGNAL_RULES = [
     patterns: ['갑각류', '새우', '게', 'crab', 'shrimp', 'crustacean'],
   },
   {
-    dishKindIds: ['vegetable_herb', 'broth'],
+    dishKindIds: ['mushroom'],
     ingredientSignalIds: ['ingredient:mushroom'],
     lexiconIds: ['mushroom-earthy-umami', 'earthy-aroma'],
     patterns: ['버섯', '표고', 'shiitake', 'mushroom'],
@@ -132,16 +132,16 @@ const SIGNAL_RULES = [
     patterns: ['채소', '나물', '허브', '잎채소', 'leafy', 'vegetable', 'herb'],
   },
   {
-    dishKindIds: ['grain_noodle'],
+    dishKindIds: ['rice_grain'],
     ingredientSignalIds: ['ingredient:grain'],
     lexiconIds: ['savory-depth'],
     patterns: ['곡류', '곡물', '쌀', '메밀', 'buckwheat', 'grain', 'rice'],
   },
   {
-    dishKindIds: ['grain_noodle'],
+    dishKindIds: ['noodle'],
     ingredientSignalIds: ['ingredient:noodle'],
     lexiconIds: ['chewy-resistance'],
-    patterns: ['면', '국수', '파스타', 'noodle', 'pasta'],
+    patterns: ['면', '국수', '파스타', '냉면', '라면', '라멘', '우동', '소바', 'noodle', 'pasta'],
   },
   {
     dishKindIds: ['fermented_jang'],
@@ -151,13 +151,13 @@ const SIGNAL_RULES = [
     patterns: ['간장', '된장', '고추장', '장류', '미소', '발효', 'soy sauce', 'miso', 'fermented'],
   },
   {
-    dishKindIds: ['grilled_smoked'],
+    dishKindIds: ['grilled'],
     processSignalIds: ['process:grilled'],
     lexiconIds: ['charred-aroma', 'roasted-aroma'],
     patterns: ['구이', '구운', '굽는', '굽기', 'grilled', 'broiled'],
   },
   {
-    dishKindIds: ['grilled_smoked'],
+    dishKindIds: ['grilled'],
     processSignalIds: ['process:charcoal'],
     lexiconIds: ['charcoal-grilled'],
     patterns: ['숯불', '숯향', 'charcoal'],
@@ -169,7 +169,7 @@ const SIGNAL_RULES = [
     patterns: ['국', '탕', '육수', '국물', '브로스', '끓이는', 'soup', 'broth', 'stock'],
   },
   {
-    dishKindIds: ['dessert'],
+    dishKindIds: ['fruit'],
     ingredientSignalIds: ['ingredient:fruit'],
     lexiconIds: ['fruit-aroma', 'bright-acidity', 'clean-sweetness'],
     patterns: ['과일', '딸기', '감귤', '배', 'fruit'],
@@ -182,14 +182,38 @@ const SIGNAL_RULES = [
   },
 ];
 
+// New dish kinds retain material/process identity without implying a taste response.
+SIGNAL_RULES.push(
+  {"dishKindIds": ["egg"], "patterns": ["달걀", "계란", "난류", "egg"], "ingredientSignalIds": ["ingredient:egg"], "processSignalIds": []},
+  {"dishKindIds": ["nut_seed"], "patterns": ["견과", "참깨", "들깨", "땅콩", "아몬드", "호두", "nut", "seed", "sesame"], "ingredientSignalIds": ["ingredient:nut-seed"], "processSignalIds": []},
+  {"dishKindIds": ["seaweed"], "patterns": ["해조", "미역", "다시마", "김", "seaweed", "kelp", "nori"], "ingredientSignalIds": ["ingredient:seaweed"], "processSignalIds": []},
+  {"dishKindIds": ["bread"], "patterns": ["빵", "바게트", "크루아상", "bread", "baguette", "croissant"], "ingredientSignalIds": [], "processSignalIds": []},
+  {"dishKindIds": ["dumpling"], "patterns": ["만두", "딤섬", "교자", "dumpling", "gyoza"], "ingredientSignalIds": [], "processSignalIds": []},
+  {"dishKindIds": ["pancake"], "patterns": ["전", "부침개", "파전", "팬케이크", "pancake", "jeon"], "ingredientSignalIds": [], "processSignalIds": []},
+  {"dishKindIds": ["raw"], "patterns": ["사시미", "생선회", "육회", "연어회", "raw", "sashimi", "tartare"], "ingredientSignalIds": [], "processSignalIds": ["process:raw"]},
+  {"dishKindIds": ["pickled"], "patterns": ["절임", "피클", "장아찌", "pickled", "pickle"], "ingredientSignalIds": [], "processSignalIds": ["process:pickled"]},
+  {"dishKindIds": ["cured"], "patterns": ["큐어", "염장", "생햄", "cured", "gravlax", "prosciutto"], "ingredientSignalIds": [], "processSignalIds": ["process:cured"]},
+  {"dishKindIds": ["smoked"], "patterns": ["훈연", "훈제", "smoked", "smoking"], "ingredientSignalIds": [], "processSignalIds": ["process:smoked"]},
+  {"dishKindIds": ["steamed"], "patterns": ["스팀", "찐", "증기", "계란찜", "찐만두", "steamed"], "ingredientSignalIds": [], "processSignalIds": ["process:steamed"]},
+  {"dishKindIds": ["braised"], "patterns": ["조림", "브레이즈", "갈비찜", "찜닭", "braised"], "ingredientSignalIds": [], "processSignalIds": ["process:braised"]},
+  {"dishKindIds": ["spice"], "patterns": ["향신료", "후추", "계피", "큐민", "spice", "cinnamon", "cumin"], "ingredientSignalIds": [], "processSignalIds": []},
+  {"dishKindIds": ["spicy"], "patterns": ["매운", "매콤", "매운맛", "마라", "spicy"], "ingredientSignalIds": [], "processSignalIds": []},
+);
+
 const FOOD_GROUP_RULES = [
-  { dishKindIds: ['seafood'], patterns: ['어패류', '해조류'] },
-  { dishKindIds: ['meat'], patterns: ['육류', '난류'] },
-  { dishKindIds: ['vegetable_herb'], patterns: ['채소류', '버섯류', '두류'] },
-  { dishKindIds: ['grain_noodle'], patterns: ['곡류', '감자류', '전분류'] },
-  { dishKindIds: ['fermented_jang'], patterns: ['조미료류'] },
-  { dishKindIds: ['dessert'], patterns: ['과일류', '당류', '우유 및 그 제품', '견과류'] },
-  { dishKindIds: ['beverage_pairing'], patterns: ['차류', '음료류', '주류'] },
+  {"dishKindIds": ["seafood"], "patterns": ["어패류"]},
+  {"dishKindIds": ["seaweed"], "patterns": ["해조류"]},
+  {"dishKindIds": ["meat"], "patterns": ["육류"]},
+  {"dishKindIds": ["egg"], "patterns": ["난류"]},
+  {"dishKindIds": ["vegetable_herb"], "patterns": ["채소류", "감자류", "전분류"]},
+  {"dishKindIds": ["mushroom"], "patterns": ["버섯류"]},
+  {"dishKindIds": ["legume_tofu"], "patterns": ["두류"]},
+  {"dishKindIds": ["rice_grain"], "patterns": ["곡류"]},
+  {"dishKindIds": ["fruit"], "patterns": ["과일류"]},
+  {"dishKindIds": ["nut_seed"], "patterns": ["견과류", "종실류"]},
+  {"dishKindIds": ["dairy_cheese"], "patterns": ["우유 및 그 제품", "유류"]},
+  {"dishKindIds": ["dessert"], "patterns": ["당류"]},
+  {"dishKindIds": ["beverage_pairing"], "patterns": ["차류", "음료류", "주류"]},
 ];
 
 function parseArgs(argv) {
@@ -197,6 +221,7 @@ function parseArgs(argv) {
   const options = {
     foodOnSource: defaultFoodOnSource,
     help: false,
+    remapTaxonomy: false,
     koreanSource: defaultKoreanSource,
     limitKorean: null,
     limitNative: null,
@@ -206,6 +231,8 @@ function parseArgs(argv) {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
+
+    if (arg === '--remap-taxonomy') { options.remapTaxonomy = true; continue; }
 
     if (arg === '--help' || arg === '-h') {
       options.help = true;
@@ -273,6 +300,7 @@ function printUsage() {
   console.log(`
 Usage:
   npm run food-knowledge:build
+  npm run food-knowledge:build -- --remap-taxonomy
   npm run food-knowledge:build -- --native-source data/native-food/raw/nongsaro-native-food-dataset.json
   npm run food-knowledge:build -- --limit-korean 200 --limit-native 20
 
@@ -333,7 +361,13 @@ function addUnique(target, values = []) {
 function textIncludesAny(sourceText, patterns) {
   const normalized = normalizeSearchText(sourceText);
 
-  return patterns.some((pattern) => normalized.includes(normalizeSearchText(pattern)));
+  return patterns.some((pattern) => {
+    const value = normalizeSearchText(pattern);
+    const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (/^[a-z0-9 -]+$/.test(value)) return new RegExp(`(^|[^a-z0-9])${escaped}($|[^a-z0-9])`, 'i').test(normalized);
+    if (value.length === 1) return new RegExp(`(^|[^가-힣a-z0-9])${escaped}($|[^가-힣a-z0-9])`, 'i').test(normalized);
+    return normalized.includes(value);
+  });
 }
 
 function inferSignalsFromText(sourceText, seed = {}) {
@@ -755,6 +789,32 @@ function buildTbaFoodKnowledgeBridge({ foodOnIndex, koreanCatalog, nativeCatalog
   };
 }
 
+// Taxonomy-only changes keep the previously linked knowledge records and source
+// references. Re-indexing FoodOn is reserved for an explicit source refresh.
+function remapExistingTaxonomy(outRoot) {
+  const normalizedDir=path.join(outRoot,'normalized');
+  const filename=path.join(outRoot,'tba','tba-food-knowledge-bridge.json');
+  const bridge=readJson(filename);
+  const sourceTextById=new Map();
+  for(const item of readJson(path.join(normalizedDir,'korean-food-catalog.json')).items) {
+    sourceTextById.set(`tba-food:korean-standard:${item.id.replace(/^korean-food:/,'')}`,
+      [item.koName,item.englishName,item.scientificName,item.foodGroup,...(item.aliases??[])].join(' '));
+  }
+  for(const item of readJson(path.join(normalizedDir,'native-food-catalog.json')).items) {
+    sourceTextById.set(`tba-food:native:${item.sourceId || slugify(item.koDishName)}`,
+      [item.koDishName,item.foodTypePath.join(' '),item.cookingMethodPath.join(' '),item.mainIngredientsText,item.subIngredientsText,item.recipeText].join(' '));
+  }
+  bridge.items=bridge.items.map(entry=>{
+    const sourceText=sourceTextById.get(entry.id) ?? [entry.canonicalName,...entry.aliases,entry.foodGroup].join(' ');
+    const mapped=inferSignalsFromText(sourceText,{dishKindIds:inferDishKindsFromFoodGroup(entry.foodGroup)});
+    return {...entry,...mapped};
+  });
+  bridge.taxonomyVersion='dish-kind/2';
+  bridge.count=bridge.items.length;
+  writeJson(filename,bridge);
+  console.log(`Remapped ${bridge.count} existing knowledge records to dish-kind/2; source references preserved.`);
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
 
@@ -762,6 +822,8 @@ async function main() {
     printUsage();
     return;
   }
+
+  if (options.remapTaxonomy) { remapExistingTaxonomy(options.outRoot); return; }
 
   const normalizedDir = path.join(options.outRoot, 'normalized');
   const tbaDir = path.join(options.outRoot, 'tba');

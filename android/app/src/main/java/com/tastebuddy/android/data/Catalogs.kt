@@ -10,7 +10,7 @@ import kotlinx.serialization.json.*
 @Serializable
 data class DetailCategory(val id: String, val label: String, val tags: List<DetailTag>)
 
-@Serializable data class DishKind(val id: String, val label: String, val keywords: List<String>)
+@Serializable data class DishKind(val id: String, val label: String, val keywords: List<String>, val group: String = "ingredient")
 
 @Serializable
 data class TasteWord(
@@ -34,6 +34,8 @@ data class TasteWordAxis(
 data class DiningCatalog(
     val detailTagCategories: List<DetailCategory>,
     val dishKindOptions: List<DishKind>,
+    val legacyDishKindOptions: List<DishKind> = emptyList(),
+    val dishKindDetailRecommendations: Map<String, List<String>> = emptyMap(),
     val tasteExperienceAxes: List<TasteWordAxis>,
 )
 
@@ -118,6 +120,6 @@ class Catalogs(private val context: Context) {
 
     fun label(id: String) =
         selection.entries.firstOrNull { it.id == id }?.label
-            ?: dining.dishKindOptions.firstOrNull { it.id == id }?.label
+            ?: (dining.dishKindOptions + dining.legacyDishKindOptions).firstOrNull { it.id == id }?.label
             ?: id
 }

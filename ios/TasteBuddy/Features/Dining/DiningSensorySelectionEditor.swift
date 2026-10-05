@@ -15,7 +15,7 @@ enum DiningSensorySelectionEditing {
         in selections: [DiningSensorySelection]
     ) -> [DiningSensorySelection] {
         guard let index = selections.firstIndex(where: {
-            $0.id == selection.id && $0.type == selection.type
+            selection.selectionInstanceID != nil ? $0.selectionInstanceID == selection.selectionInstanceID : $0.id == selection.id && $0.type == selection.type && $0.selectionInstanceID == nil
         }) else {
             return selections + [selection]
         }
@@ -29,15 +29,21 @@ struct DiningSensorySelectionEditor: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var selection: DiningSensorySelection
     let relatedBubbles: [DiningSensoryRelatedBubbleOption]
+    let onDuplicate: (() -> Void)?
+    let onRemove: (() -> Void)?
     @State private var isExpanded = false
 
     init(
         selection: Binding<DiningSensorySelection>,
         relatedBubbles: [DiningSensoryRelatedBubbleOption],
-        initiallyExpanded: Bool = false
+        initiallyExpanded: Bool = false,
+        onDuplicate: (() -> Void)? = nil,
+        onRemove: (() -> Void)? = nil
     ) {
         _selection = selection
         self.relatedBubbles = relatedBubbles
+        self.onDuplicate = onDuplicate
+        self.onRemove = onRemove
         _isExpanded = State(initialValue: initiallyExpanded)
     }
 
@@ -127,21 +133,38 @@ struct DiningSensorySelectionEditor: View {
                 selectionMenu(
                     title: "대상",
                     value: selection.target.label,
-                    options: DiningSensorySelection.Target.allCases
-                ) { selection.target = $0 }
+                    options: DiningSensorySelection.Target.allCases.filter {
+                        selection.catalogVersion != DiningSensorySelection.catalogVersion || !["beverage", "rice_grains"].contains($0.rawValue)
+                    }
+                ) {
+                    selection.target = $0
+                    if selection.bindingMode != "relation" && selection.relatedBubbleID == nil { selection.scopeKind = $0 == .wholeDish || $0 == .unspecified ? "whole_dish" : "component" }
+                }
 
                 selectionMenu(
                     title: "시점",
                     value: selection.phase.label,
-                    options: DiningSensorySelection.Phase.allCases
+                    options: DiningSensorySelection.Phase.allCases.filter {
+                        selection.catalogVersion != DiningSensorySelection.catalogVersion || !["first_sip", "while_chewing", "repeated_bites", "repeated_sips"].contains($0.rawValue)
+                    }
                 ) { selection.phase = $0 }
             }
 
-            if selection.type == .detailTag, !relatedBubbles.isEmpty {
+            if selection.type == .detailTag, selection.bindingMode == "modifier" || selection.catalogVersion == DiningSensorySelection.catalogVersion {
                 Menu {
-                    Button("연결 미지정") { selection.relatedBubbleID = nil }
+                    Button("음식 전체") {
+                        selection.relatedBubbleID = nil
+                        selection.relatedBubbleLabelSnapshot = nil
+                        selection.scopeKind = "whole_dish"
+                        selection.target = .wholeDish
+                    }
                     ForEach(relatedBubbles) { bubble in
-                        Button(bubble.label) { selection.relatedBubbleID = bubble.id }
+                        Button(bubble.label) {
+                            selection.relatedBubbleID = bubble.id
+                            selection.relatedBubbleLabelSnapshot = bubble.label
+                            selection.scopeKind = "bubble"
+                            selection.target = .unspecified
+                        }
                     }
                 } label: {
                     menuLabel(
@@ -155,6 +178,8 @@ struct DiningSensorySelectionEditor: View {
                 .font(TBFont.regular(11))
                 .foregroundStyle(TBColor.textFaint)
                 .lineSpacing(3)
+            if let onDuplicate { Button("다른 대상·시점으로 추가", action: onDuplicate).font(TBFont.semibold(12)) }
+            if let onRemove { Button("이 선택 지우기", action: onRemove).font(TBFont.semibold(12)) }
         }
     }
 
@@ -220,8 +245,8 @@ struct DiningSensorySelectionEditor: View {
     }
 
     private var relatedBubbleLabel: String {
-        guard let id = selection.relatedBubbleID else { return "미지정" }
-        return relatedBubbles.first(where: { $0.id == id })?.label ?? "기존 선택"
+        guard let id = selection.relatedBubbleID else { return "음식 전체" }
+        return relatedBubbles.first(where: { $0.id == id })?.label ?? selection.relatedBubbleLabelSnapshot.map { "\($0) · 연결 확인" } ?? "기존 선택 · 연결 확인"
     }
 
     private var summary: String {

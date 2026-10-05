@@ -3,7 +3,7 @@ import type { ElementType, HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../ui/utils';
 import SectionTitle from './SectionTitle';
 
-interface FlowHeaderBlockProps extends HTMLAttributes<HTMLDivElement> {
+interface FlowHeaderBlockProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   description?: ReactNode;
   descriptionClassName?: string;
   title: ReactNode;

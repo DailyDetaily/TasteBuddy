@@ -5,7 +5,7 @@ struct TasteIntensityLikingMatrixView: View {
     let attribute: String
     let reference: String?
     var unresolved: [SensoryUnresolved] = []
-    @State private var selected: TasteIntensityLikingMatrix.Cell?
+    @State private var selectedDetail: TasteCardDetailRoute?
     private var matrix: TasteIntensityLikingMatrix { .build(observations: observations, attribute: attribute, reference: reference,
         unresolved: unresolved, catalog: SensoryAnalysisEngine.contract?.selectionCatalog) }
     private var axis: TasteAxis? { TastePerceptionEngine.axis(for: attribute) }
@@ -14,7 +14,6 @@ struct TasteIntensityLikingMatrixView: View {
         TBPageSection(title: "강도와 호감", titleSize: .medium) {
             SectionCard {
                 VStack(alignment: .leading, spacing: TBSpacing.x12) {
-                    Text("같은 음식·감각·선택·대상·시점의 응답을 함께 봐요.").font(TBFont.regular(12))
                     Grid(horizontalSpacing: 8, verticalSpacing: 8) {
                         GridRow {
                             Text("호감 / 강도")
@@ -24,7 +23,7 @@ struct TasteIntensityLikingMatrixView: View {
                             GridRow {
                                 Text(PersonalTasteInsightPresentation.likingLabel(liking)).font(TBFont.regular(11))
                                 ForEach(matrix.cells.filter { $0.liking == liking }) { cell in
-                                    Button { selected = cell } label: {
+                                    Button { open(cell) } label: {
                                         HStack(spacing: TBSpacing.x4) {
                                             if !cell.entryIDs.isEmpty {
                                                 Circle().fill(axis?.mainColor ?? TBColor.textSecondary)
@@ -48,22 +47,20 @@ struct TasteIntensityLikingMatrixView: View {
                             }
                         }
                     }
-                    Text("단위: 음식 경험 · 강도/호감의 짝 미확인 \(matrix.unknownEntryIDs.count)개 · 같은 범위 충돌 \(matrix.conflictEntryIDs.count)개")
-                        .font(TBFont.regular(11)).foregroundStyle(TBColor.textSecondary).fixedSize(horizontal: false, vertical: true)
-                    Text("다른 대상·시점의 셀에 같은 경험이 포함될 수 있어요. 셀 합계는 전체 경험 수가 아니에요.")
-                        .font(TBFont.regular(11)).foregroundStyle(TBColor.textSecondary)
+                    TasteDetailScope(text: "요리 기록 기준 · 조건 간 중복 포함")
                     if !matrix.unknownEntryIDs.isEmpty || !matrix.conflictEntryIDs.isEmpty {
-                        Button("미확인·충돌 원문 보기") {
-                            selected = .init(intensity: "unknown", liking: "unknown", entryIDs: matrix.unknownEntryIDs.union(matrix.conflictEntryIDs), mealIDs: [],
-                                             evidenceIDs: Set(observations.filter { matrix.unknownEntryIDs.union(matrix.conflictEntryIDs).contains($0.experienceID) }.map(\.id)))
+                        Button("미확인 \(matrix.unknownEntryIDs.count)개 · 응답 충돌 \(matrix.conflictEntryIDs.count)개") {
+                            open(.init(intensity: "unknown", liking: "unknown", entryIDs: matrix.unknownEntryIDs.union(matrix.conflictEntryIDs), mealIDs: [],
+                                       evidenceIDs: Set(observations.filter { matrix.unknownEntryIDs.union(matrix.conflictEntryIDs).contains($0.experienceID) }.map(\.id))))
                         }.font(TBFont.regular(12)).frame(minHeight: 44)
                     }
                 }
             }
         }
-        .sheet(item: $selected) { cell in
-            SensoryEvidenceDetailSheet(observations: observations.filter { cell.evidenceIDs.contains($0.id) },
-                unresolved: unresolved.filter { cell.entryIDs.contains($0.experienceID) })
-        }
+        .tasteDetail($selectedDetail)
+    }
+    private func open(_ cell: TasteIntensityLikingMatrix.Cell) {
+        selectedDetail = .sensory(.selection(evidenceIDs: cell.evidenceIDs.sorted(),
+                                             unresolvedEntryIDs: cell.entryIDs.sorted { $0.uuidString < $1.uuidString }))
     }
 }

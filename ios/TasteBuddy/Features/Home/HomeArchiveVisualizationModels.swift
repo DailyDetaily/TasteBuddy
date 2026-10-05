@@ -6,13 +6,22 @@ struct HomeArchivePresentation {
     let sections: [HomeArchiveMetricSection]
     let discoveries: [HomeDiscoveryCard]
     let referenceDay: Date
+    let gastronomyInput: TDNativeInput
+    let gastronomyState: TDState
+    let sourceEntries: [DiningEntry]
+    let sourceSnapshot: SensoryAnalysisSnapshot
+    let sourceTimeZone: String
     static func make(entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot, referenceDate: Date) -> Self {
-        let sources = HomeArchiveSources(entries: entries, snapshot: snapshot, referenceDate: referenceDate)
+        let input = TDNativeAdapter.inputs(entries: entries, snapshot: snapshot, now: referenceDate)
+        let state = TDDataEngine.prepare(records: input.records, observations: input.observations, window: .all,
+                                         now: referenceDate, calendar: .current, issues: input.issues)
+        let sources = HomeArchiveSources(validated: input, state: state)
         return .init(
             summaries: HomeArchiveSummaryEngine.cards(entries: sources.entries, snapshot: snapshot, referenceDate: referenceDate),
             sections: HomeArchiveVisualizationEngine.sections(sources: sources, referenceDate: referenceDate),
-            discoveries: HomeDiscoveryEngine.cards(sources: sources, referenceDate: referenceDate),
-            referenceDay: Calendar.current.startOfDay(for: referenceDate)
+            discoveries: HomeDiscoveryEngine.gastronomyCards(input: input, state: state, calendar: .current),
+            referenceDay: Calendar.current.startOfDay(for: referenceDate), gastronomyInput: input, gastronomyState: state,
+            sourceEntries: entries, sourceSnapshot: snapshot, sourceTimeZone: Calendar.current.timeZone.identifier
         )
     }
 }
@@ -80,6 +89,9 @@ struct HomeArchiveSources {
     let observations: [SensoryObservation]
     let menus: [String: [DiningEntry]]
     let restaurants: [String: [DiningEntry]]
+    let menuKeyByEntry: [UUID: String]
+    var strictMealDates = false
+    var validatedIntensityLinks: [String: Set<String>] = [:]
 
     init(entries source: [DiningEntry], snapshot: SensoryAnalysisSnapshot, referenceDate: Date) {
         let entries = HomeArchiveIdentity.entries(source, asOf: referenceDate)
@@ -97,6 +109,33 @@ struct HomeArchiveSources {
         self.entries = entries
         menus = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasMenu), by: HomeArchiveIdentity.menu)
         restaurants = Dictionary(grouping: entries.filter(HomeArchiveIdentity.hasRestaurant), by: HomeArchiveIdentity.restaurant)
+        menuKeyByEntry = Dictionary(uniqueKeysWithValues: entries.filter(HomeArchiveIdentity.hasMenu).map { ($0.id, HomeArchiveIdentity.menu($0)) })
+    }
+
+    /// The gastronomy adapter has already checked complete original records, dates and direct atoms.
+    init(validated input: TDNativeInput, state: TDState, selectedOnly: Bool = false) {
+        let rows = selectedOnly ? state.selected : state.records
+        let recordMap = Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0) })
+        entries = input.entries.filter { recordMap[$0.id.uuidString] != nil }.sorted {
+            $0.observedAt == $1.observedAt ? $0.id.uuidString < $1.id.uuidString : $0.observedAt > $1.observedAt
+        }
+        let allRecordMap = state.recordMap
+        let issuesByMeal = Dictionary(grouping: state.issues) { allRecordMap[$0.entryID]?.mealID ?? "" }
+        let observationIDs = Set(state.observations.filter { observation in
+            let meal = allRecordMap[observation.entryID]?.mealID ?? ""
+            return !(issuesByMeal[meal] ?? []).contains { issue in
+                (issue.facet == nil || issue.facet == observation.facet) && (issue.senseKey == nil || issue.senseKey == observation.senseKey)
+            }
+        }.map(\.id))
+        observations = input.nativeObservations.filter { recordMap[$0.experienceID.uuidString] != nil && observationIDs.contains($0.id) }
+        menus = Dictionary(grouping: entries.filter { recordMap[$0.id.uuidString]?.menu != nil }) { recordMap[$0.id.uuidString]!.menu!.id }
+        restaurants = Dictionary(grouping: entries.filter { recordMap[$0.id.uuidString]?.restaurant != nil }) { recordMap[$0.id.uuidString]!.restaurant!.id }
+        menuKeyByEntry = Dictionary(uniqueKeysWithValues: entries.compactMap { entry in recordMap[entry.id.uuidString]?.menu.map { (entry.id, $0.id) } })
+        let intensityIndex = TDDataEngine.intensityIndex(state.observations)
+        for row in state.observations where row.facet == .liking || row.facet == .fit {
+            validatedIntensityLinks[row.id] = Set(TDDataEngine.linkedIntensity(row, index: intensityIndex, issues: state.issues).map(\.id))
+        }
+        strictMealDates = true
     }
 }
 
@@ -192,7 +231,7 @@ enum HomeArchiveVisualizationEngine {
         var unknown: [[DiningEntry]] = [], future: [[DiningEntry]] = []
         for rows in meals.values {
             let dates = Set(rows.compactMap(\.confirmedMealDate).map { calendar.startOfDay(for: $0) })
-            if dates.count == 1, let date = dates.first, date <= referenceDate {
+            if dates.count == 1, rows.allSatisfy({ $0.confirmedMealDate != nil }), let date = dates.first, date <= referenceDate {
                 dated.append((date, rows))
             } else if dates.count == 1 {
                 future.append(rows)

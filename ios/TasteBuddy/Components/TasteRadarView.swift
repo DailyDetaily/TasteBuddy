@@ -158,25 +158,28 @@ struct HexRadarChart: View {
         profileProgress: CGFloat
     ) {
         let geometry = RadarGeometry(size: size)
-        let gridColor = Color(hex: 0xF3F3F3)
+        let gridColor = Color(hex: 0xF8F8F8)
         let outerPoints = entries.indices.map {
             geometry.point(index: $0, value: 1)
         }
 
         for level in TasteRadarContract.gridLevels {
             context.stroke(
-                RadarGeometry.closedPolygon(
-                    entries.indices.map { geometry.point(index: $0, value: level) }
+                RadarGeometry.roundedClosedPath(
+                    points: entries.indices.map { geometry.point(index: $0, value: level) },
+                    cornerRadius: geometry.scaled(TasteRadarContract.nodeRadius)
                 ),
                 with: .color(gridColor),
                 lineWidth: geometry.scaled(1)
             )
         }
 
+        // 정육각형의 둥근 모서리 중점은 꼭짓점보다 R / 4만큼 안쪽에 있다.
+        let guideRadius = TasteRadarContract.maximumRadius - TasteRadarContract.nodeRadius / 4
         for (first, second) in [(0, 3), (1, 4), (2, 5)] {
             var diagonal = Path()
-            diagonal.move(to: outerPoints[first])
-            diagonal.addLine(to: outerPoints[second])
+            diagonal.move(to: geometry.point(index: first, radius: guideRadius))
+            diagonal.addLine(to: geometry.point(index: second, radius: guideRadius))
             context.stroke(
                 diagonal,
                 with: .color(gridColor),
@@ -324,6 +327,55 @@ struct HexRadarChart: View {
         func point(_ index: Int, _ value: Double, animated: Bool = true) -> CGPoint {
             geometry.point(index: index, value: CGFloat(value / reportedMaximum) * (animated ? progress : 1))
         }
+        // 최소 길이는 표시용이다. 기록이 없는 축의 원응답은 그대로 유지한다.
+        let displayedPoints = axes.enumerated().map { index, axis in
+            let value = values[axis] ?? 0
+            let radius = reportedMaximum > 0
+                ? CGFloat(value / reportedMaximum) * TasteRadarContract.maximumRadius * progress : 0
+            return geometry.point(
+                index: index,
+                radius: max(TasteRadarContract.centerMaskRadius + TasteRadarContract.nodeRadius, radius)
+            )
+        }
+        for index in axes.indices {
+            var spoke = Path()
+            spoke.move(to: geometry.center)
+            spoke.addLine(to: displayedPoints[index])
+            context.stroke(spoke, with: .color(axes[index].radarSpokeColor),
+                           style: StrokeStyle(lineWidth: geometry.scaled(16), lineCap: .round))
+        }
+        context.fill(
+            RadarGeometry.hexagramPath(
+                center: geometry.center,
+                outerRadius: geometry.scaled(TasteRadarContract.centerMaskRadius)
+            ),
+            with: .color(.white)
+        )
+        let segments = RadarGeometry.profileSegments(
+            centers: displayedPoints,
+            radius: geometry.scaled(TasteRadarContract.profileOutlineRadius),
+            fallbackPoints: axes.indices.map { geometry.point(index: $0, value: 1) },
+            center: geometry.center
+        )
+        for (index, segment) in segments.enumerated() {
+            let nextIndex = (index + 1) % axes.count
+            context.stroke(
+                segment.path,
+                with: .linearGradient(
+                    Gradient(colors: [
+                        axes[index].radarOutlineColor,
+                        axes[nextIndex].radarOutlineColor
+                    ]),
+                    startPoint: segment.gradientStart,
+                    endPoint: segment.gradientEnd
+                ),
+                style: StrokeStyle(
+                    lineWidth: geometry.scaled(2),
+                    lineCap: .round,
+                    lineJoin: .round
+                )
+            )
+        }
         for index in axes.indices {
             let axis = axes[index], next = (index + 1) % axes.count
             if let old = referenceValues[axis] {
@@ -334,20 +386,10 @@ struct HexRadarChart: View {
                     context.stroke(path, with: .color(TBColor.textHint), style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
                 }
             }
-            if let value = values[axis] {
-                let p = point(index, value)
-                if value > 0 {
-                    var spoke = Path(); spoke.move(to: geometry.center); spoke.addLine(to: p)
-                    context.stroke(spoke, with: .color(axis.radarSpokeColor), style: StrokeStyle(lineWidth: geometry.scaled(16), lineCap: .round))
-                }
-                if let following = values[axes[next]] {
-                    var path = Path(); path.move(to: p); path.addLine(to: point(next, following))
-                    context.stroke(path, with: .color(axis.radarOutlineColor), lineWidth: geometry.scaled(2))
-                }
-                let radius = geometry.scaled(6)
-                context.fill(Path(ellipseIn: CGRect(x: p.x-radius, y: p.y-radius, width: radius*2, height: radius*2)), with: .color(axis.mainColor))
-            }
-            let text = axis.label + (values[axis] == nil ? " —" : values[axis] == 0 ? " 0" : "")
+            let p = displayedPoints[index]
+            let radius = geometry.scaled(TasteRadarContract.nodeRadius)
+            context.fill(Path(ellipseIn: CGRect(x: p.x-radius, y: p.y-radius, width: radius*2, height: radius*2)), with: .color(axis.mainColor))
+            let text = axis.label + (values[axis] == 0 ? " 0" : "")
             context.draw(context.resolve(Text(text).font(TBFont.medium(10)).foregroundStyle(TBColor.textHint)),
                          at: geometry.point(index: index, radius: TasteRadarContract.maximumRadius + 10), anchor: labelAnchor(index: index))
         }

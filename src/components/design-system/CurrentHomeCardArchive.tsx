@@ -137,10 +137,10 @@ export default function CurrentHomeCardArchive({
             </div>
             <div className="mt-4">
               <ProfileConfidenceCard
+                measurementCount={previewData.measurementCount}
                 stage={previewData.confidenceStage}
                 measurementAgeLabel={previewData.measurementAgeLabel}
-                measurementCount={previewData.measurementCount}
-                needsMeasurementRefresh={previewData.needsMeasurementRefresh}
+                  needsMeasurementRefresh={previewData.needsMeasurementRefresh}
                 onNavigateToSection={onNavigateToSection}
                 strongestTasteLabel={strongestTasteLabel}
                 weakestTasteLabel={weakestTasteLabel}
@@ -233,12 +233,11 @@ export default function CurrentHomeCardArchive({
         >
           <div className="grid gap-6">
             <HomeCardStack
+              starterGuidance={previewData.starterGuidance}
               chefCards={previewData.chefCards}
-              confidenceStage={previewData.confidenceStage}
               featuredReservation={previewData.featuredReservation}
               featuredSummary={previewData.featuredSummary}
               measurementAgeLabel={previewData.measurementAgeLabel}
-              measurementCount={previewData.measurementCount}
               measurementSnapshot={previewData.measurementSnapshot}
               needsMeasurementRefresh={previewData.needsMeasurementRefresh}
               onNavigateToSection={onNavigateToSection}

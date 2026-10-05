@@ -8,7 +8,6 @@ enum SensoryAnalysisDisplayState: Equatable {
 }
 
 struct SensoryAnalysisHeroCard: View {
-    @State private var showsEvidence = false
     let snapshot: SensoryAnalysisSnapshot
 
     var body: some View {
@@ -25,57 +24,36 @@ struct SensoryAnalysisHeroCard: View {
                         .foregroundStyle(TBColor.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-
                 Text(heroDescription)
-                    .font(TBFont.regular(12))
-                    .foregroundStyle(TBColor.textSubtle)
+                    .font(TBFont.regular(13))
+                    .foregroundStyle(TBColor.textBody)
                     .lineSpacing(4)
-
-                HStack(alignment: .top, spacing: 12) {
-                    recordCount(title: "완료 음식 기록", count: snapshot.completedExperienceCount)
-                    recordCount(title: "관련 식사", count: Set(heroEvidence.map(\.independentMealID)).count, unit: "회")
-                }
-                .padding(.top, 2)
-                Button("직접 평가·반대 근거 보기") { showsEvidence = true }
-                    .font(TBFont.medium(12)).frame(minHeight: 44)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .accessibilityElement(children: .contain)
         }
-        .sheet(isPresented: $showsEvidence) { SensoryEvidenceDetailSheet(observations: heroEvidence, unresolved: []) }
-    }
-
-    private var heroEvidence: [SensoryObservation] {
-        let selected = [snapshot.mainWing.main, snapshot.mainWing.wing].compactMap { $0 }
-        let candidates = selected.isEmpty ? snapshot.mainWing.candidates : selected
-        let ids = Set(candidates.flatMap { $0.supportEvidenceIDs + $0.counterEvidenceIDs })
-        return snapshot.observations.filter { ids.contains($0.id) }
     }
 
     private var heroDescription: String {
         switch snapshot.mainWing.status {
         case "provisional_profile":
-            if let main = snapshot.mainWing.main, main.counterExperienceCount > 0 {
-                return "이 넓은 범주에 긍정 \(main.supportExperienceCount)회·반대 \(main.counterExperienceCount)회의 식사가 있어요. 기록 분포를 요약한 이름이며, 조건별 선호 방향은 반례와 함께 보류할 수 있어요."
+            guard let main = snapshot.mainWing.main else {
+                return "현재 식사 기록의 호감을 묶은 잠정적인 타입이에요."
             }
-            let labels = Array(Set(heroEvidence.filter { $0.kind == "attribute_liking" }.map(\.attributeLabel))).sorted().prefix(3).joined(separator: " · ")
-            return "\(labels.isEmpty ? "직접 남긴 평가" : labels + "에 남긴 직접 평가")를 요약했어요. 현재 기록에서 보이는 성향이며 조건별 판단과 반대 근거도 함께 확인해요."
+            let supportIDs = Set(main.supportEvidenceIDs + (snapshot.mainWing.wing?.supportEvidenceIDs ?? []))
+            let topics = Array(Set(snapshot.observations.filter { supportIDs.contains($0.id) }
+                .map { $0.kind == "combination_liking" ? "맛의 조합" : $0.attributeLabel })).sorted()
+            let topicText = topics.prefix(2).joined(separator: ", ") + (topics.count > 2 ? " 등" : "")
+            var description = topics.isEmpty ? "현재 식사 기록의 호감을 묶은 잠정적인 타입이에요." : "\(topicText)에 남긴 호감을 묶은 잠정 타입이에요."
+            if main.counterExperienceCount > 0 || (snapshot.mainWing.wing?.counterExperienceCount ?? 0) > 0 {
+                description += " 아쉬웠던 기록도 있어 더 확인하고 있어요."
+            }
+            return description
         case "ambiguous_main":
-            return "서로 다른 상황의 기록이 함께 있어 한 가지 입맛으로 정하지 않고 있어요."
+            return "서로 다른 취향이 함께 나타나고 있어요. 기록을 더 모으며 두드러지는 성향을 살펴보고 있어요."
         default:
-            return "기록한 감각과 직접 평가를 쌓으며 좋아하는 조합과 부담스러운 조건을 확인하고 있어요."
+            return "식사 기록을 모으며 어떤 맛과 식감을 좋아하는지 알아가고 있어요."
         }
-    }
-
-    private func recordCount(title: String, count: Int, unit: String = "개") -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-                .font(TBFont.medium(11))
-                .foregroundStyle(TBColor.textHint)
-            Text("\(count)\(unit)")
-                .font(TBFont.semibold(13))
-                .foregroundStyle(TBColor.textPrimary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
 }
@@ -283,7 +261,9 @@ struct PersonalTasteCandidateGroup: Identifiable {
                 "neutral": "보통",
                 "negative": "아쉬움",
             ][direction] ?? "같은 반응"
-            return "\(subject)는 \(mealCount)번의 식사에서 \(response)을 남겼어요."
+            let responseCount = candidate.distribution.count(for: direction)
+            let coverage = responseCount == mealCount ? "\(mealCount)번의 식사에서" : "\(mealCount)번의 식사 중 \(responseCount)번에서"
+            return "\(subject)는 \(coverage) \(response)을 남겼어요."
         }
         var responses: [String] = []
         if candidate.distribution.positive > 0 { responses.append("호감") }
@@ -367,10 +347,12 @@ struct TasteQuestionMedia: View {
     @Environment(\.displayScale) private var displayScale
     @State private var thumbnail: CGImage?
     @State private var loadedPhotoFilename: String?
+    @State private var photoRevision = 0
+    @State private var loadedPhotoRevision: Int?
 
     var body: some View {
         Group {
-            if let thumbnail, loadedPhotoFilename == photoFilename {
+            if let thumbnail, loadedPhotoFilename == photoFilename, loadedPhotoRevision == photoRevision {
                 Image(decorative: thumbnail, scale: displayScale, orientation: .up)
                     .resizable().scaledToFill()
             } else {
@@ -381,16 +363,22 @@ struct TasteQuestionMedia: View {
         .background(TBColor.mutedSurface)
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.icon, style: .continuous))
         .accessibilityHidden(true)
-        .task(id: photoFilename) {
+        .onReceive(NotificationCenter.default.publisher(for: DiningReflectionPhotoStore.didChangeNotification)) { _ in
+            photoRevision &+= 1
+        }
+        .task(id: "\(photoFilename ?? "")#\(photoRevision)") {
             thumbnail = nil
             loadedPhotoFilename = nil
+            loadedPhotoRevision = nil
+            let revision = photoRevision
             guard let photoFilename else { return }
             let image = await DiningReflectionPhotoStore.thumbnail(
                 for: photoFilename, fillingSquareOf: max(1, Int(ceil(60 * displayScale)))
             )
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, revision == photoRevision else { return }
             thumbnail = image
             loadedPhotoFilename = photoFilename
+            loadedPhotoRevision = revision
         }
     }
 }
@@ -761,25 +749,21 @@ struct PersonalTasteNextQuestionCard: View {
     .background(TBColor.page)
 }
 
-struct PersonalTasteCandidateDetailSheet: View {
+struct PersonalTasteCandidateDetailView: View {
     let group: PersonalTasteCandidateGroup
     let observations: [SensoryObservation]
     let entries: [DiningEntry]
     let limits: [String]
     var unresolved: [SensoryUnresolved] = []
-    @Environment(\.dismiss) private var dismiss
+    @State private var section: TasteDetailSection = .overview
 
     var body: some View {
-        BottomSheetShell(
-            headerStart: AnyView(BottomSheetCloseButton { dismiss() }),
-            headerCenter: AnyView(Text("조건별 입맛").tbTextStyle(.sheetTitle)),
-            stageMode: .auto(maxHeightRatio: 1),
-            usesNativeSheetChrome: true,
-            surfaceBackground: TBColor.page
-        ) {
-            BottomSheetScrollView {
+        TasteDetailPage(title: "조건별 입맛") {
+            TasteDetailSectionPicker(selection: $section, overviewTitle: "조건", evidenceTitle: "기록·반례")
+        } content: {
                 VStack(alignment: .leading, spacing: TBSpacing.section) {
-                    SectionCard(background: TBColor.mutedSurface) {
+                    if section == .overview {
+                    SectionCard(showsBorder: false) {
                         VStack(alignment: .leading, spacing: TBSpacing.x8) {
                             Text(PersonalTasteCandidatePresentation.eyebrow(group))
                                 .font(TBFont.semibold(11))
@@ -805,7 +789,8 @@ struct PersonalTasteCandidateDetailSheet: View {
                     }
 
                     TasteIntensityLikingMatrixView(observations: observations, attribute: group.attribute, reference: group.reference, unresolved: unresolved)
-
+                    }
+                    if section == .evidence {
                     ForEach(group.highlightedCandidates) { candidate in
                         let condition = group.conditionText(candidate)
                         let categorizedMealIDs = Set(
@@ -829,7 +814,7 @@ struct PersonalTasteCandidateDetailSheet: View {
                         if !candidate.neutralMealIDs.isEmpty {
                             mealEvidenceSection(
                                 title: "\(condition) · 중립으로 남긴 식사",
-                                subtitle: "좋고 싫음 어느 쪽으로도 두지 않은 기록이에요.",
+                                subtitle: "",
                                 mealIDs: candidate.neutralMealIDs,
                                 evidenceIDs: Set(candidate.evidenceIDs)
                             )
@@ -837,7 +822,7 @@ struct PersonalTasteCandidateDetailSheet: View {
                         if !candidate.mixedMealIDs.isEmpty {
                             mealEvidenceSection(
                                 title: "\(condition) · 한 식사 안에서 평가가 엇갈린 식사",
-                                subtitle: "같은 식사에서 함께 나타난 서로 다른 평가를 그대로 보여드려요.",
+                                subtitle: "",
                                 mealIDs: candidate.mixedMealIDs,
                                 evidenceIDs: Set(candidate.evidenceIDs)
                             )
@@ -845,7 +830,7 @@ struct PersonalTasteCandidateDetailSheet: View {
                         if !candidate.counterMealIDs.isEmpty {
                             mealEvidenceSection(
                                 title: "\(condition) · 다른 반응을 남긴 식사",
-                                subtitle: "이 조건 안의 반대 기록도 숨기지 않아요.",
+                                subtitle: "",
                                 mealIDs: candidate.counterMealIDs,
                                 evidenceIDs: Set(candidate.evidenceIDs)
                             )
@@ -853,7 +838,7 @@ struct PersonalTasteCandidateDetailSheet: View {
                         if !otherMealIDs.isEmpty {
                             mealEvidenceSection(
                                 title: "\(condition) · 평가가 엇갈린 식사",
-                                subtitle: "한쪽 방향으로 묶이지 않은 식사도 근거에서 빼지 않아요.",
+                                subtitle: "",
                                 mealIDs: otherMealIDs,
                                 evidenceIDs: Set(candidate.evidenceIDs)
                             )
@@ -867,33 +852,18 @@ struct PersonalTasteCandidateDetailSheet: View {
                     if !remainingEvidence.isEmpty {
                         mealEvidenceSection(
                             title: "이 감각의 다른 조건 기록",
-                            subtitle: "현재 카드에 연결된 다른 부위·시점·강도 기록도 함께 보존해요.",
+                            subtitle: "",
                             mealIDs: group.mealIDs,
                             evidenceIDs: remainingEvidence
                         )
                     }
-
+                    }
                     if !limits.isEmpty {
-                        TBPageSection(title: "해석 범위", titleSize: .medium) {
-                            SectionCard {
-                                VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                                    ForEach(limits.prefix(3), id: \.self) { limit in
-                                        Text(limit)
-                                            .font(TBFont.regular(12))
-                                            .foregroundStyle(TBColor.textBody)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                }
-                            }
-                        }
+                        TasteDetailDisclosure() { ForEach(limits, id: \.self) { Text($0) } }
                     }
                 }
                 .tbPageContentPadding()
-            }
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.hidden)
-        .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
         .modifier(MemoryRevisionDismissal())
     }
 
@@ -904,7 +874,7 @@ struct PersonalTasteCandidateDetailSheet: View {
         mealIDs: [String],
         evidenceIDs: Set<String>
     ) -> some View {
-        TBPageSection(title: title, subtitle: subtitle) {
+        TBPageSection(title: title, subtitle: subtitle.isEmpty ? nil : subtitle) {
             if mealIDs.isEmpty {
                 SectionCard {
                     Text("아직 이 범위에서 연결된 식사 근거가 없어요.")
@@ -965,7 +935,7 @@ struct PersonalTasteCandidateDetailSheet: View {
 
 enum PersonalTasteConditionLabels {
     private static let dishKindLabels: [String: String] = {
-        let options = (try? DiningFeedbackFixtureLoader.load().dishKindOptions) ?? []
+        let options = (try? DiningFeedbackFixtureLoader.load().allDishKindOptions) ?? []
         return Dictionary(uniqueKeysWithValues: options.map { ($0.id, $0.label) })
     }()
     private static let targetLabels = [
@@ -997,103 +967,84 @@ enum PersonalTasteConditionLabels {
     }
 }
 
-struct SensoryInsightDetailSheet: View {
+struct SensoryInsightDetailView: View {
     let insight: SensoryInsight
     let observations: [SensoryObservation]
     let unresolved: [SensoryUnresolved]
     let limits: [String]
-    @Environment(\.dismiss) private var dismiss
-
+    @State private var section: TasteDetailSection = .overview
     var body: some View {
-        BottomSheetShell(
-            headerStart: AnyView(BottomSheetCloseButton { dismiss() }),
-            headerCenter: AnyView(Text("인사이트").tbTextStyle(.sheetTitle)),
-            stageMode: .auto(maxHeightRatio: 1),
-            usesNativeSheetChrome: true,
-            surfaceBackground: TBColor.page
-        ) {
-            BottomSheetScrollView {
-                VStack(alignment: .leading, spacing: TBSpacing.section) {
-                    SectionCard(background: TBColor.mutedSurface) {
-                        VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                            Text(insight.title)
-                                .font(TBFont.bold(18))
-                                .foregroundStyle(TBColor.textPrimary)
-                            Text(insight.body)
-                                .font(TBFont.regular(13))
-                                .foregroundStyle(TBColor.textBody)
-                                .lineSpacing(4)
-                        }
+        TasteDetailPage(title: "인사이트") {
+            TasteDetailSectionPicker(selection: $section, overviewTitle: "해석", evidenceTitle: "기록")
+        } content: {
+            VStack(alignment: .leading, spacing: TBSpacing.x20) {
+                if section == .overview {
+                    TasteDetailChartPanel {
+                        Text(insight.title).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(insight.body).font(TBFont.regular(13)).foregroundStyle(TBColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-
-                    TBPageSection(
-                        title: "근거가 된 기록",
-                        subtitle: "같은 기록에서 나온 여러 표현은 기록 수를 늘리지 않아요."
-                    ) {
-                        SensoryEvidenceList(observations: observations, unresolved: unresolved)
-                    }
-
-                    if !limits.isEmpty {
-                        TBPageSection(title: "해석 범위", titleSize: .medium) {
-                            SectionCard {
-                                VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                                    ForEach(limits.prefix(3), id: \.self) { limit in
-                                        Label {
-                                            Text(limit)
-                                                .font(TBFont.regular(12))
-                                                .foregroundStyle(TBColor.textBody)
-                                        } icon: {
-                                            LucideIcon(
-                                                systemName: "minus",
-                                                size: TBIcon.Size.small,
-                                                strokeWidth: TBIcon.Stroke.regular
-                                            )
-                                            .foregroundStyle(TBColor.textHint)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    TasteDetailGroup {
+                        TasteDetailValueRow(title: "관련 식사", value: "\(Set(observations.map(\.independentMealID)).count)회", showsDivider: false)
+                    }.padding(.horizontal, TBSpacing.page)
+                } else {
+                    SensoryEvidenceList(observations: observations, unresolved: unresolved).padding(.horizontal, TBSpacing.page)
                 }
-                .tbPageContentPadding()
-            }
-        }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.hidden)
-        .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
-        .modifier(MemoryRevisionDismissal())
+                if !limits.isEmpty {
+                    TasteDetailDisclosure() { ForEach(limits, id: \.self) { Text($0) } }.padding(.horizontal, TBSpacing.page)
+                }
+            }.padding(.bottom, TBSpacing.page)
+        }.modifier(MemoryRevisionDismissal())
     }
 }
 
-struct SensoryEvidenceDetailSheet: View {
+struct SensoryEvidenceDetailView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let observations: [SensoryObservation]
     let unresolved: [SensoryUnresolved]
-    @Environment(\.dismiss) private var dismiss
+    @State private var scope: SensoryEvidenceScope = .all
 
     var body: some View {
-        BottomSheetShell(
-            headerStart: AnyView(BottomSheetCloseButton { dismiss() }),
-            headerCenter: AnyView(Text("기록 근거").tbTextStyle(.sheetTitle)),
-            stageMode: .auto(maxHeightRatio: 1),
-            usesNativeSheetChrome: true,
-            surfaceBackground: TBColor.page
-        ) {
-            BottomSheetScrollView {
-                TBPageSection(
-                    title: "선택과 추가 메모",
-                    subtitle: "선택한 버블·태그와 추가 메모를 출처별로 구분해요."
-                ) {
-                    SensoryEvidenceList(observations: observations, unresolved: unresolved)
-                }
-                .tbPageContentPadding()
+        TasteDetailPage(title: "기록 근거") {
+            if dynamicTypeSize.isAccessibilitySize {
+                Picker("근거 출처", selection: $scope) {
+                    ForEach(SensoryEvidenceScope.allCases) { Text($0.rawValue).tag($0) }
+                }.pickerStyle(.menu).frame(maxWidth: .infinity, minHeight: 44)
+                    .padding(.horizontal, TBSpacing.page).padding(.bottom, TBSpacing.x12)
+            } else {
+                TBCapsuleTabs(options: SensoryEvidenceScope.allCases, selection: $scope) { $0.rawValue }
             }
+        } content: {
+            SensoryEvidenceList(observations: filteredObservations, unresolved: filteredUnresolved)
+                .tbPageContentPadding()
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.hidden)
-        .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
         .modifier(MemoryRevisionDismissal())
     }
+    private var filteredObservations: [SensoryObservation] {
+        observations.filter { observation in
+            switch scope {
+            case .all: true
+            case .selection: observation.selectionEvidence != nil
+            case .notes: observation.selectionEvidence == nil
+            case .unresolved: observation.isUnclassifiedDetail
+            }
+        }
+    }
+    private var filteredUnresolved: [SensoryUnresolved] {
+        unresolved.filter { item in
+            switch scope {
+            case .all, .unresolved: true
+            case .selection: item.selectionEvidence != nil
+            case .notes: item.selectionEvidence == nil
+            }
+        }
+    }
+}
+
+private enum SensoryEvidenceScope: String, CaseIterable, Identifiable {
+    case all = "전체", selection = "선택 응답", notes = "추가 메모", unresolved = "확인 중"
+    var id: String { rawValue }
 }
 
 struct SensoryEvidenceList: View {

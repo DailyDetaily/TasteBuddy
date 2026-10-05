@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "tba-search-menu-catalog/1",
+  "revision": "official-wonton-20261004",
+  "topics": [
+    {
+      "id": "spicy-wontons",
+      "dishKindID": "dumpling",
+      "generalLabel": "완탕 둘러보기",
+      "sensoryLabel": "매운 완탕",
+      "attribute": "trigeminal.spicy",
+      "attributeLabel": "완탕의 매운 소스"
+    }
+  ],
+  "menus": [
+    {
+      "id": "dintaifung-spicy-shrimp-wonton",
+      "revision": "official-20261004",
+      "title": "매운새우완탕",
+      "restaurantName": "딘타이펑",
+      "restaurantQuery": "딘타이펑",
+      "dishKindIDs": [
+        "dumpling",
+        "sauce_glaze",
+        "seafood",
+        "meat"
+      ],
+      "availability": "unconfirmed",
+      "source": {
+        "id": "dintaifung-wonton-20261004-shrimp",
+        "kind": "official_menu_description",
+        "url": "https://www.dintaifung.co.kr/menu/220110/wonton.php",
+        "checkedAt": "2026-10-04T12:02:57.208Z",
+        "reviewAfter": "2026-11-03T12:02:57.208Z",
+        "excerpt": "매운소스 새우 고기 훈툰"
+      },
+      "features": [
+        {
+          "attribute": "trigeminal.spicy",
+          "reference": null,
+          "target": "sauce",
+          "phase": "unspecified",
+          "intensity": null,
+          "sourceExcerpt": "매운소스"
+        }
+      ]
+    },
+    {
+      "id": "dintaifung-spicy-vegetable-wonton",
+      "revision": "official-20261004",
+      "title": "매운야채완탕",
+      "restaurantName": "딘타이펑",
+      "restaurantQuery": "딘타이펑",
+      "dishKindIDs": [
+        "dumpling",
+        "sauce_glaze",
+        "vegetable_herb",
+        "meat"
+      ],
+      "availability": "unconfirmed",
+      "source": {
+        "id": "dintaifung-wonton-20261004-vegetable",
+        "kind": "official_menu_description",
+        "url": "https://www.dintaifung.co.kr/menu/220110/wonton.php",
+        "checkedAt": "2026-10-04T12:02:57.208Z",
+        "reviewAfter": "2026-11-03T12:02:57.208Z",
+        "excerpt": "매운소스 야채 고기 훈툰"
+      },
+      "features": [
+        {
+          "attribute": "trigeminal.spicy",
+          "reference": null,
+          "target": "sauce",
+          "phase": "unspecified",
+          "intensity": null,
+          "sourceExcerpt": "매운소스"
+        }
+      ]
+    }
+  ]
+}

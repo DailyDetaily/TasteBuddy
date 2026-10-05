@@ -13,6 +13,7 @@ interface InterpretationCardProps {
   indicatorBackground?: string;
   onExpand?: () => void;
   supportingText?: string;
+  supportingTextLines?: 2;
 }
 
 export default function InterpretationCard({
@@ -24,6 +25,7 @@ export default function InterpretationCard({
   indicatorBackground,
   onExpand,
   supportingText,
+  supportingTextLines,
 }: InterpretationCardProps) {
   const isInteractive = typeof onExpand === 'function';
 
@@ -78,7 +80,7 @@ export default function InterpretationCard({
               {description}
             </p>
             {supportingText ? (
-              <p className="text-[12px] font-normal leading-normal text-[var(--tb-color-text-muted)]">
+              <p className={cn(supportingTextLines === 2 && 'line-clamp-2', "text-[12px] font-normal leading-normal text-[var(--tb-color-text-muted)]")}>
                 {supportingText}
               </p>
             ) : null}

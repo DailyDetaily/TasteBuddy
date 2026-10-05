@@ -4,6 +4,9 @@ export const positiveEvaluation = /좋(?:아요|았습니다|았어요|았다|�
 export const negativeEvaluation = /싫(?:어요|었습니다|었어요|었다|었음|다|고|습니다)|아쉬(?:워요|웠습니다|웠어요|웠다|웠고|웠지만|웠음)|부담(?:스러|돼|되)|물렸|물려|별로|맛없|불쾌/u;
 export const evaluationCue = /좋|싫|아쉽|아쉬|괜찮|만족|불만|훌륭|별로|선호|마음에|거슬|즐거|반갑|환상|매력|인상|취향|기대|실망|최고|최악|부담|물렸|물려|맛있|맛없/u;
 export const comparativeOrConditional = /보다|비해|만큼|덜 .*좋|더 .*좋|(?:으면|라면|다면|했으면|할 때만|일 때만|때만)/u;
+// 변화·소실에 대한 평가는 그 감각 자체의 호감이 아니다. 관계를 풀기 전 원문으로 남긴다.
+export const appliedFoodCondition = /(?:묻히|찍으|뿌리|섞으|넣으|부으)(?:니|니까|자|면)|(?:묻혀|찍어|뿌려|섞어|넣어|부어)(?:서|도| 먹)|(?:묻힌|찍은|뿌린|섞은|넣은|부은)\s*(?:뒤|후)/u;
+export const sensoryChangeOrAppliedCondition = new RegExp('(?:죽(?:어|었)|사라(?:져|졌|지)|없어(?:져|졌|지)|줄(?:어|었)|줄어들|늘(?:어|었)|(?:강|약|덜|눅눅|미지근)해(?:져|졌|지)|변(?:해|했)|달라(?:져|졌))|' + appliedFoodCondition.source, 'u');
 export const temporalDetail = /씹을수록|씹는 동안|삼킨\s?뒤|삼킨\s?후|식으니|식었을 때|식은 뒤|입안에 남는|입안을 덮|가볍게 부서|잘게 부서|퍼졌|퍼지|감싸|스며|피어|녹아|풀리|조이는/u;
 export const additionalSenses = [
   ['texture.springy', /탄성/u],

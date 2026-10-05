@@ -191,9 +191,9 @@ struct ChipStyle: Equatable {
             )
         case (.neutral, .solid), (.accent, .solid):
             ChipStyle(
-                background: TBColor.textPrimary,
-                border: TBColor.textPrimary,
-                foreground: TBColor.textInverse
+                background: TBColor.selectionSurface,
+                border: TBColor.selectionSurface,
+                foreground: TBColor.selectionText
             )
         case (.neutral, .text):
             ChipStyle(
@@ -205,34 +205,34 @@ struct ChipStyle: Equatable {
             ChipStyle(
                 background: TBColor.successSoft,
                 border: TBColor.successSoft,
-                foreground: TBColor.success
+                foreground: TBColor.successText
             )
         case (.success, .outline):
-            ChipStyle(background: .clear, border: TBColor.success, foreground: TBColor.success)
+            ChipStyle(background: .clear, border: TBColor.success, foreground: TBColor.successText)
         case (.success, .solid):
             ChipStyle(
-                background: TBColor.success,
-                border: TBColor.success,
+                background: TBColor.successStrong,
+                border: TBColor.successStrong,
                 foreground: TBColor.textInverse
             )
         case (.success, .text):
-            ChipStyle(background: .clear, border: .clear, foreground: TBColor.success)
+            ChipStyle(background: .clear, border: .clear, foreground: TBColor.successText)
         case (.warning, .soft):
             ChipStyle(
                 background: TBColor.warningSoft,
                 border: TBColor.warningSoft,
-                foreground: TBColor.warning
+                foreground: TBColor.warningText
             )
         case (.warning, .outline):
-            ChipStyle(background: .clear, border: TBColor.warning, foreground: TBColor.warning)
+            ChipStyle(background: .clear, border: TBColor.warning, foreground: TBColor.warningText)
         case (.warning, .solid):
             ChipStyle(
-                background: TBColor.warning,
-                border: TBColor.warning,
+                background: TBColor.warningStrong,
+                border: TBColor.warningStrong,
                 foreground: TBColor.textInverse
             )
         case (.warning, .text):
-            ChipStyle(background: .clear, border: .clear, foreground: TBColor.warning)
+            ChipStyle(background: .clear, border: .clear, foreground: TBColor.warningText)
         case (.accent, .soft):
             ChipStyle(
                 background: TBColor.surface,
@@ -427,7 +427,7 @@ struct TasteChip: View {
     var body: some View {
         let isNeutral = tone == .neutral
         let resolvedAxis = colorAxis ?? axis
-        let signalColor = isNeutral ? TBColor.textTertiary : (resolvedAxis?.mainColor ?? TBColor.textTertiary)
+        let signalColor = isNeutral ? TBColor.textTertiary : (resolvedAxis?.tintTextColor ?? TBColor.textTertiary)
         let labelColor = isNeutral
             ? TBColor.textTertiary
             : (value == nil ? (resolvedAxis?.tintTextColor ?? TBColor.textTertiary) : TBColor.textPrimary)
@@ -961,6 +961,8 @@ struct TastePointArrowBox: View {
     var axis: TasteAxis? = nil
     let trend: TastePointTrend
     var size: CGFloat = 18
+    var glyphSize: CGFloat? = nil
+    var strokeWidth: CGFloat = TBIcon.Stroke.regular
 
     var body: some View {
         ZStack {
@@ -969,8 +971,8 @@ struct TastePointArrowBox: View {
 
             LucideIcon(
                 systemName: trend.symbol,
-                size: size * 0.5,
-                strokeWidth: TBIcon.Stroke.regular
+                size: glyphSize ?? size * 0.5,
+                strokeWidth: strokeWidth
             )
                 .foregroundStyle(Color.white)
         }
@@ -1252,6 +1254,30 @@ struct TasteLineChart: View {
     }
 }
 
+/// Measures the complete header and body together before balancing the footer.
+private struct TasteInsightEqualSectionsLayout: Layout {
+    private let spacing: CGFloat = TBSpacing.x12
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let sizes = subviews.map { $0.sizeThatFits(.init(width: proposal.width, height: nil)) }
+        guard sizes.count == 3 else { return .zero }
+        return CGSize(width: proposal.width ?? sizes.map(\.width).max() ?? 0,
+                      height: max(sizes[0].height, sizes[2].height) * 2 + sizes[1].height + spacing * 2)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 3 else { return }
+        let dividerHeight = subviews[1].sizeThatFits(.init(width: bounds.width, height: nil)).height
+        let sectionHeight = max(0, (bounds.height - dividerHeight - spacing * 2) / 2)
+        subviews[0].place(at: bounds.origin, anchor: .topLeading,
+                          proposal: .init(width: bounds.width, height: sectionHeight))
+        subviews[1].place(at: CGPoint(x: bounds.minX, y: bounds.minY + sectionHeight + spacing), anchor: .topLeading,
+                          proposal: .init(width: bounds.width, height: dividerHeight))
+        subviews[2].place(at: CGPoint(x: bounds.minX, y: bounds.minY + sectionHeight + spacing * 2 + dividerHeight), anchor: .topLeading,
+                          proposal: .init(width: bounds.width, height: sectionHeight))
+    }
+}
+
 struct TasteInsightSummaryCardLayout<Content: View>: View {
     let indicatorColors: [Color]
     var indicatorWeights: [Double] = []
@@ -1261,10 +1287,13 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
     let title: String
     var titleContentSpacing: CGFloat = TBSpacing.x12
     var showsTitle = true
+    var combinesAccessibilityChildren = true
+    var sectionLabelLineLimit: Int? = 1
     var accessibilityLabel: String? = nil
     var accessibilityHint: String? = nil
     var onTap: (() -> Void)? = nil
     private let content: Content
+    private let balancedFooter: AnyView?
 
     init(
         indicatorColors: [Color],
@@ -1275,9 +1304,12 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
         title: String,
         titleContentSpacing: CGFloat = TBSpacing.x12,
         showsTitle: Bool = true,
+        combinesAccessibilityChildren: Bool = true,
+        sectionLabelLineLimit: Int? = 1,
         accessibilityLabel: String? = nil,
         accessibilityHint: String? = nil,
         onTap: (() -> Void)? = nil,
+        balancedFooter: AnyView? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.indicatorColors = indicatorColors
@@ -1288,9 +1320,12 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
         self.title = title
         self.titleContentSpacing = titleContentSpacing
         self.showsTitle = showsTitle
+        self.combinesAccessibilityChildren = combinesAccessibilityChildren
+        self.sectionLabelLineLimit = sectionLabelLineLimit
         self.accessibilityLabel = accessibilityLabel
         self.accessibilityHint = accessibilityHint
         self.onTap = onTap
+        self.balancedFooter = balancedFooter
         self.content = content()
     }
 
@@ -1305,13 +1340,33 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
                 cardContent
             }
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: combinesAccessibilityChildren ? .combine : .contain)
         .accessibilityLabel(accessibilityLabel ?? "\(sectionLabel), \(title)")
         .accessibilityHint(accessibilityHint ?? "")
         .accessibilityAddTraits(onTap == nil ? [] : .isButton)
     }
 
     private var cardContent: some View {
+        Group {
+            if let balancedFooter {
+                TasteInsightEqualSectionsLayout {
+                    upperContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    Divider().overlay(TBColor.borderSubtle).frame(height: 0.5)
+                    balancedFooter
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                }
+            } else {
+                upperContent
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(TBColor.surface)
+        .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
+    }
+
+    private var upperContent: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 16) {
                 HStack(spacing: 6) {
@@ -1339,7 +1394,7 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
                     Text(sectionLabel)
                         .font(TBFont.bold(14))
                         .foregroundStyle(TBColor.textPrimary)
-                        .lineLimit(1)
+                        .lineLimit(sectionLabelLineLimit)
                 }
 
                 Spacer(minLength: 0)
@@ -1362,10 +1417,6 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
                 content
             }
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(TBColor.surface)
-        .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
     }
 }
 
@@ -1414,7 +1465,9 @@ struct TasteInsightSummaryCard: View {
                             if data.hasHistory {
                                 TastePointArrowBox(
                                     axis: detail.axis,
-                                    trend: detail.trend
+                                    trend: detail.trend,
+                                    glyphSize: 12,
+                                    strokeWidth: 3
                                 )
                             } else {
                                 LucideIcon(
@@ -1662,6 +1715,7 @@ struct RecommendationMiniCardLayout<Visual: View>: View {
             height: RecommendationMiniCardMetrics.contentHeight,
             alignment: .topLeading
         )
+        .platingLayoutFrame("home-card-content", when: title == TDCategory.experience.rawValue)
         .padding(RecommendationMiniCardMetrics.padding)
         .background(axis.tintColor)
         .clipShape(
@@ -1677,6 +1731,7 @@ struct RecommendationMiniCardLayout<Visual: View>: View {
             )
             .stroke(axis.mainColor.opacity(RecommendationMiniCardMetrics.borderOpacity))
         }
+        .platingLayoutFrame("home-card", when: title == TDCategory.experience.rawValue)
     }
 }
 

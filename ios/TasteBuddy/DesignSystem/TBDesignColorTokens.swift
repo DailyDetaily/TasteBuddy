@@ -82,9 +82,11 @@ enum TBDesignColorTokens {
             static let muted = token("surface.muted", "--tb-color-surface-muted", "#F7F7F7", .hex(0xF7F7F7))
             static let elevated = token("surface.elevated", "--tb-color-surface-elevated", "#FCFCFC", .hex(0xFCFCFC))
             static let disabled = token("surface.disabled", "--tb-color-surface-disabled", "#EFEFEF", .hex(0xEFEFEF))
+            static let placeholder = token("surface.placeholder", "--tb-color-surface-placeholder", "#EFEFEF", .hex(0xEFEFEF))
+            static let inverse = token("surface.inverse", "--tb-color-surface-inverse", "#0F0F0F", .hex(0x0F0F0F))
             static let overlay = token("surface.overlay", "--tb-color-surface-overlay", "rgba(255, 255, 255, 0.8)", .rgba(255, 255, 255, 0.8))
 
-            static let all = [base, card, cardHover, muted, elevated, disabled, overlay]
+            static let all = [base, card, cardHover, muted, elevated, disabled, placeholder, inverse, overlay]
         }
 
         enum Text {
@@ -92,14 +94,15 @@ enum TBDesignColorTokens {
             static let secondary = token("text.secondary", "--tb-color-text-secondary", "#3F3F3F", .hex(0x3F3F3F))
             static let tertiary = token("text.tertiary", "--tb-color-text-tertiary", "#535353", .hex(0x535353))
             static let body = token("text.body", "--tb-color-text-body", "#666666", .hex(0x666666))
-            static let hint = token("text.hint", "--tb-color-text-hint", "#888888", .hex(0x888888))
+            static let action = token("text.action", "--tb-color-text-action", "#666666", .hex(0x666666))
+            static let hint = token("text.hint", "--tb-color-text-hint", "#6F6F6F", .hex(0x6F6F6F))
             static let disabled = token("text.disabled", "--tb-color-text-disabled", "#AFAFAF", .hex(0xAFAFAF))
             static let inverse = token("text.inverse", "--tb-color-text-inverse", "#FFFFFF", .hex(0xFFFFFF))
             static let subtle = token("text.subtle", "--tb-color-text-subtle", "rgba(15, 15, 15, 0.6)", .rgba(15, 15, 15, 0.6))
             static let muted = token("text.muted", "--tb-color-text-muted", "rgba(15, 15, 15, 0.5)", .rgba(15, 15, 15, 0.5))
             static let faint = token("text.faint", "--tb-color-text-faint", "rgba(15, 15, 15, 0.4)", .rgba(15, 15, 15, 0.4))
 
-            static let all = [primary, secondary, tertiary, body, hint, disabled, inverse, subtle, muted, faint]
+            static let all = [primary, secondary, tertiary, body, action, hint, disabled, inverse, subtle, muted, faint]
         }
 
         enum Border {
@@ -123,16 +126,47 @@ enum TBDesignColorTokens {
         }
 
         enum State {
+            static let neutral = token("state.neutral", "--tb-color-neutral", "#3F3F3F", .hex(0x3F3F3F))
+            static let neutralSoft = token("state.neutralSoft", "--tb-color-neutral-soft", "#EFEFEF", .hex(0xEFEFEF))
+            static let informative = token("state.informative", "--tb-color-informative", "#3F3F3F", .hex(0x3F3F3F))
+            static let informativeSoft = token("state.informativeSoft", "--tb-color-informative-soft", "#F7F7F7", .hex(0xF7F7F7))
             static let success = token("state.success", "--tb-color-success", "#2F8F5B", .hex(0x2F8F5B))
+            static let successText = token("state.successText", "--tb-color-success-text", "#236B45", .hex(0x236B45))
+            static let successStrong = token("state.successStrong", "--tb-color-success-strong", "#236B45", .hex(0x236B45))
             static let successSoft = token("state.successSoft", "--tb-color-success-soft", "#E6F4EC", .hex(0xE6F4EC))
             static let warning = token("state.warning", "--tb-color-warning", "#A8661A", .hex(0xA8661A))
+            static let warningText = token("state.warningText", "--tb-color-warning-text", "#875014", .hex(0x875014))
+            static let warningStrong = token("state.warningStrong", "--tb-color-warning-strong", "#875014", .hex(0x875014))
             static let warningSoft = token("state.warningSoft", "--tb-color-warning-soft", "#FFF1DE", .hex(0xFFF1DE))
             static let destructive = token("state.destructive", "--tb-color-destructive", "#D4183D", .hex(0xD4183D))
+            static let destructiveText = token("state.destructiveText", "--tb-color-destructive-text", "#B31333", .hex(0xB31333))
+            static let destructiveSoft = token("state.destructiveSoft", "--tb-color-destructive-soft", "#FCEDEF", .hex(0xFCEDEF))
 
-            static let all = [success, successSoft, warning, warningSoft, destructive]
+            static let all = [neutral, neutralSoft, informative, informativeSoft, success, successText, successStrong, successSoft, warning, warningText, warningStrong, warningSoft, destructive, destructiveText, destructiveSoft]
         }
 
-        static let all = Background.all + Surface.all + Text.all + Border.all + Icon.all + State.all
+        enum Interaction {
+            static let primary = token("interaction.primary", "--tb-color-action-primary", "#0F0F0F", .hex(0x0F0F0F))
+            static let onPrimary = token("interaction.onPrimary", "--tb-color-action-on-primary", "#FFFFFF", .hex(0xFFFFFF))
+            static let selected = token("interaction.selected", "--tb-color-selection-surface", "#0F0F0F", .hex(0x0F0F0F))
+            static let onSelected = token("interaction.onSelected", "--tb-color-selection-text", "#FFFFFF", .hex(0xFFFFFF))
+            static let focus = token("interaction.focus", "--tb-color-focus-ring", "#3F3F3F", .hex(0x3F3F3F))
+            static let hoverOverlay = token("interaction.hoverOverlay", "--tb-color-hover-overlay", "rgba(0, 0, 0, 0.04)", .rgba(0, 0, 0, 0.04))
+            static let pressedOverlay = token("interaction.pressedOverlay", "--tb-color-pressed-overlay", "rgba(0, 0, 0, 0.06)", .rgba(0, 0, 0, 0.06))
+            static let pressedInverseOverlay = token("interaction.pressedInverseOverlay", "--tb-color-pressed-inverse-overlay", "rgba(255, 255, 255, 0.1)", .rgba(255, 255, 255, 0.1))
+
+            static let all = [primary, onPrimary, selected, onSelected, focus, hoverOverlay, pressedOverlay, pressedInverseOverlay]
+        }
+
+        enum Scrim {
+            static let subtle = token("scrim.subtle", "--tb-color-scrim-subtle", "rgba(0, 0, 0, 0.35)", .rgba(0, 0, 0, 0.35))
+            static let `default` = token("scrim.default", "--tb-color-scrim-default", "rgba(0, 0, 0, 0.5)", .rgba(0, 0, 0, 0.5))
+            static let strong = token("scrim.strong", "--tb-color-scrim-strong", "rgba(0, 0, 0, 0.6)", .rgba(0, 0, 0, 0.6))
+
+            static let all = [subtle, `default`, strong]
+        }
+
+        static let all = Background.all + Surface.all + Text.all + Border.all + Icon.all + State.all + Interaction.all + Scrim.all
 
         private static func token(
             _ path: String,
@@ -171,7 +205,7 @@ enum TBDesignColorTokens {
             static let averageStroke = token("radar.averageStroke", "--tb-data-viz-radar-average-stroke", "#D0D0D0", .hex(0xD0D0D0))
             static let highlightFill = token("radar.highlightFill", "--tb-data-viz-radar-highlight-fill", "rgba(255, 153, 0, 0.12)", .rgba(255, 153, 0, 0.12))
             static let highlightStroke = token("radar.highlightStroke", "--tb-data-viz-radar-highlight-stroke", "#FF9900", .hex(0xFF9900))
-            static let labelColor = token("radar.labelColor", "--tb-data-viz-radar-label-color", "#888888", .hex(0x888888))
+            static let labelColor = token("radar.labelColor", "--tb-data-viz-radar-label-color", "#6F6F6F", .hex(0x6F6F6F))
 
             static let all = [gridColor, averageFill, averageStroke, highlightFill, highlightStroke, labelColor]
         }
@@ -488,12 +522,15 @@ enum TBDesignColorTokens {
             static let surfaceMuted = css("--tb-color-surface-muted", "#f7f7f7", .hex(0xF7F7F7))
             static let surfaceElevated = css("--tb-color-surface-elevated", "#fcfcfc", .hex(0xFCFCFC))
             static let surfaceDisabled = css("--tb-color-surface-disabled", "#efefef", .hex(0xEFEFEF))
+            static let surfacePlaceholder = css("--tb-color-surface-placeholder", "#efefef", .hex(0xEFEFEF))
+            static let surfaceInverse = css("--tb-color-surface-inverse", "#0f0f0f", .hex(0x0F0F0F))
             static let surfaceOverlay = css("--tb-color-surface-overlay", "rgba(255, 255, 255, 0.8)", .rgba(255, 255, 255, 0.8))
             static let textPrimary = css("--tb-color-text-primary", "#0f0f0f", .hex(0x0F0F0F))
             static let textSecondary = css("--tb-color-text-secondary", "#3f3f3f", .hex(0x3F3F3F))
             static let textTertiary = css("--tb-color-text-tertiary", "#535353", .hex(0x535353))
             static let textBody = css("--tb-color-text-body", "#666666", .hex(0x666666))
-            static let textHint = css("--tb-color-text-hint", "#888888", .hex(0x888888))
+            static let textAction = css("--tb-color-text-action", "#666666", .hex(0x666666))
+            static let textHint = css("--tb-color-text-hint", "#6f6f6f", .hex(0x6F6F6F))
             static let textDisabled = css("--tb-color-text-disabled", "#afafaf", .hex(0xAFAFAF))
             static let textInverse = css("--tb-color-text-inverse", "#ffffff", .hex(0xFFFFFF))
             static let textSubtle = css("--tb-color-text-subtle", "rgba(15, 15, 15, 0.6)", .rgba(15, 15, 15, 0.6))
@@ -509,19 +546,44 @@ enum TBDesignColorTokens {
             static let iconPrimary = css("--tb-color-icon-primary", "#3f3f3f", .hex(0x3F3F3F))
             static let iconHover = css("--tb-color-icon-hover", "#6f6f6f", .hex(0x6F6F6F))
             static let iconMuted = css("--tb-color-icon-muted", "#afafaf", .hex(0xAFAFAF))
+            static let neutral = css("--tb-color-neutral", "#3f3f3f", .hex(0x3F3F3F))
+            static let neutralSoft = css("--tb-color-neutral-soft", "#efefef", .hex(0xEFEFEF))
+            static let informative = css("--tb-color-informative", "#3f3f3f", .hex(0x3F3F3F))
+            static let informativeSoft = css("--tb-color-informative-soft", "#f7f7f7", .hex(0xF7F7F7))
             static let success = css("--tb-color-success", "#2f8f5b", .hex(0x2F8F5B))
+            static let successText = css("--tb-color-success-text", "#236b45", .hex(0x236B45))
+            static let successStrong = css("--tb-color-success-strong", "#236b45", .hex(0x236B45))
             static let successSoft = css("--tb-color-success-soft", "#e6f4ec", .hex(0xE6F4EC))
             static let warning = css("--tb-color-warning", "#a8661a", .hex(0xA8661A))
+            static let warningText = css("--tb-color-warning-text", "#875014", .hex(0x875014))
+            static let warningStrong = css("--tb-color-warning-strong", "#875014", .hex(0x875014))
             static let warningSoft = css("--tb-color-warning-soft", "#fff1de", .hex(0xFFF1DE))
             static let destructive = css("--tb-color-destructive", "#d4183d", .hex(0xD4183D))
+            static let destructiveText = css("--tb-color-destructive-text", "#b31333", .hex(0xB31333))
+            static let destructiveSoft = css("--tb-color-destructive-soft", "#fcedef", .hex(0xFCEDEF))
+            static let actionPrimary = css("--tb-color-action-primary", "#0f0f0f", .hex(0x0F0F0F))
+            static let actionOnPrimary = css("--tb-color-action-on-primary", "#ffffff", .hex(0xFFFFFF))
+            static let selectionSurface = css("--tb-color-selection-surface", "#0f0f0f", .hex(0x0F0F0F))
+            static let selectionText = css("--tb-color-selection-text", "#ffffff", .hex(0xFFFFFF))
+            static let focusRing = css("--tb-color-focus-ring", "#3f3f3f", .hex(0x3F3F3F))
+            static let hoverOverlay = css("--tb-color-hover-overlay", "rgba(0, 0, 0, 0.04)", .rgba(0, 0, 0, 0.04))
+            static let pressedOverlay = css("--tb-color-pressed-overlay", "rgba(0, 0, 0, 0.06)", .rgba(0, 0, 0, 0.06))
+            static let pressedInverseOverlay = css("--tb-color-pressed-inverse-overlay", "rgba(255, 255, 255, 0.1)", .rgba(255, 255, 255, 0.1))
+            static let scrimSubtle = css("--tb-color-scrim-subtle", "rgba(0, 0, 0, 0.35)", .rgba(0, 0, 0, 0.35))
+            static let scrimDefault = css("--tb-color-scrim-default", "rgba(0, 0, 0, 0.5)", .rgba(0, 0, 0, 0.5))
+            static let scrimStrong = css("--tb-color-scrim-strong", "rgba(0, 0, 0, 0.6)", .rgba(0, 0, 0, 0.6))
 
             static let all = [
                 bgPage, bgFocus,
-                surfaceBase, surfaceCard, surfaceCardHover, surfaceMuted, surfaceElevated, surfaceDisabled, surfaceOverlay,
-                textPrimary, textSecondary, textTertiary, textBody, textHint, textDisabled, textInverse, textSubtle, textMuted, textFaint,
+                surfaceBase, surfaceCard, surfaceCardHover, surfaceMuted, surfaceElevated, surfaceDisabled, surfacePlaceholder, surfaceInverse, surfaceOverlay,
+                textPrimary, textSecondary, textTertiary, textBody, textAction, textHint, textDisabled, textInverse, textSubtle, textMuted, textFaint,
                 borderCard, borderSubtle, borderDefault, borderStrong, borderDisabled, borderAvatar, borderAvatarSoft,
                 iconPrimary, iconHover, iconMuted,
-                success, successSoft, warning, warningSoft, destructive
+                neutral, neutralSoft, informative, informativeSoft,
+                success, successText, successStrong, successSoft, warning, warningText, warningStrong, warningSoft, destructive, destructiveText, destructiveSoft,
+                actionPrimary, actionOnPrimary, selectionSurface, selectionText, focusRing,
+                hoverOverlay, pressedOverlay, pressedInverseOverlay,
+                scrimSubtle, scrimDefault, scrimStrong
             ]
         }
 
@@ -543,7 +605,7 @@ enum TBDesignColorTokens {
             static let radarAverageStroke = css("--tb-data-viz-radar-average-stroke", "#d0d0d0", .hex(0xD0D0D0))
             static let radarHighlightFill = css("--tb-data-viz-radar-highlight-fill", "rgba(255, 153, 0, 0.12)", .rgba(255, 153, 0, 0.12))
             static let radarHighlightStroke = css("--tb-data-viz-radar-highlight-stroke", "#ff9900", .hex(0xFF9900))
-            static let radarLabelColor = css("--tb-data-viz-radar-label-color", "#888888", .hex(0x888888))
+            static let radarLabelColor = css("--tb-data-viz-radar-label-color", "#6f6f6f", .hex(0x6F6F6F))
 
             static let all = [
                 progressTrack,

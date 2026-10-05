@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-01",
+  "source": "https://seed-design.io/components/callout",
+  "files": [
+    {
+      "file": "seed-callout-interaction.png",
+      "elementAlt": "Callout의 Interaction Property - Display, Actionable, Dismissible",
+      "sourceAsset": "https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/ee3635cc-d4c0-4fd1-a2fe-c0d7f7c7ac59"
+    },
+    {
+      "file": "seed-callout-tones.png",
+      "elementAlt": "Callout의 Tone Property - Neutral, Informative, Warning, Critical, Positive, Magic",
+      "sourceAsset": "https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/133b0c9e-97f8-4aff-ab60-a271dc17ee3f"
+    }
+  ],
+  "method": "Original official document image bytes. The review viewport crops horizontal whitespace; full originals open on click.",
+  "montage": "No independent Callout or Banner source in the 391-node public and resource inventory collected 2026-10-01.",
+  "usage": "Local comparison for Plating component review",
+  "native": {
+    "type": "Callout",
+    "source": "ios/TasteBuddy/Components/Callout.swift",
+    "sourceSha256": "15c0da3aaa1a63f0c09a143cccf56dd91f61a6da526e07424b4e6407b3dbc2e7",
+    "captures": "/plating/native-component-audit/callout--{state}.png",
+    "method": "UIHostingController render on iOS 26.5 simulator; metadata in src/plating/nativeAuditCaptures.json",
+    "states": [
+      "default",
+      "actionable",
+      "anatomy",
+      "critical",
+      "dismissible",
+      "informative",
+      "large",
+      "positive",
+      "warning"
+    ],
+    "note": "Recaptured after adding semantic foreground/background pairs and shared pressed overlay tokens.",
+    "capturedAt": "2026-10-02"
+  }
+}

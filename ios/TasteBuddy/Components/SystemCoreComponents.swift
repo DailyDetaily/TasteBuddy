@@ -428,7 +428,7 @@ struct EmptyState: View {
     private var actionBackground: Color {
         switch actionTone {
         case .default:
-            return TBColor.textPrimary
+            return TBColor.actionPrimary
         case .userAccent:
             return TasteAxis.sweet.tintColor
         }
@@ -437,7 +437,7 @@ struct EmptyState: View {
     private var actionForeground: Color {
         switch actionTone {
         case .default:
-            return TBColor.textInverse
+            return TBColor.actionOnPrimary
         case .userAccent:
             return TasteAxis.sweet.tintTextColor
         }
@@ -511,8 +511,7 @@ struct ActionOverlayCard<Content: View>: View {
 
     var body: some View {
         ZStack {
-            Color.black
-                .opacity(backdropOpacity)
+            backdropColor
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -581,6 +580,15 @@ struct ActionOverlayCard<Content: View>: View {
         }
     }
 
+    private var backdropColor: Color {
+        switch backdropOpacity {
+        case 0.35: TBColor.scrimSubtle
+        case 0.5: TBColor.scrimDefault
+        case 0.6: TBColor.scrimStrong
+        default: Color.black.opacity(backdropOpacity)
+        }
+    }
+
     @ViewBuilder
     private var actionStack: some View {
         switch layout {
@@ -646,7 +654,7 @@ struct ActionOverlayCard<Content: View>: View {
         case .default:
             return layout == .split ? TBColor.textTertiary : TBColor.textPrimary
         case .destructive:
-            return TBColor.destructive
+            return TBColor.destructiveText
         }
     }
 
@@ -659,7 +667,7 @@ struct ActionOverlayCard<Content: View>: View {
         case .default:
             return compact ? TBColor.mutedSurface : Color.clear
         case .destructive:
-            return compact ? TBColor.mutedSurface : TBColor.destructive.opacity(0.12)
+            return compact ? TBColor.mutedSurface : TBColor.destructiveSoft
         }
     }
 }
@@ -911,20 +919,30 @@ struct StagedSheetScreen<Content: View>: UIViewControllerRepresentable {
     let dimOpacity: CGFloat
     let animates: Bool
     let openOffsetY: CGFloat
+    var isAccessibilityHidden = false
     @ViewBuilder var content: () -> Content
 
     func makeUIViewController(context: Context) -> StagedSheetScreenController {
-        StagedSheetScreenController(rootView: AnyView(content().environment(\.self, context.environment)))
+        StagedSheetScreenController(rootView: hostedContent(environment: context.environment))
     }
 
     func updateUIViewController(_ controller: StagedSheetScreenController, context: Context) {
-        controller.hostingController.rootView = AnyView(content().environment(\.self, context.environment))
+        controller.hostingController.rootView = hostedContent(environment: context.environment)
         let reduceMotion = context.environment.accessibilityReduceMotion
         controller.updatePresentation(
             progress: reduceMotion ? 0 : progress,
             dimOpacity: dimOpacity,
             openOffsetY: openOffsetY,
             animates: animates && !reduceMotion
+        )
+    }
+
+    private func hostedContent(environment: EnvironmentValues) -> AnyView {
+        AnyView(
+            content()
+                .environment(\.self, environment)
+                .accessibilityElement(children: isAccessibilityHidden ? .ignore : .contain)
+                .accessibilityHidden(isAccessibilityHidden)
         )
     }
 }
@@ -1254,6 +1272,7 @@ struct BottomSheetShell<Content: View>: View {
             VStack(spacing: 0) {
                 if hasHeader {
                     header
+                        .platingLayoutFrame("sheet-header")
                 } else {
                     grabber
                 }
@@ -1264,6 +1283,7 @@ struct BottomSheetShell<Content: View>: View {
                         maxHeight: contentMaxHeight,
                         alignment: .topLeading
                     )
+                    .platingLayoutFrame("sheet-content")
 
                 if footer != nil || footerSafeAreaAccessory != nil {
                     VStack(spacing: 0) {
@@ -1298,6 +1318,7 @@ struct BottomSheetShell<Content: View>: View {
                     .background(footerBackground ?? Color.clear)
                     .offset(y: -footerKeyboardOffset)
                     .animation(.easeOut(duration: 0.24), value: footerKeyboardOffset)
+                    .platingLayoutFrame("sheet-footer")
                 }
             }
             .frame(maxWidth: usesNativeSheetChrome ? .infinity : BottomSheetShellMetrics.maxWidth)

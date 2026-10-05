@@ -1,3 +1,5 @@
+import { useNativeJournal } from '../../lib/gastronomy/useNativeJournal';
+import { buildNativePerceptionRecords } from '../../lib/gastronomy/nativePerception';
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import SectionCard from '../SectionCard';
@@ -24,11 +26,13 @@ const dates = (period: any) => period.start != null && period.end != null
 const responseLabel = (point: any, submission = point.submission) => submission && point.item
   ? tasteSurveyResponseLabel(submission.responses.find((row: any) => row.itemId === point.item.id), submission.scale) : '미응답';
 
-export default function TastePerceptionCards({ measurementSnapshot, surveyHistory = NO_HISTORY, feedbackSubmissions = NO_SUBMISSIONS, isActive = true, onOpenTasteChange }: {
+export default function TastePerceptionCards({ nativeOwnerID, measurementSnapshot, surveyHistory = NO_HISTORY, feedbackSubmissions = NO_SUBMISSIONS, isActive = true, preferenceUserID = 'guest', onOpenTasteChange }: {
+  nativeOwnerID?: string;
   measurementSnapshot: TasteMeasurementSnapshot;
   surveyHistory?: readonly TasteSurveySubmission[];
   feedbackSubmissions?: readonly DiningPageExternalFeedbackSubmission[];
   isActive?: boolean;
+  preferenceUserID?: string;
   onOpenTasteChange?: (series: TasteChangeSeries[]) => void;
 }) {
   const [remoteDining, setRemoteDining] = useState<Awaited<ReturnType<typeof hydrateReservationPageData>> | null>(null);
@@ -46,7 +50,8 @@ export default function TastePerceptionCards({ measurementSnapshot, surveyHistor
     });
     return () => { cancelled = true; };
   }, [isActive, measurementSnapshot.measuredAt]);
-  const dining = useMemo(() => buildDiningPerceptionRecords(feedbackSubmissions, remoteDining), [feedbackSubmissions, remoteDining]);
+  const nativeJournal = useNativeJournal(nativeOwnerID ?? (preferenceUserID === 'local-owner' ? 'guest' : preferenceUserID), isActive);
+  const dining = useMemo(() => { const legacy = buildDiningPerceptionRecords(feedbackSubmissions, remoteDining); const native = buildNativePerceptionRecords(nativeJournal.entries); return {records:[...legacy.records,...native.records],sources:[...legacy.sources,...native.sources]}; }, [feedbackSubmissions, remoteDining, nativeJournal.archive]);
   const model = useMemo(() => buildTastePerception(dining.records), [dining]);
   const survey = useMemo(() => buildSurveyPerception([
     ...remoteMeasurements.map(snapshot => snapshot.surveySubmission), ...surveyHistory, measurementSnapshot.surveySubmission,
@@ -82,7 +87,7 @@ export default function TastePerceptionCards({ measurementSnapshot, surveyHistor
       return { ...point, sources: dining.sources.filter(source => ids.has(source.id)) };
     }),
   })));
-  return <PageSection title="맛을 느끼는 경향">
+  return <PageSection title="감각 패턴">
     <div data-testid="taste-perception-radar">
       <SectionCard hoverEffect={false}>
         <div className="flex w-full items-center justify-between gap-1">
@@ -115,10 +120,6 @@ export default function TastePerceptionCards({ measurementSnapshot, surveyHistor
         title={firstChange ? `${TASTE_TOKENS[firstChange.axis as TasteId].label}을 느낀 강도가 달라졌어요` : survey.changes.length ? '기준 음식에서 기억한 강도가 달라졌어요' : '아직 변화없음'}
         onClick={openChanges}>
         {!hasComparison && <TasteChangeEmptySummary />}
-        <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-secondary)]">{firstChange
-          ? `${condition(firstChange)} · 이전 ${firstChange.previous.mealIDs.length}번과 최근 ${firstChange.recent.mealIDs.length}번의 식사`
-          : survey.changes.length ? '같은 음식·조건·척도로 남긴 이전·최근 회상 응답을 비교했어요.'
-          : hasComparison ? '비교한 기록에서는 같은 강도로 남겼어요.' : '비교할 기록이 더 필요해요.'}</p>
       </TasteInsightSummaryCard>
     </div>
     <TasteInsightSummaryCard details={[]} keywords={[]} sectionLabel="특이사항" actionLabel="조건과 근거"
@@ -142,7 +143,7 @@ export default function TastePerceptionCards({ measurementSnapshot, surveyHistor
             {pattern.conflictCount > 0 && <p>같은 식사에서 강도 응답이 나뉜 기록 {pattern.conflictCount}개</p>}
             <p className="mt-2 text-[12px] text-[var(--tb-color-text-hint)]">기록된 음식·부위·시점 안에서만 비교해요. 조리 상태와 온도 등 기록하지 않은 조건이나 변화의 원인은 알 수 없어요.</p>
             {dining.sources.filter(source => sourceIDs.has(source.id)).map(source => <details key={source.id} className="mt-3 border-t border-[var(--tb-color-border-default)] pt-2">
-              <summary className="min-h-[44px] cursor-pointer py-2 font-medium">{source.foodName} · {source.observedAt.slice(0, 10)} 원본 응답 보기</summary>
+              <summary className="min-h-[44px] cursor-pointer py-2 font-medium">{source.foodName} · {source.observedAt ? new Date(source.observedAt).toLocaleDateString('ko-KR') : '식사일 미확인'} 원본 응답 보기</summary>
               <p>{source.restaurantName}</p>
               {source.note && <p className="mt-2 whitespace-pre-wrap">{source.note}</p>}
               {source.selectedLabels.length > 0 && <p className="mt-2">직접 선택 · {source.selectedLabels.join(' · ')}</p>}

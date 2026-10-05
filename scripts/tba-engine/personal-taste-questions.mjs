@@ -45,15 +45,16 @@ function hypotheticalRecords(records, question, source, answer) {
       ? { ...source.selectionEvidence, facet: question.facet, responseValue: answer, labelValue: '' } : null }];
 }
 
-export function assessQuestion(question, records, project, baseline) {
+export function assessQuestion(question, records, project, baseline, safeAnswers) {
   const relevant = records.filter(row => attributeIdentity(row) === canonical([question.attribute, question.reference ?? null]));
-  const source = question.intent === 'exploration' ? null : relevant.find(row => question.evidenceIDs.includes(row.observationId)
+  const source = question.intent === 'exploration' ? null : relevant.find(row => (question.responseSourceID ? question.responseSourceID === row.observationId : question.evidenceIDs.includes(row.observationId))
     && row.target === question.target && row.phase === question.phase
     && (question.facet !== 'liking' || row.kind === 'sensory_presence'));
   const responseSourceID = source?.observationId ?? null;
   const comparedMealCount = unique(relevant.map(row => row.mealId)).length;
   let answers;
-  if (question.intent === 'exploration' || question.facet === 'liking') answers = LIKING_VALUES;
+  if (question.intent !== 'exploration' && safeAnswers !== undefined) answers = safeAnswers;
+  else if (question.intent === 'exploration' || question.facet === 'liking') answers = LIKING_VALUES;
   else if (question.facet === 'intensity') answers = ['weak', 'medium', 'strong'];
   else answers = unique(relevant.map(row => row[question.facet]).filter(value => value && value !== 'unspecified'));
   const states = [decisionStates(baseline)];

@@ -182,6 +182,44 @@ final class TasteBuddyAgentFullEngineTests: XCTestCase {
         )
     }
 
+    func testDishKindV2PreservesHistoricalLabelsAndSeparatesProcessing() throws {
+        let fixture = try DiningFeedbackFixtureLoader.load()
+        XCTAssertEqual(fixture.dishKindOptions.count, 32)
+        XCTAssertEqual(TasteBuddyAgent.legacyDishKindIDs.count, 6)
+        XCTAssertEqual(fixture.allDishKindOptions.first { $0.id == "raw_cured" }?.label, "생/절임/큐어")
+        XCTAssertFalse(fixture.dishKindOptions.contains { $0.id == "raw_cured" })
+        let cases: [(String, [String], [String])] = [
+            ("생선구이", ["seafood", "grilled"], ["raw", "smoked"]),
+            ("훈제연어", ["seafood", "smoked"], ["raw", "grilled"]),
+            ("염장연어", ["cured"], ["raw", "pickled"]),
+            ("계란찜", ["egg", "steamed"], ["braised"]),
+            ("갈비찜", ["meat", "braised"], ["steamed"]),
+            ("계피", ["spice"], ["spicy"]),
+            ("딸기", ["fruit"], ["dessert"]),
+            ("호두", ["nut_seed"], ["dessert"]),
+            ("김치", ["fermented_jang"], ["seaweed"]),
+            ("eggplant", [], ["egg"]),
+            ("strawberry", [], ["raw"]),
+        ]
+        for (menu, expected, excluded) in cases {
+            let kinds = TasteBuddyAgent.inferDishKindIds(title: menu, limit: 32)
+            expected.forEach { XCTAssertTrue(kinds.contains($0), "\(menu): missing \($0)") }
+            excluded.forEach { XCTAssertFalse(kinds.contains($0), "\(menu): unexpected \($0)") }
+        }
+    }
+
+    func testDishKindV2ChangesCandidateContextWithoutExpandingLegacyGroups() throws {
+        let catalog = try XCTUnwrap(DiningSensoryV2Catalog.shared)
+        XCTAssertEqual(catalog.presentation(menu: "", dishKindIDs: ["raw", "seafood"]).profileIds, ["raw-seafood"])
+        for kind in ["cured", "pickled", "raw_cured"] {
+            XCTAssertFalse(catalog.presentation(menu: "", dishKindIDs: [kind, "seafood"]).profileIds.contains("raw-seafood"))
+        }
+        XCTAssertNil(catalog.presentation(menu: "", dishKindIDs: ["spice"]).contextFlags["spice_or_pungency_known"])
+        XCTAssertEqual(catalog.presentation(menu: "", dishKindIDs: ["spicy"]).contextFlags["spice_or_pungency_known"], "confirmed")
+        let context = catalog.presentation(menu: "", dishKindIDs: ["mushroom"])
+        XCTAssertEqual(catalog.categories(context).first { $0.id == "aroma" }?.tags.first?.id, "v2.detail.aroma.mushroom")
+    }
+
     private func makeViewer(generatedAt: String) -> TasteBuddyAgentTasteProfileSnapshot {
         TasteBuddyAgent.buildTasteIdentity(
             measurement: [

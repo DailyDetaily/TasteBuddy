@@ -1,0 +1,95 @@
+.plating-motion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  color: var(--tb-color-text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.plating-motion p { margin: 0; }
+.plating-motion :is(.plating-motion-workbench, .plating-motion-spec, .plating-motion-player, .plating-motion-signatures, article) { min-width: 0; overflow-wrap: anywhere; }
+.plating-motion-intro, .plating-motion-spec { display: grid; gap: 12px; align-content: start; }
+.plating-motion-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; }
+.plating-motion-muted, .plating-motion small { color: var(--tb-color-text-body); }
+.plating-motion h3 { font-size: 16px; font-weight: 600; }
+.plating-motion code { font-size: 11px; overflow-wrap: anywhere; }
+.plating-motion-roles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-block: 1px solid var(--tb-color-border-default); }
+.plating-motion-roles > div { display: grid; gap: 4px; padding: 16px 12px; align-content: start; }
+.plating-motion-roles strong { font-size: 14px; }
+.plating-motion-roles small { font-size: 11px; }
+.plating-motion-workbench { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(240px, 1fr); gap: 24px; }
+.plating-motion-player { display: grid; gap: 12px; min-width: 0; }
+.plating-motion-controls { display: flex; flex-wrap: wrap; gap: 12px; }
+.plating-motion-controls label { display: grid; gap: 5px; font-size: 11px; }
+.plating-motion select, .plating-motion button {
+  min-height: 36px;
+  border: 1px solid var(--tb-color-border-default);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: var(--tb-color-surface-base);
+  color: var(--tb-color-text-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+.plating-motion button:hover:not(:disabled) { background: var(--tb-color-surface-muted); }
+.plating-motion :is(button, select, input):focus-visible { outline: 2px solid var(--tb-color-text-primary); outline-offset: 3px; }
+.plating-motion :disabled { opacity: 0.5; cursor: default; }
+.plating-motion-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid var(--tb-color-border-default);
+  border-radius: 20px;
+  background: var(--tb-color-surface-muted);
+}
+.plating-motion-stage-label { position: absolute; top: 14px; left: 16px; font-size: 11px; color: var(--tb-color-text-body); }
+.plating-motion-sample {
+  display: grid;
+  gap: 10px;
+  width: min(300px, 80%);
+  padding: 24px;
+  background: var(--tb-color-surface-card);
+  border: 1px solid var(--tb-color-border-card);
+  border-radius: 20px;
+  box-shadow: var(--tb-shadow-soft);
+}
+.plating-motion-sample strong { font-size: 16px; }
+.plating-motion-sample-line { height: 5px; border-radius: 999px; background: var(--tb-color-border-subtle); }
+.plating-motion-sample-line:last-child { width: 65%; }
+.plating-motion-stage:is([data-pattern="sheetEnter"], [data-pattern="sheetExit"]) .plating-motion-sample {
+  position: absolute; bottom: 0; border-radius: 20px 20px 0 0;
+}
+.plating-motion-transport { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.plating-motion-transport output { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; }
+.plating-motion-scrubber { display: grid; gap: 4px; font-size: 11px; }
+.plating-motion-scrubber input { width: 100%; min-height: 24px; accent-color: var(--tb-color-text-primary); }
+.plating-motion-reduced { display: flex; gap: 8px; align-items: center; font-size: 12px; min-height: 32px; }
+.plating-motion-reduced input { accent-color: var(--tb-color-text-primary); }
+.plating-motion-spec dl { display: grid; gap: 10px; }
+.plating-motion-spec dl > div { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 12px; }
+.plating-motion-spec dt { color: var(--tb-color-text-body); font-size: 12px; }
+.plating-motion-spec dd { margin: 0; font-size: 12px; overflow-wrap: anywhere; }
+.plating-motion-table-wrap { overflow-x: auto; }
+.plating-motion table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+.plating-motion caption { text-align: left; font-weight: 600; padding-bottom: 12px; }
+.plating-motion th, .plating-motion td { padding: 10px; border-bottom: 1px solid var(--tb-color-border-default); vertical-align: top; }
+.plating-motion th { color: var(--tb-color-text-body); font-weight: 500; white-space: nowrap; }
+.plating-motion td:nth-child(2) { min-width: 120px; font-variant-numeric: tabular-nums; }
+.plating-motion td:last-child { min-width: 200px; }
+.plating-motion-signatures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.plating-motion-signatures article { display: grid; gap: 10px; align-content: start; padding-top: 20px; border-top: 1px solid var(--tb-color-border-default); }
+.plating-motion-signatures ol { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; }
+.plating-motion-signatures li { display: flex; gap: 16px; padding: 6px 0; border-bottom: 1px solid var(--tb-color-border-card); font-size: 12px; }
+.plating-motion-signatures time { min-width: 52px; color: var(--tb-color-text-body); font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) {
+  .plating-motion-workbench { grid-template-columns: minmax(0, 1fr); }
+  .plating-motion-roles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .plating-motion-signatures { grid-template-columns: minmax(0, 1fr); }
+  .plating-motion-roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plating-motion-stage { min-height: 280px; }
+  .plating-motion-sample { width: 86%; padding: 20px; }
+}

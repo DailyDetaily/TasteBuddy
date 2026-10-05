@@ -3,7 +3,7 @@ import CryptoKit
 
 /// Deterministic, API-free native mirror of the sensory contract. The legacy axis engine is not an input.
 enum SensoryAnalysisEngine {
-    static let version = "tba-native-sensory/3"
+    static let version = "tba-native-sensory/5"
     static let contract: SensoryNativeContract? = {
         let bundle = Bundle.main
         guard let url = bundle.url(forResource: "tba-sensory-contract", withExtension: "json", subdirectory: "TBA")
@@ -71,10 +71,10 @@ enum SensoryAnalysisEngine {
                               return span.start >= 0 && span.end > span.start && span.end <= ns.length && ns.substring(with: NSRange(location: span.start, length: span.end - span.start)) == span.quote
                           }) else { continue }
                     let id = stableID([entry.id.uuidString, field, atom.kind, atom.attribute ?? "", atom.value.text, atom.target ?? "whole_dish", atom.phase ?? "unspecified", phrase, String(spans.first?.start ?? 0), evidenceIdentity(atom.selectionEvidence)])
-                    observations.append(.init(id: id, experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, kind: atom.kind, attribute: atom.attribute, attributeLabel: atom.reference ?? labels[atom.attribute ?? ""] ?? (atom.kind == "part_liking" ? "부분 평가" : "음식 전체"), value: atom.value, scale: atom.scale, target: atom.target ?? "whole_dish", phase: atom.phase ?? "unspecified", phrase: phrase, sourceSpans: spans, reference: atom.reference, combinationComponents: atom.combinationComponents ?? [], selectionEvidence: atom.selectionEvidence, mealID: entry.mealID, observedAt: entry.observedAt, knownAt: entry.knownAt(sourceField: field, phrase: phrase), dishKindIDs: entry.dishKindIDs, restaurantID: entry.restaurantID, menuItemID: entry.menuItemID, restaurantName: entry.restaurant, sourceRevision: entry.memoryRevisionNumber, mealTimeIsConfirmed: entry.confirmedMealDate != nil))
+                    observations.append(.init(id: id, experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, kind: atom.kind, attribute: atom.attribute, attributeLabel: atom.reference ?? labels[atom.attribute ?? ""] ?? atom.selectionEvidence?.labelSnapshot ?? (atom.kind == "part_liking" ? "부분 평가" : "음식 전체"), value: atom.value, scale: atom.scale, target: atom.target ?? "whole_dish", phase: atom.phase ?? "unspecified", phrase: phrase, sourceSpans: spans, reference: atom.reference, combinationComponents: atom.combinationComponents ?? [], selectionEvidence: atom.selectionEvidence, mealID: entry.mealID, observedAt: entry.observedAt, knownAt: entry.knownAt(sourceField: field, phrase: phrase, selectionInstanceID: atom.selectionEvidence?.selectionInstanceID), dishKindIDs: entry.dishKindIDs, restaurantID: entry.restaurantID, menuItemID: entry.menuItemID, restaurantName: entry.restaurant, sourceRevision: entry.memoryRevisionNumber, mealTimeIsConfirmed: entry.confirmedMealDate != nil))
                 }
                 for pending in result.unresolved {
-                    unresolved.append(.init(id: stableID([entry.id.uuidString, field, pending.reason, pending.phrase, String(pending.sourceSpans.first?.start ?? 0), evidenceIdentity(pending.selectionEvidence)]), experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, phrase: pending.phrase, reason: pending.reason, sourceSpans: pending.sourceSpans, needsMeaningReview: result.needsAI || pending.selectionEvidence != nil, selectionEvidence: pending.selectionEvidence, observedAt: entry.observedAt, knownAt: entry.knownAt(sourceField: field, phrase: pending.phrase)))
+                    unresolved.append(.init(id: stableID([entry.id.uuidString, field, pending.reason, pending.phrase, String(pending.sourceSpans.first?.start ?? 0), evidenceIdentity(pending.selectionEvidence)]), experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, phrase: pending.phrase, reason: pending.reason, sourceSpans: pending.sourceSpans, needsMeaningReview: result.needsAI || pending.selectionEvidence != nil, selectionEvidence: pending.selectionEvidence, observedAt: entry.observedAt, knownAt: entry.knownAt(sourceField: field, phrase: pending.phrase, selectionInstanceID: pending.selectionEvidence?.selectionInstanceID)))
                 }
             }
         }
@@ -88,7 +88,7 @@ enum SensoryAnalysisEngine {
         }, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs, individualQuestions: true, nativeAnswerOptions: { record, facet in
             guard let id = UUID(uuidString: record.experienceId), let entry = entriesByID[id] else { return [] }
             guard let source = record.selectionEvidence else { return [] }
-            let key = PersonalTasteModelBuilder.json([selectionKeys[id] ?? "", source.type, source.selectionID,
+            let key = PersonalTasteModelBuilder.json([selectionKeys[id] ?? "", source.type, source.selectionID, source.selectionInstanceID ?? "",
                 source.catalogVersion, source.labelSnapshot, source.relatedBubbleID ?? "", record.attribute ?? "", record.reference ?? "",
                 record.target, record.phase, facet])
             if let cached = safeAnswerCache[key] { return cached }
@@ -124,7 +124,7 @@ enum SensoryAnalysisEngine {
         for (dimension,value) in [("target",observation.target),("phase",observation.phase)] where value != "unspecified" {
             var sourceField = observation.sourceField, label = observation.phrase
             if let evidence = observation.selectionEvidence {
-                let selected = entry?.sensorySelections?.first { $0.id == evidence.selectionID && $0.type.rawValue == evidence.type }
+                let selected = entry?.sensorySelections?.first { $0.id == evidence.selectionID && $0.type.rawValue == evidence.type && (evidence.selectionInstanceID == nil || $0.selectionInstanceID == evidence.selectionInstanceID) }
                 let parent = entry?.sensorySelections?.first { $0.type == .bubble && $0.id == evidence.relatedBubbleID }
                 let directValue = dimension == "target" ? selected?.target.rawValue : selected?.phase.rawValue
                 let parentValue = dimension == "target" ? parent?.target.rawValue : parent?.phase.rawValue
@@ -172,7 +172,7 @@ enum SensoryAnalysisEngine {
         return SHA256.hash(data: data).prefix(12).map { String(format: "%02x", $0) }.joined()
     }
     private static func dedupe<T>(_ values: [T], by key: (T) -> String) -> [T] { var seen: Set<String> = []; return values.filter { seen.insert(key($0)).inserted } }
-    private static func scopeKey(_ o: SensoryObservation) -> String { [o.experienceID.uuidString, o.attribute ?? "", o.reference ?? "", o.target, o.phase].joined(separator: "|") }
+    private static func scopeKey(_ o: SensoryObservation) -> String { SensoryEvidenceLinkage.scopeKey(o) }
     private static func directLiking(_ records: [SensoryObservation]) -> [SensoryObservation] {
         let absentScopes = Set(records.filter { $0.kind == "sensory_presence" && $0.value == .flag(false) }.map(scopeKey))
         return records.filter { item in
@@ -181,14 +181,18 @@ enum SensoryAnalysisEngine {
     }
 
     private static func buildInsights(_ records: [SensoryObservation]) -> [SensoryInsight] {
-        let groups = Dictionary(grouping: directLiking(records)) { [$0.attribute ?? "", $0.reference ?? ""].joined(separator: "|") }
+        let direct = directLiking(records)
+        let groups = Dictionary(grouping: direct) { [$0.attribute ?? "", $0.reference ?? ""].joined(separator: "|") }
+        let absenceByScope = Dictionary(grouping: records.filter { $0.kind == "sensory_presence" && $0.value == .flag(false) }, by: scopeKey)
+        let intensityByScope = Dictionary(grouping: records.filter { $0.kind == "sensory_intensity" }, by: scopeKey)
         var findings: [SensoryInsight] = []
         for key in groups.keys.sorted() {
             guard let items = groups[key], let first = items.first else { continue }
             let positive = items.filter { $0.value == .text("positive") }
             let negative = items.filter { $0.value == .text("negative") }
             guard !positive.isEmpty || !negative.isEmpty else { continue }
-            let meals = Array(Set(items.map(\.experienceID))).sorted { $0.uuidString < $1.uuidString }
+            let experiences = Array(Set(items.map(\.experienceID))).sorted { $0.uuidString < $1.uuidString }
+            let mealCount = Set(items.map(\.independentMealID)).count
             let title: String, body: String, kind: String
             if let good = positive.first, let bad = negative.first {
                 let differentContext = Set(items.map { [$0.foodName, $0.target, $0.phase].joined(separator: "|") }).count > 1
@@ -196,11 +200,12 @@ enum SensoryAnalysisEngine {
                 title = "\(first.attributeLabel), 달랐던 반응"
                 body = "\(good.foodName)에서는 \(evidenceText(good)), \(bad.foodName)에서는 \(evidenceText(bad))라고 남겼어요."
             } else {
-                kind = meals.count > 1 ? "repeated_preference" : "scoped_preference"
+                // Multiple dishes from one meal are evidence, not independent repetition.
+                kind = mealCount > 1 ? "repeated_preference" : "scoped_preference"
                 title = positive.isEmpty ? "\(first.attributeLabel)이 아쉬웠던 기록" : "\(first.attributeLabel)에서 찾은 즐거움"
-                body = meals.count > 1 ? "\(meals.count)개 기록에서 \(positive.isEmpty ? "아쉬움" : "호감")을 직접 남겼어요. \(evidenceText(first))" : "\(first.foodName)에서 \(evidenceText(first))라고 남겼어요."
+                body = experiences.count > 1 ? "\(mealCount)번의 식사에 남긴 \(experiences.count)개 기록에서 \(positive.isEmpty ? "아쉬움" : "호감")을 직접 남겼어요. \(evidenceText(first))" : "\(first.foodName)에서 \(evidenceText(first))라고 남겼어요."
             }
-            findings.append(.init(id: stableID(["insight", key, kind] + items.map(\.id).sorted()), kind: kind, attribute: first.attribute, title: title, body: body, evidenceIDs: items.map(\.id), experienceIDs: meals))
+            findings.append(.init(id: stableID(["insight", key, kind] + items.map(\.id).sorted()), kind: kind, attribute: first.attribute, title: title, body: body, evidenceIDs: items.map(\.id), experienceIDs: experiences))
         }
         for item in records where item.kind == "attribute_liking" && item.attribute?.hasSuffix(".unspecified") == true && item.selectionEvidence != nil {
             let evidence = item.selectionEvidence!
@@ -211,16 +216,15 @@ enum SensoryAnalysisEngine {
         }
         // 부재가 포함된 평가는 해당 감각 자체의 호감으로 분리하지 않는다.
         for item in records where item.kind == "attribute_liking" {
-            let absence = records.filter { $0.kind == "sensory_presence" && $0.value == .flag(false) && scopeKey($0) == scopeKey(item) }
+            let absence = absenceByScope[scopeKey(item)] ?? []
             guard !absence.isEmpty else { continue }
             let evidence = [item] + absence
             findings.append(.init(id: stableID(["qualified", item.id]), kind: "qualified_preference", attribute: item.attribute, title: "감각이 없었던 경험의 평가", body: "\(item.foodName)에서 \(evidenceText(item))라고 남겼어요. 감각의 부재를 포함한 이 경험의 평가예요.", evidenceIDs: evidence.map(\.id), experienceIDs: [item.experienceID]))
         }
-        let direct = directLiking(records)
         let scoped = Dictionary(grouping: direct, by: scopeKey)
         for key in scoped.keys.sorted() {
             guard let liking = scoped[key], let first = liking.first else { continue }
-            let intensity = records.filter { $0.kind == "sensory_intensity" && scopeKey($0) == key }
+            let intensity = intensityByScope[key] ?? []
             guard let level = intensity.first, Set(intensity.map(\.value)).count == 1, Set(liking.map(\.value)).count == 1 else { continue }
             let evidence = liking + intensity
             findings.append(.init(id: stableID(["intensity_liking", key] + evidence.map(\.id).sorted()), kind: "intensity_and_liking", attribute: first.attribute, title: "\(first.attributeLabel), 함께 남긴 강도와 평가", body: "\(first.foodName)에서 \(evidenceText(level)), \(evidenceText(first))라고 남겼어요. 같은 대상과 시점에 남긴 표현이에요.", evidenceIDs: evidence.map(\.id), experienceIDs: [first.experienceID]))
@@ -247,13 +251,15 @@ enum SensoryAnalysisEngine {
 
     private static func buildProfile(_ records: [SensoryObservation], styles: [SensoryNativeContract.Style]) -> SensoryMainWing {
         let direct = directLiking(records)
+        let intensityLevelsByScope = Dictionary(grouping: records.filter { $0.kind == "sensory_intensity" }, by: scopeKey)
+            .mapValues { Set($0.map(\.value)) }
         let candidates = styles.map { style -> SensoryStyleCandidate in
             let relevant = (style.id == "harmonist" ? direct + records.filter { $0.kind == "combination_liking" } : direct).filter { item in
                 if style.id == "harmonist" && item.kind == "combination_liking" { return true }
                 if style.id == "texturalist" { return item.attribute?.hasPrefix("texture.") == true }
                 if style.id == "maximalist" {
                     guard ["taste", "aroma", "trigeminal"].contains(item.domain ?? "") else { return false }
-                    let levels = Set(records.filter { $0.kind == "sensory_intensity" && scopeKey($0) == scopeKey(item) }.map(\.value))
+                    let levels = intensityLevelsByScope[scopeKey(item)] ?? []
                     return levels == [.text("strong")]
                 }
                 return style.attributes.contains(item.attribute ?? "")
@@ -272,9 +278,11 @@ enum SensoryAnalysisEngine {
             return options.filter { !stronger($0, first) && !stronger(first, $0) }.count == 1 ? first : nil
         }
         let eligible = candidates.filter(\.eligible), main = leader(eligible)
+        let mainSupportIDs = Set(main?.supportEvidenceIDs ?? [])
         let wingOptions = eligible.filter { item in
             guard let main, item.id != main.id else { return false }
-            let remaining = records.filter { item.supportEvidenceIDs.contains($0.id) && !main.supportEvidenceIDs.contains($0.id) }
+            let supportIDs = Set(item.supportEvidenceIDs)
+            let remaining = records.filter { supportIDs.contains($0.id) && !mainSupportIDs.contains($0.id) }
             return Set(remaining.map(\.independentMealID)).count >= 2
         }
         let wing = leader(wingOptions)
@@ -332,13 +340,16 @@ private final class SensoryNativeParser {
     }
 
     func parse(_ text: String, target: String? = nil, phase: String? = nil) -> SensoryRuleResult {
-        struct Clause { let text: String; let start: Int; var deferred = false; var quoted = false }
+        struct Clause { let text: String; let start: Int; var deferred = false; var quoted = false; var sensoryChange = false }
         var result = SensoryRuleResult(), clauses: [Clause] = []
         let unresolvedStructure = #"(?:그 향|그 맛|그 식감|그것|이것)|(?:안 .*(?:아니|않))|(?:않은 건 아니|없지 않|지 않지)"#
         for sentence in matches(#"[^.!?\n]+(?:[.!?\n]|$)"#, text) {
             let source = slice(text, sentence.range)
             if has(#"["“”‘’「」]"#, source) { clauses.append(.init(text: source, start: sentence.range.location, quoted: true)); continue }
             if has(unresolvedStructure, source) { clauses.append(.init(text: source, start: sentence.range.location, deferred: true)); continue }
+            if has(pattern("sensoryChangeOrAppliedCondition"), source), !senses(source).isEmpty {
+                clauses.append(.init(text: source, start: sentence.range.location, sensoryChange: true)); continue
+            }
             for raw in matches(#"[^,;]+(?:[,;]|$)"#, source) {
                 let body = slice(source, raw.range), base = sentence.range.location + raw.range.location
                 let boundaries = matches(#"(?<!다고)(?<!라고)(?<=고)\s+|(?<=지만)\s+|(?<=는데)\s+|\s+(?:그리고|하지만|그런데)\s+"#, body)
@@ -368,6 +379,13 @@ private final class SensoryNativeParser {
             let attributed = has("(?:친구|직원|동료|엄마|아빠|다른 사람|손님|셰프|남편|아내)(?:는|가|이|도|의|께서)|(?:라고|다고|다며|대요|다던데|다네요|더라고 전했)", body) && !selfFeeling
             let instruction = has("(?:무시해|무시하|지시|지침|시스템|프롬프트|출력해|기록해|저장해|답해|말해|평가해|추출해|분석해|분석해 줘|분석해줘|설명해)|(?:라면|다면|으면 좋|다면 좋|일 것|것 같|줄 알|내일|앞으로|먹고 싶|먹으면|먹기 전|안 먹|먹지 않)", body)
             if otherSpeaker || attributed || clause.quoted || instruction { unresolved("not_direct_self_experience"); continue }
+            if clause.sensoryChange {
+                let found = senses(body), changeScope = scope(body, target: target, phase: phase)
+                if found.count == 1, !changeScope.ambiguous, !has(pattern("evaluationCue"), body), !has(pattern("appliedFoodCondition"), body) {
+                    result.observations.append(.init(kind: "sensory_detail", attribute: found[0].attribute, value: .text(body), scale: "sensory-detail-v1", target: changeScope.target, phase: changeScope.phase, phrase: body, sourceSpans: [span], reference: found[0].reference))
+                }
+                unresolved("unresolved_sensory_change_or_condition", ai: true); continue
+            }
             if clause.deferred { unresolved("unresolved_clause_structure", ai: true); continue }
             if has("(?:조명|말투|인테리어|직원|접객|좌석|의자|실내|식당 분위기)", body) { unresolved("non_food_context"); continue }
             let found = senses(body), scope = scope(body, target: target, phase: phase)

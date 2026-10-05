@@ -21,21 +21,34 @@ struct HomePeriodInsightCard: View {
     var onTap: (() -> Void)? = nil
     var labelOverride: String? = nil
     var detailLineLimit: Int? = 2
+    var controls: AnyView? = nil
+    var iconOverride: LucideIconName? = nil
+    var headerActionLabel: String? = "자세히보기"
+    var balancedFooter: AnyView? = nil
 
     var body: some View {
         TasteInsightSummaryCardLayout(
             indicatorColors: [indicatorAxis.mainColor],
-            indicatorIcon: data.kind.cardIcon,
+            indicatorIcon: iconOverride ?? data.kind.cardIcon,
             sectionLabel: labelOverride ?? data.kind.label,
-            actionLabel: onTap == nil ? nil : "자세히보기",
+            actionLabel: onTap == nil || dynamicTypeSize.isAccessibilitySize ? nil : headerActionLabel,
             title: data.title,
             titleContentSpacing: TBSpacing.x4,
             showsTitle: false,
+            combinesAccessibilityChildren: controls == nil,
+            sectionLabelLineLimit: dynamicTypeSize.isAccessibilitySize ? nil : 1,
             accessibilityLabel: accessibilityLabel,
             accessibilityHint: onTap == nil ? nil : "기간별 미식 기록 자세히 보기",
-            onTap: onTap
+            onTap: controls == nil ? onTap : nil,
+            balancedFooter: balancedFooter
         ) {
-            insightDetails
+            if let controls { controls }
+            if controls != nil, let onTap {
+                Button(action: onTap) { insightDetails.frame(minHeight: 44) }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(accessibilityLabel)
+                    .accessibilityHint("집계 기준과 원본을 엽니다")
+            } else { insightDetails }
         }
     }
 
@@ -43,16 +56,18 @@ struct HomePeriodInsightCard: View {
         let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: TBSpacing.x12)) : AnyLayout(HStackLayout(alignment: .center, spacing: TBSpacing.x16))
         return layout {
             VStack(alignment: .leading, spacing: TBSpacing.x4) {
-                Text(data.title)
-                    .font(TBFont.bold(16))
-                    .foregroundStyle(TBColor.textPrimary)
-                    .lineSpacing(2)
+                if !data.title.isEmpty {
+                    Text(data.title)
+                        .font(TBFont.bold(16))
+                        .foregroundStyle(TBColor.textPrimary)
+                        .lineSpacing(2)
+                }
 
                 Text(data.detail)
                     .font(TBFont.regular(TBTypography.FontSize.x12))
                     .foregroundStyle(TBColor.textHint)
                     .lineSpacing(3)
-                    .lineLimit(detailLineLimit)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : detailLineLimit)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .layoutPriority(1)
@@ -216,7 +231,7 @@ extension HomePeriodInsightKind {
 /// 기존 기간 카드의 레이아웃을 그대로 사용하는 누적 지표 영역.
 struct HomeArchiveMetricsSection: View {
     let sections: [HomeArchiveMetricSection]
-    @State private var selectedMetric: String?
+    @State private var selectedDetail: TasteCardDetailRoute?
 
     var body: some View {
         ForEach(sections) { section in
@@ -225,7 +240,7 @@ struct HomeArchiveMetricsSection: View {
                     ForEach(section.cards) { card in
                         HomePeriodInsightCard(
                             data: card.data,
-                            onTap: { selectedMetric = card.id },
+                            onTap: { selectedDetail = .archiveMetric(id: card.id, title: card.label) },
                             labelOverride: card.label,
                             detailLineLimit: nil
                         )
@@ -233,9 +248,8 @@ struct HomeArchiveMetricsSection: View {
                     }
                 }
             }
+            .platingLayoutFrame("home-section", when: section.id == sections.first?.id)
         }
-        .sheet(isPresented: Binding(get: { selectedMetric != nil }, set: { if !$0 { selectedMetric = nil } })) {
-            if let selectedMetric { HomeArchiveMetricDetailView(metricID: selectedMetric) }
-        }
+        .tasteDetail($selectedDetail)
     }
 }

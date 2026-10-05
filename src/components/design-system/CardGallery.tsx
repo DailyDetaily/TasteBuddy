@@ -741,7 +741,7 @@ export default function CardGallery({
                     기준보다 조금 더 산뜻한 쪽
                   </p>
                 </div>
-                <StatusChip tone="neutral">질문 2 / 6</StatusChip>
+                <StatusChip>질문 2 / 6</StatusChip>
               </div>
 
               <TCSHintCard

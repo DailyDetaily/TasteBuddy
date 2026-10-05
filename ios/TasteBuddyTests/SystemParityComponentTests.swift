@@ -3,6 +3,106 @@ import SwiftUI
 import UIKit
 @testable import TasteBuddy
 
+@MainActor
+final class PlatingEditingContractTests: XCTestCase {
+    func testTextAreaHeightScalesAndRejectsInvalidMetrics() {
+        XCTAssertEqual(TBTextAreaMetrics.height(minimum: 156, scale: 1), 156)
+        XCTAssertEqual(TBTextAreaMetrics.height(minimum: 180, scale: 2), 360)
+        XCTAssertEqual(TBTextAreaMetrics.height(minimum: .nan, scale: .infinity), 156)
+        XCTAssertEqual(TBTextAreaMetrics.height(minimum: -1, scale: 0), 156)
+    }
+
+    func testDraftDetectsChangesWithoutMutatingTheOriginal() {
+        var original = DiningEntry.sample
+        original.note = "원문 그대로 🍜\n  두 번째 줄"
+        original.mealTime = nil
+        original.foodSource = nil
+        var draft = FoodMemoryCorrectionDraft(original)
+        XCTAssertFalse(draft.hasChanges(comparedTo: original))
+        draft.note += "\n새로운 회고"
+        XCTAssertTrue(draft.hasChanges(comparedTo: original))
+        XCTAssertEqual(original.note, "원문 그대로 🍜\n  두 번째 줄")
+        draft.note = original.note
+        XCTAssertFalse(draft.hasChanges(comparedTo: original))
+    }
+
+    func testNoteOnlyEditPreservesUnknownDatesAndAllOtherSourceFields() throws {
+        var original = DiningEntry.sample
+        original.mealTime = nil
+        original.foodSource = nil
+        var draft = FoodMemoryCorrectionDraft(original)
+        draft.note = "\n  기록을 바로잡았어요 🍋\n"
+        let edited = draft.updating(original)
+        let before = try original.memorySourceFields()
+        let after = try edited.memorySourceFields()
+        XCTAssertEqual(Set(before.keys.filter { before[$0] != after[$0] }), Set(["note"]))
+        XCTAssertEqual(edited.note, draft.note)
+        XCTAssertNil(edited.mealTime)
+        XCTAssertNil(edited.foodSource)
+        XCTAssertEqual(edited.id, original.id)
+        XCTAssertEqual(edited.mealID, original.mealID)
+        XCTAssertEqual(edited.date, original.date)
+    }
+
+    func testOptionalEmptyNoteAndFutureSourceValuesArePreserved() {
+        var original = DiningEntry.sample
+        original.mealTime = .init(source: .init(rawValue: "future_source"), start: nil, end: nil, confirmedAt: nil)
+        original.foodSource = .init(kind: "future_food_source")
+        var draft = FoodMemoryCorrectionDraft(original)
+        draft.note = ""
+        let edited = draft.updating(original)
+        XCTAssertEqual(edited.note, "")
+        XCTAssertEqual(edited.mealTime, original.mealTime)
+        XCTAssertEqual(edited.foodSource, original.foodSource)
+    }
+
+    func testConfirmedDateUsesExistingUpdateSemantics() {
+        let original = DiningEntry.sample
+        let date = Date(timeIntervalSince1970: 1_780_000_000)
+        var draft = FoodMemoryCorrectionDraft(original)
+        draft.mealTime = .init(source: .confirmed, start: date, end: nil, confirmedAt: date)
+        let edited = draft.updating(original)
+        XCTAssertTrue(draft.hasChanges(comparedTo: original))
+        XCTAssertEqual(edited.date, date)
+        XCTAssertEqual(edited.observedAt, date)
+        XCTAssertEqual(edited.sensorySelections, original.sensorySelections)
+        XCTAssertEqual(edited.overallEvaluation, original.overallEvaluation)
+    }
+
+    func testStaleDraftCannotOverwriteAnUpdatedOriginal() throws {
+        let model = AppModel.preview(authEntryComplete: true, onboardingComplete: true,
+            diningEntries: [.sample], authRepository: FixtureBackendAuthRepository())
+        let original = try XCTUnwrap(model.diningEntries.first)
+        var updated = original
+        updated.note = "다른 화면에서 먼저 수정한 원문"
+        XCTAssertTrue(model.updateDiningEntry(updated, expected: original))
+        var draft = FoodMemoryCorrectionDraft(original)
+        draft.note = "오래된 편집 초안"
+        XCTAssertFalse(model.updateDiningEntry(draft.updating(original), expected: original))
+        XCTAssertEqual(model.diningEntry(id: original.id)?.note, updated.note)
+        XCTAssertNotNil(model.diningPersistenceError)
+    }
+
+    func testDraftRetainsTheOpeningBaselineWhenLiveSourceChanges() throws {
+        let model = AppModel.preview(authEntryComplete: true, onboardingComplete: true,
+            diningEntries: [.sample], authRepository: FixtureBackendAuthRepository())
+        let opened = try XCTUnwrap(model.diningEntries.first)
+        var draft = FoodMemoryCorrectionDraft(opened)
+        draft.note = "아직 저장하지 않은 내 초안"
+        var live = opened
+        live.note = "다른 화면에서 먼저 저장한 원문"
+        XCTAssertTrue(model.updateDiningEntry(live, expected: opened))
+
+        // Mirrors the sheet: both the outgoing value and expected source are
+        // derived from its retained draft, never the parent's newly supplied entry.
+        XCTAssertEqual(draft.original, opened)
+        XCTAssertTrue(draft.hasChanges(comparedTo: draft.original))
+        XCTAssertFalse(model.updateDiningEntry(draft.updating(draft.original), expected: draft.original))
+        XCTAssertEqual(model.diningEntry(id: opened.id)?.note, live.note)
+        XCTAssertEqual(draft.note, "아직 저장하지 않은 내 초안")
+    }
+}
+
 final class SystemParityComponentTests: XCTestCase {
     func testTasteRotationAlignsBeforeMorphingIntoFeedbackRings() {
         for rayCount in TasteRotationRayCount.allCases {
@@ -755,21 +855,21 @@ final class SystemParityComponentTests: XCTestCase {
     }
 
     func testDesignColorTokenMirrorExposesCompleteReactColorLayer() {
-        XCTAssertEqual(TBDesignColorTokens.ColorTokens.all.count, 34)
+        XCTAssertEqual(TBDesignColorTokens.ColorTokens.all.count, 58)
         XCTAssertEqual(TBDesignColorTokens.ShadowTokens.all.count, 5)
         XCTAssertEqual(TBDesignColorTokens.DataVizTokens.all.count, 7)
         XCTAssertEqual(TBDesignColorTokens.TasteTokens.all.count, 150)
         XCTAssertEqual(TBDesignColorTokens.NeutralTasteTokens.all.count, 2)
-        XCTAssertEqual(TBDesignColorTokens.designTokensAll.count, 193)
-        XCTAssertEqual(TBDesignColorTokens.designTokensColorLikeAll.count, 198)
+        XCTAssertEqual(TBDesignColorTokens.designTokensAll.count, 217)
+        XCTAssertEqual(TBDesignColorTokens.designTokensColorLikeAll.count, 222)
 
-        XCTAssertEqual(TBDesignColorTokens.CSSVariables.Color.all.count, 34)
+        XCTAssertEqual(TBDesignColorTokens.CSSVariables.Color.all.count, 58)
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.Shadow.all.count, 6)
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.DataViz.all.count, 7)
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.Taste.all.count, 78)
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.NeutralTaste.all.count, 2)
-        XCTAssertEqual(TBDesignColorTokens.cssVariableAll.count, 127)
-        XCTAssertEqual(Set(TBDesignColorTokens.cssVariableAll.compactMap(\.cssVariable)).count, 127)
+        XCTAssertEqual(TBDesignColorTokens.cssVariableAll.count, 151)
+        XCTAssertEqual(Set(TBDesignColorTokens.cssVariableAll.compactMap(\.cssVariable)).count, 151)
 
         XCTAssertEqual(TBDesignColorTokens.ColorTokens.Background.page.rawValue, "#F3F3F3")
         XCTAssertEqual(TBDesignColorTokens.CSSVariables.Color.bgPage.rawValue, "#f3f3f3")
@@ -800,12 +900,12 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(TBDesignFoundationTokens.RadiusTokens.all.count, 8)
         XCTAssertEqual(TBDesignFoundationTokens.TypographyTokens.all.count, 24)
         XCTAssertEqual(TBDesignFoundationTokens.ShadowTokens.all.count, 5)
-        XCTAssertEqual(TBDesignFoundationTokens.MotionTokens.all.count, 22)
+        XCTAssertEqual(TBDesignFoundationTokens.MotionTokens.all.count, 24)
         XCTAssertEqual(TBDesignFoundationTokens.IconTokens.all.count, 18)
         XCTAssertEqual(TBDesignFoundationTokens.BoxTokens.all.count, 3)
         XCTAssertEqual(TBDesignFoundationTokens.DataVizTokens.all.count, 21)
         XCTAssertEqual(TBDesignFoundationTokens.LayoutTokens.all.count, 20)
-        XCTAssertEqual(TBDesignFoundationTokens.foundationAll.count, 131)
+        XCTAssertEqual(TBDesignFoundationTokens.foundationAll.count, 133)
 
         XCTAssertEqual(TBDesignFoundationTokens.ComponentTokens.Card.all.count, 4)
         XCTAssertEqual(TBDesignFoundationTokens.ComponentTokens.Button.all.count, 6)
@@ -815,18 +915,20 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(TBDesignFoundationTokens.ComponentTokens.Chip.all.count, 64)
         XCTAssertEqual(TBDesignFoundationTokens.ComponentTokens.Pill.all.count, 1)
         XCTAssertEqual(TBDesignFoundationTokens.componentAll.count, 78)
-        XCTAssertEqual(TBDesignFoundationTokens.designTokensAll.count, 209)
+        XCTAssertEqual(TBDesignFoundationTokens.designTokensAll.count, 211)
 
-        XCTAssertEqual(TBDesignFoundationTokens.CSSVariables.nonColorAll.count, 121)
+        XCTAssertEqual(TBDesignFoundationTokens.CSSVariables.nonColorAll.count, 123)
         XCTAssertEqual(
             Set(TBDesignFoundationTokens.CSSVariables.nonColorAll.compactMap(\.cssVariable)).count,
-            121
+            123
         )
 
         XCTAssertEqual(TBDesignFoundationTokens.SpacingTokens.x20.rawValue, "20px")
         XCTAssertEqual(TBDesignFoundationTokens.RadiusTokens.full.value, .pixels(9999))
         XCTAssertEqual(TBDesignFoundationTokens.TypographyTokens.FontSize.x28.rawValue, "18px")
         XCTAssertEqual(TBDesignFoundationTokens.MotionTokens.DurationMs.splash.value, .milliseconds(2500))
+        XCTAssertEqual(TBDesignFoundationTokens.MotionTokens.DurationMs.press.value, .milliseconds(120))
+        XCTAssertEqual(TBDesignFoundationTokens.MotionTokens.staggerMs.value, .milliseconds(60))
         XCTAssertEqual(TBDesignFoundationTokens.IconTokens.Size.base.cssVariable, nil)
         XCTAssertEqual(TBDesignFoundationTokens.LayoutTokens.sectionGap.rawValue, "SPACING_TOKENS[20]")
         XCTAssertEqual(TBDesignFoundationTokens.LayoutTokens.sectionGap.value, .alias("SPACING_TOKENS.20"))

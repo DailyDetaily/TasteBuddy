@@ -102,7 +102,7 @@ export default function ImageBox({
         {...props}
       >
         <img
-          src={resolvedImageSrc}
+          src={resolvedImageSrc ?? undefined}
           alt={alt}
           className={cn('size-full object-cover', imageClassName)}
           onError={() => {

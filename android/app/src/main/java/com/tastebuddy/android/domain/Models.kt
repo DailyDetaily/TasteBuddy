@@ -50,8 +50,8 @@ data class TasteProfile(
 
 @Serializable
 data class ProfileIdentity(
-    val name: String = "신준호",
-    val nickname: String = "머리아깨무봄발",
+    val name: String = "",
+    val nickname: String = "",
     val introduction: String = "",
     val birthDate: String? = null,
     val sexContext: String? = null,

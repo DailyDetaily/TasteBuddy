@@ -53,6 +53,9 @@ struct AppRouteDestinationView: View {
             )
         case .homeInsight(let kind):
             HomeArchiveDetailView(kind: kind, bottomContentInset: bottomContentInset)
+        case .cardDetail(let detail):
+            TasteCardDetailDestination(route: detail)
+                .environment(\.tasteDetailChrome, .init(header: collapsingTopChrome, contentOffset: contentOffset, onBack: onBack))
         case .savedRestaurants:
             SavedRestaurantListView(topChrome: collapsingTopChrome, contentOffset: contentOffset) { restaurantID in
                 navigate(.restaurant(id: restaurantID))
@@ -192,18 +195,16 @@ private struct RestaurantHeroNativeCard: View {
                             Circle().stroke(TBColor.textSecondary, lineWidth: 1.5)
                         }
 
-                    Button(action: onBookmarkTap) {
-                        LucideIcon(
-                            .bookmark,
-                            size: TBIcon.Size.control,
-                            strokeWidth: TBIcon.Stroke.regular,
-                            filled: isSaved
-                        )
-                            .frame(width: 30, height: 30)
-                            .foregroundStyle(isSaved ? restaurant.axis.mainColor : restaurant.axis.tintTextColor)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(isSaved ? "북마크 편집" : "북마크 저장")
+                    IconActionButton(
+                        kind: .bookmark,
+                        isActive: isSaved,
+                        color: restaurant.axis.tintTextColor,
+                        activeColor: restaurant.axis.mainColor,
+                        buttonSize: 30,
+                        iconSize: TBIcon.Size.control,
+                        accessibilityLabel: isSaved ? "북마크 편집" : "북마크 저장",
+                        action: onBookmarkTap
+                    )
                 }
 
                 Text(restaurant.summary)
@@ -1478,85 +1479,77 @@ struct TasteChangeFocusView: View {
         value.formatted(.dateTime.year().month(.twoDigits).day(.twoDigits).locale(Locale(identifier: "ko_KR")))
     }
     var body: some View {
-        TBCollapsingTopChromeScrollView(topChrome: topChrome, contentOffset: contentOffset) {
-            TBCapsuleTabs(options: [1, 3, 6, 12, 0], selection: $selectedMonths,
-                          selectedForeground: axis.tintSurfaceTextColor,
-                          selectedBackground: axis.tintColor,
-                          selectedBorder: axis.tintSoftBorderColor) { months in
-                months == 0 ? "전부" : months == 12 ? "1년" : "\(months)개월"
-            }
-            .onChange(of: selectedMonths) { _, _ in periodOffset = 0 }
+        TasteDetailPage(title: "미각 변화", topChrome: topChrome, contentOffset: contentOffset) {
+            TasteDetailPeriodPicker(
+                selection: Binding(
+                    get: { TasteDetailPeriod(rawValue: selectedMonths) ?? .all },
+                    set: { selectedMonths = $0.rawValue; periodOffset = 0 }
+                ),
+                axis: axis
+            )
         } content: {
-            VStack(spacing: 16) {
-                Button("음식·표현·호감 기록을 시간순으로 비교") { showsMemoryComparison = true }
-                Text("아래 그래프는 확인된 식사 시점의 지각 강도와 기준 음식 회상 응답을 구분해요. 원문 교정은 취향 전환으로 세지 않아요.")
-                    .font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary)
-                HStack {
-                    CircleNavigationButton(symbol: "chevron.left", isEnabled: canGoBack) { periodOffset -= 1 }
-                        .accessibilityLabel("이전 기간 보기")
-                    Spacer()
-                    Text(selected == nil ? "기록 대기" : "\(dateLabel(bounds.start)) – \(dateLabel(bounds.end))")
-                        .font(TBFont.semibold(15)).multilineTextAlignment(.center).foregroundStyle(TBColor.textPrimary)
-                    Spacer()
-                    CircleNavigationButton(symbol: "chevron.right", isEnabled: periodOffset < 0) { periodOffset += 1 }
-                        .accessibilityLabel("다음 기간 보기")
-                }
-                HStack {
-                    TasteSelectorButton(axis: tastes[(selectedTasteIndex + 5) % 6], isMuted: true) { moveTaste(-1) }
-                    Spacer()
-                    HStack(spacing: 8) {
-                        LucideIcon(systemName: axis.symbol, size: TBIcon.Size.base, strokeWidth: TBIcon.Stroke.regular).foregroundStyle(axis.mainColor)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(axis.label).font(TBFont.semibold(14)).foregroundStyle(TBColor.textPrimary)
-                            Text(visible.last?.label ?? "기록 없음").font(TBFont.medium(11)).foregroundStyle(TBColor.textSecondary)
-                        }
-                    }.padding(12).background(TBColor.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(TBColor.border, lineWidth: 1))
-                    Spacer()
-                    TasteSelectorButton(axis: tastes[(selectedTasteIndex + 1) % 6], isMuted: true) { moveTaste(1) }
-                }
-                if let selected {
-                    Menu {
-                        ForEach(choices) { series in
-                            Button("\(series.source) · \(series.condition)") { selectedSeriesID = series.id; periodOffset = 0 }
-                        }
-                    } label: {
-                        Label("\(selected.source) · \(selected.condition)", systemImage: "chevron.down")
-                            .font(TBFont.medium(12)).foregroundStyle(TBColor.textBody).frame(minHeight: 44)
-                    }.accessibilityLabel("비교할 음식과 기록 출처 선택")
-                }
-                TasteTrendChart(axis: axis, points: visible, maximum: selected?.maximum ?? 4, start: bounds.start, end: bounds.end)
-                    .frame(height: 280).padding(.horizontal, -12)
-                HStack(spacing: 8) {
-                    TrendMetric(label: "이전", value: visible.first { $0.id == "이전" }?.label ?? "기록 없음")
-                    TrendMetric(label: "최근", value: visible.first { $0.id == "최근" }?.label ?? "기록 없음")
-                    TrendMetric(label: "변화", value: TasteChangeSeries.changeLabel(visible), accent: axis.mainColor, labelColor: axis.mainColor, background: axis.tintColor)
-                }
-                VStack(spacing: 8) {
-                    TrendMeaningRow(title: "지금 읽히는 변화", detail: visible.count == 2
-                        ? "같은 음식·조건에서 \(TasteChangeSeries.changeLabel(visible)) 남겼어요."
-                        : "아직 변화없음 · 이 기간에 비교할 기록이 더 필요해요.")
-                    ForEach(selected?.details ?? ["같은 음식·조건에서 직접 느낀 강도를 남기면 이전과 최근을 비교할 수 있어요."], id: \.self) { detail in
-                        TrendMeaningRow(title: "적용 조건", detail: detail)
+            VStack(spacing: TBSpacing.x20) {
+                TasteDetailChartPanel {
+                    HStack {
+                        CircleNavigationButton(symbol: "chevron.left", isEnabled: canGoBack) { periodOffset -= 1 }
+                            .accessibilityLabel("이전 기간 보기")
+                        Spacer()
+                        Text(selected == nil ? "기록 없음" : "\(dateLabel(bounds.start)) – \(dateLabel(bounds.end))")
+                            .font(TBFont.medium(13)).multilineTextAlignment(.center).foregroundStyle(TBColor.textSecondary)
+                        Spacer()
+                        CircleNavigationButton(symbol: "chevron.right", isEnabled: periodOffset < 0) { periodOffset += 1 }
+                            .accessibilityLabel("다음 기간 보기")
                     }
-                }
-                ForEach(visible) { point in
-                    SectionCard {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("\(point.id) · \(dateLabel(point.start)) – \(dateLabel(point.date))").font(TBFont.semibold(12))
-                            Text("\(point.label) · \(selected?.source == "식사 기록" ? "식사 \(point.count)회" : "회상 응답 \(point.count)개")").font(TBFont.regular(12))
-                            ForEach(appModel.diningEntries.filter { point.experienceIDs.contains($0.id) }) { entry in
-                                Button { selectedEntry = entry } label: {
-                                    Label("\(entry.menu) 원본 기록 보기", systemImage: "arrow.up.right").font(TBFont.medium(12)).frame(minHeight: 44)
-                                }.tint(TBColor.textSecondary)
+                    Picker("감각", selection: Binding(get: { selectedTasteIndex }, set: {
+                        selectedTasteIndex = $0; selectedSeriesID = nil; periodOffset = 0
+                    })) {
+                        ForEach(tastes.indices, id: \.self) { index in Text(tastes[index].label).tag(index) }
+                    }.pickerStyle(.menu).tint(axis.tintTextColor)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                    if let selected {
+                        Menu {
+                            ForEach(choices) { series in
+                                Button("\(series.source) · \(series.condition)") { selectedSeriesID = series.id; periodOffset = 0 }
                             }
-                        }.frame(maxWidth: .infinity, alignment: .leading)
+                        } label: {
+                            Label("\(selected.source) · \(selected.condition)", systemImage: "chevron.down")
+                                .font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true).frame(minHeight: 44)
+                        }.accessibilityLabel("음식과 기록 출처")
                     }
+                    TasteTrendChart(axis: axis, points: visible, maximum: selected?.maximum ?? 4, start: bounds.start, end: bounds.end)
+                        .frame(height: 260).padding(.horizontal, -TBSpacing.x12)
+                    TasteDetailScope(text: selected?.source == "식사 기록" ? "지각 강도 · 약 / 중 / 강" : "회상 강도 · 0–\(selected?.maximum ?? 4)")
                 }
-            }.tbPageContentPadding().background(TBColor.surface)
+                TasteDetailGroup {
+                    TasteDetailValueRow(title: "이전", value: visible.first { $0.id == "이전" }?.label ?? "—", showsDivider: false)
+                    TasteDetailValueRow(title: "최근", value: visible.first { $0.id == "최근" }?.label ?? "—")
+                    TasteDetailValueRow(title: "변화", value: TasteChangeSeries.changeLabel(visible), accent: axis.tintTextColor)
+                }.padding(.horizontal, TBSpacing.page)
+                VStack(alignment: .leading, spacing: TBSpacing.x8) {
+                    if !visible.isEmpty {
+                        TasteDetailDisclosure("기록") {
+                            ForEach(visible) { point in
+                                Text("\(point.id) · \(dateLabel(point.start)) – \(dateLabel(point.date))")
+                                    .font(TBFont.medium(12))
+                                Text("\(point.label) · \(selected?.source == "식사 기록" ? "식사 \(point.count)회" : "회상 \(point.count)개")")
+                                ForEach(appModel.diningEntries.filter { point.experienceIDs.contains($0.id) }) { entry in
+                                    Button { selectedEntry = entry } label: {
+                                        Label(entry.menu, systemImage: "chevron.right").font(TBFont.medium(12)).frame(minHeight: 44)
+                                    }.tint(TBColor.textPrimary)
+                                }
+                            }
+                        }
+                    }
+                    if let selected, !selected.details.isEmpty {
+                        TasteDetailDisclosure("조건") { ForEach(selected.details, id: \.self) { Text($0) } }
+                    }
+                    Button("경험 비교") { showsMemoryComparison = true }
+                        .font(TBFont.medium(12)).frame(minHeight: 44).tint(TBColor.textPrimary)
+                }.padding(.horizontal, TBSpacing.page)
+            }.padding(.bottom, TBSpacing.page)
         }
-        .tbPageBackground().accessibilityIdentifier("taste-change-screen")
+        .accessibilityIdentifier("taste-change-screen")
         .onAppear {
             if let first = allSeries.first(where: { TasteChangeSeries.changeLabel($0.points) != "비교 부족" && TasteChangeSeries.changeLabel($0.points) != "같은 강도" }) ?? allSeries.first,
                let index = tastes.firstIndex(of: first.axis) { selectedTasteIndex = index; selectedSeriesID = first.id }
@@ -1680,53 +1673,5 @@ private struct TasteTrendChart: View {
         .tasteBloomChartReveal()
         .accessibilityElement(children: .ignore).accessibilityLabel("\(axis.label) 미각 변화 그래프")
         .accessibilityValue(points.map { "\($0.id) \($0.label)" }.joined(separator: ", "))
-    }
-}
-
-private struct TrendMetric: View {
-    let label: String
-    let value: String
-    var accent = TBColor.textPrimary
-    var labelColor: Color? = nil
-    var background = TBColor.mutedSurface
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(TBFont.semibold(11))
-                .foregroundStyle(labelColor ?? TBColor.textHint)
-            Text(value)
-                .font(TBFont.bold(14))
-                .foregroundStyle(accent)
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(background)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-    }
-}
-
-private struct TrendMeaningRow: View {
-    let title: String
-    let detail: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text(title)
-                .font(TBFont.semibold(12))
-                .foregroundStyle(TBColor.textPrimary)
-            Text(detail)
-                .font(TBFont.regular(12))
-                .foregroundStyle(TBColor.textSubtle)
-                .lineSpacing(3)
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(TBColor.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(TBColor.borderSubtle, lineWidth: 1)
-        }
     }
 }

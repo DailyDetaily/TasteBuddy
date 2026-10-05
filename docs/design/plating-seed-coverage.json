@@ -1,0 +1,2160 @@
+{
+  "date": "2026-10-01",
+  "basis": "SEED live web guide role comparison; existing Montage/Plating Figma snapshot from same-day audit reused, not re-audited visually",
+  "seedIndex": "https://seed-design.io/components",
+  "counts": {
+    "current": 52,
+    "deprecated": 9,
+    "status": {
+      "누락": 15,
+      "보완 필요": 16,
+      "정리됨": 7,
+      "현재 제품에 불필요": 14
+    },
+    "newConfirmedGaps": 4
+  },
+  "rows": [
+    {
+      "seed": {
+        "name": "Accordion",
+        "slug": "accordion",
+        "url": "https://seed-design.io/components/accordion",
+        "lifecycle": "current",
+        "htmlSha256": "ec4bc3864b726ec00ef824f89a7b2b7539c7410aa04f670b70643cb146b2d83e"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [],
+      "role": "정보를 접고 펼치는 목록",
+      "assessment": "기존 보충표의 TasteDetailDisclosure 누락을 재확인했다. 실제 제품은 단일 Disclosure 중심이므로 SEED의 다중 항목 Accordion 전체를 그대로 만들지 않고 Collapsible 역할로 우선 정리한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/TastePerceptionCards.swift",
+          "line": 195,
+          "excerpt": "TasteDetailDisclosure(\"기록\") {",
+          "match": "TasteDetailDisclosure(\"기록\")"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 316,
+          "excerpt": "struct TasteDetailDisclosure<Content: View>: View {",
+          "match": "struct TasteDetailDisclosure"
+        }
+      ],
+      "relatedProductRows": [
+        "TasteDetailDisclosure"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Action Button",
+        "slug": "action-button",
+        "url": "https://seed-design.io/components/action-button",
+        "lifecycle": "current",
+        "htmlSha256": "51a7ff65468d1182693c360a74418a5a3c9cb64fec3b2bc1cf1a8f7f2d0b329b"
+      },
+      "plating": [
+        {
+          "id": "primary-button",
+          "nodeId": "6:13"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Button/Button",
+          "nodeId": "16215:37602"
+        }
+      ],
+      "role": "주요·보조 행동",
+      "assessment": "PrimaryButton·IconButton은 있으나 tasteTint·visualDisabled 및 텍스트 보조 행동이 미완성이다. Montage의 버튼 6항목을 SEED 한 항목과 합산하지 않는다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/TBComponents.swift",
+          "line": 123,
+          "excerpt": "struct PrimaryButton: View {",
+          "match": "struct PrimaryButton"
+        },
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 471,
+          "excerpt": "rule: \"한 화면의 주요 행동은 하나로 정해요. disabled는 실제 실행을 막고, visualDisabled는 설명을 보여줄 수 있는 별도 상태예요.\",",
+          "match": "visualDisabled는 설명"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Alert Dialog",
+        "slug": "alert-dialog",
+        "url": "https://seed-design.io/components/alert-dialog",
+        "lifecycle": "current",
+        "htmlSha256": "1e55cabb89c3576304ab3edba825bc93740c100e4eb5871ab7365d5179fd46fa"
+      },
+      "plating": [
+        {
+          "id": "dialog",
+          "nodeId": "8:182"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Alert/Alert",
+          "nodeId": "16215:20106"
+        }
+      ],
+      "role": "확인 또는 경고를 위한 모달",
+      "assessment": "Dialog 열림/닫힘은 있으나 실제 iOS alert의 삭제 확인·저장 실패와 플랫폼 차이가 충분히 정리되지 않았다. 확인·취소·destructive·오류의 역할과 Native 시스템 alert 사용을 추가한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+          "line": 546,
+          "excerpt": ".alert(\"이 디시 기록을 삭제할까요?\", isPresented: $showsDeleteAlert) {",
+          "match": ".alert(\"이 디시 기록을 삭제할까요?\""
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Attachment Input",
+        "slug": "attachment-input",
+        "url": "https://seed-design.io/components/attachment-input",
+        "lifecycle": "current",
+        "htmlSha256": "c0b486cab2dc505da0bbe7b703951bee4ded397ca699502f835478a23dda3b49"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [],
+      "role": "사진 등 첨부 입력과 결과 상태",
+      "assessment": "PhotosPicker 호출뿐 아니라 선택→준비/실패→미리보기→삭제를 한 패턴으로 정리해야 한다. 이전 PhotosPicker 누락의 범위를 구체화한다. 파일 업로드·재정렬 등 제품에 없는 기능을 추가하지 않는다.",
+      "evidence": [
+        {
+          "path": "src/components/dining-native/NativeDiningEditor.tsx",
+          "line": 461,
+          "excerpt": "update({ reflectionPhotoFilename: null });"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+          "line": 2037,
+          "excerpt": "PhotosPicker(selection: $photoPickerItem, matching: .images) {",
+          "match": "PhotosPicker(selection:"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+          "line": 1895,
+          "excerpt": ".alert(\"사진을 불러오지 못했어요\", isPresented: photoLoadErrorBinding) {",
+          "match": ".alert(\"사진을 불러오지 못했어요\""
+        }
+      ],
+      "relatedProductRows": [
+        "PhotosPicker / 사진 입력"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Avatar",
+        "slug": "avatar",
+        "url": "https://seed-design.io/components/avatar",
+        "lifecycle": "current",
+        "htmlSha256": "872a16cb9459437efc092d29645875eee4e51a2a3835c1e913fa76cbc308f5ca"
+      },
+      "plating": [
+        {
+          "id": "avatar",
+          "nodeId": "7:342"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P2",
+      "montage": [
+        {
+          "name": "Avatar/Avatar",
+          "nodeId": "16215:25725"
+        }
+      ],
+      "role": "사용자 이미지·대체 표현",
+      "assessment": "Figma는 기본 1종이나 코드에는 sm/md/lg/xl, 이미지와 initials, 측정 배경이 있다. 실제 크기와 이미지/이니셜/측정 유무를 속성 및 예제로 정리한다.",
+      "evidence": [
+        {
+          "path": "src/components/system/TasteProfileAvatar.tsx",
+          "line": 19,
+          "excerpt": "imageSrc?: string | null;",
+          "match": "imageSrc?: string | null;"
+        },
+        {
+          "path": "src/components/system/TasteProfileAvatar.tsx",
+          "line": 27,
+          "excerpt": "sm: 'text-[11px]',",
+          "match": "sm: 'text-[11px]'"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Badge",
+        "slug": "badge",
+        "url": "https://seed-design.io/components/badge",
+        "lifecycle": "current",
+        "htmlSha256": "1578210777cedbb8e7a5b37e166709f5c3d28e0dff1f949646d8d6e1981dd1f7"
+      },
+      "plating": [
+        {
+          "id": "badge",
+          "nodeId": "7:321"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P2",
+      "montage": [
+        {
+          "name": "Content Badge/Content Badge",
+          "nodeId": "16215:25365"
+        }
+      ],
+      "role": "읽기용 상태 라벨",
+      "assessment": "Figma 기본 1종만 있어 실제 Chip/StatusChip의 상태·의미별 용도를 충분히 표현하지 않는다. 읽기용 배지와 선택형 칩을 구분하고 실제 정보/경고/근거 상태만 추가한다.",
+      "evidence": [
+        {
+          "path": "src/components/measurement/TasteSurveyQuestionCard.tsx",
+          "line": 43,
+          "excerpt": "<Chip size=\"xs\" tone=\"warning\" variant=\"soft\">",
+          "match": "tone=\"warning\""
+        },
+        {
+          "path": "src/components/restaurant/RestaurantMenuDetailView.tsx",
+          "line": 75,
+          "excerpt": "<StatusChip>{menu.confidenceLabel}</StatusChip>",
+          "match": "<StatusChip>"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Bottom Navigation",
+        "slug": "bottom-navigation",
+        "url": "https://seed-design.io/components/bottom-navigation",
+        "lifecycle": "current",
+        "htmlSha256": "cf72d95937ad96b765ab4ce3826fbbebe6046731a27d1d59f1a39fd53db901a2"
+      },
+      "plating": [
+        {
+          "id": "bottom-tab",
+          "nodeId": "7:136"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P2",
+      "montage": [],
+      "role": "주요 목적지 간 이동",
+      "assessment": "기본 3목적지 사양은 있으나 실제 shell의 중앙 기록 액션·safe area가 빠져 있다. SEED의 탭 개수 규칙을 Taste Buddy에 이식하지 않는다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/Shell/AppChromeComponents.swift",
+          "line": 850,
+          "excerpt": "private struct TopAppBarIconButton: View {",
+          "match": "private struct TopAppBarIconButton"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/Shell/BottomTabCenterButton.swift",
+          "line": 3,
+          "excerpt": "struct BottomTabCenterButton: View {",
+          "match": "struct BottomTabCenterButton"
+        }
+      ],
+      "relatedProductRows": [
+        "TopBar / BottomTab / BackButton"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Bottom Sheet",
+        "slug": "bottom-sheet",
+        "url": "https://seed-design.io/components/bottom-sheet",
+        "lifecycle": "current",
+        "htmlSha256": "17a463a238b73b072c2322aa964d3c46660628a9107a8b3c1a0772992985012f"
+      },
+      "plating": [
+        {
+          "id": "bottom-sheet",
+          "nodeId": "8:127"
+        }
+      ],
+      "status": "정리됨",
+      "priority": "—",
+      "montage": [],
+      "role": "맥락을 유지하는 하단 모달",
+      "assessment": "현재 Native/Web·열림/닫힘과 제목/설명 및 규격 차이가 정리돼 있다. 모든 콘텐츠·드래그·snap 정책의 구현 완료는 아니다.",
+      "evidence": [
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 491,
+          "excerpt": "\"Native 최대 높이 98%, 반경 32, 손잡이 36×5. Web은 95%, 반경 20, 40×6. 이 v1은 양쪽의 현재 계약을 보존해요.\",",
+          "match": "Native 최대 높이 98%"
+        }
+      ],
+      "relatedProductRows": [
+        "BottomSheetShell"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Callout",
+        "slug": "callout",
+        "url": "https://seed-design.io/components/callout",
+        "lifecycle": "current",
+        "htmlSha256": "22bb8d7620ee7d4fc06fe3a88bf6264ed6fb86a16df6e0c90630e2ee98eefa64"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [],
+      "role": "강조된 정보·팁 메시지",
+      "assessment": "현재 범위에서 독립 Callout 사용 근거를 확인하지 못했다. 미호출 TasteDetailNote 정의만으로 필수 누락에 넣지 않는다. 실제 안내 블록 필요가 확인되면 채택한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 234,
+          "excerpt": "struct TasteDetailNote: View {",
+          "match": "struct TasteDetailNote"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/DesignSystemFullComponents.swift",
+          "line": 1171,
+          "excerpt": ".init(swiftType: \"TasteDetailMetric\", sourceFile: \"Components/TasteDetailPage.swift\", usage: .visualReference,",
+          "match": "swiftType: \"TasteDetailMetric\""
+        }
+      ],
+      "relatedProductRows": [
+        "TasteDetailNote / Metric"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Checkbox",
+        "slug": "checkbox",
+        "url": "https://seed-design.io/components/checkbox",
+        "lifecycle": "current",
+        "htmlSha256": "2d947358d526180ea3b0121cb0463ec26bacf03cf2cee2d623166ed28e9a5285"
+      },
+      "plating": [
+        {
+          "id": "checkbox",
+          "nodeId": "6:296"
+        }
+      ],
+      "status": "정리됨",
+      "priority": "—",
+      "montage": [
+        {
+          "name": "Control/Checkbox",
+          "nodeId": "16215:33897"
+        }
+      ],
+      "role": "독립적인 복수 선택",
+      "assessment": "v1의 독립적인 체크 선택·비활성 역할과 편집 라벨이 있다. Montage의 indeterminate/크기 전체를 필요 조건으로 보지 않는다. 일괄 선택 요구가 생기면 indeterminate를 추가한다.",
+      "evidence": [
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 395,
+          "excerpt": "checkbox: [\"기본\", \"선택\", \"비활성\"],",
+          "match": "checkbox: [\"기본\", \"선택\", \"비활성\"]"
+        },
+        {
+          "path": "src/plating/ComponentPreview.tsx",
+          "line": 213,
+          "excerpt": "<Checkbox",
+          "match": "<Checkbox"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Chip",
+        "slug": "chip",
+        "url": "https://seed-design.io/components/chip",
+        "lifecycle": "current",
+        "htmlSha256": "a4bd6d50d9506bbd1e92d70a7080683a2971a8f60c8cb24a2135b4b1a95ac316"
+      },
+      "plating": [
+        {
+          "id": "chip",
+          "nodeId": "6:274"
+        },
+        {
+          "id": "taste-chip",
+          "nodeId": "9:23"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Chip/Chip",
+          "nodeId": "16215:42078"
+        }
+      ],
+      "role": "짧은 값·선택 조건",
+      "assessment": "일반 Chip은 기본/선택만 있고 실제 size·tone·variant·비활성·correction 차이가 빠져 있다. TasteChip은 별개 의미다. TBSelectableChip 및 일반 Chip의 실사용 변형을 맞추고 읽기/선택/수정 요청을 분리한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+          "line": 1542,
+          "excerpt": "TBSelectableChip(",
+          "match": "TBSelectableChip("
+        },
+        {
+          "path": "src/components/restaurant/RestaurantMenuDetailView.tsx",
+          "line": 72,
+          "excerpt": "<Chip size=\"xs\" tone=\"neutral\" variant=\"soft\">",
+          "match": "size=\"xs\" tone=\"neutral\" variant=\"soft\""
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Content Placeholder",
+        "slug": "content-placeholder",
+        "url": "https://seed-design.io/components/content-placeholder",
+        "lifecycle": "current",
+        "htmlSha256": "13b12337aa91b5122f6ce33c4b99371a4fdb13e4203e4ec92a90d9ca35470fcf"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P2",
+      "montage": [
+        {
+          "name": "Thumbnail/Thumbnail",
+          "nodeId": "16215:25523"
+        }
+      ],
+      "role": "콘텐츠 이미지 부재·실패의 대체 표현",
+      "assessment": "ImageBox에 menu/restaurant/generic fallback이 있지만 목록에 없다. EmptyState와 Skeleton과 구분하고 원본 없음·불러오기 실패를 문서화한다.",
+      "evidence": [
+        {
+          "path": "src/components/system/ImageBox.tsx",
+          "line": 34,
+          "excerpt": "const FALLBACK_ICON = {"
+        },
+        {
+          "path": "src/components/dining/DishFeedbackCard.tsx",
+          "line": 452,
+          "excerpt": "kind=\"menu\""
+        },
+        {
+          "path": "src/components/system/CompactCard.tsx",
+          "line": 14,
+          "excerpt": "media: ReactNode;",
+          "match": "media: ReactNode;"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/SensoryAnalysisCards.swift",
+          "line": 364,
+          "excerpt": ".resizable().scaledToFill()",
+          "match": ".resizable().scaledToFill()"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Contextual Floating Button",
+        "slug": "contextual-floating-button",
+        "url": "https://seed-design.io/components/contextual-floating-button",
+        "lifecycle": "current",
+        "htmlSha256": "6a88105ff3bbf225c5d66fca4241ae51248f036a7332d225dcee01cc0c4ae732"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [],
+      "role": "특정 상황에서 나타나는 보조 부유 행동",
+      "assessment": "범위 내에서 대응하는 조건부 부유 버튼을 확인하지 못했다. 하단의 주요 기록 버튼은 이 역할로 분류하지 않는다.",
+      "evidence": [],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Date Picker",
+        "slug": "date-picker",
+        "url": "https://seed-design.io/components/date-picker",
+        "lifecycle": "current",
+        "htmlSha256": "e2a715946d669e45b82aef56bb5dac41a243c1294b55a65283d78a4e1988d642"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P2",
+      "montage": [],
+      "role": "날짜·기간 선택",
+      "assessment": "실제 식사일과 회상 기간 편집을 OS DatePicker 패턴으로 등록한다. SEED의 커스텀 캘린더를 새로 구현한다는 뜻은 아니다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Home/FoodMemoryViews.swift",
+          "line": 314,
+          "excerpt": "DatePicker(source == .confirmed ? \"식사일\" : \"기간 시작\", selection: Binding(get: { value?.start ?? .now }, set: { value?.start = $0; value?.confirmedAt = .now }), displayedComponents: .date)",
+          "match": "DatePicker(source == .confirmed"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Home/FoodMemoryViews.swift",
+          "line": 316,
+          "excerpt": "DatePicker(\"기간 끝\", selection: Binding(get: { value?.end ?? .now }, set: { value?.end = $0; value?.confirmedAt = .now }), in: (value?.start ?? .distantPast)..., displayedComponents: .date)",
+          "match": "DatePicker(\"기간 끝\""
+        }
+      ],
+      "relatedProductRows": [
+        "DatePicker / 식사일·기간"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Dialog",
+        "slug": "dialog",
+        "url": "https://seed-design.io/components/dialog",
+        "lifecycle": "current",
+        "htmlSha256": "12e7406e3909168e1792184d57b15a7067cb693f75067d5d243e14d11b1b66a7"
+      },
+      "plating": [
+        {
+          "id": "dialog",
+          "nodeId": "8:182"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Alert/Alert",
+          "nodeId": "16215:20106"
+        }
+      ],
+      "role": "작업·정보용 모달",
+      "assessment": "플레이팅 Dialog 예제는 삭제 확인이다. Alert Dialog와 일반 작업 Dialog의 차이, 내용 스크롤·확인/취소·반응형 처리를 구분한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+          "line": 546,
+          "excerpt": ".alert(\"이 디시 기록을 삭제할까요?\", isPresented: $showsDeleteAlert) {",
+          "match": ".alert(\"이 디시 기록을 삭제할까요?\""
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Divider",
+        "slug": "divider",
+        "url": "https://seed-design.io/components/divider",
+        "lifecycle": "current",
+        "htmlSha256": "99eb0b36d08864fcddf91a624137eaa0049e8385fb2c891613cb51f42745cd7a"
+      },
+      "plating": [
+        {
+          "id": "divider",
+          "nodeId": "7:515"
+        }
+      ],
+      "status": "정리됨",
+      "priority": "—",
+      "montage": [
+        {
+          "name": "Divider/Divider",
+          "nodeId": "16215:43086"
+        }
+      ],
+      "role": "콘텐츠 경계",
+      "assessment": "현재 기본 경계 분리 역할은 정리돼 있다. Montage 굵기/방향 전체를 추가할 근거는 별도다. 새 방향·그룹 구분이 실제 사용될 때 확장한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 270,
+          "excerpt": "if showsDivider { Divider().overlay(TBColor.borderSubtle).padding(.horizontal, TBSpacing.x16) }",
+          "match": "Divider().overlay(TBColor.borderSubtle)"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Field",
+        "slug": "field",
+        "url": "https://seed-design.io/components/field",
+        "lifecycle": "current",
+        "htmlSha256": "938796ec02f486fb6bc571c34da0bcd1f4a9d783fcaff174b2f224056d697ead"
+      },
+      "plating": [
+        {
+          "id": "text-input",
+          "nodeId": "6:84"
+        },
+        {
+          "id": "inline-error",
+          "nodeId": "8:30"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Textinput/Textfield",
+          "nodeId": "16215:31385"
+        }
+      ],
+      "role": "입력 라벨·도움말·오류의 공통 구조",
+      "assessment": "현재 입력에 분산된 label/helper/error를 하나의 조합 계약으로 정리한다. 단일행·여러 줄·선택창 입력의 메시지 우선순위와 접근성 연결이 필요하다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+          "line": 15,
+          "excerpt": "struct TBTextInput: View {"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+          "line": 15,
+          "excerpt": "struct TBTextInput: View {",
+          "match": "struct TBTextInput"
+        },
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 73,
+          "excerpt": "\"Dining 44 / Auth 48 · 반경 10 / 12\",",
+          "match": "Dining 44 / Auth 48"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Floating Action Button",
+        "slug": "floating-action-button",
+        "url": "https://seed-design.io/components/floating-action-button",
+        "lifecycle": "current",
+        "htmlSha256": "576a5b82588a28fd9b1b99e5861ce8719a81599b03eaac2476cdcfa229a832c2"
+      },
+      "plating": [
+        {
+          "id": "bottom-tab",
+          "nodeId": "7:136"
+        }
+      ],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [
+        {
+          "name": "Button/Icon/Solid",
+          "nodeId": "16215:41931"
+        }
+      ],
+      "role": "화면 위의 주요 부유 행동",
+      "assessment": "중앙 기록 버튼은 BottomTab의 일부이며 독립 FAB와 동일하지 않다. 새로운 부유 진입점은 현재 근거 없이 추가하지 않고 기존 중앙 액션 보완에 포함한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/Shell/BottomTabCenterButton.swift",
+          "line": 3,
+          "excerpt": "struct BottomTabCenterButton: View {"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/Shell/AppRouteDestinations.swift",
+          "line": 1585,
+          "excerpt": "private struct CircleNavigationButton: View {",
+          "match": "private struct CircleNavigationButton"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/SearchSystemComponents.swift",
+          "line": 248,
+          "excerpt": "struct CompactCardIconActionButton: View {",
+          "match": "struct CompactCardIconActionButton"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Footer",
+        "slug": "footer",
+        "url": "https://seed-design.io/components/footer",
+        "lifecycle": "current",
+        "htmlSha256": "137d0dd4f31f22802f76d9e73e75df9e218d56a17b420973da613f2e71080be9"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "범위 밖",
+      "montage": [],
+      "role": "웹 사이트 정보·정책·탐색 영역",
+      "assessment": "SEED Footer는 하단 CTA 바가 아니다. 플레이팅 문서 footer는 실제 존재하지만 네이티브 제품 계열과 별도다. TBFlowStepCTA 누락은 Montage Action Area로 추적한다.",
+      "evidence": [
+        {
+          "path": "src/plating/PlatingSite.tsx",
+          "line": 461,
+          "excerpt": "<footer className=\"pl-doc-footer\">"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Help Bubble",
+        "slug": "help-bubble",
+        "url": "https://seed-design.io/components/help-bubble",
+        "lifecycle": "current",
+        "htmlSha256": "29798dc9dc652a464eed5ae66130a7d06a520104e990abffbe73bcf8eba3373c"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [
+        {
+          "name": "Tooltip/Tooltip",
+          "nodeId": "16764:137783"
+        }
+      ],
+      "role": "특정 조작의 맥락 설명",
+      "assessment": "현재 제품의 도움말 화면 및 차트 값 Tooltip과 이 설명 말풍선은 역할이 다르다. 명확한 사용 지점이 확인될 때 검토한다.",
+      "evidence": [
+        {
+          "path": "src/pages/AnalysisPage.tsx",
+          "line": 2336,
+          "excerpt": "content={<WeeklyTrendTooltip visibleTasteLabels={visibleTasteLabels} />}",
+          "match": "content={<WeeklyTrendTooltip"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Identity Placeholder",
+        "slug": "identity-placeholder",
+        "url": "https://seed-design.io/components/identity-placeholder",
+        "lifecycle": "current",
+        "htmlSha256": "788a744f15536c486aa2f1b377f836849f98e0a8683c68caa07470dd3b134dac"
+      },
+      "plating": [
+        {
+          "id": "avatar",
+          "nodeId": "7:342"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P2",
+      "montage": [
+        {
+          "name": "Avatar/Avatar",
+          "nodeId": "16215:25725"
+        }
+      ],
+      "role": "인물 이미지의 대체 표현",
+      "assessment": "프로필 이니셜과 ImageBox person fallback을 한 규칙으로 연결해야 한다. 별도 당근 캐릭터 이미지를 가져오지 않는다.",
+      "evidence": [
+        {
+          "path": "src/components/system/ImageBox.tsx",
+          "line": 38,
+          "excerpt": "person: UserRound,"
+        },
+        {
+          "path": "src/components/restaurant/RestaurantHeroCard.tsx",
+          "line": 211,
+          "excerpt": "fallback=\"person\""
+        },
+        {
+          "path": "src/components/system/TasteProfileAvatar.tsx",
+          "line": 19,
+          "excerpt": "imageSrc?: string | null;",
+          "match": "imageSrc?: string | null;"
+        },
+        {
+          "path": "src/components/system/TasteProfileAvatar.tsx",
+          "line": 27,
+          "excerpt": "sm: 'text-[11px]',",
+          "match": "sm: 'text-[11px]'"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Image Frame",
+        "slug": "image-frame",
+        "url": "https://seed-design.io/components/image-frame",
+        "lifecycle": "current",
+        "htmlSha256": "816ce4f1fff2fbc1f2999079741cda63f650a7091bebc8529f8a8eeba53c38e9"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P2",
+      "montage": [
+        {
+          "name": "Thumbnail/Thumbnail",
+          "nodeId": "16215:25523"
+        }
+      ],
+      "role": "이미지 비율·잘림·대체 표현",
+      "assessment": "ImageBox 및 카드 사진의 비율·crop·실패·fallback을 독립 항목으로 정리한다. SEED 이미지를 그대로 복제할 필요는 없다.",
+      "evidence": [
+        {
+          "path": "src/components/system/CompactCard.tsx",
+          "line": 14,
+          "excerpt": "media: ReactNode;",
+          "match": "media: ReactNode;"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/SensoryAnalysisCards.swift",
+          "line": 364,
+          "excerpt": ".resizable().scaledToFill()",
+          "match": ".resizable().scaledToFill()"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Input Button",
+        "slug": "input-button",
+        "url": "https://seed-design.io/components/input-button",
+        "lifecycle": "current",
+        "htmlSha256": "f333398cb4ea9e9b8250dd9a4c4e0c2f2c0a2634180b7ce0a52e8a85baeb6b64"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Select/Select",
+          "nodeId": "16215:33116"
+        }
+      ],
+      "role": "선택창을 열고 선택 결과를 보여주는 입력형 버튼",
+      "assessment": "ProfileEditSelectField가 현재값을 보여주고 picker를 연다. 텍스트를 직접 편집하는 Input 및 펼침 목록 Select와 구분해 빈 값·현재값·취소·오류를 정리한다.",
+      "evidence": [
+        {
+          "path": "src/components/ProfileEditSheetContent.tsx",
+          "line": 1348,
+          "excerpt": "function ProfileEditSelectField({"
+        },
+        {
+          "path": "src/components/ProfileEditSheetContent.tsx",
+          "line": 1216,
+          "excerpt": "onClick={() => setActivePicker('birthDate')}"
+        },
+        {
+          "path": "src/App.tsx",
+          "line": 3744,
+          "excerpt": "<ProfileEditSheetContent"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Gastronomy/DiningFoodSourceEditor.swift",
+          "line": 16,
+          "excerpt": "Picker(\"음식 출처\", selection: Binding(get: { value?.kind ?? \"unknown\" }, set: { kind in",
+          "match": "Picker(\"음식 출처\""
+        },
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 141,
+          "excerpt": "}.pickerStyle(.menu).frame(maxWidth: .infinity, minHeight: 44)",
+          "match": ".pickerStyle(.menu)"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": true
+    },
+    {
+      "seed": {
+        "name": "List",
+        "slug": "list",
+        "url": "https://seed-design.io/components/list",
+        "lifecycle": "current",
+        "htmlSha256": "65aded929c5074bded20c9f662211a82a946962d1f12574c92e902622a0fb6ba"
+      },
+      "plating": [
+        {
+          "id": "list-row",
+          "nodeId": "7:296"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "List Cell/List Cell",
+          "nodeId": "16215:26404"
+        }
+      ],
+      "role": "정보·값·행동을 담는 행",
+      "assessment": "기본 1종·사양 프리뷰에 머문다. 실제 값 행의 이동 표시·구분선·큰 글자 세로 전환이 반영되지 않았다. TasteDetailValueRow를 우선 등록하고 단순 목록과 값 행의 차이를 연결한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/TastePerceptionCards.swift",
+          "line": 191,
+          "excerpt": "TasteDetailValueRow(title: \"최근 강도\", value: pattern.currentLevel.map { TastePerceptionEngine.levelLabels[$0] } ?? \"—\", showsDivider: false)",
+          "match": "TasteDetailValueRow(title:"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 261,
+          "excerpt": "struct TasteDetailValueRow: View {",
+          "match": "struct TasteDetailValueRow"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Manner Temp & Manner Temp Badge",
+        "slug": "manner-temp",
+        "url": "https://seed-design.io/components/manner-temp",
+        "lifecycle": "current",
+        "htmlSha256": "16589504b2ed008e6fe90c30128b3c30d89ac63dac6f0c49443aa217425cc7a8"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "제외",
+      "montage": [],
+      "role": "당근의 매너온도 표현",
+      "assessment": "당근 고유 신뢰 지표다. Taste Buddy 미각 값이나 취향 점수로 치환하거나 가져오지 않는다.",
+      "evidence": [],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Menu Sheet",
+        "slug": "menu-sheet",
+        "url": "https://seed-design.io/components/menu-sheet",
+        "lifecycle": "current",
+        "htmlSha256": "ff0e24d20915e373bf6851be8c29f76396242c5261541a093bdddce6fe313b22"
+      },
+      "plating": [
+        {
+          "id": "bottom-sheet",
+          "nodeId": "8:127"
+        },
+        {
+          "id": "menu",
+          "nodeId": "8:211"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Menu/Menu",
+          "nodeId": "16215:18469"
+        }
+      ],
+      "role": "관련 행동을 모은 하단 시트",
+      "assessment": "AppMenuSheet가 실제 존재하지만 현재 Figma는 일반 시트와 메뉴를 따로만 정리했다. 행동 그룹·설명·로그아웃 등 역할과 닫기를 조합 패턴으로 추가한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/Shell/AppShellView.swift",
+          "line": 762,
+          "excerpt": "AppMenuSheet("
+        },
+        {
+          "path": "ios/TasteBuddy/Components/Shell/AppShellView.swift",
+          "line": 3258,
+          "excerpt": "private struct AppMenuSheet: View {"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/TastePerceptionCards.swift",
+          "line": 54,
+          "excerpt": "Menu {",
+          "match": "Menu {"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Home/HomeDiscoveryViews.swift",
+          "line": 21,
+          "excerpt": ".contextMenu {",
+          "match": ".contextMenu"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Menu",
+        "slug": "menu",
+        "url": "https://seed-design.io/components/menu",
+        "lifecycle": "current",
+        "htmlSha256": "6bb519e815daae9cfb763d6cd6b0a701ad6adf640158ee5ac64acd5f4ec96613"
+      },
+      "plating": [
+        {
+          "id": "menu",
+          "nodeId": "8:211"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Menu/Menu",
+          "nodeId": "16215:18469"
+        }
+      ],
+      "role": "주변 맥락의 행동 목록",
+      "assessment": "현재 Figma는 열림/닫힘 2종. 실제 메뉴·선택 Picker·contextMenu의 역할, 항목 선택·파괴 액션 구분이 부족하다. 공통 메뉴 항목과 Native Picker/문맥 메뉴 차이를 정리한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/TastePerceptionCards.swift",
+          "line": 54,
+          "excerpt": "Menu {",
+          "match": "Menu {"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Home/HomeDiscoveryViews.swift",
+          "line": 21,
+          "excerpt": ".contextMenu {",
+          "match": ".contextMenu"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Notification Badge",
+        "slug": "notification-badge",
+        "url": "https://seed-design.io/components/notification-badge",
+        "lifecycle": "current",
+        "htmlSha256": "a81628b5cfb857705dd9b8cfdf12cccb10e55a9ae4161ef27169b1ee219ed429"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Content Badge/Content Badge",
+          "nodeId": "16215:25365"
+        }
+      ],
+      "role": "읽지 않은 알림의 점·수량 표시",
+      "assessment": "일반 StatusChip과 별개다. Native 상단바 showsDot 및 웹 unreadCount가 실제 존재하므로 표시/숨김·읽음 처리·수량의 계약을 등록한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/Shell/AppChromeComponents.swift",
+          "line": 801,
+          "excerpt": "showsDot: hasUnreadNotifications,"
+        },
+        {
+          "path": "src/components/NotificationPanel.tsx",
+          "line": 127,
+          "excerpt": "const unreadCount = notifications.filter((notification) => !notification.read).length;"
+        },
+        {
+          "path": "src/App.tsx",
+          "line": 3554,
+          "excerpt": "<NotificationPanel"
+        },
+        {
+          "path": "src/components/measurement/TasteSurveyQuestionCard.tsx",
+          "line": 43,
+          "excerpt": "<Chip size=\"xs\" tone=\"warning\" variant=\"soft\">",
+          "match": "tone=\"warning\""
+        },
+        {
+          "path": "src/components/restaurant/RestaurantMenuDetailView.tsx",
+          "line": 75,
+          "excerpt": "<StatusChip>{menu.confidenceLabel}</StatusChip>",
+          "match": "<StatusChip>"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": true
+    },
+    {
+      "seed": {
+        "name": "Page Banner",
+        "slug": "page-banner",
+        "url": "https://seed-design.io/components/page-banner",
+        "lifecycle": "current",
+        "htmlSha256": "319d06f657967da5e9734163e91f32e911e3ef810a18a821dc9f305589e75103"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [],
+      "role": "페이지 전체 상태 안내",
+      "assessment": "현재 범위에서 전용 페이지 배너 사용을 확인하지 못했다. 입력 저장 오류·Toast·결과 화면을 일괄 배너로 바꾸지 않는다.",
+      "evidence": [],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Pagination",
+        "slug": "pagination",
+        "url": "https://seed-design.io/components/pagination",
+        "lifecycle": "current",
+        "htmlSha256": "14aa2efd95362228b579c8cc88ace536c48b37cf052d79b29aaafc638d36cd78"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [
+        {
+          "name": "Pagination/Navigation",
+          "nodeId": "16215:22953"
+        }
+      ],
+      "role": "번호를 통한 페이지 이동",
+      "assessment": "현재 번호 기반 목록 페이지 이동은 확인하지 못했다. 온보딩 StepIndicator를 Pagination으로 매핑하지 않는다.",
+      "evidence": [],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Progress Circle",
+        "slug": "progress-circle",
+        "url": "https://seed-design.io/components/progress-circle",
+        "lifecycle": "current",
+        "htmlSha256": "4d3c31b7b53427004d41334d03295df771fb54b5010e8e018142f5bb6a9a8a9a"
+      },
+      "plating": [
+        {
+          "id": "progress",
+          "nodeId": "8:96"
+        }
+      ],
+      "status": "정리됨",
+      "priority": "—",
+      "montage": [
+        {
+          "name": "Circular/Circular",
+          "nodeId": "16215:24960"
+        }
+      ],
+      "role": "진행 중 상태 표시",
+      "assessment": "Progress의 비정량 상태와 Native ProgressView가 회전 로딩 역할을 담는다. 화면 전체의 로딩 안내 조합은 별도 누락이다. 기본 로딩 primitive를 유지하고 FlowLoadingState를 추가한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/NativeLayoutComponents.swift",
+          "line": 125,
+          "excerpt": "ProgressView()",
+          "match": "ProgressView()"
+        },
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 405,
+          "excerpt": "progress: [\"정량\", \"비정량\"],",
+          "match": "progress: [\"정량\", \"비정량\"]"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Quantity Picker",
+        "slug": "quantity-picker",
+        "url": "https://seed-design.io/components/quantity-picker",
+        "lifecycle": "current",
+        "htmlSha256": "293ca4908f0c1a102f26442c20e45e955914544f6d790cfd95eefd41a2f40cd4"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [],
+      "role": "수치를 한 단계씩 증감하는 입력",
+      "assessment": "현재 제품 범위에서 수량 증감 컨트롤을 확인하지 못했다. 예약/주문 참고 화면을 현행 기능으로 세지 않는다.",
+      "evidence": [],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Radio",
+        "slug": "radio",
+        "url": "https://seed-design.io/components/radio",
+        "lifecycle": "current",
+        "htmlSha256": "32a87b29f7f3ed4052e55799718af2bb970f329a42720c49632c810e9d524159"
+      },
+      "plating": [
+        {
+          "id": "radio",
+          "nodeId": "6:329"
+        }
+      ],
+      "status": "정리됨",
+      "priority": "—",
+      "montage": [
+        {
+          "name": "Control/Radio",
+          "nodeId": "16215:34160"
+        }
+      ],
+      "role": "상호 배타적인 단일 선택",
+      "assessment": "단일 선택·비활성 및 웹 그룹 프리뷰가 정리돼 있다. 카탈로그 범위의 충족이며 전체 화면 QA 판정은 아니다. 그룹 문구 편집 편의는 후속 라이브러리 개선으로 관리한다.",
+      "evidence": [
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 396,
+          "excerpt": "radio: [\"기본\", \"선택\", \"비활성\"],",
+          "match": "radio: [\"기본\", \"선택\", \"비활성\"]"
+        },
+        {
+          "path": "src/plating/ComponentPreview.tsx",
+          "line": 224,
+          "excerpt": "<RadioGroup",
+          "match": "<RadioGroup"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Reaction Button",
+        "slug": "reaction-button",
+        "url": "https://seed-design.io/components/reaction-button",
+        "lifecycle": "current",
+        "htmlSha256": "0ca47ddb11fe089bc2d098219aa0182fdba936c029585dff0ceb775105e8ab10"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P2",
+      "montage": [
+        {
+          "name": "Control/Toggle Icon",
+          "nodeId": "16215:34872"
+        }
+      ],
+      "role": "좋아요 등 콘텐츠 반응",
+      "assessment": "실제 좋아요 aria-pressed가 있으나 독립 계열이 없다. 북마크와 감정 반응의 문구·실패 복귀·수량 표시를 구분한다.",
+      "evidence": [
+        {
+          "path": "src/components/dining/DishFeedbackCard.tsx",
+          "line": 933,
+          "excerpt": "aria-pressed={isLiked}",
+          "match": "aria-pressed={isLiked}"
+        },
+        {
+          "path": "src/components/restaurant/RestaurantHeroCard.tsx",
+          "line": 243,
+          "excerpt": "aria-label=\"북마크\"",
+          "match": "aria-label=\"북마크\""
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Result Section",
+        "slug": "result-section",
+        "url": "https://seed-design.io/components/result-section",
+        "lifecycle": "current",
+        "htmlSha256": "77af18ef0217c0fb904f28d2334fc0218765561dec4c61a25a72906eb2864f74"
+      },
+      "plating": [
+        {
+          "id": "empty-state",
+          "nodeId": "8:63"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [],
+      "role": "빈 결과·완료·실패와 다음 행동",
+      "assessment": "EmptyState는 있지만 TBFlowRetryState는 빠져 있다. DiningResultCard는 식사 해석 결과여서 일반 작업 완료/실패 화면과 동일하지 않다. 전체 화면/영역별 크기와 실제 재시도를 정리한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/SensoryAnalysisCards.swift",
+          "line": 134,
+          "excerpt": "EmptyState(",
+          "match": "EmptyState("
+        },
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 404,
+          "excerpt": "\"empty-state\": [\"첫 기록\", \"검색 결과 없음\"],",
+          "match": "\"empty-state\": [\"첫 기록\", \"검색 결과 없음\"]"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Calibration/CalibrationFlowView.swift",
+          "line": 21,
+          "excerpt": "TBFlowRetryState(",
+          "match": "TBFlowRetryState("
+        },
+        {
+          "path": "ios/TasteBuddy/Components/NativeLayoutComponents.swift",
+          "line": 136,
+          "excerpt": "struct TBFlowRetryState: View {",
+          "match": "struct TBFlowRetryState"
+        }
+      ],
+      "relatedProductRows": [
+        "EmptyState",
+        "TBFlowRetryState"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Scroll Fog",
+        "slug": "scroll-fog",
+        "url": "https://seed-design.io/components/scroll-fog",
+        "lifecycle": "current",
+        "htmlSha256": "e956fe6678fe8c27b9aacf353bdd43c3ebbf6ac09f341e5e4804118d26ab2660"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P2",
+      "montage": [],
+      "role": "가려진 스크롤 영역의 시각적 경계",
+      "assessment": "BirthDatePicker 위·아래 gradient가 실제 사용된다. 단독 제품 컴포넌트 대신 picker 내부 유틸리티로 등록하고 배경 일치·값 가림을 확인한다.",
+      "evidence": [
+        {
+          "path": "src/components/system/BirthDatePicker.tsx",
+          "line": 89,
+          "excerpt": "<div className=\"pointer-events-none absolute inset-x-0 top-0 z-20 h-14 bg-gradient-to-b from-[var(--tb-color-bg-focus)] via-[var(--tb-color-bg-focus)]/80 to-transparent\" />"
+        },
+        {
+          "path": "src/components/ProfileEditSheetContent.tsx",
+          "line": 1260,
+          "excerpt": "<BirthDatePicker"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": true
+    },
+    {
+      "seed": {
+        "name": "Segmented Control",
+        "slug": "segmented-control",
+        "url": "https://seed-design.io/components/segmented-control",
+        "lifecycle": "current",
+        "htmlSha256": "5ff275adfd48002a1fed5e2fc7132a422a9515438869e274d1dc7261020490d2"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Segmented Control/Segmented Control",
+          "nodeId": "16215:35115"
+        }
+      ],
+      "role": "관련 보기·모드의 즉시 전환",
+      "assessment": "TasteDetailSectionPicker와 TBCapsuleTabs가 있지만 별도 상세 모드 선택기 항목이 없다. 해석/근거·비교/기록 문구와 큰 글자 메뉴 전환을 등록한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/PersonalTasteInsightCards.swift",
+          "line": 138,
+          "excerpt": "TasteDetailSectionPicker(selection: $section, overviewTitle: \"비교\", evidenceTitle: \"기록\")",
+          "match": "TasteDetailSectionPicker("
+        },
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 130,
+          "excerpt": "struct TasteDetailSectionPicker: View {",
+          "match": "struct TasteDetailSectionPicker"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Select Box",
+        "slug": "select-box",
+        "url": "https://seed-design.io/components/select-box",
+        "lifecycle": "current",
+        "htmlSha256": "ee9084f4ab19d4f2cdbe16aeacfa6cb45db8cf77dad7b633bd8472da1e558e36"
+      },
+      "plating": [
+        {
+          "id": "selection-card",
+          "nodeId": "6:224"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P2",
+      "montage": [
+        {
+          "name": "Framed Style/Framed Style",
+          "nodeId": "16736:173366"
+        },
+        {
+          "name": "Control/Check Mark",
+          "nodeId": "16215:34298"
+        }
+      ],
+      "role": "박스 형태의 단일·복수 선택",
+      "assessment": "SelectionCard 대응은 있지만 indicator radio/checkbox, 선택된 비활성, 그룹 레이블이 부족하다. Select Box를 Select 드롭다운과 혼동하지 않는다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/TBComponents.swift",
+          "line": 509,
+          "excerpt": "struct TBSelectionCard: View {",
+          "match": "struct TBSelectionCard"
+        },
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 394,
+          "excerpt": "\"selection-card\": [\"기본\", \"선택\", \"비활성\"],",
+          "match": "\"selection-card\": [\"기본\", \"선택\", \"비활성\"]"
+        },
+        {
+          "path": "src/components/system/SelectionCard.tsx",
+          "line": 21,
+          "excerpt": "indicator?: 'checkbox' | 'radio';",
+          "match": "indicator?: 'checkbox' | 'radio'"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Calibration/CalibrationFlowView.swift",
+          "line": 657,
+          "excerpt": "TBSelectionCard(",
+          "match": "TBSelectionCard("
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Select",
+        "slug": "select",
+        "url": "https://seed-design.io/components/select",
+        "lifecycle": "current",
+        "htmlSha256": "cc81315939d74e61d5bd320fef1052130f82eff185cf6faaca55dfc614c19eb3"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Select/Select",
+          "nodeId": "16215:33116"
+        }
+      ],
+      "role": "목록에서 폼 값을 선택",
+      "assessment": "Native Picker의 선택 메뉴와 큰 글자 대체 경로가 실제 사용되지만 선택 필드 항목이 없다. Native OS Picker와 웹 선택 메뉴를 구분하고 현재값·disabled·취소 계약을 문서화한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Gastronomy/DiningFoodSourceEditor.swift",
+          "line": 16,
+          "excerpt": "Picker(\"음식 출처\", selection: Binding(get: { value?.kind ?? \"unknown\" }, set: { kind in",
+          "match": "Picker(\"음식 출처\""
+        },
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 141,
+          "excerpt": "}.pickerStyle(.menu).frame(maxWidth: .infinity, minHeight: 44)",
+          "match": ".pickerStyle(.menu)"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Side Navigation",
+        "slug": "side-navigation",
+        "url": "https://seed-design.io/components/side-navigation",
+        "lifecycle": "current",
+        "htmlSha256": "db3a06c2cc24bdb9f37bda15281afa220f69e8828272ba90c543e6449f320a36"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "범위 밖",
+      "montage": [],
+      "role": "측면의 주요 목적지 탐색",
+      "assessment": "현재 제품은 하단 탐색을 쓴다. 플레이팅 문서 사이드바는 존재하지만 제품 컴포넌트 커버리지에 섞지 않는다.",
+      "evidence": [
+        {
+          "path": "src/plating/PlatingSite.tsx",
+          "line": 416,
+          "excerpt": "<aside className=\"pl-sidebar\">"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Side Panel",
+        "slug": "side-panel",
+        "url": "https://seed-design.io/components/side-panel",
+        "lifecycle": "current",
+        "htmlSha256": "36ac11019fa50e8c3d2a0c4bc51e9941f0dbf3aaf87412dda22288442f291521"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [],
+      "role": "측면에서 여는 보조 작업 영역",
+      "assessment": "웹 알림 패널은 상단 overlay이며 SEED 측면 패널과 같지 않다. 현행 제품에 명확한 좌/우 sliding panel 근거가 없어 보류한다.",
+      "evidence": [
+        {
+          "path": "src/components/NotificationPanel.tsx",
+          "line": 140,
+          "excerpt": "<div className=\"fixed inset-x-0 top-0 z-[70] flex justify-center\">"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Skeleton",
+        "slug": "skeleton",
+        "url": "https://seed-design.io/components/skeleton",
+        "lifecycle": "current",
+        "htmlSha256": "534f2891a33289eca699f82fbd6780cc6b0c396d66cb905434516cf25c257445"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P2",
+      "montage": [
+        {
+          "name": "Skeleton/Text",
+          "nodeId": "16215:25039"
+        }
+      ],
+      "role": "로딩 중 콘텐츠 윤곽",
+      "assessment": "Montage의 Text/Rectangle/Circle 3행을 SEED Skeleton 1행으로 연결한다. 실제 DishFeedbackCardSkeleton을 기준으로 형태와 reduced-motion을 정리한다.",
+      "evidence": [
+        {
+          "path": "src/components/dining/DishFeedbackCard.tsx",
+          "line": 89,
+          "excerpt": "function DishFeedbackSkeletonShape({",
+          "match": "function DishFeedbackSkeletonShape"
+        },
+        {
+          "path": "src/pages/DiningPage.tsx",
+          "line": 1700,
+          "excerpt": "<DishFeedbackListSkeleton />",
+          "match": "<DishFeedbackListSkeleton"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Slider",
+        "slug": "slider",
+        "url": "https://seed-design.io/components/slider",
+        "lifecycle": "current",
+        "htmlSha256": "f6112f60735aab8e7ded53740384e3efaf9c034cc125a63362f963dc2bc17b94"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [],
+      "role": "범위 안의 값 조절",
+      "assessment": "QuickTasteCalibrationScreen에 range 입력은 있지만 현재 소스에서 해당 화면의 외부 import/렌더 연결을 찾지 못했다. 파일 존재만으로 현재 필수 누락에 넣지 않고 사용 여부를 먼저 확인한다.",
+      "evidence": [
+        {
+          "path": "src/pages/QuickTasteCalibrationScreen.tsx",
+          "line": 387,
+          "excerpt": "type=\"range\""
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Snackbar",
+        "slug": "snackbar",
+        "url": "https://seed-design.io/components/snackbar",
+        "lifecycle": "current",
+        "htmlSha256": "00a34ed469b832f95da81078ee5aa7bc13f9d933851b7d34590d03bd2ae191fa"
+      },
+      "plating": [
+        {
+          "id": "toast",
+          "nodeId": "8:7"
+        }
+      ],
+      "status": "정리됨",
+      "priority": "—",
+      "montage": [
+        {
+          "name": "Snackbar/Snackbar",
+          "nodeId": "16215:19587"
+        }
+      ],
+      "role": "일시적인 결과와 되돌리기",
+      "assessment": "현재 짧은 결과·되돌리기는 ToastSurface의 행동 포함으로 대응한다. presenter의 수명/교체 보완은 기존 Toast 항목에서 계속 추적한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+          "line": 1586,
+          "excerpt": "if let pendingDeletedMenu {",
+          "match": "if let pendingDeletedMenu"
+        },
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 457,
+          "excerpt": "'<ToastSurface message=\"기록을 저장했어요\"\\n  actionLabel=\"되돌리기\" onAction={onUndo}\\n/>\\n// 표시 수명과 중복 알림 교체는 presenter가 관리해요.',",
+          "match": "actionLabel=\"되돌리기\""
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Switch",
+        "slug": "switch",
+        "url": "https://seed-design.io/components/switch",
+        "lifecycle": "current",
+        "htmlSha256": "c5043a78f6f6603aa1e8f8c233ee2399b57feb0b73382424bcb2ae6f78d1d25b"
+      },
+      "plating": [
+        {
+          "id": "switch",
+          "nodeId": "6:362"
+        }
+      ],
+      "status": "정리됨",
+      "priority": "—",
+      "montage": [
+        {
+          "name": "Switch/Switch",
+          "nodeId": "16215:34983"
+        }
+      ],
+      "role": "즉시 적용되는 켜짐·꺼짐",
+      "assessment": "켜짐·꺼짐·비활성과 텍스트 라벨 및 실제 웹 스위치 예제가 있다. 플랫폼별 외형 추가는 실제 화면 적용 범위와 함께 관리한다.",
+      "evidence": [
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 397,
+          "excerpt": "switch: [\"꺼짐\", \"켜짐\", \"비활성\"],",
+          "match": "switch: [\"꺼짐\", \"켜짐\", \"비활성\"]"
+        },
+        {
+          "path": "src/components/restaurant/NativeBookmarkSheet.tsx",
+          "line": 397,
+          "excerpt": "<Switch",
+          "match": "<Switch"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Table Pagination",
+        "slug": "table-pagination",
+        "url": "https://seed-design.io/components/table-pagination",
+        "lifecycle": "current",
+        "htmlSha256": "cfdeeec117c87faa1f122e83cf34b497989918c3957271b7ff1a49175bcd0625"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [
+        {
+          "name": "Pagination/Navigation",
+          "nodeId": "16215:22953"
+        }
+      ],
+      "role": "테이블의 표시 범위·행 수 선택",
+      "assessment": "일반 Pagination과도 구분되는 테이블용 조작이다. 현재 제품의 대용량 표 경로를 확인하지 못했다.",
+      "evidence": [],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Tabs",
+        "slug": "tabs",
+        "url": "https://seed-design.io/components/tabs",
+        "lifecycle": "current",
+        "htmlSha256": "9a55eec2d41b9448237e91439d2243b508ae2c16d94adf003fbb85df7f0e0df8"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Tab/Tab",
+          "nodeId": "16215:21806"
+        }
+      ],
+      "role": "같은 화면의 콘텐츠 전환",
+      "assessment": "기간/내용 탭의 독립 항목이 없다. SEED Tabs와 Segmented Control의 역할 구분을 참고하되 현재 기간 5종과 큰 글자 메뉴 전환을 보존한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Home/HomeArchiveVisualizationViews.swift",
+          "line": 108,
+          "excerpt": "TasteDetailPeriodPicker(",
+          "match": "TasteDetailPeriodPicker("
+        },
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 185,
+          "excerpt": "struct TasteDetailPeriodPicker: View {",
+          "match": "struct TasteDetailPeriodPicker"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Tag Group",
+        "slug": "tag-group",
+        "url": "https://seed-design.io/components/tag-group",
+        "lifecycle": "current",
+        "htmlSha256": "da494d26db435bc38148d89cb793160eb8d96b3ccac7da1ab03586f980e40f62"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [],
+      "role": "읽기용 메타데이터 묶음",
+      "assessment": "선택 가능한 ChipGroup과 다르다. 실제 출처/기간·태그 묶음의 우선순위·구분자·줄바꿈·+N을 정리한다. TBWrapLayout/OverflowTagRow는 배치 구현이며 정보 의미와 분리한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Analysis/TastePerceptionCards.swift",
+          "line": 183,
+          "excerpt": "TasteDetailScope(text: pattern.conditionLabel)",
+          "match": "TasteDetailScope(text:"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/TasteDetailPage.swift",
+          "line": 307,
+          "excerpt": "struct TasteDetailScope: View {",
+          "match": "struct TasteDetailScope"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Home/HomeView.swift",
+          "line": 1061,
+          "excerpt": "TBWrapLayout(spacing: SearchSuggestionMetrics.chipGap) {",
+          "match": "TBWrapLayout(spacing:"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/NativeLayoutComponents.swift",
+          "line": 5,
+          "excerpt": "struct TBWrapLayout: Layout {",
+          "match": "struct TBWrapLayout"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+          "line": 6167,
+          "excerpt": "TBOverflowTagRow(items: detailTags, spacing: DiningFeedbackResultLayout.chipGap) { tag in",
+          "match": "TBOverflowTagRow(items:"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/NativeLayoutComponents.swift",
+          "line": 81,
+          "excerpt": "struct TBOverflowTagRow<Item: Identifiable, Tag: View, Overflow: View>: View {",
+          "match": "struct TBOverflowTagRow"
+        }
+      ],
+      "relatedProductRows": [
+        "TasteDetailScope",
+        "TBWrapLayout",
+        "TBOverflowTagRow"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Text Input & Textarea",
+        "slug": "text-input",
+        "url": "https://seed-design.io/components/text-input",
+        "lifecycle": "current",
+        "htmlSha256": "a1c370888a064c5e309f93b67001989839cf6acb70195e983f549fe34e8aadd7"
+      },
+      "plating": [
+        {
+          "id": "text-input",
+          "nodeId": "6:84"
+        },
+        {
+          "id": "search-field",
+          "nodeId": "6:152"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [
+        {
+          "name": "Textinput/Textfield",
+          "nodeId": "16215:31385"
+        },
+        {
+          "name": "Textinput/Textarea",
+          "nodeId": "16215:32165"
+        }
+      ],
+      "role": "단일행과 여러 줄 텍스트 입력",
+      "assessment": "SEED가 한 문서에 묶은 두 역할 중 단일행은 보완 필요, Textarea는 누락이다. 상위 행은 부분 보유로 집계하고 하위 누락을 명시한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+          "line": 15,
+          "excerpt": "struct TBTextInput: View {",
+          "match": "struct TBTextInput"
+        },
+        {
+          "path": "src/plating/catalog.ts",
+          "line": 73,
+          "excerpt": "\"Dining 44 / Auth 48 · 반경 10 / 12\",",
+          "match": "Dining 44 / Auth 48"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+          "line": 1922,
+          "excerpt": "TextEditor(text: $reflectionNote)",
+          "match": "TextEditor(text: $reflectionNote)"
+        },
+        {
+          "path": "src/components/restaurant/RestaurantInfoSuggestionSheet.tsx",
+          "line": 179,
+          "excerpt": "<Textarea",
+          "match": "<Textarea"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Time Picker",
+        "slug": "time-picker",
+        "url": "https://seed-design.io/components/time-picker",
+        "lifecycle": "current",
+        "htmlSha256": "d05e89ea73bf924ba71338f19f276711fc8643813e2556d2f9ac99e6fce03b6f"
+      },
+      "plating": [],
+      "status": "현재 제품에 불필요",
+      "priority": "보류",
+      "montage": [],
+      "role": "시·분 선택",
+      "assessment": "확인한 날짜 입력은 생년월일·식사일/기간의 date 범위다. 시·분 선택의 직접 사용 근거가 없어 보류한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Calibration/CalibrationFlowView.swift",
+          "line": 639,
+          "excerpt": "displayedComponents: .date"
+        },
+        {
+          "path": "ios/TasteBuddy/Features/Home/FoodMemoryViews.swift",
+          "line": 314,
+          "excerpt": "DatePicker(source == .confirmed ? \"식사일\" : \"기간 시작\", selection: Binding(get: { value?.start ?? .now }, set: { value?.start = $0; value?.confirmedAt = .now }), displayedComponents: .date)"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Top Navigation",
+        "slug": "top-navigation",
+        "url": "https://seed-design.io/components/top-navigation",
+        "lifecycle": "current",
+        "htmlSha256": "e3cfc69f587359ae1b940ce9f1cabaa78108450ba72ee8551aa92fb1f98cd838"
+      },
+      "plating": [
+        {
+          "id": "top-bar",
+          "nodeId": "7:99"
+        },
+        {
+          "id": "back-button",
+          "nodeId": "7:201"
+        }
+      ],
+      "status": "보완 필요",
+      "priority": "P1",
+      "montage": [],
+      "role": "화면 제목·뒤로·상단 행동",
+      "assessment": "기본 상단바만으로 루트/상세·투명 chrome·알림 점·History Back을 모두 설명할 수 없다. SEED의 Back/Close 및 History/Hierarchy 구분을 실제 방문 이력 규칙과 연결한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Components/Shell/AppChromeComponents.swift",
+          "line": 850,
+          "excerpt": "private struct TopAppBarIconButton: View {",
+          "match": "private struct TopAppBarIconButton"
+        },
+        {
+          "path": "ios/TasteBuddy/Components/Shell/BottomTabCenterButton.swift",
+          "line": 3,
+          "excerpt": "struct BottomTabCenterButton: View {",
+          "match": "struct BottomTabCenterButton"
+        }
+      ],
+      "relatedProductRows": [
+        "TopBar / BottomTab / BackButton"
+      ],
+      "newConfirmedGap": false
+    },
+    {
+      "seed": {
+        "name": "Wheel Picker",
+        "slug": "wheel-picker",
+        "url": "https://seed-design.io/components/wheel-picker",
+        "lifecycle": "current",
+        "htmlSha256": "071985e9857a5bf9892c4118dd23e430fb94c619381df23d03971adf0141c88b"
+      },
+      "plating": [],
+      "status": "누락",
+      "priority": "P1",
+      "montage": [],
+      "role": "세로 스크롤로 연관 값을 선택",
+      "assessment": "웹 BirthDatePicker와 Native datePickerStyle(.wheel)이 실제 사용된다. 연/월/일 연동·말일 보정·값 확정·취소·키보드·읽기 대안을 등록한다.",
+      "evidence": [
+        {
+          "path": "ios/TasteBuddy/Features/Calibration/CalibrationFlowView.swift",
+          "line": 642,
+          "excerpt": ".datePickerStyle(.wheel)"
+        },
+        {
+          "path": "src/components/ProfileEditSheetContent.tsx",
+          "line": 1260,
+          "excerpt": "<BirthDatePicker"
+        },
+        {
+          "path": "src/App.tsx",
+          "line": 3744,
+          "excerpt": "<ProfileEditSheetContent"
+        }
+      ],
+      "relatedProductRows": [],
+      "newConfirmedGap": true
+    }
+  ],
+  "deprecated": [
+    {
+      "name": "Action Chip",
+      "url": "https://seed-design.io/components/action-chip",
+      "replacementName": "Chip",
+      "replacementUrl": "https://seed-design.io/components/chip",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    },
+    {
+      "name": "Action Sheet",
+      "url": "https://seed-design.io/components/action-sheet",
+      "replacementName": "Menu Sheet",
+      "replacementUrl": "https://seed-design.io/components/menu-sheet",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    },
+    {
+      "name": "Control Chip",
+      "url": "https://seed-design.io/components/control-chip",
+      "replacementName": "Chip",
+      "replacementUrl": "https://seed-design.io/components/chip",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    },
+    {
+      "name": "Error State",
+      "url": "https://seed-design.io/components/error-state",
+      "replacementName": "Result Section",
+      "replacementUrl": "https://seed-design.io/components/result-section",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    },
+    {
+      "name": "Extended Action Sheet",
+      "url": "https://seed-design.io/components/extended-action-sheet",
+      "replacementName": "Menu Sheet",
+      "replacementUrl": "https://seed-design.io/components/menu-sheet",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    },
+    {
+      "name": "Extended FAB",
+      "url": "https://seed-design.io/components/extended-fab",
+      "replacementName": "Contextual Floating Button",
+      "replacementUrl": "https://seed-design.io/components/contextual-floating-button",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    },
+    {
+      "name": "FAB",
+      "url": "https://seed-design.io/components/fab",
+      "replacementName": "Contextual Floating Button",
+      "replacementUrl": "https://seed-design.io/components/contextual-floating-button",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    },
+    {
+      "name": "Inline Banner",
+      "url": "https://seed-design.io/components/inline-banner",
+      "replacementName": "Page Banner",
+      "replacementUrl": "https://seed-design.io/components/page-banner",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    },
+    {
+      "name": "Link Content",
+      "url": "https://seed-design.io/components/link-content",
+      "replacementName": "Action Button",
+      "replacementUrl": "https://seed-design.io/components/action-button",
+      "decision": "폐기 항목으로 보존; 신규 구축과 현행 52개 집계에서 제외"
+    }
+  ],
+  "scope": "Current iOS and web product roles; documentation site kept separate; no implementation or Figma writes; no claim of runtime validation",
+  "implementationFollowUp": {
+    "date": "2026-10-01",
+    "scope": "20 families added to the web library and existing Figma file; original audit classifications below remain a historical baseline.",
+    "components": {
+      "disclosure": {
+        "web": "/design-system/components/disclosure",
+        "figmaNodeId": "79:431",
+        "figmaReviewId": "79:459"
+      },
+      "textarea": {
+        "web": "/design-system/components/textarea",
+        "figmaNodeId": "77:198",
+        "figmaReviewId": "77:215"
+      },
+      "select": {
+        "web": "/design-system/components/select",
+        "figmaNodeId": "77:255",
+        "figmaReviewId": "77:281"
+      },
+      "segmented-control": {
+        "web": "/design-system/components/segmented-control",
+        "figmaNodeId": "77:405",
+        "figmaReviewId": "77:431"
+      },
+      "period-tabs": {
+        "web": "/design-system/components/period-tabs",
+        "figmaNodeId": "79:210",
+        "figmaReviewId": "79:278"
+      },
+      "text-action": {
+        "web": "/design-system/components/text-action",
+        "figmaNodeId": "78:291",
+        "figmaReviewId": "78:296"
+      },
+      "notification-badge": {
+        "web": "/design-system/components/notification-badge",
+        "figmaNodeId": "80:115",
+        "figmaReviewId": "80:145"
+      },
+      "skeleton": {
+        "web": "/design-system/components/skeleton",
+        "figmaNodeId": "80:198",
+        "figmaReviewId": "80:209"
+      },
+      "image-frame": {
+        "web": "/design-system/components/image-frame",
+        "figmaNodeId": "79:375",
+        "figmaReviewId": "79:392"
+      },
+      "tag-group": {
+        "web": "/design-system/components/tag-group",
+        "figmaNodeId": "79:507",
+        "figmaReviewId": "79:540"
+      },
+      "scope-label": {
+        "web": "/design-system/components/scope-label",
+        "figmaNodeId": "81:185",
+        "figmaReviewId": "81:189"
+      },
+      "flow-loading": {
+        "web": "/design-system/components/flow-loading",
+        "figmaNodeId": "80:241",
+        "figmaReviewId": "80:252"
+      },
+      "flow-retry": {
+        "web": "/design-system/components/flow-retry",
+        "figmaNodeId": "80:278",
+        "figmaReviewId": "80:287"
+      },
+      "action-area": {
+        "web": "/design-system/components/action-area",
+        "figmaNodeId": "78:424",
+        "figmaReviewId": "78:457"
+      },
+      "date-picker": {
+        "web": "/design-system/components/date-picker",
+        "figmaNodeId": "77:480",
+        "figmaReviewId": "77:504"
+      },
+      "wheel-picker": {
+        "web": "/design-system/components/wheel-picker",
+        "figmaNodeId": "78:509",
+        "figmaReviewId": "78:599"
+      },
+      "attachment-input": {
+        "web": "/design-system/components/attachment-input",
+        "figmaNodeId": "78:709",
+        "figmaReviewId": "78:754"
+      },
+      "icon-action-button": {
+        "web": "/design-system/components/icon-action-button",
+        "figmaNodeId": "78:318",
+        "figmaReviewId": "78:360"
+      },
+      "record-actions": {
+        "web": "/design-system/components/record-actions",
+        "figmaNodeId": "339:2463",
+        "figmaReviewId": "78:360"
+      },
+      "social-actions": {
+        "web": "/design-system/components/social-actions",
+        "figmaNodeId": "339:2502",
+        "figmaReviewId": "78:360"
+      }
+    },
+    "browserChecks": "output/plating/additions-browser-20261001.json",
+    "productAdoption": "New web primitives are available in Plating. Production route integration, native execution, and deployment are not included.",
+    "review": {
+      "current": "disclosure",
+      "order": [
+        "disclosure",
+        "textarea",
+        "select",
+        "segmented-control",
+        "period-tabs",
+        "text-action",
+        "icon-action-button",
+        "record-actions",
+        "social-actions",
+        "notification-badge",
+        "skeleton",
+        "image-frame",
+        "tag-group",
+        "scope-label",
+        "flow-loading",
+        "flow-retry",
+        "action-area",
+        "date-picker",
+        "wheel-picker",
+        "attachment-input"
+      ],
+      "url": "http://127.0.0.1:3001/design-system/review/disclosure"
+    },
+    "catalogUpdatedAt": "2026-10-04",
+    "catalogUpdate": "Removed the standalone detail screen example and replaced toggle actions with native IconActionButton, RecordActions and SocialActions. Original audit counts remain historical.",
+    "profileFieldsUpdate": "Merged InputButton into SelectField and connected native/profile TextInput and SelectField. Original audit counts remain historical."
+  }
+}

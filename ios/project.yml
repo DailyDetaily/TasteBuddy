@@ -67,10 +67,14 @@ targets:
       - path: TasteBuddy
         excludes:
           - Resources/Info.plist
+          - Resources/LogoSplash
+      - path: TasteBuddy/Resources/LogoSplash
+        type: folder
     resources:
       - path: TasteBuddy/Resources
         excludes:
           - Info.plist
+          - LogoSplash
     info:
       path: TasteBuddy/Resources/Info.plist
       properties:

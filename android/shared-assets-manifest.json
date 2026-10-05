@@ -9,11 +9,11 @@
   },
   "app/src/main/assets/tba/tba-food-knowledge-full.json": {
     "source": "ios/TasteBuddy/Resources/TBA/tba-food-knowledge-full.json",
-    "sha256": "4fe909b3d568009566fe70dbe655f3f708d1f2901a66c4527c3db517ed656609"
+    "sha256": "d6c38edb11788bd272f8fd0f77c557db23686dc31287634ec71af0a5b3dd26ee"
   },
   "app/src/main/assets/tba/tba-native-runtime.json": {
     "source": "ios/TasteBuddy/Resources/TBA/tba-native-runtime.json",
-    "sha256": "2900ead8f9b7a41225a5688982c355624fa42387c44d4978e84dfc79fc0f5093"
+    "sha256": "b06a175f81914fa0300e08fe125f23a5f59c769da618ffe2b8f255ef0ab7774e"
   },
   "app/src/main/assets/tba/tba-sensory-contract.json": {
     "source": "ios/TasteBuddy/Resources/TBA/tba-sensory-contract.json",
@@ -21,7 +21,7 @@
   },
   "app/src/main/assets/fixtures/dining-feedback-scenario.json": {
     "source": "ios/TasteBuddy/Resources/Fixtures/dining-feedback-scenario.json",
-    "sha256": "b751d804bd5041fadaa3a7cd2c10936198c40ec546e2e3cf84d29a4e1f8b2dd0"
+    "sha256": "a481fc147db414a8265a0723ded9ea14316d593c866116775e074127e9b6fbdd"
   },
   "app/src/main/assets/fixtures/preference-intake.json": {
     "source": "ios/TasteBuddy/Resources/Fixtures/preference-intake.json",
@@ -41,7 +41,7 @@
   },
   "app/src/main/assets/fixtures/tba-full-engine-golden.json": {
     "source": "ios/TasteBuddy/Resources/Fixtures/tba-full-engine-golden.json",
-    "sha256": "3be9248f2e99b83d801914080cb63fb42779e6788ff50fee3c0610f9cee889d4"
+    "sha256": "d9f138607f6df820d04ad8eef25c3f361d49067e028a6f26ddefd736dc270b23"
   },
   "app/src/main/assets/images/KangMingoo.png": {
     "source": "ios/TasteBuddy/Resources/Images/KangMingoo.png",
@@ -106,5 +106,9 @@
   "app/src/main/assets/tba/taste-perception-fixtures.json": {
     "source": "ios/TasteBuddy/Resources/TBA/taste-perception-fixtures.json",
     "sha256": "df4a6471b396e0e2717e7921d96cd30ebebbc3c778d09351e689b6eb7dc9974d"
+  },
+  "app/src/main/assets/tba/dining-sensory-v2.json": {
+    "source": "ios/TasteBuddy/Resources/TBA/dining-sensory-v2.json",
+    "sha256": "1d219e7f5ddab87d6491e8df99eeda474e34c381a205a21dc5da55abe6250de7"
   }
 }

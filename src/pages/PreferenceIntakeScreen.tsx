@@ -42,9 +42,11 @@ const HEADER_SURFACE_CLASS =
 
 interface PreferenceIntakeScreenProps {
   initialProfile?: PreferenceIntakeProfile | null;
+  initialResponses?: PreferenceIntakeResponses;
+  onDraft?: (responses:PreferenceIntakeResponses)=>Promise<unknown>;
   userID?: string;
   onBack: () => void;
-  onComplete: (profile: PreferenceIntakeProfile) => void;
+  onComplete: (profile: PreferenceIntakeProfile) => void | Promise<void>;
 }
 
 function getSelectionCount(question: PreferenceIntakeQuestion, responses: PreferenceIntakeResponses) {
@@ -60,14 +62,16 @@ function getSelectionCount(question: PreferenceIntakeQuestion, responses: Prefer
 export default function PreferenceIntakeScreen({
   initialProfile = null,
   userID = 'local-owner',
+  initialResponses, onDraft,
   onBack,
   onComplete,
 }: PreferenceIntakeScreenProps) {
+  const [saving,setSaving]=useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [responses, setResponses] = useState<PreferenceIntakeResponses>(() =>
-    createPreferenceIntakeResponsesFromProfile(initialProfile, userID),
+    initialResponses ?? createPreferenceIntakeResponsesFromProfile(initialProfile, userID),
   );
 
   const currentQuestion = PREFERENCE_INTAKE_QUESTIONS[questionIndex];
@@ -98,20 +102,21 @@ export default function PreferenceIntakeScreen({
     setQuestionIndex((currentIndex) => currentIndex - 1);
   };
 
-  const handleNext = () => {
-    if (!canContinue) {
+  const handleNext = async () => {
+    if (!canContinue || saving) {
       return;
     }
 
     if (isLastQuestion) {
+      setSaving(true);
       try {
         if (!PREFERENCE_INTAKE_QUESTIONS.every(question => isPreferenceQuestionAnswered(question, responses))) throw new Error('INCOMPLETE_PREFERENCE_INTAKE');
         const submission = createPreferenceIntakeSubmission(responses, { userID }) as PreferenceIntakeSubmission;
-        onComplete({ ...buildPreferenceIntakeProfile(responses), submissions: [...(initialProfile?.submissions ?? []), submission] });
+        await onComplete({ ...buildPreferenceIntakeProfile(responses), submissions: [...(initialProfile?.submissions ?? []), submission] });
         setSaveError(null);
-      } catch {
-        setSaveError('응답을 저장하지 못했어요. 선택은 유지되어 있으니 다시 시도해 주세요.');
-      }
+      } catch (error) {
+        setSaveError(error instanceof Error ? error.message : '응답을 저장하지 못했어요. 선택은 유지되어 있어요.');
+      } finally {setSaving(false);}
       return;
     }
 
@@ -120,27 +125,13 @@ export default function PreferenceIntakeScreen({
   };
 
   const handleOptionSelect = (optionId: string) => {
-    setResponses((currentResponses) => {
-      if (currentQuestion.selectionMode === 'single') {
-        return {
-          ...currentResponses,
-          [currentQuestion.id]: optionId,
-        } as PreferenceIntakeResponses;
-      }
+    if(saving)return;
+    const next = currentQuestion.selectionMode === 'single'
+      ? {...responses,[currentQuestion.id]:optionId}
+      : {...responses,[currentQuestion.id]:getNextPreferenceMultiSelectValue(currentQuestion,Array.isArray(responses[currentQuestion.id])?responses[currentQuestion.id] as string[]:[],optionId)};
+    setResponses(next as PreferenceIntakeResponses);
+    if(onDraft)void onDraft(next as PreferenceIntakeResponses).catch(e=>setSaveError(e instanceof Error?e.message:'초안을 저장하지 못했어요.'));
 
-      const nextValue = getNextPreferenceMultiSelectValue(
-        currentQuestion,
-        Array.isArray(currentResponses[currentQuestion.id])
-          ? (currentResponses[currentQuestion.id] as string[])
-          : [],
-        optionId,
-      );
-
-      return {
-        ...currentResponses,
-        [currentQuestion.id]: nextValue,
-      } as PreferenceIntakeResponses;
-    });
   };
 
   return (
@@ -159,7 +150,7 @@ export default function PreferenceIntakeScreen({
             </span>
             <button
               type="button"
-              onClick={handleBack}
+              onClick={handleBack} disabled={saving}
               aria-label={questionIndex === 0 ? '서비스 설명으로 돌아가기' : '이전 질문으로 돌아가기'}
               className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-opacity active:opacity-70"
               style={{
@@ -236,8 +227,8 @@ export default function PreferenceIntakeScreen({
       </main>
 
       <FlowStepCta
-        actionDisabled={!canContinue}
-        actionLabel={isLastQuestion ? '선호 저장' : '다음 질문'}
+        actionDisabled={!canContinue || saving}
+        actionLabel={saving ? '저장 중…' : isLastQuestion ? '선호 저장' : '다음 질문'}
         currentIndex={questionIndex}
         helperText={helperText}
         onAction={handleNext}

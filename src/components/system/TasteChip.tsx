@@ -1,6 +1,6 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
-import { getTasteColor, getTasteTintSoft, getTasteTintSoftBorder } from '../../constants/tasteColors';
+import { getTasteTintSurfaceText, getTasteTintSoft, getTasteTintSoftBorder } from '../../constants/tasteColors';
 import { cn } from '../ui/utils';
 
 interface TasteChipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
@@ -21,10 +21,11 @@ export default function TasteChip({
 }: TasteChipProps) {
   const isNeutral = tone === 'neutral';
   const resolvedTaste = colorTaste ?? taste;
-  const color = isNeutral ? 'var(--tb-color-text-tertiary)' : getTasteColor(resolvedTaste);
+  const color = isNeutral ? 'var(--tb-color-text-tertiary)' : getTasteTintSurfaceText(resolvedTaste);
   const backgroundColor = isNeutral ? 'var(--tb-color-surface-muted)' : getTasteTintSoft(resolvedTaste);
   const borderColor = isNeutral ? 'var(--tb-color-border-strong)' : getTasteTintSoftBorder(resolvedTaste);
-  const tasteLabelColor = isNeutral ? color : value ? 'var(--tb-color-text-primary)' : color;
+  const hasValue = value !== undefined && value !== null;
+  const tasteLabelColor = isNeutral ? color : hasValue ? 'var(--tb-color-text-primary)' : color;
 
   return (
     <span
@@ -36,7 +37,7 @@ export default function TasteChip({
       {...props}
     >
       <span style={{ color: tasteLabelColor }}>{taste}</span>
-      {value ? (
+      {hasValue ? (
         <span className="font-semibold" style={{ color }}>
           {value}
         </span>

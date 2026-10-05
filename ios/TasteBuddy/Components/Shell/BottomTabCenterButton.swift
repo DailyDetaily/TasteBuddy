@@ -2,17 +2,24 @@ import SwiftUI
 
 struct BottomTabCenterButton: View {
     var accessibilityLabel = "디시 기록 추가"
-    let action: () -> Void
+    let action: (TasteBeamLaunchState) -> Void
     var onPressingChange: (Bool) -> Void = { _ in }
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.displayScale) private var displayScale
     @State private var animationStart = Date.now
     @State private var colorSequence = TasteBeamPalette.randomSequence()
     @State private var isBeamVisible = false
     @GestureState private var isPressing = false
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            action(TasteBeamLaunchState(
+                elapsedAtTap: max(0, Date.now.timeIntervalSince(animationStart)),
+                sequence: colorSequence,
+                reduceMotion: reduceMotion
+            ))
+        } label: {
             TimelineView(
                 .animation(minimumInterval: 1 / 60, paused: reduceMotion)
             ) { timeline in
@@ -51,80 +58,92 @@ struct BottomTabCenterButton: View {
         }
     }
 
+    private var beamContentInset: CGFloat {
+        if #available(iOS 26.0, *) {
+            // Keep the color layer's antialiased edge beneath the full-size glass surface.
+            return 1 / max(displayScale, 1)
+        }
+        return 0
+    }
+
     private func buttonSurface(at date: Date, isPressed: Bool) -> some View {
         let animation = animationState(at: date)
 
         return ZStack {
             ZStack {
-                legacyButtonBackground
+                ZStack {
+                    legacyButtonBackground
 
-                liquidBeamWash(animation, isPressed: isPressed)
-                liquidBeamCore(animation, isPressed: isPressed)
+                    liquidBeamWash(animation, isPressed: isPressed)
+                    liquidBeamCore(animation, isPressed: isPressed)
 
-                TasteBeamBlobTrack(
-                    phase: animation.phase,
-                    firstColor: animation.firstColor.filtered(
-                        hueRotation: animation.hueRotation,
-                        brightness: Metrics.innerBrightness,
-                        saturation: Metrics.innerSaturation
-                    ).color,
-                    secondColor: animation.secondColor.filtered(
-                        hueRotation: animation.hueRotation,
-                        brightness: Metrics.innerBrightness,
-                        saturation: Metrics.innerSaturation
-                    ).color
-                )
-                .mask {
-                    TasteBeamInnerMask()
+                    TasteBeamBlobTrack(
+                        phase: animation.phase,
+                        firstColor: animation.firstColor.filtered(
+                            hueRotation: animation.hueRotation,
+                            brightness: Metrics.innerBrightness,
+                            saturation: Metrics.innerSaturation
+                        ).color,
+                        secondColor: animation.secondColor.filtered(
+                            hueRotation: animation.hueRotation,
+                            brightness: Metrics.innerBrightness,
+                            saturation: Metrics.innerSaturation
+                        ).color
+                    )
+                    .mask {
+                        TasteBeamInnerMask()
+                    }
+                    .opacity(isBeamVisible ? Metrics.innerOpacity : 0)
+
+                    TasteBeamBlobTrack(
+                        phase: animation.phase,
+                        firstColor: animation.firstColor.filtered(
+                            hueRotation: animation.hueRotation * Metrics.strokeHueMultiplier,
+                            brightness: Metrics.strokeBrightness,
+                            saturation: Metrics.strokeSaturation,
+                            contrast: Metrics.strokeContrast
+                        ).color,
+                        secondColor: animation.secondColor.filtered(
+                            hueRotation: animation.hueRotation * Metrics.strokeHueMultiplier,
+                            brightness: Metrics.strokeBrightness,
+                            saturation: Metrics.strokeSaturation,
+                            contrast: Metrics.strokeContrast
+                        ).color
+                    )
+                    .mask {
+                        Circle()
+                            .stroke(Color.white, lineWidth: Metrics.strokeWidth)
+                    }
+                    .opacity(isBeamVisible ? Metrics.strokeOpacity : 0)
+
+                    TasteBeamBlobTrack(
+                        phase: animation.phase,
+                        firstColor: animation.firstColor.filtered(
+                            hueRotation: animation.hueRotation,
+                            brightness: Metrics.bloomBrightness,
+                            saturation: Metrics.bloomSaturation
+                        ).color,
+                        secondColor: animation.secondColor.filtered(
+                            hueRotation: animation.hueRotation,
+                            brightness: Metrics.bloomBrightness,
+                            saturation: Metrics.bloomSaturation
+                        ).color
+                    )
+                    .mask {
+                        Circle()
+                            .stroke(Color.white, lineWidth: Metrics.strokeWidth)
+                    }
+                    .blur(radius: Metrics.bloomBlur)
+                    .opacity(isBeamVisible ? Metrics.bloomOpacity : 0)
+
+                    liquidPressedEdgeConcentration(animation, isPressed: isPressed)
+                        .allowsHitTesting(false)
+
+                    legacyCenterShield
+                        .allowsHitTesting(false)
                 }
-                .opacity(isBeamVisible ? Metrics.innerOpacity : 0)
-
-                TasteBeamBlobTrack(
-                    phase: animation.phase,
-                    firstColor: animation.firstColor.filtered(
-                        hueRotation: animation.hueRotation * Metrics.strokeHueMultiplier,
-                        brightness: Metrics.strokeBrightness,
-                        saturation: Metrics.strokeSaturation,
-                        contrast: Metrics.strokeContrast
-                    ).color,
-                    secondColor: animation.secondColor.filtered(
-                        hueRotation: animation.hueRotation * Metrics.strokeHueMultiplier,
-                        brightness: Metrics.strokeBrightness,
-                        saturation: Metrics.strokeSaturation,
-                        contrast: Metrics.strokeContrast
-                    ).color
-                )
-                .mask {
-                    Circle()
-                        .stroke(Color.white, lineWidth: Metrics.strokeWidth)
-                }
-                .opacity(isBeamVisible ? Metrics.strokeOpacity : 0)
-
-                TasteBeamBlobTrack(
-                    phase: animation.phase,
-                    firstColor: animation.firstColor.filtered(
-                        hueRotation: animation.hueRotation,
-                        brightness: Metrics.bloomBrightness,
-                        saturation: Metrics.bloomSaturation
-                    ).color,
-                    secondColor: animation.secondColor.filtered(
-                        hueRotation: animation.hueRotation,
-                        brightness: Metrics.bloomBrightness,
-                        saturation: Metrics.bloomSaturation
-                    ).color
-                )
-                .mask {
-                    Circle()
-                        .stroke(Color.white, lineWidth: Metrics.strokeWidth)
-                }
-                .blur(radius: Metrics.bloomBlur)
-                .opacity(isBeamVisible ? Metrics.bloomOpacity : 0)
-
-                liquidPressedEdgeConcentration(animation, isPressed: isPressed)
-                    .allowsHitTesting(false)
-
-                legacyCenterShield
-                    .allowsHitTesting(false)
+                .compositingGroup()
+                .clipShape(Circle().inset(by: beamContentInset))
 
                 liquidGlassSurface(isPressed: isPressed)
                     .allowsHitTesting(false)
@@ -437,7 +456,7 @@ struct BottomTabCenterButton: View {
 		                            stops: [
 		                                .init(color: Color.white.opacity(0.84), location: 0.0),
 		                                .init(color: Color.white.opacity(0.18), location: 0.18),
-		                                .init(color: Color.black.opacity(0.10), location: 0.33),
+		                                .init(color: Color.white.opacity(0.10), location: 0.33),
 		                                .init(color: Color.white.opacity(0.28), location: 0.49),
 		                                .init(color: Color.white.opacity(0.56), location: 0.72),
 		                                .init(color: Color.white.opacity(0.84), location: 1.0),
@@ -460,30 +479,10 @@ struct BottomTabCenterButton: View {
     }
 
     private func animationState(at date: Date) -> TasteBeamAnimationState {
-        guard !reduceMotion else {
-            let pair = TasteBeamPalette.pair(cycle: 0, sequence: colorSequence)
-            return TasteBeamAnimationState(
-                phase: 0,
-                firstColor: pair.first,
-                secondColor: pair.second,
-                hueRotation: 0
-            )
-        }
-
-        let elapsed = max(0, date.timeIntervalSince(animationStart))
-        let cycle = Int(floor(elapsed / Metrics.motionDuration))
-        let progress = (elapsed.truncatingRemainder(dividingBy: Metrics.motionDuration))
-            / Metrics.motionDuration
-        let easedProgress = progress * progress * (3 - 2 * progress)
-        let currentPair = TasteBeamPalette.pair(cycle: cycle, sequence: colorSequence)
-        let nextPair = TasteBeamPalette.pair(cycle: cycle + 1, sequence: colorSequence)
-        let phase = progress * .pi * 2
-
-        return TasteBeamAnimationState(
-            phase: phase,
-            firstColor: currentPair.first.mixed(with: nextPair.first, amount: easedProgress),
-            secondColor: currentPair.second.mixed(with: nextPair.second, amount: easedProgress),
-            hueRotation: sin(phase + .pi / 6) * Metrics.hueRotationAmplitude
+        TasteBeamPalette.state(
+            elapsed: max(0, date.timeIntervalSince(animationStart)),
+            sequence: colorSequence,
+            reduceMotion: reduceMotion
         )
     }
 }
@@ -582,20 +581,58 @@ private enum Metrics {
     static let travelDistance: CGFloat = 5.7
 }
 
-private struct TasteBeamAnimationState {
+struct TasteBeamLaunchState {
+    let elapsedAtTap: TimeInterval
+    let sequence: [TasteBeamColorPair]
+    let reduceMotion: Bool
+
+    static func random() -> TasteBeamLaunchState {
+        .init(elapsedAtTap: 0, sequence: TasteBeamPalette.randomSequence(), reduceMotion: false)
+    }
+
+    func state(after elapsed: TimeInterval) -> TasteBeamAnimationState {
+        TasteBeamPalette.state(
+            elapsed: elapsedAtTap + max(0, elapsed),
+            sequence: sequence,
+            reduceMotion: reduceMotion
+        )
+    }
+}
+
+struct TasteBeamAnimationState {
     let phase: Double
     let firstColor: TasteBeamColor
     let secondColor: TasteBeamColor
     let hueRotation: Double
+    let backgroundColor: TasteBeamColor
+    let tertiaryColor: TasteBeamColor
+
+    var resultPalette: DiningFeedbackResultVisualPalette {
+        let resolved = { (color: TasteBeamColor) in
+            color.filtered(hueRotation: self.hueRotation, brightness: 1, saturation: 1).color
+        }
+        return DiningFeedbackResultVisualPalette(
+            background: resolved(backgroundColor),
+            main: resolved(firstColor),
+            secondary: resolved(secondColor),
+            tertiary: resolved(tertiaryColor),
+            photoAreaProportions: nil
+        )
+    }
 }
 
-private struct TasteBeamColor {
+struct TasteBeamColor {
     let red: Double
     let green: Double
     let blue: Double
 
     var color: Color {
         Color(red: red, green: green, blue: blue)
+    }
+
+    static func from(_ color: Color) -> TasteBeamColor {
+        let resolved = color.resolve(in: EnvironmentValues())
+        return .init(red: Double(resolved.red), green: Double(resolved.green), blue: Double(resolved.blue))
     }
 
     func mixed(with other: TasteBeamColor, amount: Double) -> TasteBeamColor {
@@ -666,57 +703,54 @@ private struct TasteBeamColor {
     }
 }
 
-private struct TasteBeamColorPair {
+struct TasteBeamColorPair {
     let firstIndex: Int
     let secondIndex: Int
 }
 
-private enum TasteBeamPalette {
-    static let colors = [
-        TasteBeamColor(red: 1, green: 0.6, blue: 0),
-        TasteBeamColor(red: 251 / 255, green: 192 / 255, blue: 45 / 255),
-        TasteBeamColor(red: 149 / 255, green: 201 / 255, blue: 0),
-        TasteBeamColor(red: 114 / 255, green: 153 / 255, blue: 1),
-        TasteBeamColor(red: 179 / 255, green: 114 / 255, blue: 180 / 255),
-        TasteBeamColor(red: 149 / 255, green: 134 / 255, blue: 122 / 255),
-    ]
+enum TasteBeamPalette {
+    static let colors = TasteAxis.allCases.map { TasteBeamColor.from($0.mainColor) }
+    static let tints = TasteAxis.allCases.map { TasteBeamColor.from($0.tintColor) }
+    static let colorDuration: TimeInterval = 0.75
 
     static func randomSequence(count: Int = 512) -> [TasteBeamColorPair] {
         var sequence: [TasteBeamColorPair] = []
-        var previousPair: TasteBeamColorPair?
-
-        for _ in 0 ..< count {
-            var nextPair: TasteBeamColorPair
-
-            repeat {
-                let firstIndex = Int.random(in: colors.indices)
-                var secondIndex = Int.random(in: colors.indices)
-
-                if secondIndex == firstIndex {
-                    secondIndex = (secondIndex + 1) % colors.count
-                }
-
-                nextPair = TasteBeamColorPair(
-                    firstIndex: firstIndex,
-                    secondIndex: secondIndex
-                )
-            } while previousPair?.firstIndex == nextPair.firstIndex
-                && previousPair?.secondIndex == nextPair.secondIndex
-
-            sequence.append(nextPair)
-            previousPair = nextPair
+        while sequence.count < count {
+            var bag = Array(colors.indices).shuffled()
+            if let previous = sequence.last,
+               Set([previous.firstIndex, previous.secondIndex]) == Set(bag.prefix(2)) {
+                bag.swapAt(1, 2)
+            }
+            for index in stride(from: 0, to: bag.count, by: 2) where sequence.count < count {
+                sequence.append(.init(firstIndex: bag[index], secondIndex: bag[index + 1]))
+            }
         }
-
         return sequence
     }
 
-    static func pair(
-        cycle: Int,
-        sequence: [TasteBeamColorPair]
-    ) -> (first: TasteBeamColor, second: TasteBeamColor) {
-        let safeSequence = sequence.isEmpty ? randomSequence(count: 1) : sequence
-        let pair = safeSequence[cycle % safeSequence.count]
-        return (colors[pair.firstIndex], colors[pair.secondIndex])
+    static func state(
+        elapsed: TimeInterval,
+        sequence: [TasteBeamColorPair],
+        reduceMotion: Bool
+    ) -> TasteBeamAnimationState {
+        // A stable fallback keeps an empty sequence deterministic too.
+        let sequence = sequence.isEmpty ? [TasteBeamColorPair(firstIndex: 0, secondIndex: 3)] : sequence
+        let time = reduceMotion ? 0 : max(0, elapsed)
+        let cycle = Int(floor(time / colorDuration))
+        let local = time.truncatingRemainder(dividingBy: colorDuration) / colorDuration
+        let blend = min(max((local - 0.12) / 0.76, 0), 1)
+        let eased = blend * blend * (3 - 2 * blend)
+        let current = sequence[cycle % sequence.count]
+        let next = sequence[(cycle + 1) % sequence.count]
+        let phase = time / Metrics.motionDuration * .pi * 2
+        return TasteBeamAnimationState(
+            phase: phase,
+            firstColor: colors[current.firstIndex].mixed(with: colors[next.firstIndex], amount: eased),
+            secondColor: colors[current.secondIndex].mixed(with: colors[next.secondIndex], amount: eased),
+            hueRotation: reduceMotion ? 0 : sin(phase + .pi / 6) * Metrics.hueRotationAmplitude,
+            backgroundColor: tints[current.firstIndex].mixed(with: tints[next.firstIndex], amount: eased),
+            tertiaryColor: colors[current.secondIndex].mixed(with: colors[next.secondIndex], amount: eased)
+        )
     }
 }
 
@@ -899,30 +933,10 @@ struct BottomTabCenterButtonPressBeamOverlay: View {
     }
 
     private func animationState(at date: Date) -> TasteBeamAnimationState {
-        guard !reduceMotion else {
-            let pair = TasteBeamPalette.pair(cycle: 0, sequence: colorSequence)
-            return TasteBeamAnimationState(
-                phase: 0,
-                firstColor: pair.first,
-                secondColor: pair.second,
-                hueRotation: 0
-            )
-        }
-
-        let elapsed = max(0, date.timeIntervalSince(animationStart))
-        let cycle = Int(floor(elapsed / Metrics.motionDuration))
-        let progress = (elapsed.truncatingRemainder(dividingBy: Metrics.motionDuration))
-            / Metrics.motionDuration
-        let easedProgress = progress * progress * (3 - 2 * progress)
-        let currentPair = TasteBeamPalette.pair(cycle: cycle, sequence: colorSequence)
-        let nextPair = TasteBeamPalette.pair(cycle: cycle + 1, sequence: colorSequence)
-        let phase = progress * .pi * 2
-
-        return TasteBeamAnimationState(
-            phase: phase,
-            firstColor: currentPair.first.mixed(with: nextPair.first, amount: easedProgress),
-            secondColor: currentPair.second.mixed(with: nextPair.second, amount: easedProgress),
-            hueRotation: sin(phase + .pi / 6) * Metrics.hueRotationAmplitude
+        TasteBeamPalette.state(
+            elapsed: max(0, date.timeIntervalSince(animationStart)),
+            sequence: colorSequence,
+            reduceMotion: reduceMotion
         )
     }
 }
@@ -1466,7 +1480,7 @@ private struct TasteBeamInnerMask: View {
 
 #if canImport(PreviewsMacros)
     #Preview {
-        BottomTabCenterButton(action: {})
+        BottomTabCenterButton(action: { _ in })
             .frame(width: 80, height: 80)
             .background(TBColor.page)
     }

@@ -6,16 +6,17 @@ import { join } from 'node:path';
 import { createExperiencePilot, FIXTURE_TIME, fixtureAnswer, ruleResultFor, validateStoredRuleArtifact } from './experience-evidence.mjs';
 import { AI_RESPONSE_SCHEMA, rawAnswerHash, validateAIProposal } from './ai-extraction.mjs';
 import { buildInsightViews, normalizeEvidence } from './insight-views.mjs';
-import { LEXICON_VERSION, parseByRules } from './rules.mjs';
+import { LEXICON_VERSION, RULE_VERSION, parseByRules } from './rules.mjs';
 import { parseByRules as parseByRulesV3 } from './rules-v3.mjs';
 import { parseByRules as parseByRulesV4 } from './rules-v4.mjs';
+import { parseByRules as parseByRulesV5 } from './rules-v5.mjs';
 
 const food={id:'sensory-storage-food',name:'감각 저장 테스트 음식',claims:[]};
 const v2=value=>({question:'free_text',questionVersion:'2',choiceVersion:LEXICON_VERSION,value});
 const event=(experienceId,mutationId,baseRevision,answer,answerKey)=>({experienceId,mutationId,baseRevision,operation:'set',answerKey,recordedAt:FIXTURE_TIME,answer});
 const span=(text,quote=text)=>{const start=text.indexOf(quote);return {start,end:start+quote.length,quote};};
 
-test('v4 artifact replay retains its version while new intensity negation uses v5',()=>{
+test('v4 artifact replay retains its version while current intensity negation stays unresolved',()=>{
   const answer=v2('단맛이 강하지 않았어요.');
   const context={owner:'u',experienceId:'meal',answerId:'answer',eventId:'event',answerKey:'note'};
   const source={answerId:context.answerId,eventId:context.eventId,answerKey:context.answerKey};
@@ -24,10 +25,24 @@ test('v4 artifact replay retains its version while new intensity negation uses v
   assert.equal(result.versions.rules,'tba-rules/4');
   assert.deepEqual(validateStoredRuleArtifact(artifact,{answer,context}),result);
   const current=parseByRules(answer);
-  assert.equal(current.versions.rules,'tba-rules/5');
+  assert.equal(current.versions.rules,RULE_VERSION);
   assert.equal(current.observations.some(atom=>atom.kind==='sensory_presence'),false);
   assert.throws(()=>validateStoredRuleArtifact({...artifact,result:{...result,versions:current.versions}},
     {answer,context}),/RULE_ARTIFACT_MAPPING_MISMATCH/);
+});
+
+test('v5 source artifacts replay without silently applying the new change-evaluation rule',()=>{
+  const answer=v2('바삭함이 사라져서 아쉬웠어요.');
+  const context={owner:'u',experienceId:'meal',answerId:'answer',eventId:'event',answerKey:'note'};
+  const result=ruleResultFor(answer,{answerId:'answer',eventId:'event',answerKey:'note'},{evidenceClass:'user_report',parser:parseByRulesV5});
+  const artifact={...context,evidenceClass:'user_report',rawHash:rawAnswerHash(answer),result};
+  assert.equal(result.versions.rules,'tba-rules/5');
+  assert.ok(result.observations.some(a=>a.kind==='attribute_liking'&&a.value==='negative'));
+  assert.deepEqual(validateStoredRuleArtifact(artifact,{answer,context}),result);
+  const current=parseByRules(answer);
+  assert.equal(current.versions.rules,'tba-rules/6');
+  assert.equal(current.observations.length,0);
+  assert.ok(current.unresolved.some(u=>u.reason==='unresolved_sensory_change_or_condition'));
 });
 
 test('AI sensory_detail 계약은 원문 detail만 받고 미분류 의미를 unresolved로 유지한다',()=>{

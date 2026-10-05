@@ -128,72 +128,55 @@ enum PersonalTasteInsightPresentation {
     }
 }
 
-struct PersonalTasteInsightDetailSheet: View {
+struct PersonalTasteInsightDetailView: View {
     let group: PersonalTasteInsightGroup
     let observations: [SensoryObservation]
     let entries: [DiningEntry]
-    @Environment(\.dismiss) private var dismiss
-
+    @State private var section: TasteDetailSection = .overview
     var body: some View {
-        BottomSheetShell(
-            headerStart: AnyView(BottomSheetCloseButton { dismiss() }),
-            headerCenter: AnyView(Text(group.kind == .fit ? "알맞았던 조건" : "전체와 감각의 평가").tbTextStyle(.sheetTitle)),
-            stageMode: .auto(maxHeightRatio: 1), usesNativeSheetChrome: true, surfaceBackground: TBColor.page
-        ) {
-            BottomSheetScrollView {
-                VStack(alignment: .leading, spacing: TBSpacing.section) {
-                    SectionCard(background: TBColor.mutedSurface) {
-                        VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                            Text(group.eyebrow).font(TBFont.semibold(11)).foregroundStyle(TBColor.textHint)
-                            Text(group.title).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
-                            Text(group.kind == .fit
-                                 ? "알맞음은 좋고 싫음과 별도로 읽어요. 한 식사가 여러 조건의 해석에 함께 쓰일 수 있어요."
-                                 : "같은 메뉴 기록의 두 평가를 연결했어요. 두 평가가 함께 나타난 것이며 원인을 뜻하지 않아요.")
-                                .font(TBFont.regular(12)).foregroundStyle(TBColor.textBody).lineSpacing(4)
-                        }
+        TasteDetailPage(title: group.kind == .fit ? "알맞았던 조건" : "전체와 감각의 평가") {
+            TasteDetailSectionPicker(selection: $section, overviewTitle: "비교", evidenceTitle: "기록")
+        } content: {
+            VStack(alignment: .leading, spacing: TBSpacing.x20) {
+                if section == .overview {
+                    TasteDetailChartPanel {
+                        Text(group.title).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        TasteDetailScope(text: "식사 \(group.mealIDs.count)회 · \(group.kind == .fit ? "알맞음" : "전체·감각 평가")")
                     }
-                    ForEach(group.rows) { row in
-                        TBPageSection(title: row.condition, subtitle: row.summary) {
-                            SectionCard {
-                                VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                                    ForEach(row.counts, id: \.self) { count in
-                                        Text(count).font(TBFont.regular(13)).foregroundStyle(TBColor.textBody)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
+                    TasteDetailGroup {
+                        ForEach(Array(group.rows.enumerated()), id: \.element.id) { index, row in
+                            VStack(alignment: .leading, spacing: TBSpacing.x8) {
+                                if index > 0 { Divider().overlay(TBColor.borderSubtle) }
+                                Text(row.condition).font(TBFont.semibold(13)).foregroundStyle(TBColor.textPrimary)
+                                ForEach(row.counts, id: \.self) { count in
+                                    Text(count).font(TBFont.regular(13)).foregroundStyle(TBColor.textSecondary)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
-                            }
+                            }.padding(TBSpacing.x16)
                         }
-                    }
-                    TBPageSection(title: "근거가 된 식사", subtitle: "같은 식사의 여러 메뉴와 표현은 한 번의 식사로 셌어요.") {
+                    }.padding(.horizontal, TBSpacing.page)
+                } else {
+                    VStack(alignment: .leading, spacing: TBSpacing.x16) {
                         ForEach(group.mealIDs, id: \.self) { mealID in
                             let mealEntries = entries.filter { $0.mealID.uuidString.lowercased() == mealID.lowercased() }
                             let entryIDs = Set(mealEntries.map(\.id)), evidenceIDs = Set(group.evidenceIDs)
-                            VStack(alignment: .leading, spacing: TBSpacing.x8) {
-                                if let first = mealEntries.sorted(by: { $0.id.uuidString < $1.id.uuidString }).first {
-                                    Text("\(first.restaurant) · \(first.observedAt.formatted(date: .abbreviated, time: .omitted))")
-                                        .font(TBFont.semibold(13)).foregroundStyle(TBColor.textPrimary)
-                                }
-                                if group.mixedMealIDs.contains(mealID) {
-                                    Text("이 식사에는 서로 다른 평가 쌍이 있어요")
-                                        .font(TBFont.regular(12)).foregroundStyle(TBColor.textSecondary)
-                                }
-                                SensoryEvidenceList(observations: observations.filter { evidenceIDs.contains($0.id) && entryIDs.contains($0.experienceID) }, unresolved: [])
+                            if let first = mealEntries.sorted(by: { $0.id.uuidString < $1.id.uuidString }).first {
+                                Text("\(first.restaurant) · \(first.observedAt.formatted(date: .abbreviated, time: .omitted))")
+                                    .font(TBFont.semibold(13)).foregroundStyle(TBColor.textPrimary)
                             }
+                            if group.mixedMealIDs.contains(mealID) { TasteDetailScope(text: "응답 나뉨") }
+                            SensoryEvidenceList(observations: observations.filter { evidenceIDs.contains($0.id) && entryIDs.contains($0.experienceID) }, unresolved: [])
                         }
-                    }
+                    }.padding(.horizontal, TBSpacing.page)
                 }
-                .tbPageContentPadding()
-            }
-        }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.hidden)
-        .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
-        .modifier(MemoryRevisionDismissal())
+            }.padding(.bottom, TBSpacing.page)
+        }.modifier(MemoryRevisionDismissal())
     }
 }
 
 #Preview("알맞음 조건 상세") {
-    PersonalTasteInsightDetailSheet(
+    PersonalTasteInsightDetailView(
         group: .init(id: "preview", kind: .fit, title: "산미가 알맞았던 때와 과했던 때", body: "", rows: [
             .init(id: "medium", condition: "국물 · 중간 강도로 느낀", summary: "‘알맞았어요’가 3번의 식사에서 반복됐어요.", counts: ["알맞았어요 · 3번의 식사"]),
             .init(id: "strong", condition: "국물 · 강하게 느낀", summary: "‘조금 과했어요’가 3번의 식사에서 반복됐어요.", counts: ["조금 과했어요 · 3번의 식사"])

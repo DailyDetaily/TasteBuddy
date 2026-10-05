@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   Beef,
   CakeSlice,
@@ -159,6 +159,7 @@ function getStableListTastePalette(listId: string) {
 }
 
 export function ListThumbnail({
+  style,
   className = 'size-[52px]',
   IconOverride,
   iconSize = ICON_TOKENS.size.lg,
@@ -168,6 +169,7 @@ export function ListThumbnail({
   IconOverride?: LucideIcon;
   iconSize?: number;
   list: BookmarkList;
+  style?: CSSProperties;
 }) {
   const ListThumbnailIcon = getStableListIcon(list.id);
   const listThumbnailPalette = getStableListTastePalette(list.id);
@@ -184,6 +186,7 @@ export function ListThumbnail({
       style={{
         backgroundColor: thumbnailPalette.tintSurface,
         color: thumbnailPalette.main,
+        ...style,
       }}
     >
       <ThumbnailIcon size={iconSize} strokeWidth={1.8} />

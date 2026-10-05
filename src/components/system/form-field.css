@@ -1,0 +1,20 @@
+.tb-form-field { --tb-form-placeholder-color: var(--tb-color-text-hint); display: grid; gap: var(--tb-space-8, 8px); min-width: 0; width: 100%; }
+.tb-form-field > label { color: var(--tb-color-text-muted); font-size: 12px; font-weight: 600; }
+.tb-form-control { box-sizing: border-box; min-width: 0; width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid var(--tb-color-border-default); border-radius: var(--tb-radius-12); background: var(--tb-color-surface-card); color: var(--tb-color-text-primary); font: inherit; font-size: 14px; font-weight: 600; line-height: 20px; outline: none; }
+.tb-form-control::placeholder, .tb-form-placeholder { color: var(--tb-form-placeholder-color); }
+.tb-form-control:focus-visible, .tb-form-control[aria-expanded="true"], .tb-form-control[data-doc-focused="true"] { border-color: var(--tb-color-icon-primary); }
+.tb-form-control[aria-invalid="true"] { border-color: var(--tb-color-destructive); }
+.tb-form-control:disabled { --tb-form-placeholder-color: var(--tb-color-text-disabled); border-color: var(--tb-color-border-disabled); color: var(--tb-color-text-disabled); background: var(--tb-color-surface-disabled); cursor: not-allowed; }
+.tb-form-helper, .tb-form-error { margin: 0; font-size: 11px; font-weight: 400; line-height: 1.6; overflow-wrap: anywhere; }
+.tb-form-helper { color: var(--tb-color-text-faint); }
+.tb-form-error { color: var(--tb-color-destructive); }
+.tb-form-picker { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; cursor: pointer; }
+.tb-form-picker > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-form-picker > svg { flex-shrink: 0; color: var(--tb-color-icon-primary); }
+.tb-form-select-wrap { position: relative; min-width: 0; }
+.tb-form-select { appearance: none; padding-right: 40px; text-overflow: ellipsis; }
+.tb-form-select-wrap > svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--tb-color-icon-primary); }
+
+.tb-form-select:has(option:checked[value=""]) { color: var(--tb-form-placeholder-color); }
+.tb-form-picker:disabled > svg { color: var(--tb-color-text-disabled); }
+.tb-form-select:disabled + svg { color: var(--tb-color-text-disabled); }

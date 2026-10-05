@@ -1,3 +1,4 @@
+import {BOOKMARK_ICONS,BOOKMARK_TASTES} from './gastronomy/nativeBookmarks';
 import type {
   BookmarkList,
   RestaurantBookmarkRecord,
@@ -80,8 +81,8 @@ function parseListRow(row: BookmarkListRow): BookmarkList | null {
     name: row.name,
     description: row.description,
     isPrivate: row.is_private === true,
-    coverIconId: row.cover_icon_id ?? undefined,
-    coverTasteId: row.cover_taste_id ?? undefined,
+    coverIconId: BOOKMARK_ICONS.find(id=>id===row.cover_icon_id),
+    coverTasteId: BOOKMARK_TASTES.find(id=>id===row.cover_taste_id),
   };
 }
 

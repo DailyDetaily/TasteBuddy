@@ -37,11 +37,11 @@ const feedbackMutations = new Map<string, Promise<unknown>>();
 
 export function serializeFeedbackMutation<T>(key: string, operation: () => Promise<T>): Promise<T> {
   const previous = feedbackMutations.get(key) ?? Promise.resolve();
-  const next = previous.catch(() => undefined).then(() => {
+  const next = previous.catch(() => undefined).then(async () => {
     // Web Locks extend ordering to other tabs; database-derived learning remains
     // idempotent for clients without this API and for other devices.
     if (typeof navigator !== 'undefined' && navigator.locks) {
-      return navigator.locks.request(`tastebuddy-feedback:${key}`, operation);
+      return await navigator.locks.request(`tastebuddy-feedback:${key}`, async () => await operation());
     }
     return operation();
   });

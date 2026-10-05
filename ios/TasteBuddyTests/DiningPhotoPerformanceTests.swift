@@ -276,3 +276,115 @@ final class DiningPhotoPerformanceTests: XCTestCase {
         }
     }
 }
+
+final class FoodMemoryDetailPresentationTests: XCTestCase {
+    func testCarouselUsesOnlyThisFoodsPhotosInSavedOrderWithoutDuplicates() {
+        let entry = DiningEntry(restaurant: "온지음", menu: "구운 배", rating: 0, note: "", reflectionPhotoFilename: "main.jpg", additionalPhotoFilenames: ["detail.jpg", "main.jpg", "third.jpg"])
+        let result = FoodMemoryDetailPresentation(entry: entry)
+        XCTAssertEqual(result.photos.map(\.filename), ["main.jpg", "detail.jpg", "third.jpg"])
+        XCTAssertTrue(result.photos.allSatisfy { $0.entryID == entry.id && $0.menu == entry.menu })
+    }
+
+    func testGallerySurvivesCodableStorageContextAndFeedProjection() throws {
+        let entry = DiningEntry(restaurant: "온지음", menu: "구운 배", rating: 0, note: "", reflectionPhotoFilename: "main.jpg", additionalPhotoFilenames: ["detail.jpg", "third.jpg"])
+        let decoded = try JSONDecoder().decode(DiningEntry.self, from: JSONEncoder().encode(entry))
+        let saved = decoded.preparedForInitialSave(at: .now)
+        let updated = try saved.preparedForUpdate(previous: saved, at: .now)
+        XCTAssertEqual(updated.allReflectionPhotoFilenames, entry.allReflectionPhotoFilenames)
+        XCTAssertEqual(DiningDishFeedbackItem.fromDiningEntry(updated, analysis: nil).images.compactMap(\.localPhotoFilename), entry.allReflectionPhotoFilenames)
+        var legacy = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(entry)) as? [String: Any])
+        legacy.removeValue(forKey: "additionalPhotoFilenames")
+        let older = try JSONDecoder().decode(DiningEntry.self, from: JSONSerialization.data(withJSONObject: legacy))
+        XCTAssertEqual(older.allReflectionPhotoFilenames, ["main.jpg"])
+    }
+
+    func testEmptyStructuredResponsesDoNotResurrectLegacySelections() throws {
+        let legacy = try XCTUnwrap(TasteExperienceCatalog.experiences.first)
+        let cleared = DiningEntry(restaurant: "", menu: "메뉴", rating: 5, note: "", tasteExperienceIDs: [legacy.id], sensorySelections: [])
+        XCTAssertTrue(FoodMemoryDetailPresentation(entry: cleared).tastes.isEmpty)
+        let older = DiningEntry(restaurant: "", menu: "메뉴", rating: 5, note: "", tasteExperienceIDs: [legacy.id, "unknown-legacy-id"])
+        let tastes = FoodMemoryDetailPresentation(entry: older).tastes
+        XCTAssertEqual(tastes.map(\.label), [legacy.label])
+        XCTAssertNil(tastes.first?.selection, "Legacy choices must not invent liking, intensity, or fit responses")
+    }
+
+    func testSnapshotLabelsAndRepeatedScopedResponsesRemainSeparate() {
+        let selections: [DiningSensorySelection] = [
+            .init(id: "sweet-center", type: .bubble, labelSnapshot: "저장 당시 표현", liking: .liked, target: .sauce),
+            .init(id: "sweet-center", type: .bubble, labelSnapshot: "저장 당시 표현", liking: .disliked, target: .inside)
+        ]
+        let entry = DiningEntry(restaurant: "", menu: "메뉴", rating: 0, note: "", sensorySelections: selections)
+        let result = FoodMemoryDetailPresentation(entry: entry)
+        XCTAssertEqual(result.tastes.map(\.label), ["저장 당시 표현", "저장 당시 표현"])
+        XCTAssertEqual(Set(result.tastes.map(\.id)).count, 2)
+        XCTAssertEqual(result.tastes.compactMap(\.selection), selections)
+    }
+
+    func testDateLabelsDistinguishRecordingPhotoAndConfirmedMealDates() {
+        let date = Date(timeIntervalSince1970: 1_790_000_000)
+        let legacy = DiningEntry(restaurant: "", menu: "", date: date, rating: 0, note: "")
+        XCTAssertTrue(FoodMemoryDetailPresentation(entry: legacy).dateLabel?.hasSuffix("기록") == true)
+        let photographed = DiningEntry(restaurant: "", menu: "", date: date, rating: 0, note: "", mealTime: .init(source: .photoCandidate, start: date))
+        XCTAssertTrue(FoodMemoryDetailPresentation(entry: photographed).dateLabel?.hasSuffix("촬영") == true)
+        let unknown = DiningEntry(restaurant: "", menu: "", date: date, rating: 0, note: "", mealTime: .init(source: .unknown))
+        XCTAssertNil(FoodMemoryDetailPresentation(entry: unknown).dateLabel)
+        let confirmed = DiningEntry(restaurant: "", menu: "", date: date, rating: 0, note: "", mealTime: .init(source: .confirmed, start: date))
+        XCTAssertEqual(FoodMemoryDetailPresentation(entry: confirmed).dateLabel,
+                       date.formatted(.dateTime.year().month().day().locale(Locale(identifier: "ko_KR"))))
+    }
+
+    func testPhotoReplacementPreservesOriginalResponsesDatesAndCorrectionHistory() throws {
+        var selection = DiningSensorySelection(id: "future-bubble", type: .bubble, labelSnapshot: "저장한 표현", liking: .liked, target: .sauce)
+        selection.additionalFields["futureField"] = .string("keep")
+        let original = DiningEntry(restaurant: "온지음", menu: "구운 배", savedAt: Date(timeIntervalSince1970: 1_700_000_000),
+                                   rating: 5, note: "내가 쓴 메모", tasteExperienceIDs: ["old-id"], detailTagIDs: ["old-detail"],
+                                   sensorySelections: [selection], overallEvaluation: .init(response: .liked),
+                                   reflectionPhotoFilename: "original.jpg", mealTime: .init(source: .unknown), memoryRevision: 3,
+                                   memoryCorrections: [.init(id: UUID(), revision: 3, changedAt: .now, before: ["note": .string("이전")], after: ["note": .string("내가 쓴 메모")])])
+        let updated = try FoodMemoryDetailPresentation.settingPhotos(in: original, filenames: ["replacement.jpg", "detail.jpg"], palette: .neutralFallback)
+        XCTAssertEqual(updated.reflectionPhotoFilename, "replacement.jpg")
+        XCTAssertEqual(updated.additionalPhotoFilenames, ["detail.jpg"])
+        XCTAssertEqual(updated.id, original.id)
+        XCTAssertEqual(updated.mealID, original.mealID)
+        XCTAssertEqual(updated.savedAt, original.savedAt)
+        XCTAssertEqual(updated.memoryCorrections, original.memoryCorrections)
+        XCTAssertEqual(updated.memoryRevision, original.memoryRevision)
+        XCTAssertEqual(try updated.memorySourceFields(), try original.memorySourceFields())
+        XCTAssertEqual(updated.sensorySelections?.first?.additionalFields, selection.additionalFields)
+    }
+
+    @MainActor
+    func testRemovingGalleryPhotosKeepsSharedOriginalsUntilTheirLastRecordIsDeleted() throws {
+        let suite = "tastebuddy.gallery.tests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        let model = AppModel(defaults: defaults, authRepository: FixtureBackendAuthRepository())
+        let scope = DiningReflectionPhotoStore.currentOwnerScope
+        let data = UIGraphicsImageRenderer(size: CGSize(width: 30, height: 30)).jpegData(withCompressionQuality: 0.8) { context in
+            UIColor.orange.setFill(); context.fill(CGRect(x: 0, y: 0, width: 30, height: 30))
+        }
+        let files = try (0..<3).map { _ in try DiningReflectionPhotoStore.save(data, entryID: UUID(), ownerScope: scope) }
+        defer {
+            files.forEach { DiningReflectionPhotoStore.remove(filename: $0, ownerScope: scope) }
+            defaults.removePersistentDomain(forName: suite)
+        }
+        let first = DiningEntry(restaurant: "", menu: "첫 기록", rating: 0, note: "메모", reflectionPhotoFilename: files[0], additionalPhotoFilenames: Array(files.dropFirst()))
+        let shared = DiningEntry(restaurant: "", menu: "공유 원본", rating: 0, note: "", reflectionPhotoFilename: files[1])
+        model.addDiningEntry(first); model.addDiningEntry(shared)
+        let original = try XCTUnwrap(model.diningEntry(id: first.id))
+        let edited = try FoodMemoryDetailPresentation.settingPhotos(in: original, filenames: Array(files.dropFirst()), palette: nil)
+        XCTAssertTrue(model.updateDiningEntry(edited, expected: original))
+        XCTAssertNil(DiningReflectionPhotoStore.data(for: files[0], ownerScope: scope))
+        XCTAssertNotNil(DiningReflectionPhotoStore.data(for: files[1], ownerScope: scope))
+        XCTAssertEqual(model.diningEntry(id: first.id)?.reflectionPhotoFilename, files[1])
+        XCTAssertTrue(model.deleteDiningEntry(id: first.id))
+        XCTAssertNotNil(DiningReflectionPhotoStore.data(for: files[1], ownerScope: scope))
+        XCTAssertNil(DiningReflectionPhotoStore.data(for: files[2], ownerScope: scope))
+        XCTAssertTrue(model.deleteDiningEntry(id: shared.id))
+        XCTAssertNil(DiningReflectionPhotoStore.data(for: files[1], ownerScope: scope))
+    }
+
+    func testGeneratedSummaryRemainsIdentifiableWithoutDuplicatingAnalysis() {
+        let entry = DiningEntry(restaurant: "", menu: "", rating: 0, note: "메인 미각 단맛으로 기억에 남은 식후 피드백입니다.")
+        XCTAssertTrue(FoodMemoryDetailPresentation(entry: entry).isGeneratedNote)
+    }
+}
