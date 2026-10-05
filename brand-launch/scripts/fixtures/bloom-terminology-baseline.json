@@ -1,0 +1,245 @@
+{
+  "description": "Pre-rename SVG output: preserve avatar identity across stamen/pistil terminology changes",
+  "fixtures": [
+    {
+      "profile": {
+        "sweet": 85,
+        "sour": 72,
+        "bitter": 41,
+        "salty": 63,
+        "umami": 54,
+        "fat": 38
+      },
+      "shapeSeed": null,
+      "svgSha256": "1bd31448cf110eb86b8d8a242323a3e4267adbe5d253a0199f98c659896a5455"
+    },
+    {
+      "profile": {
+        "sweet": 85,
+        "sour": 72,
+        "bitter": 41,
+        "salty": 63,
+        "umami": 54,
+        "fat": 38
+      },
+      "shapeSeed": "current-user",
+      "svgSha256": "ce02e8c8939ec7578b28590830183e812c75251a6d3c42400528f87a10595580"
+    },
+    {
+      "profile": {
+        "sweet": 85,
+        "sour": 72,
+        "bitter": 41,
+        "salty": 63,
+        "umami": 54,
+        "fat": 38
+      },
+      "shapeSeed": "신준호",
+      "svgSha256": "5319f7705bb77772d5c4d1a9bc37ac45ff17f5022cbf7c79776f87e8e768e4bf"
+    },
+    {
+      "profile": {
+        "sweet": 85,
+        "sour": 72,
+        "bitter": 41,
+        "salty": 63,
+        "umami": 54,
+        "fat": 38
+      },
+      "shapeSeed": "person-42|2026-09-22",
+      "svgSha256": "289623adb0f27820d0f6c6c715dd8657cc7df9ba808181f8d641b37cb9308cfd"
+    },
+    {
+      "profile": {
+        "sweet": 82,
+        "sour": 76,
+        "bitter": 54,
+        "salty": 63,
+        "umami": 91,
+        "fat": 47
+      },
+      "shapeSeed": null,
+      "svgSha256": "536cd956c3fc620777fcad883e230d267b896dafa27eb0a53b98fc1428fb9e49"
+    },
+    {
+      "profile": {
+        "sweet": 82,
+        "sour": 76,
+        "bitter": 54,
+        "salty": 63,
+        "umami": 91,
+        "fat": 47
+      },
+      "shapeSeed": "current-user",
+      "svgSha256": "56cc9c99bbc4a43446f87d2bb5468d3af970d75d770d4b17e137decaa0e1225f"
+    },
+    {
+      "profile": {
+        "sweet": 82,
+        "sour": 76,
+        "bitter": 54,
+        "salty": 63,
+        "umami": 91,
+        "fat": 47
+      },
+      "shapeSeed": "신준호",
+      "svgSha256": "e5dc052b47ccb6a92440bc5e70eb0863688bd8b378bc8c37da47e278b7a76cd8"
+    },
+    {
+      "profile": {
+        "sweet": 82,
+        "sour": 76,
+        "bitter": 54,
+        "salty": 63,
+        "umami": 91,
+        "fat": 47
+      },
+      "shapeSeed": "person-42|2026-09-22",
+      "svgSha256": "2de9b6f4010857e068aa5ad8f49e5bde5aeaec32b80ec7ae2002fe3b9c448461"
+    },
+    {
+      "profile": {
+        "sweet": 0,
+        "sour": 0,
+        "bitter": 0,
+        "salty": 0,
+        "umami": 0,
+        "fat": 0
+      },
+      "shapeSeed": null,
+      "svgSha256": "23ba08f8565ea73dc1273a050288e8669d1fadae3e3f713ebc6bd35265023797"
+    },
+    {
+      "profile": {
+        "sweet": 0,
+        "sour": 0,
+        "bitter": 0,
+        "salty": 0,
+        "umami": 0,
+        "fat": 0
+      },
+      "shapeSeed": "current-user",
+      "svgSha256": "07735de3f16fc2ac10166885966faf79595bba8be059c0490cb4ac7990490f4f"
+    },
+    {
+      "profile": {
+        "sweet": 0,
+        "sour": 0,
+        "bitter": 0,
+        "salty": 0,
+        "umami": 0,
+        "fat": 0
+      },
+      "shapeSeed": "신준호",
+      "svgSha256": "ee78477c4b5eb2898e4af2039275c09312e3774fda2923c30c1b27026c3a80a0"
+    },
+    {
+      "profile": {
+        "sweet": 0,
+        "sour": 0,
+        "bitter": 0,
+        "salty": 0,
+        "umami": 0,
+        "fat": 0
+      },
+      "shapeSeed": "person-42|2026-09-22",
+      "svgSha256": "8816fff2cfe671cb9fe95dae104c5ba5044c006f294966a0f66ce67984c352bb"
+    },
+    {
+      "profile": {
+        "sweet": 50,
+        "sour": 50,
+        "bitter": 50,
+        "salty": 50,
+        "umami": 50,
+        "fat": 50
+      },
+      "shapeSeed": null,
+      "svgSha256": "fc0e423390bbf347bd57b59dfdd05dd43c42d729c19ea8ea3d7bbbd069d0e6dc"
+    },
+    {
+      "profile": {
+        "sweet": 50,
+        "sour": 50,
+        "bitter": 50,
+        "salty": 50,
+        "umami": 50,
+        "fat": 50
+      },
+      "shapeSeed": "current-user",
+      "svgSha256": "8a7e877515f30e05d7c00fa113180020a0ba8761ae9fb3d86a2236cd1b345174"
+    },
+    {
+      "profile": {
+        "sweet": 50,
+        "sour": 50,
+        "bitter": 50,
+        "salty": 50,
+        "umami": 50,
+        "fat": 50
+      },
+      "shapeSeed": "신준호",
+      "svgSha256": "e0d8e10f80aba8363a4d2448bd75b0fe99c8e6617e6b4fc06098bf9703009274"
+    },
+    {
+      "profile": {
+        "sweet": 50,
+        "sour": 50,
+        "bitter": 50,
+        "salty": 50,
+        "umami": 50,
+        "fat": 50
+      },
+      "shapeSeed": "person-42|2026-09-22",
+      "svgSha256": "fc36c6dba52c416f20d17189d1488321dc5dcc76babff2fab1cfd1255d0ff5e5"
+    },
+    {
+      "profile": {
+        "sweet": 100,
+        "sour": 0,
+        "bitter": 0,
+        "salty": 0,
+        "umami": 0,
+        "fat": 0
+      },
+      "shapeSeed": null,
+      "svgSha256": "ec6ff270b98ceffdb15217376798bb3b2e94b6a2015855f1f6eba91b433de7be"
+    },
+    {
+      "profile": {
+        "sweet": 100,
+        "sour": 0,
+        "bitter": 0,
+        "salty": 0,
+        "umami": 0,
+        "fat": 0
+      },
+      "shapeSeed": "current-user",
+      "svgSha256": "b4b61a795e29daca34420000ffbeb45938fa434ede1298d87848817667ea817f"
+    },
+    {
+      "profile": {
+        "sweet": 100,
+        "sour": 0,
+        "bitter": 0,
+        "salty": 0,
+        "umami": 0,
+        "fat": 0
+      },
+      "shapeSeed": "신준호",
+      "svgSha256": "831f31adba10c4b46595a4f58c204df5901369064d21e3ca98e00ce8b3b7dee2"
+    },
+    {
+      "profile": {
+        "sweet": 100,
+        "sour": 0,
+        "bitter": 0,
+        "salty": 0,
+        "umami": 0,
+        "fat": 0
+      },
+      "shapeSeed": "person-42|2026-09-22",
+      "svgSha256": "87cf7330b393e64b96326ea51c1bb25585f9eb972cf0f594ff624e58359dd4b9"
+    }
+  ]
+}

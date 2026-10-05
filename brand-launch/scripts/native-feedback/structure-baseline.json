@@ -1,0 +1,872 @@
+{
+  "font": {
+    "file": "ios/TasteBuddy/DesignSystem/TBTheme.swift",
+    "marker": "enum TBFont",
+    "signature": "53169b89c28c1f5c390710e8074e09b9db08297321652d1fe96291bea1452c92",
+    "strings": [
+      "Pretendard-Regular",
+      "Pretendard-Medium",
+      "Pretendard-SemiBold",
+      "Pretendard-Bold"
+    ],
+    "numbers": [
+      "18",
+      "18",
+      "18",
+      "18"
+    ],
+    "dynamicStrings": []
+  },
+  "typography": {
+    "file": "ios/TasteBuddy/DesignSystem/TBTheme.swift",
+    "marker": "enum TBTypography",
+    "signature": "0fcc44b4658cd74e50090b7e505c5ec5a4ee83b220cca33820fa8ab637d15485",
+    "strings": [],
+    "numbers": [
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "18",
+      "18",
+      "18",
+      "18",
+      "18",
+      "400",
+      "500",
+      "600",
+      "700",
+      "1.2",
+      "1.35",
+      "1.4",
+      "1.5",
+      "0.24",
+      "0.14",
+      "0"
+    ],
+    "dynamicStrings": []
+  },
+  "restaurant": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var restaurantSelectionContent:",
+    "signature": "9abc3d081896655218865e7a74a8993267ea31560d785f43de2a0cf341e4e7fa",
+    "strings": [
+      "식후 피드백",
+      "어느 식당에서 남긴 기록인가요?",
+      "사진 위치를 기준으로 가까운 식당 후보를 먼저 정리했어요. 맞는 식당을 고르거나, 보이지 않으면 직접 입력해 주세요.",
+      "사진 위치 주변의 식당 후보를 찾고 있어요.",
+      "직접 입력",
+      "후보가 맞지 않으면 식당명을 직접 남길 수 있어요",
+      "식당명 직접 입력",
+      "예: 정식당",
+      "식당명",
+      "식당 확인하고 메뉴 선택"
+    ],
+    "numbers": [
+      "0",
+      "20",
+      "12",
+      "12",
+      "12",
+      "12",
+      "14",
+      "156",
+      "0",
+      "0",
+      "1",
+      "0",
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "menu": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var menuSelectionContent:",
+    "signature": "380135c73360a2af3a6d00014fc8db332faa5745da900f5c24e919332e4195d4",
+    "strings": [
+      "식후 피드백",
+      "dining-header",
+      "어떤 메뉴를 먼저 기록할까요?",
+      "가장 선명하게 기억나는 메뉴부터 선택해 주세요.",
+      "직접 입력",
+      "코스 목록에 없는 메뉴도 미각 기록으로 남길 수 있어요.",
+      "메뉴 직접 입력",
+      "메뉴 수정",
+      "예: 오미자와 배 디저트",
+      "메뉴명",
+      "음식 종류와 특성",
+      "추천 태그를 먼저 골라두었어요. 메뉴와 다르면 직접 바꿔주세요.",
+      "선택사항",
+      "디시 종류 직접 입력",
+      "dining-content",
+      "취향까지 기록",
+      "여기까지만 저장",
+      "dining-footer",
+      "메뉴를 삭제했어요",
+      "되돌리기",
+      "사진을 저장하지 못했어요",
+      "기록을 저장하지 못했어요",
+      "확인",
+      ""
+    ],
+    "numbers": [
+      "0",
+      "20",
+      "12",
+      "12",
+      "12",
+      "14",
+      "8",
+      "12",
+      "16",
+      "44",
+      "12",
+      "12",
+      "4",
+      "14",
+      "12",
+      "3",
+      "11",
+      "156",
+      "0",
+      "0",
+      "1",
+      "0",
+      "1",
+      "1",
+      "96",
+      "10"
+    ],
+    "dynamicStrings": []
+  },
+  "dishKindGroups": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var dishKindSelectionGroups:",
+    "signature": "6519bd6ee7ac0090d75ae38822f9e1c88cd5bdbad2f53b98f7c5f7efeb2b3bf6",
+    "strings": [
+      "ingredient"
+    ],
+    "numbers": [
+      "0",
+      "0",
+      "8",
+      "11",
+      "8"
+    ],
+    "dynamicStrings": [
+      "DishKind-\\(kind.id)"
+    ]
+  },
+  "dishKindGroupLabels": {
+    "file": "ios/TasteBuddy/Domain/Models/DiningFeedbackContractModels.swift",
+    "marker": "enum DiningDishKindGroup:",
+    "signature": "1ef14addd4eec742df2a2519ea30323855f97325a1900c097a5ec7a469a8178c",
+    "strings": [
+      "주요 재료",
+      "요리 형태",
+      "조리·처리",
+      "특성",
+      "이전에 선택한 분류"
+    ],
+    "numbers": [],
+    "dynamicStrings": []
+  },
+  "details": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var detailTagsView:",
+    "signature": "26bee88b4d022d2164cc133a08fb0e407ebda9137fa779b0a6bb5c14275ef019",
+    "strings": [
+      "이전에 남긴 표현을 그대로 보관하고 있어요.",
+      "이 선택 지우기",
+      "",
+      "",
+      "선택한 디테일 평가",
+      "느낀 점의 대상과 시점을 필요한 만큼 더 알려주세요.",
+      "완료",
+      "사진을 불러오지 못했어요",
+      "확인",
+      ""
+    ],
+    "numbers": [
+      "0",
+      "28",
+      "0",
+      "0",
+      "0",
+      "8",
+      "14",
+      "12",
+      "0",
+      "0",
+      "12",
+      "28",
+      "10",
+      "14",
+      "12",
+      "3",
+      "0",
+      "12",
+      "164"
+    ],
+    "dynamicStrings": []
+  },
+  "note": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var reflectionView:",
+    "signature": "237ab94bbf2b3a288c102bcdc9fc4be3e6affc8bfeb994bc142490dc74252d9b",
+    "strings": [
+      "추가 메모 · 선택사항",
+      "기억에 남는 맛과 상황을 적어 주세요.",
+      "추가 메모",
+      "계속하기",
+      "취소하기"
+    ],
+    "numbers": [
+      "0",
+      "164",
+      "150"
+    ],
+    "dynamicStrings": []
+  },
+  "helper": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var detailHelperText:",
+    "signature": "3da30fd51c761e98b666c17b9095c82f0281dfc3dd9922041835851a15e57c29",
+    "strings": [
+      "태그를 고르지 않아도 미각 인상은 저장됩니다."
+    ],
+    "numbers": [],
+    "dynamicStrings": [
+      "\\(selectedDetailTagIDs.count)개의 디테일 단서를 함께 저장합니다."
+    ]
+  },
+  "photoEntry": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private struct DiningReflectionEntryCard:",
+    "signature": "2f9e75ac72cd539c507b22b92a095608799bcbc17d89acff8b0f139a04f0a9b2",
+    "strings": [
+      "추가 메모 또는 사진",
+      "선택한 버블과 태그를 보충하고 싶을 때만 남겨주세요.",
+      "선택사항인 추가 메모 작성",
+      "미식 기록 사진 추가"
+    ],
+    "numbers": [
+      "12",
+      "48",
+      "48",
+      "12",
+      "3",
+      "14",
+      "11",
+      "2",
+      "0",
+      "40",
+      "40",
+      "40",
+      "40",
+      "12",
+      "20",
+      "20"
+    ],
+    "dynamicStrings": []
+  },
+  "camera": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var cameraCaptureView:",
+    "signature": "2b1bbf6948f8869f24424ec2e5c9405e9dc41c05cff68d12dd26d4b63c9a58a4",
+    "strings": [
+      "카메라를 준비하고 있어요.",
+      "카메라 닫기",
+      "플래시 끄기",
+      "플래시 켜기",
+      "사진첩에서 선택",
+      "사진 촬영",
+      "전면 후면 카메라 전환",
+      "사진을 불러오지 못했어요",
+      "확인",
+      ""
+    ],
+    "numbers": [
+      "1",
+      "0",
+      "0.45",
+      "0",
+      "132",
+      "0",
+      "0.55",
+      "176",
+      "0",
+      "16",
+      "2",
+      "28",
+      "0",
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "cameraMetrics": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private enum DiningFeedbackCameraControlMetrics",
+    "signature": "b9ab8bd4ea2cbd08a037979fdcfc39b60f88ca8c074759e7b2fd94757101197e",
+    "strings": [],
+    "numbers": [
+      "48",
+      "72",
+      "58",
+      "0",
+      "2",
+      "2",
+      "2"
+    ],
+    "dynamicStrings": []
+  },
+  "result": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var resultStageContent:",
+    "signature": "fe7c1c7970cd288498c421089cc0d78b99cf8de6264c5fa050677268eacac9eb",
+    "strings": [
+      "빠른 저장 결과 카드",
+      "미각 결과 카드",
+      "상단 공유 버튼과 하단 취향 덧붙이기 또는 완료 버튼을 표시합니다",
+      "상단 공유 버튼과 하단 저장 버튼을 표시합니다"
+    ],
+    "numbers": [
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "dynamicStrings": []
+  },
+  "resultHeader": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private var resultTopBar:",
+    "signature": "3b3ae27117fa326609024a146a44e4100f4d6ece724962c501c946dde8bc8feb",
+    "strings": [
+      "메뉴 선택으로 돌아가기",
+      "디테일 태그로 돌아가기",
+      "식사 기록 카드 공유",
+      "미각 결과 카드 공유"
+    ],
+    "numbers": [
+      "20"
+    ],
+    "dynamicStrings": []
+  },
+  "resultCard": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private struct DiningFeedbackResultCard:",
+    "signature": "b62faaadfbcd33aa0b5ab3ace4b62635529ff564f6a9fcf7f40c748cc798a8ba",
+    "strings": [
+      "취향은 언제든 덧붙일 수 있어요.",
+      "미식 노트",
+      "식사를 담아두었어요"
+    ],
+    "numbers": [
+      "10",
+      "2",
+      "14",
+      "2",
+      "12",
+      "3",
+      "8",
+      "1",
+      "12",
+      "3",
+      "12",
+      "12",
+      "6",
+      "8",
+      "13",
+      "12",
+      "3",
+      "4",
+      "12",
+      "12",
+      "12",
+      "20",
+      "0.16",
+      "35",
+      "0",
+      "24",
+      "12"
+    ],
+    "dynamicStrings": []
+  },
+  "resultLayout": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private enum DiningFeedbackResultLayout",
+    "signature": "7a986cfaaa34f3b080fcedd2fe44f2706a1393c4e61fff57bc29a8887c7fc731",
+    "strings": [],
+    "numbers": [
+      "50",
+      "4.0",
+      "5.0",
+      "6",
+      "6"
+    ],
+    "dynamicStrings": []
+  },
+  "bubble": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private struct TasteExperienceBubbleView:",
+    "signature": "2454bbb3fb2f0e71fa52c8b39edd2587653e09375e4370deaa342154cc3e5027",
+    "strings": [
+      "메인 미각",
+      "보조 미각",
+      "현재 초점",
+      "",
+      "메인 미각",
+      "보조 미각"
+    ],
+    "numbers": [
+      "1",
+      "0",
+      "10",
+      "0.7",
+      "26",
+      "14",
+      "3",
+      "0.84",
+      "14",
+      "0",
+      "8",
+      "1.14",
+      "1",
+      "0.12",
+      "23",
+      "0",
+      "0",
+      "18",
+      "0",
+      "1",
+      "0",
+      "1",
+      "0.72",
+      "0",
+      "1",
+      "0.56",
+      "1",
+      "80",
+      "20",
+      "100",
+      "100",
+      "1",
+      "0.54",
+      "0.18",
+      "0"
+    ],
+    "dynamicStrings": []
+  },
+  "bubbleCard": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private struct TasteExperienceSelectionCard:",
+    "signature": "36ba1e70b506437ae91f9abba5cc5f7accbeca6fd85a31669527072de3e9b66a",
+    "strings": [
+      "선택한 미각 인상으로 기록하기",
+      "다음 미각 후보로 이동하기",
+      "현재 미각 인상 선택하기"
+    ],
+    "numbers": [
+      "16",
+      "0",
+      "16",
+      "2",
+      "14",
+      "2",
+      "4",
+      "12",
+      "0",
+      "48",
+      "48",
+      "16",
+      "1",
+      "3"
+    ],
+    "dynamicStrings": []
+  },
+  "detailHero": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private struct TasteExperienceDetailHero:",
+    "signature": "17d6c886d3bcc3339880d02e34f32fd473a7ea93edae63096e78dfe2f414eff8",
+    "strings": [
+      "메인 미각",
+      "보조 미각",
+      " : "
+    ],
+    "numbers": [
+      "1",
+      "16",
+      "8",
+      "0",
+      "11",
+      "0.7",
+      "17",
+      "20",
+      "176",
+      "176",
+      "12",
+      "0.45",
+      "24",
+      "24",
+      "0.22",
+      "1.1",
+      "1",
+      "8"
+    ],
+    "dynamicStrings": [
+      "\\(index == 0 ? ",
+      ") 미각 \\(experience.label) 보기"
+    ]
+  },
+  "tagSelector": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private struct DiningDetailTagSelector:",
+    "signature": "20bedbe357787ad93c8188dcb961bec2d2ba7dfdaf035867a56efd113724a441",
+    "strings": [
+      "선택사항",
+      "",
+      "Pretendard-SemiBold"
+    ],
+    "numbers": [
+      "2",
+      "12",
+      "14",
+      "11",
+      "8",
+      "8",
+      "0",
+      "8",
+      "1",
+      "0",
+      "12",
+      "12",
+      "36",
+      "1",
+      "36",
+      "12",
+      "12",
+      "220",
+      "36",
+      "24"
+    ],
+    "dynamicStrings": [
+      "\\(category.label) 직접 입력",
+      "\\(category.label) 직접 입력"
+    ]
+  },
+  "intro": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private struct DiningFeedbackIntroHeader:",
+    "signature": "5bf51a849b7a32f7874c50a7be0b1db30d2b256d8d89d3b9b3ab187d2bdbc441",
+    "strings": [],
+    "numbers": [
+      "12",
+      "18",
+      "2",
+      "8",
+      "14",
+      "5",
+      "12",
+      "4",
+      "16"
+    ],
+    "dynamicStrings": []
+  },
+  "addChip": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+    "marker": "private struct DiningFeedbackAddChipButton:",
+    "signature": "00c5ad8e8c79c829f310d7dde23c5db67b1c45892c16a3617ce64f0f93970f1f",
+    "strings": [],
+    "numbers": [
+      "36",
+      "36",
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "input": {
+    "file": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+    "marker": "struct TBTextInput:",
+    "signature": "3c032c8b2c8dc0992b5abed3c78905482a99f27e238ca42097e56bf1a4f18372",
+    "strings": [
+      "",
+      "",
+      "sheet-input"
+    ],
+    "numbers": [
+      "12",
+      "1",
+      "11",
+      "12",
+      "3"
+    ],
+    "dynamicStrings": [
+      "오류: \\($0)"
+    ]
+  },
+  "inputVariant": {
+    "file": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+    "marker": "enum TBTextInputVariant",
+    "signature": "52e4c65834ee070c6a411607417692bd8325d8c06755cb20e58711c5d7bddd34",
+    "strings": [],
+    "numbers": [
+      "44",
+      "48",
+      "13",
+      "14",
+      "14"
+    ],
+    "dynamicStrings": []
+  },
+  "textArea": {
+    "file": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+    "marker": "struct TBTextArea:",
+    "signature": "8b4d41fad60dbd8a6f040251e12722db69d28ac60e7d57657c710de77f4d6d9f",
+    "strings": [
+      "",
+      ""
+    ],
+    "numbers": [
+      "1",
+      "156",
+      "14",
+      "13",
+      "13",
+      "5",
+      "2",
+      "1",
+      "12",
+      "3"
+    ],
+    "dynamicStrings": [
+      "오류: \\($0)"
+    ]
+  },
+  "chip": {
+    "file": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+    "marker": "struct TBSelectableChip:",
+    "signature": "79e734f8e652a99a5216760dab6a38649a57ffe92ed9c415abaca9b4e552c8a2",
+    "strings": [],
+    "numbers": [
+      "0.28",
+      "6",
+      "16",
+      "16",
+      "14",
+      "1.8",
+      "1",
+      "9",
+      "8",
+      "36",
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "header": {
+    "file": "ios/TasteBuddy/Components/TBComponents.swift",
+    "marker": "struct TBFlowTopBar:",
+    "signature": "a195dfac141e3001e1eb1b0126cb244183997fd0e43b82562186b9a2db5b52ef",
+    "strings": [
+      "chevron.left",
+      "이전 화면으로 돌아가기"
+    ],
+    "numbers": [
+      "15",
+      "1",
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "cta": {
+    "file": "ios/TasteBuddy/Components/TBComponents.swift",
+    "marker": "struct TBFlowBottomCTA:",
+    "signature": "f9f461967d095ab112d36f82c3b218b56b24a290b1e9180c7ffa177f2339d3cb",
+    "strings": [],
+    "numbers": [
+      "0",
+      "0",
+      "11",
+      "0",
+      "0",
+      "0.8",
+      "0.45",
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "primaryButton": {
+    "file": "ios/TasteBuddy/Components/TBComponents.swift",
+    "marker": "struct PrimaryButton:",
+    "signature": "ab615ef7f25a3036b09975803c6f94a6fbf388e498d11f98d4d44623c393177c",
+    "strings": [],
+    "numbers": [
+      "0.10",
+      "20",
+      "0",
+      "8"
+    ],
+    "dynamicStrings": []
+  },
+  "primaryAppearance": {
+    "file": "ios/TasteBuddy/Components/TBComponents.swift",
+    "marker": "enum PrimaryButtonAppearance",
+    "signature": "54cc47486d1cad41922ef36c4eeb9621c6f523b67f0e65ffc66cd5ac274ee01b",
+    "strings": [],
+    "numbers": [],
+    "dynamicStrings": []
+  },
+  "controlFeedback": {
+    "file": "ios/TasteBuddy/DesignSystem/TasteBloomMotion.swift",
+    "marker": "enum TBControlFeedback",
+    "signature": "2ba642a1e1560e8ea03898857ec6e5c64d38caf3c94e5d3166ddae0fbfebf21a",
+    "strings": [],
+    "numbers": [
+      "1",
+      "4",
+      "24",
+      "0.10",
+      "0.06",
+      "0",
+      "0",
+      "1",
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "selectionCard": {
+    "file": "ios/TasteBuddy/Components/TBComponents.swift",
+    "marker": "struct TBSelectionCard:",
+    "signature": "8e008acda3fcf847923c6d0eea5c52d327a001ed58c7f9bfd9a7853aaf724c75",
+    "strings": [],
+    "numbers": [
+      "0",
+      "0",
+      "14",
+      "2",
+      "12",
+      "3",
+      "44",
+      "1",
+      "0.06",
+      "0",
+      "1",
+      "2",
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "sectionCard": {
+    "file": "ios/TasteBuddy/Components/TBComponents.swift",
+    "marker": "struct SectionCard<",
+    "signature": "b4f5eeb3c538b14405963e06594e06fe85fd7d3a795d642ee4ba47f17f2df8e5",
+    "strings": [],
+    "numbers": [
+      "1"
+    ],
+    "dynamicStrings": []
+  },
+  "overall": {
+    "file": "ios/TasteBuddy/Features/Dining/DiningOverallEvaluationStepView.swift",
+    "marker": "struct DiningOverallEvaluationStepView:",
+    "signature": "483f0ff4a6012e5ca0fa7b44fdd24b37e694f5000ea0ad52785e5c996fb918e5",
+    "strings": [
+      "전체 평가",
+      "메뉴 선택으로 돌아가기",
+      "가장 가까운 느낌을 골라주세요.",
+      "미각 버블 고르기",
+      "전체 평가를 하나 선택해 주세요."
+    ],
+    "numbers": [
+      "0",
+      "24",
+      "8",
+      "20",
+      "13",
+      "4",
+      "10",
+      "16",
+      "148",
+      "1",
+      "2"
+    ],
+    "dynamicStrings": []
+  },
+  "evaluation": {
+    "file": "ios/TasteBuddy/Domain/Models/DiningOverallEvaluation.swift",
+    "marker": "struct DiningOverallEvaluation:",
+    "signature": "9ba33a4770225b868d686aa1c287cb0dec4b1ee29dea9abdb1f3b4fe69c0e8d4",
+    "strings": [
+      "dining-overall-liking/1",
+      "이 음식은 전체적으로 어땠나요?",
+      "veryLiked",
+      "liked",
+      "neutral",
+      "disliked",
+      "veryDisliked",
+      "veryLiked",
+      "정말 좋았어요",
+      "liked",
+      "좋았어요",
+      "neutral",
+      "보통이었어요",
+      "disliked",
+      "아쉬웠어요",
+      "veryDisliked",
+      "많이 아쉬웠어요",
+      "알 수 없는 응답",
+      "veryLiked",
+      "very_positive",
+      "liked",
+      "positive",
+      "neutral",
+      "neutral",
+      "disliked",
+      "negative",
+      "veryDisliked",
+      "very_negative",
+      "overall_liking",
+      "whole_dish",
+      "unspecified",
+      "전체평가 객체가 아님",
+      "unknown",
+      "unknown",
+      "unknown",
+      "읽을 수 없는 전체평가",
+      "읽을 수 없는 응답",
+      "overallEvaluation",
+      "liking",
+      "resolved",
+      "unreadable_overall_evaluation_payload",
+      "overall_liking",
+      "unknown_overall_evaluation_version",
+      "overall_evaluation_label_mismatch",
+      "unknown_overall_evaluation_response",
+      "whole_dish",
+      "unspecified",
+      "invalid_overall_evaluation_scope",
+      "unresolved",
+      "overall_liking",
+      "overall-five-category-v1"
+    ],
+    "numbers": [
+      "0"
+    ],
+    "dynamicStrings": []
+  },
+  "backdrop": {
+    "file": "ios/TasteBuddy/Components/Shell/AppChromeComponents.swift",
+    "marker": "private struct TBTopChromeBackdrop:",
+    "signature": "bcd7890fb9861d94a508a5bf7253cf4c4369c34f5abd8c3fd6bb1c61f56c7a59",
+    "strings": [],
+    "numbers": [
+      "0",
+      "0.5",
+      "1"
+    ],
+    "dynamicStrings": []
+  }
+}

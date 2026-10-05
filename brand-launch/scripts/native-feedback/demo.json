@@ -1,0 +1,8 @@
+{
+  "menu": "버터 허브 파스타",
+  "dishKindIDs": ["seafood", "noodle"],
+  "safeArea": {
+    "top": 59,
+    "bottom": 34
+  }
+}

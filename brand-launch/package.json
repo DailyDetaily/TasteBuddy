@@ -1,7 +1,7 @@
 {
   "name": "brand-launch",
   "version": "1.0.0",
-  "description": "Taste Buddy 30\ucd08 \ube0c\ub79c\ub4dc \ub7f0\uce6d \uc601\uc0c1 \u00b7 \uc2e4\uc81c SwiftUI \ud654\uba74 \uc790\ub3d9 \uac31\uc2e0",
+  "description": "Taste Buddy 30초 브랜드 런칭 영상 · 실제 SwiftUI 화면 자동 갱신",
   "repository": {},
   "license": "UNLICENSED",
   "private": true,
@@ -9,14 +9,19 @@
     "@remotion/cli": "4.0.521",
     "@remotion/fonts": "4.0.521",
     "@remotion/media": "4.0.521",
+    "@remotion/paths": "4.0.521",
+    "@remotion/player": "4.0.521",
     "@remotion/transitions": "4.0.521",
+    "@remotion/zod-types": "4.0.521",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "remotion": "4.0.521"
+    "remotion": "4.0.521",
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "@remotion/eslint-config-flat": "4.0.521",
     "@types/react": "19.2.7",
+    "@types/react-dom": "~19.2.0",
     "@types/web": "0.0.166",
     "eslint": "9.19.0",
     "prettier": "3.8.1",
@@ -24,7 +29,7 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "studio": "remotion studio --no-open --port=3110",
+    "studio": "node scripts/dev.mjs",
     "build": "remotion bundle",
     "lint": "eslint src && tsc",
     "native:capture": "node scripts/native-ui.mjs --once",
@@ -34,7 +39,13 @@
     "sync:brand": "node scripts/sync-brand.mjs",
     "audio:generate": "python3 scripts/generate-score.py",
     "render": "node scripts/render.mjs",
-    "test:motion": "node --test scripts/taste-motion.test.mjs"
+    "test:motion": "node --test scripts/taste-motion.test.mjs",
+    "studio:categories": "remotion studio --no-open --port=3110",
+    "dev:native": "node scripts/dev.mjs --with-native-captures",
+    "sync:feedback": "node scripts/native-feedback-sync.mjs",
+    "sync:feedback:watch": "node scripts/native-feedback-sync.mjs --watch",
+    "sync:feedback:check": "node scripts/native-feedback-sync.mjs --check",
+    "test:feedback-sync": "node --test scripts/native-feedback-sync.test.mjs"
   },
   "sideEffects": [
     "*.css"

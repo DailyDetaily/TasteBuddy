@@ -1,0 +1,7 @@
+{
+  "generator": "Built-in image_gen",
+  "reference": "/Users/sinjunho/Desktop/dirtykoreann_1766305504_3792367898967822855_8001008502.jpg",
+  "asset": "generated-pasta-reference.png",
+  "description": "AI-generated photographic scene inspired by user reference; not actual camera footage.",
+  "prompt": "Create a NEW photorealistic smartphone food photograph inspired by the attached reference, not a copy. Reference role: food subject and casual restaurant atmosphere. Portrait 9:16 framing for a phone camera viewfinder. On a brushed stainless steel restaurant table, a broad ivory ceramic plate holding dark olive-black wide curled ribbon pasta, small chopped translucent cooked shrimp and parsley, fresh delicate dill sprigs, with one generous golden yellow butter cube on the central upper part of the pasta. Natural imperfect plating and glossy pasta texture, soft warm restaurant daylight from upper left, believable shadows, no studio advertising look. Camera at a slightly oblique overhead angle like a diner about to take a photo, moderate depth of field, center food details tack sharp so blur can be animated later in code. Entire food mound should fit within the central 65 percent of image width and middle 55 percent of image height; retain ample plate and steel tabletop above and below for camera UI and subtle motion crop. Fresh arrangement different from reference, realistic edible ingredients. Only photographic scene, no hands, no phone, no text, no logos, no watermark, no UI, no artificial bokeh overlay."
+}

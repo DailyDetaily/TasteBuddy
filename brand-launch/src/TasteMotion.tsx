@@ -22,7 +22,7 @@ const FeedbackMotion = ({time, rayCount, angle, endingAt}: {time: number; rayCou
   </g>;
 };
 
-const InsightMotion = ({time}: {time: number}) => {
+export const InsightMotion = ({time}: {time: number}) => {
   const maskId = useId().replace(/:/g, "");
   const playing = Internals.usePlaying();
   const [interaction, setInteraction] = useState({at: 0, anchorAt: 0, from: 0, to: 0});

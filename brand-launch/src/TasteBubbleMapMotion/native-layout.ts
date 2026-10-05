@@ -1,0 +1,507 @@
+// Generated from the unmodified Swift TasteExperienceMapEngine by export-native-bubble-layout.mjs.
+export const NATIVE_BUBBLE_LAYOUT = [
+  {
+    "diameter": 126,
+    "id": "sweet-soft",
+    "introDelay": 0.18,
+    "x": 772,
+    "y": 722.2205450853163
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-fruit-soft",
+    "introDelay": 0.5,
+    "x": 840,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-front",
+    "introDelay": 0.5276923076923077,
+    "x": 704,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-round",
+    "introDelay": 0.56,
+    "x": 772,
+    "y": 486.661635255949
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-caramel",
+    "introDelay": 0.5646153846153846,
+    "x": 908,
+    "y": 486.661635255949
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-clean-finish",
+    "introDelay": 0.6107692307692307,
+    "x": 636,
+    "y": 486.661635255949
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-long",
+    "introDelay": 0.6476923076923077,
+    "x": 840,
+    "y": 368.8821803412654
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-syrup",
+    "introDelay": 0.6846153846153846,
+    "x": 704,
+    "y": 368.8821803412654
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-finish-hold",
+    "introDelay": 0.6799999999999999,
+    "x": 500,
+    "y": 486.661635255949
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-dense",
+    "introDelay": 0.7215384615384616,
+    "x": 568,
+    "y": 368.8821803412654
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-too-much",
+    "introDelay": 0.7676923076923077,
+    "x": 772,
+    "y": 251.10272542658174
+  },
+  {
+    "diameter": 126,
+    "id": "sweet-covering",
+    "introDelay": 0.7723076923076924,
+    "x": 908,
+    "y": 251.10272542658174
+  },
+  {
+    "diameter": 126,
+    "id": "sour-fresh",
+    "introDelay": 0.24,
+    "x": 908,
+    "y": 722.2205450853163
+  },
+  {
+    "diameter": 126,
+    "id": "sour-soft-citrus",
+    "introDelay": 0.5092307692307693,
+    "x": 1044,
+    "y": 722.2205450853163
+  },
+  {
+    "diameter": 126,
+    "id": "sour-opening",
+    "introDelay": 0.5323076923076923,
+    "x": 976,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "sour-clean-finish",
+    "introDelay": 0.5692307692307692,
+    "x": 1112,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "sour-citrus",
+    "introDelay": 0.5876923076923077,
+    "x": 1180,
+    "y": 722.2205450853163
+  },
+  {
+    "diameter": 126,
+    "id": "sour-fermented",
+    "introDelay": 0.6153846153846154,
+    "x": 1044,
+    "y": 486.661635255949
+  },
+  {
+    "diameter": 126,
+    "id": "sour-sharp",
+    "introDelay": 0.6523076923076923,
+    "x": 1248,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "sour-vinegar",
+    "introDelay": 0.6938461538461539,
+    "x": 1180,
+    "y": 486.661635255949
+  },
+  {
+    "diameter": 126,
+    "id": "sour-long",
+    "introDelay": 0.6892307692307692,
+    "x": 976,
+    "y": 368.8821803412654
+  },
+  {
+    "diameter": 126,
+    "id": "sour-tight",
+    "introDelay": 0.7261538461538461,
+    "x": 1112,
+    "y": 368.8821803412654
+  },
+  {
+    "diameter": 126,
+    "id": "sour-jumping",
+    "introDelay": 0.7769230769230769,
+    "x": 1316,
+    "y": 486.661635255949
+  },
+  {
+    "diameter": 126,
+    "id": "sour-covering",
+    "introDelay": 0.7815384615384615,
+    "x": 1384,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "salty-balanced",
+    "introDelay": 0.3,
+    "x": 976,
+    "y": 840
+  },
+  {
+    "diameter": 126,
+    "id": "salty-soft-salt",
+    "introDelay": 0.5138461538461538,
+    "x": 1044,
+    "y": 957.7794549146837
+  },
+  {
+    "diameter": 126,
+    "id": "salty-clear",
+    "introDelay": 0.536923076923077,
+    "x": 1112,
+    "y": 840
+  },
+  {
+    "diameter": 126,
+    "id": "salty-flavor-lift",
+    "introDelay": 0.5923076923076923,
+    "x": 1180,
+    "y": 957.7794549146837
+  },
+  {
+    "diameter": 126,
+    "id": "salty-broth-salt",
+    "introDelay": 0.5969230769230769,
+    "x": 1112,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "salty-sea-clean",
+    "introDelay": 0.62,
+    "x": 1248,
+    "y": 840
+  },
+  {
+    "diameter": 126,
+    "id": "salty-strong-sea",
+    "introDelay": 0.6569230769230769,
+    "x": 1248,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "salty-sauce-forward",
+    "introDelay": 0.703076923076923,
+    "x": 1316,
+    "y": 957.7794549146837
+  },
+  {
+    "diameter": 126,
+    "id": "salty-fermented-salt",
+    "introDelay": 0.6984615384615385,
+    "x": 1316,
+    "y": 722.2205450853163
+  },
+  {
+    "diameter": 126,
+    "id": "salty-long-salty",
+    "introDelay": 0.7307692307692308,
+    "x": 1384,
+    "y": 840
+  },
+  {
+    "diameter": 126,
+    "id": "salty-front",
+    "introDelay": 0.7861538461538462,
+    "x": 1384,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "salty-covering",
+    "introDelay": 0.7907692307692308,
+    "x": 1316,
+    "y": 1193.338364744051
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-soft-after",
+    "introDelay": 0.36,
+    "x": 908,
+    "y": 957.7794549146837
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-clean-bitter",
+    "introDelay": 0.5230769230769231,
+    "x": 840,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-roasted",
+    "introDelay": 0.5461538461538462,
+    "x": 976,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-herbal",
+    "introDelay": 0.5738461538461539,
+    "x": 908,
+    "y": 1193.338364744051
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-char",
+    "introDelay": 0.5784615384615385,
+    "x": 772,
+    "y": 1193.338364744051
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-finish-clean",
+    "introDelay": 0.6246153846153846,
+    "x": 1044,
+    "y": 1193.338364744051
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-strong-smoke",
+    "introDelay": 0.6384615384615384,
+    "x": 840,
+    "y": 1311.1178196587346
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-burnt",
+    "introDelay": 0.6661538461538461,
+    "x": 976,
+    "y": 1311.1178196587346
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-dry-bitter",
+    "introDelay": 0.7076923076923076,
+    "x": 1180,
+    "y": 1193.338364744051
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-long-bitter",
+    "introDelay": 0.7353846153846153,
+    "x": 1112,
+    "y": 1311.1178196587346
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-covering",
+    "introDelay": 0.7492307692307693,
+    "x": 908,
+    "y": 1428.8972745734181
+  },
+  {
+    "diameter": 126,
+    "id": "bitter-smoke-cover",
+    "introDelay": 0.7538461538461538,
+    "x": 772,
+    "y": 1428.8972745734181
+  },
+  {
+    "diameter": 126,
+    "id": "umami-subtle-depth",
+    "introDelay": 0.42,
+    "x": 772,
+    "y": 957.7794549146837
+  },
+  {
+    "diameter": 126,
+    "id": "umami-clear",
+    "introDelay": 0.5184615384615384,
+    "x": 636,
+    "y": 957.7794549146837
+  },
+  {
+    "diameter": 126,
+    "id": "umami-flowing",
+    "introDelay": 0.5507692307692308,
+    "x": 704,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "umami-broth",
+    "introDelay": 0.6015384615384616,
+    "x": 568,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "umami-seafood",
+    "introDelay": 0.6061538461538462,
+    "x": 500,
+    "y": 957.7794549146837
+  },
+  {
+    "diameter": 126,
+    "id": "umami-fermented",
+    "introDelay": 0.6292307692307693,
+    "x": 636,
+    "y": 1193.338364744051
+  },
+  {
+    "diameter": 126,
+    "id": "umami-dense",
+    "introDelay": 0.6615384615384615,
+    "x": 432,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "umami-meaty",
+    "introDelay": 0.7123076923076923,
+    "x": 500,
+    "y": 1193.338364744051
+  },
+  {
+    "diameter": 126,
+    "id": "umami-long",
+    "introDelay": 0.6707692307692308,
+    "x": 704,
+    "y": 1311.1178196587346
+  },
+  {
+    "diameter": 126,
+    "id": "umami-short",
+    "introDelay": 0.74,
+    "x": 568,
+    "y": 1311.1178196587346
+  },
+  {
+    "diameter": 126,
+    "id": "umami-heavy",
+    "introDelay": 0.7953846153846154,
+    "x": 364,
+    "y": 1193.338364744051
+  },
+  {
+    "diameter": 126,
+    "id": "umami-covering",
+    "introDelay": 0.8,
+    "x": 296,
+    "y": 1075.5589098293674
+  },
+  {
+    "diameter": 126,
+    "id": "fat-soft-texture",
+    "introDelay": 0.48,
+    "x": 704,
+    "y": 840
+  },
+  {
+    "diameter": 126,
+    "id": "fat-clean-fat",
+    "introDelay": 0.5046153846153846,
+    "x": 636,
+    "y": 722.2205450853163
+  },
+  {
+    "diameter": 126,
+    "id": "fat-nutty-weight",
+    "introDelay": 0.5415384615384615,
+    "x": 568,
+    "y": 840
+  },
+  {
+    "diameter": 126,
+    "id": "fat-buttery",
+    "introDelay": 0.583076923076923,
+    "x": 500,
+    "y": 722.2205450853163
+  },
+  {
+    "diameter": 126,
+    "id": "fat-creamy",
+    "introDelay": 0.5553846153846154,
+    "x": 568,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "fat-silky",
+    "introDelay": 0.6338461538461538,
+    "x": 432,
+    "y": 840
+  },
+  {
+    "diameter": 126,
+    "id": "fat-long",
+    "introDelay": 0.6430769230769231,
+    "x": 432,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "fat-rich",
+    "introDelay": 0.6753846153846154,
+    "x": 364,
+    "y": 722.2205450853163
+  },
+  {
+    "diameter": 126,
+    "id": "fat-coating",
+    "introDelay": 0.7169230769230769,
+    "x": 364,
+    "y": 957.7794549146837
+  },
+  {
+    "diameter": 126,
+    "id": "fat-finish-heavy",
+    "introDelay": 0.7446153846153846,
+    "x": 296,
+    "y": 840
+  },
+  {
+    "diameter": 126,
+    "id": "fat-greasy",
+    "introDelay": 0.7584615384615385,
+    "x": 296,
+    "y": 604.4410901706327
+  },
+  {
+    "diameter": 126,
+    "id": "fat-fat-covering",
+    "introDelay": 0.763076923076923,
+    "x": 364,
+    "y": 486.661635255949
+  }
+] as const;

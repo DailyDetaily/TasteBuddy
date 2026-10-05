@@ -1,0 +1,656 @@
+{
+  "source": "src/components/system/PalateBloomAvatar.tsx",
+  "sourceSha256": "f1e57aa196cb4901845a84908dba96d9261cf34ad0bc6dd30d0672ecb273dcb9",
+  "colorSource": "src/styles/design-system.css",
+  "colorSha256": "b22220d57c6a2c09e5a3b40c72619a3ef5c70f32c2c651b2139fe0e5f08346ec",
+  "variants": [
+    {
+      "id": "round-four",
+      "name": "Round",
+      "detail": "원형 꽃잎 · 가는 수술 · 원형 암술",
+      "petalShape": "roundPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "solidPistil",
+      "shapeCountOverride": 4,
+      "profile": {
+        "sweet": 84,
+        "sour": 36,
+        "bitter": 65,
+        "salty": 74,
+        "umami": 53,
+        "fat": 26
+      },
+      "formNumber": 1
+    },
+    {
+      "id": "round-six",
+      "name": "Rosette",
+      "detail": "원형 꽃잎 · 둥근 수술 · 씨앗 암술",
+      "petalShape": "roundPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "seedCluster",
+      "shapeCountOverride": 6,
+      "profile": {
+        "sweet": 65,
+        "sour": 74,
+        "bitter": 34,
+        "salty": 86,
+        "umami": 54,
+        "fat": 24
+      },
+      "formNumber": 2
+    },
+    {
+      "id": "round-eight",
+      "name": "Daisy",
+      "detail": "원형 꽃잎 · 점 수술 · 마름모 암술",
+      "petalShape": "roundPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "diamondPistil",
+      "shapeCountOverride": 8,
+      "profile": {
+        "sweet": 52,
+        "sour": 64,
+        "bitter": 73,
+        "salty": 34,
+        "umami": 85,
+        "fat": 24
+      },
+      "formNumber": 3
+    },
+    {
+      "id": "capsule-five",
+      "name": "Capsule",
+      "detail": "캡슐 꽃잎 · 가는 수술 · 마름모 암술",
+      "petalShape": "capsulePetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "diamondPistil",
+      "shapeCountOverride": 5,
+      "profile": {
+        "sweet": 75,
+        "sour": 86,
+        "bitter": 52,
+        "salty": 34,
+        "umami": 65,
+        "fat": 24
+      },
+      "formNumber": 4
+    },
+    {
+      "id": "capsule-seven",
+      "name": "Cosmos",
+      "detail": "캡슐 꽃잎 · 둥근 수술 · 원형 암술",
+      "petalShape": "capsulePetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "solidPistil",
+      "shapeCountOverride": 7,
+      "profile": {
+        "sweet": 54,
+        "sour": 34,
+        "bitter": 84,
+        "salty": 64,
+        "umami": 75,
+        "fat": 24
+      },
+      "formNumber": 5
+    },
+    {
+      "id": "diamond-four",
+      "name": "Diamond",
+      "detail": "마름모 꽃잎 · 점 수술 · 씨앗 암술",
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "seedCluster",
+      "shapeCountOverride": 4,
+      "profile": {
+        "sweet": 34,
+        "sour": 65,
+        "bitter": 54,
+        "salty": 75,
+        "umami": 24,
+        "fat": 85
+      },
+      "formNumber": 6
+    },
+    {
+      "id": "diamond-six",
+      "name": "Lily",
+      "detail": "마름모 꽃잎 · 가는 수술 · 원형 암술",
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "solidPistil",
+      "shapeCountOverride": 6,
+      "profile": {
+        "sweet": 74,
+        "sour": 34,
+        "bitter": 54,
+        "salty": 24,
+        "umami": 86,
+        "fat": 65
+      },
+      "formNumber": 7
+    },
+    {
+      "id": "serrated-five",
+      "name": "Crown",
+      "detail": "톱니 꽃잎 · 둥근 수술 · 마름모 암술",
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "diamondPistil",
+      "shapeCountOverride": 5,
+      "profile": {
+        "sweet": 64,
+        "sour": 54,
+        "bitter": 74,
+        "salty": 85,
+        "umami": 24,
+        "fat": 34
+      },
+      "formNumber": 8
+    },
+    {
+      "id": "serrated-eight",
+      "name": "Carnation",
+      "detail": "톱니 꽃잎 · 점 수술 · 씨앗 암술",
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "seedCluster",
+      "shapeCountOverride": 8,
+      "profile": {
+        "sweet": 85,
+        "sour": 64,
+        "bitter": 24,
+        "salty": 54,
+        "umami": 74,
+        "fat": 34
+      },
+      "formNumber": 9
+    },
+    {
+      "petalShape": "capsulePetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-10",
+      "name": "Marguerite",
+      "detail": "캡슐 꽃잎 · 둥근 수술 · 마름모 암술",
+      "formNumber": 10,
+      "shapeCountOverride": 4,
+      "profile": {
+        "sour": 84,
+        "bitter": 36,
+        "salty": 65,
+        "umami": 74,
+        "fat": 53,
+        "sweet": 26
+      }
+    },
+    {
+      "petalShape": "capsulePetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-11",
+      "name": "Oval",
+      "detail": "캡슐 꽃잎 · 가는 수술 · 원형 암술",
+      "formNumber": 11,
+      "shapeCountOverride": 6,
+      "profile": {
+        "sour": 65,
+        "bitter": 74,
+        "salty": 34,
+        "umami": 86,
+        "fat": 54,
+        "sweet": 24
+      }
+    },
+    {
+      "petalShape": "capsulePetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-12",
+      "name": "Spoon",
+      "detail": "캡슐 꽃잎 · 가는 수술 · 씨앗 암술",
+      "formNumber": 12,
+      "shapeCountOverride": 8,
+      "profile": {
+        "sour": 52,
+        "bitter": 64,
+        "salty": 73,
+        "umami": 34,
+        "fat": 85,
+        "sweet": 24
+      }
+    },
+    {
+      "petalShape": "roundPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-13",
+      "name": "Poppy",
+      "detail": "원형 꽃잎 · 둥근 수술 · 원형 암술",
+      "formNumber": 13,
+      "shapeCountOverride": 5,
+      "profile": {
+        "sour": 75,
+        "bitter": 86,
+        "salty": 52,
+        "umami": 34,
+        "fat": 65,
+        "sweet": 24
+      }
+    },
+    {
+      "petalShape": "roundPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-14",
+      "name": "Clover",
+      "detail": "원형 꽃잎 · 가는 수술 · 마름모 암술",
+      "formNumber": 14,
+      "shapeCountOverride": 7,
+      "profile": {
+        "sour": 54,
+        "bitter": 34,
+        "salty": 84,
+        "umami": 64,
+        "fat": 75,
+        "sweet": 24
+      }
+    },
+    {
+      "petalShape": "roundPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-15",
+      "name": "Camellia",
+      "detail": "원형 꽃잎 · 둥근 수술 · 마름모 암술",
+      "formNumber": 15,
+      "shapeCountOverride": 4,
+      "profile": {
+        "sour": 34,
+        "bitter": 65,
+        "salty": 54,
+        "umami": 75,
+        "fat": 24,
+        "sweet": 85
+      }
+    },
+    {
+      "petalShape": "roundPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-16",
+      "name": "Marigold",
+      "detail": "원형 꽃잎 · 점 수술 · 씨앗 암술",
+      "formNumber": 16,
+      "shapeCountOverride": 6,
+      "profile": {
+        "sour": 74,
+        "bitter": 34,
+        "salty": 54,
+        "umami": 24,
+        "fat": 86,
+        "sweet": 65
+      }
+    },
+    {
+      "petalShape": "roundPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-17",
+      "name": "Blossom",
+      "detail": "원형 꽃잎 · 가는 수술 · 씨앗 암술",
+      "formNumber": 17,
+      "shapeCountOverride": 5,
+      "profile": {
+        "sour": 64,
+        "bitter": 54,
+        "salty": 74,
+        "umami": 85,
+        "fat": 24,
+        "sweet": 34
+      }
+    },
+    {
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-18",
+      "name": "Lotus",
+      "detail": "마름모 꽃잎 · 가는 수술 · 마름모 암술",
+      "formNumber": 18,
+      "shapeCountOverride": 8,
+      "profile": {
+        "sour": 85,
+        "bitter": 64,
+        "salty": 24,
+        "umami": 54,
+        "fat": 74,
+        "sweet": 34
+      }
+    },
+    {
+      "petalShape": "roundPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-19",
+      "name": "Button",
+      "detail": "원형 꽃잎 · 점 수술 · 원형 암술",
+      "formNumber": 19,
+      "shapeCountOverride": 4,
+      "profile": {
+        "bitter": 84,
+        "salty": 36,
+        "umami": 65,
+        "fat": 74,
+        "sweet": 53,
+        "sour": 26
+      }
+    },
+    {
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-20",
+      "name": "Ruby",
+      "detail": "마름모 꽃잎 · 둥근 수술 · 마름모 암술",
+      "formNumber": 20,
+      "shapeCountOverride": 6,
+      "profile": {
+        "bitter": 65,
+        "salty": 74,
+        "umami": 34,
+        "fat": 86,
+        "sweet": 54,
+        "sour": 24
+      }
+    },
+    {
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-21",
+      "name": "Iris",
+      "detail": "마름모 꽃잎 · 둥근 수술 · 원형 암술",
+      "formNumber": 21,
+      "shapeCountOverride": 8,
+      "profile": {
+        "bitter": 52,
+        "salty": 64,
+        "umami": 73,
+        "fat": 34,
+        "sweet": 85,
+        "sour": 24
+      }
+    },
+    {
+      "petalShape": "capsulePetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-22",
+      "name": "Anemone",
+      "detail": "캡슐 꽃잎 · 점 수술 · 마름모 암술",
+      "formNumber": 22,
+      "shapeCountOverride": 5,
+      "profile": {
+        "bitter": 75,
+        "salty": 86,
+        "umami": 52,
+        "fat": 34,
+        "sweet": 65,
+        "sour": 24
+      }
+    },
+    {
+      "petalShape": "capsulePetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-23",
+      "name": "Gerbera",
+      "detail": "캡슐 꽃잎 · 둥근 수술 · 씨앗 암술",
+      "formNumber": 23,
+      "shapeCountOverride": 7,
+      "profile": {
+        "bitter": 54,
+        "salty": 34,
+        "umami": 84,
+        "fat": 64,
+        "sweet": 75,
+        "sour": 24
+      }
+    },
+    {
+      "petalShape": "capsulePetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-24",
+      "name": "Aster",
+      "detail": "캡슐 꽃잎 · 점 수술 · 원형 암술",
+      "formNumber": 24,
+      "shapeCountOverride": 4,
+      "profile": {
+        "bitter": 34,
+        "salty": 65,
+        "umami": 54,
+        "fat": 75,
+        "sweet": 24,
+        "sour": 85
+      }
+    },
+    {
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-25",
+      "name": "Star",
+      "detail": "톱니 꽃잎 · 가는 수술 · 원형 암술",
+      "formNumber": 25,
+      "shapeCountOverride": 6,
+      "profile": {
+        "bitter": 74,
+        "salty": 34,
+        "umami": 54,
+        "fat": 24,
+        "sweet": 86,
+        "sour": 65
+      }
+    },
+    {
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-26",
+      "name": "Jasmine",
+      "detail": "마름모 꽃잎 · 점 수술 · 원형 암술",
+      "formNumber": 26,
+      "shapeCountOverride": 5,
+      "profile": {
+        "bitter": 64,
+        "salty": 54,
+        "umami": 74,
+        "fat": 85,
+        "sweet": 24,
+        "sour": 34
+      }
+    },
+    {
+      "petalShape": "capsulePetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-27",
+      "name": "Echinacea",
+      "detail": "캡슐 꽃잎 · 점 수술 · 씨앗 암술",
+      "formNumber": 27,
+      "shapeCountOverride": 8,
+      "profile": {
+        "bitter": 85,
+        "salty": 64,
+        "umami": 24,
+        "fat": 54,
+        "sweet": 74,
+        "sour": 34
+      }
+    },
+    {
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-28",
+      "name": "Dahlia",
+      "detail": "마름모 꽃잎 · 가는 수술 · 씨앗 암술",
+      "formNumber": 28,
+      "shapeCountOverride": 4,
+      "profile": {
+        "salty": 84,
+        "umami": 36,
+        "fat": 65,
+        "sweet": 74,
+        "sour": 53,
+        "bitter": 26
+      }
+    },
+    {
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-29",
+      "name": "Fringe",
+      "detail": "톱니 꽃잎 · 가는 수술 · 씨앗 암술",
+      "formNumber": 29,
+      "shapeCountOverride": 6,
+      "profile": {
+        "salty": 65,
+        "umami": 74,
+        "fat": 34,
+        "sweet": 86,
+        "sour": 54,
+        "bitter": 24
+      }
+    },
+    {
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "thinStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-30",
+      "name": "Garnet",
+      "detail": "톱니 꽃잎 · 가는 수술 · 마름모 암술",
+      "formNumber": 30,
+      "shapeCountOverride": 8,
+      "profile": {
+        "salty": 52,
+        "umami": 64,
+        "fat": 73,
+        "sweet": 34,
+        "sour": 85,
+        "bitter": 24
+      }
+    },
+    {
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-31",
+      "name": "Orchid",
+      "detail": "마름모 꽃잎 · 둥근 수술 · 씨앗 암술",
+      "formNumber": 31,
+      "shapeCountOverride": 5,
+      "profile": {
+        "salty": 75,
+        "umami": 86,
+        "fat": 52,
+        "sweet": 34,
+        "sour": 65,
+        "bitter": 24
+      }
+    },
+    {
+      "petalShape": "softDiamondPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-32",
+      "name": "Prism",
+      "detail": "마름모 꽃잎 · 점 수술 · 마름모 암술",
+      "formNumber": 32,
+      "shapeCountOverride": 7,
+      "profile": {
+        "salty": 54,
+        "umami": 34,
+        "fat": 84,
+        "sweet": 64,
+        "sour": 75,
+        "bitter": 24
+      }
+    },
+    {
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "seedCluster",
+      "id": "form-33",
+      "name": "Peony",
+      "detail": "톱니 꽃잎 · 둥근 수술 · 씨앗 암술",
+      "formNumber": 33,
+      "shapeCountOverride": 4,
+      "profile": {
+        "salty": 34,
+        "umami": 65,
+        "fat": 54,
+        "sweet": 75,
+        "sour": 24,
+        "bitter": 85
+      }
+    },
+    {
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "diamondPistil",
+      "id": "form-34",
+      "name": "Calendula",
+      "detail": "톱니 꽃잎 · 점 수술 · 마름모 암술",
+      "formNumber": 34,
+      "shapeCountOverride": 6,
+      "profile": {
+        "salty": 74,
+        "umami": 34,
+        "fat": 54,
+        "sweet": 24,
+        "sour": 86,
+        "bitter": 65
+      }
+    },
+    {
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "roundedSpokeStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-35",
+      "name": "Cornflower",
+      "detail": "톱니 꽃잎 · 둥근 수술 · 원형 암술",
+      "formNumber": 35,
+      "shapeCountOverride": 5,
+      "profile": {
+        "salty": 64,
+        "umami": 54,
+        "fat": 74,
+        "sweet": 85,
+        "sour": 24,
+        "bitter": 34
+      }
+    },
+    {
+      "petalShape": "serratedTipPetal",
+      "stamenShape": "dottedRayStamen",
+      "pistilShape": "solidPistil",
+      "id": "form-36",
+      "name": "Zinnia",
+      "detail": "톱니 꽃잎 · 점 수술 · 원형 암술",
+      "formNumber": 36,
+      "shapeCountOverride": 8,
+      "profile": {
+        "salty": 85,
+        "umami": 64,
+        "fat": 24,
+        "sweet": 54,
+        "sour": 74,
+        "bitter": 34
+      }
+    }
+  ]
+}

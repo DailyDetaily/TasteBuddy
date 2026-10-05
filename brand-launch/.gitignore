@@ -8,3 +8,6 @@ build
 out
 .cache
 .native-ui-cache
+
+# Local native feedback watcher state (the generated UI module is retained).
+.native-feedback-sync/
