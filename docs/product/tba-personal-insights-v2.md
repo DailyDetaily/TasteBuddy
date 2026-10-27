@@ -1,5 +1,16 @@
 # 개인 모델 v2: 알맞음, 전체 평가, 다음 질문
 
+## 2026-10-13 근거 연결 경계 수정
+
+아래 2026-09/10 실행 기록은 당시의 결과로 유지한다. 이번 보완은 통계 모델 교체가 아니라 현재 코드의 연결 일관성 수정이다.
+
+- JS의 `sameSelection`도 Swift와 같이 비어 있거나 잘못된 `selectionID`, `type`, `catalogVersion`을 같은 선택이라는 증거로 받지 않는다. 유효한 다른 인스턴스의 강도를 빌리지 않으며 직접 호감은 별도로 보존한다.
+- 전체 평가 연결은 두 출력(`overallPatterns`, `overallAssociations`) 모두 같은 `experienceId`와 `mealId`, 유효한 `overall-five-category-v1` 응답 값이어야 한다. 전체 평가가 달라져도 개별 감각 호감은 바꾸지 않는다.
+- 검증된 `validatedIntensityLinks`는 호감과 알맞음뿐 아니라 전체 평가 교차 및 알맞음 질문의 누락 판단에도 전달된다. 알려진 강도를 다시 미응답으로 묻지 않는다. 검증하지 않은 부모·형제 연결을 새로 만드는 변경은 아니다.
+- 다른 계정으로 거부한 기록은 현재 계정의 `missingKnownAtCount`를 늘리지 않는다. 원문·근거 ID·선택 인스턴스·원본 revision과 기존 저장소를 유지한다.
+
+날짜 입력은 [현재 개인 모델 계약](tba-advanced-personal-model.md)의 확정 식사일·미래 제외 규칙을 따른다. 새 독립 대조는 `scripts/tba-engine/policy-boundaries.test.mjs`이며 기존 shared expected/cohort를 수정하지 않는다. 최종 명령·실행 수준은 `output/pro-tba-policy-review-20261013/results/policy-complete-20261013-202330/CHANGES_AND_VERIFICATION.md`를 참조한다.
+
 상태: 2026-09-07 로컬 구현·개발 검증 완료.
 
 구현 범위는 `tba-personal-taste-model/2`의 세 가지 확장이다. 기존 기록 형식과 질문 이력의 의미 식별자는 유지한다. 외부 API나 RAG·LLM 연결, 기간 변화와 감각 조합의 추가 분석은 이번 변경에 포함하지 않는다.

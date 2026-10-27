@@ -11,6 +11,8 @@ export const recordScope = record => canonical([record.experienceId, record.attr
 export function sameSelection(left, right) {
   const a = left.selectionEvidence, b = right.selectionEvidence;
   if (!a || !b) return !a && !b;
+  // Missing identity is not proof of the same choice; mirror SensoryEvidenceLinkage.
+  if ([a, b].some(e => ['selectionID', 'type', 'catalogVersion'].some(key => typeof e[key] !== 'string' || !e[key]))) return false;
   return ['selectionID', 'type', 'catalogVersion', 'relatedBubbleID', 'selectionInstanceID'].every(key => (a[key] ?? null) === (b[key] ?? null));
 }
 export const attributeIdentity = row => canonical([row.attribute, row.reference ?? null]);
@@ -93,8 +95,8 @@ export function buildFitPatterns(records, userID, policy, { includeEvidence = tr
   return patterns.sort((a, b) => a.id < b.id ? -1 : 1);
 }
 
-export function buildOverallPatterns(records, userID, { includeEvidence = true } = {}) {
-  const ratings = scopedRatings(records, 'attribute_liking', 'attribute-three-category-v1', LIKING_VALUES);
+export function buildOverallPatterns(records, userID, { includeEvidence = true, validatedIntensityLinks = {} } = {}) {
+  const ratings = scopedRatings(records, 'attribute_liking', 'attribute-three-category-v1', LIKING_VALUES, validatedIntensityLinks);
   const overallByExperience = new Map(grouped(records.filter(row => row.kind === 'overall_liking'
     && row.scale === 'overall-five-category-v1' && OVERALL_VALUES.includes(row.value)), row => row.experienceId));
   // 연결의 기본 단위는 식사 전체가 아닌 실제로 평가한 디시다. 다른 디시의 전체 평가를 붙이지 않는다.

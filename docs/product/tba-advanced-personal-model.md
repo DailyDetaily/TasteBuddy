@@ -1,5 +1,17 @@
 # TBA 조건부 개인 취향 모델
 
+## 2026-10-13 현재 판단·시간 경계 보완
+
+이 절은 아래의 2026-09 실행 기록과 구 `observedAt` 설명을 수정하지 않고 현재 분석 계약을 명시한다. 최소 식사 수 3, 조건 최소 3, 후보 최대 2차원은 그대로다. 1~2회 직접 응답도 관찰과 횟수로 표시하고 일반화만 유보한다. 반복 표시가 개인의 고정 취향이나 보정된 미래 호감 확률을 뜻하지 않는다.
+
+현재 웹 `nativeAnalysisSources`와 iOS `SensoryAnalysisEngine`은 분석용 경험 시각에 `user_confirmed mealTime.start` / `confirmedMealDate`만 사용한다. 저장 원본의 raw `observedAt`/`date`, `savedAt`는 그대로 보존하되 확정 식사일의 대체값으로 사용하지 않는다. 날짜 미확인 직접 평가는 현재 전기간 회상에 남기고, `asOf`처럼 시각 근거가 필요한 판단에서는 제외한다. 확정 미래 식사와 미래 `knownAt` 응답은 타입·개인 모델·요약·질문의 현재 근거에서 함께 제외한다. 신규 저장에서 미래 식사일을 거부하는 기존 규칙과, 복원된 오래된 자료의 분석 입력을 검증하는 규칙은 별개로 유지한다.
+
+웹 분석은 선택적 `referenceDate`를 받고, iOS는 `AppModel.refreshSensoryAnalysis`에서 이미 캡처한 `archiveReferenceDate`를 전달한다. 시간대가 다른 표현도 같은 절대시각이면 동일하게 비교한다. 날짜별 차트는 기존 현지 달력 계약을 따른다. `asOf`는 현재 유효 원문을 두 시각으로 제한할 뿐 완전한 과거 원본 복원이 아니다.
+
+원선택의 필수 ID·버전 검증, 다른 계정의 시각 누락 진단 배제, 전체 평가의 동일 식사/유효값 검사, 검증된 강도 연결의 교차·질문 전달을 JS/Swift에 맞췄다. 저장 포맷·계정 경계·식사ID·선택 인스턴스·기존 동결 평가 정답은 변경하지 않는다.
+
+독립 의미 대조: `scripts/tba-engine/policy-contrast-fixtures.mjs`와 `policy-boundaries.test.mjs`. 실제 웹 날짜/저장소 경계: `scripts/test-web-native-analysis-time.mjs`. Foundation 독립 검사: `scripts/test-tba-policy-native.py`. iOS 회귀는 `PersonalTasteModelTests`의 `testPolicy...` 메서드다. 이번 실행의 통과·실패·외부 제약은 `output/pro-tba-policy-review-20261013/results/policy-complete-20261013-202330/CHANGES_AND_VERIFICATION.md`에서 구분한다. 아래 과거 숫자를 이번 검증 결과로 사용하지 않는다.
+
 상태: 로컬 모델 구현·앱 연결·독립 개발 평가와 시뮬레이터 화면 검증 완료(2026-09-06). 기존 선택형 수집과 전체 5단계 평가를 입력으로 사용하며 외부 API는 보류 상태다. 이 문서의 완료 기준은 현재 제품 모델의 구현·계약·개발 평가에 대한 기준이다. 실제 사용자의 해석 만족도나 음식 선택 성공률까지 검증되었다는 뜻은 아니다.
 
 알맞음 반복 집계, 전체 평가 교차 해석, 답변 영향에 따른 질문 선정은 [개인 모델 v2 확장](tba-personal-insights-v2.md)에 이어서 정리한다. 아래 2026-09-06 실행 결과와 동결 평가는 당시 검증 기록을 그대로 보존한다.

@@ -1,5 +1,5 @@
 import { sha256 } from './sha256.mjs';
-import { buildFitPatterns, buildOverallPatterns, sameSelection, scopedRatings, FIT_VALUES } from './personal-taste-insights.mjs';
+import { buildFitPatterns, buildOverallPatterns, sameSelection, scopedRatings, FIT_VALUES, OVERALL_VALUES } from './personal-taste-insights.mjs';
 import { assessQuestion, questionPrecedes } from './personal-taste-questions.mjs';
 import { individualQuestionGroups, questionFamilyKey } from './personal-taste-question-instances.mjs';
 
@@ -40,7 +40,7 @@ export function buildPersonalTasteModel(normalized,{asOf=null,policy:inputPolicy
   else if(r.userId!==userID)reason='different_user';
   else if(!userID||typeof id!=='string'||!id||!r.experienceId||!(r.mealId??r.experienceId))reason='missing_record_identity';
   const observedAt=Object.hasOwn(r,'observedAt')?r.observedAt:r.recordedAt??null,knownAt=r.knownAt??null;
-  if(knownAt===null)missingKnownAtCount++;
+  if(!reason&&knownAt===null)missingKnownAtCount++;
   if(!reason&&cutoff!==null){if(observedAt===null||!Number.isFinite(Date.parse(observedAt)))reason='observed_time_unknown';else if(knownAt===null||!Number.isFinite(Date.parse(knownAt)))reason='known_time_unknown';else if(Date.parse(observedAt)>cutoff||Date.parse(knownAt)>cutoff)reason='after_cutoff';}
   if(!reason&&!confirmed(r))reason='unconfirmed';
   if(reason){excludedEvidence.push({id,reason});continue;}
@@ -93,16 +93,16 @@ export function buildPersonalTasteModel(normalized,{asOf=null,policy:inputPolicy
  }
  candidates.sort((a,b)=>a.id<b.id?-1:1);
  const fitPatterns=buildFitPatterns(included,userID,policy,{includeEvidence:_includeEvidence,validatedIntensityLinks});
- const overallPatterns=buildOverallPatterns(included,userID,{includeEvidence:_includeEvidence});
+ const overallPatterns=buildOverallPatterns(included,userID,{includeEvidence:_includeEvidence,validatedIntensityLinks});
  const overallAssociations=[];
- for(const u of (_includeEvidence?units:[])){const overall=included.filter(r=>r.kind==='overall_liking'&&u.experienceIDs.includes(r.experienceId)&&r.scale==='overall-five-category-v1');if(overall.length)overallAssociations.push({unitID:u.id,mealID:u.mealID,attribute:u.attribute,individualValue:u.liking,overallValues:sorted(overall.map(r=>r.value)),evidenceIDs:sorted([...u.evidenceIDs,...overall.map(r=>r.observationId)]),causalClaim:null});}
+ for(const u of (_includeEvidence?units:[])){const overall=included.filter(r=>r.kind==='overall_liking'&&u.experienceIDs.includes(r.experienceId)&&r.mealId===u.mealID&&r.scale==='overall-five-category-v1'&&OVERALL_VALUES.includes(r.value));if(overall.length)overallAssociations.push({unitID:u.id,mealID:u.mealID,attribute:u.attribute,individualValue:u.liking,overallValues:sorted(overall.map(r=>r.value)),evidenceIDs:sorted([...u.evidenceIDs,...overall.map(r=>r.observationId)]),causalClaim:null});}
  const snapshot=nextSelection=>({version:PERSONAL_TASTE_MODEL_VERSION,userID,policy,units,candidates,fitPatterns,overallPatterns,nextSelection,overallAssociations,excludedEvidence:excludedEvidence.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:a.reason<b.reason?-1:1),temporalValidity:{mode:asOf===null?'current_snapshot':'historical_as_of',asOf,missingKnownAtCount,historicalReconstruction:false},limits:['분포는 기록한 식사 수이며 미래 호감 확률이 아니에요.','조건별 차이는 연관이며 원인을 확정하지 않아요.','전체 평가는 개별 감각의 평가를 바꾸지 않아요.','과거 수정 이력이 없는 기록은 과거 상태로 복원하지 않아요.']});
  if(!_assessQuestions)return snapshot(null);
  const questions=[];
  const sensory=included.filter(r=>r.attribute&&!r.attribute.endsWith('.unspecified')&&r.kind==='sensory_presence'&&r.value===true);
  for(const r of sensory){if(included.some(x=>x.kind==='attribute_liking'&&semanticScope(x)===semanticScope(r)&&sameSelection(x,r)))continue;questions.push({attribute:r.attribute,reference:r.reference??null,label:labelFor(r),facet:'liking',reason:'liking_not_reported',score:100,evidenceIDs:[r.observationId],mealIDs:[r.mealId],target:r.target,phase:r.phase});}
  for(const u of units){for(const [facet,missing,score] of [['intensity',u.intensity===null,70],['target',u.target==='unspecified',60],['phase',u.phase==='unspecified',50]]){if(!missing)continue;const unstable=candidates.some(c=>c.attribute===u.attribute&&c.reference===u.reference&&c.status==='mixed');questions.push({attribute:u.attribute,reference:u.reference,label:u.label,facet,reason:unstable?'unstable_context_comparison':`${facet}_not_reported`,score:unstable?90:score,evidenceIDs:u.evidenceIDs,mealIDs:[u.mealID],target:u.target,phase:u.phase});}}
- for(const r of scopedRatings(included,'preference_fit','preference-fit-v1',FIT_VALUES)){
+ for(const r of scopedRatings(included,'preference_fit','preference-fit-v1',FIT_VALUES,validatedIntensityLinks)){
   for(const [facet,missing,score] of [['intensity',r.intensity===null,70],['target',r.target==='unspecified',60],['phase',r.phase==='unspecified',50]]){
    if(!missing)continue;
    const unstable=fitPatterns.some(p=>p.attribute===r.attribute&&p.reference===(r.reference??null)&&p.status==='mixed_fit');
