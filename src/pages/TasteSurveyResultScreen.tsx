@@ -1,6 +1,5 @@
 import FlowBottomCta from '../components/system/FlowBottomCta';
 import FlowHeaderBlock from '../components/system/FlowHeaderBlock';
-import OutlineBadge from '../components/system/OutlineBadge';
 import TasteSurveyEvidencePanel from '../components/measurement/TasteSurveyEvidencePanel';
 import type { TasteSurveyCompatibleResult } from '../types/tasteSurvey';
 
@@ -18,7 +17,7 @@ export default function TasteSurveyResultScreen({ compatibleResult = null, onCom
           <FlowHeaderBlock
             title="기억한 맛을 정리했어요"
             description="기준 음식에서 느낀 강도를 그대로 남겼어요. 좋아하는 정도는 식사 기록에서 따로 살펴봐요."
-            topLeft={<OutlineBadge>기준 음식 회상</OutlineBadge>}
+            descriptionClassName="text-[13px] leading-[18.5px] text-[var(--tb-color-text-body)]"
           />
           {submission ? <TasteSurveyEvidencePanel submission={submission} /> : (
             <p className="text-[13px] text-[var(--tb-color-text-muted)]">아직 저장된 설문 응답이 없어요.</p>

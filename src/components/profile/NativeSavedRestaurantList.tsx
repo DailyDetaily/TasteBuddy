@@ -174,7 +174,7 @@ export default function NativeSavedRestaurantList({
           <ArrowLeft size={18} />
           저장 식당 목록으로
         </button>
-        <section className="rounded-[20px] bg-white p-3">
+        <section className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-3">
           <h2 className="text-[16px] font-bold">
             {selected.restaurantName || "식당 정보 확인 필요"}
           </h2>
@@ -222,7 +222,7 @@ export default function NativeSavedRestaurantList({
             </div>
           )}
           <button
-            className="mt-4 min-h-11 rounded-xl bg-black px-4 text-sm text-white"
+            className="mt-4 min-h-11 rounded-xl bg-[var(--tb-color-interaction-primary)] px-4 text-sm text-[var(--tb-color-interaction-on-primary)]"
             onClick={() => setEditing(selected)}
           >
             저장 목록 관리
@@ -259,7 +259,7 @@ export default function NativeSavedRestaurantList({
               <button
                 key={r.restaurantID}
                 onClick={() => open(r)}
-                className="flex min-h-[72px] items-center gap-3 rounded-[20px] bg-white p-3 text-left disabled:opacity-70"
+                className="flex min-h-[72px] items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-base)] p-3 text-left disabled:opacity-70"
               >
                 <Bookmark size={20} />
                 <span className="min-w-0 flex-1">
@@ -290,7 +290,7 @@ export default function NativeSavedRestaurantList({
       ) : (
         <div className="flex flex-col gap-3">
           <button
-            className="min-h-11 rounded-xl bg-black px-4 text-sm text-white"
+            className="min-h-11 rounded-xl bg-[var(--tb-color-interaction-primary)] px-4 text-sm text-[var(--tb-color-interaction-on-primary)]"
             onClick={() => setEditing("create")}
           >
             새 리스트 만들기
@@ -299,7 +299,7 @@ export default function NativeSavedRestaurantList({
             <button
               key={list.id}
               onClick={() => setListID(list.id)}
-              className="flex min-h-[72px] items-center gap-3 rounded-[20px] bg-white p-3 text-left"
+              className="flex min-h-[72px] items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-base)] p-3 text-left"
             >
               <NativeBookmarkThumbnail list={list} />
               <span className="min-w-0 flex-1">

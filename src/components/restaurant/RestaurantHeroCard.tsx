@@ -1,3 +1,4 @@
+import InlineButton from '../system/InlineButton';
 import RecordActions from "../system/plating/RecordActions";
 import { useState } from 'react';
 import {
@@ -263,15 +264,14 @@ export default function RestaurantHeroCard({
                     )}
                   </div>
                   {item.id === 'address' ? (
-                    <button
-                      className="shrink-0 text-[11px] font-semibold text-[var(--tb-user-accent-main)] transition-colors hover:text-[var(--tb-user-accent-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-user-accent-tint-soft-border)]"
+                    <InlineButton
                       onClick={() => {
                         void navigator.clipboard?.writeText(item.value);
                       }}
                       type="button"
                     >
                       복사
-                    </button>
+                    </InlineButton>
                   ) : null}
                   {item.id === 'hours' && item.allValues ? (
                     <button

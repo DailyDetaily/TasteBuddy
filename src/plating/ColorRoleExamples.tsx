@@ -1,11 +1,14 @@
 import type { CSSProperties } from "react";
 import { CircleAlert, CircleCheck, Info, TriangleAlert } from "lucide-react";
-import { nativeColor } from "./foundationReferenceData";
+import { nativeColorForMode } from "../constants/colorModes";
+import { useColorMode } from "./ColorModeReference";
 import { colorContrast, documentedColorPairs, stateColorPairs } from "./colorPairings";
 
 const stateIcons = [Info, Info, CircleCheck, TriangleAlert, CircleAlert];
 
 export function StateColorExamples() {
+  const { mode } = useColorMode();
+  const nativeColor = (name: string) => nativeColorForMode(name, mode);
   return <>
     <div className="pl-color-state-pairs">{stateColorPairs.map((pair, index) => {
       const foreground = nativeColor(pair.foreground);
@@ -22,7 +25,10 @@ export function StateColorExamples() {
 }
 
 export function InteractionColorExamples() {
+  const { mode } = useColorMode();
+  const nativeColor = (name: string) => nativeColorForMode(name, mode);
   const style = {
+    "--pl-example-page": nativeColor("page"), "--pl-example-surface": nativeColor("surface"), "--pl-example-text": nativeColor("textPrimary"),
     "--pl-example-primary": nativeColor("actionPrimary"), "--pl-example-on-primary": nativeColor("actionOnPrimary"),
     "--pl-example-selected": nativeColor("selectionSurface"), "--pl-example-on-selected": nativeColor("selectionText"),
     "--pl-example-focus": nativeColor("focusRing"), "--pl-example-hover": nativeColor("hoverOverlay"),
@@ -33,9 +39,9 @@ export function InteractionColorExamples() {
       {[
         ["primary", "주요 행동", "actionPrimary + actionOnPrimary"],
         ["selected", "선택", "selectionSurface + selectionText"],
-        ["hover", "밝은 표면 · 호버", "hoverOverlay · 검정 4%"],
-        ["pressed", "밝은 표면 · 누름", "pressedOverlay · 검정 6%"],
-        ["inverse-pressed", "어두운 표면 · 누름", "pressedInverseOverlay · 흰색 10%"],
+        ["hover", "기본 표면 · 호버", mode === 'dark' ? "hoverOverlay · 흰색 6%" : "hoverOverlay · 검정 4%"],
+        ["pressed", "기본 표면 · 누름", mode === 'dark' ? "pressedOverlay · 흰색 10%" : "pressedOverlay · 검정 6%"],
+        ["inverse-pressed", "주요 행동 · 누름", mode === 'dark' ? "pressedInverseOverlay · 검정 8%" : "pressedInverseOverlay · 흰색 10%"],
         ["focus", "키보드·입력 초점", "focusRing"],
       ].map(([state, label, token]) => <figure key={state}><div className="pl-color-interaction-stage"><div className={`pl-color-control-sample is-${state}`}>기록 완료</div></div><figcaption><strong>{label}</strong><code>{token}</code></figcaption></figure>)}
     </div>
@@ -44,11 +50,12 @@ export function InteractionColorExamples() {
 }
 
 export function ContrastColorTable() {
+  const { mode } = useColorMode();
   return <>
     <div className="pl-color-contrast-table" role="region" aria-label="글자와 배경 대비 표" tabIndex={0}><table>
       <caption>현재 토큰으로 계산한 작은 글자의 색 조합</caption>
       <thead><tr><th scope="col">용도</th><th scope="col">글자 / 배경</th><th scope="col">대비</th><th scope="col">4.5:1 기준</th></tr></thead>
-      <tbody>{documentedColorPairs().map(pair => {
+      <tbody>{documentedColorPairs(mode).map(pair => {
         const contrast = colorContrast(pair.foreground, pair.background);
         return <tr key={pair.name}><th scope="row">{pair.name}</th><td><span className="pl-color-contrast-sample" style={{ color: pair.foreground, background: pair.background }}>가나다 123</span><code>{pair.foreground} / {pair.background}</code></td><td>{contrast.toFixed(2)}:1</td><td>{contrast >= 4.5 ? "통과" : "조정 필요"}</td></tr>;
       })}</tbody>

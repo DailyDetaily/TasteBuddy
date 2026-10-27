@@ -6,7 +6,7 @@ import os from 'node:os';
 import { build } from 'esbuild';
 
 const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'plating-colors-'));
-await build({ stdin: { contents: "export * from './src/plating/colorPairings.ts';export * from './src/plating/foundationReferenceData.ts';", resolveDir: process.cwd() }, outfile: path.join(dir, 'colors.mjs'), bundle: true, platform: 'node', format: 'esm', logLevel: 'silent' });
+await build({ stdin: { contents: "export * from './src/plating/colorPairings.ts';export * from './src/plating/foundationReferenceData.ts';export * from './src/constants/designTokens.ts';", resolveDir: process.cwd() }, outfile: path.join(dir, 'colors.mjs'), bundle: true, platform: 'node', format: 'esm', logLevel: 'silent' });
 const m = await import(path.join(dir, 'colors.mjs'));
 const normalize = value => value.toLowerCase().replaceAll(/\s/g, '');
 
@@ -63,10 +63,40 @@ test('state text remains readable in hover and pressed composites', () => {
 });
 
 test('the six native taste palettes retain their identity and readable text pairs', () => {
-  const expected = { sweet: '#FF9900', sour: '#FBC02D', bitter: '#95C900', salty: '#7299FF', umami: '#B372B4', fat: '#95867A' };
+  const expected = { sweet: '#FF9900', sour: '#FFD600', bitter: '#95C900', salty: '#7299FF', umami: '#B372B4', fat: '#95867A' };
   assert.equal(m.IOS_FOUNDATIONS.tastes.length, 6);
   for (const taste of m.IOS_FOUNDATIONS.tastes) {
     assert.equal(taste.main, expected[taste.id], taste.id);
     assert.ok(m.colorContrast(taste.tintText, taste.tintSurface) >= 4.5, `${taste.label} small text`);
   }
+});
+
+
+test('all 60 white-mix primitives and semantic aliases agree with CSS and native surfaces', async () => {
+  const css = await fs.readFile('src/styles/design-system.css', 'utf8');
+  const values = new Map([...css.matchAll(/(--tb-[\w-]+):\s*([^;]+);/g)].map(([, name, value]) => [name, value.trim()]));
+  const resolve = name => {
+    const value = values.get(name);
+    assert.ok(value, name);
+    const alias = value.match(/^var\((--tb-[\w-]+)\)$/);
+    return alias ? resolve(alias[1]) : value.toUpperCase();
+  };
+  for (const id of m.TASTE_IDS) {
+    const palette = m.TASTE_TOKENS[id].palette;
+    const main = m.TASTE_MAIN_COLORS[id];
+    for (const white of m.TASTE_TINT_STEPS) {
+      const expected = '#' + [1, 3, 5].map(offset => Math.round(parseInt(main.slice(offset, offset + 2), 16) * (1 - white / 100) + 255 * white / 100).toString(16).padStart(2, '0')).join('').toUpperCase();
+      assert.equal(m.TASTE_TINTS[id][white], expected, `${id} white ${white}`);
+      assert.equal(resolve(`--tb-taste-${id}-tint-${white}`), expected);
+    }
+    for (const [role, white] of Object.entries(m.TASTE_COLOR_ROLE_STEPS)) {
+      const suffix = role.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
+      assert.equal(palette[role], m.TASTE_TINTS[id][white], `${id}.${role}`);
+      assert.equal(resolve(`--tb-taste-${id}-${suffix}`), palette[role]);
+      assert.match(palette[role], /^#[0-9A-F]{6}$/);
+    }
+    assert.equal(m.IOS_FOUNDATIONS.tastes.find(t => t.id === id).tintSurface, palette.chartTrack);
+  }
+  assert.equal(m.TASTE_TOKENS.sour.palette.chartTrack, '#FFF7CC');
+  assert.equal(m.COLOR_TOKENS.text.hint, m.nativeColor('textHint'));
 });

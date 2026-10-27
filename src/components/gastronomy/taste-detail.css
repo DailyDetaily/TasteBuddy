@@ -1,0 +1,23 @@
+.tb-taste-detail { display: flex; flex-direction: column; height: 100%; min-height: 0; width: 100%; background: var(--tb-color-bg-page); color: var(--tb-color-text-primary); }
+.tb-taste-detail-header { flex-shrink: 0; }
+.tb-taste-detail-controls { flex-shrink: 0; display: flex; justify-content: center; min-height: 76px; padding: 8px 20px 24px; border-bottom: .5px solid var(--tb-color-border-subtle); overflow-x: auto; }
+.tb-taste-detail-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: calc(20px + var(--tb-safe-area-bottom, 0px)); }
+.tb-taste-detail-stack { display: flex; flex-direction: column; gap: 20px; }
+.tb-taste-detail-panel { display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--tb-color-surface-base); }
+.tb-taste-detail-summary { margin-inline: 20px; padding: 12px; border-radius: 20px; min-height: 157px; }
+.tb-taste-detail-scope { font-size: 11px; line-height: 1.4; color: var(--tb-color-text-secondary); }
+.tb-taste-detail-group { margin-inline: 20px; border-radius: 20px; background: var(--tb-color-surface-base); overflow: hidden; }
+.tb-taste-detail-value { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-height: 52px; padding: 12px 16px; }
+.tb-taste-detail-value + .tb-taste-detail-value::before { content: ''; position: absolute; inset: 0 16px auto; border-top: .5px solid var(--tb-color-border-subtle); }
+.tb-taste-detail-value dt { flex: 1; min-width: 0; font-size: 13px; line-height: 1.5; color: var(--tb-color-text-secondary); }
+.tb-taste-detail-value dd { min-width: 0; margin: 0; max-width: 66%; font-size: 15px; line-height: 1.5; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.tb-taste-detail-plot { display: flex; gap: 12px; width: 100%; position: relative; padding: 0; margin: 0; list-style: none; }
+.tb-taste-detail-plot::before { content: ''; position: absolute; left: 0; right: 0; top: 24px; height: 180px; background: linear-gradient(var(--tb-color-border-subtle),var(--tb-color-border-subtle)) top/100% .5px no-repeat, linear-gradient(var(--tb-color-border-subtle),var(--tb-color-border-subtle)) center/100% .5px no-repeat, linear-gradient(var(--tb-color-border-subtle),var(--tb-color-border-subtle)) bottom/100% .5px no-repeat; }
+.tb-taste-detail-plot li { flex: 1; min-width: 0; text-align: center; z-index: 1; }
+.tb-taste-detail-plot-value { display: block; min-height: 24px; font-size: 11px; font-weight: 500; line-height: 16px; }
+.tb-taste-detail-plot-bar { height: 180px; display: flex; justify-content: center; align-items: flex-end; }
+.tb-taste-detail-plot-bar i { display: block; width: 6px; border-radius: 3px; background: var(--tb-color-text-secondary); }
+.tb-taste-detail-plot-label { display: block; margin-top: 12px; font-size: 11px; line-height: 1.3; color: var(--tb-color-text-secondary); overflow-wrap: anywhere; }
+.tb-taste-detail-disclosure { margin-inline: 20px; border-radius: 20px; padding: 4px 16px; background: var(--tb-color-surface-base); font-size: 12px; }
+.tb-taste-detail-disclosure summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; }
+.tb-taste-detail-disclosure[open] > :not(summary) { margin-bottom: 12px; }

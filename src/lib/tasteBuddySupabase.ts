@@ -2744,15 +2744,21 @@ export async function hydrateReservationPageData({ seedIfEmpty = true, expectedO
   }
 }
 
-export async function hydrateLatestMeasurementSnapshot() {
+export type LatestMeasurementHydrationResult =
+  | { status: 'ready'; snapshot: TasteMeasurementSnapshot }
+  | { status: 'empty' }
+  | { status: 'unavailable'; message: string };
+
+/** Auth routing needs to distinguish a confirmed empty account from a failed read. */
+export async function hydrateLatestMeasurementSnapshotResult(): Promise<LatestMeasurementHydrationResult> {
   if (!supabase || !isSupabaseConfigured) {
-    return null;
+    return { status: 'unavailable', message: '지금은 계정의 입맛 기록에 연결할 수 없어요.' };
   }
 
   const userId = await getHydrationUserId();
 
   if (!userId) {
-    return null;
+    return { status: 'unavailable', message: '로그인한 계정을 확인하지 못했어요. 다시 로그인해 주세요.' };
   }
 
   const { data: latestSession, error: latestSessionError } = await supabase
@@ -2766,15 +2772,18 @@ export async function hydrateLatestMeasurementSnapshot() {
 
   if (latestSessionError) {
     console.warn('Failed to hydrate measurement session from Supabase.', latestSessionError);
-    return null;
+    return { status: 'unavailable', message: '입맛 기록을 불러오지 못했어요. 다시 시도해 주세요.' };
   }
 
   if (!latestSession?.id) {
-    return null;
+    return { status: 'empty' };
   }
 
   if (latestSession.raw_payload?.derived_snapshot_source === 'recalled-intensity') {
-    return restoreTasteSurveyMeasurementSnapshot(latestSession.raw_payload);
+    const snapshot = restoreTasteSurveyMeasurementSnapshot(latestSession.raw_payload);
+    return snapshot
+      ? { status: 'ready', snapshot }
+      : { status: 'unavailable', message: '저장된 입맛 기록의 내용을 확인하지 못했어요.' };
   }
 
   const { data: resultRows, error: resultRowsError } = await supabase
@@ -2784,14 +2793,23 @@ export async function hydrateLatestMeasurementSnapshot() {
 
   if (resultRowsError) {
     console.warn('Failed to hydrate measurement results from Supabase.', resultRowsError);
-    return null;
+    return { status: 'unavailable', message: '입맛 기록의 상세 결과를 불러오지 못했어요. 다시 시도해 주세요.' };
   }
 
-  return {
+  if (!resultRows?.length) {
+    return { status: 'unavailable', message: '저장된 입맛 기록의 상세 결과를 확인하지 못했어요.' };
+  }
+
+  return { status: 'ready', snapshot: {
     measuredAt: latestSession.completed_at ?? new Date().toISOString(),
     results: toTasteMeasurementResults(resultRows ?? []),
     source: latestSession.source === 'quick_calibration' ? 'broad-starter' : 'measured',
-  } satisfies TasteMeasurementSnapshot;
+  } satisfies TasteMeasurementSnapshot };
+}
+
+export async function hydrateLatestMeasurementSnapshot() {
+  const result = await hydrateLatestMeasurementSnapshotResult();
+  return result.status === 'ready' ? result.snapshot : null;
 }
 
 export async function hydrateRecentMeasurementSnapshots(limit = 6) {

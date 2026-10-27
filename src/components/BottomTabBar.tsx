@@ -77,11 +77,11 @@ export default function BottomTabBar({ activeTab, onCenterAction, onTabChange }:
       className="relative min-h-[var(--tb-size-bottom-tab-bar-height)] w-full shrink-0 overflow-visible border-t border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-page)]"
       style={{ paddingBottom: 'var(--tb-safe-area-bottom)' }}
     >
-      <div className="grid grid-cols-5 items-center px-2 py-1">
+      <nav aria-label="주요 화면" className="grid min-h-[var(--tb-size-bottom-tab-bar-height)] grid-cols-5 items-center px-2">
         {leadingTabs.map(renderTabButton)}
         <BottomTabCenterButton onClick={onCenterAction} ariaLabel="미식 기록 시작" title="미식 기록" />
         {trailingTabs.map(renderTabButton)}
-      </div>
+      </nav>
     </div>
   );
 }

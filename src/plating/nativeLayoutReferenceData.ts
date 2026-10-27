@@ -32,7 +32,7 @@ export const layoutScreenGuides: Array<{
     description: "상단 탐색·스크롤 본문·하단 탭의 영역을 실제 홈 화면에서 확인해요.",
     regions: [
       { key: "top-bar", label: "상단 탐색", note: "AppShellView가 홈의 검색과 상단 영역을 구성해요." },
-      { key: "home-card", label: "인사이트 카드", note: "HomeSummaryCard는 132 × 132pt의 공용 카드 규격을 사용해요." },
+      { key: "home-card", label: "인사이트 카드", note: "CompactSummaryCard는 132 × 132pt의 공용 카드 규격을 사용해요." },
       { key: "content", label: "스크롤 본문", note: "좌우 여백을 제외한 본문 전체 치수예요. 화면 아래로 이어지는 내용도 높이에 포함해요." },
       { key: "bottom-tab", label: "하단 탭", note: "탭의 높이와 기기의 하단 안전 영역을 구분해요." },
     ],
@@ -40,7 +40,7 @@ export const layoutScreenGuides: Array<{
       "Components/Shell/AppShellView.swift · AppShellView",
       "Components/Shell/AppChromeComponents.swift · MainTabChromeScrollView",
       "Features/Home/HomeView.swift · HomeView",
-      "Features/Home/HomeSummaryComponents.swift · HomeSummaryCard",
+      "Features/Home/HomeSummaryComponents.swift · CompactSummaryCard",
     ],
   },
   {

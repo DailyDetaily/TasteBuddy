@@ -85,7 +85,7 @@ export default function NativeProfileActivity({
   ];
   const error = journal.error ?? analysis.error ?? bookmarkError;
   return (
-    <PageSection title="활동 요약" titleSize="md">
+    <PageSection title="활동 요약" titleAs="h2">
       <div
         aria-label="활동 요약 지표"
         aria-busy={!stats && !error}

@@ -49,7 +49,7 @@ function Switch({
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className={cn(
-          "bg-card dark:data-[state=unchecked]:bg-card-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block rounded-full ring-0 transition-transform data-[state=unchecked]:translate-x-[2px]",
+          "data-[state=unchecked]:bg-[var(--tb-color-switch-off-thumb)] data-[state=checked]:bg-[var(--tb-color-switch-on-thumb)] pointer-events-none block rounded-full ring-0 transition-transform data-[state=unchecked]:translate-x-[2px]",
           sizeClassNames.thumb,
         )}
       />

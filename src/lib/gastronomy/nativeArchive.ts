@@ -5,7 +5,8 @@ import {
 } from "../../../scripts/tba-platform-pilot/dining-selections.mjs";
 import { parseOverallEvaluation } from "../../../scripts/tba-platform-pilot/dining-overall-evaluation.mjs";
 import { DISH_KIND_OPTIONS } from "../../constants/dishKindTags";
-import type { Data, Facet, Observation, RecordRow } from "./engine";
+import type { Data, Facet, Observation, OverallStar, RecordRow } from "./engine";
+import { nativeOverallStar } from "./archiveMenuInsights";
 const object = (value: unknown): value is Record<string, any> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 const strings = (value: unknown): string[] =>
@@ -46,7 +47,7 @@ export function decodeNativeAccount(payload: unknown, now = new Date()): Data {
   if (!Array.isArray(entries))
     throw new Error("네이티브 원본 기록을 읽지 못했어요.");
   const records: RecordRow[] = [],
-    observations: Observation[] = [];
+    observations: Observation[] = [], overallStars: OverallStar[] = [];
   for (const e of entries) {
     if (
       !object(e) ||
@@ -116,6 +117,7 @@ export function decodeNativeAccount(payload: unknown, now = new Date()): Data {
       restaurant: source === "homeCooked" ? "" : e.restaurant,
       menuKey,
       restaurantKey,
+      foodKindIDs: strings(e.dishKindIDs),
       foodKinds: strings(e.dishKindIDs).flatMap((id) => {
         const k = DISH_KIND_OPTIONS.find((k) => k.id === id);
         return k ? [k.label] : [];
@@ -134,6 +136,17 @@ export function decodeNativeAccount(payload: unknown, now = new Date()): Data {
       source,
     });
     if ((e.feedbackStatus ?? "completed") !== "completed") continue;
+    const star = nativeOverallStar(e.overallEvaluation);
+    const overallCorrection = Array.isArray(e.memoryCorrections)
+      ? [...e.memoryCorrections].reverse().find(c => object(c)
+        && object(c.before) && object(c.after)
+        && JSON.stringify(c.before.overallEvaluation) !== JSON.stringify(c.after.overallEvaluation))
+      : null;
+    const overallKnownAt = swiftDate(overallCorrection?.changedAt
+      ?? (e.memoryCorrections == null ? e.updatedAt ?? e.savedAt : e.savedAt)) ?? observedAt;
+    if (star !== null && Date.parse(overallKnownAt) <= +now) overallStars.push({
+      id: "native:" + e.id + ":overall-stars", entryID: "native:" + e.id, value: star,
+    });
     for (const [i, o] of [
       ...parsed.observations,
       ...overall.observations,
@@ -164,7 +177,7 @@ export function decodeNativeAccount(payload: unknown, now = new Date()): Data {
       });
     }
   }
-  return { records, observations, sourceRecordCount: entries.length };
+  return { records, observations, overallStars, sourceRecordCount: entries.length };
 }
 function nativeAttributeLabel(attribute: string) {
   const labels: Record<string, string> = {

@@ -2,7 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { ArrowRight, X } from "lucide-react";
 import PrimaryButton from "../components/system/PrimaryButton";
 import ProductTasteChip from "../components/system/TasteChip";
-import { getTasteTintSoftBorder } from "../constants/tasteColors";
+import { getTasteBorder } from "../constants/tasteColors";
 import type { CatalogComponent } from "./catalog";
 import type { ComponentGuide, GuideKind } from "./componentGuides";
 import "./component-guides.css";
@@ -13,7 +13,7 @@ function TasteChip(props: ComponentProps<typeof ProductTasteChip>) {
   const border =
     props.tone === "neutral"
       ? "#E5E5E5"
-      : getTasteTintSoftBorder(props.colorTaste ?? props.taste);
+      : getTasteBorder(props.colorTaste ?? props.taste);
   return (
     <ProductTasteChip
       {...props}

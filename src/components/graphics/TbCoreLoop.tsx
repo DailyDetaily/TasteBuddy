@@ -1,5 +1,7 @@
 import TasteCircularLoop from './TasteCircularLoop';
 import { TASTE_TOKENS } from '../../constants/designTokens';
+import { useProductColorMode } from '../../lib/colorMode';
+import { MEASUREMENT_PALETTES_BY_MODE } from '../../constants/colorModes';
 
 interface TbCoreLoopProps {
   activeLevel: number;
@@ -9,6 +11,8 @@ interface TbCoreLoopProps {
 const SWEET_LOOP = TASTE_TOKENS.sweet.measurement.loop;
 
 export default function TbCoreLoop({ activeLevel, className = '' }: TbCoreLoopProps) {
+  const mode = useProductColorMode();
+  const SWEET_LOOP = MEASUREMENT_PALETTES_BY_MODE[mode].sweet.loop;
   return (
     <TasteCircularLoop
       activeLevel={activeLevel}

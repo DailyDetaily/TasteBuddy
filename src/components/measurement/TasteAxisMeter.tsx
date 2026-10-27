@@ -1,4 +1,5 @@
-import { TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
+import { type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import { getStarterAxisDisplayLabel } from '../../constants/quickTasteCalibrationData';
 
 interface TasteAxisMeterProps {
@@ -13,7 +14,7 @@ export default function TasteAxisMeter({
   const taste = TASTE_TOKENS[tasteId];
 
   return (
-    <div className="flex flex-col gap-2 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-white/84 p-3">
+    <div className="flex flex-col gap-2 rounded-[20px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-overlay)] p-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span

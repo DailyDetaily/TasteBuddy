@@ -2,7 +2,8 @@ import {
   Check as CheckIcon
 } from 'lucide-react';
 
-import { ICON_TOKENS, TASTE_TOKENS } from '../../constants/designTokens';
+import { ICON_TOKENS } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import {
   formatMeasurementDate,
   formatMeasurementValue,
@@ -23,58 +24,6 @@ const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...props }:
 );
 
 const Check = wrapIcon(CheckIcon);
-
-function hexToRgb(hex: string) {
-  const normalized = hex.replace('#', '');
-
-  return [0, 2, 4].map((offset) => Number.parseInt(normalized.slice(offset, offset + 2), 16));
-}
-
-function rgbToHex(rgb: number[]) {
-  return `#${rgb
-    .map((channel) => Math.round(channel).toString(16).padStart(2, '0'))
-    .join('')}`;
-}
-
-function mixHex(colorA: string, colorB: string, ratio: number) {
-  const left = hexToRgb(colorA);
-  const right = hexToRgb(colorB);
-
-  return rgbToHex(left.map((channel, index) => channel + (right[index] - channel) * ratio));
-}
-
-function getRelativeLuminance(hex: string) {
-  const [r, g, b] = hexToRgb(hex).map((channel) => {
-    const value = channel / 255;
-    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  });
-
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-function getContrastRatio(backgroundColor: string, foregroundColor: string) {
-  const backgroundLuminance = getRelativeLuminance(backgroundColor);
-  const foregroundLuminance = getRelativeLuminance(foregroundColor);
-  const lighter = Math.max(backgroundLuminance, foregroundLuminance);
-  const darker = Math.min(backgroundLuminance, foregroundLuminance);
-
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-function getAccessibleTasteLabelColor(backgroundColor: string, baseColor: string) {
-  if (getContrastRatio(backgroundColor, baseColor) >= 3) {
-    return baseColor;
-  }
-
-  for (let ratio = 0.05; ratio <= 1; ratio += 0.05) {
-    const candidate = mixHex(baseColor, '#0F0F0F', ratio);
-    if (getContrastRatio(backgroundColor, candidate) >= 3) {
-      return candidate;
-    }
-  }
-
-  return '#0F0F0F';
-}
 
 interface TasteMeasurementCompletedPanelProps {
   snapshot: TasteMeasurementSnapshot;
@@ -117,19 +66,19 @@ export default function TasteMeasurementCompletedPanel({
               평균 {formatMeasurementValue(averageMeasurement)}
             </h2>
           </div>
-          <span className="rounded-full border border-[var(--tb-color-border-subtle)] bg-white px-3 py-2 text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
+          <span className="rounded-full border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-base)] px-3 py-2 text-[12px] font-semibold text-[var(--tb-color-text-primary)]">
             {tasteProfileBadge}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-[8px] bg-white p-3">
+          <div className="rounded-[8px] bg-[var(--tb-color-surface-base)] p-3">
             <p className="mb-2 text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
               가장 민감한 맛
             </p>
             <p
               className="text-[18px] font-bold"
-              style={{ color: TASTE_TOKENS[strongestTaste.id].measurement.accent }}
+              style={{ color: `var(--tb-taste-${strongestTaste.id}-measurement-text)` }}
             >
               {strongestTaste.label}
             </p>
@@ -137,13 +86,13 @@ export default function TasteMeasurementCompletedPanel({
               {formatMeasurementValue(strongestTaste.valueMm)}
             </p>
           </div>
-          <div className="rounded-[8px] bg-white p-3">
+          <div className="rounded-[8px] bg-[var(--tb-color-surface-base)] p-3">
             <p className="mb-2 text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
               가장 둔감한 맛
             </p>
             <p
               className="text-[18px] font-bold"
-              style={{ color: TASTE_TOKENS[weakestTaste.id].measurement.accent }}
+              style={{ color: `var(--tb-taste-${weakestTaste.id}-measurement-text)` }}
             >
               {weakestTaste.label}
             </p>
@@ -153,7 +102,7 @@ export default function TasteMeasurementCompletedPanel({
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-3 rounded-[8px] bg-white px-3 py-3">
+        <div className="flex items-center justify-between gap-3 rounded-[8px] bg-[var(--tb-color-surface-base)] px-3 py-3">
           <div>
             <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
               프로필 반영 시점
@@ -177,13 +126,10 @@ export default function TasteMeasurementCompletedPanel({
             <div
               key={entry.id}
               className="rounded-[20px] p-3"
-              style={{ backgroundColor: TASTE_TOKENS[entry.id].palette.bg }}
+              style={{ backgroundColor: TASTE_TOKENS[entry.id].palette.tintSurface }}
             >
               {(() => {
-                const labelColor = getAccessibleTasteLabelColor(
-                  TASTE_TOKENS[entry.id].palette.bg,
-                  TASTE_TOKENS[entry.id].palette.dark,
-                );
+                const labelColor = TASTE_TOKENS[entry.id].palette.tintSurfaceText;
 
                 return (
                   <>

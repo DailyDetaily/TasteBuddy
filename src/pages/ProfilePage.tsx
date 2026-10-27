@@ -8,6 +8,7 @@ import {
   UserPlus as UserPlusIcon
 } from 'lucide-react';
 import React from 'react';
+import { TASTE_TOKENS } from '../constants/uiColorTokens';
 
 import type { AppMenuSupportPanel } from '../components/AppMenuDrawer';
 
@@ -26,11 +27,11 @@ const Bookmark = wrapIcon(BookmarkIcon);
 const CircleCheck = wrapIcon(CircleCheckIcon);
 const Award = wrapIcon(TrophyIcon);
 const Star = wrapIcon(StarIcon);
-const UserPlus = wrapIcon(UserPlusIcon);
 
 import PageSection from '../components/system/PageSection';
 import NativeProfileActivity from '../components/profile/NativeProfileActivity';
 import DiningFriendActionButton from '../components/profile/DiningFriendActionButton';
+import CapsuleButton from '../components/system/CapsuleButton';
 import PalateBloomAvatar, {
   createPalateBloomProfileFromMeasurementSnapshot,
   createPalateBloomFallbackProfile,
@@ -122,7 +123,7 @@ function deriveProfileStatsFromCounts({
       label: '평균 만족도',
       value: averageRating !== null ? averageRating.toFixed(1) : '-',
       icon: Star,
-      color: '#FBC02D',
+      color: TASTE_TOKENS.sour.palette.main,
     },
   ];
 }
@@ -283,50 +284,50 @@ export default function ProfilePage({
         : updatingConnectionId === selectedConnectionProfile.id
           ? '추가 중'
           : '팔로우';
-      const selectedProfileStats = deriveProfileStatsFromCounts({
+      const selectedProfileStats = selectedConnectionProfile.activitySummary ? deriveProfileStatsFromCounts({
         averageRating: selectedConnectionProfile.activitySummary?.averageRating ?? null,
         feedbackCount: selectedConnectionProfile.activitySummary?.feedbackCount ?? 0,
         measurementCount:
           selectedConnectionProfile.activitySummary?.measurementCount ??
           (selectedProfileSnapshot ? 1 : 0),
         savedListCount: selectedConnectionProfile.activitySummary?.savedRestaurantCount ?? 0,
-      });
+      }) : null;
       return (
         <div className="flex h-full w-full flex-col bg-[var(--tb-color-bg-page)]">
           <div className="flex-1 overflow-y-auto no-scrollbar">
-            <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
+            <div className="tb-section-stack px-5 pb-[72px] pt-2 animate-fadeIn">
               <div className="tb-card-stack">
-                <div className="rounded-[20px] bg-white p-3">
+                <div className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-3">
                   <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-[14px]">
                       <PalateBloomAvatar
                         ariaLabel={selectedProfileName}
                         imageSrc={selectedProfileAvatarSrc}
                         profile={selectedProfileBloom}
                         shapeSeed={`${selectedConnectionProfile.id}|${selectedProfileSnapshot?.measuredAt ?? 'no-measurement'}`}
-                        size="lg"
+                        size={64}
                       />
-                      <div className="flex min-w-0 flex-1 flex-col">
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
                         <span className="truncate text-[16px] font-bold text-[var(--tb-color-text-primary)]">
                           {selectedProfileName}
                         </span>
-                        <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-muted)]">
+                        <span className="truncate text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
                           {selectedProfileNickname}
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex min-w-[64px] flex-col rounded-[8px] text-left">
+                    <div className="flex items-center gap-[18px]">
+                      <div className="flex min-w-[64px] flex-col gap-[3px] rounded-[8px] text-left">
                         <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                           {formatSocialCount(selectedConnectionProfile.followerCount)}
                         </span>
-                        <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로워</span>
+                        <span className="text-[12px] text-[var(--tb-color-text-hint)]">팔로워</span>
                       </div>
-                      <div className="flex min-w-[64px] flex-col rounded-[8px] text-left">
+                      <div className="flex min-w-[64px] flex-col gap-[3px] rounded-[8px] text-left">
                         <span className="text-[14px] font-semibold text-[var(--tb-color-text-primary)]">
                           {formatSocialCount(selectedConnectionProfile.followingCount)}
                         </span>
-                        <span className="text-[12px] text-[var(--tb-color-text-muted)]">팔로잉</span>
+                        <span className="text-[12px] text-[var(--tb-color-text-hint)]">팔로잉</span>
                       </div>
                       <DiningFriendActionButton
                         ariaLabel={
@@ -344,8 +345,8 @@ export default function ProfilePage({
                 </div>
               </div>
 
-              <PageSection title="활동 요약" titleSize="md">
-                <div className="grid grid-cols-2 gap-3">
+              <PageSection title="활동 요약" titleAs="h2">
+                {selectedProfileStats ? <div className="grid grid-cols-2 gap-3">
                   {selectedProfileStats.map((stat) => (
                     <SummaryMetricCard
                       key={stat.label}
@@ -355,10 +356,11 @@ export default function ProfilePage({
                       value={stat.value}
                     />
                   ))}
-                </div>
+                </div> : <div className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-3">
+                  <p className="text-[14px] font-bold leading-[17px] text-[var(--tb-color-text-primary)]">활동 통계 미제공</p>
+                  <p className="mt-[5px] text-[12px] leading-[15px] text-[var(--tb-color-text-subtle)]">이 프로필에서 공개한 기록 통계가 없습니다.</p>
+                </div>}
               </PageSection>
-
-              <div className="h-6" />
             </div>
           </div>
         </div>
@@ -370,13 +372,13 @@ export default function ProfilePage({
         <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-20 pt-5">
           <div className="flex flex-col gap-3">
             {connectionStatus === 'loading' ? (
-              <div className="rounded-[20px] bg-white p-4 text-[13px] font-semibold text-[var(--tb-color-text-muted)]">
+              <div className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4 text-[13px] font-semibold text-[var(--tb-color-text-muted)]">
                 {connectionTitle} 목록을 불러오고 있어요.
               </div>
             ) : null}
 
             {connectionStatus !== 'loading' && connectionProfiles.length === 0 ? (
-              <div className="rounded-[20px] bg-white p-4">
+              <div className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
                 <p className="text-[14px] font-bold text-[var(--tb-color-text-primary)]">
                   {connectionStatus === 'error'
                     ? `${connectionTitle} 목록을 불러오지 못했어요`
@@ -417,9 +419,9 @@ export default function ProfilePage({
   return (
     <div className="flex flex-col w-full h-full bg-[var(--tb-color-bg-page)]">
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="tb-section-stack px-5 pb-20 pt-5 animate-fadeIn">
+        <div className="tb-section-stack px-5 pb-[72px] pt-2 animate-fadeIn">
           <div className="tb-card-stack">
-            <div className="relative rounded-[20px] bg-white p-3">
+            <div className="relative rounded-[20px] bg-[var(--tb-color-surface-base)] p-3">
               <button
                 type="button"
                 onClick={onOpenProfileSettings}
@@ -469,14 +471,14 @@ export default function ProfilePage({
                     </span>
                     <span className="text-[12px] text-[var(--tb-color-text-hint)]">팔로잉</span>
                   </button>
-                  <button
+                  <CapsuleButton
                     type="button"
                     onClick={onFindBuddy}
-                    className="ml-auto flex h-9 items-center gap-2 rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[12px] font-semibold text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                    className="ml-auto"
+                    icon={UserPlusIcon}
                   >
-                    <UserPlus size={ICON_TOKENS.size.sm} className="text-[var(--tb-color-icon-primary)]" />
-                    <span>버디 찾기</span>
-                  </button>
+                    버디 찾기
+                  </CapsuleButton>
                 </div>
               </div>
             </div>
@@ -485,7 +487,6 @@ export default function ProfilePage({
 
           <NativeProfileActivity owner={owner} active={active} onOpenSavedList={onOpenSavedList} />
 
-          <div className="h-6" />
         </div>
       </div>
     </div>

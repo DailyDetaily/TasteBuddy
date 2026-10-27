@@ -1,11 +1,10 @@
 import { NativeRecordPhoto } from "./NativeDiningHome";
 import NativePhotoHints from "./NativePhotoHints";
-import { diningDetailTagCategories } from "../../constants/diningDetailTags";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SENSORY_V2, makeSensoryV2Presentation, makeSensoryV2Selection, sensoryV2Categories, sensoryV2Entry, sensoryV2MatchesQuery, sensorySelectionKey, validSensoryV2Presentation } from '../../lib/sensoryV2.mjs';
 import SensoryProfileControls from './SensoryProfileControls';
 import DishKindIcon from '../system/DishKindIcon';
-import { Camera, X } from "lucide-react";
+import { Camera, X, Pencil, Clock3, MapPin, Plus } from "lucide-react";
 import { DINING_SELECTION_CATALOG } from "../../../scripts/tba-platform-pilot/dining-selections.mjs";
 import { DINING_OVERALL_RESPONSES } from "../../../scripts/tba-platform-pilot/dining-overall-evaluation.mjs";
 import { DISH_KIND_GROUPS, getDishKindOptionsForSelection } from "../../constants/dishKindTags";
@@ -24,14 +23,21 @@ import {
 } from "../../lib/gastronomy/nativeRecord";
 import {
   TasteExperienceMap,
+  findTasteExperience,
   type TasteExperienceWord,
   type TasteMapViewportState,
 } from "../reservation/DiningFeedbackFlow";
-import SensorySelectionEditor from "./SensorySelectionEditor";
+import SelectionCard from '../system/SelectionCard';
+import PrimaryButton from '../system/PrimaryButton';
+import BottomSheetShell, { BottomSheetCloseButton } from '../system/BottomSheetShell';
+import { DrawerTitle, DrawerDescription } from '../ui/drawer';
+import { getTasteTintSurface, getTasteTintSurfaceText, getTasteChipBorder } from '../../constants/tasteColors';
+import { nativeOverallStar } from '../../lib/gastronomy/archiveMenuInsights';
+import './native-dining.css';
 import { DetailHeader } from "../gastronomy/TasteDataPage";
-const titles = ["미식 기록", "전체 평가", "미각 버블", "디테일", "기록 확인"];
+const titles = ["식후 피드백", "전체 평가", "미각 버블", "디테일", "기록 확인"];
 const field =
-  "min-h-11 w-full rounded-[14px] border border-[var(--tb-color-border-default)] bg-white px-3 text-[14px]";
+  "min-h-11 w-full rounded-[14px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[14px]";
 function dateInput(value?: number | null) {
   if (value == null) return "";
   const d = new Date(Date.UTC(2001, 0, 1) + value * 1000);
@@ -63,6 +69,7 @@ async function jpeg(file: File): Promise<Blob> {
 }
 export default function NativeDiningEditor({
   original,
+  initialPhoto,
   owner,
   seed,
   meal,
@@ -71,6 +78,7 @@ export default function NativeDiningEditor({
   onClose,
 }: {
   original?: NativeRecord;
+  initialPhoto?: File;
   owner: string;
   seed?: Pick<NativeRecord, "restaurant"> &
     Partial<Pick<NativeRecord, "menu" | "restaurantID" | "foodSource">>;
@@ -93,10 +101,14 @@ export default function NativeDiningEditor({
     [saving, setSaving] = useState(false),
     [error, setError] = useState<string | null>(null),
     [discard, setDiscard] = useState(false);
+  const [manualMenu, setManualMenu] = useState(true);
+  const [menuSelectionConfirmed, setMenuSelectionConfirmed] = useState(Boolean(original?.menu || seed?.menu));
   const [sourcePhoto, setSourcePhoto] = useState<File | null>(null);
   const [linkedBubbleID, setLinkedBubbleID] = useState<string | null>(null);
-  const [detailSearch, setDetailSearch] = useState('');
-  const [showAllDetails, setShowAllDetails] = useState(false);
+  const [supplement, setSupplement] = useState<'note' | 'date' | 'location' | null>(null);
+  const [noteBeforeEdit, setNoteBeforeEdit] = useState('');
+  const [customCategory, setCustomCategory] = useState<string | null>(null);
+  const detailPhotoRef = useRef<HTMLInputElement>(null);
   const [customInputs, setCustomInputs] = useState<Record<string,string>>({});
   const [photo, setPhoto] = useState<
       { filename: string; blob: Blob } | undefined
@@ -127,6 +139,21 @@ export default function NativeDiningEditor({
     };
   }, []);
   useEffect(() => {
+    if (!initialPhoto) return;
+    let cancelled = false;
+    setSourcePhoto(initialPhoto);
+    setPhotoLoading(true);
+    void jpeg(initialPhoto).then((blob) => {
+      if (cancelled) return;
+      const filename = `${crypto.randomUUID()}.jpg`;
+      setPhoto({ filename, blob });
+      setEntry((current) => ({ ...current, reflectionPhotoFilename: filename }));
+    }).catch(() => {
+      if (!cancelled) setError('사진을 읽지 못했어요. 다른 사진을 선택해 주세요.');
+    }).finally(() => { if (!cancelled) setPhotoLoading(false); });
+    return () => { cancelled = true; };
+  }, [initialPhoto]);
+  useEffect(() => {
     if (!photo) {
       setPhotoURL(null);
       return;
@@ -153,14 +180,10 @@ export default function NativeDiningEditor({
   const dishKindIDs = entry.dishKindIDs ?? [];
   const usesLegacyMap = !!baseline && effectiveSelections(baseline).some(s=>s.type==='bubble'&&s.catalogVersion==='dining-sensory-selection/1');
   const presentation = useMemo(() => validSensoryV2Presentation(entry.sensoryPresentation) ? entry.sensoryPresentation : makeSensoryV2Presentation({menu:entry.menu,dishKindIDs:entry.dishKindIDs ?? []}), [entry.sensoryPresentation,entry.menu,entry.dishKindIDs]);
-  const categoryPools = useMemo(() => {
-    if (showAllDetails || detailSearch.trim()) return SENSORY_V2.entries.filter(e=>e.type==='detailTag'&&e.label.includes(detailSearch.trim())).reduce<{id:string;label:string;tags:{id:string;label:string}[]}[]>((groups,e)=>{
-      let group=groups.find(g=>g.id===e.familyId);
-      if(!group){group={id:e.familyId!,label:diningDetailTagCategories.find(f=>f.id===e.familyId)?.label??e.familyId!,tags:[]};groups.push(group);}
-      group.tags.push({id:e.id,label:e.label});return groups;
-    },[]);
-    return sensoryV2Categories(presentation);
-  },[presentation,showAllDetails,detailSearch]);
+  const categoryPools = useMemo(() => sensoryV2Categories(presentation), [presentation]);
+  const activeBubble = bubbles.find((bubble) => bubble.id === linkedBubbleID) ?? bubbles[0];
+  const activeAxis = findTasteExperience(activeBubble?.id)?.axis;
+  const activeTaste = ({ sweet: '단맛', sour: '신맛', salty: '짠맛', bitter: '쓴맛', umami: '감칠맛', fat: '지방맛' } as Record<string, string>)[activeAxis ?? ''] ?? '감칠맛';
   const update = (fields: Partial<NativeRecord>) =>
     setEntry((current) => {
       const next = {...current,...fields};
@@ -194,17 +217,11 @@ export default function NativeDiningEditor({
     setSelections(next);
     return next.filter((s) => s.type === "bubble").map((s) => s.id);
   };
-  const setSelection = (next: SensorySelection, previousKey=sensorySelectionKey(next)) =>
-    setSelections(
-      selections.map((s) =>
-        sensorySelectionKey(s)===previousKey ? next : s,
-      ),
-    );
-  const scopedDetail = (id:string) => details.find(s=>s.id===id&&(sensoryV2Entry(id)?.bindingMode!=='modifier'||(s.relatedBubbleID??null)===(bubbles.find(b=>b.id===linkedBubbleID)?.id??null)));
+  const scopedDetail = (id:string) => details.find(s=>s.id===id&&(sensoryV2Entry(id)?.bindingMode!=='modifier'||(s.relatedBubbleID??null)===(activeBubble?.id??null)));
   const toggleDetail = (id:string) => {
     const selected=scopedDetail(id);
     if(selected){remove(selected);return;}
-    setSelections([...selections,makeSensoryV2Selection(id,{relatedBubble:bubbles.find(b=>b.id===linkedBubbleID)??null})]);
+    setSelections([...selections,makeSensoryV2Selection(id,{relatedBubble:activeBubble??null})]);
   };
   const addCustom = (family:string) => {
     const label=(customInputs[family]??'').trim();if(!label)return;
@@ -214,10 +231,10 @@ export default function NativeDiningEditor({
   };
   const canContinue =
     step === 0
-      ? !!entry.menu.trim() && !photoLoading
+      ? !!entry.menu.trim() && menuSelectionConfirmed && !photoLoading
       : step === 1
         ? !!entry.overallEvaluation &&
-          !!DINING_OVERALL_RESPONSES[entry.overallEvaluation.responseValue]
+          (!!DINING_OVERALL_RESPONSES[entry.overallEvaluation.responseValue] || nativeOverallStar(entry.overallEvaluation) !== null)
         : step === 2
           ? true
           : true;
@@ -267,6 +284,10 @@ export default function NativeDiningEditor({
       if (alive.current && id === request.current) setSearching(false);
     }
   };
+  const menuCandidates = [...new Map(entries.filter((candidate) => {
+    if (!entry.restaurant.trim()) return false;
+    return entry.restaurantID ? candidate.restaurantID === entry.restaurantID : !candidate.restaurantID && candidate.restaurant === entry.restaurant;
+  }).map((candidate) => [candidate.menuItemID ?? candidate.menu, candidate])).values()].slice(0, 8);
   const recipes = [
     ...new Map(
       entries
@@ -279,9 +300,10 @@ export default function NativeDiningEditor({
   ];
   return (
     <div
-      className="fixed inset-0 z-[80] flex flex-col bg-[var(--tb-color-bg-page)]"
+      className={`fixed inset-0 z-[80] flex flex-col ${step === 3 ? "bg-[var(--tb-color-bg-focus)]" : "bg-[var(--tb-color-bg-page)]"}`}
       ref={shellRef}
       onKeyDown={(e) => {
+        if (supplement === 'date' || supplement === 'location') return;
         if (e.key === "Escape") {
           e.preventDefault();
           if (discard) setDiscard(false);
@@ -322,10 +344,11 @@ export default function NativeDiningEditor({
       <div className="flex items-center">
         <div className="min-w-0 flex-1">
           <DetailHeader
-            title={titles[step]}
+            title={step === 3 ? entry.menu : titles[step]}
             onBack={() => {
               if (!saving) {
-                if (step) setStep((n) => n - 1);
+                if (supplement) setSupplement(null);
+                else if (step) setStep((n) => n - 1);
                 else close();
               }
             }}
@@ -342,7 +365,7 @@ export default function NativeDiningEditor({
         </button>
       </div>
       {step === 2 && !showWords ? (
-        <div className="relative min-h-0 flex-1 overflow-hidden bg-white">
+        <div className="relative min-h-0 flex-1 overflow-hidden bg-[var(--tb-color-surface-base)]">
           <TasteExperienceMap
             viewportStateRef={mapViewportRef}
             sensoryPresentation={usesLegacyMap ? undefined : presentation}
@@ -360,14 +383,14 @@ export default function NativeDiningEditor({
           />
           <button
             type="button"
-            className="absolute right-5 top-3 z-40 min-h-11 rounded-full bg-white px-4 text-[12px] shadow-sm"
+            className="absolute right-5 top-3 z-40 min-h-11 rounded-full bg-[var(--tb-color-surface-base)] px-4 text-[12px] shadow-sm"
             onClick={() => setShowWords(true)}
           >
             미각 단어 검색
           </button>
           <button
             type="button"
-            className="absolute left-5 top-3 z-40 min-h-11 rounded-full bg-white px-4 text-[12px] shadow-sm"
+            className="absolute left-5 top-3 z-40 min-h-11 rounded-full bg-[var(--tb-color-surface-base)] px-4 text-[12px] shadow-sm"
             onClick={() => setStep(3)}
           >
             {bubbles.length ? `${bubbles.length}개 선택 · 다음` : '디테일만 기록'}
@@ -376,218 +399,49 @@ export default function NativeDiningEditor({
       ) : (
         <div
           ref={formRef}
-          className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 pt-5"
+          className={`min-h-0 flex-1 overflow-y-auto px-5 pb-8 ${step === 3 ? "pt-3" : "pt-4"}`}
         >
           <div className="mx-auto flex max-w-[560px] flex-col gap-6">
             {step === 0 && (
               <>
-                <label className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-[20px] bg-white p-4">
-                  {photoURL ? (
-                    <img
-                      src={photoURL}
-                      alt="선택한 음식 사진"
-                      className="max-h-52 rounded-xl object-contain"
-                    />
-                  ) : original && entry.reflectionPhotoFilename ? (
-                    <NativeRecordPhoto
-                      owner={owner}
-                      entry={entry}
-                      fallback={<Camera size={28} />}
-                    />
-                  ) : (
-                    <Camera size={28} />
-                  )}
-                  <span className="text-[13px]">
-                    {photoLoading
-                      ? "사진 준비 중"
-                      : entry.reflectionPhotoFilename &&
-                          original?.reflectionPhotoFilename ===
-                            entry.reflectionPhotoFilename &&
-                          !photo
-                        ? "기존 사진 유지 · 사진 변경"
-                        : "사진으로 기록하기 · 선택사항"}
-                  </span>
-                  <input
-                    aria-label="음식 사진"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="sr-only"
-                    disabled={photoLoading || saving}
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setPhotoLoading(true);
-                      try {
-                        const blob = await jpeg(file);
-                        if (!alive.current) return;
-                        const filename = `${crypto.randomUUID()}.jpg`;
-                        setPhoto({ filename, blob });
-                        setSourcePhoto(file);
-                        update({ reflectionPhotoFilename: filename });
-                      } catch {
-                        setError(
-                          "사진을 읽지 못했어요. 다른 사진을 선택해 주세요.",
-                        );
-                      } finally {
-                        if (alive.current) setPhotoLoading(false);
-                      }
-                    }}
-                  />
-                </label>
-                {sourcePhoto && (
-                  <NativePhotoHints
-                    key={photo?.filename}
-                    file={sourcePhoto}
-                    onMenu={(menu) => update({ menu, menuItemID: null })}
-                    onRestaurant={(restaurantID, restaurant) =>
-                      update({
-                        restaurant,
-                        restaurantID,
-                        foodSource: {
-                          kind: "restaurant",
-                          version: 1,
-                          restaurantNamespace: "kakao",
-                        },
-                      })
-                    }
-                  />
-                )}
-                {entry.reflectionPhotoFilename && (
-                  <button
-                    type="button"
-                    className="min-h-11 text-sm underline"
-                    onClick={() => {
-                      setPhoto(undefined);
-                      setSourcePhoto(null);
-                      update({
-                        reflectionPhotoFilename: entry.additionalPhotoFilenames?.[0] ?? null,
-                        additionalPhotoFilenames: entry.additionalPhotoFilenames?.slice(1) ?? [],
-                      });
-                    }}
-                  >
-                    사진 제거
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-[18px] font-bold">어떤 메뉴를 먼저 기록할까요?</h2>
+                  <p className="text-[13px] text-[var(--tb-color-text-subtle)]">가장 선명하게 기억나는 메뉴부터 선택해 주세요.</p>
+                  {entry.restaurant && <p className="text-[12px] text-[var(--tb-color-text-muted)]">{entry.restaurant}</p>}
+                </div>
+                <div className="flex flex-col gap-3">
+                  {menuCandidates.map((candidate) => <SelectionCard key={candidate.menuItemID ?? candidate.menu} title={candidate.menu} description="이 식당에서 기록한 메뉴" selected={!manualMenu && entry.menu === candidate.menu} className={!manualMenu && entry.menu === candidate.menu ? 'shadow-none' : 'border-transparent shadow-none'} onClick={() => {
+                    setManualMenu(false); setMenuSelectionConfirmed(true);
+                    update({ menu: candidate.menu, menuItemID: candidate.menuItemID ?? null, dishKindIDs: candidate.dishKindIDs ?? [] });
+                  }} />)}
+                  {!manualMenu && menuSelectionConfirmed && !menuCandidates.some((candidate) => candidate.menu === entry.menu) && <SelectionCard title={entry.menu} description="직접 입력한 메뉴" selected className="shadow-none" onClick={() => { setManualMenu(true); setMenuSelectionConfirmed(false); }} />}
+                  <SelectionCard title="직접 입력" description="목록에 없는 메뉴도 미각 기록으로 남길 수 있어요." selected={manualMenu} className={manualMenu ? 'shadow-none' : 'border-transparent shadow-none'} onClick={() => setManualMenu(true)} />
+                  {manualMenu && <div className="rounded-[20px] bg-[var(--tb-color-surface-card)] p-3">
+                    <label className="text-[14px] font-semibold">메뉴 직접 입력
+                      <div className="mt-3 flex gap-2"><input autoFocus={!initialPhoto} aria-label="메뉴 이름" className={`${field} min-w-0 flex-1`} value={entry.menu} onChange={(event) => { setMenuSelectionConfirmed(false); update({ menu: event.target.value, menuItemID: null }); }} onKeyDown={(event) => { if (event.key === 'Enter' && entry.menu.trim()) { event.preventDefault(); setMenuSelectionConfirmed(true); setManualMenu(false); } }} placeholder="예: 오미자와 배 디저트" />
+                        <button type="button" disabled={!entry.menu.trim() || photoLoading} className="min-h-11 shrink-0 rounded-[14px] bg-[var(--tb-color-interaction-primary)] px-4 text-[12px] font-semibold text-[var(--tb-color-interaction-on-primary)] disabled:bg-[var(--tb-color-surface-disabled)] disabled:text-[var(--tb-color-text-disabled)]" onClick={() => { setMenuSelectionConfirmed(true); setManualMenu(false); }}>추가</button>
+                      </div>
+                    </label>
+                  </div>}
+                </div>
+                <div className="flex flex-col gap-3">
+                  <button type="button" className="flex min-h-[72px] items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-card)] p-3 text-left" onClick={() => setSupplement('date')}>
+                    <span className="flex-1"><span className="block text-[12px] text-[var(--tb-color-text-secondary)]">식사일</span><span className="mt-1.5 block text-[16px] font-semibold">{entry.mealTime?.source === 'user_confirmed' && entry.mealTime.start != null ? dateInput(entry.mealTime.start) : '식사일 미확인'}</span></span><Clock3 size={18} className="text-[var(--tb-color-text-hint)]" />
                   </button>
-                )}
-                <label className="text-[13px] font-semibold">
-                  메뉴 이름
-                  <input
-                    autoFocus
-                    aria-label="메뉴 이름"
-                    className={`${field} mt-2`}
-                    value={entry.menu}
-                    onChange={(e) =>
-                      update({ menu: e.target.value, menuItemID: null })
-                    }
-                    placeholder="어떤 음식을 기록할까요?"
-                  />
-                </label>
-                <label className="text-[13px] font-semibold">
-                  식당 · 선택사항
-                  <div className="mt-2 flex gap-2">
-                    <input
-                      aria-label="식당 이름"
-                      className={field}
-                      value={entry.restaurant}
-                      onChange={(e) => {
-                        request.current++;
-                        setPlaces([]);
-                        setSearching(false);
-                        update({
-                          restaurant: e.target.value,
-                          restaurantID: null,
-                        });
-                      }}
-                      placeholder="식당명 입력"
-                    />
-                    <button
-                      type="button"
-                      onClick={lookup}
-                      disabled={searching || !entry.restaurant.trim()}
-                      className="shrink-0 rounded-xl bg-white px-3 text-[12px]"
-                    >
-                      {searching ? "검색 중" : "식당 찾기"}
-                    </button>
-                  </div>
-                </label>
-                {places.map((p, i) => (
-                  <button
-                    type="button"
-                    className="rounded-[14px] bg-white p-3 text-left text-[13px]"
-                    key={p.placeId ?? i}
-                    onClick={() => {
-                      if (!p.placeId || !p.name) return;
-                      update({
-                        restaurant: p.name,
-                        restaurantID: p.placeId,
-                        foodSource: {
-                          kind: "restaurant",
-                          restaurantNamespace: "kakao",
-                          version: 1,
-                        },
-                      });
-                      setPlaces([]);
-                      setPlaceMessage("확인한 식당에 연결했어요.");
-                    }}
-                  >
-                    {p.name}
-                    <span className="mt-1 block text-[11px] text-[var(--tb-color-text-hint)]">
-                      {p.roadAddress ?? p.address}
-                    </span>
+                  <button type="button" className="flex min-h-[72px] items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-card)] p-3 text-left" onClick={() => setSupplement('location')}>
+                    <span className="flex-1"><span className="block text-[12px] text-[var(--tb-color-text-secondary)]">식당 연결</span><span className="mt-1.5 block text-[16px] font-semibold">{entry.restaurant || '식당 미확인'}</span></span><MapPin size={18} className="text-[var(--tb-color-text-hint)]" />
                   </button>
-                ))}
-                {placeMessage && <p className="text-[12px]">{placeMessage}</p>}
-                <details className="rounded-[18px] bg-white p-4">
-                  <summary className="min-h-11 cursor-pointer text-[13px] font-semibold">
-                    식사 시점 · 선택사항
-                  </summary>
-                  <select
-                    aria-label="식사일 출처"
-                    className={field}
-                    value={entry.mealTime?.source ?? "unknown"}
-                    onChange={(e) =>
-                      update({ mealTime: { source: e.target.value } })
-                    }
-                  >
-                    <option value="unknown">식사 시점 모름</option>
-                    <option value="user_confirmed">확인한 식사일</option>
-                    <option value="recorded_only">기록일만 확인</option>
-                    {entry.mealTime?.source &&
-                      !["unknown", "user_confirmed", "recorded_only"].includes(
-                        entry.mealTime.source,
-                      ) && (
-                        <option value={entry.mealTime.source}>
-                          이전에 남긴 식사 시점 유지
-                        </option>
-                      )}
-                  </select>
-                  {entry.mealTime?.source === "user_confirmed" && (
-                    <input
-                      aria-label="확인한 식사일"
-                      type="date"
-                      className={`${field} mt-3`}
-                      max={dateInput(swiftTime())}
-                      value={dateInput(entry.mealTime.start)}
-                      onChange={(e) =>
-                        update({
-                          mealTime: {
-                            source: "user_confirmed",
-                            start: e.target.value
-                              ? swiftTime(
-                                  new Date(e.target.value + "T00:00:00"),
-                                )
-                              : null,
-                            confirmedAt: swiftTime(),
-                          },
-                        })
-                      }
-                    />
-                  )}
-                  <p className="mt-3 text-[11px] text-[var(--tb-color-text-hint)]">
-                    저장한 날짜를 실제 식사일로 대신 사용하지 않아요.
-                  </p>
-                </details>
-                <details className="rounded-[18px] bg-white p-4">
+                  <button type="button" aria-label="음식 사진 선택" className="flex min-h-16 items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-card)] p-3 text-left" onClick={() => detailPhotoRef.current?.click()}>
+                    {photoURL ? <img src={photoURL} alt="선택한 음식 사진" className="size-12 rounded-[10px] object-cover" /> : original?.reflectionPhotoFilename ? <div className="size-12 overflow-hidden rounded-[10px]"><NativeRecordPhoto owner={owner} entry={entry} /></div> : <Camera size={24} className="text-[var(--tb-color-text-hint)]" />}
+                    <span className="flex-1 text-[14px]">{photoLoading ? '사진 준비 중' : entry.reflectionPhotoFilename ? '사진 변경' : '사진 추가 · 선택사항'}</span><Plus size={18} />
+                  </button>
+                  {entry.reflectionPhotoFilename && <button type="button" className="min-h-11 self-start text-[12px] text-[var(--tb-color-text-hint)]" onClick={() => { setPhoto(undefined); setSourcePhoto(null); update({ reflectionPhotoFilename: entry.additionalPhotoFilenames?.[0] ?? null, additionalPhotoFilenames: entry.additionalPhotoFilenames?.slice(1) ?? [] }); }}>사진 제거</button>}
+                </div>
+                {sourcePhoto && <details className="rounded-[20px] bg-[var(--tb-color-surface-card)] p-3"><summary className="cursor-pointer text-[13px] font-semibold">사진에서 메뉴·식당 찾기</summary><div className="mt-3"><NativePhotoHints key={photo?.filename} file={sourcePhoto} onMenu={(menu) => { setManualMenu(true); setMenuSelectionConfirmed(false); update({ menu, menuItemID: null }); }} onRestaurant={(restaurantID, restaurant) => update({ restaurant, restaurantID, menuItemID: null, foodSource: { kind: 'restaurant', restaurantNamespace: 'kakao', version: 1 } })} /></div></details>}
+                <details className="rounded-[20px] bg-[var(--tb-color-surface-card)] p-3">
+                  <summary className="min-h-8 cursor-pointer text-[13px] font-semibold">음식 정보 · 선택사항</summary>
+                  <div className="mt-3 flex flex-col gap-3">
+                <details className="rounded-[18px] bg-[var(--tb-color-surface-base)] p-4">
                   <summary className="min-h-11 cursor-pointer text-[13px] font-semibold">
                     음식 출처 · 선택사항
                   </summary>
@@ -665,7 +519,7 @@ export default function NativeDiningEditor({
                     </>
                   )}
                 </details>
-                <details className="rounded-[18px] bg-white p-4">
+                <details className="rounded-[18px] bg-[var(--tb-color-surface-base)] p-4">
                   <summary className="min-h-11 cursor-pointer text-[13px] font-semibold">
                     음식 종류와 특성 · 선택사항
                   </summary>
@@ -677,7 +531,7 @@ export default function NativeDiningEditor({
                       <div className="flex flex-wrap gap-2">
                         {options.map((k) => <button
                           type="button" key={k.id} aria-pressed={dishKindIDs.includes(k.id)}
-                          className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border px-3 text-[12px] ${dishKindIDs.includes(k.id) ? "border-black bg-black text-white" : "border-transparent bg-[var(--tb-color-surface-muted)]"}`}
+                          className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border px-3 text-[12px] ${dishKindIDs.includes(k.id) ? "border-[var(--tb-color-text-primary)] bg-[var(--tb-color-interaction-primary)] text-[var(--tb-color-interaction-on-primary)]" : "border-transparent bg-[var(--tb-color-surface-muted)]"}`}
                           onClick={() => update({ dishKindIDs: dishKindIDs.includes(k.id) ? dishKindIDs.filter((id) => id !== k.id) : [...dishKindIDs, k.id] })}
                         ><DishKindIcon id={k.id} /><span>{k.label}</span></button>)}
                       </div>
@@ -685,12 +539,14 @@ export default function NativeDiningEditor({
                   })}
                 </details>
                 <SensoryProfileControls presentation={presentation} onChange={(profileSelection,flagOverrides)=>update({sensoryPresentation:makeSensoryV2Presentation({menu:entry.menu,dishKindIDs,profileSelection,flagOverrides})})}/>
+                  </div>
+                </details>
               </>
             )}
             {step === 1 && (
               <>
                 <div>
-                  <h2 className="text-[20px] font-bold">
+                  <h2 className="text-[18px] font-bold">
                     이 음식은 전체적으로 어땠나요?
                   </h2>
                   <p className="mt-2 text-[13px] text-[var(--tb-color-text-hint)]">
@@ -698,30 +554,13 @@ export default function NativeDiningEditor({
                   </p>
                 </div>
                 <div className="flex flex-col gap-[10px]">
-                  {Object.entries(DINING_OVERALL_RESPONSES).map(
-                    ([value, response]) => (
-                      <button
-                        type="button"
-                        key={value}
-                        aria-pressed={
-                          entry.overallEvaluation?.responseValue === value
-                        }
-                        className={`min-h-[64px] rounded-[20px] border p-4 text-left text-[14px] font-semibold ${entry.overallEvaluation?.responseValue === value ? "border-black bg-white" : "border-transparent bg-white"}`}
-                        onClick={() =>
-                          update({
-                            overallEvaluation: overallEvaluation(value),
-                          })
-                        }
-                      >
-                        {response.label}
-                        <span className="float-right">
-                          {entry.overallEvaluation?.responseValue === value
-                            ? "●"
-                            : "○"}
-                        </span>
-                      </button>
-                    ),
-                  )}
+                  {nativeOverallStar(entry.overallEvaluation) !== null && <p className="text-[13px] text-[var(--tb-color-text-subtle)]">현재 평가: {nativeOverallStar(entry.overallEvaluation)}점</p>}
+                  {Object.entries(DINING_OVERALL_RESPONSES).map(([value, response]) => (
+                    <SelectionCard key={value} title={response.label} singleLine indicator="radio"
+                      selected={entry.overallEvaluation?.responseValue === value}
+                      className={`h-[50px] py-0 shadow-none ${entry.overallEvaluation?.responseValue === value ? '' : 'border-transparent'}`}
+                      onClick={() => update({ overallEvaluation: overallEvaluation(value) })} />
+                  ))}
                 </div>
               </>
             )}
@@ -755,7 +594,7 @@ export default function NativeDiningEditor({
                       onClick={() =>
                         toggleBubble({ id: c.id } as TasteExperienceWord)
                       }
-                      className={`min-h-[64px] rounded-full border px-3 text-[12px] ${bubbles.some((b) => b.id === c.id) ? "border-black bg-black text-white" : "border-transparent bg-white"}`}
+                      className={`min-h-[64px] rounded-full border px-3 text-[12px] ${bubbles.some((b) => b.id === c.id) ? "border-[var(--tb-color-text-primary)] bg-[var(--tb-color-interaction-primary)] text-[var(--tb-color-interaction-on-primary)]" : "border-transparent bg-[var(--tb-color-surface-base)]"}`}
                     >
                       {bubbles.find(b => b.id === c.id)?.labelSnapshot ?? c.label}
                     </button>
@@ -763,108 +602,47 @@ export default function NativeDiningEditor({
                 </div>
               </>
             )}
-            {step === 3 && (
-              <>
-                {bubbles.length > 0 && <section className="flex flex-col gap-3">
-                  <h2 className="text-[16px] font-bold">선택한 미각 평가</h2>
-                  {bubbles.map((s) => (
-                    <SensorySelectionEditor
-                      key={sensorySelectionKey(s)}
-                      selection={s}
-                      bubbles={bubbles}
-                      onChange={next=>setSelection(next,sensorySelectionKey(s))}
-                      onRemove={() => remove(s)}
-                    />
-                  ))}
-                </section>}
-                <section>
-                  <h2 className="mb-3 text-[16px] font-bold">
-                    디테일 태그 · 선택사항
-                  </h2>
-                  <label className="mb-4 block text-[12px]">
-                    흐름을 설명할 대상
-                    <select
-                      aria-label="흐름을 설명할 대상"
-                      className={`${field} mt-2`}
-                      value={
-                        bubbles.find((b) => b.id === linkedBubbleID)?.id ??
-                        ""
-                      }
-                      onChange={(e) => setLinkedBubbleID(e.target.value||null)}
-                    >
-                      <option value="">음식 전체</option>
-                      {bubbles.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.labelSnapshot}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="mb-4 flex items-center gap-2">
-                    <input aria-label="디테일 태그 검색" className={field} value={detailSearch} onChange={e=>setDetailSearch(e.target.value)} placeholder="디테일 태그 검색"/>
-                    <button type="button" className="min-h-11 shrink-0 text-[12px]" onClick={()=>setShowAllDetails(v=>!v)}>{showAllDetails?'음식에 맞는 표현':'전체 표현'}</button>
+            {step === 3 && (supplement === 'note' ? (
+              <label className="text-[14px] font-semibold text-[var(--tb-color-text-secondary)]">추가 메모 · 선택사항
+                <textarea autoFocus aria-label="추가 메모" className="mt-2 min-h-[176px] w-full rounded-[20px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)] p-3 text-[13px] font-normal outline-none" value={entry.note} onChange={(event) => update({ note: event.target.value })} placeholder="기억에 남는 맛과 상황을 적어 주세요." />
+              </label>
+            ) : (
+              <div className="flex flex-col gap-7">
+                <div className="flex min-h-[232px] flex-col items-center gap-4 py-2">
+                  {activeBubble ? <>
+                    <div className="flex size-44 flex-col items-center justify-center gap-2 rounded-full border px-5 text-center" style={{ background: getTasteTintSurface(activeTaste), color: getTasteTintSurfaceText(activeTaste), borderColor: getTasteChipBorder(activeTaste) }}>
+                      <span className="text-[11px] font-semibold opacity-70">메인 미각</span>
+                      <strong className="text-[17px] leading-[23px]">{activeBubble.labelSnapshot}</strong>
+                    </div>
+                    <div className="flex items-center gap-2" role="group" aria-label="선택한 미각">
+                      {bubbles.map((bubble) => <button key={bubble.id} type="button" aria-label={bubble.labelSnapshot} aria-pressed={bubble.id === activeBubble.id} className={`size-6 rounded-full border ${bubble.id === activeBubble.id ? '' : 'opacity-40'}`} style={{ background: getTasteTintSurface(activeTaste), borderColor: getTasteChipBorder(activeTaste) }} onClick={() => setLinkedBubbleID(bubble.id)} />)}
+                    </div>
+                  </> : <div className="flex size-44 items-center justify-center rounded-full bg-[var(--tb-color-surface-muted)] px-5 text-center text-[17px] font-bold">음식의 디테일을<br />남겨주세요</div>}
+                </div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3 rounded-[20px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] p-3">
+                    <p className="min-w-0 flex-1 truncate text-[14px]">{entry.note || '추가 메모 또는 사진'}</p>
+                    <button type="button" aria-label="추가 메모" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)]" onClick={() => { setNoteBeforeEdit(entry.note); setSupplement('note'); }}><Pencil size={16} strokeWidth={1.8} /></button>
+                    <button type="button" aria-label="사진 추가" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-bg-focus)]" onClick={() => detailPhotoRef.current?.click()}><Camera size={16} strokeWidth={1.8} /></button>
                   </div>
-                  <div className="flex flex-col gap-6">
-                    {categoryPools.map((group) => (
-                      <section key={group.id}>
-                        <h3 className="mb-3 text-[14px] font-semibold">
-                          {group.label}
-                        </h3>
-                        <div className="grid grid-flow-col grid-rows-2 auto-cols-max gap-2 overflow-x-auto pb-2">
-                          {group.tags.map((c) => {
-                            const selected = scopedDetail(c.id);
-                            return (
-                              <button
-                                type="button"
-                                key={c.id}
-                                aria-pressed={!!selected}
-                                className={`min-h-11 rounded-full border px-3 text-[12px] ${selected ? "border-black bg-black text-white" : "border-transparent bg-white"}`}
-                                onClick={() => toggleDetail(c.id)}
-                              >
-                                {c.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <div className="mt-2 flex gap-2">
-                          <input aria-label={`${group.label} 직접 입력`} className={field} placeholder="직접 입력" value={customInputs[group.id]??''} onChange={e=>setCustomInputs(v=>({...v,[group.id]:e.target.value}))} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addCustom(group.id);}}}/>
-                          <button type="button" className="min-h-11 shrink-0 px-2 text-[12px]" onClick={()=>addCustom(group.id)}>추가</button>
-                        </div>
-                      </section>
-                    ))}
+                  <div className="flex gap-2">
+                    <button type="button" aria-label="식사 날짜 수정" className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-[20px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] p-3 text-left text-[14px]" onClick={() => setSupplement('date')}><Clock3 size={16} className="shrink-0" /><span className="truncate">{entry.mealTime?.source === 'user_confirmed' && entry.mealTime.start != null ? dateInput(entry.mealTime.start) : '식사일 미확인'}</span></button>
+                    <button type="button" aria-label="위치 수정" className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-[20px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] p-3 text-left text-[14px]" onClick={() => setSupplement('location')}><MapPin size={16} className="shrink-0" /><span className="truncate">{entry.restaurant || '위치 미확인'}</span></button>
                   </div>
-                </section>
-                {details.length > 0 && (
-                  <section className="flex flex-col gap-3">
-                    <h2 className="text-[16px] font-bold">
-                      선택한 디테일 평가
-                    </h2>
-                    {details.map((s) => (
-                      <SensorySelectionEditor
-                        key={sensorySelectionKey(s)}
-                        selection={s}
-                        bubbles={bubbles}
-                        onChange={next=>setSelection(next,sensorySelectionKey(s))}
-                        onRemove={() => remove(s)}
-                        onDuplicate={()=>setSelections([...selections,{...s,selectionInstanceID:crypto.randomUUID(),liking:null,intensity:null,preferenceFit:null}])}
-                      />
-                    ))}
-                  </section>
-                )}
-                <label className="text-[13px] font-semibold">
-                  추가 메모 · 선택사항
-                  <textarea
-                    aria-label="추가 메모"
-                    className={`${field} mt-2 min-h-[120px] py-3 font-normal`}
-                    value={entry.note}
-                    onChange={(e) => update({ note: e.target.value })}
-                    placeholder="선택한 버블과 태그를 보충하고 싶을 때만 남겨주세요."
-                  />
-                </label>
-              </>
-            )}
+                </div>
+                {categoryPools.map((group) => <section key={group.id}>
+                  <div className="mb-3 flex items-center justify-between"><h3 className="text-[14px] font-bold">{group.label}</h3><span className="text-[11px] text-[var(--tb-color-text-faint)]">선택사항</span></div>
+                  <div className="grid grid-flow-col grid-rows-2 auto-cols-max gap-2 overflow-x-auto pb-2 no-scrollbar">
+                    <button type="button" aria-label={`${group.label} 직접 입력`} className="flex size-9 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)]" onClick={() => setCustomCategory(customCategory === group.id ? null : group.id)}><Plus size={14} /></button>
+                    {group.tags.map((tag) => { const selected = !!scopedDetail(tag.id); return <button type="button" key={tag.id} aria-pressed={selected} className="h-9 rounded-full border px-3 text-[12px]" style={{ background: selected ? getTasteTintSurface(activeTaste) : 'var(--tb-color-surface-muted)', color: selected ? getTasteTintSurfaceText(activeTaste) : 'var(--tb-color-text-subtle)', borderColor: selected ? getTasteChipBorder(activeTaste) : 'var(--tb-color-border-default)' }} onClick={() => toggleDetail(tag.id)}>{tag.label}</button>; })}
+                    {details.filter((selection) => selection.id.startsWith(`custom:${group.id}:`)).map((selection) => <button type="button" key={sensorySelectionKey(selection)} aria-pressed="true" aria-label={`${selection.labelSnapshot} 선택 해제`} className="h-9 rounded-full border px-3 text-[12px]" style={{ background: getTasteTintSurface(activeTaste), color: getTasteTintSurfaceText(activeTaste), borderColor: getTasteChipBorder(activeTaste) }} onClick={() => remove(selection)}>{selection.labelSnapshot}</button>)}
+                  </div>
+                  {customCategory === group.id && <div className="mt-2 flex gap-2"><input autoFocus aria-label={`${group.label} 직접 입력`} className={field} placeholder="직접 입력" value={customInputs[group.id] ?? ''} onChange={(event) => setCustomInputs((values) => ({ ...values, [group.id]: event.target.value }))} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addCustom(group.id); setCustomCategory(null); } }} /><button type="button" className="min-h-11 shrink-0 px-2 text-[12px]" onClick={() => { addCustom(group.id); setCustomCategory(null); }}>추가</button></div>}
+                </section>)}
+              </div>
+            ))}
             {step === 4 && (
-              <article className="rounded-[24px] bg-white p-5">
+              <article className="rounded-[24px] bg-[var(--tb-color-surface-base)] p-5">
                 {photoURL ? (
                   <img
                     src={photoURL}
@@ -913,42 +691,43 @@ export default function NativeDiningEditor({
         </p>
       )}
       {(step !== 2 || showWords) && (
-        <footer
-          className="shrink-0 bg-[var(--tb-color-bg-page)] p-5"
-          style={{ paddingBottom: "max(20px, env(safe-area-inset-bottom))" }}
-        >
-          <button
-            type="button"
-            className="min-h-[52px] w-full rounded-full bg-black px-5 text-[14px] font-semibold text-white disabled:opacity-30"
-            disabled={!canContinue || saving}
-            onClick={step === 4 ? () => void save() : next}
-          >
-            {saving
-              ? "저장 중"
-              : step === 4
-                ? "저장"
-                : step === 1
-                  ? "미각 버블 고르기"
-                  : "다음"}
-          </button>
-          {step === 0 && !baseline && (
-            <button
-              type="button"
-              className="mt-2 min-h-11 w-full text-[12px]"
-              disabled={!canContinue || saving}
-              onClick={() => void save("captured")}
-            >
-              사진·메뉴만 먼저 저장
-            </button>
-          )}
+        <footer className="native-dining-flow-footer shrink-0" style={step === 3 ? { background: 'linear-gradient(transparent, var(--tb-color-bg-focus) 40%)' } : undefined}>
+          {step === 1 && !canContinue && <p className="mb-2 text-center text-[11px] text-[var(--tb-color-text-faint)]">전체 평가를 하나 선택해 주세요.</p>}
+          {step === 3 && <p className="mb-2 text-center text-[11px] text-[var(--tb-color-text-faint)]">태그를 고르지 않아도 미각 인상은 저장됩니다.</p>}
+          <div className="flex gap-2">
+            {step === 3 && supplement === 'note' && <button type="button" className="min-h-12 flex-1 rounded-[12px] border border-[var(--tb-color-border-default)] text-[14px]" onClick={() => { update({ note: noteBeforeEdit }); setSupplement(null); }}>취소하기</button>}
+            <PrimaryButton className={step === 3 && supplement === 'note' ? 'flex-1' : ''} disabled={!canContinue || saving} onClick={step === 4 ? () => void save() : step === 3 && supplement === 'note' ? () => setSupplement(null) : next}>
+              {saving ? '저장 중' : step === 4 ? '저장' : step === 1 ? '미각 버블 고르기' : step === 3 ? supplement === 'note' ? '계속하기' : '완료' : step === 0 ? '취향까지 기록' : '다음'}
+            </PrimaryButton>
+          </div>
+          {step === 0 && !baseline && <button type="button" className="mt-2 min-h-11 w-full text-[12px]" disabled={!canContinue || saving} onClick={() => void save('captured')}>사진·메뉴만 먼저 저장</button>}
         </footer>
       )}
+      <input ref={detailPhotoRef} aria-label="디테일 사진" type="file" accept="image/*" capture="environment" className="sr-only" onChange={async (event) => {
+        const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
+        setPhotoLoading(true);
+        try { const blob = await jpeg(file); if (!alive.current) return; const filename = `${crypto.randomUUID()}.jpg`; setPhoto({ filename, blob }); setSourcePhoto(file); update({ reflectionPhotoFilename: filename }); }
+        catch { setError('사진을 읽지 못했어요. 다른 사진을 선택해 주세요.'); }
+        finally { if (alive.current) setPhotoLoading(false); }
+      }} />
+      <BottomSheetShell open={supplement === 'date' || supplement === 'location'} onOpenChange={(open) => { if (!open) setSupplement(null); }} contentClassName="!z-[90]" overlayClassName="!z-[89]" headerStart={<BottomSheetCloseButton />} headerCenter={<DrawerTitle className="text-[15px] font-bold">{supplement === 'date' ? '식사 날짜' : '위치'}</DrawerTitle>}>
+        <DrawerDescription className="sr-only">확인한 식사 날짜와 식당만 기록에 반영합니다.</DrawerDescription>
+        <div className="flex flex-col gap-4 px-5 pb-8">
+          {supplement === 'date' ? <label className="text-[14px]">확인한 식사일<input type="date" aria-label="확인한 식사일" className={`${field} mt-2`} max={dateInput(swiftTime())} value={entry.mealTime?.source === 'user_confirmed' ? dateInput(entry.mealTime.start) : ''} onChange={(event) => update({ mealTime: event.target.value ? { source: 'user_confirmed', start: swiftTime(new Date(event.target.value + 'T00:00:00')), confirmedAt: swiftTime() } : { source: 'unknown' } })} /><span className="mt-2 block text-[12px] text-[var(--tb-color-text-hint)]">날짜를 모르면 비워두세요.</span></label>
+            : <>
+              <label className="text-[14px]">식당 이름<div className="mt-2 flex gap-2"><input aria-label="기록 위치" className={`${field} min-w-0 flex-1`} value={entry.restaurant} onChange={(event) => { request.current++; setPlaces([]); setSearching(false); update({ restaurant: event.target.value, restaurantID: null, menuItemID: null, foodSource: entry.foodSource ? { ...entry.foodSource, restaurantPlace: null } : entry.foodSource }); }} /><button type="button" disabled={searching || !entry.restaurant.trim()} className="shrink-0 rounded-[14px] bg-[var(--tb-color-surface-muted)] px-3 text-[12px]" onClick={lookup}>{searching ? '검색 중' : '식당 찾기'}</button></div></label>
+              {places.map((place) => <button type="button" key={place.placeId} className="rounded-[20px] bg-[var(--tb-color-surface-muted)] p-3 text-left" onClick={() => { if (!place.placeId || !place.name) return; update({ restaurant: place.name, restaurantID: place.placeId, menuItemID: null, foodSource: {kind:'restaurant',restaurantNamespace:'kakao',version:1,restaurantPlace:{name:place.name,address:place.roadAddress ?? place.address ?? '',kakaoPlaceID:place.placeId,latitude:place.lat,longitude:place.lng,phone:place.phone}} });setPlaces([]);setPlaceMessage('확인한 식당에 연결했어요.'); }}><span className="text-[14px] font-semibold">{place.name}</span><span className="mt-1 block text-[12px] text-[var(--tb-color-text-hint)]">{place.roadAddress ?? place.address}</span></button>)}
+              {placeMessage && <p role="status" className="text-[12px] text-[var(--tb-color-text-hint)]">{placeMessage}</p>}
+            </>}
+          <PrimaryButton onClick={() => setSupplement(null)}>확인</PrimaryButton>
+        </div>
+      </BottomSheetShell>
       {discard && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 p-5">
           <div
             role="alertdialog"
             aria-label="기록 닫기 확인"
-            className="w-full max-w-sm rounded-[24px] bg-white p-5"
+            className="w-full max-w-sm rounded-[24px] bg-[var(--tb-color-surface-base)] p-5"
           >
             <h2 className="text-[16px] font-bold">
               작성 중인 기록을 닫을까요?
@@ -964,7 +743,7 @@ export default function NativeDiningEditor({
                 계속 작성
               </button>
               <button
-                className="min-h-11 flex-1 rounded-full bg-black text-white"
+                className="min-h-11 flex-1 rounded-full bg-[var(--tb-color-interaction-primary)] text-[var(--tb-color-interaction-on-primary)]"
                 onClick={onClose}
               >
                 닫기

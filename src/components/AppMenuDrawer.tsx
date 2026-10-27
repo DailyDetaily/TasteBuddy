@@ -6,6 +6,7 @@ import {
   Bell as BellIcon,
   CircleHelp as CircleHelpIcon,
   Info as InfoIcon,
+  SunMoon as SunMoonIcon,
   LogIn as LogInIcon,
   LogOut as LogOutIcon,
   Mail as MailIcon,
@@ -14,6 +15,10 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
+import { COLOR_MODE_OPTIONS, setColorModePreference, useColorModePreference } from '../lib/colorMode';
+import BottomSheetShell, { BottomSheetCloseButton } from './system/BottomSheetShell';
+import SelectionCard from './system/SelectionCard';
+import { DrawerTitle, DrawerDescription } from './ui/drawer';
 import PalateBloomAvatar, {
   DEFAULT_PALATE_BLOOM_PROFILE,
   type TasteProfile as PalateBloomTasteProfile,
@@ -29,6 +34,7 @@ const RefreshCw = wrapIcon(RefreshCwIcon);
 const Bell = wrapIcon(BellIcon);
 const HelpCircle = wrapIcon(CircleHelpIcon);
 const Info = wrapIcon(InfoIcon);
+const SunMoon = wrapIcon(SunMoonIcon);
 const LogIn = wrapIcon(LogInIcon);
 const LogOut = wrapIcon(LogOutIcon);
 const Mail = wrapIcon(MailIcon);
@@ -63,6 +69,7 @@ const menuSections: { title: string; items: MenuItem[] }[] = [
     items: [
       { icon: HelpCircle, label: '도움말', desc: 'TCS 사용 가이드', action: 'help' },
       { icon: Info, label: '앱 정보', desc: 'Taste Buddy v1.0.0', action: 'about' },
+      { icon: SunMoon, label: '화면 테마', action: 'theme' },
     ],
   },
 ];
@@ -100,12 +107,21 @@ export default function AppMenuDrawer({
   userLabel = 'Taste Buddy',
   isAnonymousUser = true,
 }: AppMenuDrawerProps) {
+  const colorModePreference = useColorModePreference();
+  const [isThemeSheetOpen, setIsThemeSheetOpen] = React.useState(false);
+  const themeLabel = COLOR_MODE_OPTIONS.find((option) => option.value === colorModePreference)?.label;
+  React.useEffect(() => {
+    if (!isOpen) setIsThemeSheetOpen(false);
+  }, [isOpen]);
   const FooterIcon = isAnonymousUser ? LogIn : LogOut;
   const footerAction = isAnonymousUser ? 'auth' : 'logout';
   const footerLabel = isAnonymousUser ? '로그인' : '로그아웃';
 
   const handleAction = (action: string) => {
     switch (action) {
+      case 'theme':
+        setIsThemeSheetOpen(true);
+        break;
       case 'remeasure':
         onClose();
         onStartMeasurement?.();
@@ -148,10 +164,11 @@ export default function AppMenuDrawer({
 
       {/* Drawer */}
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-[300px] max-w-[85vw] bg-white/85 supports-[backdrop-filter:blur(0px)]:bg-white/85 backdrop-blur-xl transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        aria-hidden={!isOpen}
+        className={`fixed inset-y-0 right-0 z-[70] w-[300px] max-w-[85vw] bg-[var(--tb-color-surface-overlay)] supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-surface-overlay)] backdrop-blur-xl transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           isOpen
             ? 'translate-x-0 shadow-[var(--tb-shadow-drawer)]'
-            : 'translate-x-full shadow-none pointer-events-none'
+            : 'invisible translate-x-full shadow-none pointer-events-none'
         }`}
       >
         <div className="flex flex-col h-full">
@@ -161,6 +178,7 @@ export default function AppMenuDrawer({
             <button
               type="button"
               onClick={onClose}
+              aria-label="메뉴 닫기"
               className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors]"
               style={{
                 width: CHROME_ICON_BUTTON_SIZE,
@@ -207,7 +225,7 @@ export default function AppMenuDrawer({
           </button>
 
           {/* Menu Sections */}
-          <div className="flex-1 overflow-y-auto no-scrollbar px-5">
+          <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar px-5">
             <div className="flex flex-col gap-6">
               {menuSections.map((section) => (
                 <div key={section.title}>
@@ -217,6 +235,7 @@ export default function AppMenuDrawer({
                   <div className="flex flex-col gap-1">
                     {section.items.map((item) => {
                       const Icon = item.icon;
+                      const description = item.action === 'theme' ? themeLabel : item.desc;
                       return (
                         <button
                           key={item.action}
@@ -229,9 +248,9 @@ export default function AppMenuDrawer({
                             <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
                               {item.label}
                             </span>
-                            {item.desc && (
+                            {description && (
                               <span className="text-[11px] text-[var(--tb-color-text-muted)] truncate">
-                                {item.desc}
+                                {description}
                               </span>
                             )}
                           </div>
@@ -245,22 +264,41 @@ export default function AppMenuDrawer({
                   </div>
                 </div>
               ))}
+              <div className="py-4 border-t border-[var(--tb-color-border-default)]">
+                <button
+                  type="button"
+                  onClick={() => handleAction(isAnonymousUser ? 'login' : footerAction)}
+                  className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 w-full text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
+                >
+                  <FooterIcon size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
+                  <span className="text-[13px] font-medium text-[var(--tb-color-text-hint)]">{footerLabel}</span>
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-4 py-4 border-t border-[var(--tb-color-border-default)]">
-            <button
-              type="button"
-              onClick={() => handleAction(isAnonymousUser ? 'login' : footerAction)}
-              className="flex items-center gap-3 rounded-[var(--tb-radius-12)] px-3 py-3 w-full text-left transition-colors hover:bg-[var(--tb-color-surface-muted)]"
-            >
-              <FooterIcon size={ICON_TOKENS.size.md} className="shrink-0 text-[var(--tb-color-icon-muted)]" />
-              <span className="text-[13px] font-medium text-[var(--tb-color-text-hint)]">{footerLabel}</span>
-            </button>
           </div>
         </div>
       </div>
+      <BottomSheetShell
+        open={isOpen && isThemeSheetOpen}
+        onOpenChange={setIsThemeSheetOpen}
+        overlayClassName="z-[80]"
+        contentClassName="z-[90] !h-auto !max-h-[80dvh]"
+        headerStart={<BottomSheetCloseButton ariaLabel="화면 테마 닫기" />}
+        headerCenter={<DrawerTitle className="text-[15px] font-bold text-[var(--tb-color-text-primary)]">화면 테마</DrawerTitle>}
+      >
+        <DrawerDescription className="sr-only">사용할 화면 테마를 선택하세요.</DrawerDescription>
+        <div className="flex flex-col gap-2 overflow-y-auto px-5 pb-[max(24px,var(--tb-safe-area-bottom))]">
+          {COLOR_MODE_OPTIONS.map((option) => (
+            <SelectionCard
+              key={option.value}
+              title={option.label}
+              singleLine
+              selected={colorModePreference === option.value}
+              onClick={() => setColorModePreference(option.value)}
+            />
+          ))}
+        </div>
+      </BottomSheetShell>
     </>
   );
 }

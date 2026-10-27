@@ -1,14 +1,15 @@
 import { useNativeJournal } from '../../lib/gastronomy/useNativeJournal';
+import { useNativeAnalysis, type NativePalateData } from '../../lib/gastronomy/useNativeAnalysis';
+import { buildOverallTasteProfile } from '../../lib/overallTasteProfile.mjs';
 import { buildNativePerceptionRecords } from '../../lib/gastronomy/nativePerception';
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import SectionCard from '../SectionCard';
 import { DrawerTitle } from '../ui/drawer';
-import PageSection from '../system/PageSection';
 import HexRadarChart from '../system/HexRadarChart';
 import TasteInsightSummaryCard, { TasteChangeEmptySummary } from '../system/TasteInsightSummaryCard';
 import BottomSheetShell, { BottomSheetCloseButton } from '../system/BottomSheetShell';
-import { TASTE_IDS, TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
+import { TASTE_IDS, type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import type { TasteMeasurementSnapshot } from '../../constants/tasteMeasurementData';
 import type { TasteSurveySubmission } from '../../types/tasteSurvey';
 import type { DiningPageExternalFeedbackSubmission } from '../../pages/DiningPage';
@@ -26,8 +27,9 @@ const dates = (period: any) => period.start != null && period.end != null
 const responseLabel = (point: any, submission = point.submission) => submission && point.item
   ? tasteSurveyResponseLabel(submission.responses.find((row: any) => row.itemId === point.item.id), submission.scale) : '미응답';
 
-export default function TastePerceptionCards({ nativeOwnerID, measurementSnapshot, surveyHistory = NO_HISTORY, feedbackSubmissions = NO_SUBMISSIONS, isActive = true, preferenceUserID = 'guest', onOpenTasteChange }: {
+export default function TastePerceptionCards({ nativeOwnerID, nativeData, measurementSnapshot, surveyHistory = NO_HISTORY, feedbackSubmissions = NO_SUBMISSIONS, isActive = true, preferenceUserID = 'guest', onOpenTasteChange }: {
   nativeOwnerID?: string;
+  nativeData?: NativePalateData;
   measurementSnapshot: TasteMeasurementSnapshot;
   surveyHistory?: readonly TasteSurveySubmission[];
   feedbackSubmissions?: readonly DiningPageExternalFeedbackSubmission[];
@@ -37,11 +39,10 @@ export default function TastePerceptionCards({ nativeOwnerID, measurementSnapsho
 }) {
   const [remoteDining, setRemoteDining] = useState<Awaited<ReturnType<typeof hydrateReservationPageData>> | null>(null);
   const [remoteMeasurements, setRemoteMeasurements] = useState<TasteMeasurementSnapshot[]>([]);
-  const [showMeals, setShowMeals] = useState(false);
-  const [showPrevious, setShowPrevious] = useState(false);
   const [detail, setDetail] = useState<{ kind: 'meal' | 'survey' | 'conditions'; axis?: TasteId } | null>(null);
   useEffect(() => {
-    if (!isActive) return;
+    setRemoteDining(null); setRemoteMeasurements([]); setDetail(null);
+    if (!isActive || nativeOwnerID) return;
     let cancelled = false;
     Promise.allSettled([hydrateReservationPageData({ seedIfEmpty: false }), hydrateRecentMeasurementSnapshots(7)]).then(([dining, measurements]) => {
       if (cancelled) return;
@@ -49,31 +50,31 @@ export default function TastePerceptionCards({ nativeOwnerID, measurementSnapsho
       if (measurements.status === 'fulfilled') setRemoteMeasurements(measurements.value);
     });
     return () => { cancelled = true; };
-  }, [isActive, measurementSnapshot.measuredAt]);
-  const nativeJournal = useNativeJournal(nativeOwnerID ?? (preferenceUserID === 'local-owner' ? 'guest' : preferenceUserID), isActive);
-  const dining = useMemo(() => { const legacy = buildDiningPerceptionRecords(feedbackSubmissions, remoteDining); const native = buildNativePerceptionRecords(nativeJournal.entries); return {records:[...legacy.records,...native.records],sources:[...legacy.sources,...native.sources]}; }, [feedbackSubmissions, remoteDining, nativeJournal.archive]);
+  }, [isActive, nativeOwnerID, preferenceUserID, measurementSnapshot.measuredAt]);
+  const owner = nativeOwnerID ?? (preferenceUserID === 'local-owner' ? 'guest' : preferenceUserID);
+  const localJournal = useNativeJournal(owner, isActive && !nativeData);
+  const nativeJournal = nativeData?.journal ?? localJournal;
+  const localAnalysis = useNativeAnalysis(nativeJournal.entries, owner, !nativeData && !!nativeJournal.archive && nativeJournal.canEdit);
+  const analysis = nativeData?.analysis ?? localAnalysis;
+  const waiting = nativeJournal.loading || analysis.updating || (!nativeJournal.archive && !nativeJournal.error);
+  const error = analysis.error ?? (!nativeJournal.canEdit ? nativeJournal.error : null);
+  const retry = () => { nativeJournal.retry(); analysis.retry(); };
+  // The worker uses a stable model identity; the hook separately gates the result by real account owner.
+  const overall = useMemo(() => buildOverallTasteProfile(analysis.snapshot?.model, analysis.snapshot?.observations ?? [], {
+    userID: analysis.owner === owner ? analysis.snapshot?.model.userID ?? '' : '',
+  }), [analysis.snapshot, analysis.owner, owner]);
+  const dining = useMemo(() => {
+    const native = buildNativePerceptionRecords(nativeJournal.entries);
+    if (nativeOwnerID) return native;
+    const legacy = buildDiningPerceptionRecords(feedbackSubmissions, remoteDining);
+    return { records: [...legacy.records, ...native.records], sources: [...legacy.sources, ...native.sources] };
+  }, [nativeOwnerID, feedbackSubmissions, remoteDining, nativeJournal.archive]);
   const model = useMemo(() => buildTastePerception(dining.records), [dining]);
   const survey = useMemo(() => buildSurveyPerception([
     ...remoteMeasurements.map(snapshot => snapshot.surveySubmission), ...surveyHistory, measurementSnapshot.surveySubmission,
   ]), [remoteMeasurements, surveyHistory, measurementSnapshot]);
   const currentFor = (axis: TasteId) => model.axes.find((row: any) => row.axis === axis)?.current;
   const currentPatterns = TASTE_IDS.map(currentFor).filter(Boolean);
-  const valuesFor = (previous: boolean) => TASTE_IDS.map(axis => {
-    const pattern = currentFor(axis), point = survey.points.find((row: any) => row.axis === axis);
-    const level = previous ? pattern?.previousLevel : pattern?.currentLevel;
-    return showMeals ? level == null ? null : level + 1 : (previous ? point?.previous?.value : point?.value) ?? null;
-  });
-  const values = valuesFor(showPrevious), referenceValues = showPrevious ? [] : valuesFor(true);
-  const hasPrevious = showMeals ? currentPatterns.some((row: any) => row.previous.mealIDs.length > 0) : survey.points.some((point: any) => point.previous);
-  const count = showMeals ? new Set(currentPatterns.flatMap((row: any) => (showPrevious ? row.previous : row.recent).mealIDs)).size : values.filter(value => value !== null).length;
-  const timestamps = (showMeals ? currentPatterns.flatMap((row: any) => {
-    const period = showPrevious ? row.previous : row.recent; return [period.start, period.end];
-  }) : survey.points.map((point: any) => Date.parse((showPrevious ? point.previous?.submission : point.submission)?.recordedAt)))
-    .filter((value: any) => value != null && Number.isFinite(value));
-  const dateLabel = (value: number) => new Date(value).toLocaleDateString('ko-KR');
-  const start = Math.min(...timestamps), end = Math.max(...timestamps);
-  const periodLabel = timestamps.length ? dateLabel(start) === dateLabel(end) ? dateLabel(start) : `${dateLabel(start)} – ${dateLabel(end)}` : showPrevious ? '이전 기록' : '최근 기록';
-  const hasReference = referenceValues.some(value => value !== null);
   const hasComparison = model.patterns.some((row: any) => row.currentLevel != null && row.previousLevel != null)
     || survey.points.some((row: any) => row.value != null && row.previous?.value != null);
   const firstChange = model.changes[0];
@@ -87,44 +88,24 @@ export default function TastePerceptionCards({ nativeOwnerID, measurementSnapsho
       return { ...point, sources: dining.sources.filter(source => ids.has(source.id)) };
     }),
   })));
-  return <PageSection title="감각 패턴">
+  return <section className="flex flex-col gap-5" aria-label="전체 입맛과 변화">
     <div data-testid="taste-perception-radar">
-      <SectionCard hoverEffect={false}>
-        <div className="flex w-full items-center justify-between gap-1">
-          <button type="button" className="flex size-11 shrink-0 items-center justify-center disabled:text-[var(--tb-color-text-disabled)]" aria-label="이전 기간 보기" disabled={showPrevious || !hasPrevious} onClick={() => setShowPrevious(true)}><ChevronLeft size={20} strokeWidth={1.5} /></button>
-          <select aria-label="기록 출처 선택" value={showMeals ? 'meal' : 'survey'} onChange={event => { setShowMeals(event.target.value === 'meal'); setShowPrevious(false); }}
-            className="min-h-11 min-w-0 appearance-none bg-transparent text-center text-[14px] font-semibold">
-            <option value="survey">{showMeals ? '기준 음식 회상' : periodLabel}</option>
-            <option value="meal">{showMeals ? periodLabel : '식사 기록'}</option>
-          </select>
-          <button type="button" className="flex size-11 shrink-0 items-center justify-center disabled:text-[var(--tb-color-text-disabled)]" aria-label="다음 기간 보기" disabled={!showPrevious} onClick={() => setShowPrevious(false)}><ChevronRight size={20} strokeWidth={1.5} /></button>
-        </div>
-        <div className="w-full" role="img" aria-label={TASTE_IDS.map((axis, index) => `${TASTE_TOKENS[axis].label} ${values[index] == null ? '기록 없음' : showMeals ? INTENSITY_LABELS[values[index]! - 1] : `${values[index]}단계`}`).join(', ')}>
-          <HexRadarChart reportedValues={values} referenceValues={referenceValues} maximum={showMeals ? 3 : 4} />
-        </div>
-        <div className="mt-2 flex w-full items-end justify-center gap-1">
-          <button type="button" className="flex min-h-11 flex-col items-center justify-end gap-1" onClick={() => setDetail({ kind: showMeals ? 'meal' : 'survey' })} aria-label="나의 반응, 적용 조건과 원본 기록 보기">
-            <span className="text-[10px] text-[var(--tb-color-text-hint)]">나의 반응</span>
-            <span className="flex h-6 items-center rounded-md bg-[var(--tb-color-text-primary)] px-2.5 text-[12px] font-bold text-white">{count ? showMeals ? `식사 ${count}회` : `회상 ${count}개` : '기록 없음'}</span>
-          </button>
-          <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-md bg-[var(--tb-color-text-disabled)] text-[10px] font-bold text-white">→</span>
-          <button type="button" className="flex min-h-11 flex-col items-center justify-end gap-1" disabled={!hasReference} onClick={() => setDetail({ kind: showMeals ? 'meal' : 'survey' })} aria-label="기준 반응, 이전 기록 보기">
-            <span className="text-[10px] text-[var(--tb-color-text-hint)]">기준 반응</span>
-            <span className="flex h-6 items-center rounded-md bg-[var(--tb-color-text-primary)] px-2.5 text-[12px] font-bold text-white">{hasReference ? '이전 기록' : '아직 없음'}</span>
-          </button>
-        </div>
-      </SectionCard>
+      {waiting ? <p role="status" className="flex min-h-[300px] items-center justify-center text-[13px]">전체 기록을 불러오고 있어요</p>
+        : error ? <div role="alert" className="flex min-h-[300px] flex-col items-center justify-center gap-3">
+          <p>입맛 기록을 불러오지 못했어요</p><p className="text-[12px]">{error}</p>
+          <button type="button" className="min-h-11 px-4 underline" onClick={retry}>다시 시도</button>
+        </div> : <OverallTasteRadar key={owner} overall={overall} />}
     </div>
     <div data-testid="taste-perception-change">
-      <TasteInsightSummaryCard details={[]} keywords={[]} sectionLabel="미각변화" actionLabel="기록 비교"
-        title={firstChange ? `${TASTE_TOKENS[firstChange.axis as TasteId].label}을 느낀 강도가 달라졌어요` : survey.changes.length ? '기준 음식에서 기억한 강도가 달라졌어요' : '아직 변화없음'}
-        onClick={openChanges}>
-        {!hasComparison && <TasteChangeEmptySummary />}
+      <TasteInsightSummaryCard details={[]} keywords={[]} sectionLabel="미각 변화" actionLabel="기록 비교"
+        title={waiting ? "기록을 불러오고 있어요" : error ? "기록 조회 실패" : firstChange ? `${TASTE_TOKENS[firstChange.axis as TasteId].label}을 느낀 강도가 달라졌어요` : survey.changes.length ? '기준 음식에서 기억한 강도가 달라졌어요' : hasComparison ? '확인된 강도 변화가 없어요' : '비교할 기록이 부족해요'}
+        onClick={waiting || error ? undefined : openChanges}>
+        {!waiting && !error && !hasComparison && <TasteChangeEmptySummary />}
       </TasteInsightSummaryCard>
     </div>
-    <TasteInsightSummaryCard details={[]} keywords={[]} sectionLabel="특이사항" actionLabel="조건과 근거"
-      title={model.contrasts.length ? '같은 음식도 조건에 따라 다르게 느꼈어요' : '조건별 차이는 확인 중'} onClick={() => setDetail({ kind: 'conditions' })}>
-      <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-secondary)]">{model.contrasts[0]
+    <TasteInsightSummaryCard category="context" details={[]} keywords={[]} sectionLabel="특이사항" actionLabel="조건과 근거"
+      title={waiting ? '기록을 불러오고 있어요' : error ? '기록 조회 실패' : model.contrasts.length ? '같은 음식도 조건에 따라 다르게 느꼈어요' : '조건별 차이는 확인 중'} onClick={waiting || error ? undefined : () => setDetail({ kind: 'conditions' })}>
+      <p className="text-[13px] leading-relaxed text-[var(--tb-color-text-secondary)]">{waiting ? '현재 기록을 확인하고 있어요.' : error ? '기록을 다시 불러와 주세요.' : model.contrasts[0]
         ? `${condition(model.contrasts[0].first)} · ${condition(model.contrasts[0].second)} — 근거 ${model.contrasts[0].mealIDs.length}번의 식사`
         : '같은 음식의 부위나 시점을 다르게 남긴 반복 기록을 살펴봐요.'}</p>
     </TasteInsightSummaryCard>
@@ -160,5 +141,35 @@ export default function TastePerceptionCards({ nativeOwnerID, measurementSnapsho
         </SectionCard>)}
       </div>
     </BottomSheetShell>
-  </PageSection>;
+  </section>;
+}
+
+
+/** Uses the same per-axis repository aggregation as the palate type. Selection stores no values. */
+export function OverallTasteRadar({ overall }: { overall: ReturnType<typeof buildOverallTasteProfile> }) {
+  const [selectedAxis, setSelectedAxis] = useState<TasteId | null>(null);
+  const selected = overall.axes.find(row => row.axis === selectedAxis);
+  const values = overall.axes.map(row => row.current.value);
+  const referenceValues = overall.axes.map(row => row.previous.value);
+  const valueLabel = (previous: boolean) => {
+    const value = selected && (previous ? selected.previous : selected.current).value;
+    return value == null ? '—' : `${Math.round(value)}%`;
+  };
+  const summary = (previous: boolean) => {
+    if (!selected) return '미각을 선택해 주세요';
+    const value = previous ? selected.previous : selected.current;
+    return `${TASTE_TOKENS[selected.axis].label}: ${value.value === null ? '미측정' : `좋아한 비율 ${Math.round(value.value)}%, 평가한 식사 ${value.rated}회 중 ${value.positive}회`}${value.mixed ? `, 평가가 나뉜 식사 ${value.mixed}회 제외` : ''}`;
+  };
+  return <>
+    <HexRadarChart reportedValues={values} referenceValues={referenceValues} maximum={100}
+      selectedAxis={selectedAxis} onSelectAxis={axis => setSelectedAxis(selectedAxis === axis ? null : axis)} />
+    <div className="-mt-10" data-testid="radar-comparison-legend" aria-live="polite" aria-atomic="true">
+      <div className="flex items-end justify-center gap-1 text-[10px] text-[var(--tb-color-text-hint)]">
+        <span className="inline-flex flex-col items-center gap-1" title={`가장 최근 식사일 이전까지의 기록. ${summary(true)}`}>이전<span data-testid="radar-previous-value" aria-label={summary(true)} className="flex h-6 w-12 items-center justify-center rounded-md bg-[var(--tb-color-text-hint)] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">{valueLabel(true)}</span></span>
+        <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-md bg-[var(--tb-color-text-disabled)] text-[10px] font-bold text-white">→</span>
+        <span className="inline-flex flex-col items-center gap-1" title={summary(false)}>현재<span data-testid="radar-current-value" aria-label={summary(false)} className="flex h-6 w-12 items-center justify-center rounded-md bg-[var(--tb-color-text-secondary)] text-[12px] font-bold text-[var(--tb-color-text-inverse)]">{valueLabel(false)}</span></span>
+      </div>
+    </div>
+    {values.every(value => value === null) && <p className="mt-3 text-center text-[12px] text-[var(--tb-color-text-hint)]">식사일과 감각별 호감이 확인된 기록을 모아 보여드려요.</p>}
+  </>;
 }

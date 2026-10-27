@@ -5,7 +5,8 @@ import FlowBottomCta from '../components/system/FlowBottomCta';
 import OutlineBadge from '../components/system/OutlineBadge';
 import SectionTitle from '../components/system/SectionTitle';
 import TasteChip from '../components/system/TasteChip';
-import { ICON_TOKENS, TASTE_TOKENS } from '../constants/designTokens';
+import { ICON_TOKENS } from '../constants/designTokens';
+import { TASTE_TOKENS } from '../constants/uiColorTokens';
 import { tasteSurveyResponseLabel } from '../lib/tasteSurveyEvidence';
 import type { TasteSurveyItem, TasteSurveyResponse } from '../types/tasteSurvey';
 
@@ -36,7 +37,7 @@ export default function TasteSurveyReviewScreen({
           className="w-full max-w-[1440px] bg-[var(--tb-color-bg-focus)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-focus)]/70"
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
-          <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">
+          <div className="relative flex min-h-[var(--tb-size-flow-top-bar-height)] items-center justify-between px-5">
             <button
               type="button"
               aria-label="설문 문항으로 돌아가기"
@@ -63,7 +64,7 @@ export default function TasteSurveyReviewScreen({
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-5 pt-[calc(var(--tb-safe-area-top)+var(--tb-size-top-app-bar-height)+16px)] no-scrollbar">
+      <main className="flex-1 overflow-y-auto px-5 pt-[calc(var(--tb-safe-area-top)+var(--tb-size-flow-top-bar-height)+16px)] no-scrollbar">
         <div className="tb-section-stack pb-[calc(156px+var(--tb-safe-area-bottom))]">
           <div className="tb-card-stack">
             <div className="flex items-center justify-between gap-3">
@@ -75,12 +76,12 @@ export default function TasteSurveyReviewScreen({
             <SectionTitle size="lg" className="leading-tight">
               응답을 한 번 확인해 주세요
             </SectionTitle>
-            <p className="text-[14px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-              이 응답은 첫 프로필을 해석하는 출발점으로 쓰입니다. 떠올리기 어려웠던 항목은 그대로 남겨도 됩니다.
+            <p className="text-[13px] leading-[18.5px] text-[var(--tb-color-text-body)]">
+              설문 응답을 정리한 참고 결과예요. 떠올리기 어려웠던 항목은 그대로 남겨도 됩니다.
             </p>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-[10px]">
             {items.map((item, index) => {
               const taste = TASTE_TOKENS[item.tasteId];
               const response = responses[item.id];
@@ -107,12 +108,12 @@ export default function TasteSurveyReviewScreen({
                         <p className="mt-3 text-[13px] font-semibold leading-snug text-[var(--tb-color-text-primary)]">
                           {item.anchor.label}
                         </p>
-                        <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-[var(--tb-color-text-muted)]">
+                        <p className="mt-1 line-clamp-2 text-[12px] leading-[16px] text-[var(--tb-color-text-body)]">
                           {item.prompt}
                         </p>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="text-[11px] font-medium text-[var(--tb-color-text-faint)]">
+                        <p className="text-[10px] font-medium text-[var(--tb-color-text-hint)]">
                           응답
                         </p>
                         <p className="mt-1 max-w-[104px] text-[12px] font-semibold leading-snug text-[var(--tb-color-text-primary)]">
@@ -129,7 +130,7 @@ export default function TasteSurveyReviewScreen({
       </main>
 
       <FlowBottomCta
-        actionLabel="응답 정리 보기"
+        actionLabel="설문 결과 보기"
         fadeClassName="bg-[linear-gradient(to_top,var(--tb-color-bg-focus)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]"
         onAction={onSubmit}
       />

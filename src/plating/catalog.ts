@@ -5,6 +5,7 @@ import type { ComponentGuide } from "./componentGuides";
 import { nativeComponentGuides as componentGuides } from "./nativeComponentGuides";
 import { additionalComponents } from "./additionalCatalog";
 import { nativeComponentAudit } from "./nativeComponentAudit";
+import { componentLocation, libraryAreas, libraryReferences, type LibraryArea, type LibraryReference } from "./catalogNavigation";
 
 export const PLATING_FIGMA =
   "https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W";
@@ -155,9 +156,9 @@ const rows: Row[] = [
     "탐색",
     "화면 제목과 돌아갈 위치를 알려줘요.",
     "홈 · 기록 · 분석",
-    "FlowHeaderBlock.tsx",
+    "../TopAppBar.tsx",
     "Shell/AppChromeComponents.swift",
-    "Native 48 / Web 56 · 제목 가운데",
+    "일반 48pt · Glass 40pt · 제목 가운데",
   ],
   [
     "bottom-tab",
@@ -376,8 +377,22 @@ const rows: Row[] = [
     "여러 기록에서 보이는 경향을 조심스럽게 설명해요.",
     "홈 요약 · 취향 분석",
     "InterpretationCard.tsx",
-    "../Features/Analysis/PersonalTasteInsightCards.swift",
-    "짧은 감각 제목 · 근거 수 · 가설 표현",
+    "SystemParityComponents.swift",
+    "보조 설명 1줄 · 넘침 시 말줄임과 더보기 · 사용자 미각 악센트",
+  ],
+  [
+    "expandable-card", "ExpandableCard", "펼침 카드", "콘텐츠",
+    "개별 카드의 헤더와 펼침 본문을 보여줘요.",
+    "홈 질문의 답변 접힘·펼침 · 발견 내용 열기",
+    "ExpandableCard.tsx", "NativeLayoutComponents.swift",
+    "패딩 12 · 반경 20 · 본문 간격 12 · 질문 답변 버튼 최소 44",
+  ],
+  [
+    "stack-card", "StackCard", "스택 카드", "콘텐츠",
+    "카드 묶음의 쌓임과 세로 나열을 보여줘요.",
+    "홈의 질문·발견 대기열",
+    "StackCard.tsx", "NativeLayoutComponents.swift",
+    "카드 간격 12 · 뒤쪽 장식 offset 8 / 16 · 첫 카드의 대기열 토글 44 × 44",
   ],
   [
     "taste-graph",
@@ -448,6 +463,20 @@ const examples: Record<string, string> = {
     '<PalateBloomAvatar size={200}\n  profile={{sweet:72, sour:58, bitter:36, salty:46, umami:84, fat:63}}\n  ariaLabel="합성 예제의 미각 관계"\n/>',
 };
 const specifics: Record<string, Partial<CatalogComponent>> = {
+  "expandable-card": {
+    states: ["본문 접힘", "본문 펼침"],
+    rule: "단일 카드의 본문 펼침을 담당해요. 카드 대기열의 쌓임·나열은 StackCard가 담당해요.",
+    accessibility: "본문 버튼에 펼침 상태와 수행할 행동을 제공해요. 선택적 우측 행동은 별도 버튼이에요.",
+    difference: "아래는 ExpandableCard를 사용하는 질문 예제의 실제 SwiftUI 렌더예요. 본문 슬롯은 답변 외의 내용에도 사용할 수 있어요.",
+    code: 'ExpandableCard(isExpanded: isExpanded) {\n    cardHeader\n} content: {\n    answerChoices\n}',
+  },
+  "stack-card": {
+    states: ["스택 쌓임", "스택 펼침"],
+    rule: "카드 묶음의 배치를 담당해요. 개별 카드의 답변 접힘·펼침은 ExpandableCard가 담당해요.",
+    accessibility: "첫 카드의 별도 토글에 대기열 펼침 상태를 제공해요. 뒤쪽 두 장은 장식이며 카드 수로 읽지 않아요.",
+    difference: "아래는 실제 SwiftUI 렌더예요. 펼침 예제에서는 답변이 접힌 질문 카드 3개를 12pt 간격으로 나열해요.",
+    code: 'StackCard(showsStack: cards.count > 1, isExpanded: isStackExpanded) {\n    ForEach(visibleCards) { card in\n        cardView(card)\n    }\n}',
+  },
   "primary-button": {
     rule: "한 화면의 주요 행동은 하나로 정해요. disabled는 실제 실행을 막고, visualDisabled는 설명을 보여줄 수 있는 별도 상태예요.",
     accessibility:
@@ -541,6 +570,7 @@ export type DocSection = {
   title: string;
   body: string;
   items?: string[];
+  links?: { slug: string; label: string }[];
 };
 export type DocPage = {
   slug: string;
@@ -548,6 +578,8 @@ export type DocPage = {
   title: string;
   intro: string;
   sections: DocSection[];
+  figmaNodeId?: string;
+  sourcePaths?: string[];
 };
 export const docs: DocPage[] = [
   {
@@ -568,7 +600,7 @@ export const docs: DocPage[] = [
         body: "기초에서 의미별 토큰을 확인하고 컴포넌트의 실제 사용처를 읽으세요. Figma 메인 컴포넌트에서 인스턴스를 만든 뒤 필요한 상태만 바꿔요.",
         items: [
           "제품 프리뷰는 현재 앱의 라이트 규격이에요. 문서 사이트는 홈 라이트·상세 다크 테마를 사용해요.",
-          "Figma의 폰트 대체 여부와 플랫폼 차이를 먼저 확인하세요.",
+          "Figma와 제품의 Pretendard 굵기 대응 및 플랫폼 차이를 먼저 확인하세요.",
           "브랜드 그래픽은 원본의 조형·비율을 보존해요.",
         ],
       },
@@ -715,65 +747,14 @@ export const docs: DocPage[] = [
   {
     slug: "foundations/colors",
     eyebrow: "FOUNDATIONS",
-    title: "색상",
-    intro:
-      "미각을 구분하는 여섯 색과, 기록을 읽기 쉽게 받쳐주는 뉴트럴 계열을 함께 사용해요. 색에 담은 의도와 사용하는 역할을 알아보세요.",
+    title: "컬러",
+    intro: "Atomic은 원시 색상, Semantic은 사용 역할입니다.",
     sections: [
-      {
-        id: "overview",
-        title: "컬러 오버뷰",
-        body: "플레이팅의 컬러는 음식에서 느낀 감각을 알아보고 기록을 이해하도록 돕는 언어예요. 미각 컬러는 어떤 감각인지 드러내고, 뉴트럴 계열은 배경·표면·글자·경계의 구조를 만들어요.",
-        items: [
-          "같은 미각에는 같은 색을 사용해요. 기록, 차트, 해석 카드에서 미각을 일관되게 알아볼 수 있도록 해요.",
-          "음식과 기록이 중심이 되도록 뉴트럴 계열을 바탕에 두고, 미각의 의미를 전달하는 곳에 색을 사용해요.",
-          "미각색은 감각의 종류를 뜻해요. 강도는 수치와 그래프의 크기·위치로, 호감은 별도의 응답으로 표현해요.",
-        ],
-      },
-      {
-        id: "taste",
-        title: "미각 컬러의 선정 이유",
-        body: "음식에서 떠오르는 인상과 팔레트 안의 구분을 기준으로 여섯 색을 설명해요. 색과 미각의 연결은 플레이팅의 시각적 해석이에요.",
-      },
-      {
-        id: "roles",
-        title: "뉴트럴·상태 컬러",
-        body: "뉴트럴 계열은 밝기와 대비로 정보의 위계를 만들고, 음식 사진과 미각 컬러를 받쳐줘요. 역할별 스와치를 눌러 색상값과 iOS 토큰을 확인하세요.",
-      },
-      {
-        id: "state-pairs",
-        title: "상태별 색 조합",
-        body: "중립·정보·성공·주의·오류에는 각각의 배경과 글자색을 함께 사용해요. 아래 문구는 색 조합을 설명하는 예제이며, 색상값은 현재 iOS 토큰을 따릅니다.",
-      },
-      {
-        id: "interaction-colors",
-        title: "행동과 선택의 색",
-        body: "주요 행동·선택·초점·호버·누름에는 각 역할의 색을 사용해요. 같은 검정이나 흰색이어도 역할 이름을 유지하면 상태를 일관되게 조합할 수 있어요.",
-      },
-      {
-        id: "pairings",
-        title: "배경과 글자를 함께 골라요",
-        body: "색의 가독성은 함께 놓인 전경과 배경으로 판단해요. 기본 표면에는 TBColor.textPrimary·textBody 등 목적에 맞는 글자색을, 밝은 미각 배경에는 해당 TasteAxis.tintTextColor를 사용하고 실제 조합의 대비를 확인하세요.",
-        items: [
-          "선택·오류·성공은 색과 함께 형태, 아이콘 또는 문구로도 알려요.",
-          "투명도, 사진, 그라디언트가 겹치면 최종 배경 위에서 다시 확인해요.",
-          "TBColor.textHint·textDisabled를 중요한 본문이나 활성 행동의 기본값으로 사용하지 않아요. 활성 보조 행동에는 textAction을 사용해요.",
-        ],
-      },
-      {
-        id: "contrast",
-        title: "읽기용 색 조합과 대비",
-        body: "본문·입력 힌트·상태 안내·선택·미각 라벨에 쓰는 글자와 배경의 조합을 확인해요. 상태별 글자색은 기본·호버·누름에서도 일반 작은 글자 기준을 만족하도록 정합니다.",
-      },
-      {
-        id: "mode",
-        title: "현재 지원 범위",
-        body: "현재 TBColor는 iOS 제품의 라이트 규격을 정의해요. 이 문서의 값은 Swift 소스에서 확인한 기준이에요. 실제 화면의 배경 조합, 투명도와 접근성 설정에 따른 가독성은 적용 화면에서 확인해요.",
-      },
-      {
-        id: "color-usage-examples",
-        title: "제품에서 색이 쓰이는 모습",
-        body: "iOS의 홈·미각 선택·기록 저장에서 쓰는 색상과 상태를 실제 소스 기준으로 살펴봐요.",
-      },
+      { id: "atomic", title: "Atomic", body: "원시 색상 · Light / Dark · sRGB" },
+      { id: "semantic", title: "Semantic", body: "사용 역할 → Atomic" },
+      { id: "visualization-colors", title: "시각화와 효과", body: "레이더·미각 측정·중립 미각·그림자의 Light / Dark 값" },
+      { id: "color-rules", title: "필수 규칙", body: "작은 글자 ≥ 4.5:1 · 필수 UI·그래픽 ≥ 3:1 · 색과 함께 문구·형태 제공", items: ["main은 작은 본문에 사용하지 않습니다.", "투명색은 최종 배경 위에서 확인합니다."] },
+      { id: "color-details", title: "참고", body: "" },
     ],
   },
   {
@@ -1122,6 +1103,34 @@ export const docs: DocPage[] = [
     ],
   },
   {
+    slug: "patterns/flow-step",
+    eyebrow: "PATTERNS",
+    title: "단계 표시와 하단 행동",
+    intro: "StepIndicator와 PrimaryButton을 화면에서 조합해 현재 단계와 다음 행동을 안내해요.",
+    sections: [
+      {
+        id: "composition",
+        title: "조합 방식",
+        body: "StepIndicator는 진행 위치를, PrimaryButton은 행동을 담당해요. 필요한 화면은 보조 버튼이나 안내 문구를 함께 배치해요. 하단 영역 전체를 감싸는 별도 FlowStepCta 컴포넌트는 사용하지 않아요.",
+      },
+      {
+        id: "layout",
+        title: "화면의 배치 책임",
+        body: "웹 화면은 부모 기준 하단 고정·최소 높이 140px + safe area·좌우 20px·하단 max(12px, safe area)를 적용해요. iOS는 높이 140pt의 VStack과 좌우 20pt·하단 12pt, 하단 safe area까지 이어지는 페이드를 사용해요. 키보드에 따른 표시와 콘텐츠 하단 여백은 각 화면에서 관리해요.",
+      },
+      {
+        id: "state",
+        title: "단계와 버튼 상태",
+        body: "단위는 현재 흐름의 단계이며 currentIndex는 0부터 시작해요. total은 해당 흐름의 실제 단계 수예요. 기간·날짜·시간대·집계 분모·중복 제거는 적용되지 않아요. 저장 여부나 계정 기록량을 단계 수로 대체하지 않아요. 화면의 기존 상태와 콜백을 사용하고 입력 부족·저장 중·보조 행동·인디케이터 숨김 조건을 그대로 전달해요.",
+      },
+      {
+        id: "examples",
+        title: "상태 예시",
+        body: "아래는 기본·보조 행동·비활성 조합을 확인하는 합성 예시예요. 실제 계정 데이터 저장이나 기기 키보드 동작의 검증 자료는 아니에요. Figma 04 Patterns에도 동일한 조합 예시가 있어요.",
+      },
+    ],
+  },
+  {
     slug: "patterns/dining",
     eyebrow: "PATTERNS",
     title: "식사 기록",
@@ -1204,7 +1213,7 @@ export const docs: DocPage[] = [
       {
         id: "entry",
         title: "음식 기억에서 수정해요",
-        body: "내 기록 검색 → 음식 기억 → 회고·식사 시점 바로잡기. 기존 TasteDetailGroup 안의 전체 행 버튼으로 수정·전체 편집·비교를 묶고, 삭제는 별도 행동으로 분리해요.",
+        body: "내 기록 검색 → 음식 기억 → 메모 수정 / 날짜 수정 / 식당 수정. 기존 TasteDetailGroup 안의 전체 행 버튼으로 수정·전체 편집·비교를 묶고, 삭제는 별도 행동으로 분리해요.",
       },
       {
         id: "editing",
@@ -1225,7 +1234,7 @@ export const docs: DocPage[] = [
       {
         id: "scope",
         title: "구현과 검증 범위",
-        body: "iOS FoodMemoryDetailView·FoodMemoryCorrectionSheet와 DiningFeedbackSheet.reflectionView에 연결했어요. 웹 입력 프리뷰와 Android의 편집 흐름은 이번 iOS 변경과 별도예요. 실행·실기기·VoiceOver의 확인 여부는 해당 변경 기록을 기준으로 읽어야 해요.",
+        body: "iOS FoodMemoryDetailView·FoodMemoryNoteEditor와 DiningFeedbackSheet.reflectionView에 연결했어요. 웹 입력 프리뷰와 Android의 편집 흐름은 이번 iOS 변경과 별도예요. 실행·실기기·VoiceOver의 확인 여부는 해당 변경 기록을 기준으로 읽어야 해요.",
         items: ["실제 사용처: ios/TasteBuddy/Features/Home/FoodMemoryViews.swift", "공용 입력: ios/TasteBuddy/Components/NativeInputComponents.swift → TBTextArea", "다이닝 사용처: ios/TasteBuddy/Features/Dining/DiningView.swift → reflectionView"],
       },
     ],
@@ -1353,7 +1362,7 @@ export const docs: DocPage[] = [
       {
         id: "process",
         title: "변경 절차",
-        body: "사용처와 문제 → 영향받는 ID → 코드·Figma 수정 → 문서와 대응표 갱신 → 해당 플랫폼 검증 → 변경 이력 기록. 소스만 바뀐 경우 검증 상태를 유지하지 말고 다시 확인해요.",
+        body: "사용처와 문제 → 영향받는 ID → Figma·공용 및 제품 코드·토큰 수정 → 플레이팅 예시·디자인 시스템 문서·대응표 갱신 → 해당 플랫폼 검증 → 변경 이력 기록. 이 항목들을 한 작업으로 함께 반영하고 일부만 바꾼 상태를 완료로 보고하지 않아요. 소스가 바뀌면 이전 검증 상태도 다시 확인해요.",
       },
       {
         id: "sync",
@@ -1373,33 +1382,98 @@ export const docs: DocPage[] = [
     ],
   },
 ];
+docs.push(
+  {
+    slug: "assets", eyebrow: "ASSETS", title: "Assets",
+    intro: "아이콘·음식 표현·브랜드와 모션 자산을 용도별로 찾아보세요.",
+    figmaNodeId: "1271:6993",
+    sections: [
+      { id: "icons", title: "Interface & food icons", body: "행동과 음식의 특징을 표현하는 아이콘과 이미지의 사용 기준을 확인해요.", links: [{ slug: "foundations/icons", label: "아이콘과 이미지" }] },
+      { id: "brand-motion", title: "Brand & Motion", body: "기존 브랜드 자산과 모션 원본을 찾아보고 사용 기준을 확인해요.", links: [{ slug: "brand-assets", label: "브랜드 에셋" }, { slug: "motion", label: "인터랙션과 모션" }] },
+    ],
+  },
+  {
+    slug: "patterns/sheet-presentation", eyebrow: "PATTERNS", title: "SheetPresentation",
+    intro: "시트와 배경 화면이 함께 표시되는 방식, 계층과 닫기 동작을 확인해요.",
+    figmaNodeId: "1282:9972",
+    sections: [
+      { id: "examples", title: "시트와 배경 화면", body: "기존 시트 프리뷰에서 표시 방식과 배경 변화를 확인하세요." },
+      { id: "related", title: "함께 쓰는 요소", body: "시트의 콘텐츠와 뒤쪽 배경 레이어는 각각의 원본으로 관리해요.", links: [{ slug: "components/bottom-sheet", label: "BottomSheetShell" }, { slug: "components/sheet-background", label: "SheetBackground" }] },
+    ],
+  },
+  ...libraryReferences.map((entry): DocPage => ({
+    slug: `components/${entry.id}`,
+    eyebrow: `${componentLocation(entry.id).areaLabel.toUpperCase()} / ${componentLocation(entry.id).category}`,
+    title: entry.name,
+    intro: entry.purpose,
+    figmaNodeId: entry.figmaNodeId,
+    sourcePaths: entry.sourcePaths,
+    sections: [
+      { id: "sources", title: "원본과 소스", body: "현재 Figma 정의와 구현 소스를 연결한 안내입니다. 상세 규격과 상태는 각 원본에서 확인하세요." },
+      { id: "related", title: "함께 확인할 문서", body: "관련된 공통 UI, 그래프와 사용 패턴을 찾아보세요.", links: entry.related },
+    ],
+  })),
+);
+
+export type LibraryEntry = {
+  id: string;
+  slug: string;
+  name: string;
+  purpose: string;
+  component?: CatalogComponent;
+  reference?: LibraryReference;
+  doc?: DocPage;
+};
+
+export function librarySections(area: LibraryArea) {
+  return area.sections.map((section) => ({
+    ...section,
+    entries: [
+      ...(section.docSlugs ?? []).map((slug): LibraryEntry => {
+        const doc = docs.find((page) => page.slug === slug);
+        if (!doc) throw new Error(`Missing Plating document: ${slug}`);
+        return { id: slug, slug, name: doc.title, purpose: doc.intro, doc };
+      }),
+      ...section.componentIds.map((id): LibraryEntry => {
+        const component = components.find((item) => item.id === id);
+        const reference = libraryReferences.find((item) => item.id === id);
+        const item = component ?? reference;
+        if (!item) throw new Error(`Missing Plating catalog entry: ${id}`);
+        return { id, slug: `components/${id}`, name: item.name, purpose: item.purpose, component, reference };
+      }),
+    ],
+  }));
+}
+
+export type PlatingNavSection = { label: string; items: string[][] };
 export type PlatingNavGroup = {
   id: string;
   label: string;
   entry: string;
   items: string[][];
+  sections?: PlatingNavSection[];
 };
 
-export const componentNavGroup: PlatingNavGroup = {
-  id: "components",
-  label: "Components",
-  entry: "components",
-  items: [
-    ["components", `전체 컴포넌트 (${components.length})`],
-    ...[...components]
-      .sort((a, b) => a.name.localeCompare(b.name, "en"))
-      .map(({ id, name }) => [`components/${id}`, name]),
-  ],
-};
+const libraryNavGroups: PlatingNavGroup[] = libraryAreas.map((area) => {
+  const sections = librarySections(area).map((section) => ({
+    label: section.label,
+    items: section.entries.map((entry) => [entry.slug, entry.name]),
+  }));
+  const count = sections.reduce((total, section) => total + section.items.length, 0);
+  return { id: area.id, label: area.label, entry: area.entry, sections, items: [[area.entry, `전체보기 (${count})`], ...sections.flatMap((section) => section.items)] };
+});
+export const componentNavGroup = libraryNavGroups.find((group) => group.id === "core")!;
 
 export const navGroups: PlatingNavGroup[] = [
   {
     id: "getting-started",
-    label: "시작하기",
+    label: "Start",
     entry: "getting-started",
     items: [
       ["getting-started", "소개와 사용법"],
       ["principles", "제품 원칙"],
+      ["writing", "콘텐츠와 라이팅"],
+      ["accessibility", "접근성"],
     ],
   },
   {
@@ -1408,40 +1482,29 @@ export const navGroups: PlatingNavGroup[] = [
     entry: "foundations",
     items: [
       ["foundations", "전체보기"],
-      ["foundations/design-tokens", "디자인 토큰"],
-      ["foundations/colors", "색상"],
       ["foundations/typography", "타이포그래피"],
-      ["foundations/layout", "레이아웃"],
-      ["foundations/spacing", "스페이싱"],
-      ["foundations/radius", "반경"],
+      ["foundations/colors", "색상"],
       ["foundations/elevation", "레이어"],
+      ["foundations/radius", "형태와 반경"],
+      ["foundations/spacing", "스페이싱"],
+      ["foundations/layout", "레이아웃"],
+      ["foundations/design-tokens", "디자인 토큰"],
       ["foundations/state", "상태"],
       ["foundations/feedback", "누름 피드백"],
-      ["foundations/icons", "아이콘과 이미지"],
-      ["writing", "콘텐츠와 라이팅"],
-      ["motion", "인터랙션과 모션"],
-      ["accessibility", "접근성"],
     ],
   },
-  componentNavGroup,
   {
-    id: "patterns",
-    label: "Patterns",
-    entry: "patterns/dining",
+    id: "assets",
+    label: "Assets",
+    entry: "assets",
     items: [
-      ["patterns/dining", "식사 기록"],
-      ["patterns/sensory", "감각 선택"],
-      ["patterns/interpretation", "취향 해석"],
-      ["patterns/revision", "원본 수정과 복귀"],
-      ["patterns/recovery", "검색과 복구"],
+      ["assets", "전체보기"],
+      ["foundations/icons", "Interface & food icons"],
+      ["brand-assets", "Brand & Motion"],
+      ["motion", "인터랙션과 모션"],
     ],
   },
-  {
-    id: "brand",
-    label: "브랜드",
-    entry: "brand-assets",
-    items: [["brand-assets", "전체 브랜드 에셋"]],
-  },
+  ...libraryNavGroups,
   {
     id: "resources",
     label: "Resources",
@@ -1449,9 +1512,15 @@ export const navGroups: PlatingNavGroup[] = [
     items: [
       ["audit", "현재 자산과 대응표"],
       ["governance", "운영과 변경 이력"],
+      ...components.filter((component) => componentLocation(component.id).areaId === "resources").map((component) => [`components/${component.id}`, `${component.name} · 웹 참고 문서`]),
     ],
   },
 ];
+docs.find((page) => page.slug === "getting-started")!.sections.splice(1, 0, {
+  id: "structure", title: "Plating의 분류와 목차",
+  body: "Figma와 같은 분류로 공통 UI, 데이터 시각화, 제품 전용 UI와 사용 패턴을 찾아보세요. 기존 컴포넌트 문서 주소는 그대로 사용할 수 있어요.",
+  links: navGroups.filter((group) => group.id !== "getting-started").map((group) => ({ slug: group.entry, label: group.label })),
+});
 export const references = [
   {
     name: "SEED",

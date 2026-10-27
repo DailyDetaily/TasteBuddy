@@ -139,7 +139,7 @@ export default function NotificationPanel({
       {/* Panel */}
       <div className="fixed inset-x-0 top-0 z-[70] flex justify-center">
         <div className="w-full max-w-[1440px] relative">
-          <div className="absolute top-[56px] right-0 left-0 mx-5 max-h-[70vh] overflow-y-auto no-scrollbar rounded-[var(--tb-radius-20)] bg-white/85 supports-[backdrop-filter:blur(0px)]:bg-white/85 backdrop-blur-xl shadow-[var(--tb-shadow-drawer)] animate-slideIn">
+          <div className="absolute top-[56px] right-0 left-0 mx-5 max-h-[70vh] overflow-y-auto no-scrollbar rounded-[var(--tb-radius-20)] bg-[var(--tb-color-surface-overlay)] supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-surface-overlay)] backdrop-blur-xl shadow-[var(--tb-shadow-drawer)] animate-slideIn">
             {/* Header */}
             <div className="sticky top-0 z-10 flex items-center justify-between bg-[var(--tb-color-surface-base)] p-4">
               <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export default function NotificationPanel({
                       ) : null
                     }
                     onClick={() => onMarkAsRead(notification.id)}
-                    className={`${notification.read ? 'opacity-60' : ''} rounded-[16px] bg-white px-3 py-3 shadow-none`}
+                    className={`${notification.read ? 'opacity-60' : ''} rounded-[16px] bg-[var(--tb-color-surface-base)] px-3 py-3 shadow-none`}
                   />
                 );
               })}

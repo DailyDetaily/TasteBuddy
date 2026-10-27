@@ -1,14 +1,19 @@
 import type { CSSProperties, ReactNode } from 'react';
 
 import { cn } from '../ui/utils';
+import SummaryCardFooter, { type SummaryCardLegendItem } from './SummaryCardLegend';
+import type { Category } from '../../lib/gastronomy/engine';
+import InsightCategoryIcon from './InsightCategoryIcon';
 
 interface InsightSummaryCardProps {
+  category: Category;
+  iconColor?: string;
   action?: ReactNode;
   as?: 'button' | 'div' | 'summary';
   children?: ReactNode;
   className?: string;
   contentClassName?: string;
-  indicator?: ReactNode;
+  legend?: readonly SummaryCardLegendItem[];
   onClick?: () => void;
   subtitle?: ReactNode;
   title: ReactNode;
@@ -16,12 +21,14 @@ interface InsightSummaryCardProps {
 }
 
 export default function InsightSummaryCard({
+  category,
+  iconColor,
   action,
   as = 'div',
   children,
   className,
   contentClassName,
-  indicator,
+  legend = [],
   onClick,
   subtitle,
   title,
@@ -37,7 +44,7 @@ export default function InsightSummaryCard({
     <Component
       {...componentProps}
       className={cn(
-        'w-full rounded-[20px] bg-white text-left',
+        'w-full rounded-[20px] bg-[var(--tb-color-surface-base)] text-left text-[var(--tb-color-text-primary)]',
         interactive && 'cursor-pointer transition-transform active:scale-[0.98]',
         as === 'summary' && 'list-none',
         className,
@@ -47,7 +54,7 @@ export default function InsightSummaryCard({
         <div className={cn('flex w-full flex-col gap-[12px] p-3', contentClassName)}>
           <div className="flex w-full items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-[6px]">
-              {indicator}
+              <InsightCategoryIcon category={category} color={iconColor} />
               <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
                 {title}
               </p>
@@ -60,6 +67,7 @@ export default function InsightSummaryCard({
             </p>
           ) : null}
           {children}
+          <SummaryCardFooter items={legend} />
         </div>
       </div>
     </Component>

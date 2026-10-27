@@ -83,7 +83,7 @@ export default function NativeBookmarkImport({
             이 목록은 내가 사용한 기록이며 현재 계정으로 가져옵니다.
           </label>
           <button
-            className="min-h-11 rounded-xl bg-black px-4 text-white disabled:opacity-40"
+            className="min-h-11 rounded-xl bg-[var(--tb-color-interaction-primary)] px-4 text-[var(--tb-color-interaction-on-primary)] disabled:opacity-40"
             disabled={!confirmed || busy}
             onClick={save}
           >

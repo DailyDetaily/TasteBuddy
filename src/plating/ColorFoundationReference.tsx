@@ -2,6 +2,8 @@ import { useId, useState, type CSSProperties } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { Check, Copy, Search, X } from "lucide-react";
 import { COLOR_GROUPS, NATIVE_COLORS } from "./foundationReferenceData";
+import { nativeColorForMode } from "../constants/colorModes";
+import { useColorMode } from "./ColorModeReference";
 import "./color-foundation.css";
 
 type Swatch = {
@@ -229,7 +231,7 @@ const shortLabels: Record<string, string> = {
   textMuted: "투명 50%",
   textFaint: "투명 40%",
   textInverse: "반전",
-  borderCard: "카드",
+  borderCard: "아주 약한 경계 (이전명)",
   borderSubtle: "약한",
   border: "기본",
   borderStrong: "강한",
@@ -267,13 +269,14 @@ const shortLabels: Record<string, string> = {
   scrimStrong: "강한 딤",
 };
 
-export function SemanticColorReference() {
+export function SemanticColorReference({ compact = false }: { compact?: boolean }) {
+  const { mode } = useColorMode();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("all");
   const searchId = useId();
   const filterId = useId();
   const normalizedQuery = query.trim().toLocaleLowerCase();
-  const rows = NATIVE_COLORS.filter(
+  const rows = NATIVE_COLORS.map(color => ({ ...color, code: mode === 'dark' ? `TBColorMode.dark.${color.name}` : color.code, value: nativeColorForMode(color.name, mode), alias: mode === 'light' ? color.alias : undefined })).filter(
     (color) =>
       (group === "all" || group === color.group) &&
       [
@@ -289,7 +292,7 @@ export function SemanticColorReference() {
         .includes(normalizedQuery),
   );
   return (
-    <div className="pl-color-reference">
+    <div className={"pl-color-reference" + (compact ? " is-compact" : "")}>
       <div className="pl-color-tools">
         <label htmlFor={searchId}>
           <span>색상 찾기</span>

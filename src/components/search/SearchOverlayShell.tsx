@@ -7,7 +7,7 @@ import { cn } from '../ui/utils';
 const SEARCH_BAR_FIELD_CLASS_NAME =
   'flex h-11 min-w-0 flex-1 items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-4 text-left transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
 const SEARCH_BAR_ICON_BUTTON_CLASS_NAME =
-  'flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[#303946] transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
+  'flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
 const SEARCH_OVERLAY_TOP_OFFSET =
   'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const SEARCH_OVERLAY_BOTTOM_OFFSET =

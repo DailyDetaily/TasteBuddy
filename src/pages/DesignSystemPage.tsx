@@ -238,7 +238,6 @@ const COMPONENT_ARCHITECTURE_GROUPS = [
     components: [
       "PrimaryButton",
       "FlowBottomCta",
-      "FlowStepCta",
       "FlowHeaderBlock",
       "CalibrationQuestionHeader",
       "StepIndicator",
@@ -805,10 +804,10 @@ function StatusTag({
 }) {
   const className =
     tone === "used"
-      ? "border-[rgba(15,15,15,0.12)] bg-[rgba(15,15,15,0.06)] text-[var(--tb-color-text-primary)]"
+      ? "border-[var(--tb-color-border-default)] bg-[rgba(15,15,15,0.06)] text-[var(--tb-color-text-primary)]"
       : tone === "unused"
-        ? "border-[rgba(255,153,0,0.2)] bg-[rgba(255,153,0,0.12)] text-[#9A5E00]"
-        : "border-[rgba(114,153,255,0.22)] bg-[rgba(114,153,255,0.12)] text-[#365FC8]";
+        ? "border-[var(--tb-taste-sweet-border-subtle)] bg-[rgba(255,153,0,0.12)] text-[#9A5E00]"
+        : "border-[var(--tb-taste-salty-border-subtle)] bg-[rgba(114,153,255,0.12)] text-[#365FC8]";
 
   return (
     <span className={cn("inline-flex items-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]", className)}>
@@ -2563,7 +2562,7 @@ export default function DesignSystemPage() {
           <PlaygroundSection
             id="buttons"
             title="Buttons"
-            description="The active product uses PrimaryButton for the action itself, FlowBottomCta for the anchored shell, and FlowStepCta for the shared onboarding / measurement step footer. The measurement flow injects taste-aware indicator colors on top of the shared layout."
+            description="Flow screens compose StepIndicator and PrimaryButton directly. Each screen owns the bottom anchor, safe-area spacing, fade, and optional secondary action. FlowBottomCta remains available for existing generic footers."
             controls={
               <>
                 <ControlBlock label="Button family" hint={buttonFamily === "system" ? "current app" : "defined generic"}>

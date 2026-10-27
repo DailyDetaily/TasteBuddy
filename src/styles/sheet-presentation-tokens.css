@@ -1,0 +1,32 @@
+/* Generated from SHEET_PRESENTATION_TOKENS. Run npm run design:motion. */
+:root {
+  --tb-sheet-native-background-scale: 0.9;
+  --tb-sheet-native-background-offset-y: 10px;
+  --tb-sheet-native-background-radius: 20px;
+  --tb-sheet-native-background-dim-opacity: 0.6;
+  --tb-sheet-native-background-shadow-y: 0px;
+  --tb-sheet-native-background-shadow-blur: 0px;
+  --tb-sheet-native-background-shadow-opacity: 0;
+  --tb-sheet-native-surface-height-ratio: 0.98;
+  --tb-sheet-native-surface-top-inset: 12px;
+  --tb-sheet-native-surface-radius: 32px;
+  --tb-sheet-native-surface-grabber-width: 36px;
+  --tb-sheet-native-surface-grabber-height: 5px;
+  --tb-sheet-native-drag-minimum-distance: 6px;
+  --tb-sheet-native-drag-dismiss-progress: 0.32;
+  --tb-sheet-web-background-scale: 0.9;
+  --tb-sheet-web-background-offset-y: 30px;
+  --tb-sheet-web-background-radius: 24px;
+  --tb-sheet-web-background-dim-opacity: 0.6;
+  --tb-sheet-web-background-shadow-y: 20px;
+  --tb-sheet-web-background-shadow-blur: 60px;
+  --tb-sheet-web-background-shadow-opacity: 0.24;
+  --tb-sheet-web-surface-height-ratio: 0.95;
+  --tb-sheet-web-surface-top-inset: 12px;
+  --tb-sheet-web-surface-radius: 20px;
+  --tb-sheet-web-surface-grabber-width: 40px;
+  --tb-sheet-web-surface-grabber-height: 6px;
+  --tb-sheet-web-motion-duration-ms: 620ms;
+  --tb-sheet-web-motion-radius-duration-ms: 720ms;
+  --tb-sheet-web-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
+}

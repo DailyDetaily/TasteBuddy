@@ -158,7 +158,7 @@ function TabBar({
               type="button"
               className={`shrink-0 rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors ${
                 isActive
-                  ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-white'
+                  ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
                   : 'border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-bg-focus)] text-[var(--tb-color-text-muted)]'
               }`}
               key={tab.id}

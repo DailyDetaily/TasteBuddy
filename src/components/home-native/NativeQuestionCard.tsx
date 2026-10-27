@@ -84,7 +84,7 @@ export default function NativeQuestionCard({
             key={choice.id}
             type="button"
             disabled={pending}
-            className="min-h-12 min-w-0 flex-1 rounded-full border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-muted)] px-3 py-2 text-[12px] disabled:opacity-40"
+            className="min-h-11 min-w-0 flex-1 rounded-full border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-control-surface)] px-3 py-2 text-[12px] disabled:opacity-40"
             onClick={() => void run(() => presentation.answer(item, choice.id))}
           >
             {choice.label}
@@ -174,7 +174,7 @@ export function QuestionUndo({ presentation }: { presentation: Presentation }) {
   if (!presentation.canUndo) return null;
   return (
     <div
-      className="fixed bottom-24 left-1/2 z-[95] flex w-[calc(100%-40px)] max-w-md -translate-x-1/2 flex-wrap items-center gap-2 rounded-[20px] bg-[var(--tb-color-text-primary)] px-4 py-2 text-white shadow-lg"
+      className="fixed bottom-24 left-1/2 z-[95] flex w-[calc(100%-40px)] max-w-md -translate-x-1/2 flex-wrap items-center gap-2 rounded-[20px] bg-[var(--tb-color-text-primary)] px-4 py-2 text-[var(--tb-color-text-inverse)] shadow-lg"
       role="status"
     >
       <span className="flex-1 text-[13px]">답변을 기록했어요</span>

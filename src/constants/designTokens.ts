@@ -191,13 +191,16 @@ export const COLOR_TOKENS = {
     elevated: '#FCFCFC',
     disabled: '#EFEFEF',
     overlay: 'rgba(255, 255, 255, 0.8)',
+    placeholder: '#EFEFEF',
+    inverse: '#0F0F0F',
   },
   text: {
     primary: '#0F0F0F',
     secondary: '#3F3F3F',
     tertiary: '#535353',
     body: '#666666',
-    hint: '#888888',
+    action: '#666666',
+    hint: '#6F6F6F',
     disabled: '#AFAFAF',
     inverse: '#FFFFFF',
     subtle: 'rgba(15, 15, 15, 0.6)',
@@ -219,11 +222,36 @@ export const COLOR_TOKENS = {
     muted: '#AFAFAF',
   },
   state: {
+    neutral: '#3F3F3F',
+    neutralSoft: '#EFEFEF',
+    informative: '#3F3F3F',
+    informativeSoft: '#F7F7F7',
     success: '#2F8F5B',
+    successText: '#236B45',
+    successStrong: '#236B45',
     successSoft: '#E6F4EC',
     warning: '#A8661A',
+    warningText: '#875014',
+    warningStrong: '#875014',
     warningSoft: '#FFF1DE',
     destructive: '#D4183D',
+    destructiveText: '#B31333',
+    destructiveSoft: '#FCEDEF',
+  },
+  interaction: {
+    primary: '#0F0F0F',
+    onPrimary: '#FFFFFF',
+    selected: '#0F0F0F',
+    onSelected: '#FFFFFF',
+    focus: '#3F3F3F',
+    hoverOverlay: 'rgba(0, 0, 0, 0.04)',
+    pressedOverlay: 'rgba(0, 0, 0, 0.06)',
+    pressedInverseOverlay: 'rgba(255, 255, 255, 0.1)',
+  },
+  scrim: {
+    subtle: 'rgba(0, 0, 0, 0.35)',
+    default: 'rgba(0, 0, 0, 0.5)',
+    strong: 'rgba(0, 0, 0, 0.6)',
   },
   shadow: SHADOW_TOKENS,
 } as const;
@@ -234,7 +262,8 @@ export const LAYOUT_TOKENS = {
   sectionGap: SPACING_TOKENS[20],
   cardStackGap: SPACING_TOKENS[12],
   cardPadding: '12px',
-  topAppBarHeight: '56px',
+  topAppBarHeight: '48px',
+  flowTopBarHeight: '32px',
   bottomTabBarHeight: '60px',
   primaryButtonHeight: '48px',
   bottomFadeMinHeight: '140px',
@@ -252,6 +281,20 @@ export const LAYOUT_TOKENS = {
 } as const;
 
 export const COMPONENT_TOKENS = {
+  miniChart: {
+    lineStartTint: 70,
+    stackedBarTint: 20,
+    compactLine: { rowHeight: 26, rowGap: 4, trackWidth: 12, lineWidth: 2, currentDiameter: 12, historyDiameter: 4 },
+    width: 132,
+    height: 56,
+    gap: 3,
+    weeklyGap: 8,
+    groupGap: 8,
+    intraGroupGap: 2,
+    maximumBarWidth: 12,
+    zeroHeightRatio: 0.5,
+    examplePadding: 16,
+  },
   card: {
     background: COLOR_TOKENS.surface.card,
     hoverBackground: COLOR_TOKENS.surface.cardHover,
@@ -396,6 +439,43 @@ export const TASTE_IDS = ['sweet', 'sour', 'bitter', 'salty', 'umami', 'fat'] as
 
 export type TasteId = (typeof TASTE_IDS)[number];
 
+/** Steps name the mode's base-color percentage, not alpha or remaining taste color. */
+export const TASTE_TINT_STEPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95] as const;
+export type TasteTintStep = (typeof TASTE_TINT_STEPS)[number];
+export type ColorMode = 'light' | 'dark';
+export const TASTE_TINT_BASES = { light: '#FFFFFF', dark: '#1C1C1C' } as const;
+export const TASTE_MAIN_COLORS = {
+  sweet: '#FF9900', sour: '#FFD600', bitter: '#95C900',
+  salty: '#7299FF', umami: '#B372B4', fat: '#95867A',
+} as const;
+
+/** Both appearances share the vivid taste identity; surfaces and chart roles adapt. */
+export const DARK_TASTE_MAIN_COLORS = TASTE_MAIN_COLORS;
+export const TASTE_MAIN_COLORS_BY_MODE = { light: TASTE_MAIN_COLORS, dark: DARK_TASTE_MAIN_COLORS } as const;
+
+export function mixTasteWithBase(main: string, basePercent: TasteTintStep, mode: ColorMode): string {
+  return '#' + [1, 3, 5].map(offset => {
+    const channel = parseInt(main.slice(offset, offset + 2), 16);
+    const base = parseInt(TASTE_TINT_BASES[mode].slice(offset, offset + 2), 16);
+    return Math.floor((channel * (100 - basePercent) + base * basePercent + 50) / 100).toString(16).padStart(2, '0');
+  }).join('').toUpperCase();
+}
+
+export function mixTasteWithWhite(main: string, whitePercent: TasteTintStep): string {
+  return mixTasteWithBase(main, whitePercent, 'light');
+}
+
+export const TASTE_TINTS_BY_MODE = Object.fromEntries((['light', 'dark'] as const).map(mode => [mode,
+  Object.fromEntries(TASTE_IDS.map(id => [id,
+    Object.fromEntries(TASTE_TINT_STEPS.map(step => [step, mixTasteWithBase(TASTE_MAIN_COLORS_BY_MODE[mode][id], step, mode)])),
+  ])),
+])) as Record<ColorMode, Record<TasteId, Record<TasteTintStep, string>>>;
+
+/** Existing unthemed consumers retain the Light palette. */
+export const TASTE_TINTS = TASTE_TINTS_BY_MODE.light;
+
+export const TASTE_COLOR_ROLE_STEPS = { tintSoft: 80, tintSoftBorder: 80, borderSubtle: 80, borderDefault: 70, borderStrong: 60, tintSurface: 80, chartTrack: 80 } as const;
+
 type TasteScale = readonly [
   string,
   string,
@@ -415,8 +495,13 @@ interface TastePalette {
   gradient: string;
   light: string;
   main: string;
+  chartTrack: string;
   tintSoft: string;
   tintSoftBorder: string;
+  borderSubtle: string;
+  borderDefault: string;
+  borderStrong: string;
+  borderAccent: string;
   tintSurface: string;
   tintSurfaceSubText: string;
   tintSurfaceText: string;
@@ -444,13 +529,18 @@ export const TASTE_TOKENS = {
   sweet: {
     label: '단맛',
     palette: {
-      main: '#FF9900',
+      main: TASTE_MAIN_COLORS.sweet,
+      chartTrack: TASTE_TINTS.sweet[TASTE_COLOR_ROLE_STEPS.chartTrack],
       dark: '#CC7A00',
       light: '#FFCC80',
       bg: '#FFD699',
-      tintSoft: 'rgba(255, 153, 0, 0.05)',
-      tintSoftBorder: 'rgba(255, 153, 0, 0.18)',
-      tintSurface: '#FFEBCC',
+      tintSoft: TASTE_TINTS.sweet[TASTE_COLOR_ROLE_STEPS.tintSoft],
+      tintSoftBorder: TASTE_TINTS.sweet[TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+      borderSubtle: TASTE_TINTS.sweet[TASTE_COLOR_ROLE_STEPS.borderSubtle],
+      borderDefault: TASTE_TINTS.sweet[TASTE_COLOR_ROLE_STEPS.borderDefault],
+      borderStrong: TASTE_TINTS.sweet[TASTE_COLOR_ROLE_STEPS.borderStrong],
+      borderAccent: '#FF9900',
+      tintSurface: TASTE_TINTS.sweet[TASTE_COLOR_ROLE_STEPS.tintSurface],
       tintSurfaceSubText: '#896735',
       tintSurfaceText: '#6F4609',
       gradient: 'linear-gradient(135deg, #FF9900, #FFB84D)',
@@ -480,17 +570,23 @@ export const TASTE_TOKENS = {
   },
   sour: {
     label: '신맛',
+    // UI roles alias the white-mix scale. Measurement keeps its dedicated ramp.
     palette: {
-      main: '#FBC02D',
+      main: TASTE_MAIN_COLORS.sour,
+      chartTrack: TASTE_TINTS.sour[TASTE_COLOR_ROLE_STEPS.chartTrack],
       dark: '#C99A00',
       light: '#FDD835',
       bg: '#FFEF99',
-      tintSoft: 'rgba(251, 192, 45, 0.05)',
-      tintSoftBorder: 'rgba(251, 192, 45, 0.18)',
-      tintSurface: '#FFF7CC',
+      tintSoft: TASTE_TINTS.sour[TASTE_COLOR_ROLE_STEPS.tintSoft],
+      tintSoftBorder: TASTE_TINTS.sour[TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+      borderSubtle: TASTE_TINTS.sour[TASTE_COLOR_ROLE_STEPS.borderSubtle],
+      borderDefault: TASTE_TINTS.sour[TASTE_COLOR_ROLE_STEPS.borderDefault],
+      borderStrong: TASTE_TINTS.sour[TASTE_COLOR_ROLE_STEPS.borderStrong],
+      borderAccent: '#FFD600',
+      tintSurface: TASTE_TINTS.sour[TASTE_COLOR_ROLE_STEPS.tintSurface],
       tintSurfaceSubText: '#897C35',
       tintSurfaceText: '#6F5F09',
-      gradient: 'linear-gradient(135deg, #FBC02D, #FFD54F)',
+      gradient: 'linear-gradient(135deg, #FFD600, #FFD54F)',
     },
     measurement: {
       accent: '#FFD600',
@@ -518,13 +614,18 @@ export const TASTE_TOKENS = {
   bitter: {
     label: '쓴맛',
     palette: {
-      main: '#95C900',
+      main: TASTE_MAIN_COLORS.bitter,
+      chartTrack: TASTE_TINTS.bitter[TASTE_COLOR_ROLE_STEPS.chartTrack],
       dark: '#6E9600',
       light: '#E6EE9C',
       bg: '#E0EBB4',
-      tintSoft: 'rgba(149, 201, 0, 0.05)',
-      tintSoftBorder: 'rgba(149, 201, 0, 0.18)',
-      tintSurface: '#EAF4CC',
+      tintSoft: TASTE_TINTS.bitter[TASTE_COLOR_ROLE_STEPS.tintSoft],
+      tintSoftBorder: TASTE_TINTS.bitter[TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+      borderSubtle: TASTE_TINTS.bitter[TASTE_COLOR_ROLE_STEPS.borderSubtle],
+      borderDefault: TASTE_TINTS.bitter[TASTE_COLOR_ROLE_STEPS.borderDefault],
+      borderStrong: TASTE_TINTS.bitter[TASTE_COLOR_ROLE_STEPS.borderStrong],
+      borderAccent: '#95C900',
+      tintSurface: TASTE_TINTS.bitter[TASTE_COLOR_ROLE_STEPS.tintSurface],
       tintSurfaceSubText: '#70794B',
       tintSurfaceText: '#505B24',
       gradient: 'linear-gradient(135deg, #95C900, #AED581)',
@@ -555,13 +656,18 @@ export const TASTE_TOKENS = {
   salty: {
     label: '짠맛',
     palette: {
-      main: '#7299FF',
+      main: TASTE_MAIN_COLORS.salty,
+      chartTrack: TASTE_TINTS.salty[TASTE_COLOR_ROLE_STEPS.chartTrack],
       dark: '#4A70CC',
       light: '#90CAF9',
       bg: '#C6D6FF',
-      tintSoft: 'rgba(114, 153, 255, 0.05)',
-      tintSoftBorder: 'rgba(114, 153, 255, 0.18)',
-      tintSurface: '#E3EBFF',
+      tintSoft: TASTE_TINTS.salty[TASTE_COLOR_ROLE_STEPS.tintSoft],
+      tintSoftBorder: TASTE_TINTS.salty[TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+      borderSubtle: TASTE_TINTS.salty[TASTE_COLOR_ROLE_STEPS.borderSubtle],
+      borderDefault: TASTE_TINTS.salty[TASTE_COLOR_ROLE_STEPS.borderDefault],
+      borderStrong: TASTE_TINTS.salty[TASTE_COLOR_ROLE_STEPS.borderStrong],
+      borderAccent: '#7299FF',
+      tintSurface: TASTE_TINTS.salty[TASTE_COLOR_ROLE_STEPS.tintSurface],
       tintSurfaceSubText: '#5A6789',
       tintSurfaceText: '#36466F',
       gradient: 'linear-gradient(135deg, #7299FF, #9FBFFF)',
@@ -592,13 +698,18 @@ export const TASTE_TOKENS = {
   umami: {
     label: '감칠맛',
     palette: {
-      main: '#B372B4',
+      main: TASTE_MAIN_COLORS.umami,
+      chartTrack: TASTE_TINTS.umami[TASTE_COLOR_ROLE_STEPS.chartTrack],
       dark: '#8A5490',
       light: '#CE93D8',
       bg: '#E1C7E1',
-      tintSoft: 'rgba(179, 114, 180, 0.05)',
-      tintSoftBorder: 'rgba(179, 114, 180, 0.18)',
-      tintSurface: '#F0E3F0',
+      tintSoft: TASTE_TINTS.umami[TASTE_COLOR_ROLE_STEPS.tintSoft],
+      tintSoftBorder: TASTE_TINTS.umami[TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+      borderSubtle: TASTE_TINTS.umami[TASTE_COLOR_ROLE_STEPS.borderSubtle],
+      borderDefault: TASTE_TINTS.umami[TASTE_COLOR_ROLE_STEPS.borderDefault],
+      borderStrong: TASTE_TINTS.umami[TASTE_COLOR_ROLE_STEPS.borderStrong],
+      borderAccent: '#B372B4',
+      tintSurface: TASTE_TINTS.umami[TASTE_COLOR_ROLE_STEPS.tintSurface],
       tintSurfaceSubText: '#705B70',
       tintSurfaceText: '#513751',
       gradient: 'linear-gradient(135deg, #B372B4, #CE93D8)',
@@ -629,13 +740,18 @@ export const TASTE_TOKENS = {
   fat: {
     label: '지방맛',
     palette: {
-      main: '#95867A',
+      main: TASTE_MAIN_COLORS.fat,
+      chartTrack: TASTE_TINTS.fat[TASTE_COLOR_ROLE_STEPS.chartTrack],
       dark: '#6B5E54',
       light: '#BCAAA4',
       bg: '#D5CFCA',
-      tintSoft: 'rgba(149, 134, 122, 0.05)',
-      tintSoftBorder: 'rgba(149, 134, 122, 0.18)',
-      tintSurface: '#EAE7E4',
+      tintSoft: TASTE_TINTS.fat[TASTE_COLOR_ROLE_STEPS.tintSoft],
+      tintSoftBorder: TASTE_TINTS.fat[TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+      borderSubtle: TASTE_TINTS.fat[TASTE_COLOR_ROLE_STEPS.borderSubtle],
+      borderDefault: TASTE_TINTS.fat[TASTE_COLOR_ROLE_STEPS.borderDefault],
+      borderStrong: TASTE_TINTS.fat[TASTE_COLOR_ROLE_STEPS.borderStrong],
+      borderAccent: '#95867A',
+      tintSurface: TASTE_TINTS.fat[TASTE_COLOR_ROLE_STEPS.tintSurface],
       tintSurfaceSubText: '#66625D',
       tintSurfaceText: '#453F3A',
       gradient: 'linear-gradient(135deg, #95867A, #B0A49A)',
@@ -679,7 +795,22 @@ export const NEUTRAL_TASTE_TOKENS = {
   label: '모든맛',
   palette: {
     main: '#7A7A7A',
+    tint80: mixTasteWithBase('#7A7A7A', 80, 'light'),
     tintSurface: '#E4E4E4',
+  },
+} as const;
+
+/** Sheet surface and the presenting screen. Keep the current platform geometry. */
+export const SHEET_PRESENTATION_TOKENS = {
+  native: {
+    background: { scale: 0.9, offsetY: 10, radius: 20, dimOpacity: 0.6, shadowY: 0, shadowBlur: 0, shadowOpacity: 0 },
+    surface: { heightRatio: 0.98, topInset: 12, radius: 32, grabberWidth: 36, grabberHeight: 5 },
+    drag: { minimumDistance: 6, dismissProgress: 0.32 },
+  },
+  web: {
+    background: { scale: 0.9, offsetY: 30, radius: 24, dimOpacity: 0.6, shadowY: 20, shadowBlur: 60, shadowOpacity: 0.24 },
+    surface: { heightRatio: 0.95, topInset: 12, radius: 20, grabberWidth: 40, grabberHeight: 6 },
+    motion: { durationMs: MOTION_TOKENS.durationMs.slow, radiusDurationMs: MOTION_TOKENS.durationMs.slowest, easing: MOTION_TOKENS.easing.entrance },
   },
 } as const;
 
@@ -690,6 +821,7 @@ export const DESIGN_TOKENS = {
   radius: RADIUS_TOKENS,
   typography: TYPOGRAPHY_TOKENS,
   motion: MOTION_TOKENS,
+  sheetPresentation: SHEET_PRESENTATION_TOKENS,
   icon: ICON_TOKENS,
   dataViz: DATA_VIZ_TOKENS,
   layout: LAYOUT_TOKENS,

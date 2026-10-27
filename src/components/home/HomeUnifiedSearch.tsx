@@ -50,7 +50,7 @@ const KAKAO_SEARCH_DEBOUNCE_MS = 80;
 const SEARCH_BAR_FIELD_CLASS_NAME =
   'flex h-11 min-w-0 flex-1 items-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] px-4 text-left transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
 const SEARCH_BAR_ICON_BUTTON_CLASS_NAME =
-  'flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[#303946] transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
+  'flex size-11 shrink-0 items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-icon-primary)] transition-colors hover:bg-[var(--tb-color-surface-disabled)]';
 const APP_LUCIDE_ICON_SIZE_M = ICON_TOKENS.size.md;
 const SEARCH_BAR_ICON_SIZE = ICON_TOKENS.size.md;
 const SEARCH_FOCUS_CARD_CLASS_NAME =
@@ -75,7 +75,7 @@ const SEARCH_RESULT_SIGNATURES_CLASS_NAME = 'mt-3 flex flex-wrap gap-2';
 const SEARCH_RESULT_TYPE_LABEL_CLASS_NAME =
   'text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--tb-color-text-faint)]';
 const SEARCH_EMPTY_STATE_CLASS_NAME =
-  'rounded-[28px] border border-dashed border-[var(--tb-color-border-default)] bg-white/75 px-2 py-6';
+  'rounded-[28px] border border-dashed border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-overlay)] px-2 py-6';
 const SEARCH_SUGGESTION_SECTION_CLASS_NAME = 'tb-card-stack';
 const SEARCH_SUGGESTION_ITEMS_CLASS_NAME = 'flex flex-wrap gap-2';
 const SEARCH_PENDING_ADDRESS_LABEL = '주소 확인 중';
@@ -1077,9 +1077,9 @@ function FriendSearchSection({
 export function HomeSearchTrigger({ onOpen }: { onOpen: () => void }) {
   return (
     <div className="flex w-full items-center gap-2">
-      <button type="button" onClick={onOpen} aria-label="통합 검색 열기" className={SEARCH_BAR_FIELD_CLASS_NAME}>
-        <span className="truncate text-[13px] font-medium text-[var(--tb-color-text-muted)]">
-          레스토랑, 메뉴, 셰프, 버디 검색
+      <button type="button" onClick={onOpen} aria-label="내 음식 기록, 식당, 메뉴 검색" className={SEARCH_BAR_FIELD_CLASS_NAME}>
+        <span className="truncate text-[13px] font-medium text-[var(--tb-color-text-hint)]">
+          내 음식 기록, 식당, 메뉴 검색
         </span>
       </button>
       <button type="button" onClick={onOpen} aria-label="통합 검색" className={SEARCH_BAR_ICON_BUTTON_CLASS_NAME}>
@@ -1523,7 +1523,7 @@ export default function HomeUnifiedSearch({
           query={query}
         >
                 <div className="tb-section-stack">
-                  {isPersonalQuery && <p role="status" className="rounded-[20px] bg-white p-4 text-[13px] leading-6">개인 경험을 찾는 문장이에요. 홈 아카이브의 ‘내 기록 검색’에서 찾아 주세요. 외부로 전송하지 않았어요.</p>}
+                  {isPersonalQuery && <p role="status" className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4 text-[13px] leading-6">개인 경험을 찾는 문장이에요. 홈 아카이브의 ‘내 기록 검색’에서 찾아 주세요. 외부로 전송하지 않았어요.</p>}
                   {selectedResult ? <SearchFocusCard result={selectedResult} /> : null}
 
                   {!query.trim() ? (

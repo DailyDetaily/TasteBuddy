@@ -47,14 +47,14 @@ export function polarToCartesian(centerX: number, centerY: number, radius: numbe
   };
 }
 
-export function getGuideGradientColor(baseColor: string, progress: number) {
+export function getGuideGradientColor(baseColor: string, progress: number, mixBase = '#FFFFFF') {
   const clampedProgress = clamp(progress, 0, 1);
   const stops = [
-    { color: mixHex(baseColor, '#FFFFFF', 0.78), position: 0 },
-    { color: mixHex(baseColor, '#FFFFFF', 0.62), position: 0.35 },
-    { color: mixHex(baseColor, '#FFFFFF', 0.38), position: 0.65 },
-    { color: mixHex(baseColor, '#FFFFFF', 0.12), position: 0.9 },
-    { color: mixHex(baseColor, '#FFFFFF', 0.78), position: 1 },
+    { color: mixHex(baseColor, mixBase, 0.78), position: 0 },
+    { color: mixHex(baseColor, mixBase, 0.62), position: 0.35 },
+    { color: mixHex(baseColor, mixBase, 0.38), position: 0.65 },
+    { color: mixHex(baseColor, mixBase, 0.12), position: 0.9 },
+    { color: mixHex(baseColor, mixBase, 0.78), position: 1 },
   ];
 
   for (let index = 0; index < stops.length - 1; index += 1) {
@@ -70,7 +70,7 @@ export function getGuideGradientColor(baseColor: string, progress: number) {
   return stops[stops.length - 1].color;
 }
 
-export function buildGuideDots(baseColor: string) {
+export function buildGuideDots(baseColor: string, mixBase = '#FFFFFF') {
   const { center, guideDotDiameter, guideDotGap, guideRadius } = TASTE_CIRCULAR_LOOP_LAYOUT;
   const circumference = 2 * Math.PI * guideRadius;
   const dotCount = Math.max(1, Math.round(circumference / (guideDotDiameter + guideDotGap)));
@@ -81,7 +81,7 @@ export function buildGuideDots(baseColor: string) {
     const { x, y } = polarToCartesian(center, center, guideRadius, angle);
 
     return {
-      color: getGuideGradientColor(baseColor, progress),
+      color: getGuideGradientColor(baseColor, progress, mixBase),
       x,
       y,
     };

@@ -264,7 +264,7 @@ export function HomeDiningPreparationCard({
         : '예약 확정';
 
   return (
-    <div className="relative w-full rounded-[20px] bg-white transition-all duration-300">
+    <div className="relative w-full rounded-[20px] bg-[var(--tb-color-surface-base)] transition-all duration-300">
       <div className="size-full overflow-clip rounded-[inherit]">
         <div className="box-border flex w-full flex-col items-start gap-[12px] p-[12px]">
           <div className="flex w-full items-center gap-2">
@@ -338,7 +338,7 @@ export function HomeDiningPreparationCard({
             ))}
           </div>
 
-          <div className="w-full border-t border-[rgba(15,15,15,0.08)] pt-[12px]">
+          <div className="w-full border-t border-[var(--tb-color-border-subtle)] pt-[12px]">
             <p className="text-[12px] font-semibold text-[var(--tb-color-text-subtle)] tracking-[0.2px]">
               다음 다이닝 준비
             </p>

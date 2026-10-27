@@ -10,7 +10,7 @@ import './PalateSignatureAvatar.css';
 
 export const TASTE_COLORS = {
   sweet: '#FF9900',
-  sour: '#FBC02D',
+  sour: '#FFD600',
   bitter: '#95C900',
   salty: '#7299FF',
   umami: '#B372B4',

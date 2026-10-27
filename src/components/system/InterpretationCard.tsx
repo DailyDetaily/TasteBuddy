@@ -1,4 +1,6 @@
-import { type KeyboardEvent } from 'react';
+import { ChevronRight } from 'lucide-react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
+import InlineButton from './InlineButton';
 import CardDetailLabel from './CardDetailLabel';
 import SectionCard from '../SectionCard';
 import { cn } from '../ui/utils';
@@ -13,7 +15,6 @@ interface InterpretationCardProps {
   indicatorBackground?: string;
   onExpand?: () => void;
   supportingText?: string;
-  supportingTextLines?: 2;
 }
 
 export default function InterpretationCard({
@@ -25,33 +26,39 @@ export default function InterpretationCard({
   indicatorBackground,
   onExpand,
   supportingText,
-  supportingTextLines,
 }: InterpretationCardProps) {
   const isInteractive = typeof onExpand === 'function';
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (!isInteractive) {
-      return;
-    }
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLSpanElement>(null);
+  const supportingId = useId();
 
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onExpand?.();
-    }
-  };
+  useLayoutEffect(() => {
+    setExpanded(false);
+    let active = true;
+    const measure = () => {
+      if (active && rowRef.current && measureRef.current) {
+        setOverflows(measureRef.current.getBoundingClientRect().width > rowRef.current.clientWidth + 0.5);
+      }
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    if (rowRef.current) observer.observe(rowRef.current);
+    if (measureRef.current) observer.observe(measureRef.current);
+    void document.fonts.ready.then(measure);
+    return () => { active = false; observer.disconnect(); };
+  }, [supportingText]);
 
   return (
     <SectionCard
       hoverEffect={isInteractive}
       className={cn(
-        isInteractive && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-default)]',
+        isInteractive && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-focus)]',
         className,
       )}
       onClick={isInteractive ? onExpand : undefined}
-      onKeyDown={isInteractive ? handleKeyDown : undefined}
-      role={isInteractive ? 'button' : undefined}
-      tabIndex={isInteractive ? 0 : undefined}
-      aria-haspopup={isInteractive ? 'dialog' : undefined}
     >
       <div className="flex w-full flex-col gap-2">
         <div className="flex w-full items-center justify-between gap-3">
@@ -62,7 +69,11 @@ export default function InterpretationCard({
               </p>
             ) : null}
           </div>
-          <CardDetailLabel label={detailLabel} />
+          {onExpand ? (
+            <InlineButton tone="neutral" icon={ChevronRight} aria-haspopup="dialog" onClick={(event) => { event.stopPropagation(); onExpand(); }}>
+              {detailLabel ?? '자세히보기'}
+            </InlineButton>
+          ) : detailLabel ? <CardDetailLabel label={detailLabel} /> : null}
         </div>
 
         <div className="flex w-full items-stretch gap-3">
@@ -80,9 +91,18 @@ export default function InterpretationCard({
               {description}
             </p>
             {supportingText ? (
-              <p className={cn(supportingTextLines === 2 && 'line-clamp-2', "text-[12px] font-normal leading-normal text-[var(--tb-color-text-muted)]")}>
-                {supportingText}
-              </p>
+              <div ref={rowRef} className="relative flex min-w-0 items-baseline gap-1.5 text-[12px] font-normal leading-normal text-[var(--tb-color-text-muted)]">
+                <span ref={measureRef} aria-hidden="true" className="pointer-events-none invisible absolute left-0 top-0 whitespace-nowrap">{supportingText}</span>
+                <p id={supportingId} className={cn('min-w-0 flex-1', expanded ? 'break-words' : 'truncate')}>{supportingText}</p>
+                {(overflows || expanded) && (
+                  <InlineButton
+                    aria-expanded={onExpand ? undefined : expanded}
+                    aria-controls={onExpand ? undefined : supportingId}
+                    aria-haspopup={onExpand ? 'dialog' : undefined}
+                    onClick={(event) => { event.stopPropagation(); if (onExpand) onExpand(); else setExpanded((value) => !value); }}
+                  >{expanded ? '접기' : '더보기'}</InlineButton>
+                )}
+              </div>
             ) : null}
           </div>
         </div>

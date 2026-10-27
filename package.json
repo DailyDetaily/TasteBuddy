@@ -35,6 +35,7 @@
             "border-beam": "^1.2.0",
             "class-variance-authority": "^0.7.1",
             "clsx": "*",
+            "d3-shape": "3.2.0",
             "cmdk": "^1.1.1",
             "embla-carousel-react": "^8.6.0",
             "exifr": "7.1.3",
@@ -60,6 +61,7 @@
             "@tailwindcss/vite": "4.1.17",
             "@tesseract.js-data/eng": "1.0.0",
             "@tesseract.js-data/kor": "1.0.0",
+            "@types/d3-shape": "3.1.8",
             "@types/node": "^20.10.0",
             "@types/react": "^19.2.7",
             "@types/react-dom": "^19.2.3",
@@ -83,6 +85,7 @@
             "dev:design-system": "node scripts/open-design-system.mjs",
             "design:motion": "node scripts/build-plating-motion.mjs",
             "test:motion": "node scripts/build-plating-motion.mjs --check && node --test scripts/plating-motion.test.mjs",
+            "test:sheet-presentation": "node scripts/build-plating-motion.mjs --check && node --test scripts/sheet-presentation.test.mjs",
             "dev:design-system-updates": "node scripts/open-design-system.mjs /design-system-updates",
             "build": "vite build",
             "preview": "vite preview",
@@ -114,6 +117,8 @@
             "predev": "npm run prepare:ocr",
             "predev:web": "npm run prepare:ocr",
             "typecheck": "tsc --noEmit",
+            "test:archive-menu-insights": "node --test scripts/test-archive-menu-*.mjs",
+            "test:record-charts": "node --test scripts/test-web-record-chart-*.mjs scripts/test-record-chart-native-parity.mjs scripts/test-mini-area-layers.mjs scripts/test-web-mini-heatmap.mjs scripts/test-web-mini-stacked-bar-chart.mjs scripts/test-web-mini-bubble-chart.mjs scripts/test-web-donut-chart.mjs",
             "test:native-web": "node --test scripts/test-web-*.mjs scripts/test-native-web-records.mjs scripts/test-native-place-lookup.mjs"
       }
 }

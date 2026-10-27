@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 
 import SurveyStepCard from '../components/measurement/SurveyStepCard';
-import FlowStepCta from '../components/system/FlowStepCta';
+import PrimaryButton from '../components/system/PrimaryButton';
+import StepIndicator from '../components/system/StepIndicator';
 import { ICON_TOKENS } from '../constants/designTokens';
 
 export interface FlowIntroStep {
@@ -55,8 +56,8 @@ export default function FlowIntroScreen({
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-page)] font-sans">
       <header
-        className="z-10 flex min-h-[var(--tb-size-top-app-bar-height)] shrink-0 items-center justify-between bg-[var(--tb-color-bg-page)] px-5 py-3"
-        style={{ paddingTop: 'calc(var(--tb-safe-area-top) + 12px)' }}
+        className="z-10 flex min-h-[calc(var(--tb-size-flow-top-bar-height)+var(--tb-safe-area-top))] shrink-0 items-center justify-between bg-[var(--tb-color-bg-page)] px-5"
+        style={{ paddingTop: 'var(--tb-safe-area-top)' }}
       >
         {onBack ? (
           <button
@@ -110,7 +111,7 @@ export default function FlowIntroScreen({
         )}
       </header>
 
-      <main className="flex-1 overflow-y-auto px-5 pb-24 no-scrollbar">
+      <main className="flex-1 overflow-y-auto px-5 pb-[188px] no-scrollbar">
         <div className="mb-12 mt-6 text-center">
           <h1 className="mb-3 text-[18px] font-bold leading-tight tracking-normal text-[var(--tb-color-text-primary)]">
             {title}
@@ -142,15 +143,27 @@ export default function FlowIntroScreen({
         </div>
       </main>
 
-      <FlowStepCta
-        actionLabel={resolvedActionLabel}
-        currentIndex={safeActiveStepIndex}
-        fadeClassName="bg-[linear-gradient(to_top,var(--tb-color-bg-page)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]"
-        onAction={onAction}
-        secondaryButtonLabel={secondaryActionLabel}
-        onSecondaryButtonAction={onSecondaryAction}
-        total={steps.length}
-      />
+      <div className="absolute inset-x-0 bottom-0 z-20 flex justify-center">
+        <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
+          <div className="tb-bottom-fade relative flex min-h-[calc(var(--tb-size-bottom-fade-min-height)+var(--tb-safe-area-bottom))] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))] bg-[linear-gradient(to_top,var(--tb-color-bg-page)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]">
+            <StepIndicator
+              className="mb-8 self-center"
+              currentIndex={safeActiveStepIndex}
+              total={steps.length}
+            />
+            {secondaryActionLabel && onSecondaryAction ? (
+              <div className="flex w-full flex-col">
+                <PrimaryButton onClick={onAction}>{resolvedActionLabel}</PrimaryButton>
+                <button type="button" className="min-h-10 text-[12px] font-semibold text-[var(--tb-color-text-faint)]" onClick={onSecondaryAction}>
+                  {secondaryActionLabel}
+                </button>
+              </div>
+            ) : (
+              <PrimaryButton onClick={onAction}>{resolvedActionLabel}</PrimaryButton>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

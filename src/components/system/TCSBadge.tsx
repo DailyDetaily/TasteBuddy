@@ -1,8 +1,6 @@
 import { buildTasteAdjustmentGradient, type TasteAdjustmentLike } from '../../constants/tasteColors';
 import { cn } from '../ui/utils';
-
-const TCS_BADGE_BOX_SHADOW =
-  '0 2px 8px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.1), 1px 1px 2px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.5), inset 1px 0 1px rgba(255,255,255,0.5), inset 0 -1px 1px rgba(0,0,0,0.1), inset -1px 0 1px rgba(0,0,0,0.1)';
+import { TCS_BADGE_BOX_SHADOW, tcsBadgeColor } from './tcsBadgeTokens';
 
 export interface TCSBadgeProps {
   adjustments?: TasteAdjustmentLike[];
@@ -17,6 +15,7 @@ export default function TCSBadge({
   disabled = false,
   label = 'TCS',
 }: TCSBadgeProps) {
+  const gradient = buildTasteAdjustmentGradient(adjustments, { colorForTaste: tcsBadgeColor });
   return (
     <span
       className={cn(
@@ -28,9 +27,10 @@ export default function TCSBadge({
       data-state={disabled ? 'disabled' : 'default'}
       style={
         disabled
-          ? { boxShadow: TCS_BADGE_BOX_SHADOW }
+          ? { boxShadow: TCS_BADGE_BOX_SHADOW, color: 'var(--tb-tcs-badge-label)' }
           : {
-              background: buildTasteAdjustmentGradient(adjustments),
+              background: gradient === '#E0E0E0' ? 'var(--tb-tcs-badge-empty)' : gradient,
+              color: 'var(--tb-tcs-badge-label)',
               boxShadow: TCS_BADGE_BOX_SHADOW,
             }
       }

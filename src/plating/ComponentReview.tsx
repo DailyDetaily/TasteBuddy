@@ -6,7 +6,7 @@ import "./component-review.css";
 const ProductExamples = lazy(() => import("./DisclosureProductExamples"));
 
 // Review one family at a time; this order follows the confirmed gaps, with Accordion first.
-export const componentReviewOrder = ["disclosure", "textarea", "select", "capsule-tabs", "text-action", "icon-action-button", "record-actions", "social-actions", "notification-badge", "skeleton", "image-frame", "chip-group", "scope-label", "flow-loading", "flow-retry", "action-area", "date-picker", "wheel-picker", "attachment-input"];
+export const componentReviewOrder = ["disclosure", "textarea", "select", "capsule-tabs", "text-action", "icon-action-button", "record-actions", "social-actions", "notification-badge", "skeleton", "image-frame", "chip-group", "scope-label", "flow-loading", "flow-retry", "date-picker", "wheel-picker"];
 
 export default function ComponentReview() {
   const [closedValues, setClosedValues] = useState<string[]>([]);

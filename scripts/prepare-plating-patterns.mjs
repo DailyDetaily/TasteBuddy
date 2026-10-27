@@ -2,13 +2,13 @@ import fs from 'node:fs/promises';
 const state=JSON.parse(await fs.readFile('output/plating/figma/state.json','utf8'));
 const code=`
 const state=${JSON.stringify({defaults:state.defaults,components:state.components,styles:state.styles,pages:state.pages})};
-await Promise.all(['Regular','Medium','Bold'].map(style=>figma.loadFontAsync({family:'Noto Sans KR',style})));
+await Promise.all(['Regular','Medium','Bold'].map(style=>figma.loadFontAsync({family:'Pretendard',style})));
 const page=await figma.getNodeByIdAsync(state.pages['06 · Patterns']);await figma.setCurrentPageAsync(page);if(page.children.length)throw new Error('Patterns already exist.');
 const ids=[],screens=[],actions=[],instances=[];const vars=Object.fromEntries((await figma.variables.getLocalVariablesAsync()).map(v=>[v.name,v]));
 function paint(n,name){n.fills=[figma.variables.setBoundVariableForPaint({type:'SOLID',color:{r:1,g:1,b:1}},'color',vars[name])];}
 function frame(parent,name,width,direction='VERTICAL'){const n=figma.createAutoLayout(direction);ids.push(n.id);parent.appendChild(n);n.name=name;n.resize(width,20);n.primaryAxisSizingMode=direction==='VERTICAL'?'AUTO':'FIXED';n.counterAxisSizingMode=direction==='VERTICAL'?'FIXED':'AUTO';n.itemSpacing=20;n.setBoundVariable('itemSpacing',vars['spacing/20']);n.fills=[];n.clipsContent=false;return n;}
 function pad(n,value){for(const f of ['paddingTop','paddingBottom','paddingLeft','paddingRight']){n[f]=value;n.setBoundVariable(f,vars['spacing/'+value]);}}
-async function text(parent,content,style='Product/Body',width=0){const n=figma.createText();ids.push(n.id);n.fontName={family:'Noto Sans KR',style:'Regular'};n.characters=content;await n.setTextStyleIdAsync(state.styles[style]);paint(n,'color/text/primary');parent.appendChild(n);if(width){n.textAutoResize='HEIGHT';n.resize(width,n.height);}return n;}
+async function text(parent,content,style='Product/Body',width=0){const n=figma.createText();ids.push(n.id);n.fontName={family:'Pretendard',style:'Regular'};n.characters=content;await n.setTextStyleIdAsync(state.styles[style]);paint(n,'color/text/primary');parent.appendChild(n);if(width){n.textAutoResize='HEIGHT';n.resize(width,n.height);}return n;}
 async function instance(parent,id,label,width=350){const main=await figma.getNodeByIdAsync(state.defaults[id]);const n=main.createInstance();parent.appendChild(n);n.name=id+' / instance';ids.push(n.id);instances.push(n.id);n.resize(width,n.height);if(label){const key=Object.keys(n.componentProperties).find(k=>k.startsWith('Label#'));if(key)n.setProperties({[key]:label});}return n;}
 const root=frame(page,'Flow review / Meal to meaning',1810);root.x=80;root.y=80;pad(root,40);paint(root,'color/surface/card');await text(root,'기록에서 해석으로','Editorial/Title');await text(root,'검토용 화면: 실제 메인 컴포넌트 인스턴스 조합. 합성 예제이며 현재 제품 화면의 픽셀 단위 복제는 아닙니다.','Editorial/Body',1730);
 const row=page;

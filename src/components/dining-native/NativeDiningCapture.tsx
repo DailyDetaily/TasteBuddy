@@ -1,7 +1,8 @@
 import type { NativeRecord } from "../../lib/gastronomy/nativeRecord";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNativeJournal } from "../../lib/gastronomy/useNativeJournal";
 import NativeDiningEditor from "./NativeDiningEditor";
+import NativeDiningCameraSource from './NativeDiningCameraSource';
 export interface NativeCaptureRequest {
   seed?: Pick<NativeRecord, "restaurant"> &
     Partial<Pick<NativeRecord, "menu" | "restaurantID" | "foodSource">>;
@@ -20,6 +21,8 @@ export default function NativeDiningCapture({
   onSaved: () => void;
 }) {
   const mounted = useRef(true);
+  const [camera, setCamera] = useState(!request.entryID && !request.mealEntryID && !request.seed);
+  const [initialPhoto, setInitialPhoto] = useState<File | undefined>();
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
@@ -31,6 +34,7 @@ export default function NativeDiningCapture({
   const meal = request.mealEntryID
     ? journal.entries.find((e) => e.id === request.mealEntryID)
     : undefined;
+  if (camera) return <NativeDiningCameraSource onClose={onClose} onManual={() => setCamera(false)} onPhoto={(file) => { setInitialPhoto(file); setCamera(false); }} />;
   if (
     !journal.canEdit ||
     (request.entryID && !original) ||
@@ -61,6 +65,7 @@ export default function NativeDiningCapture({
     <NativeDiningEditor
       owner={owner}
       original={original}
+      initialPhoto={initialPhoto}
       seed={request.seed}
       meal={meal}
       entries={journal.entries}

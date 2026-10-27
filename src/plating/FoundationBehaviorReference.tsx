@@ -147,9 +147,9 @@ function LayoutRules({ section }: { section: string }) {
             "최소 82pt의 adaptive grid를 사용해요.",
           ],
           [
-            "TBOverflowTagRow",
+            "OverflowTagRow",
             "한 줄 요약",
-            "실제 +N 너비까지 계산해 앞쪽 항목을 보여줘요.",
+            "실제 +N 너비까지 계산하고, 펼침 옵션을 켜면 전체 항목을 여러 줄로 보여줘요.",
           ],
           [
             "시트 드래그",

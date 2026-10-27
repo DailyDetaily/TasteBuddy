@@ -66,7 +66,7 @@ export default function SplashLogo({ autoplays = true, onComplete }: SplashLogoP
                         <svg key={leaf.index} width="1000" height="500" viewBox="0 0 1000 500" aria-hidden="true"
                             style={{ position: 'absolute', inset: 0, overflow: 'visible', transformOrigin: `${symbol.cx}px ${symbol.cy}px`,
                                 transform: `matrix3d(${splashPetalMatrix(leaf.angle, fold, symbol.perspective).join(',')})` }}>
-                            <path d={leaf.d} fill="#000000" />
+                            <path d={leaf.d} fill="var(--tb-color-text-primary)" />
                         </svg>
                     ))}
                 </div>
@@ -82,7 +82,7 @@ export default function SplashLogo({ autoplays = true, onComplete }: SplashLogoP
                                 {step < vector.maskSteps && <defs><clipPath id={id}>
                                     <path d={glyph.masks[step]} clipRule="evenodd" />
                                 </clipPath></defs>}
-                                <path d={glyph.d} fill="#000000" clipPath={step < vector.maskSteps ? `url(#${id})` : undefined} />
+                                <path d={glyph.d} fill="var(--tb-color-text-primary)" clipPath={step < vector.maskSteps ? `url(#${id})` : undefined} />
                             </g>;
                         })}
                     </g>

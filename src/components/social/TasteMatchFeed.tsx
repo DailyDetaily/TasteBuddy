@@ -1,9 +1,10 @@
 import { useState } from 'react';
 
 import { getChefImageByName } from '../../constants/chefImages';
-import { TASTE_IDS, TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
+import { TASTE_IDS, type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import {
-  getTasteTint,
+  getTasteBorder,
   getTasteTintSurface,
   getTasteTintSurfaceSubText,
   getTasteTintSurfaceText,
@@ -370,7 +371,7 @@ function GhostBuddyRecommendationCard({
       className="box-border flex h-[132px] w-[132px] shrink-0 flex-col items-start gap-[12px] overflow-clip rounded-[20px] p-[12px] text-left"
       style={{
         backgroundColor: getTasteTintSurface(primaryTasteLabel),
-        border: `1px solid ${getTasteTint(primaryTasteLabel, 0.18)}`,
+        border: `1px solid ${getTasteBorder(primaryTasteLabel, 'default')}`,
       }}
       aria-label={`${reviewerName}, ${reviewerHandle}, 취향 적합도 ${matchScore}%`}
       onClick={() => onOpenProfile?.(profile)}
@@ -429,7 +430,7 @@ function BuddyRecommendationCard({
       className="box-border flex h-[132px] w-[132px] shrink-0 flex-col items-start gap-[12px] overflow-clip rounded-[20px] p-[12px] text-left"
       style={{
         backgroundColor: getTasteTintSurface(primaryTasteLabel),
-        border: `1px solid ${getTasteTint(primaryTasteLabel, 0.18)}`,
+        border: `1px solid ${getTasteBorder(primaryTasteLabel, 'default')}`,
       }}
       aria-label={`${reviewerName}, ${reviewerHandle}, 취향 적합도 ${item.matchScore}%`}
       onClick={() => onOpenProfile?.(item.reviewer)}
@@ -513,7 +514,7 @@ function RestaurantRecommendationCard({
       className="box-border flex h-[132px] w-[132px] shrink-0 flex-col items-start gap-[12px] overflow-clip rounded-[20px] p-[12px] text-left"
       style={{
         backgroundColor: getTasteTintSurface(primaryTasteLabel),
-        border: `1px solid ${getTasteTint(primaryTasteLabel, 0.18)}`,
+        border: `1px solid ${getTasteBorder(primaryTasteLabel, 'default')}`,
       }}
       aria-label={`${item.restaurantName}, ${dishLabel}, 적합도 ${item.matchScore}%`}
     >
@@ -568,7 +569,7 @@ function ChefRecommendationCard({
       className="box-border flex h-[132px] w-[132px] shrink-0 flex-col items-start gap-[12px] overflow-clip rounded-[20px] p-[12px] text-left"
       style={{
         backgroundColor: getTasteTintSurface(primaryTasteLabel),
-        border: `1px solid ${getTasteTint(primaryTasteLabel, 0.18)}`,
+        border: `1px solid ${getTasteBorder(primaryTasteLabel, 'default')}`,
       }}
       aria-label={`${chefName}, ${item.restaurantName}, 적합도 ${item.matchScore}%`}
     >
@@ -673,8 +674,8 @@ export default function TasteMatchFeed({
                   aria-pressed={isActive}
                   className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold transition-colors ${
                     isActive
-                      ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-white'
-                      : 'border-[var(--tb-color-border-default)] bg-white text-[var(--tb-color-text-muted)] hover:border-[var(--tb-color-border-strong)] hover:text-[var(--tb-color-text-primary)]'
+                      ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
+                      : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-muted)] hover:border-[var(--tb-color-border-strong)] hover:text-[var(--tb-color-text-primary)]'
                   }`}
                   onClick={() => {
                     setRecommendationMode(option.mode);

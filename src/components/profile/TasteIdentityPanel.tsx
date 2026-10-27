@@ -2,7 +2,7 @@ import { Compass, Eye, ShieldCheck, UsersRound } from 'lucide-react';
 
 import { ICON_TOKENS } from '../../constants/designTokens';
 import {
-  getTasteTint,
+  getTasteBorder,
   getTasteTintSurface,
   getTasteTintSurfaceSubText,
   getTasteTintSurfaceText,
@@ -34,7 +34,7 @@ function SignalCard({ signal }: { signal: TasteIdentitySignal }) {
       className="rounded-[16px] border p-3"
       style={{
         backgroundColor: getTasteTintSurface(tasteLabel),
-        borderColor: getTasteTint(tasteLabel, 0.18),
+        borderColor: getTasteBorder(tasteLabel, 'default'),
       }}
     >
       <div className="flex items-center justify-between gap-2">
@@ -45,7 +45,7 @@ function SignalCard({ signal }: { signal: TasteIdentitySignal }) {
           {signal.label}
         </p>
         <span
-          className="shrink-0 rounded-full bg-white/50 px-2 py-1 text-[10px] font-semibold"
+          className="shrink-0 rounded-full bg-[var(--tb-color-surface-overlay)] px-2 py-1 text-[10px] font-semibold"
           style={{ color: getTasteTintSurfaceText(tasteLabel) }}
         >
           {Math.round(signal.confidence * 100)}%
@@ -72,7 +72,7 @@ export default function TasteIdentityPanel({
 
   return (
     <div className="tb-section-stack">
-      <section className="rounded-[20px] bg-white p-4">
+      <section className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
         <div className="flex items-start gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-[var(--tb-color-surface-muted)]">
             <ShieldCheck size={ICON_TOKENS.size.md} className="text-[var(--tb-color-icon-primary)]" />
@@ -102,7 +102,7 @@ export default function TasteIdentityPanel({
         </div>
       </section>
 
-      <section className="rounded-[20px] bg-white p-4">
+      <section className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
         <div className="flex items-start gap-3">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-[8px] bg-[var(--tb-color-surface-muted)]">
             <Eye size={ICON_TOKENS.size.base} className="text-[var(--tb-color-icon-primary)]" />
@@ -134,7 +134,7 @@ export default function TasteIdentityPanel({
         </SectionTitle>
         <div className="grid gap-3">
           {similarProfiles.length === 0 ? (
-            <div className="rounded-[20px] bg-white p-4">
+            <div className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
               <div className="flex gap-3">
                 <UsersRound size={ICON_TOKENS.size.lg} className="text-[var(--tb-color-icon-muted)]" />
                 <div>
@@ -151,7 +151,7 @@ export default function TasteIdentityPanel({
           {similarProfiles.map((publicProfile) => {
             const edge = similarityEdges.find((item) => item.targetUserId === publicProfile.userId);
             return (
-              <article key={publicProfile.userId} className="rounded-[20px] bg-white p-3">
+              <article key={publicProfile.userId} className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-3">
                 <div className="flex items-start gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-[var(--tb-color-surface-muted)]">
                     <Compass size={ICON_TOKENS.size.md} className="text-[var(--tb-color-icon-primary)]" />

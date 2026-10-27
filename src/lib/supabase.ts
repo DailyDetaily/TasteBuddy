@@ -67,6 +67,22 @@ function getAuthRedirectUrl() {
   return window.location.origin + window.location.pathname;
 }
 
+/** Uses the existing account provider, just as the native auth entry does. */
+export async function continueWithSupabaseGoogle() {
+  if (!supabase) return { ok: false, message: '지금은 로그인에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.' };
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: getAuthRedirectUrl() },
+    });
+    return error
+      ? { ok: false, message: 'Google 로그인에 연결하지 못했어요. 다시 시도해 주세요.' }
+      : { ok: true, message: null };
+  } catch {
+    return { ok: false, message: 'Google 로그인에 연결하지 못했어요. 다시 시도해 주세요.' };
+  }
+}
+
 export async function getCurrentSupabaseSession() {
   if (!supabase) {
     return null;

@@ -241,7 +241,7 @@ export const TasteBuddyNativeAppScreen: React.FC = () => {
               <span style={{ fontSize: 12, color: '#888888' }}>나의 입맛 분석</span>
             </div>
 
-            {/* Horizontal Rail of HomeSummaryCards */}
+            {/* Horizontal Rail of CompactSummaryCards */}
             <div
               style={{
                 display: 'flex',

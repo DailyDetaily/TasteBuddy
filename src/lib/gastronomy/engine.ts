@@ -1,4 +1,5 @@
 /** Web port of TDDataEngine: records, meals, direct sensory evidence and dates stay separate. */
+import { TASTE_TOKENS } from '../../constants/designTokens';
 export type Category =
   | "experience"
   | "sensation"
@@ -13,6 +14,7 @@ export interface RecordRow {
   menu: string;
   restaurant: string;
   foodKinds: string[];
+  foodKindIDs?: string[];
   menuKey?: string | null;
   restaurantKey?: string | null;
   date: string | null;
@@ -34,10 +36,17 @@ export interface Observation {
   selection: string;
   reference?: string;
 }
+export interface OverallStar {
+  id: string;
+  entryID: string;
+  value: number;
+}
 export interface Data {
   sourceRecordCount?: number;
   records: RecordRow[];
   observations: Observation[];
+  /** Direct half-step star answers, separate from the legacy five-category scale. */
+  overallStars?: OverallStar[];
 }
 export interface Segment {
   key: string;
@@ -76,7 +85,7 @@ export const categories: {
     id: "sensation",
     title: "감각",
     subtitle: "느낀 맛·향·식감과 강도",
-    color: "#FBC02D",
+    color: TASTE_TOKENS.sour.palette.main,
   },
   {
     id: "preference",
@@ -88,7 +97,7 @@ export const categories: {
     id: "context",
     title: "맥락",
     subtitle: "조건에 따라 남긴 반응",
-    color: "#FBC02D",
+    color: TASTE_TOKENS.sour.palette.main,
   },
   {
     id: "change",
@@ -220,6 +229,11 @@ export function prepare(
       return new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
     };
     const days = unique(rows.map((r) => day(r.date)));
+    // One confirmed future dish excludes the whole meal, even with undated siblings.
+    if (days.some(value => value !== null && Date.parse(value) > +now)) {
+      future.push(...rows);
+      continue;
+    }
     if (
       days.length !== 1 ||
       !days[0] ||

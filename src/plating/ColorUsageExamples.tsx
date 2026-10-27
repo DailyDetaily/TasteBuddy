@@ -43,8 +43,7 @@ function TasteBubblePair({ taste }: { taste: NativeTaste }) {
   const style = {
     "--usage-tint": taste.tintSurface,
     "--usage-tint-text": taste.tintText,
-    // TasteAxis.tintSoftBorderColor is main at 18% in TBDesignColorTokens.swift.
-    "--usage-tint-border": `color-mix(in srgb, ${taste.main} 18%, transparent)`,
+    "--usage-tint-border": `var(--tb-taste-${taste.id}-border-strong)`,
   } as CSSProperties;
   return <div className="pl-usage-taste" style={style}>
     <div className="pl-usage-taste-name"><strong>{taste.label}</strong><code>{taste.id}</code></div>
@@ -62,7 +61,7 @@ function NativeTasteExample() {
     <TokenRoles rows={[
       ["TasteAxis.{axis}.tintColor", "기본 채움 56% → 선택 채움 100%"],
       ["TasteAxis.{axis}.tintTextColor", "기본 글자 74% → 선택 글자 100%"],
-      ["TasteAxis.{axis}.tintSoftBorderColor", "선택이 안정된 뒤 나타나는 1pt 테두리"],
+      ["TasteAxis.{axis}.borderStrongColor", "선택이 안정된 뒤 나타나는 1pt 테두리"],
     ]} />
     <p className="pl-usage-note">현재 초점이 없는 초기 상태와 선택 상태의 색상 표본이에요. 실제 지도에서는 초점과의 거리에 따라 기본 농도가 달라지고, 크기·위치·선택 순위도 함께 바뀌어요. 비교를 위해 크기를 맞추고 문구는 미각 이름으로 줄였어요.</p>
     <details className="pl-usage-source"><summary>네이티브 구현 근거</summary><p><code>DiningView.swift · TasteExperienceBubbleView</code><br/><code>TasteModels.swift · TasteAxis</code><br/>초점이 없을 때 <code>fillOpacity = 0.56</code>, <code>textOpacity = 0.74</code>. 선택하면 두 값 모두 1이 돼요. 이 문서의 토글은 색상 비교용이며 실제 기록을 바꾸지 않아요.</p></details>

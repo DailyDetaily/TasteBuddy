@@ -41,11 +41,11 @@ export default function SelectionCard({
       type={type}
       aria-pressed={selected}
       className={cn(
-        'flex w-full items-start gap-3 rounded-[var(--tb-radius-20)] border p-4 text-left transition-all outline-none',
-        'focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2',
+        'flex w-full items-center gap-3 rounded-[var(--tb-radius-20)] border p-4 text-left transition-all outline-none',
+        'focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-focus)] focus-visible:ring-offset-2',
         'active:scale-[0.99]',
         selected
-          ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-surface-base)] shadow-[0_12px_24px_rgba(15,15,15,0.06)]'
+          ? 'border-[var(--tb-color-border-selected)] bg-[var(--tb-color-surface-base)] shadow-[0_12px_24px_rgba(15,15,15,0.06)]'
           : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)] hover:border-[var(--tb-color-border-strong)] hover:bg-[var(--tb-color-surface-card-hover)]',
         className,
       )}
@@ -55,12 +55,11 @@ export default function SelectionCard({
         aria-hidden="true"
         className={cn(
           'flex size-[18px] shrink-0 items-center justify-center border transition-colors',
-          !singleLine && 'mt-[2px]',
           indicator === 'checkbox' ? 'rounded-[6px]' : 'rounded-full',
           indicator === 'radio' && selected
-            ? 'border-transparent bg-transparent text-[var(--tb-color-text-primary)] shadow-[inset_0_0_0_2px_var(--tb-color-text-primary)]'
+            ? 'border-transparent bg-transparent text-[var(--tb-color-text-primary)] shadow-[inset_0_0_0_2px_var(--tb-color-border-selected)]'
             : selected
-              ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
+              ? 'border-[var(--tb-color-border-selected)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
               : 'border-[var(--tb-color-border-disabled)] bg-transparent text-transparent',
         )}
       >

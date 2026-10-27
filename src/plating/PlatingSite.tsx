@@ -24,11 +24,14 @@ import {
   PLATING_FIGMA,
   components,
   docs,
+  librarySections,
   navGroups,
   references,
   type CatalogComponent,
   type DocPage,
+  type LibraryEntry,
 } from "./catalog";
+import { componentLocation, libraryAreas, type LibraryArea } from "./catalogNavigation";
 import assets from "./assets.json";
 import figmaMap from "./figma-map.json";
 import ComponentReview from "./ComponentReview";
@@ -55,11 +58,15 @@ import {
   nativeAuditKindLabels,
 } from "./nativeComponentAudit";
 import { FoundationIntro, FoundationSection } from "./FoundationReference";
+import { ColorModeProvider } from "./ColorModeReference";
 const MotionSection = lazy(
   () => import("../components/design-system/PlatingMotionSection"),
 );
 const ComponentPreview = lazy(() => import("./ComponentPreview"));
+const AdditionalPreview = lazy(() => import("./AdditionalPreview"));
 const ComponentGuidelines = lazy(() => import("./ComponentGuidelines"));
+const SheetPresentation = lazy(() => import("./SheetPresentation"));
+const SummaryCardExamples = lazy(() => import("./SummaryCardExamples"));
 const Legacy = lazy(() => import("../pages/DesignSystemPage"));
 const rootSource = "/Users/sinjunho/Desktop/Taste Buddy/";
 const map = figmaMap as {
@@ -258,15 +265,17 @@ export default function PlatingSite() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
   const selectedComponent = components.find(
-    (v) => `components/${v.id}` === slug,
+    (v) => `components/${v.id}` === slug || (slug === "components/inline-text-button" && v.id === "inline-button"),
   );
-  const selectedDoc = docs.find((v) => v.slug === slug);
+  const selectedDoc = docs.find((v) => v.slug === (slug === "components/action-area" ? "patterns/flow-step" : slug));
+  const selectedCollection = libraryAreas.find((area) => area.entry === slug);
   const selectedAsset = assets.find((v) => `brand-assets/${v.id}` === slug);
   useEffect(() => {
-    document.title = `${slug === "review/callout" ? "콜아웃 비교" : slug === "review/disclosure" ? "아코디언 비교" : selectedComponent?.korean || selectedDoc?.title || selectedAsset?.title || "플레이팅"} · Plating`;
-  }, [slug, selectedComponent, selectedDoc, selectedAsset]);
+    document.title = `${slug === "review/callout" ? "콜아웃 비교" : slug === "review/disclosure" ? "아코디언 비교" : selectedComponent?.korean || selectedDoc?.title || selectedCollection?.label || selectedAsset?.title || "플레이팅"} · Plating`;
+  }, [slug, selectedComponent, selectedDoc, selectedCollection, selectedAsset]);
   const allResults = useMemo(
     () => [
+      ...libraryAreas.map((area) => ({ title: area.label, detail: "목차", slug: area.entry, text: area.intro })),
       ...docs.map((d) => ({
         title: d.title,
         detail: d.eyebrow,
@@ -275,7 +284,7 @@ export default function PlatingSite() {
       })),
       ...components.map((c) => ({
         title: `${c.name} · ${c.korean}`,
-        detail: c.group,
+        detail: `${componentLocation(c.id).areaLabel} · ${componentLocation(c.id).category}`,
         slug: `components/${c.id}`,
         text: c.purpose + " " + c.usage,
       })),
@@ -290,29 +299,35 @@ export default function PlatingSite() {
   );
   const results = allResults
     .filter((v) =>
-      (v.title + " " + v.text)
+      (v.title + " " + v.detail + " " + v.text)
         .toLocaleLowerCase()
         .includes(query.trim().toLocaleLowerCase()),
     )
     .slice(0, 12);
+  const activeSlug = selectedComponent ? `components/${selectedComponent.id}` : selectedDoc?.slug ?? slug;
   const activeNavGroup = navGroups.find(
     (group) =>
-      group.items.some(([path]) => path === slug) ||
-      (group.id === "brand" && slug.startsWith("brand-assets/")),
+      group.items.some(([path]) => path === activeSlug) ||
+      (group.id === "assets" && slug.startsWith("brand-assets/")),
   );
   const sidebarGroup = activeNavGroup ?? navGroups[0];
   useEffect(() => {
     sidebarContainer.current?.scrollTo(0, 0);
   }, [sidebarGroup.id]);
   const sidebarItems =
-    sidebarGroup.id === "brand"
+    sidebarGroup.id === "assets" && slug.startsWith("brand-assets")
       ? [
           ...sidebarGroup.items,
           ...assets.map(({ id, title }) => [`brand-assets/${id}`, title]),
         ]
       : sidebarGroup.items;
-  const navigationLabel =
-    sidebarGroup.id === "components" ? "컴포넌트" : sidebarGroup.label;
+  const navigationLabel = sidebarGroup.label;
+  const groupedSidebarPaths = new Set(sidebarGroup.sections?.flatMap((section) => section.items.map(([path]) => path)));
+  const sidebarLink = ([path, label]: string[]) => (
+    <Link href={`${BASE}/${path}`} aria-current={activeSlug === path ? "page" : undefined} key={path}>
+      {label}
+    </Link>
+  );
   const sectionLinks = navGroups.map((group) => (
     <Link
       href={`${BASE}/${group.entry}`}
@@ -326,16 +341,14 @@ export default function PlatingSite() {
     <nav aria-label={`${navigationLabel} 탐색`}>
       <div className="pl-nav-group" key={sidebarGroup.id}>
         <p>{sidebarGroup.label}</p>
-        {sidebarItems.map(([path, label]) => (
-          <Link
-            href={`${BASE}/${path}`}
-            aria-current={slug === path ? "page" : undefined}
-            key={path}
-          >
-            {label}
-          </Link>
-        ))}
+        {sidebarItems.filter(([path]) => !groupedSidebarPaths.has(path)).map(sidebarLink)}
       </div>
+      {sidebarGroup.sections?.map((section) => (
+        <div className="pl-nav-group" key={section.label}>
+          <p>{section.label}</p>
+          {section.items.map(sidebarLink)}
+        </div>
+      ))}
     </nav>
   );
   if (slug === "review/disclosure") return <ComponentReview />;
@@ -348,7 +361,10 @@ export default function PlatingSite() {
     );
   const isHome = !slug;
   const toc =
-    selectedComponent?.id === "disclosure" ? [
+    selectedCollection ? [
+      { id: "catalog-index", title: "분류와 검색" },
+      { id: "catalog-results", title: "문서 목차" },
+    ] : selectedComponent?.id === "disclosure" ? [
       { id: "preview", title: "아코디언 미리보기" },
       { id: "anatomy", title: "구조" },
       { id: "properties", title: "속성" },
@@ -357,15 +373,16 @@ export default function PlatingSite() {
       { id: "states", title: "접힘·펼침·본문 형식" },
       { id: "slots", title: "콘텐츠 슬롯" },
       { id: "sources", title: "소스와 연결" },
-    ] : selectedDoc?.sections.map((v) => ({ id: v.id, title: v.title })) ||
-    selectedComponent
+    ] : (selectedDoc || selectedComponent)
       ? [
           ...(selectedDoc?.sections.map((v) => ({
             id: v.id,
             title: v.title,
           })) ?? [
-            { id: "native-audit", title: "iOS 대조 결과" },
-            { id: "preview", title: "실제 iOS 렌더" },
+            ...(selectedComponent?.id === "bottom-sheet" ? [{ id: "sheet-presentation", title: "시트와 배경 카드" }] : []),
+            ...((selectedComponent?.id === "mini-area-chart" || selectedComponent?.id === "mini-treemap-chart" || selectedComponent?.id === "mini-bubble-chart" || selectedComponent?.id === "pie-donut-chart" || selectedComponent?.id === "mini-stacked-bar-chart")
+              ? [{ id: "web-preview", title: "차트 미리보기" }]
+              : [{ id: "native-audit", title: "iOS 대조 결과" }, { id: "preview", title: "실제 iOS 렌더" }]),
             ...(selectedComponent?.guide?.platform === "ios"
               ? [
                   { id: "anatomy", title: "iOS 구조와 속성" },
@@ -532,11 +549,7 @@ export default function PlatingSite() {
             <div className="pl-breadcrumb">
               <Link href={BASE}>Plating</Link>
               <span>/</span>
-              <span>
-                {selectedComponent?.group ||
-                  selectedDoc?.eyebrow ||
-                  "라이브러리"}
-              </span>
+              <Link href={`${BASE}/${sidebarGroup.entry}`}>{sidebarGroup.label}</Link>
             </div>
             {selectedComponent ? (
               <ComponentPage
@@ -545,8 +558,8 @@ export default function PlatingSite() {
               />
             ) : selectedDoc ? (
               <Documentation page={selectedDoc} />
-            ) : slug === "components" ? (
-              <ComponentGallery />
+            ) : selectedCollection ? (
+              <ComponentGallery key={selectedCollection.id} area={selectedCollection} />
             ) : slug === "brand-assets" ? (
               <AssetGallery />
             ) : selectedAsset ? (
@@ -558,10 +571,10 @@ export default function PlatingSite() {
                 <Heading
                   eyebrow="NOT FOUND"
                   title="이 문서를 찾지 못했어요"
-                  intro="주소를 확인하거나 전체 컴포넌트에서 다시 찾아보세요."
+                  intro="주소를 확인하거나 Plating의 분류와 목차에서 다시 찾아보세요."
                 />
-                <Link className="pl-dark-link" href={`${BASE}/components`}>
-                  컴포넌트 보기
+                <Link className="pl-dark-link" href={`${BASE}/getting-started#structure`}>
+                  전체 목차 보기
                   <ArrowRight size={18} />
                 </Link>
               </>
@@ -581,7 +594,7 @@ export default function PlatingSite() {
             ))}
             <a
               className="pl-toc-source"
-              href={PLATING_FIGMA}
+              href={figmaURL(selectedCollection?.figmaNodeId ?? selectedDoc?.figmaNodeId ?? libraryAreas.find((area) => area.id === activeNavGroup?.id)?.figmaNodeId)}
               target="_blank"
               rel="noreferrer"
             >
@@ -620,69 +633,92 @@ function ComponentTile({ component: c }: { component: CatalogComponent }) {
     </Link>
   );
 }
-function ComponentGallery() {
+function LibraryEntryTile({ entry }: { entry: LibraryEntry }) {
+  if (entry.component) return <ComponentTile component={entry.component} />;
+  return (
+    <Link href={`${BASE}/${entry.slug}`} className="pl-component-tile pl-reference-tile">
+      <div className="pl-reference-summary">
+        <Tag>{entry.reference ? "원본·소스 안내" : "사용 패턴"}</Tag>
+        <p>{entry.purpose}</p>
+      </div>
+      <div className="pl-tile-label">
+        <div><h3>{entry.name}</h3><span>{entry.reference?.korean ?? "패턴 문서"}</span></div>
+        <ArrowUpRight size={18} />
+      </div>
+    </Link>
+  );
+}
+
+function ComponentGallery({ area }: { area: LibraryArea }) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("전체");
   const [scope, setScope] = useState("전체");
-  const found = components.filter(
-    (c) =>
-      (group === "전체" || c.group === group) &&
-      (scope === "전체" || nativeComponentAudit[c.id]?.kind === scope) &&
-      (c.name + c.korean + c.usage).toLowerCase().includes(query.toLowerCase()),
-  );
+  const sections = librarySections(area);
+  const foundSections = sections
+    .filter((section) => group === "전체" || section.id === group)
+    .map((section) => ({ ...section, entries: section.entries.filter((entry) =>
+      (scope === "전체" || nativeComponentAudit[entry.id]?.kind === scope) &&
+      `${entry.name} ${entry.component?.korean ?? entry.reference?.korean ?? ""} ${entry.purpose}`.toLowerCase().includes(query.trim().toLowerCase()),
+    ) }))
+    .filter((section) => section.entries.length > 0);
+  const foundCount = foundSections.reduce((total, section) => total + section.entries.length, 0);
   return (
     <>
       <Heading
-        eyebrow="COMPONENTS"
-        title="좋은 선택을 다시 사용해요"
-        intro={`${components.length}개 계열을 현재 iOS 소스와 대조했어요. 제품 구현, 시스템 컨트롤, 참고 견본과 독립 구현이 없는 항목을 구분해 안내해요.`}
+        eyebrow={area.label.toUpperCase()}
+        title={area.label}
+        intro={area.intro}
       />
-      <div className="pl-gallery-tools">
+      <div className="pl-gallery-tools" id="catalog-index">
         <label className="pl-filter-search">
           <Search size={18} />
           <input
-            aria-label="컴포넌트 검색"
-            placeholder="컴포넌트 검색"
+            aria-label={`${area.label} 문서 검색`}
+            placeholder="이 영역에서 문서 검색"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
-        <select
+        {area.id !== "patterns" && <select
           aria-label="구현 범위"
           value={scope}
           onChange={(e) => setScope(e.target.value)}
         >
-          <option value="전체">전체 iOS 항목</option>
+          <option value="전체">전체 문서</option>
           {Object.entries(nativeAuditKindLabels).map(([kind, label]) => (
             <option key={kind} value={kind}>
               {label}
             </option>
           ))}
-        </select>
+        </select>}
       </div>
-      <div className="pl-filter-tabs" role="group" aria-label="컴포넌트 분류">
-        {["전체", ...new Set(components.map((c) => c.group))].map((g) => (
+      <div className="pl-filter-tabs" role="group" aria-label={`${area.label} 분류`}>
+        {[{ id: "전체", label: "전체" }, ...sections].map((section) => (
           <button
-            key={g}
-            aria-pressed={group === g}
-            onClick={() => setGroup(g)}
+            key={section.id}
+            aria-pressed={group === section.id}
+            onClick={() => setGroup(section.id)}
           >
-            {g}
+            {section.label}
           </button>
         ))}
       </div>
       <p className="pl-result-count" role="status">
-        {found.length}개 컴포넌트 계열
+        {foundCount}개 목차 항목
       </p>
-      {found.length ? (
-        <div className="pl-component-grid">
-          {found.map((c) => (
-            <ComponentTile key={c.id} component={c} />
-          ))}
-        </div>
+      <div id="catalog-results">
+      {foundCount ? (
+        foundSections.map((section) => (
+          <section className="pl-doc-section pl-catalog-section" key={section.id}>
+            <h2>{section.label}</h2>
+            <div className="pl-component-grid">
+              {section.entries.map((entry) => <LibraryEntryTile key={entry.id} entry={entry} />)}
+            </div>
+          </section>
+        ))
       ) : (
         <div className="pl-empty">
-          <h2>찾는 컴포넌트가 없어요</h2>
+          <h2>찾는 문서가 없어요</h2>
           <button
             onClick={() => {
               setQuery("");
@@ -694,14 +730,17 @@ function ComponentGallery() {
           </button>
         </div>
       )}
+      </div>
     </>
   );
 }
 function ComponentPage({ component: c }: { component: CatalogComponent }) {
+  const location = componentLocation(c.id);
   const isAccordion = c.id === "disclosure";
   const isCapsuleTabs = c.id === "capsule-tabs";
   const isChipFamily = c.id === "chip-group" || c.id === "chip";
-  const hasLiveExample = isAccordion || isCapsuleTabs || isChipFamily;
+  const isMiniChart = c.id === "mini-chart" || c.id === "mini-line-chart" || c.id === "mini-area-chart" || c.id === "mini-treemap-chart" || c.id === "mini-bubble-chart" || c.id === "pie-donut-chart" || c.id === "mini-stacked-bar-chart";
+  const hasLiveExample = c.id === "inline-button" || isAccordion || isCapsuleTabs || isChipFamily || isMiniChart || c.id === "tcs-badge";
   const details = componentDocumentation[c.id];
   const audit = nativeComponentAudit[c.id];
   const [showWebReference, setShowWebReference] = useState(hasLiveExample);
@@ -724,13 +763,13 @@ function ComponentPage({ component: c }: { component: CatalogComponent }) {
   return (
     <>
       <Heading
-        eyebrow={`COMPONENTS / ${c.group}`}
+        eyebrow={`${location.areaLabel.toUpperCase()} / ${location.category}`}
         title={c.name}
         intro={c.purpose}
       />
       <div className="pl-meta-row">
         <Tag>{c.korean}</Tag>
-        <Tag>{isAccordion ? "라이브러리 컴포넌트" : audit ? nativeAuditKindLabels[audit.kind] : "규격 재현"}</Tag>
+        <Tag>{isAccordion || c.id === "mini-area-chart" || c.id === "mini-treemap-chart" || c.id === "mini-bubble-chart" || c.id === "pie-donut-chart" || c.id === "mini-stacked-bar-chart" ? "라이브러리 컴포넌트" : audit ? nativeAuditKindLabels[audit.kind] : "규격 재현"}</Tag>
         <a
           href={figmaURL(map.components[c.id])}
           target="_blank"
@@ -740,13 +779,14 @@ function ComponentPage({ component: c }: { component: CatalogComponent }) {
           <ArrowUpRight size={15} />
         </a>
       </div>
+      {c.id === "bottom-sheet" && <Suspense fallback={null}><SheetPresentation /></Suspense>}
       {!isAccordion && <NativeComponentReference component={c} />}
       <details
         className="pl-web-archive"
         open={hasLiveExample ? showWebReference : undefined}
         onToggle={(event) => setShowWebReference(event.currentTarget.open)}
       >
-        <summary>{isAccordion ? "아코디언 구조와 동작" : isCapsuleTabs ? "공통 CapsuleTabs 예제" : isChipFamily ? "칩 구성과 동작" : "기존 웹 구현 참고"}</summary>
+        <summary>{c.id === "inline-button" ? "인라인 버튼 구성과 상태" : c.id === "tcs-badge" ? "TCS 배지 · Light / Dark" : c.id === "pie-donut-chart" ? "파이 도넛 차트 예시" : isMiniChart ? "공통 미니 그래프와 카드 적용 예시" : isAccordion ? "아코디언 구조와 동작" : isCapsuleTabs ? "공통 CapsuleTabs 예제" : isChipFamily ? "칩 구성과 동작" : "기존 웹 구현 참고"}</summary>
         {showWebReference && (
           <>
             <section id={isAccordion ? "preview" : "web-preview"} className="pl-playground">
@@ -989,8 +1029,15 @@ function ComponentPage({ component: c }: { component: CatalogComponent }) {
       )}
       <section className="pl-doc-section" id="sources">
         <h2>소스와 연결</h2>
+        {c.id === "bottom-sheet" && <>
+          <SourceLink path="src/components/system/SheetBackground.tsx" />
+          <SourceLink path="src/lib/sheetPresentation.ts" />
+          <SourceLink path="src/constants/designTokens.ts" />
+          <SourceLink path="ios/TasteBuddy/DesignSystem/TBTheme.swift" />
+          <a className="pl-inline-link" href={figmaURL(map.components["sheet-presentation"])} target="_blank" rel="noreferrer">Figma 시트와 배경 카드 ↗</a>
+        </>}
         {(!audit || isCapsuleTabs || isChipFamily) && <SourceLink path={c.source} />}
-        <SourceLink path={c.native} />
+        {c.native && c.id !== "mini-area-chart" && <SourceLink path={c.native} />}
         {audit &&
           [...new Set(audit.sources.map((source) => source.path))]
             .filter((path) => path !== c.native)
@@ -1078,16 +1125,47 @@ function ComponentPage({ component: c }: { component: CatalogComponent }) {
   );
 }
 function Documentation({ page }: { page: DocPage }) {
+  if (page.slug !== "foundations/colors") return <DocumentationContent page={page} />;
+  return <ColorModeProvider key={page.slug}><DocumentationContent page={page} /></ColorModeProvider>;
+}
+function DocumentationContent({ page }: { page: DocPage }) {
   return (
     <>
       <Heading {...page} />
+      {page.figmaNodeId && <div className="pl-meta-row">
+        {page.sourcePaths && <Tag>원본·소스 안내</Tag>}
+        <a href={figmaURL(page.figmaNodeId)} target="_blank" rel="noreferrer">Figma 원본과 목차 <ArrowUpRight size={15} /></a>
+      </div>}
       <FoundationIntro slug={page.slug} />
+      {page.slug === "components/summary-card" && <Suspense fallback={<p>요약 카드 예시를 불러오고 있어요.</p>}><SummaryCardExamples /></Suspense>}
       {page.sections.map((s) => (
         page.slug === "foundations/colors" && s.id === "color-usage-examples" ?
         <FoundationSection key={s.id} slug={page.slug} section={s.id} LinkComponent={Link} /> :
         <section className="pl-doc-section" id={s.id} key={s.id}>
           <h2>{s.title}</h2>
           <p>{s.body}</p>
+          {page.slug === "patterns/sheet-presentation" && s.id === "examples" && <Suspense fallback={<p>시트 예시를 불러오고 있어요.</p>}><SheetPresentation /></Suspense>}
+          {s.id === "sources" && page.sourcePaths && <div className="pl-source-list">
+            {page.sourcePaths.map((path) => <SourceLink key={path} path={path} />)}
+          </div>}
+          {s.links && <ul className="pl-document-links">
+            {s.links.map((link) => <li key={link.slug}><Link href={`${BASE}/${link.slug}`}>{link.label} <ArrowUpRight size={14} aria-hidden="true" /></Link></li>)}
+          </ul>}
+          {page.slug === "patterns/flow-step" && s.id === "examples" && (
+            <>
+              <a href={figmaURL("1282:5137")} target="_blank" rel="noreferrer">Figma 패턴 보기 ↗</a>
+              <div className="pl-flow-pattern-examples">
+                {["기본", "보조 행동", "비활성"].map((state) => (
+                  <div key={state}>
+                    <h3>{state}</h3>
+                    <Suspense fallback={<p>예시를 불러오고 있어요.</p>}>
+                      <AdditionalPreview id="action-area" state={state} label="" />
+                    </Suspense>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
           {s.items && (
             <ul>
               {s.items.map((v) => (
@@ -1146,7 +1224,7 @@ function Documentation({ page }: { page: DocPage }) {
       )}
       <div className="pl-related">
         <Link href={`${BASE}/components`}>
-          컴포넌트 탐색
+          Core components
           <ArrowRight size={17} />
         </Link>
         <Link href={`${BASE}/audit`}>

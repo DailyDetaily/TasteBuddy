@@ -1,0 +1,11 @@
+.pl-tcs-examples { width: 100%; display: grid; gap: 16px; }
+.pl-tcs-mode { padding: 20px; border-radius: 12px; background: var(--tb-color-bg-page); color: var(--tb-color-text-primary); }
+.pl-tcs-mode h3 { margin: 0 0 20px; font-size: 13px; }
+.pl-tcs-state-row { display: flex; flex-wrap: wrap; gap: 20px 28px; }
+.pl-tcs-state-row figure { margin: 0; min-width: 64px; }
+.pl-tcs-state-row figcaption { margin-top: 12px; font-size: 11px; color: var(--tb-color-text-body); }
+.pl-tcs-card-example { margin-top: 24px; padding: 16px; border-radius: 12px; background: var(--tb-color-surface-card); }
+.pl-tcs-card-example > div { display: flex; align-items: center; gap: 8px; }
+.pl-tcs-card-example strong { font-size: 13px; }
+.pl-tcs-card-example p { margin: 10px 0 0; font-size: 12px; color: var(--tb-color-text-body); }
+.plating-site[data-theme] .pl-live-stage .pl-product-demo[data-component="tcs-badge"] { max-width: 816px; width: 100%; padding: 0; background: transparent; }

@@ -20,6 +20,7 @@ export function useGastronomyData(
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [revision, setRevision] = useState(0);
+  const [settledOwner, setSettledOwner] = useState<string | null>(null);
   useEffect(() => {
     const changed = () => setRevision((n) => n + 1);
     window.addEventListener(DINING_RECORDS_CHANGED, changed);
@@ -48,9 +49,10 @@ export function useGastronomyData(
           setRemote(null);
           setError(web.reason instanceof Error ? web.reason.message : "이전 기록을 불러오지 못했어요.");
         }
-        if (native.status === "fulfilled")
+        if (native.status === "fulfilled") {
           setNative({ owner, data: native.value });
-        else {
+          if (native.value.syncError) setError(native.value.syncError);
+        } else {
           setNative(null);
           setError(
             native.reason instanceof Error
@@ -63,7 +65,7 @@ export function useGastronomyData(
         if (!cancelled) setRemote(null);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) { setLoading(false); setSettledOwner(owner); }
       });
     return () => {
       cancelled = true;
@@ -89,13 +91,17 @@ export function useGastronomyData(
         ...data.observations,
         ...(native?.owner === owner ? native.data.observations : []),
       ],
+      overallStars: [
+        ...(data.overallStars ?? []),
+        ...(native?.owner === owner ? native.data.overallStars ?? [] : []),
+      ],
     }),
     [data, native, owner],
   );
   return {
     data: combined,
-    loading,
-    error,
+    loading: active && (loading || settledOwner !== owner),
+    error: settledOwner === owner ? error : null,
     retry: () => setRevision((n) => n + 1),
   };
 }

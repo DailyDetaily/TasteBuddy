@@ -241,9 +241,9 @@ export const COLOR_GROUPS: Array<{
       name: "보더 & 상태",
       colors: [
         {
-          name: "border-card",
+          name: "border-faint",
           value: COLOR_TOKENS.border.card,
-          cssVar: "--tb-color-border-card",
+          cssVar: "--tb-color-border-faint",
           source: "src/styles/design-system.css / COLOR_TOKENS.border.card",
           status: "currently-used",
         },
@@ -571,12 +571,7 @@ export const CURRENTLY_USED_COMPONENTS: InventoryEntry[] = [
     note: "온보딩과 미각 측정, 그리고 여러 flow screen의 하단 CTA shell입니다.",
     status: "currently-used",
   },
-  {
-    name: "FlowStepCta",
-    source: "src/components/system/FlowStepCta.tsx",
-    note: "온보딩과 미각 측정의 하단 스텝 footer를 공통 패턴으로 통일합니다.",
-    status: "currently-used",
-  },
+
   {
     name: "TopAppBar",
     source: "src/components/TopAppBar.tsx",

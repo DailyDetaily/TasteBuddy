@@ -2,9 +2,11 @@
 import { createRoot } from "react-dom/client";
 import { lazy, Suspense } from "react";
 import { registerSW } from "virtual:pwa-register";
+import { installSystemColorMode } from "./lib/colorMode";
 
 const App = lazy(() => import("./App.tsx"));
 const PlatingSite = lazy(() => import("./plating/PlatingSite"));
+const SheetPresentationPreview = lazy(() => import("./plating/SheetPresentation").then(module => ({ default: module.SheetPresentationPreview })));
 const ChatGPTConsentPage = lazy(() => import("./pages/ChatGPTConsentPage"));
 import "./index.css";
 
@@ -63,9 +65,11 @@ async function bootstrap() {
   const isPlating = window.location.pathname === "/design-system" ||
     window.location.pathname.startsWith("/design-system/") ||
     new URLSearchParams(window.location.search).get("preview") === "design-system";
+  const isSheetPreview = window.location.pathname === "/design-system/sheet-presentation-preview";
+  if (!isPlating && window.location.pathname !== "/oauth/chatgpt") installSystemColorMode();
   createRoot(document.getElementById("root")!).render(
     <Suspense fallback={<div role="status" style={{padding: 24}}>불러오고 있어요.</div>}>
-      {window.location.pathname === "/oauth/chatgpt" ? <ChatGPTConsentPage /> : isPlating ? <PlatingSite /> : <App />}
+      {window.location.pathname === "/oauth/chatgpt" ? <ChatGPTConsentPage /> : isSheetPreview ? <SheetPresentationPreview /> : isPlating ? <PlatingSite /> : <App />}
     </Suspense>,
   );
 }

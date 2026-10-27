@@ -10,13 +10,15 @@ import SectionCard from '../components/SectionCard';
 import CalibrationQuestionHeader from '../components/measurement/CalibrationQuestionHeader';
 import HexRadarChart from '../components/system/HexRadarChart';
 import FlowHeaderBlock from '../components/system/FlowHeaderBlock';
-import FlowStepCta from '../components/system/FlowStepCta';
+import PrimaryButton from '../components/system/PrimaryButton';
+import StepIndicator from '../components/system/StepIndicator';
 import CardScrollList from '../components/system/CardScrollList';
 import SectionTitle from '../components/system/SectionTitle';
 import OutlineBadge from '../components/system/OutlineBadge';
 import TasteChip from '../components/system/TasteChip';
 import TasteTintCard from '../components/system/TasteTintCard';
-import { ICON_TOKENS, MOTION_TOKENS, TASTE_TOKENS } from '../constants/designTokens';
+import { ICON_TOKENS, MOTION_TOKENS } from '../constants/designTokens';
+import { TASTE_TOKENS } from '../constants/uiColorTokens';
 import {
   QUICK_CALIBRATION_SLIDER_VALUES,
   QUICK_TASTE_CALIBRATION_QUESTIONS,
@@ -32,7 +34,7 @@ import { getTasteMeasurementEntries } from '../constants/tasteMeasurementData';
 import {
   getTasteColor,
   getTasteTintSoft,
-  getTasteTintSoftBorder,
+  getTasteBorder,
 } from '../constants/tasteColors';
 
 const wrapIcon = (Icon: any) => ({ size, fontSize, className, style, ...props }: any) => (
@@ -105,7 +107,7 @@ function CalibrationMetaChip({
 }: CalibrationMetaChipProps) {
   const accentColor = getTasteColor(taste);
   const backgroundColor = getTasteTintSoft(taste);
-  const borderColor = getTasteTintSoftBorder(taste);
+  const borderColor = getTasteBorder(taste);
 
   return (
     <span
@@ -462,7 +464,7 @@ export default function QuickTasteCalibrationScreen({
 
                       <p
                         className="mt-5 text-[13px] leading-relaxed"
-                        style={{ color: currentTaste.palette.dark }}
+                        style={{ color: currentTaste.palette.tintSurfaceText }}
                       >
                         {currentSelection.responseNote}
                       </p>
@@ -498,8 +500,8 @@ export default function QuickTasteCalibrationScreen({
                         <div
                           className="rounded-[18px] px-3 py-2 text-[12px] font-semibold"
                           style={{
-                            backgroundColor: currentTaste.palette.bg,
-                            color: currentTaste.palette.dark,
+                            backgroundColor: currentTaste.palette.tintSurface,
+                            color: currentTaste.palette.tintSurfaceText,
                           }}
                         >
                           {getStarterAxisDisplayLabel(
@@ -538,7 +540,7 @@ export default function QuickTasteCalibrationScreen({
                     <span className="inline-flex items-center gap-2">
                       <span>첫 번째 미각 프로필이 준비됐어요</span>
                       <span className="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[var(--tb-color-text-primary)] shadow-[var(--tb-shadow-strong)]">
-                        <Check size={ICON_TOKENS.size.xs} strokeWidth={ICON_TOKENS.strokeWidth.emphasis} className="text-white" />
+                        <Check size={ICON_TOKENS.size.xs} strokeWidth={ICON_TOKENS.strokeWidth.emphasis} className="text-[var(--tb-color-interaction-on-primary)]" />
                       </span>
                     </span>
                   }
@@ -588,8 +590,8 @@ export default function QuickTasteCalibrationScreen({
                               value={`${entry.score}`}
                               className="border"
                               style={{
-                                backgroundColor: TASTE_TOKENS[entry.id].palette.bg,
-                                borderColor: TASTE_TOKENS[entry.id].palette.light,
+                                backgroundColor: TASTE_TOKENS[entry.id].palette.tintSurface,
+                                borderColor: TASTE_TOKENS[entry.id].palette.borderDefault,
                               }}
                             />
                           ))}
@@ -598,8 +600,8 @@ export default function QuickTasteCalibrationScreen({
                             value="조심할 포인트"
                             className="border"
                             style={{
-                              backgroundColor: TASTE_TOKENS[starterGuidance.cautionAxis].palette.bg,
-                              borderColor: TASTE_TOKENS[starterGuidance.cautionAxis].palette.light,
+                              backgroundColor: TASTE_TOKENS[starterGuidance.cautionAxis].palette.tintSurface,
+                              borderColor: TASTE_TOKENS[starterGuidance.cautionAxis].palette.borderDefault,
                             }}
                           />
                         </div>
@@ -627,7 +629,7 @@ export default function QuickTasteCalibrationScreen({
                               {entry.label.slice(0, 1)}
                             </span>
                           }
-                          leadingClassName="bg-white/80"
+                          leadingClassName="bg-[var(--tb-color-surface-overlay)]"
                           description={getStarterAxisDisplayLabel(entry.score / 10)}
                           detail={`현재 반응 ${entry.score}점`}
                           tasteId={entry.id}
@@ -643,15 +645,21 @@ export default function QuickTasteCalibrationScreen({
         </AnimatePresence>
       </main>
 
-      <FlowStepCta
-        actionLabel={buttonLabel}
-        currentIndex={questionIndex}
-        indicatorActiveColor={(currentTaste ?? TASTE_TOKENS.salty).palette.main}
-        fadeClassName="bg-[linear-gradient(to_top,var(--tb-color-bg-focus)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]"
-        onAction={handleContinue}
-        showIndicator={phase === 'questions'}
-        total={QUICK_TASTE_CALIBRATION_QUESTIONS.length}
-      />
+      <div className="absolute inset-x-0 bottom-0 z-20 flex justify-center">
+        <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
+          <div className="tb-bottom-fade relative flex min-h-[calc(var(--tb-size-bottom-fade-min-height)+var(--tb-safe-area-bottom))] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))] bg-[linear-gradient(to_top,var(--tb-color-bg-focus)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]">
+            {phase === 'questions' && (
+              <StepIndicator
+                className="mb-8 self-center"
+                currentIndex={questionIndex}
+                total={QUICK_TASTE_CALIBRATION_QUESTIONS.length}
+                activeColor={(currentTaste ?? TASTE_TOKENS.salty).palette.main}
+              />
+            )}
+            <PrimaryButton onClick={handleContinue}>{buttonLabel}</PrimaryButton>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

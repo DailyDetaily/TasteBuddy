@@ -152,7 +152,7 @@ const activityStats = [
   { color: "#FF9900", icon: SparklesIcon, label: "TCS 보정", value: "12회" },
   { color: "#B372B4", icon: MessageCircleIcon, label: "피드백", value: "8건" },
   { color: "#7299FF", icon: CalendarIcon, label: "이용 기간", value: "3개월" },
-  { color: "#FBC02D", icon: StarIcon, label: "평균 만족도", value: "4.5" },
+  { color: TASTE_TOKENS.sour.palette.main, icon: StarIcon, label: "평균 만족도", value: "4.5" },
 ] as const;
 
 const settingsItems = [

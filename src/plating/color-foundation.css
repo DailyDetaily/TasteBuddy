@@ -9,8 +9,8 @@
 .pl-color-message { display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 10px; font-size: 14px; line-height: 1.6; }
 .pl-color-message svg { flex-shrink: 0; }
 .pl-color-interaction-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 18px; }
-.pl-color-interaction-stage { display: grid; place-items: center; min-height: 112px; padding: 22px; background: #f3f3f3; border-radius: 12px; }
-.pl-color-control-sample { width: 100%; max-width: 240px; padding: 14px 16px; border-radius: 10px; color: #0f0f0f; background: #fff; text-align: center; font-size: 14px; font-weight: 600; }
+.pl-color-interaction-stage { display: grid; place-items: center; min-height: 112px; padding: 22px; background: var(--pl-example-page, #f3f3f3); border-radius: 12px; }
+.pl-color-control-sample { width: 100%; max-width: 240px; padding: 14px 16px; border-radius: 10px; color: var(--pl-example-text, #0f0f0f); background: var(--pl-example-surface, #fff); text-align: center; font-size: 14px; font-weight: 600; }
 .pl-color-control-sample.is-primary, .pl-color-control-sample.is-inverse-pressed { color: var(--pl-example-on-primary); background: var(--pl-example-primary); }
 .pl-color-control-sample.is-selected { color: var(--pl-example-on-selected); background: var(--pl-example-selected); }
 .pl-color-control-sample.is-hover { box-shadow: inset 0 0 0 100px var(--pl-example-hover); }

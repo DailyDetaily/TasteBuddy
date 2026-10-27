@@ -11,7 +11,7 @@ HEAD 및 `git ls-remote origin refs/heads/main`은 a69feb0fbb112834068f8191cc7a1
 | 답변 가능성 | PersonalTasteInlineAnswer → AppModel.savePersonalTasteQuestionResponse | legacy 임시 선택에도 버튼 표시, 직접 조건과 상속 조건 비교 | parser 기반 가능성 검사, Q4–7 |
 | 안전 저장 | persistDiningEntries의 encode/readback 및 expected 비교 재사용 | 질문은 expected:nil, 계정 문맥 없음, undo가 저장 결과 무시 | 최신성·계정·실패 검사, Q11–13 |
 | 질문 노출 | 기존 사진/스택/인라인/전체 목록/고정 3개 배치 | resolved와 숨김 혼용, 비평가 보류 없음, 범위 문구 생략 | instance progress, 보조 동작, Q9/10/16 |
-| 홈 요약 | HomeArchiveSummaryEngine → HomeSummaryCard → HomeArchiveDetailView | 메뉴 이름이 식당 범위를 잃음, 부족 카드 9개 강제 | 집계/카피/빈 상태, 관련 원본 연결 |
+| 홈 요약 | HomeArchiveSummaryEngine → CompactSummaryCard → HomeArchiveDetailView | 메뉴 이름이 식당 범위를 잃음, 부족 카드 9개 강제 | 집계/카피/빈 상태, 관련 원본 연결 |
 | 홈 하단 | HomeArchiveMetricsEngine → HomePeriodInsightCard | chartValues 비어 있음, 탭 없음, 전체 평가를 meal 단위로 합침 | 시간/구성/5단계 분포와 범주 상세 |
 | 타입/레이더/변화 | 기존 Hero, TastePerceptionCards, reportedValues 레이더 | 출처는 메뉴 안, 기준 반응/아직 변화없음 카피 | 범위/단위/결측/출처 정합성 |
 | 강도–호감 | 기존 PersonalTasteCandidateDetailSheet와 observations | 3×3 탐색 없음 | 같은 출처·조건의 쌍과 충돌/미확인, 셀→원문 |
@@ -24,7 +24,7 @@ HEAD 및 `git ls-remote origin refs/heads/main`은 a69feb0fbb112834068f8191cc7a1
 
 ### 홈: 원본으로 내려가는 표시
 
-기존 `HomeSummaryCard` 정사각형·가로 스크롤과 `HomePeriodInsightCard` 외형을 재사용한다. 상단 정보 순서는 분류명 → 값 → 범위다. 기본 기록 카드를 남기고, 근거 없는 조건·차이·변화 카드는 만들지 않는다. 카드에 표시한 숫자는 아래 출처만 사용한다.
+기존 `CompactSummaryCard` 정사각형·가로 스크롤과 `HomePeriodInsightCard` 외형을 재사용한다. 상단 정보 순서는 분류명 → 값 → 범위다. 기본 기록 카드를 남기고, 근거 없는 조건·차이·변화 카드는 만들지 않는다. 카드에 표시한 숫자는 아래 출처만 사용한다.
 
 | 카드 | 입력과 단위 | 상세 |
 |---|---|---|

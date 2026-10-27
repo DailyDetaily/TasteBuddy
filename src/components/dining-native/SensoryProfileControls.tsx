@@ -7,7 +7,7 @@ export default function SensoryProfileControls({presentation,onChange}: {
   return <div className="flex flex-wrap items-start gap-3 text-[12px]">
     <label className="flex min-h-11 flex-1 items-center gap-2">
       표현 종류
-      <select aria-label="음식별 미각 표현 종류" className="min-h-11 min-w-0 flex-1 rounded-xl bg-white px-3"
+      <select aria-label="음식별 미각 표현 종류" className="min-h-11 min-w-0 flex-1 rounded-xl bg-[var(--tb-color-surface-base)] px-3"
         value={presentation.profileSelection==null?'auto':presentation.profileSelection[0]??'generic'}
         onChange={e=>onChange(e.target.value==='auto'?null:e.target.value==='generic'?[]:[e.target.value],presentation.flagOverrides)}>
         <option value="auto">자동 · {presentation.profileIds.map(id=>SENSORY_V2.profiles.find(p=>p.id===id)?.label).join(' · ')}</option>

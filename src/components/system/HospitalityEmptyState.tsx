@@ -30,7 +30,7 @@ export default function HospitalityEmptyState({
             </h2>
           </div>
 
-          <div className="shrink-0 rounded-[16px] bg-white px-3 py-2 text-right">
+          <div className="shrink-0 rounded-[16px] bg-[var(--tb-color-surface-base)] px-3 py-2 text-right">
             <p className="text-[11px] font-medium text-[var(--tb-color-text-hint)]">
               현재 준비 상태
             </p>
@@ -45,7 +45,7 @@ export default function HospitalityEmptyState({
         </p>
 
         <div className="grid gap-2">
-          <div className="rounded-[16px] bg-white px-4 py-3">
+          <div className="rounded-[16px] bg-[var(--tb-color-surface-base)] px-4 py-3">
             <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
               지금 준비된 프로필
             </p>
@@ -54,7 +54,7 @@ export default function HospitalityEmptyState({
             </p>
           </div>
 
-          <div className="rounded-[16px] bg-white px-4 py-3">
+          <div className="rounded-[16px] bg-[var(--tb-color-surface-base)] px-4 py-3">
             <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
               예약이 생기면 바로 하는 일
             </p>
@@ -63,7 +63,7 @@ export default function HospitalityEmptyState({
             </p>
           </div>
 
-          <div className="rounded-[16px] bg-white px-4 py-3">
+          <div className="rounded-[16px] bg-[var(--tb-color-surface-base)] px-4 py-3">
             <p className="text-[12px] font-semibold text-[var(--tb-color-text-hint)]">
               식후 피드백의 역할
             </p>

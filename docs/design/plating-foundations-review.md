@@ -288,7 +288,7 @@ SEED의 [Inclusive Design](https://seed-design.io/foundations/inclusive-design)�
 
 - `TBTextStyle`의 6개 역할을 SwiftUI로 렌더하고 크기·굵기·색상·추가 행간을 표시했다. `UIFont`의 기본 행 높이는 별도 측정값으로 설명한다.
 - 상단 바·흐름 제목·기본 및 compact 버튼의 글자 규격과 사용 API를 연결했다.
-- 홈 `HomeSummaryCard`, 식사 `DiningFeedbackIntroHeader`, 분석 `TasteQuestionStackCard`에서 글자 조합을 추출했다. 표본의 문구는 문서용 예문이고 전체 제품 화면이나 모든 상호작용을 재현한 것은 아니다.
+- 홈 `CompactSummaryCard`, 식사 `DiningFeedbackIntroHeader`, 분석 `TasteQuestionStackCard`에서 글자 조합을 추출했다. 표본의 문구는 문서용 예문이고 전체 제품 화면이나 모든 상호작용을 재현한 것은 아니다.
 - 같은 긴 한국어와 390pt 너비에 `.large`, `.xxxLarge`, `.accessibility2`를 적용했다. 측정된 콘텐츠 높이는 각각 268pt, 352pt, 541pt다. 긴 버튼 문구는 확대 시 줄바꿈된다.
 - 기존 브라우저 입력·배율 미리보기는 접힌 참고 영역에 유지했다. 실제 iOS Dynamic Type 표본과 구별했다.
 

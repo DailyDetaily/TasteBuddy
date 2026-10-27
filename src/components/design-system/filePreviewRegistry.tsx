@@ -31,7 +31,7 @@ import CardScrollList from '../system/CardScrollList';
 import Chip from '../system/Chip';
 import FlowBottomCta from '../system/FlowBottomCta';
 import FlowHeaderBlock from '../system/FlowHeaderBlock';
-import FlowStepCta from '../system/FlowStepCta';
+
 import HexRadarChart from '../system/HexRadarChart';
 import TasteLineChart from '../system/TasteLineChart';
 import TCSBadge from '../system/TCSBadge';
@@ -121,30 +121,6 @@ function FlowBottomCtaFilePreview() {
         actionLabel="연결 없이 계속"
         helperText="하드웨어 없이도 다음 단계로 이어집니다."
         onAction={() => undefined}
-      />
-    </div>
-  );
-}
-
-function FlowStepCtaFilePreview() {
-  return (
-    <div className="relative min-h-[340px] bg-[var(--tb-color-surface-base)]">
-      <div className="px-6 pt-6">
-        <p className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
-          Shared onboarding / measurement footer
-        </p>
-        <p className="mt-2 max-w-[360px] text-[12px] leading-relaxed text-[var(--tb-color-text-subtle)]">
-          The step indicator and primary action stay centered while the active step can tint with the current taste palette.
-        </p>
-      </div>
-      <FlowStepCta
-        actionLabel="다시 작성"
-        currentIndex={1}
-        indicatorActiveColor={TASTE_TOKENS.sour.palette.main}
-        onAction={() => undefined}
-        secondaryButtonLabel="건너뛰기"
-        onSecondaryButtonAction={() => undefined}
-        total={4}
       />
     </div>
   );
@@ -989,8 +965,9 @@ function TasteLineChartFilePreview() {
               같은 스케일에서 최근 변화 흐름을 비교합니다.
             </p>
           </div>
-          <div className="w-[152px]">
+          <div className="w-[132px] shrink-0">
             <TasteLineChart
+              plotWidth={132}
               entries={[
                 { id: 'umami', taste: '감칠맛', values: [1.2, 2.1, 2.4, 4.5] },
                 { id: 'fat', taste: '지방맛', values: [0.8, 1.1, 1.4, 3.2] },
@@ -1207,12 +1184,6 @@ const FILE_PREVIEW_DEFINITIONS: Record<string, FilePreviewDefinition> = {
     kind: 'component',
     title: 'FlowBottomCta.tsx',
     render: () => <FlowBottomCtaFilePreview />,
-  },
-  'src/components/system/FlowStepCta.tsx': {
-    description: 'The shared onboarding / taste measurement footer built on top of FlowBottomCta and StepIndicator.',
-    kind: 'component',
-    title: 'FlowStepCta.tsx',
-    render: () => <FlowStepCtaFilePreview />,
   },
   'src/components/system/FlowHeaderBlock.tsx': {
     description: 'A shared flow intro header block that aligns top badges with a title and description stack.',

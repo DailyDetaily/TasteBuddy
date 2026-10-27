@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import type { NativeRecord } from "./nativeRecord";
 import type { NativeAnalysisSnapshot } from "./nativeAnalysis";
+import { useNativeJournal } from "./useNativeJournal";
+export function useNativePalateData(owner: string, active = true) {
+  const journal = useNativeJournal(owner, active);
+  const analysis = useNativeAnalysis(journal.entries, owner, !!journal.archive && journal.canEdit);
+  return { journal, analysis };
+}
+export type NativePalateData = ReturnType<typeof useNativePalateData>;
 export function useNativeAnalysis(
   entries: NativeRecord[],
   owner: string,
@@ -46,6 +53,7 @@ export function useNativeAnalysis(
   }, [key, owner, ready, attempt]);
   const current = ready && value?.owner === owner && value.key === key ? value : null;
   return {
+    owner: current?.owner ?? null,
     snapshot: current?.snapshot,
     error: current?.error,
     updating: ready && !current,

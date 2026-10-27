@@ -20,6 +20,7 @@ import {
 } from "../../lib/gastronomy/nativeHomeDiscoveries";
 import { DINING_KEY } from "../../lib/gastronomy/nativeRecord";
 import JournalStackCard, { journalButton } from "./JournalStackCard";
+import StackCard from "../system/StackCard";
 import NativeQuestionCard, {
   QuestionUndo,
   QuestionMedia,
@@ -28,7 +29,7 @@ import NativeDiscoveryDetail from "./NativeDiscoveryDetail";
 const NativeDiningCapture = React.lazy(
   () => import("../dining-native/NativeDiningCapture"),
 );
-export default function HomeJournalStack({ owner }: { owner: string }) {
+export default function HomeJournalStack({ owner, repeatedMenuEntryIDs = [] }: { owner: string; repeatedMenuEntryIDs?: readonly string[] }) {
   const journal = useNativeJournal(owner),
     analysis = useNativeAnalysis(
       journal.entries,
@@ -46,8 +47,10 @@ export default function HomeJournalStack({ owner }: { owner: string }) {
         : [],
     [snapshot, journal.archive?.snapshot.values[DINING_KEY], now],
   );
+  const repeatedIDs = new Set(repeatedMenuEntryIDs.map(id => id.replace(/^native:/, "").toLowerCase()));
   const discoveries = visibility.ready
-    ? visibleDiscoveries(cards, visibility.history, now)
+    ? visibleDiscoveries(cards, visibility.history, now).filter(card =>
+      card.kind !== "repeatedMenu" || !card.entryIDs.every(id => repeatedIDs.has(id.toLowerCase())))
     : [];
   const items = mergeJournal(
     questions.candidates.map((item: any) => ({
@@ -87,7 +90,7 @@ export default function HomeJournalStack({ owner }: { owner: string }) {
     insideList = false,
   ) {
     const stack = {
-      showsStack: !insideList && !expanded && items.length > 1,
+      showsStack: false,
       expandedStack: expanded,
       onToggleStack:
         !insideList && index === 0 && items.length > 1
@@ -140,7 +143,7 @@ export default function HomeJournalStack({ owner }: { owner: string }) {
       {error && (
         <p
           role="alert"
-          className="mb-3 rounded-[20px] bg-white p-4 text-[13px]"
+          className="mb-3 rounded-[20px] bg-[var(--tb-color-surface-base)] p-4 text-[13px]"
         >
           {error}
         </p>
@@ -148,12 +151,12 @@ export default function HomeJournalStack({ owner }: { owner: string }) {
       {loading ? (
         <p
           role="status"
-          className="rounded-[20px] bg-white p-5 text-center text-[13px]"
+          className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-5 text-center text-[13px]"
         >
           기록을 다시 읽고 있어요
         </p>
       ) : (
-        <div className="flex flex-col gap-3">
+        <StackCard showsStack={items.length > 1} expanded={expanded}>
           {preview.map((item, index) => render(item, index))}
           {expanded && items.length > preview.length && (
             <button
@@ -166,7 +169,7 @@ export default function HomeJournalStack({ owner }: { owner: string }) {
               카드 전체보기 · {items.length}개
             </button>
           )}
-        </div>
+        </StackCard>
       )}
       <Dialog.Root open={all} onOpenChange={setAll}>
         <Dialog.Portal>

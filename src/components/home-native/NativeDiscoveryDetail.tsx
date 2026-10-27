@@ -89,7 +89,7 @@ export default function NativeDiscoveryDetail({
                 {(["summary", "records"] as const).map((value) => (
                   <button
                     key={value}
-                    className={`${journalButton} ${tab === value ? "bg-white shadow-sm" : ""}`}
+                    className={`${journalButton} ${tab === value ? "bg-[var(--tb-color-surface-base)] shadow-sm" : ""}`}
                     aria-pressed={tab === value}
                     onClick={() => {
                       setTab(value);
@@ -103,7 +103,7 @@ export default function NativeDiscoveryDetail({
               <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
                 {tab === "summary" ? (
                   <div className="flex flex-col gap-4">
-                    <section className="rounded-[20px] bg-white p-4">
+                    <section className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
                       <p className="text-[11px] text-[var(--tb-color-text-hint)]">
                         {homeDiscoveryLabels[card.kind]}
                       </p>
@@ -117,7 +117,7 @@ export default function NativeDiscoveryDetail({
                         {card.scopeLabel}
                       </p>
                     </section>
-                    <section className="rounded-[20px] bg-white p-4 text-[13px]">
+                    <section className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4 text-[13px]">
                       <p>관련 식사 · {meals(card.entryIDs)}회</p>
                       <p className="mt-3">요리 기록 · {related.length}개</p>
                       <p className="mt-3">
@@ -128,14 +128,14 @@ export default function NativeDiscoveryDetail({
                       </p>
                     </section>
                     {card.evidenceSummary && (
-                      <section className="rounded-[20px] bg-white p-4 text-[13px] whitespace-pre-line">
+                      <section className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4 text-[13px] whitespace-pre-line">
                         {card.evidenceSummary}
                       </section>
                     )}
                     {card.evidenceGroups && (
                       <section
                         aria-label="비교 근거 묶음"
-                        className="rounded-[20px] bg-white p-4"
+                        className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4"
                       >
                         <h3 className="text-[14px] font-semibold">
                           비교에 사용한 근거
@@ -163,7 +163,7 @@ export default function NativeDiscoveryDetail({
                         </ul>
                       </section>
                     )}
-                    <details className="rounded-[20px] bg-white p-4">
+                    <details className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
                       <summary className="min-h-11 cursor-pointer py-3 text-[13px]">
                         발견의 근거와 범위
                       </summary>
@@ -217,7 +217,7 @@ export default function NativeDiscoveryDetail({
                       .map((entry) => (
                         <section
                           key={entry.id}
-                          className="rounded-[20px] bg-white p-4"
+                          className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>

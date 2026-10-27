@@ -4,6 +4,8 @@ import {useNativeBookmarks} from '../lib/gastronomy/useNativeBookmarks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Ellipsis,
+  ArrowUpRight,
+  MapPin,
   Pencil,
   Share,
 } from 'lucide-react';
@@ -1269,7 +1271,15 @@ export default function RestaurantDetailPage({
         ? sanitizeMapBackedRestaurantInfo(sourceDetail.info)
         : sourceDetail.info
       : getRestaurantInfo(sourceDetail.name);
-  const [placeInfo, setPlaceInfo] = useState<Partial<RestaurantInfoViewModel> | null>(null);
+  const placeKey = `${nativeOwner ?? 'guest'}:${sourceDetail.id}:${sourceDetail.name}`;
+  const [placeLookup, setPlaceLookup] = useState<{
+    key: string;
+    info: Partial<RestaurantInfoViewModel> | null;
+    status: 'loading' | 'available' | 'unavailable' | 'error' | 'saved';
+  } | null>(null);
+  const [placeRetry, setPlaceRetry] = useState(0);
+  const placeInfo = placeLookup?.key === placeKey ? placeLookup.info : null;
+  const placeStatus = placeLookup?.key === placeKey ? placeLookup.status : 'loading';
   const detail = useMemo(
     () => ({
       ...sourceDetail,
@@ -1348,27 +1358,25 @@ export default function RestaurantDetailPage({
 
   useEffect(() => {
     let isCancelled = false;
-    setPlaceInfo(
-      sourceDetail.info.sourceByRow?.address === 'kakao'
+    const base = sourceDetail.info.sourceByRow?.address === 'kakao'
         ? sanitizeMapBackedRestaurantInfo(sourceDetail.info)
-        : null,
-    );
+        : null;
+    setPlaceLookup({ key: placeKey, info: base, status: sourceDetail.savedSourceOnly ? 'saved' : 'loading' });
 
     if (sourceDetail.savedSourceOnly) return;
     void (async () => {
-      const hydratedPlaceInfo = await hydrateRestaurantPlaceInfo(sourceDetail.name);
-
-      if (isCancelled) {
-        return;
+      try {
+        const hydratedPlaceInfo = await hydrateRestaurantPlaceInfo(sourceDetail.name);
+        if (!isCancelled) setPlaceLookup({ key: placeKey, info: hydratedPlaceInfo ?? base, status: hydratedPlaceInfo ? 'available' : 'unavailable' });
+      } catch {
+        if (!isCancelled) setPlaceLookup({ key: placeKey, info: base, status: 'error' });
       }
-
-      setPlaceInfo(hydratedPlaceInfo);
     })();
 
     return () => {
       isCancelled = true;
     };
-  }, [sourceDetail.name, sourceDetail.id, sourceDetail.savedSourceOnly]);
+  }, [sourceDetail.name, sourceDetail.id, sourceDetail.savedSourceOnly, placeKey, placeRetry]);
 
   useEffect(() => {
     const syncBookmarkState = () => {
@@ -1489,7 +1497,7 @@ export default function RestaurantDetailPage({
       />
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="tb-section-stack p-5 pb-10">
+        <div className="tb-section-stack px-5 pb-[max(34px,env(safe-area-inset-bottom))] pt-4">
           <RestaurantHeroCard
             isBookmarked={nativeOwner !== undefined ? !!nativeBookmarks.state?.ids.includes(nativeBookmarkSeed.restaurantID) : isBookmarked}
             quickInfo={detail.info}
@@ -1506,6 +1514,12 @@ export default function RestaurantDetailPage({
             }
           />
 
+          {placeStatus === 'loading' && <p role="status" className="text-[12px] text-[var(--tb-color-text-subtle)]">지도 정보 불러오는 중</p>}
+          {(placeStatus === 'error' || placeStatus === 'unavailable') && <div>
+            <p role={placeStatus === 'error' ? 'alert' : 'status'} className="text-[13px] text-[var(--tb-color-text-subtle)]">{placeStatus === 'error' ? '지도 정보를 불러오지 못했어요.' : '일치하는 최신 지도 정보를 확인하지 못했어요.'}</p>
+            <button type="button" className="min-h-11 text-[13px] font-medium" onClick={() => setPlaceRetry((value) => value + 1)}>다시 시도</button>
+          </div>}
+          {placeStatus === 'available' && detail.info.rating == null && <p className="text-[12px] text-[var(--tb-color-text-subtle)]">Google 평점이 아직 제공되지 않아요.</p>}
           <RestaurantExternalPlaceSignalsCard info={detail.info} />
 
           {detail.memorableDishes.length > 0 ? (
@@ -1524,6 +1538,9 @@ export default function RestaurantDetailPage({
             <div className="flex flex-col items-center gap-2">
               <RestaurantInfoCard info={detail.info} />
               {detail.savedSourceOnly && !detail.info.address && !detail.info.phone && <p className="text-[13px] text-[var(--tb-color-text-hint)]">위치와 연락처를 아직 확인하지 못했어요.</p>}
+              <a href={detail.info.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([detail.name, detail.info.address].filter(Boolean).join(' '))}`} target="_blank" rel="noopener noreferrer" className="flex min-h-11 w-full items-center gap-2 px-4 text-[13px] font-medium text-[var(--tb-user-accent-main)]">
+                <MapPin size={18} strokeWidth={1.8} /><span>{detail.info.googleMapsUrl ? 'Google Maps에서 보기' : 'Google Maps에서 검색'}</span><ArrowUpRight size={16} strokeWidth={1.8} className="ml-auto" />
+              </a>
               <button
                 className="inline-flex items-center gap-1.5 self-center px-1 py-1 text-[12px] font-semibold text-[var(--tb-user-accent-main)] transition-colors hover:text-[var(--tb-user-accent-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-user-accent-tint-soft-border)]"
                 onClick={() => setIsInfoSuggestionSheetOpen(true)}
@@ -1534,8 +1551,6 @@ export default function RestaurantDetailPage({
               </button>
             </div>
           </PageSection>
-
-          <div className="h-6" />
         </div>
       </div>
 

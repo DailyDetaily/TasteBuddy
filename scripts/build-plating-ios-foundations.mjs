@@ -100,6 +100,14 @@ function namedArguments(source, context) {
 }
 
 function color(expression, lookup, context) {
+  const whiteMix = expression.match(/^TBTasteTint\.color\((\w+), white: (10|20|30|40|50|60|70|80|90|95)\)$/);
+  if (whiteMix) {
+    const raw = lookup(whiteMix[1]);
+    if (typeof raw !== 'string' || !/^0x[\dA-Fa-f]{6}$/.test(raw)) fail(context + ': invalid white-mix base');
+    const percent = Number(whiteMix[2]);
+    const hex = '#' + [2, 4, 6].map(offset => Math.floor((parseInt(raw.slice(offset, offset + 2), 16) * (100 - percent) + 255 * percent + 50) / 100).toString(16).padStart(2, '0')).join('').toUpperCase();
+    return { hex, alpha: 1 };
+  }
   const opacity = expression.match(/^(.+)\.opacity\(([\d.]+)\)$/);
   if (opacity) {
     const base = color(opacity[1], lookup, context);
@@ -198,7 +206,7 @@ function parseTheme(source) {
   };
   const values = scope => numbers.get(scope).map(({ name }) => ({ name, value: numberValue(scope, name) }));
   const weights = Object.fromEntries(values('TBTypography.Weight').map(({ name, value }) => [name, value]));
-  const colorEntries = declarations(enumBody(source, 'TBColor'), 'TBColor');
+  const colorEntries = declarations(enumBody(source, source.includes('enum TBLightColor {') ? 'TBLightColor' : 'TBColor'), 'TBColor');
   const colorActive = new Set();
   const resolveColor = name => {
     if (colorActive.has(name)) fail('Cyclic TBColor alias ' + name);
@@ -270,7 +278,7 @@ function parseTastes(source) {
     if (!/^"(?:[^"\\]|\\.)*"$/.test(expression)) fail('TasteAxis.label: unsupported string');
     return JSON.parse(expression);
   }, 'TasteAxis.label');
-  const paletteNames = switchValues(property(axis, 'palette', 'TasteAxisPalette').body, names, expression => {
+  const paletteNames = switchValues(property(axis, axis.includes('var lightPalette:') ? 'lightPalette' : 'palette', 'TasteAxisPalette').body, names, expression => {
     if (!/^\.\w+$/.test(expression)) fail('TasteAxis.palette: unsupported reference');
     return expression.slice(1);
   }, 'TasteAxis.palette');

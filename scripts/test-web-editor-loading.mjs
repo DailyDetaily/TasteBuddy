@@ -28,7 +28,7 @@ await build({
     b.onResolve({filter: /^(\.\/NativeDiningHome|\.\/NativePhotoHints|\.\.\/reservation\/DiningFeedbackFlow|\.\.\/gastronomy\/TasteDataPage|\.\.\/\.\.\/lib\/tasteBuddySupabase)$/},
       a => ({path: a.path, namespace: 'ui-stub'}));
     b.onLoad({filter: /.*/, namespace: 'ui-stub'}, () => ({loader: 'js', contents:
-      'export const NativeRecordPhoto=()=>null;export const TasteExperienceMap=()=>null;export const DetailHeader=()=>null;export const searchKakaoRestaurantPlaces=async()=>[];export default ()=>null;'}));
+      'export const NativeRecordPhoto=()=>null;export const TasteExperienceMap=()=>null;export const findTasteExperience=()=>null;export const DetailHeader=()=>null;export const searchKakaoRestaurantPlaces=async()=>[];export default ()=>null;'}));
     b.onResolve({filter: /^\.\/useNativeJournal$/}, () => ({path: 'journal', namespace: 'journal-stub'}));
     b.onLoad({filter: /.*/, namespace: 'journal-stub'}, () => ({loader: 'js', contents:
       'export const useNativeJournal=()=>globalThis.__editorLoadingJournal;'}));

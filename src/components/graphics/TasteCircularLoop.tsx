@@ -1,4 +1,6 @@
 import type { CSSProperties } from 'react';
+import { useProductColorMode } from '../../lib/colorMode';
+import { TASTE_TINT_BASES, type ColorMode } from '../../constants/designTokens';
 import { TASTE_CIRCULAR_LOOP_LAYOUT } from './tasteCircularLoopLayout';
 import {
   TASTE_CIRCULAR_LOOP_LABEL_PULSE_SCALE,
@@ -12,6 +14,7 @@ import {
 } from './tasteCircularLoopUtils';
 
 interface TasteCircularLoopProps {
+  colorMode?: ColorMode;
   activeLevel: number;
   ariaLabel: string;
   className?: string;
@@ -36,6 +39,7 @@ interface InnerGlowProps {
 }
 
 interface GuideDotsProps {
+  colorMode?: ColorMode;
   guideDotDiameter: number;
   ringGuideBaseColor: string;
 }
@@ -53,18 +57,18 @@ function OuterRing({ outerRingInset, outerRingThickness, ringGradient }: OuterRi
       className="absolute rounded-full"
       aria-hidden="true"
       style={{
-        height: `${TASTE_CIRCULAR_LOOP_LAYOUT.size - outerRingInset * 2}px`,
-        left: `${outerRingInset}px`,
-        top: `${outerRingInset}px`,
-        width: `${TASTE_CIRCULAR_LOOP_LAYOUT.size - outerRingInset * 2}px`,
+        height: `${100 - outerRingInset * 200 / TASTE_CIRCULAR_LOOP_LAYOUT.size}%`,
+        left: `${outerRingInset * 100 / TASTE_CIRCULAR_LOOP_LAYOUT.size}%`,
+        top: `${outerRingInset * 100 / TASTE_CIRCULAR_LOOP_LAYOUT.size}%`,
+        width: `${100 - outerRingInset * 200 / TASTE_CIRCULAR_LOOP_LAYOUT.size}%`,
         background: ringGradient,
         boxShadow: 'inset 0 0 0 0.5px rgba(255, 255, 255, 0.42)',
       }}
     >
       <div
-        className="absolute rounded-full bg-white"
+        className="absolute rounded-full bg-[var(--tb-color-surface-base)]"
         style={{
-          inset: `${outerRingThickness}px`,
+          inset: `${outerRingThickness * 100 / (TASTE_CIRCULAR_LOOP_LAYOUT.size - outerRingInset * 2)}%`,
         }}
       />
     </div>
@@ -82,18 +86,20 @@ function InnerGlow({
       className="absolute rounded-full pointer-events-none"
       aria-hidden="true"
       style={{
-        height: `${TASTE_CIRCULAR_LOOP_LAYOUT.size - (outerRingInset + outerRingThickness + 2) * 2}px`,
-        left: `${outerRingInset + outerRingThickness + 2}px`,
-        top: `${outerRingInset + outerRingThickness + 2}px`,
-        width: `${TASTE_CIRCULAR_LOOP_LAYOUT.size - (outerRingInset + outerRingThickness + 2) * 2}px`,
+        height: `${100 - (outerRingInset + outerRingThickness + 2) * 200 / TASTE_CIRCULAR_LOOP_LAYOUT.size}%`,
+        left: `${(outerRingInset + outerRingThickness + 2) * 100 / TASTE_CIRCULAR_LOOP_LAYOUT.size}%`,
+        top: `${(outerRingInset + outerRingThickness + 2) * 100 / TASTE_CIRCULAR_LOOP_LAYOUT.size}%`,
+        width: `${100 - (outerRingInset + outerRingThickness + 2) * 200 / TASTE_CIRCULAR_LOOP_LAYOUT.size}%`,
         background: `radial-gradient(circle, ${ringBaseColorSoft} 0%, ${glowTransparentColor} 44%, ${glowTransparentColor.slice(0, -2)}00 72%)`,
       }}
     />
   );
 }
 
-function GuideDots({ guideDotDiameter, ringGuideBaseColor }: GuideDotsProps) {
-  const guideDots = buildGuideDots(ringGuideBaseColor);
+function GuideDots({ guideDotDiameter, ringGuideBaseColor, colorMode }: GuideDotsProps) {
+  const systemMode = useProductColorMode();
+  const mode = colorMode ?? systemMode;
+  const guideDots = buildGuideDots(ringGuideBaseColor, TASTE_TINT_BASES[mode]);
 
   return (
     <>
@@ -118,7 +124,7 @@ function StepMarkers({ activeLevel, nodeColors, nodeRadius, stepCount }: StepMar
         const { labelX, labelY, nodeX, nodeY, step } = getStepGeometry(index);
         const isActive = step === activeLevel;
         const nodeFill = nodeColors[index];
-        const labelColor = isActive ? '#0F0F0F' : 'rgba(15, 15, 15, 0.5)';
+        const labelColor = isActive ? 'var(--tb-color-text-primary)' : 'var(--tb-color-text-muted)';
 
         return (
           <g key={step}>
@@ -164,6 +170,7 @@ function StepMarkers({ activeLevel, nodeColors, nodeRadius, stepCount }: StepMar
 }
 
 export default function TasteCircularLoop({
+  colorMode,
   activeLevel,
   ariaLabel,
   className = '',
@@ -214,6 +221,7 @@ export default function TasteCircularLoop({
         aria-label={ariaLabel}
       >
         <GuideDots
+          colorMode={colorMode}
           guideDotDiameter={guideDotDiameter}
           ringGuideBaseColor={ringGuideBaseColor}
         />

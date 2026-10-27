@@ -1,5 +1,6 @@
 import { useId } from 'react';
-import { TASTE_TOKENS, type TasteId } from '../../../constants/designTokens';
+import { type TasteId } from '../../../constants/designTokens';
+import { TASTE_TOKENS } from '../../../constants/uiColorTokens';
 import './CapsuleTabs.css';
 
 export type CapsuleTabOption<Value extends string | number> = {
@@ -28,7 +29,7 @@ export default function CapsuleTabs<Value extends string | number>({
     style={palette ? {
       '--tb-capsule-foreground': palette.tintSurfaceText,
       '--tb-capsule-background': palette.tintSurface,
-      '--tb-capsule-border': palette.tintSoftBorder,
+      '--tb-capsule-border': palette.borderDefault,
     } : undefined}>
     <fieldset className="tb-capsule-options" disabled={disabled}>
       <legend className="tb-capsule-sr-only">{label}</legend>

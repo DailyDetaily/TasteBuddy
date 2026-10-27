@@ -2,7 +2,7 @@
 .pl-native-capture-originals summary { min-height: 44px; padding: 10px 0; color: #b8b9c3; font-size: 13px; cursor: pointer; }
 .pl-native-anatomy-scroll, .pl-native-property-board, .pl-native-state-board, .pl-native-source-diagram { border: 1px solid #dedee3; border-radius: 12px; background: #f3f3f3; color: #161713; color-scheme: light; }
 .pl-native-anatomy-scroll { overflow: auto; }
-.pl-native-anatomy-scroll svg { display: block; width: 100%; min-width: 620px; font-family: "Plating Sans", Pretendard, sans-serif; font-size: 14px; }
+.pl-native-anatomy-scroll > svg { display: block; width: 100%; min-width: 620px; font-family: "Plating Sans", Pretendard, sans-serif; font-size: 14px; }
 .pl-native-anatomy-pointer { color: #505159; }
 .pl-native-anatomy-pointer path { stroke: currentColor; stroke-width: 1; }
 .pl-native-anatomy-pointer text { fill: currentColor; }

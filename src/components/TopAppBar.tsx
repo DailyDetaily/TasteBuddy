@@ -5,6 +5,7 @@ import {
   Search as SearchIcon
 } from 'lucide-react';
 import React, { type ReactNode } from 'react';
+import './top-app-bar.css';
 import { ICON_TOKENS } from '../constants/designTokens';
 import PalateBloomAvatar, {
   DEFAULT_PALATE_BLOOM_PROFILE,
@@ -25,7 +26,7 @@ const APP_SHELL_ICON_SIZE = ICON_TOKENS.size.lg;
 const APP_SHELL_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 
 interface TopAppBarProps {
-  appearance?: 'default' | 'solid' | 'transparent';
+  appearance?: 'default' | 'solid' | 'transparent' | 'glass';
   solidBackground?: 'focus' | 'page' | 'surface';
   title?: string;
   showBack?: boolean;
@@ -61,6 +62,7 @@ export default function TopAppBar({
   userPalateBloomProfile,
   userPalateBloomShapeSeed,
 }: TopAppBarProps) {
+  const actionButtonSize = appearance === 'glass' ? 40 : APP_SHELL_ICON_BUTTON_SIZE;
   const PrimaryActionIcon = showSearchAction ? Search : PlusCircle;
   const primaryActionLabel = showSearchAction ? '통합 검색 열기' : '미각 측정 시작';
   const primaryActionTitle = showSearchAction ? '검색' : '미각 측정';
@@ -72,7 +74,7 @@ export default function TopAppBar({
         ? 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-surface-base)]'
         : 'w-full shrink-0 border-b border-transparent bg-[var(--tb-color-bg-page)]';
   const appBarClassName =
-    appearance === 'transparent'
+    appearance === 'transparent' || appearance === 'glass'
       ? 'w-full shrink-0 border-b border-transparent bg-transparent'
       : appearance === 'solid'
         ? solidBackgroundClassName
@@ -80,10 +82,11 @@ export default function TopAppBar({
 
   return (
     <div
-      className={appBarClassName}
-      style={{ paddingTop: 'var(--tb-safe-area-top)' }}
+      className={'tb-top-app-bar ' + appBarClassName}
+      data-appearance={appearance}
+      style={{ paddingTop: appearance === 'glass' ? 0 : 'var(--tb-safe-area-top)' }}
     >
-      <div className="relative flex h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-[20px]">
+      <div className="tb-top-app-bar-content relative flex h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-[20px]">
         {/* Left */}
         <div className="flex items-center">
           {showBack ? (
@@ -92,8 +95,8 @@ export default function TopAppBar({
               aria-label="뒤로 가기"
               className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors"
               style={{
-                width: APP_SHELL_ICON_BUTTON_SIZE,
-                height: APP_SHELL_ICON_BUTTON_SIZE,
+                width: actionButtonSize,
+                height: actionButtonSize,
               }}
             >
               <svg
@@ -102,7 +105,7 @@ export default function TopAppBar({
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth={appearance === 'glass' ? 1.8 : 2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -129,24 +132,24 @@ export default function TopAppBar({
 
         {/* Center Title */}
         {title && (
-          <span className="absolute left-1/2 max-w-[calc(100%-128px)] -translate-x-1/2 truncate text-center text-[15px] font-bold text-[var(--tb-color-text-primary)]">
-            {title}
+          <span className="tb-top-app-bar-title absolute left-1/2 max-w-[calc(100%-128px)] -translate-x-1/2 truncate text-center text-[15px] font-bold text-[var(--tb-color-text-primary)]">
+            <span className="tb-top-app-bar-title-label">{title}</span>
           </span>
         )}
 
         {/* Right */}
         {rightActions ? (
-          <div className="flex items-center gap-2">{rightActions}</div>
+          <div className="tb-top-app-bar-actions flex items-center gap-2">{rightActions}</div>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="tb-top-app-bar-actions flex items-center gap-2">
             <button
               type="button"
               onClick={onOpenNotifications}
               aria-label="알림"
               className="relative flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
               style={{
-                width: APP_SHELL_ICON_BUTTON_SIZE,
-                height: APP_SHELL_ICON_BUTTON_SIZE,
+                width: actionButtonSize,
+                height: actionButtonSize,
               }}
             >
               <Bell size={APP_SHELL_ICON_SIZE} strokeWidth={1.8} />
@@ -161,8 +164,8 @@ export default function TopAppBar({
               title={primaryActionTitle}
               className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
               style={{
-                width: APP_SHELL_ICON_BUTTON_SIZE,
-                height: APP_SHELL_ICON_BUTTON_SIZE,
+                width: actionButtonSize,
+                height: actionButtonSize,
               }}
             >
               <PrimaryActionIcon size={APP_SHELL_ICON_SIZE} strokeWidth={1.8} />
@@ -173,8 +176,8 @@ export default function TopAppBar({
               aria-label="메뉴 열기"
               className="flex items-center justify-center rounded-full text-[var(--tb-color-icon-primary)] transition-colors hover:text-[var(--tb-color-text-primary)]"
               style={{
-                width: APP_SHELL_ICON_BUTTON_SIZE,
-                height: APP_SHELL_ICON_BUTTON_SIZE,
+                width: actionButtonSize,
+                height: actionButtonSize,
               }}
             >
               <Menu size={APP_SHELL_ICON_SIZE} strokeWidth={1.8} />

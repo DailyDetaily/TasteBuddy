@@ -1,10 +1,14 @@
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { build } from 'esbuild';
-import { buildCards, buildDiscoveries, dimensionRows, eventRows, mealCount, periodWindow, prepare } from '../src/lib/gastronomy/engine.ts';
+const engineDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'tb-gastronomy-engine-'));
+const engineOutput = path.join(engineDirectory, 'engine.mjs');
+await build({ entryPoints: ['src/lib/gastronomy/engine.ts'], outfile: engineOutput, bundle: true, platform: 'node', format: 'esm', logLevel: 'silent' });
+const { buildCards, buildDiscoveries, dimensionRows, eventRows, mealCount, periodWindow, prepare } = await import(engineOutput);
+after(() => fs.rm(engineDirectory, { recursive: true, force: true }));
 const now=new Date('2026-09-22T12:00:00+09:00');
 const record=(id,mealID=id,extra={})=>({id,mealID,menu:'국수',restaurant:'식당',foodKinds:[],date:'2026-09-20T12:00:00+09:00',savedAt:'2026-09-21T00:00:00+09:00',note:'',labels:[],source:'unknown',...extra});
 const atom=(id,entryID,facet,value,extra={})=>({id,entryID,facet,value,attribute:'taste.salty',label:'짠맛',target:'whole_dish',phase:'first_bite',selection:'a',...extra});

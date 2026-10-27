@@ -5,6 +5,7 @@ import {
   parseStructuredSelections,
 } from "../../../scripts/tba-platform-pilot/dining-selections.mjs";
 import { SENSORY_V2_VERSION, makeSensoryV2Selection, sensoryV2Entry } from '../sensoryV2.mjs';
+import { nativeOverallStar } from "./archiveMenuInsights";
 import {
   DINING_OVERALL_QUESTION,
   DINING_OVERALL_RESPONSES,
@@ -70,6 +71,15 @@ export interface NativeRecord {
     kind: string;
     homeCookingID?: string | null;
     restaurantNamespace?: string | null;
+    restaurantPlace?: {
+      name: string;
+      address: string;
+      kakaoPlaceID?: string | null;
+      googlePlaceID?: string | null;
+      latitude?: number | null;
+      longitude?: number | null;
+      phone?: string | null;
+    } | null;
     version: number;
     [key: string]: unknown;
   } | null;
@@ -366,7 +376,8 @@ export function prepareNativeRecord(
     entry.overallEvaluation &&
     canonical(entry.overallEvaluation) !==
       canonical(previous?.overallEvaluation) &&
-    parseOverallEvaluation(entry.overallEvaluation).unresolved.length
+    parseOverallEvaluation(entry.overallEvaluation).unresolved.length &&
+    nativeOverallStar(entry.overallEvaluation) === null
   )
     throw new Error("음식 전체 평가를 다시 확인해 주세요.");
   if (

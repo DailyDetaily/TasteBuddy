@@ -1,0 +1,18 @@
+/* iOS 26 TasteBeam: 48pt color-filled surface and white plus.
+   Browser gradients approximate the native interactive glass material. */
+.tb-native-record-action {
+  --tb-center-beam-color-a: #fbc02d;
+  --tb-center-beam-color-b: #95c900;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at calc(18% + var(--tb-beam-x1, 0px)) calc(8% + var(--tb-beam-y1, 0px)), color-mix(in srgb, var(--tb-center-beam-color-a) 56%, white), transparent 78%),
+    radial-gradient(ellipse at calc(90% - var(--tb-beam-x3, 0px)) calc(94% - var(--tb-beam-y3, 0px)), color-mix(in srgb, var(--tb-center-beam-color-b) 48%, white), transparent 78%),
+    linear-gradient(135deg, color-mix(in srgb, var(--tb-center-beam-color-a) 52%, white), color-mix(in srgb, var(--tb-center-beam-color-b) 48%, white));
+  box-shadow: inset 0 0 0 .6px rgb(255 255 255 / 35%);
+  isolation: isolate;
+}
+.tb-native-record-action:active {
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--tb-center-beam-color-a) 45%, transparent), inset 0 0 0 1px rgb(255 255 255 / 65%);
+}

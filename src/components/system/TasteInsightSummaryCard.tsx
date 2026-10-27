@@ -1,12 +1,15 @@
 import { useId, type ReactNode } from 'react';
 
-import { TASTE_IDS, TASTE_TOKENS } from '../../constants/designTokens';
-import { buildTasteAdjustmentGradient, getTasteColor } from '../../constants/tasteColors';
+import { COMPONENT_TOKENS, TASTE_IDS } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
+import { getTasteColor } from '../../constants/tasteColors';
 import { cn } from '../ui/utils';
 import CardDetailLabel from './CardDetailLabel';
 import TasteChip from './TasteChip';
 import TasteLineChart from './TasteLineChart';
 import TastePointArrowBox, { type TastePointArrowBoxTrend } from './TastePointArrowBox';
+import type { Category } from '../../lib/gastronomy/engine';
+import InsightCategoryIcon from './InsightCategoryIcon';
 
 export function TasteChangeEmptySummary() {
   const gradientId = useId();
@@ -38,13 +41,14 @@ export type TasteInsightSummaryDetail = {
 };
 
 interface TasteInsightSummaryCardProps {
+  category?: Category;
   children?: ReactNode;
   action?: ReactNode;
   actionLabel?: string;
   className?: string;
   details: TasteInsightSummaryDetail[];
   keywords: string[];
-  onClick: () => void;
+  onClick?: () => void;
   sectionLabel: string;
   title: string;
 }
@@ -93,17 +97,8 @@ function KeywordChip({ keyword }: { keyword: string }) {
   return <TasteChip taste={tasteLabel} value={value || undefined} />;
 }
 
-function buildIndicatorBackground(details: TasteInsightSummaryDetail[]) {
-  return buildTasteAdjustmentGradient(
-    details.map((detail) => ({
-      taste: detail.parentTaste,
-      change: detail.change,
-    })),
-    { direction: 'to bottom', useTint: false },
-  );
-}
-
 export default function TasteInsightSummaryCard({
+  category = 'change',
   children,
   action,
   actionLabel,
@@ -125,17 +120,15 @@ export default function TasteInsightSummaryCard({
     <button
       type="button"
       onClick={onClick}
-      className={cn('w-full rounded-[20px] bg-white text-left transition-transform active:scale-[0.98]', className)}
+      disabled={!onClick}
+      className={cn('w-full rounded-[20px] bg-[var(--tb-color-surface-base)] text-left transition-transform active:scale-[0.98]', className)}
     >
       <div className="overflow-clip rounded-[inherit]">
         <div className="flex w-full flex-col gap-[12px] p-3">
           <div className="flex w-full items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-[6px]">
-              <span
-                aria-hidden="true"
-                className="size-4 shrink-0 rounded-full"
-                style={{ background: buildIndicatorBackground(details) }}
-              />
+              <InsightCategoryIcon category={category} className="shrink-0"
+                color={summaryDetails[0] ? getTasteColor(summaryDetails[0].parentTaste) : undefined} />
               <p className="truncate text-[14px] font-bold text-[var(--tb-color-text-primary)]">
                 {sectionLabel}
               </p>
@@ -167,8 +160,8 @@ export default function TasteInsightSummaryCard({
                   </div>
                 ))}
               </div>
-              <div className="flex min-w-0 grow basis-0 items-center">
-                <TasteLineChart entries={graphEntries} />
+              <div className="flex shrink-0 items-center" style={{ width: COMPONENT_TOKENS.miniChart.width }}>
+                <TasteLineChart entries={graphEntries} plotWidth={COMPONENT_TOKENS.miniChart.width} />
               </div>
             </div>
 

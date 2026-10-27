@@ -45,7 +45,7 @@ export default function ProfileSetupSheetContent({
           </span>
           <input
             autoComplete="name"
-            className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-white px-3 text-[14px] text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
+            className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[14px] text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
             disabled={isSubmitting}
             onChange={(event) => setDisplayName(event.target.value)}
             placeholder="이름을 입력해주세요"
@@ -59,7 +59,7 @@ export default function ProfileSetupSheetContent({
           </span>
           <input
             autoComplete="nickname"
-            className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-white px-3 text-[14px] text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
+            className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[14px] text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
             disabled={isSubmitting}
             onChange={(event) => setNickname(event.target.value)}
             placeholder="Taste Buddy에서 사용할 이름"

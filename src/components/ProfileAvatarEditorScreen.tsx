@@ -177,7 +177,7 @@ export default function ProfileAvatarEditorScreen({
                     {item.isRemovable && item.onRemove ? (
                       <button
                         type="button"
-                        className="absolute right-0 top-0 flex size-5 items-center justify-center rounded-full bg-black text-[13px] font-bold leading-none text-white shadow-[0_1px_5px_rgba(0,0,0,0.22)]"
+                        className="absolute right-0 top-0 flex size-5 items-center justify-center rounded-full bg-[var(--tb-color-interaction-primary)] text-[13px] font-bold leading-none text-[var(--tb-color-interaction-on-primary)] shadow-[0_1px_5px_rgba(0,0,0,0.22)]"
                         aria-label={`${item.label} 제거`}
                         onClick={item.onRemove}
                       >

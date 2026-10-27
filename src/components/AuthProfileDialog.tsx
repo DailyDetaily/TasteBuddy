@@ -115,7 +115,7 @@ export default function AuthProfileDialog({
                 </span>
                 <input
                   autoComplete="email"
-                  className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-white px-3 text-[14px] text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
+                  className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[14px] text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
                   disabled={!isConfigured || status === 'submitting'}
                   inputMode="email"
                   onChange={(event) => setEmail(event.target.value)}

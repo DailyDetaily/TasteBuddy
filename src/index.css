@@ -2,7 +2,9 @@
 @import "tailwindcss" source("./");
 @import "./styles/globals.css";
 @import "./styles/design-system.css";
+@import "./styles/color-modes.css";
 @import "./styles/plating-motion.css";
+@import "./styles/sheet-presentation-tokens.css";
 
 @theme {
   --font-sans: "Pretendard", ui-sans-serif, system-ui, sans-serif;

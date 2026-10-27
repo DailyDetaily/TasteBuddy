@@ -1,6 +1,7 @@
-import { TASTE_COLORS } from './designTokens';
+import { COMPONENT_TOKENS, TASTE_COLORS, TASTE_IDS, TASTE_TINTS, TASTE_TOKENS } from './designTokens';
+import { TASTE_COLORS as UI_TASTE_COLORS } from './uiColorTokens';
 
-export { TASTE_COLORS };
+export { UI_TASTE_COLORS as TASTE_COLORS };
 export type TasteType = keyof typeof TASTE_COLORS;
 export const TASTE_TYPES: TasteType[] = ['단맛', '신맛', '쓴맛', '짠맛', '감칠맛', '지방맛'];
 export interface TasteAdjustmentLike {
@@ -11,10 +12,11 @@ export interface TasteAdjustmentLike {
 interface TasteAdjustmentGradientOptions {
   direction?: string;
   useTint?: boolean;
+  colorForTaste?: (taste: string) => string;
 }
 
 export function getTasteColor(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.main || '#FF9900';
+  return (UI_TASTE_COLORS as any)[taste]?.main || UI_TASTE_COLORS['단맛'].main;
 }
 
 function normalizeHex(hex: string): string {
@@ -41,9 +43,12 @@ function hexToRgb(hex: string) {
 }
 
 export function mixHexColors(leftHex: string, rightHex: string, rightWeight: number) {
+  const safeWeight = Math.min(1, Math.max(0, rightWeight));
+  if (!/^#[\da-f]{3}([\da-f]{3})?$/i.test(leftHex) || !/^#[\da-f]{3}([\da-f]{3})?$/i.test(rightHex)) {
+    return `color-mix(in srgb, ${leftHex} ${(1 - safeWeight) * 100}%, ${rightHex} ${safeWeight * 100}%)`;
+  }
   const left = hexToRgb(leftHex);
   const right = hexToRgb(rightHex);
-  const safeWeight = Math.min(1, Math.max(0, rightWeight));
   const leftWeight = 1 - safeWeight;
 
   const r = Math.round(left.r * leftWeight + right.r * safeWeight);
@@ -54,47 +59,90 @@ export function mixHexColors(leftHex: string, rightHex: string, rightWeight: num
 }
 
 export function getTasteTint(taste: string, alpha: number): string {
-  const { r, g, b } = hexToRgb(getTasteColor(taste));
   const safeAlpha = Math.min(1, Math.max(0, alpha));
-
-  return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
+  return `color-mix(in srgb, ${getTasteColor(taste)} ${safeAlpha * 100}%, transparent)`;
 }
 
 export function getTasteTintSoft(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.tintSoft || getTasteTint(taste, 0.05);
+  return (UI_TASTE_COLORS as any)[taste]?.tintSoft || UI_TASTE_COLORS['단맛'].tintSoft;
 }
 
+export function getTasteChipBackground(taste: string): string {
+  const id = TASTE_IDS.find((id) => TASTE_TOKENS[id].label === taste) ?? 'sweet';
+  return `var(--tb-taste-${id}-chip-background, ${TASTE_TOKENS[id].palette.tintSoft})`;
+}
+
+export type TasteBorderLevel = 'subtle' | 'default' | 'strong' | 'accent';
+
+export function getTasteBorder(taste: string, level: TasteBorderLevel = 'subtle'): string {
+  const id = TASTE_IDS.find(id => TASTE_TOKENS[id].label === taste) ?? 'sweet';
+  const role = `border${level[0].toUpperCase()}${level.slice(1)}` as 'borderSubtle' | 'borderDefault' | 'borderStrong' | 'borderAccent';
+  return `var(--tb-taste-${id}-border-${level}, ${TASTE_TOKENS[id].palette[role]})`;
+}
+
+/** @deprecated Use getTasteBorder(taste, 'default') on the shared pale surface. */
+export function getTasteChipBorder(taste: string): string { return getTasteBorder(taste, 'default'); }
+
 export function getTasteTintSoftBorder(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.tintSoftBorder || getTasteTint(taste, 0.18);
+  return (UI_TASTE_COLORS as any)[taste]?.tintSoftBorder || UI_TASTE_COLORS['단맛'].tintSoftBorder;
 }
 
 export function getTasteBg(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.bg || '#FFD699';
+  return (UI_TASTE_COLORS as any)[taste]?.bg || UI_TASTE_COLORS['단맛'].bg;
 }
 
 export function getTasteTintSurface(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.tintSurface || '#FFEBCC';
+  return (UI_TASTE_COLORS as any)[taste]?.tintSurface || UI_TASTE_COLORS['단맛'].tintSurface;
+}
+
+export function getTasteChartLineStart(taste: string): string {
+  const axis = TASTE_IDS.find(id => TASTE_TOKENS[id].label === taste) ?? 'sweet';
+  return `var(--tb-taste-${axis}-line-chart-start, var(--tb-taste-${axis}-tint-${COMPONENT_TOKENS.miniChart.lineStartTint}))`;
+}
+
+export function getTasteChartLineEnd(taste: string): string {
+  const axis = TASTE_IDS.find(id => TASTE_TOKENS[id].label === taste) ?? 'sweet';
+  return `var(--tb-taste-${axis}-line-chart-end, var(--tb-taste-${axis}-main))`;
+}
+
+export function getTasteChartNodeStart(taste: string): string {
+  const axis = TASTE_IDS.find(id => TASTE_TOKENS[id].label === taste) ?? 'sweet';
+  return `var(--tb-taste-${axis}-line-chart-node-start, var(--tb-taste-${axis}-line-chart-start))`;
+}
+
+export function getTasteLineChartTrack(taste: string): string {
+  const axis = TASTE_IDS.find(id => TASTE_TOKENS[id].label === taste) ?? 'sweet';
+  return `var(--tb-taste-${axis}-line-chart-track, var(--tb-taste-${axis}-chart-track))`;
+}
+
+export function getTasteChartArea(taste: string): string {
+  const axis = TASTE_IDS.find(id => TASTE_TOKENS[id].label === taste) ?? 'sweet';
+  return `var(--tb-taste-${axis}-chart-tint-60, ${TASTE_TINTS[axis][60]})`;
+}
+
+export function getTasteChartTrack(taste: string): string {
+  return (UI_TASTE_COLORS as any)[taste]?.chartTrack || UI_TASTE_COLORS['단맛'].chartTrack;
 }
 
 export function getTasteDark(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.dark || '#CC7A00';
+  return (UI_TASTE_COLORS as any)[taste]?.dark || UI_TASTE_COLORS['단맛'].dark;
 }
 
 export function getTasteLight(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.light || '#E0E0E0';
+  return (UI_TASTE_COLORS as any)[taste]?.light || '#E0E0E0';
 }
 
 export function getTasteTintSurfaceText(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.tintSurfaceText || getTasteDark(taste);
+  return (UI_TASTE_COLORS as any)[taste]?.tintSurfaceText || UI_TASTE_COLORS['단맛'].tintSurfaceText;
 }
 
 export function getTasteTintSurfaceSubText(taste: string): string {
-  return (TASTE_COLORS as any)[taste]?.tintSurfaceSubText || getTasteTintSurfaceText(taste);
+  return (UI_TASTE_COLORS as any)[taste]?.tintSurfaceSubText || getTasteTintSurfaceText(taste);
 }
 
 function parseTasteAdjustmentWeight(change: number | string): number {
   if (typeof change === 'number') {
-    return Math.abs(change);
+    return Number.isFinite(change) ? Math.abs(change) : 0;
   }
 
   const parsed = Number.parseFloat(change.replace('%', '').trim());
@@ -121,6 +169,7 @@ export function buildTasteAdjustmentGradient(
     typeof optionsOrDirection === 'string'
       ? true
       : optionsOrDirection.useTint ?? true;
+  const colorForTaste = typeof optionsOrDirection === 'string' ? undefined : optionsOrDirection.colorForTaste;
 
   if (adjustments.length === 0) {
     return '#E0E0E0';
@@ -128,7 +177,7 @@ export function buildTasteAdjustmentGradient(
 
   const weightedAdjustments = adjustments
     .map((adjustment) => ({
-      color: useTint
+      color: colorForTaste ? colorForTaste(adjustment.taste) : useTint
         ? mixHexColors(getTasteLight(adjustment.taste), '#FFFFFF', 0.25)
         : getTasteColor(adjustment.taste),
       weight: parseTasteAdjustmentWeight(adjustment.change),
@@ -144,13 +193,14 @@ export function buildTasteAdjustmentGradient(
     return `linear-gradient(${direction}, ${color} 0%, ${color} 100%)`;
   }
 
+  const maximumWeight = Math.max(...weightedAdjustments.map(adjustment => adjustment.weight));
   const totalWeight = weightedAdjustments.reduce(
-    (sum, adjustment) => sum + adjustment.weight,
+    (sum, adjustment) => sum + adjustment.weight / maximumWeight,
     0,
   );
 
   const segmentWidths = weightedAdjustments.map(
-    (adjustment) => (adjustment.weight / totalWeight) * 100,
+    (adjustment) => (adjustment.weight / maximumWeight / totalWeight) * 100,
   );
   const stops: string[] = [`${weightedAdjustments[0]?.color ?? '#E0E0E0'} 0%`];
 

@@ -203,7 +203,7 @@ export class NativeRepository {
         let snapshot = replaceNativeRecord(current.snapshot, entry, expected);
         if (photo) {
           if (
-            entry.reflectionPhotoFilename !== photo.filename ||
+            !nativeRecordPhotoFilenames(entry).includes(photo.filename) ||
             !photo.filename.match(/^[A-Za-z0-9_-]{1,251}\.jpg$/) ||
             photo.blob.type !== "image/jpeg" ||
             photo.blob.size > 6291456

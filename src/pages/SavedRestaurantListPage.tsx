@@ -409,7 +409,7 @@ export default function SavedRestaurantListPage({
               테이스트 리스트
             </button>
 
-            <div className="flex items-center gap-3 rounded-[20px] bg-white p-3">
+            <div className="flex items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-base)] p-3">
               <ListThumbnail
                 className="size-10"
                 iconSize={ICON_TOKENS.size.md}
@@ -428,7 +428,7 @@ export default function SavedRestaurantListPage({
             {selectedListBookmarks.length > 0 ? (
               selectedListBookmarks.map((bookmark) => renderRestaurantCard(bookmark))
             ) : (
-              <div className="rounded-[20px] bg-white p-4">
+              <div className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-icon-primary)]">
                   <Bookmark size={ICON_TOKENS.size.lg} strokeWidth={1.8} />
                 </div>
@@ -470,7 +470,7 @@ export default function SavedRestaurantListPage({
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            <div className="rounded-[20px] bg-white p-4">
+            <div className="rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-icon-primary)]">
                 <Bookmark size={ICON_TOKENS.size.lg} strokeWidth={1.8} />
               </div>

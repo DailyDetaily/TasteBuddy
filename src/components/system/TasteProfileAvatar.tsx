@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 
-import { TASTE_IDS, TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
+import { TASTE_IDS, type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import {
   getTasteMeasurementEntries,
   type TasteMeasurementSnapshot,
@@ -157,9 +158,7 @@ export function createTasteProfileAvatarStyle(
       const radius = Math.min(66, 34 + ratio * 150);
       const [x, y] = positions[index] ?? ['50%', '50%'];
 
-      return `radial-gradient(circle at ${x} ${y}, ${token.palette.main}${Math.round(alpha * 255)
-        .toString(16)
-        .padStart(2, '0')} 0%, transparent ${radius.toFixed(0)}%)`;
+      return `radial-gradient(circle at ${x} ${y}, color-mix(in srgb, ${token.palette.main} ${alpha * 100}%, transparent) 0%, transparent ${radius.toFixed(0)}%)`;
     })
     .join(', ');
 

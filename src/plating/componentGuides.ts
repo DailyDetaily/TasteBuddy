@@ -334,7 +334,7 @@ export const componentGuides: Partial<Record<string, ComponentGuide>> = {
       {
         part: "배경 / 경계",
         state: "미각 표현",
-        reference: "getTasteTintSoft / getTasteTintSoftBorder",
+        reference: "getTasteTintSoft / getTasteBorder",
         value: "미각별 tintSoft / tintSoftBorder · 경계 1px",
       },
       {

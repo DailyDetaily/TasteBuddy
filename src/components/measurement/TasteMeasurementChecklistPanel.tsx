@@ -41,7 +41,7 @@ export default function TasteMeasurementChecklistPanel() {
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[8px] bg-black">
               <Check size={ICON_TOKENS.size.md} color="white" strokeWidth={3} />
             </div>
-            <span className="text-[15px] font-bold text-black">{text}</span>
+            <span className="text-[15px] font-bold text-[var(--tb-color-text-primary)]">{text}</span>
           </div>
         ))}
       </div>

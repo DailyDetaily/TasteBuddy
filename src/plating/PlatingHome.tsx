@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { BASE, PLATING_FIGMA } from "./catalog";
+import { BASE, PLATING_FIGMA, navGroups } from "./catalog";
 import PlatingFoundationMap from "./PlatingFoundationMap";
 import PlatingBloomStrip from "./PlatingBloomStrip";
 import PlatingHeroTitle from "./PlatingHeroTitle";
@@ -32,12 +32,8 @@ export default function PlatingHome() {
         <PlatingBloomStrip rows={bloomRows} />
       </section>
       <nav className="pl-home-resources" aria-label="주요 문서">
-        {[
-          ["Foundations", `${BASE}/foundations/colors`],
-          ["Components", `${BASE}/components`],
-          ["Brand & Motion", `${BASE}/brand-assets`],
-        ].map(([label, href]) => (
-          <a href={href} key={href}>
+        {navGroups.filter((group) => group.id !== "getting-started").map(({ label, entry }) => (
+          <a href={`${BASE}/${entry}`} key={entry}>
             <PlatingHeroTitle as="span" lines={[label]} />
             <ArrowUpRight size={20} aria-hidden="true" />
           </a>

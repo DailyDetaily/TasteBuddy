@@ -35,8 +35,9 @@ import CardScrollList from '../components/system/CardScrollList';
 import SectionTitle from '../components/system/SectionTitle';
 import TasteTintCard from '../components/system/TasteTintCard';
 import HexRadarChart from '../components/system/HexRadarChart';
-import { DATA_VIZ_TOKENS, ICON_TOKENS, NEUTRAL_TASTE_TOKENS, TASTE_IDS, TASTE_LABELS, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
-import { buildTasteAdjustmentGradient, getTasteColor, getTasteTint, mixHexColors } from '../constants/tasteColors';
+import { DATA_VIZ_TOKENS, ICON_TOKENS, TASTE_IDS, TASTE_LABELS, type TasteId } from '../constants/designTokens';
+import { NEUTRAL_TASTE_TOKENS, TASTE_TOKENS } from '../constants/uiColorTokens';
+import { getTasteTintSoftBorder, buildTasteAdjustmentGradient, getTasteColor, getTasteTintSurface, getTasteTintSurfaceText, mixHexColors } from '../constants/tasteColors';
 import { type DiningFeedbackDraft } from '../constants/diningFeedbackData';
 import {
   formatMeasurementDate,
@@ -60,6 +61,7 @@ import { RESERVATION_CATALOG, type ReservationRecord } from '../constants/reserv
 import TasteChangePage, { TasteChangeEvidencePage, type TasteChangeSeries } from './TasteChangePage';
 
 const RADAR_CHART = DATA_VIZ_TOKENS.radar;
+import { useNativePalateData } from '../lib/gastronomy/useNativeAnalysis';
 const NativeAnalysisOverview = React.lazy(() => import('../components/analysis-native/NativeAnalysisOverview'));
 const TastePerceptionCards = React.lazy(() => import('../components/analysis/TastePerceptionCards'));
 const TREND_TINT_LINE_STROKE_WIDTH = 12;
@@ -191,7 +193,7 @@ function WeeklyTrendActiveDot({
         y={cy - (TREND_ACTIVE_DOT_OUTER_RADIUS + TREND_GUIDE_GAP)}
         width={TREND_GUIDE_MASK_WIDTH}
         height={(TREND_ACTIVE_DOT_OUTER_RADIUS + TREND_GUIDE_GAP) * 2}
-        fill="#FFFFFF"
+        fill="var(--tb-color-surface-base)"
         rx={TREND_GUIDE_MASK_WIDTH / 2}
       />
       <circle cx={cx} cy={cy} r={TREND_ACTIVE_DOT_OUTER_RADIUS} fill={haloColor} />
@@ -239,7 +241,7 @@ function WeeklyTrendCursor({
       x2={x}
       y1={top}
       y2={top + height}
-      stroke="#0F0F0F"
+      stroke="var(--tb-color-text-primary)"
       strokeWidth={2}
       pointerEvents="none"
     />
@@ -400,7 +402,7 @@ function WeeklyTrendTooltip({
   );
 
   return (
-    <div className="min-w-[116px] rounded-[12px] bg-white px-[12px] py-[10px] shadow-[var(--tb-shadow-soft)]">
+    <div className="min-w-[116px] rounded-[12px] bg-[var(--tb-color-surface-base)] px-[12px] py-[10px] shadow-[var(--tb-shadow-soft)]">
       <p className="mb-[6px] text-[12px] font-semibold text-[var(--tb-color-text-subtle)]">
         {activeDatum.event}
       </p>
@@ -1512,6 +1514,7 @@ function buildProfileChangeTrendData(
 }
 
 interface AnalysisPageProps {
+  onRootViewChange?: (isRoot: boolean) => void;
   nativeOwnerID?: string;
   preferenceProfile?: PreferenceIntakeProfile | null;
   preferenceUserID?: string;
@@ -1530,18 +1533,25 @@ interface AnalysisPageProps {
 
 export default function AnalysisPage(props: AnalysisPageProps) {
   const [changeSeries, setChangeSeries] = useState<TasteChangeSeries[] | null>(null);
+  const [analysisIsRoot, setAnalysisIsRoot] = useState(true);
   // The legacy preference form names its guest owner "local-owner"; native journals use "guest".
   const journalOwner = props.nativeOwnerID ?? (props.preferenceUserID === 'local-owner' ? 'guest' : props.preferenceUserID ?? 'guest');
+  const nativeData = useNativePalateData(journalOwner, props.isActive ?? true);
+  useEffect(() => { setChangeSeries(null); setAnalysisIsRoot(true); }, [journalOwner]);
+  useEffect(() => {
+    props.onRootViewChange?.(changeSeries === null && analysisIsRoot);
+    return () => props.onRootViewChange?.(true);
+  }, [changeSeries, analysisIsRoot, props.onRootViewChange]);
   if (changeSeries !== null) return <TasteChangeEvidencePage series={changeSeries} onBack={() => setChangeSeries(null)} onOpenMenu={props.onOpenMenu} />;
-  return <main className="flex h-full flex-col gap-6 overflow-y-auto bg-[var(--tb-color-bg-page)] px-5 pt-5 pb-24">
+  return <main className="flex h-full flex-col gap-5 overflow-y-auto bg-[var(--tb-color-bg-page)] px-5 pt-2 pb-[72px]">
+    {nativeData.journal.archive && nativeData.journal.error && <div role="status" className="text-[12px] leading-relaxed text-[var(--tb-color-text-hint)]">
+      이 기기 기록 기준 · {nativeData.journal.error}
+      <button type="button" className="ml-2 min-h-11 underline" onClick={nativeData.journal.retry}>백업 다시 시도</button>
+    </div>}
     <React.Suspense fallback={<SectionCard><p role="status">기록을 다시 읽고 있어요</p></SectionCard>}>
-      <NativeAnalysisOverview key={journalOwner} owner={journalOwner} active={props.isActive ?? true}/>
-      <TastePerceptionCards {...props} nativeOwnerID={journalOwner} onOpenTasteChange={setChangeSeries} />
+      <NativeAnalysisOverview key={journalOwner} owner={journalOwner} data={nativeData} active={props.isActive ?? true} onRootViewChange={setAnalysisIsRoot}/>
+      <TastePerceptionCards key={`perception:${journalOwner}`} {...props} nativeData={nativeData} nativeOwnerID={journalOwner} onOpenTasteChange={setChangeSeries} />
     </React.Suspense>
-    {props.measurementSnapshot.surveySubmission && <PageSection title="처음 남긴 맛의 단서">
-      <TasteSurveyEvidencePanel submission={props.measurementSnapshot.surveySubmission}/>
-      <button type="button" className="mt-3 min-h-11 rounded-full bg-white px-4 text-[13px] font-semibold" onClick={props.onStartMeasurement}>기준 음식 다시 기록하기</button>
-    </PageSection>}
   </main>;
 }
 
@@ -1683,9 +1693,9 @@ function LegacyMeasurementAnalysisPage({
   const previousTasteMeta = getTasteCardMeta(previousTaste);
   const nextTasteMeta = getTasteCardMeta(nextTaste);
   const trendRangeAccentColor =
-    selectedTaste === '모든맛' ? NEUTRAL_TASTE_TOKENS.palette.main : getTasteColor(selectedTaste);
+    selectedTaste === '모든맛' ? 'var(--tb-color-neutral-selection-text)' : getTasteTintSurfaceText(selectedTaste);
   const trendRangeAccentTint =
-    selectedTaste === '모든맛' ? NEUTRAL_TASTE_TOKENS.palette.tintSurface : getTasteTint(selectedTaste, 0.12);
+    selectedTaste === '모든맛' ? NEUTRAL_TASTE_TOKENS.palette.tintSurface : getTasteTintSurface(selectedTaste);
   const visibleTasteLabels = selectedTaste === '모든맛' ? [...GRAPH_TASTE_ORDER] : [selectedTaste];
   const visibleTrendData = trendData.filter((point) => point.isVisible);
   const trendAxisConfig = buildTrendAxisConfig(visibleTrendData, visibleTasteLabels);
@@ -1697,12 +1707,12 @@ function LegacyMeasurementAnalysisPage({
   });
   const tasteTrendDetailAccentColor =
     tasteTrendDetailInfo.accentTaste === '모든맛'
-      ? NEUTRAL_TASTE_TOKENS.palette.main
+      ? 'var(--tb-color-neutral-selection-text)'
       : getTasteColor(tasteTrendDetailInfo.accentTaste);
   const tasteTrendDetailAccentTint =
     tasteTrendDetailInfo.accentTaste === '모든맛'
       ? NEUTRAL_TASTE_TOKENS.palette.tintSurface
-      : getTasteTint(tasteTrendDetailInfo.accentTaste, 0.12);
+      : getTasteTintSurface(tasteTrendDetailInfo.accentTaste);
   const trendPeriodGuide = buildTrendPeriodGuide(
     activeTrendRange,
     trendViewWindow,
@@ -2120,7 +2130,7 @@ function LegacyMeasurementAnalysisPage({
             type="button"
             disabled={!canShiftTrendWindowBackward}
             onClick={() => handleShiftTrendWindow(-1)}
-            className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white disabled:cursor-default disabled:border-[var(--tb-color-border-subtle)] disabled:bg-transparent disabled:text-[var(--tb-color-text-disabled)]"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-card-hover)] disabled:cursor-default disabled:border-[var(--tb-color-border-subtle)] disabled:bg-transparent disabled:text-[var(--tb-color-text-disabled)]"
             style={{
               width: TREND_WINDOW_NAV_BUTTON_SIZE,
               height: TREND_WINDOW_NAV_BUTTON_SIZE,
@@ -2137,7 +2147,7 @@ function LegacyMeasurementAnalysisPage({
           <button
             type="button"
             onClick={() => handleShiftTrendWindow(1)}
-            className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-white"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[var(--tb-color-text-primary)] transition-colors hover:bg-[var(--tb-color-surface-card-hover)]"
             style={{
               width: TREND_WINDOW_NAV_BUTTON_SIZE,
               height: TREND_WINDOW_NAV_BUTTON_SIZE,
@@ -2341,7 +2351,7 @@ function LegacyMeasurementAnalysisPage({
                       <Line
                         type="linear"
                         dataKey={taste}
-                        stroke={getTasteTint(taste, 0.18)}
+                        stroke={getTasteTintSoftBorder(taste)}
                         strokeWidth={TREND_TINT_LINE_STROKE_WIDTH}
                         strokeLinecap="round"
                         strokeLinejoin="round"

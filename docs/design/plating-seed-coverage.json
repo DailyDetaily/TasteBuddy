@@ -2104,11 +2104,6 @@
         "figmaNodeId": "78:509",
         "figmaReviewId": "78:599"
       },
-      "attachment-input": {
-        "web": "/design-system/components/attachment-input",
-        "figmaNodeId": "78:709",
-        "figmaReviewId": "78:754"
-      },
       "icon-action-button": {
         "web": "/design-system/components/icon-action-button",
         "figmaNodeId": "78:318",
@@ -2148,8 +2143,7 @@
         "flow-retry",
         "action-area",
         "date-picker",
-        "wheel-picker",
-        "attachment-input"
+        "wheel-picker"
       ],
       "url": "http://127.0.0.1:3001/design-system/review/disclosure"
     },

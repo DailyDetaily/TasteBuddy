@@ -62,8 +62,11 @@ const parts: Record<string, Part[]> = {
   "bottom-tab": [["Navigation Bar", .9, .4], ["Destination", .12, .53], ["Create Action", .5, .46], ["Label", .13, .61]],
   "step-indicator": [["Step Group", .55, .5], ["Current Step", .48, .5], ["Other Steps", .54, .5]],
   card: [["Card Surface", .92, .32], ["Media Slot", .12, .5], ["Heading", .36, .43], ["Metadata · 선택", .4, .58]],
+  "expandable-card": [["Card Surface", .91, .35], ["Square Media", .16, .37], ["Header", .56, .33], ["Body · 펼침", .55, .67]],
+  "stack-card": [["Front Card", .5, .35], ["Decorative Stack", .5, .78], ["Stack Toggle", .9, .32]],
   "list-row": [["Row", .9, .4], ["Title", .16, .5], ["Value", .84, .5], ["Chevron · 선택", .9, .5]],
   badge: [["Badge Surface", .57, .43], ["Label", .5, .5]],
+  "tcs-badge": [["Weighted Gradient", .52, .52], ["Label", .5, .5]],
   avatar: [["Avatar", .55, .4], ["Initials", .5, .5]],
   divider: [["Divider", .5, .5], ["Content Above", .5, .37], ["Content Below", .5, .63]],
   toast: [["Toast Surface", .91, .33], ["Icon", .1, .5], ["Title", .35, .43], ["Message · 선택", .4, .57], ["Action · 선택", .84, .5]],
@@ -95,7 +98,6 @@ const parts: Record<string, Part[]> = {
   "action-area": [["CTA Area", .9, .52], ["Step Indicator", .5, .3], ["Step Label · 선택", .5, .36], ["Primary Button", .5, .8]],
   "date-picker": [["DatePicker", .5, .5]],
   "wheel-picker": [["Header", .45, .18], ["System DatePicker", .5, .50], ["Close", .85, .18], ["Apply", .5, .80]],
-  "attachment-input": [["PhotosPicker / Image", .5, .5]],
   menu: [["Menu Trigger", .5, .5]],
 };
 
@@ -105,7 +107,10 @@ export function nativeVisualParts(component: CatalogComponent): Part[] {
 }
 const imageURL = (capture: Capture) => `/plating/native-component-audit/${capture.file}`;
 export function nativeCaptureLabel(id: string, state: string) {
-  const labels: Record<string, string> = { default: "기본", "leap-day": "윤년 말일", "no-count": "숫자 없음", disabled: "비활성", actionable: "전체 클릭", dismissible: "닫기", informative: "정보", positive: "성공", warning: "주의", critical: "오류", large: "큰 글자", intrinsic: "내용 너비", tint: "미각색", "visual-disabled": "조건 안내", busy: "처리 중 조합", auth: "Auth", error: "오류", anatomy: "구조 · 보조 링크", value: "값 포함", neutral: "중립", unchecked: "미선택", off: "Off", first: id === 'radio' ? '첫 항목 선택' : '첫 단계', last: "마지막 단계", analysis: "나의 입맛", dining: "다이닝", profile: "프로필", checkbox: "Checkbox", "single-line": "Single Line", plain: id === 'toast' ? 'Text Only' : '정보 행', "size-xs": "XS", "size-sm": "SM", "size-md": "MD", "size-32": "32pt", "size-48": "48pt", "size-64": "64pt", "variant-soft": "Soft", "variant-outline": "Outline", "variant-solid": "Solid", "variant-text": "Text", "appearance-default": "Default", "appearance-solid": "Solid", "appearance-transparent": "Transparent" };
+  if (id === "tcs-badge") return ({ default: "두 가지 맛", single: "단색", triple: "세 가지 맛", empty: "빈 데이터", disabled: "비활성", dark: "Dark · 두 가지 맛" } as Record<string,string>)[state] ?? state;
+  if (id === "stack-card") return state === "expanded" ? "스택 펼침 · 질문 나열" : "스택 쌓임";
+  if (id === "expandable-card") return state === "expanded" ? "본문 펼침 · 답변 예제" : "본문 접힘";
+  const labels: Record<string, string> = { default: "기본", "leap-day": "윤년 말일", "no-count": "숫자 없음", disabled: "비활성", actionable: "전체 클릭", dismissible: "닫기", informative: "정보", positive: "성공", warning: "주의", critical: "오류", large: "큰 글자", intrinsic: "내용 너비", tint: "미각색", "visual-disabled": "조건 안내", busy: "처리 중 조합", auth: "Auth", error: "오류", anatomy: "구조 · 보조 링크", value: "값 포함", neutral: "중립", unchecked: "미선택", off: "Off", first: id === 'radio' ? '첫 항목 선택' : '첫 단계', last: "마지막 단계", analysis: "나의 입맛", dining: "다이닝", profile: "프로필", checkbox: "Checkbox", "single-line": "Single Line", plain: id === 'toast' ? 'Text Only' : '정보 행', "size-xs": "XS", "size-sm": "SM", "size-md": "MD", "size-32": "32pt", "size-48": "48pt", "size-64": "64pt", "variant-soft": "Soft", "variant-outline": "Outline", "variant-solid": "Solid", "variant-text": "Text", "appearance-default": "Default", "appearance-solid": "Solid", "appearance-transparent": "Transparent", "appearance-glass": "Glass", "usage-home": "홈 · Transparent + 프로필·기본 액션" };
   return state === "selected" ? id === "primary-button" ? "Compact" : ["text-input", "textarea"].includes(id) ? "입력됨" : "선택" : labels[state] ?? state;
 }
 
@@ -117,7 +122,9 @@ function SourceStructure({ component }: { component: CatalogComponent }) {
 
 export function NativeAnatomy({ component }: { component: CatalogComponent }) {
   const markerId = `anatomy-${useId().replaceAll(':', '')}`;
-  const sample = captures[component.id]?.find(c => c.state === "anatomy") ?? captures[component.id]?.[0];
+  const sample = captures[component.id]?.find(c => c.state === "anatomy")
+    ?? (component.id === "expandable-card" ? captures[component.id]?.find(c => c.state === "expanded") : undefined)
+    ?? captures[component.id]?.[0];
   const labels = nativeVisualParts(component);
   const height = sample ? Math.min(sample.height, 260) : 160;
   const width = sample ? sample.width * height / sample.height : 390;
@@ -151,6 +158,8 @@ type BoardRow = { state: string; label: string; note?: string };
 type Board = { id: string; name: string; rows: BoardRow[]; note?: string };
 const row = (state: string, label: string, note?: string): BoardRow => ({ state, label, note });
 const boardMap: Record<string, Board[]> = {
+  "stack-card": [{ id: "variants", name: "State", rows: [row("default", "스택 쌓임"), row("expanded", "스택 펼침 · 질문 나열", "본문이 접힌 카드 3개 · 카드 간격 12pt")] }],
+  "expandable-card": [{ id: "variants", name: "State", rows: [row("default", "본문 접힘"), row("expanded", "본문 펼침 · 답변 예제")] }],
   "primary-button": [
     { id: "sizes", name: "Size", rows: [row("default", "Default", "최소 높이 48pt · 글자 14pt"), row("selected", "Compact", "최소 높이 40pt · 글자 12pt")] },
     { id: "layouts", name: "Layout", rows: [row("selected", "Full Width", "fullWidth = true"), row("intrinsic", "Content Width", "fullWidth = false · Compact")], note: "현재 PrimaryButton은 텍스트 레이블을 사용해요. 아이콘 전용 행동은 IconButton을 사용해요." },
@@ -165,7 +174,7 @@ const boardMap: Record<string, Board[]> = {
   chip: [{ id: "sizes", name: "Size", rows: [row("size-xs", "Extra Small", "글자 10pt"), row("size-sm", "Small", "글자 11pt"), row("size-md", "Medium", "글자 12pt")] }, { id: "variants", name: "Variant", rows: [row("variant-soft", "Soft"), row("variant-outline", "Outline"), row("variant-solid", "Solid"), row("variant-text", "Text")] }],
   "taste-chip": [{ id: "sizes", name: "Size", rows: [row("size-xs", "XS", "10pt"), row("size-sm", "SM", "11pt"), row("size-md", "MD", "12pt")] }, { id: "layouts", name: "Content", rows: [row("size-xs", "Label Only"), row("value", "Label + Value", "0도 표시해요")] }, { id: "variants", name: "Tone", rows: [row("size-xs", "Taste"), row("neutral", "Neutral")] }],
   avatar: [{ id: "sizes", name: "Size", rows: [row("size-32", "32pt"), row("size-48", "48pt", "기본"), row("size-64", "64pt")], note: "size는 수치를 직접 지정하는 속성이에요. 제품 아바타가 아닌 정적 참고 타입의 표본입니다." }],
-  "top-bar": [{ id: "variants", name: "Appearance", rows: [row("appearance-default", "Default"), row("appearance-solid", "Solid"), row("appearance-transparent", "Transparent")] }],
+  "top-bar": [{ id: "variants", name: "Appearance", rows: [row("appearance-default", "Default"), row("appearance-solid", "Solid"), row("appearance-transparent", "Transparent"), row("appearance-glass", "Glass", "40pt · 제목 캡슐·원형 버튼")] }, { id: "layouts", name: "Usage", rows: [row("usage-home", "홈", "Transparent · 프로필 + 알림·측정·메뉴. 검색창은 별도 조합")] }],
   "selection-card": [{ id: "layouts", name: "Layout", rows: [row("default", "Title + Description"), row("single-line", "Single Line", "최소 44pt")] }, { id: "variants", name: "Indicator", rows: [row("default", "Radio"), row("checkbox", "Checkbox")] }],
   "list-row": [{ id: "layouts", name: "Layout", rows: [row("plain", "Value Row"), row("default", "With Chevron"), row("large", "Large Text", "접근성 글자 크기 · 세로 배치")] }],
   toast: [{ id: "layouts", name: "Content", rows: [row("plain", "Text Only"), row("default", "With Action", "actionTitle + action")] }],
@@ -199,7 +208,7 @@ export function NativePropertyBoards({ component, idPrefix = "" }: { component: 
 
 export function NativeStateBoard({ component }: { component: CatalogComponent }) {
   const images = captures[component.id] ?? [];
-  const states = images.filter(c => !c.state.startsWith('size-') && !c.state.startsWith('variant-') && !c.state.startsWith('appearance-') && !['anatomy', 'auth', 'intrinsic', 'tint', 'value', 'neutral'].includes(c.state) && !(component.id === 'primary-button' && c.state === 'selected'));
+  const states = images.filter(c => !c.state.startsWith('size-') && !c.state.startsWith('variant-') && !c.state.startsWith('appearance-') && !['usage-home', 'anatomy', 'auth', 'intrinsic', 'tint', 'value', 'neutral'].includes(c.state) && !(component.id === 'primary-button' && c.state === 'selected'));
   if (!states.length) return <p className="pl-native-visual-note">상태별 실제 iOS 캡처가 없는 항목이에요. 현재 사용처의 상태 계약은 아래 표에서 확인할 수 있어요.</p>;
   return <div className="pl-native-state-board">{states.map(c => <figure key={c.file}><span className="pl-native-state-tag">{nativeCaptureLabel(component.id, c.state)}</span><Sample capture={c} label={`${component.name} · ${nativeCaptureLabel(component.id, c.state)}`} /></figure>)}</div>;
 }

@@ -1,0 +1,53 @@
+.native-dining-feed-card article > div {
+  padding: 12px;
+  border-radius: 20px;
+}
+
+.native-dining-feed-card [class*="leading-relaxed"] {
+  font-size: 14px;
+  line-height: 1.48;
+}
+
+.native-dining-detail-photo {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  height: auto;
+  min-height: 0;
+  object-fit: cover;
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+
+.native-dining-option-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 60px;
+  padding: 12px;
+  border-radius: 20px;
+  background: var(--tb-color-surface-card);
+  text-align: left;
+}
+
+.native-dining-option-row:focus-visible {
+  outline: 2px solid var(--tb-color-border-focus);
+  outline-offset: 2px;
+}
+
+.native-dining-option-row:disabled { opacity: .45; }
+
+.native-dining-option-icon {
+  display: grid;
+  width: 32px;
+  height: 36px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--tb-color-surface-muted);
+}
+
+.native-dining-flow-footer {
+  padding: 32px 20px max(24px, env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, var(--tb-color-bg-page) 40%);
+}

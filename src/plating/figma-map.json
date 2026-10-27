@@ -1,35 +1,31 @@
 {
   "fileKey": "HHwQ9suI1czmYEwCQ6wW1W",
+  "colorStyleGuide": "839:113",
+  "colorAtomic": "39:2",
+  "colorReference": "840:321",
+  "tasteTintPalette": "849:330",
   "pages": {
-    "Overview": "0:1",
-    "Updates": "37:7",
-    "———— Component ————": "147:57",
-    "1 Theme": "150:85",
-    "2 Element": "150:58",
-    "3 Component": "4:123",
-    "Resource": "37:11",
-    " ┗ 기존 TB 컴포넌트": "163:57",
-    " ┗ 새로 만든 컴포넌트": "163:58",
-    "———— Guideline ————": "147:58",
-    "⓪ Foundation": "147:59",
-    " ┗ Color - Atomic": "4:122",
-    " ┗ Color - Semantic": "37:8",
-    " ┗ Typography": "37:9",
-    " ┗ Grid": "150:65",
-    "① Theme": "150:74",
-    " ┗ Icon": "150:76",
-    " ┗ Logo": "4:128",
-    "② Element": "150:79",
-    " ┗ Basic": "150:81",
-    " ┗ Spacing": "37:10",
-    " ┗ Decorate": "154:57",
-    "③ Component": "4:124",
-    " ┗ Guidelines": "4:125",
-    "Ⓟ Plating Principle": "4:126",
-    "———— Example ————": "147:60",
-    "Work": "4:127"
+    "00 Start": "0:1",
+    "01 Foundations": "147:59",
+    "02 Assets": "150:85",
+    "03 Core components": "4:123",
+    "04 Data visualization": "1541:168",
+    "05 Product components": "1541:169",
+    "06 Patterns": "4:127",
+    "07 Resources": "37:11"
+  },
+  "catalogs": {
+    "start": "1340:57",
+    "foundations": "1271:73",
+    "assets": "1271:6993",
+    "core": "1269:5293",
+    "data-visualization": "1542:168",
+    "product-components": "1543:168",
+    "patterns": "1271:7012",
+    "resources": "1271:7037"
   },
   "components": {
+    "stack-card": "199:1729",
     "primary-button": "6:13",
     "icon-button": "6:56",
     "text-input": "6:84",
@@ -53,6 +49,8 @@
     "empty-state": "8:63",
     "progress": "8:96",
     "bottom-sheet": "8:127",
+    "sheet-background": "716:2910",
+    "sheet-presentation": "716:2935",
     "dialog": "8:182",
     "menu": "8:211",
     "taste-chip": "9:23",
@@ -60,14 +58,13 @@
     "taste-bloom": "9:153",
     "dining-result": "9:250",
     "interpretation-card": "9:279",
+    "inline-button": "1116:3877",
     "taste-graph": "9:308",
     "textarea": "126:580",
     "select": "77:255",
     "date-picker": "77:480",
     "text-action": "78:291",
-    "action-area": "78:424",
     "wheel-picker": "78:509",
-    "attachment-input": "78:709",
     "image-frame": "79:375",
     "disclosure": "79:431",
     "chip-group": "79:507",
@@ -79,7 +76,20 @@
     "icon-action-button": "78:318",
     "record-actions": "339:2463",
     "social-actions": "339:2502",
-    "capsule-tabs": "459:2853"
+    "capsule-tabs": "459:2853",
+    "mini-chart": "1346:1917",
+    "mini-line-chart": "820:3657",
+    "mini-area-chart": "858:3660",
+    "pie-donut-chart": "908:3700",
+    "mini-bubble-chart": "1346:1918",
+    "mini-treemap-chart": "1235:4866",
+    "mini-stacked-bar-chart": "942:3710",
+    "mini-heatmap": "1089:3900",
+    "expandable-card": "796:3330",
+    "tcs-badge": "1100:3885",
+    "dish-feed": "197:2262",
+    "period-picker": "1400:3204",
+    "capsule-button": "1436:9645"
   },
   "variables": {
     "primitive/color/page": "VariableID:4:9",
@@ -225,37 +235,75 @@
   },
   "verification": "2026-09-30 · 13 pages / 31 component sets / 91 variants / 138 variables / 16 styles. Stable source IDs preserved; 12 instance property checks passed. Figma text font fallback documented.",
   "boards": {
-    "primary-button": "37:114",
-    "icon-button": "37:204",
-    "text-input": "37:263",
-    "search-field": "37:353",
-    "selection-card": "37:443",
-    "chip": "37:519",
-    "checkbox": "37:570",
-    "radio": "37:633",
-    "switch": "37:692",
-    "top-bar": "38:153",
-    "bottom-tab": "38:203",
-    "back-button": "38:292",
-    "step-indicator": "38:347",
-    "card": "38:415",
-    "list-row": "38:463",
-    "badge": "38:510",
-    "avatar": "38:556",
-    "divider": "38:641",
-    "toast": "38:1093",
-    "inline-error": "38:1149",
-    "empty-state": "38:1202",
-    "progress": "38:1259",
-    "bottom-sheet": "38:1314",
-    "dialog": "38:1392",
-    "menu": "38:1446",
-    "taste-chip": "38:1503",
-    "sensory-bubble": "38:1649",
-    "taste-bloom": "38:1726",
-    "dining-result": "38:1815",
-    "interpretation-card": "38:1870",
-    "taste-graph": "38:1925"
+    "primary-button": "1281:5017",
+    "icon-button": "1282:5607",
+    "text-input": "1282:7315",
+    "search-field": "1282:6855",
+    "selection-card": "1282:7057",
+    "chip": "1282:6647",
+    "checkbox": "1282:6601",
+    "radio": "1282:6809",
+    "switch": "1282:7177",
+    "top-bar": "1282:9260",
+    "bottom-tab": "1282:8695",
+    "back-button": "1282:8655",
+    "step-indicator": "1282:9196",
+    "card": "1282:5033",
+    "list-row": "1282:5237",
+    "badge": "1282:8129",
+    "avatar": "1282:8325",
+    "divider": "1282:8107",
+    "toast": "1282:9611",
+    "inline-error": "1282:9483",
+    "empty-state": "1282:9395",
+    "progress": "1282:8615",
+    "bottom-sheet": "1282:9645",
+    "dialog": "1282:9717",
+    "menu": "1282:9755",
+    "taste-chip": "1282:8153",
+    "sensory-bubble": "1282:9791",
+    "taste-bloom": "1282:10168",
+    "dining-result": "1282:11332",
+    "interpretation-card": "1282:11797",
+    "inline-button": "1282:5647",
+    "taste-graph": "1282:10276",
+    "tcs-badge": "1282:8427",
+    "icon-action-button": "1282:5279",
+    "record-actions": "1282:5764",
+    "social-actions": "1282:5868",
+    "text-action": "1282:6016",
+    "capsule-tabs": "1282:6052",
+    "date-picker": "1282:6723",
+    "select": "1282:6961",
+    "textarea": "1282:7229",
+    "wheel-picker": "1282:7401",
+    "disclosure": "1282:7705",
+    "chip-group": "1282:7889",
+    "image-frame": "1282:7995",
+    "scope-label": "1282:8067",
+    "skeleton": "1282:8507",
+    "flow-loading": "1282:8567",
+    "period-picker": "1282:8983",
+    "flow-retry": "1282:9439",
+    "notification-badge": "1282:9513",
+    "sheet-background": "1282:9873",
+    "sheet-presentation": "1282:9972",
+    "mini-area-chart": "1565:1383",
+    "mini-bubble-chart": "1565:1409",
+    "mini-chart": "1282:10498",
+    "mini-grouped": "1565:1370",
+    "mini-heatmap": "1565:1404",
+    "mini-line-chart": "1565:1374",
+    "mini-stacked-bar-chart": "1565:1396",
+    "mini-treemap-chart": "1565:1422",
+    "pie-donut-chart": "1565:1426",
+    "expandable-card": "1282:11565",
+    "mini-card": "1282:11901",
+    "mini-icon-card": "1282:11942",
+    "profile-card": "1282:12005",
+    "stack-card": "1282:14088",
+    "summary-card": "1282:14532",
+    "taste-change-card": "1282:14699"
   },
   "reviews": {
     "textarea": "126:581",
@@ -264,7 +312,6 @@
     "text-action": "78:296",
     "action-area": "78:457",
     "wheel-picker": "78:599",
-    "attachment-input": "78:754",
     "image-frame": "79:392",
     "disclosure": "79:459",
     "chip-group": "79:540",
@@ -276,55 +323,194 @@
     "icon-action-button": "78:360",
     "record-actions": "78:360",
     "social-actions": "78:360",
-    "capsule-tabs": "77:431"
+    "capsule-tabs": "77:431",
+    "dish-feed": "1375:5834"
   },
   "nativeComponents": {
-    "textarea": "126:580"
+    "textarea": "126:580",
+    "tcs-badge": "1100:3885"
   },
   "nativeReviews": {
-    "textarea": "126:581"
+    "textarea": "126:581",
+    "tcs-badge": "1100:3894"
   },
   "patterns": {
     "revision": "131:198"
   },
   "pagePanelVerification": {
-    "date": "2026-10-03",
-    "pageCount": 27,
-    "reference": "Montage",
-    "originalPageIdsPreserved": true,
-    "originalNodeIdsChecked": 517,
+    "date": "2026-10-09",
+    "pageCount": 6,
+    "reference": "Material 3 Design Kit",
+    "referenceUrl": "https://www.figma.com/design/jP5nToG3DDN7SwFL7PLbdK?node-id=47909-2",
+    "layout": "horizontal single row",
+    "originalPageIdsPreserved": false,
+    "retainedCorePageIds": [
+      "0:1",
+      "147:59",
+      "150:85",
+      "4:123",
+      "4:127",
+      "37:11"
+    ],
+    "removedEmptyPageCount": 21,
+    "originalNodeIdsChecked": 383,
     "missingOriginalNodeIds": [],
-    "registeredCatalogFamilies": 51,
-    "componentSections": 8,
-    "scope": "몽타주 Theme/Element/Component 및 Guideline/Example 페이지 체계. 기존 컴포넌트와 문서 ID 보존."
+    "componentSections": 63,
+    "componentsPage": {
+      "components": 584,
+      "componentSets": 123,
+      "instances": 848,
+      "galleryOnly": false,
+      "comparisonPanelCount": 125,
+      "mainComponentsInComparison": 513,
+      "comparisonInstanceCount": 0
+    },
+    "scope": "6개 페이지의 주요 영역은 수평 한 줄. Components의 기존 라이트·다크 비교 배치를 유지하며 비교 대상 511개를 실제 메인으로 전환했다. 원본 베리언트와 속성을 재사용하고 기존 인스턴스 연결을 유지한다. 내부 구성 요소와 추가 그래프 원본은 해당 컴포넌트 섹션에 배치했다. Assets의 별도 Component sources 영역은 제거했다. 사용 맥락 예시는 Patterns, 참고 자료는 Resources에 둔다.",
+    "componentCategories": 10,
+    "tocLinkCount": 63,
+    "sourceIntegrity": {
+      "originalMainsAndSetsChecked": 385,
+      "originalIdsPreserved": true,
+      "originalVariantAndComponentPropertiesPreserved": true,
+      "comparisonInstancesConverted": 511,
+      "comparisonMainCount": 513,
+      "missingMainReferences": 0,
+      "brokenNodeLinks": 0,
+      "sourceRootRemoved": true,
+      "unchangedImageChecks": [
+        "PrimaryButton",
+        "PeriodPicker"
+      ],
+      "verificationScope": "Figma structure and representative rendering; no product runtime or backend change"
+    },
+    "sourceLinkCount": 62,
+    "exampleLinkCount": 12,
+    "sectionCornerRadius": 24,
+    "stylesPage": {
+      "styleSections": 6,
+      "tocLinkCount": 6,
+      "layout": "horizontal single row",
+      "semanticRoleListPreserved": "910:229",
+      "originalInstancesChecked": 167,
+      "variablesUnchanged": 1070,
+      "textStylesUnchanged": 40,
+      "effectStylesUnchanged": 13,
+      "darkSemanticValuesChecked": 57,
+      "referenceUrl": "https://www.figma.com/design/jP5nToG3DDN7SwFL7PLbdK?node-id=49823-12141",
+      "scope": "M3식 타입·색상 역할·Elevation·화면 구조 견본. 작은 UI 컬러칩은 Assets. Styles는 기본 UI·대표 미각색 80개 역할만 표시하고, 파생·구현·원시 색상 전체는 Resources의 참조표로 연결. 기존 변수·텍스트·효과 정의 보존.",
+      "atomicPageId": "147:59",
+      "semanticColorChipsPageId": "150:85",
+      "semanticColorChipsNodeId": "1321:2044",
+      "typeSpecimens": 14,
+      "elevationSpecimens": 10,
+      "layoutSpecimens": 3,
+      "layoutSpecimenSource": "src/plating/nativeLayoutCaptures.json: home-large, dining-large, sheet-large; existing documentation measurements",
+      "colorCatalog": {
+        "coreRoles": 80,
+        "allColorVariables": 902,
+        "completeReferencesInResources": true
+      }
+    },
+    "componentConsolidation": {
+      "date": "2026-10-09",
+      "originalGraphIdsPreserved": true,
+      "graphGeometryAndBindingsUnchanged": true,
+      "publicSectionCount": 69,
+      "sourceFamilyCount": 68,
+      "barSetId": "1346:1917",
+      "bubbleSetId": "1346:1918",
+      "internalMiniCardIconId": "1172:4205",
+      "summaryExampleCount": 21,
+      "representativeExampleCount": 6,
+      "extendedExampleCount": 15,
+      "evidence": "output/component-consolidation-20261009"
+    }
   },
   "componentSections": {
-    "1 Layout": "155:566",
-    "2 Action": "155:567",
-    "3 Selection and Input": "155:568",
-    "4 Content": "155:569",
-    "5 Loading": "155:570",
-    "6 Navigation": "155:571",
-    "7 Feedback": "155:572",
-    "8 Presentation": "155:573"
+    "PrimaryButton": "1281:5017",
+    "CompactCard": "1282:5033",
+    "ListRow": "1282:5237",
+    "IconActionButton": "1282:5279",
+    "IconButton": "1282:5607",
+    "InlineButton": "1282:5647",
+    "RecordActions": "1282:5764",
+    "SocialActions": "1282:5868",
+    "TextAction": "1282:6016",
+    "CapsuleTabs": "1282:6052",
+    "Checkbox": "1282:6601",
+    "Chip": "1282:6647",
+    "DateField": "1282:6723",
+    "RadioGroup": "1282:6809",
+    "SearchField": "1282:6855",
+    "SelectField": "1282:6961",
+    "SelectionCard": "1282:7057",
+    "Switch": "1282:7177",
+    "TextareaField": "1282:7229",
+    "TextInput": "1282:7315",
+    "WheelDatePicker": "1282:7401",
+    "Accordion": "1282:7705",
+    "ChipGroup": "1282:7889",
+    "ImageBox": "1282:7995",
+    "ScopeLabel": "1282:8067",
+    "Separator": "1282:8107",
+    "StatusChip": "1282:8129",
+    "TasteChip": "1282:8153",
+    "TasteProfileAvatar": "1282:8325",
+    "TCSBadge": "1282:8427",
+    "ContentSkeleton": "1282:8507",
+    "FlowLoadingState": "1282:8567",
+    "Progress": "1282:8615",
+    "BackButton": "1282:8655",
+    "BottomTab": "1282:8695",
+    "PeriodPicker": "1282:8983",
+    "StepIndicator": "1282:9196",
+    "TopBar": "1282:9260",
+    "EmptyState": "1282:9395",
+    "FlowRetryState": "1282:9439",
+    "InlineError": "1282:9483",
+    "NotificationBadge": "1282:9513",
+    "ToastSurface": "1282:9611",
+    "BottomSheetShell": "1282:9645",
+    "Dialog": "1282:9717",
+    "DropdownMenu": "1282:9755",
+    "SensoryBubble": "1282:9791",
+    "SheetBackground": "1282:9873",
+    "SheetPresentation": "1282:9972",
+    "TasteBloom": "1282:10168",
+    "TasteGraph": "1282:10276",
+    "MiniChart": "1282:10498",
+    "DiningResultCard": "1282:11332",
+    "ExpandableCard": "1282:11565",
+    "InterpretationCard": "1282:11797",
+    "MiniCard": "1282:11901",
+    "ProfileCard": "1282:12005",
+    "StackCard": "1282:14088",
+    "SummaryCard": "1282:14532",
+    "TasteChangeCard": "1282:14699",
+    "DishFeed": "1375:5834",
+    "CapsuleButton": "1436:9451"
   },
   "libraryPages": {
     "theme": "150:85",
-    "element": "150:58",
+    "element": "147:59",
     "component": "4:123",
-    "resource": "37:11"
+    "resource": "37:11",
+    "start": "0:1",
+    "styles": "147:59",
+    "assets": "150:85",
+    "patterns": "4:127"
   },
   "resourceProvenance": {
     "date": "2026-10-03",
     "existing": {
-      "pageId": "163:57",
+      "pageId": "37:11",
       "boardId": "164:57",
       "count": 33,
       "existingCode": 25,
       "nativeDerivedDocumentation": 8
     },
     "new": {
-      "pageId": "163:58",
+      "pageId": "37:11",
       "boardId": "164:2090",
       "count": 19,
       "figmaRegisteredFamilies": 18,
@@ -336,12 +522,13 @@
     "basis": "기존 코드·Native 구조 기반 / 플레이팅 신규·조합 보강. 제품 적용 상태와는 별도 분류.",
     "cardLayouts": {
       "boardId": "207:463",
-      "count": 8,
+      "count": 9,
       "newNativeDerivedFamilies": [
         "mini",
         "summary",
         "profile",
-        "stack"
+        "stack",
+        "expandable"
       ]
     }
   },
@@ -432,14 +619,132 @@
         "id": "197:1514",
         "variants": [
           "197:1513"
-        ]
+        ],
+        "border": {
+          "role": "border/default",
+          "light": "tint/70",
+          "dark": "tint/60",
+          "opacity": 1,
+          "darkVariantId": "1397:15075",
+          "variables": {
+            "sweet": "VariableID:1408:9969",
+            "sour": "VariableID:1408:9970",
+            "bitter": "VariableID:1408:9971",
+            "salty": "VariableID:1408:9972",
+            "umami": "VariableID:1408:9973",
+            "fat": "VariableID:1408:9974"
+          },
+          "web": "src/components/system/TasteTintCard.tsx",
+          "native": "ios/TasteBuddy/Components/SystemParityComponents.swift#RecommendationMiniCardLayout",
+          "evidence": "output/border-token-system-20261009/figma-variable-ledger.json"
+        }
       },
       "summary": {
         "id": "197:1527",
         "variants": [
           "197:1525",
           "197:1526"
-        ]
+        ],
+        "reviewedAt": "2026-10-09",
+        "source": "ios/TasteBuddy/Features/Home/HomePeriodInsightComponents.swift",
+        "notes": "네이티브 16pt Lucide 아이콘(24단위 경로·stroke 2)과 16pt 세로 가중 그라데이션 원형. Action/InlineButton 인스턴스의 자세히보기+우측 화살표. 보조 문구 2줄·텍스트 반폭 제한·132×56 그래프 슬롯을 모든 예시에서 확인. 첫 기록/반복 기록으로 UX 카피 통일. 합성 표본이며 제품/백엔드 변경 없음. 미각 변화 5개는 전용 두 지표 행으로 복원했으며 과거 점 포함 MiniLinePaired를 연결. 일반 카드 21개는 2줄 보조 문구 유지.",
+        "evidence": "output/summary-card-figma-20261008/06-final-audit.json",
+        "reviewExamples": [
+          "202:1851",
+          "1172:6472"
+        ],
+        "miniChartCardExamples": 21,
+        "verifiedInstanceCount": 26,
+        "nativeHeaderAssets": {
+          "calendar": "1166:4100",
+          "globe": "1166:4104",
+          "waves": "1166:4108",
+          "gradient": "1166:4111"
+        },
+        "emptyChart": "1166:4113",
+        "tasteChange": {
+          "id": "1189:4752",
+          "emptyId": "1189:4836",
+          "graphWrapperId": "1189:4733",
+          "linkedLineComponent": "901:3685",
+          "arrowComponents": {
+            "increase": "1189:4727",
+            "decrease": "1189:4730"
+          },
+          "instances": [
+            "202:1960",
+            "1172:6778",
+            "1172:6849",
+            "207:491",
+            "202:1979"
+          ],
+          "source": "ios/TasteBuddy/Components/SystemParityComponents.swift · TasteInsightSummaryCard / TastePointArrowBox",
+          "notes": "전용 상승·하강 지표 2행 복원. 기존 MiniLinePaired 인스턴스의 과거 점 4px·현재 점 12px·round cap 유지. 기본 132×63을 유지하며, 미각 변화 카드에서 132×52로 높이 대응. 18pt 화살표 박스·14pt Medium 미각명·12pt SemiBold 수치. 비교 부족은 중립 기존 구성.",
+          "evidence": "output/summary-card-figma-20261008/taste-change/verified-history-points.json",
+          "capsuleTrack": {
+            "trackWidth": 12,
+            "trackFill": "opaque taste tint/80",
+            "lineWidth": 2,
+            "strokeCap": "ROUND",
+            "strokeJoin": "ROUND",
+            "defaultChartSize": [
+              132,
+              63
+            ],
+            "cardChartSize": [
+              132,
+              52
+            ],
+            "clipsPlot": false,
+            "evidence": "output/summary-card-figma-20261008/taste-change/capsule-track-fix.json",
+            "visualEvidence": [
+              "output/summary-card-figma-20261008/taste-change/capsule-track-final.png",
+              "output/summary-card-figma-20261008/taste-change/capsule-card-final.png"
+            ]
+          }
+        },
+        "additionalGraphExamples": {
+          "date": "2026-10-09",
+          "sectionId": "1245:4884",
+          "boardId": "1172:6472",
+          "count": 6,
+          "cardIds": [
+            "1245:4890",
+            "1245:4937",
+            "1245:4983",
+            "1245:5040",
+            "1245:5090",
+            "1245:5146"
+          ],
+          "graphIds": [
+            "1227:4859",
+            "1227:4874",
+            "1235:4866",
+            "1098:3850"
+          ],
+          "correctedExistingCard": "1172:7320",
+          "dataContract": "output/summary-card-examples-20261009/contract.json",
+          "evidence": "output/summary-card-examples-20261009/verification-result.json"
+        },
+        "exampleOrganization": {
+          "date": "2026-10-09",
+          "pageId": "4:127",
+          "boardId": "1172:6472",
+          "representativeId": "1348:3908",
+          "representativeCount": 6,
+          "extendedId": "1245:4884",
+          "extendedCount": 15,
+          "representativeCardIds": [
+            "1172:6478",
+            "1172:6714",
+            "1172:6778",
+            "1172:6994",
+            "1172:7433",
+            "1245:4983"
+          ],
+          "preservedCardCount": 21,
+          "scope": "Figma design specimens; no backend or runtime changes"
+        }
       },
       "interpretation": {
         "id": "9:279",
@@ -452,9 +757,9 @@
         "id": "9:250",
         "variants": [
           "9:248",
-          "9:249",
-          "197:2262"
-        ]
+          "9:249"
+        ],
+        "notes": "DiningFeedbackResultCard의 미각 기록·빠른 기록 두 상태. 디시 피드는 별도 dishFeed 계열."
       },
       "list": {
         "id": "7:267",
@@ -484,19 +789,2287 @@
         "id": "199:1729",
         "variants": [
           "199:1726",
-          "199:1727",
-          "199:1728"
+          "199:1727"
+        ],
+        "reviewedAt": "2026-10-07",
+        "source": "ios/TasteBuddy/Components/NativeLayoutComponents.swift",
+        "notes": "카드 묶음의 쌓임·세로 나열. ExpandableCard 인스턴스로 구성. 펼침 예제는 본문이 접힌 질문3개·간격12pt·첫 카드만 대기열 토글.",
+        "evidence": "output/plating/card-decomposition-20261007",
+        "reviewExamples": [
+          "797:5033",
+          "202:2569"
         ]
+      },
+      "expandable": {
+        "id": "796:3330",
+        "variants": [
+          "796:3331",
+          "796:3344"
+        ],
+        "reviewedAt": "2026-10-07",
+        "source": "ios/TasteBuddy/Components/NativeLayoutComponents.swift",
+        "notes": "단일 카드의 본문 접힘·펼침. 패딩12pt·본문 간격12pt. 질문 예제의 답변 버튼 최소44pt. StackCard의 중첩 컴포넌트로 재사용.",
+        "evidence": "output/plating/card-decomposition-20261007",
+        "resourceExample": "799:1014"
+      },
+      "dishFeed": {
+        "id": "197:2262",
+        "name": "Content/Card/DishFeed",
+        "type": "COMPONENT",
+        "reviewedAt": "2026-10-09",
+        "source": "ios/TasteBuddy/Components/TBComponents.swift",
+        "caller": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+        "documentation": "docs/design/dish-feed-card.md",
+        "docSectionId": "1375:5834",
+        "sourceSectionId": "1374:2202",
+        "instances": [
+          "1282:11379",
+          "1282:11490",
+          "202:2120"
+        ],
+        "imageBoxId": "79:372",
+        "chipGroupId": "79:503",
+        "socialActionsId": "339:2499",
+        "imageTile": {
+          "width": 144,
+          "height": 144,
+          "gap": 8
+        },
+        "scope": "Synthetic Figma specimens; SwiftUI source and Light/Dark render verified. No runtime or backend changes.",
+        "evidence": "output/dish-feed-figma-20261009/verification.json"
       }
     },
     "newFamilyCount": 4,
     "updatedFamilyCount": 4,
     "variantCount": 20,
     "productExampleCount": 31,
-    "resourcePageId": "163:57",
+    "resourcePageId": "37:11",
     "resourceBoardId": "207:463",
     "source": "ios/TasteBuddy",
-    "fontBoundary": "Figma Noto Sans KR / native Pretendard",
-    "evidence": "output/plating/card-layouts-20261003/validation.json"
+    "fontBoundary": "Figma / web / native: Pretendard",
+    "evidence": "output/plating/card-layouts-20261003/validation.json",
+    "nativeMiniCharts": {
+      "date": "2026-10-07",
+      "pageId": "4:123",
+      "id": "197:1505",
+      "name": "Period=주간",
+      "type": "COMPONENT",
+      "width": 132,
+      "height": 56,
+      "variantCount": 3,
+      "themeCollectionId": "VariableCollectionId:752:3137",
+      "reviewId": "752:3284",
+      "exampleCardIds": [
+        "752:3369",
+        "752:3436"
+      ],
+      "evidence": "output/summary-card-figma-20261006/mini-chart-contract-20261007.json",
+      "dense": {
+        "id": "787:3292",
+        "name": "Period=월간",
+        "width": 132,
+        "height": 56,
+        "exampleTileId": "787:3353",
+        "evidence": "output/summary-card-figma-20261006/mini-chart-contract-20261007.json",
+        "historicalGeometry": {
+          "barCount": 12,
+          "barWidth": 8.25,
+          "gap": 3
+        }
+      },
+      "exampleContainer": {
+        "width": 164,
+        "paddingHorizontal": 16
+      },
+      "oneValueHeight": "barWidth",
+      "webSource": "src/components/system/plating/MiniChart.tsx",
+      "nativeSource": "ios/TasteBuddy/Components/SystemParityComponents.swift",
+      "documentation": "docs/design/mini-chart.md",
+      "platingPath": "/design-system/components/mini-chart",
+      "zeroHeightRatio": 0.5,
+      "maximumBarWidth": 12,
+      "grouped": {
+        "id": "813:3630",
+        "name": "Content/Chart/MiniGrouped",
+        "width": 132,
+        "height": 32,
+        "groups": 4,
+        "barWidth": 12,
+        "groupGap": 8,
+        "intraGroupGap": 2,
+        "exampleTileId": "813:3676",
+        "legendId": "813:3703",
+        "evidence": "output/summary-card-figma-20261006/grouped-mini-chart-20261007.json"
+      },
+      "componentSetId": "1346:1917",
+      "componentSetName": "Content/Chart/Mini",
+      "variants": [
+        {
+          "id": "197:1505",
+          "name": "Period=주간",
+          "w": 132,
+          "h": 56
+        },
+        {
+          "id": "899:3688",
+          "name": "Period=보름",
+          "w": 132,
+          "h": 56
+        },
+        {
+          "id": "787:3292",
+          "name": "Period=월간",
+          "w": 132,
+          "h": 56
+        }
+      ],
+      "organizationEvidence": "output/component-consolidation-20261009/01-source-result.json"
+    }
+  },
+  "typography": {
+    "family": "Pretendard",
+    "weights": {
+      "400": "Regular",
+      "500": "Medium",
+      "600": "SemiBold",
+      "700": "Bold"
+    },
+    "reviewedAt": "2026-10-07",
+    "evidence": "output/plating/pretendard-20261007/migration.json"
+  },
+  "componentTableOfContents": {
+    "pageId": "4:123",
+    "nodeId": "1269:5293",
+    "linkCount": 56,
+    "entries": {
+      "card": "1282:5033",
+      "list-row": "1282:5237",
+      "icon-action-button": "1282:5279",
+      "icon-button": "1282:5607",
+      "inline-button": "1282:5647",
+      "primary-button": "1281:5017",
+      "record-actions": "1282:5764",
+      "social-actions": "1282:5868",
+      "text-action": "1282:6016",
+      "capsule-tabs": "1282:6052",
+      "checkbox": "1282:6601",
+      "chip": "1282:6647",
+      "date-picker": "1282:6723",
+      "radio": "1282:6809",
+      "search-field": "1282:6855",
+      "select": "1282:6961",
+      "selection-card": "1282:7057",
+      "switch": "1282:7177",
+      "textarea": "1282:7229",
+      "text-input": "1282:7315",
+      "wheel-picker": "1282:7401",
+      "disclosure": "1282:7705",
+      "chip-group": "1282:7889",
+      "image-frame": "1282:7995",
+      "scope-label": "1282:8067",
+      "divider": "1282:8107",
+      "badge": "1282:8129",
+      "taste-chip": "1282:8153",
+      "avatar": "1282:8325",
+      "tcs-badge": "1282:8427",
+      "skeleton": "1282:8507",
+      "flow-loading": "1282:8567",
+      "progress": "1282:8615",
+      "back-button": "1282:8655",
+      "bottom-tab": "1282:8695",
+      "period-picker": "1282:8983",
+      "step-indicator": "1282:9196",
+      "top-bar": "1282:9260",
+      "empty-state": "1282:9395",
+      "flow-retry": "1282:9439",
+      "inline-error": "1282:9483",
+      "notification-badge": "1282:9513",
+      "toast": "1282:9611",
+      "bottom-sheet": "1282:9645",
+      "dialog": "1282:9717",
+      "menu": "1282:9755",
+      "sensory-bubble": "1282:9791",
+      "sheet-background": "1282:9873",
+      "sheet-presentation": "1282:9972",
+      "taste-bloom": "1282:10168",
+      "taste-graph": "1282:10276",
+      "mini-chart": "1282:10498",
+      "dining-result": "1282:11332",
+      "expandable-card": "1282:11565",
+      "interpretation-card": "1282:11797",
+      "mini-card": "1282:11901",
+      "profile-card": "1282:12005",
+      "stack-card": "1282:14088",
+      "summary-card": "1282:14532",
+      "taste-change-card": "1282:14699",
+      "dish-feed": "1375:5834",
+      "capsule-button": "1436:9451"
+    },
+    "countVerifiedAt": "2026-10-10"
+  },
+  "componentCategories": {
+    "action": [
+      "primary-button",
+      "capsule-button",
+      "icon-action-button",
+      "icon-button",
+      "inline-button",
+      "record-actions",
+      "social-actions",
+      "text-action"
+    ],
+    "layout": [
+      "card",
+      "list-row"
+    ],
+    "input": [
+      "capsule-tabs",
+      "checkbox",
+      "chip",
+      "date-picker",
+      "radio",
+      "search-field",
+      "select",
+      "selection-card",
+      "switch",
+      "textarea",
+      "text-input",
+      "wheel-picker"
+    ],
+    "content": [
+      "disclosure",
+      "chip-group",
+      "image-frame",
+      "scope-label",
+      "divider",
+      "badge",
+      "taste-chip",
+      "avatar",
+      "tcs-badge"
+    ],
+    "loading": [
+      "skeleton",
+      "flow-loading",
+      "progress"
+    ],
+    "navigation": [
+      "back-button",
+      "bottom-tab",
+      "period-picker",
+      "step-indicator",
+      "top-bar"
+    ],
+    "feedback": [
+      "empty-state",
+      "flow-retry",
+      "inline-error",
+      "notification-badge",
+      "toast"
+    ],
+    "presentation": [
+      "bottom-sheet",
+      "dialog",
+      "menu",
+      "sensory-bubble",
+      "sheet-background",
+      "sheet-presentation",
+      "taste-bloom",
+      "taste-graph"
+    ],
+    "charts": [
+      "mini-chart"
+    ],
+    "cards": [
+      "dining-result",
+      "dish-feed",
+      "expandable-card",
+      "interpretation-card",
+      "mini-card",
+      "profile-card",
+      "stack-card",
+      "summary-card",
+      "taste-change-card"
+    ]
+  },
+  "componentSources": {
+    "primary-button": "6:13",
+    "card": "7:267",
+    "list-row": "7:296",
+    "icon-action-button": "78:318",
+    "icon-button": "6:56",
+    "inline-button": "1116:3877",
+    "record-actions": "339:2463",
+    "social-actions": "339:2502",
+    "text-action": "78:291",
+    "capsule-tabs": "459:2853",
+    "checkbox": "6:296",
+    "chip": "6:274",
+    "date-picker": "77:480",
+    "radio": "6:329",
+    "search-field": "6:152",
+    "select": "77:255",
+    "selection-card": "6:224",
+    "switch": "6:362",
+    "textarea": "126:580",
+    "text-input": "6:84",
+    "wheel-picker": "78:509",
+    "disclosure": "79:431",
+    "chip-group": "79:507",
+    "image-frame": "79:375",
+    "scope-label": "81:185",
+    "divider": "7:515",
+    "badge": "7:321",
+    "taste-chip": "9:23",
+    "avatar": "7:342",
+    "tcs-badge": "1100:3885",
+    "skeleton": "80:198",
+    "flow-loading": "80:241",
+    "progress": "8:96",
+    "back-button": "7:201",
+    "bottom-tab": "7:136",
+    "step-indicator": "7:230",
+    "top-bar": "7:99",
+    "empty-state": "8:63",
+    "flow-retry": "80:278",
+    "inline-error": "8:30",
+    "notification-badge": "80:115",
+    "toast": "8:7",
+    "bottom-sheet": "8:127",
+    "dialog": "8:182",
+    "menu": "8:211",
+    "sensory-bubble": "9:85",
+    "sheet-background": "716:2910",
+    "sheet-presentation": "716:2935",
+    "taste-bloom": "9:153",
+    "taste-graph": "9:308",
+    "mini-area-chart": "1282:10405",
+    "mini-bubble-chart": "1282:10497",
+    "mini-chart": "1346:1917",
+    "mini-grouped": "1282:10835",
+    "mini-heatmap": "1282:10927",
+    "mini-line-chart": "1282:10997",
+    "mini-stacked-bar-chart": "1282:11239",
+    "mini-treemap-chart": "1282:11285",
+    "pie-donut-chart": "1282:11331",
+    "dining-result": "9:250",
+    "expandable-card": "796:3330",
+    "interpretation-card": "9:279",
+    "mini-card": "197:1514",
+    "profile-card": "197:2494",
+    "stack-card": "199:1729",
+    "summary-card": "197:1527",
+    "taste-change-card": "1189:4752",
+    "dish-feed": "197:2262",
+    "period-picker": "1400:3204",
+    "capsule-button": "1436:9645"
+  },
+  "componentExamples": {
+    "capsule-tabs": "1298:12930",
+    "wheel-picker": "1298:12934",
+    "disclosure": "1298:12938",
+    "chip-group": "1298:12942",
+    "period-picker": "1298:12946",
+    "top-bar": "1298:12950",
+    "bottom-sheet": "1298:12954",
+    "mini-area-chart": "1298:12958",
+    "mini-bubble-chart": "1298:12962",
+    "mini-chart": "1298:12966",
+    "mini-grouped": "1298:12970",
+    "mini-heatmap": "1298:12974",
+    "mini-line-chart": "1298:12978",
+    "mini-stacked-bar-chart": "1298:12982",
+    "mini-treemap-chart": "1298:12986",
+    "pie-donut-chart": "1298:12990",
+    "mini-card": "1298:12994",
+    "profile-card": "1298:12998",
+    "stack-card": "1298:13002",
+    "summary-card": "1298:13006",
+    "cards-with-mini-charts": "1298:13010",
+    "card-layouts": "1298:13014",
+    "capsule-button": "1438:7129"
+  },
+  "archivedComponentExamples": {
+    "primary-button": "1298:12742",
+    "card": "1298:12746",
+    "action-area": "1298:12750",
+    "list-row": "1298:12754",
+    "icon-action-button": "1298:12758",
+    "icon-button": "1298:12762",
+    "inline-button": "1298:12766",
+    "record-actions": "1298:12770",
+    "social-actions": "1298:12774",
+    "text-action": "1298:12778",
+    "checkbox": "1298:12782",
+    "chip": "1298:12786",
+    "date-picker": "1298:12790",
+    "radio": "1298:12794",
+    "search-field": "1298:12798",
+    "select": "1298:12802",
+    "selection-card": "1298:12806",
+    "switch": "1298:12810",
+    "textarea": "1298:12814",
+    "text-input": "1298:12818",
+    "image-frame": "1298:12822",
+    "scope-label": "1298:12826",
+    "divider": "1298:12830",
+    "badge": "1298:12834",
+    "taste-chip": "1298:12838",
+    "avatar": "1298:12842",
+    "tcs-badge": "1298:12846",
+    "skeleton": "1298:12850",
+    "flow-loading": "1298:12854",
+    "progress": "1298:12858",
+    "back-button": "1298:12862",
+    "bottom-tab": "1298:12866",
+    "step-indicator": "1298:12870",
+    "empty-state": "1298:12874",
+    "flow-retry": "1298:12878",
+    "inline-error": "1298:12882",
+    "notification-badge": "1298:12886",
+    "toast": "1298:12890",
+    "dialog": "1298:12894",
+    "menu": "1298:12898",
+    "sensory-bubble": "1298:12902",
+    "taste-bloom": "1298:12906",
+    "taste-graph": "1298:12910",
+    "dining-result": "1298:12914",
+    "interpretation-card": "1298:12918",
+    "capsule-tabs-tones": "1298:12922"
+  },
+  "componentSupportNavigation": {
+    "sources": {
+      "pageId": "4:123",
+      "nodeId": "1269:5293",
+      "familyCount": 70,
+      "placement": "Main components live directly in Light/Dark comparison panels; internal building blocks remain with their component family."
+    },
+    "examples": {
+      "pageId": "4:127",
+      "nodeId": "1298:12926",
+      "boardCount": 22
+    },
+    "archive": {
+      "pageId": "37:11",
+      "nodeId": "1298:12738",
+      "boardCount": 46
+    },
+    "references": {
+      "pageId": "37:11",
+      "nodeId": "1264:5021"
+    },
+    "headerLinks": {
+      "guide": "plain text link",
+      "source": "direct link to main in the comparison panel",
+      "example": "capsule text link"
+    },
+    "miniGraphs": {
+      "pageId": "4:127",
+      "nodeId": "1356:4629",
+      "typeCount": 9,
+      "specimenCount": 38
+    }
+  },
+  "styleSections": {
+    "typography": "1271:61",
+    "color": "1271:57",
+    "effects": "1316:582",
+    "shape": "1271:69",
+    "spacing": "1316:565",
+    "layout": "1271:65"
+  },
+  "styleTableOfContents": {
+    "pageId": "147:59",
+    "nodeId": "1271:73",
+    "linkCount": 6,
+    "entries": {
+      "typography": "1271:61",
+      "color": "1271:57",
+      "effects": "1316:582",
+      "shape": "1271:69",
+      "spacing": "1316:565",
+      "layout": "1271:65"
+    }
+  },
+  "styleReferences": {
+    "pageId": "37:11",
+    "nodeId": "1314:2768",
+    "semanticDetails": "1314:2772",
+    "boards": {
+      "Guide / Color — Dark Atomic": "939:4592",
+      "Guide / Color — Light & Dark": "939:3899",
+      "Guide / Color — Visualization & Effects": "1005:4136",
+      "Guide / Grid": "156:57",
+      "Guide / Space & shape": "39:239",
+      "Guide / Basic": "156:198",
+      "1 Basic": "157:79",
+      "Guide / Decorate": "156:162",
+      "Semantic details": "1314:2772",
+      "Typography details": "39:181"
+    },
+    "typography": "39:181",
+    "fullSemanticColors": "1329:2786",
+    "primitiveColors": "1327:3374"
+  },
+  "stylePanels": {
+    "atomic": "39:2",
+    "semanticLight": "839:113",
+    "semanticDark": "1316:592",
+    "semanticRoleList": "910:229",
+    "typography": "1322:463",
+    "spacing": "157:91",
+    "shape": "157:133",
+    "colorRoleLight": "1330:369",
+    "colorRoleDark": "1330:624"
+  },
+  "semanticColorChips": {
+    "pageId": "150:85",
+    "nodeId": "1321:2044",
+    "light": "839:113",
+    "dark": "1316:592",
+    "originalRoleList": "910:229",
+    "scope": "작은 색상칩·역할명·값으로 정리한 Light/Dark 목록. Atomic 팔레트는 Styles에 유지.",
+    "uiRoleCount": 57
+  },
+  "colorCatalog": {
+    "core": {
+      "pageId": "147:59",
+      "nodeId": "1271:57",
+      "roleCount": 80,
+      "light": "1330:369",
+      "dark": "1330:624",
+      "groups": [
+        "Surface & Text",
+        "Border, Icon & Action",
+        "Feedback",
+        "Taste"
+      ]
+    },
+    "fullSemantic": {
+      "pageId": "37:11",
+      "nodeId": "1329:2786",
+      "light": "1322:370",
+      "dark": "1322:416",
+      "semanticVariables": 333,
+      "contextVariables": 4,
+      "specimensPerMode": 345
+    },
+    "primitives": {
+      "pageId": "37:11",
+      "nodeId": "1327:3374",
+      "variables": 565
+    },
+    "verification": {
+      "colorVariables": 902,
+      "coveredColorVariables": 902,
+      "missing": [],
+      "valuesChecked": 1255,
+      "definitionsUnchanged": true
+    },
+    "scope": "기본 UI와 대표 미각색은 Styles에 간결하게 표시. 틴트·측정 단계·차트·효과·내부 구현색과 모든 원시 색상은 전체 참조표로 연결."
+  },
+  "startPage": {
+    "pageNodeId": "0:1",
+    "introductionNodeId": "1271:7054",
+    "coverNodeId": "4:129",
+    "guidesSectionNodeId": "1271:7050",
+    "bodyNodeId": "1340:57",
+    "referenceUrl": "https://www.figma.com/design/jP5nToG3DDN7SwFL7PLbdK/Material-3-Design-Kit--Community-?node-id=11-1833",
+    "layout": "Editable brand cover followed by six text-and-preview navigation rows",
+    "sections": [
+      {
+        "name": "Guidance",
+        "nodeId": "1340:58",
+        "targetNodeId": "156:243"
+      },
+      {
+        "name": "Styles",
+        "nodeId": "1340:67",
+        "targetNodeId": "1271:73"
+      },
+      {
+        "name": "Assets",
+        "nodeId": "1340:82",
+        "targetNodeId": "1271:6993"
+      },
+      {
+        "name": "Components",
+        "nodeId": "1340:148",
+        "targetNodeId": "1269:5293"
+      },
+      {
+        "name": "Patterns",
+        "nodeId": "1340:168",
+        "targetNodeId": "1271:7012"
+      },
+      {
+        "name": "Resources",
+        "nodeId": "1340:332",
+        "targetNodeId": "1271:7037"
+      }
+    ],
+    "verification": {
+      "scope": "Figma design only",
+      "validNavigationTargets": 6,
+      "preservedOriginalCoverInstances": 10,
+      "duplicateMainComponents": 0,
+      "rasterUiNodes": 0,
+      "fontFamilies": [
+        "Pretendard"
+      ],
+      "productIntegration": "Not changed; previews reuse design-system specimens"
+    }
+  },
+  "componentInternals": {
+    "mini-card-category-icon": {
+      "id": "1172:4205",
+      "name": ".Card/Mini/CategoryIcon",
+      "parent": "mini-card",
+      "documentationSectionId": "1282:11942",
+      "sourceSectionId": "1298:885",
+      "parentDocumentationSectionId": "1282:11901",
+      "parentSourceSectionId": "1298:881"
+    }
+  },
+  "componentVariantSets": {
+    "mini-chart": {
+      "id": "1346:1917",
+      "name": "Content/Chart/Mini",
+      "variantProperty": "Period",
+      "variants": [
+        {
+          "id": "197:1505",
+          "name": "Period=주간",
+          "w": 132,
+          "h": 56
+        },
+        {
+          "id": "899:3688",
+          "name": "Period=보름",
+          "w": 132,
+          "h": 56
+        },
+        {
+          "id": "787:3292",
+          "name": "Period=월간",
+          "w": 132,
+          "h": 56
+        }
+      ],
+      "properties": {
+        "Period": {
+          "type": "VARIANT",
+          "defaultValue": "주간",
+          "variantOptions": [
+            "주간",
+            "월간",
+            "보름"
+          ]
+        }
+      }
+    },
+    "mini-bubble-chart": {
+      "id": "1346:1918",
+      "name": "Content/Chart/MiniBubble",
+      "variantProperty": "Display",
+      "variants": [
+        {
+          "id": "1098:3846",
+          "name": "Display=숫자 2개",
+          "w": 132,
+          "h": 56
+        },
+        {
+          "id": "1098:3850",
+          "name": "Display=숫자 3개",
+          "w": 132,
+          "h": 56
+        },
+        {
+          "id": "1159:4080",
+          "name": "Display=아이콘 3개",
+          "w": 132,
+          "h": 56
+        }
+      ],
+      "properties": {
+        "Display": {
+          "type": "VARIANT",
+          "defaultValue": "숫자 2개",
+          "variantOptions": [
+            "숫자 2개",
+            "숫자 3개",
+            "아이콘 3개"
+          ]
+        }
+      }
+    }
+  },
+  "miniGraphCatalog": {
+    "date": "2026-10-10",
+    "representative": {
+      "id": "1282:10498",
+      "page": "1541:168",
+      "kind": "Original main component cards",
+      "count": 19,
+      "mainIds": [
+        "197:1505",
+        "899:3688",
+        "787:3292",
+        "813:3630",
+        "820:3657",
+        "901:3685",
+        "858:3660",
+        "1227:4859",
+        "1227:4874",
+        "942:3710",
+        "942:3790",
+        "1089:3900",
+        "1098:3846",
+        "1098:3850",
+        "1159:4080",
+        "1235:4866",
+        "908:3700",
+        "908:3722",
+        "1166:4113"
+      ]
+    },
+    "gallery": {
+      "id": "1356:4629",
+      "page": "1541:168",
+      "typeCount": 9,
+      "instanceCount": 38,
+      "mainCount": 19,
+      "mainIds": [
+        "197:1505",
+        "899:3688",
+        "787:3292",
+        "1166:4113",
+        "813:3630",
+        "942:3710",
+        "942:3790",
+        "820:3657",
+        "901:3685",
+        "858:3660",
+        "1227:4859",
+        "1227:4874",
+        "1098:3846",
+        "1098:3850",
+        "1159:4080",
+        "908:3700",
+        "908:3722",
+        "1235:4866",
+        "1089:3900"
+      ],
+      "layout": "Separate Light and Dark areas; one graph variant per card",
+      "cardSize": [
+        280,
+        192
+      ],
+      "cardCount": 38,
+      "themes": [
+        {
+          "id": "1565:1353",
+          "theme": "Light",
+          "w": 960,
+          "h": 1588,
+          "cards": 19
+        },
+        {
+          "id": "1565:1439",
+          "theme": "Dark",
+          "w": 960,
+          "h": 1588,
+          "cards": 19
+        }
+      ]
+    },
+    "sections": {
+      "mini-chart": "1565:1357",
+      "mini-grouped": "1565:1370",
+      "mini-stacked-bar-chart": "1565:1396",
+      "mini-line-chart": "1565:1374",
+      "mini-area-chart": "1565:1383",
+      "mini-bubble-chart": "1565:1409",
+      "pie-donut-chart": "1565:1426",
+      "mini-treemap-chart": "1565:1422",
+      "mini-heatmap": "1565:1404"
+    },
+    "allVariantsLinkId": "1300:6626",
+    "sourceComponentsChanged": false,
+    "productAndBackendChanged": false,
+    "evidence": "output/mini-chart-theme-cards-20261010",
+    "cards": [
+      {
+        "id": "1565:1357",
+        "theme": "Light",
+        "name": "막대 그래프 · 주간",
+        "sourceCard": "1269:5195",
+        "instance": "1356:4653",
+        "main": "197:1505",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1361",
+        "theme": "Light",
+        "name": "막대 그래프 · 보름",
+        "sourceCard": "1450:2695",
+        "instance": "1356:4656",
+        "main": "899:3688",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1365",
+        "theme": "Light",
+        "name": "막대 그래프 · 월간",
+        "sourceCard": "1450:2698",
+        "instance": "1356:4659",
+        "main": "787:3292",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1370",
+        "theme": "Light",
+        "name": "막대 그래프 · 비교",
+        "sourceCard": "1269:5213",
+        "instance": "1282:10781",
+        "main": "813:3630",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1374",
+        "theme": "Light",
+        "name": "라인 그래프",
+        "sourceCard": "1269:5219",
+        "instance": "1282:10941",
+        "main": "820:3657",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1378",
+        "theme": "Light",
+        "name": "라인 그래프 · 두 계열",
+        "sourceCard": "1269:5221",
+        "instance": "1282:10951",
+        "main": "901:3685",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1383",
+        "theme": "Light",
+        "name": "영역 그래프",
+        "sourceCard": "1269:5197",
+        "instance": "1282:10367",
+        "main": "858:3660",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1387",
+        "theme": "Light",
+        "name": "영역 그래프 · 미각 겹침",
+        "sourceCard": "1269:5201",
+        "instance": "1282:10372",
+        "main": "1227:4859",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1391",
+        "theme": "Light",
+        "name": "영역 그래프 · 같은 미각 비교",
+        "sourceCard": "1269:5199",
+        "instance": "1282:10379",
+        "main": "1227:4874",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1396",
+        "theme": "Light",
+        "name": "누적 막대 · 주간",
+        "sourceCard": "1269:5223",
+        "instance": "1282:11011",
+        "main": "942:3710",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1400",
+        "theme": "Light",
+        "name": "누적 막대 · 보름",
+        "sourceCard": "1269:5225",
+        "instance": "1282:11048",
+        "main": "942:3790",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1404",
+        "theme": "Light",
+        "name": "히트맵",
+        "sourceCard": "1269:5217",
+        "instance": "1282:10849",
+        "main": "1089:3900",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1409",
+        "theme": "Light",
+        "name": "버블 그래프 · 숫자 2개",
+        "sourceCard": "1269:5203",
+        "instance": "1282:10419",
+        "main": "1098:3846",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1413",
+        "theme": "Light",
+        "name": "버블 그래프 · 숫자 3개",
+        "sourceCard": "1450:2702",
+        "instance": "1282:10426",
+        "main": "1098:3850",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1417",
+        "theme": "Light",
+        "name": "버블 그래프 · 음식 아이콘",
+        "sourceCard": "1450:2705",
+        "instance": "1282:10435",
+        "main": "1159:4080",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1422",
+        "theme": "Light",
+        "name": "트리맵",
+        "sourceCard": "1269:5227",
+        "instance": "1282:11253",
+        "main": "1235:4866",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1426",
+        "theme": "Light",
+        "name": "파이 그래프 · 구성비",
+        "sourceCard": "1269:5229",
+        "instance": "1282:11299",
+        "main": "908:3700",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1430",
+        "theme": "Light",
+        "name": "파이 그래프 · 절대 비율",
+        "sourceCard": "1269:5231",
+        "instance": "1282:11306",
+        "main": "908:3722",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1435",
+        "theme": "Light",
+        "name": "빈 상태",
+        "sourceCard": "1269:5211",
+        "instance": "1356:4662",
+        "main": "1166:4113",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1443",
+        "theme": "Dark",
+        "name": "막대 그래프 · 주간",
+        "sourceCard": "1269:5195",
+        "instance": "1356:4668",
+        "main": "197:1505",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1447",
+        "theme": "Dark",
+        "name": "막대 그래프 · 보름",
+        "sourceCard": "1450:2695",
+        "instance": "1356:4671",
+        "main": "899:3688",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1451",
+        "theme": "Dark",
+        "name": "막대 그래프 · 월간",
+        "sourceCard": "1450:2698",
+        "instance": "1356:4674",
+        "main": "787:3292",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1456",
+        "theme": "Dark",
+        "name": "막대 그래프 · 비교",
+        "sourceCard": "1269:5213",
+        "instance": "1282:10810",
+        "main": "813:3630",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1460",
+        "theme": "Dark",
+        "name": "라인 그래프",
+        "sourceCard": "1269:5219",
+        "instance": "1282:10971",
+        "main": "820:3657",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1464",
+        "theme": "Dark",
+        "name": "라인 그래프 · 두 계열",
+        "sourceCard": "1269:5221",
+        "instance": "1282:10981",
+        "main": "901:3685",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1469",
+        "theme": "Dark",
+        "name": "영역 그래프",
+        "sourceCard": "1269:5197",
+        "instance": "1282:10388",
+        "main": "858:3660",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1473",
+        "theme": "Dark",
+        "name": "영역 그래프 · 미각 겹침",
+        "sourceCard": "1269:5201",
+        "instance": "1282:10393",
+        "main": "1227:4859",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1477",
+        "theme": "Dark",
+        "name": "영역 그래프 · 같은 미각 비교",
+        "sourceCard": "1269:5199",
+        "instance": "1282:10400",
+        "main": "1227:4874",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1482",
+        "theme": "Dark",
+        "name": "누적 막대 · 주간",
+        "sourceCard": "1269:5223",
+        "instance": "1282:11127",
+        "main": "942:3710",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1486",
+        "theme": "Dark",
+        "name": "누적 막대 · 보름",
+        "sourceCard": "1269:5225",
+        "instance": "1282:11164",
+        "main": "942:3790",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1490",
+        "theme": "Dark",
+        "name": "히트맵",
+        "sourceCard": "1269:5217",
+        "instance": "1282:10890",
+        "main": "1089:3900",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1495",
+        "theme": "Dark",
+        "name": "버블 그래프 · 숫자 2개",
+        "sourceCard": "1269:5203",
+        "instance": "1282:10460",
+        "main": "1098:3846",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1499",
+        "theme": "Dark",
+        "name": "버블 그래프 · 숫자 3개",
+        "sourceCard": "1450:2702",
+        "instance": "1282:10467",
+        "main": "1098:3850",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1503",
+        "theme": "Dark",
+        "name": "버블 그래프 · 음식 아이콘",
+        "sourceCard": "1450:2705",
+        "instance": "1282:10476",
+        "main": "1159:4080",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1508",
+        "theme": "Dark",
+        "name": "트리맵",
+        "sourceCard": "1269:5227",
+        "instance": "1282:11271",
+        "main": "1235:4866",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1512",
+        "theme": "Dark",
+        "name": "파이 그래프 · 구성비",
+        "sourceCard": "1269:5229",
+        "instance": "1282:11317",
+        "main": "908:3700",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1516",
+        "theme": "Dark",
+        "name": "파이 그래프 · 절대 비율",
+        "sourceCard": "1269:5231",
+        "instance": "1282:11324",
+        "main": "908:3722",
+        "w": 280,
+        "h": 192
+      },
+      {
+        "id": "1565:1521",
+        "theme": "Dark",
+        "name": "빈 상태",
+        "sourceCard": "1269:5211",
+        "instance": "1356:4677",
+        "main": "1166:4113",
+        "w": 280,
+        "h": 192
+      }
+    ],
+    "nodeRedirects": {
+      "1356:4634": "1565:1357",
+      "1282:10768": "1565:1370",
+      "1282:10998": "1565:1396",
+      "1282:10928": "1565:1374",
+      "1282:10354": "1565:1383",
+      "1282:10406": "1565:1409",
+      "1282:11286": "1565:1426",
+      "1282:11240": "1565:1422",
+      "1282:10836": "1565:1404"
+    },
+    "verification": "38 original instances preserved, 19 originals preserved, both theme screenshots reviewed, no clipped card children."
+  },
+  "darkComponents": {
+    "stack-card": "1397:15155",
+    "primary-button": "1394:5842",
+    "icon-button": "1397:6079",
+    "text-input": "1397:13588",
+    "search-field": "1397:13393",
+    "selection-card": "1397:13481",
+    "chip": "1397:13312",
+    "checkbox": "1397:13292",
+    "radio": "1397:13375",
+    "switch": "1397:13531",
+    "top-bar": "1397:14334",
+    "bottom-tab": "1397:14172",
+    "back-button": "1397:14157",
+    "step-indicator": "1397:14308",
+    "card": "1397:5820",
+    "list-row": "1397:5907",
+    "badge": "1397:13942",
+    "avatar": "1397:14026",
+    "divider": "1397:13938",
+    "toast": "1397:14472",
+    "inline-error": "1397:14421",
+    "empty-state": "1397:14392",
+    "progress": "1397:14144",
+    "bottom-sheet": "1397:14484",
+    "sheet-background": "1397:14572",
+    "sheet-presentation": "1397:14615",
+    "dialog": "1397:14511",
+    "menu": "1397:14523",
+    "taste-chip": "1397:13964",
+    "sensory-bubble": "1397:14535",
+    "taste-bloom": "1397:14702",
+    "dining-result": "1397:14781",
+    "interpretation-card": "1397:15030",
+    "inline-button": "1397:6098",
+    "taste-graph": "1397:14749",
+    "textarea": "1397:13552",
+    "select": "1397:13438",
+    "date-picker": "1397:13340",
+    "text-action": "1397:13013",
+    "wheel-picker": "1397:13621",
+    "image-frame": "1397:13899",
+    "disclosure": "1397:13767",
+    "chip-group": "1397:13853",
+    "notification-badge": "1397:14432",
+    "skeleton": "1397:14106",
+    "flow-loading": "1397:14127",
+    "flow-retry": "1397:14407",
+    "scope-label": "1397:13927",
+    "icon-action-button": "1397:5940",
+    "record-actions": "1397:12902",
+    "social-actions": "1397:12947",
+    "capsule-tabs": "1397:13050",
+    "expandable-card": "1397:14919",
+    "tcs-badge": "1397:14077",
+    "dish-feed": "1397:14814",
+    "period-picker": "1400:3302",
+    "capsule-button": "1436:9646"
+  },
+  "darkNativeComponents": {
+    "textarea": "1397:13552",
+    "tcs-badge": "1397:14077"
+  },
+  "comparisonMainPromotion": {
+    "date": "2026-10-09",
+    "pageId": "4:123",
+    "comparisonPanels": 125,
+    "replacedInstanceCount": 511,
+    "mainCountInComparison": 513,
+    "lightDarkVariantSets": {
+      "period-picker": {
+        "light": "1400:3204",
+        "dark": "1400:3302"
+      }
+    },
+    "assetsSourceRootRemoved": "1298:625",
+    "supportingSections": [
+      {
+        "source": "1298:653",
+        "target": "1282:5647",
+        "node": "1282:5763",
+        "name": "InlineButton / Building blocks",
+        "mainCount": 9
+      },
+      {
+        "source": "1298:669",
+        "target": "1282:6052",
+        "node": "1282:6600",
+        "name": "CapsuleTabs / Building blocks",
+        "mainCount": 15
+      },
+      {
+        "source": "1298:777",
+        "target": "1282:9260",
+        "node": "1282:9394",
+        "name": "TopBar / Building blocks",
+        "mainCount": 15
+      },
+      {
+        "source": "1298:821",
+        "target": "1282:9972",
+        "node": "1282:10167",
+        "name": "SheetPresentation / Building blocks",
+        "mainCount": 1
+      },
+      {
+        "source": "1298:833",
+        "target": "1282:10498",
+        "node": "1282:10405",
+        "name": "MiniAreaChart / Additional main components",
+        "mainCount": 3
+      },
+      {
+        "source": "1298:837",
+        "target": "1282:10498",
+        "node": "1282:10497",
+        "name": "MiniBubbleChart / Additional main components",
+        "mainCount": 4
+      },
+      {
+        "source": "1298:841",
+        "target": "1282:10498",
+        "node": "1282:10767",
+        "name": "MiniChart / Additional main components",
+        "mainCount": 1
+      },
+      {
+        "source": "1298:845",
+        "target": "1282:10498",
+        "node": "1282:10835",
+        "name": "MiniGroupedChart / Additional main components",
+        "mainCount": 1
+      },
+      {
+        "source": "1298:849",
+        "target": "1282:10498",
+        "node": "1282:10927",
+        "name": "MiniHeatmap / Additional main components",
+        "mainCount": 1
+      },
+      {
+        "source": "1298:853",
+        "target": "1282:10498",
+        "node": "1282:10997",
+        "name": "MiniLineChart / Additional main components",
+        "mainCount": 2
+      },
+      {
+        "source": "1298:857",
+        "target": "1282:10498",
+        "node": "1282:11239",
+        "name": "MiniStackedBarChart / Additional main components",
+        "mainCount": 2
+      },
+      {
+        "source": "1298:861",
+        "target": "1282:10498",
+        "node": "1282:11285",
+        "name": "MiniTreemapChart / Additional main components",
+        "mainCount": 1
+      },
+      {
+        "source": "1298:865",
+        "target": "1282:10498",
+        "node": "1282:11331",
+        "name": "PieChart / Additional main components",
+        "mainCount": 2
+      },
+      {
+        "source": "1298:869",
+        "target": "1282:11332",
+        "node": "1282:11564",
+        "name": "DiningResultCard / Building blocks",
+        "mainCount": 1
+      },
+      {
+        "source": "1298:873",
+        "target": "1282:11565",
+        "node": "1282:11796",
+        "name": "ExpandableCard / Building blocks",
+        "mainCount": 1
+      },
+      {
+        "source": "1298:881",
+        "target": "1282:11901",
+        "node": "1282:11941",
+        "name": "MiniCard / Building blocks",
+        "mainCount": 1
+      },
+      {
+        "source": "1298:897",
+        "target": "1282:14532",
+        "node": "1282:14698",
+        "name": "SummaryCard / Building blocks",
+        "mainCount": 10
+      },
+      {
+        "source": "1298:901",
+        "target": "1282:14699",
+        "node": "1282:14884",
+        "name": "TasteChangeCard / Building blocks",
+        "mainCount": 3
+      }
+    ],
+    "evidence": "output/figma-comparison-main-20261009",
+    "validation": {
+      "allOriginalMainIdsPreserved": 385,
+      "brokenMainReferences": 0,
+      "brokenNodeLinks": 0,
+      "comparisonInstancesRemaining": 0,
+      "unclippedSectionChildren": true
+    }
+  },
+  "borderTokenSystem": {
+    "updatedAt": "2026-10-10",
+    "guideNodeId": "1436:480",
+    "guideUrl": "https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=1436-480",
+    "tasteLevels": {
+      "subtle": {
+        "light": 80,
+        "dark": 70
+      },
+      "default": {
+        "light": 70,
+        "dark": 60
+      },
+      "strong": {
+        "light": 60,
+        "dark": 50
+      },
+      "accent": {
+        "light": "main",
+        "dark": "main"
+      }
+    },
+    "opacity": 1,
+    "variables": {
+      "color/border/default": "VariableID:4:20",
+      "color/border/strong": "VariableID:23:142",
+      "color/border/focus": "VariableID:126:548",
+      "color/border/disabled": "VariableID:126:554",
+      "color/border/faint": "VariableID:839:69",
+      "color/border/subtle": "VariableID:839:71",
+      "taste/sweet/border/subtle": "VariableID:1076:3815",
+      "taste/sour/border/subtle": "VariableID:1076:3816",
+      "taste/bitter/border/subtle": "VariableID:1076:3817",
+      "taste/salty/border/subtle": "VariableID:1076:3818",
+      "taste/umami/border/subtle": "VariableID:1076:3819",
+      "taste/fat/border/subtle": "VariableID:1076:3820",
+      "color/border/onMuted": "VariableID:1076:3823",
+      "taste/sweet/border/default": "VariableID:1408:9969",
+      "taste/sour/border/default": "VariableID:1408:9970",
+      "taste/bitter/border/default": "VariableID:1408:9971",
+      "taste/salty/border/default": "VariableID:1408:9972",
+      "taste/umami/border/default": "VariableID:1408:9973",
+      "taste/fat/border/default": "VariableID:1408:9974",
+      "taste/sweet/border/strong": "VariableID:1428:2490",
+      "taste/sweet/border/accent": "VariableID:1428:2491",
+      "taste/sour/border/strong": "VariableID:1428:2492",
+      "taste/sour/border/accent": "VariableID:1428:2493",
+      "taste/bitter/border/strong": "VariableID:1428:2494",
+      "taste/bitter/border/accent": "VariableID:1428:2495",
+      "taste/salty/border/strong": "VariableID:1428:2496",
+      "taste/salty/border/accent": "VariableID:1428:2497",
+      "taste/umami/border/strong": "VariableID:1428:2498",
+      "taste/umami/border/accent": "VariableID:1428:2499",
+      "taste/fat/border/strong": "VariableID:1428:2500",
+      "taste/fat/border/accent": "VariableID:1428:2501",
+      "color/border/selected": "VariableID:1428:2502",
+      "color/border/destructive": "VariableID:1428:2503",
+      "color/border/success": "VariableID:1428:2504",
+      "color/border/successSoft": "VariableID:1428:2505",
+      "color/border/warning": "VariableID:1428:2506",
+      "color/border/warningSoft": "VariableID:1428:2507"
+    },
+    "inspectedComponentBorderNodes": 273,
+    "updatedComponentBorderNodes": 102,
+    "documentation": "docs/design/border-tokens.md",
+    "evidence": "output/border-token-system-20261009",
+    "latestInspectedComponentBorderNodes": 301
+  },
+  "capsuleButton": {
+    "pageId": "4:123",
+    "sectionNodeId": "1436:9451",
+    "reviewNodeId": "1436:9452",
+    "lightMainSet": "1436:9645",
+    "darkMainSet": "1436:9646",
+    "usagePageId": "4:127",
+    "usageNodeId": "1438:7129",
+    "mainVariantCount": 40,
+    "appearance": [
+      "Outlined",
+      "Tonal"
+    ],
+    "textSizes": {
+      "md": 12,
+      "sm": 11
+    },
+    "height": 36,
+    "horizontalPadding": 12,
+    "iconSize": 16,
+    "iconGap": 8,
+    "states": [
+      "기본",
+      "호버",
+      "포커스",
+      "누름",
+      "비활성"
+    ],
+    "properties": {
+      "label": "Label",
+      "leadingIcon": "Leading icon",
+      "iconSwap": "Icon"
+    },
+    "tonalColor": "User accent; Figma specimen binds Sweet fallback tokens",
+    "reference": "https://www.figma.com/design/jP5nToG3DDN7SwFL7PLbdK?node-id=53923-27460",
+    "usageAudit": [
+      {
+        "surface": "내 프로필 / 버디 찾기",
+        "files": [
+          "src/pages/ProfilePage.tsx",
+          "ios/TasteBuddy/Features/Profile/ProfileView.swift"
+        ],
+        "appearance": "Outlined",
+        "textSize": 12,
+        "leadingIcon": true
+      },
+      {
+        "surface": "다른 사용자 프로필 / 팔로우와 팔로잉",
+        "files": [
+          "src/pages/ProfilePage.tsx",
+          "src/components/profile/DiningFriendActionButton.tsx",
+          "ios/TasteBuddy/Components/Shell/AppRouteDestinations.swift"
+        ],
+        "appearance": [
+          "Tonal",
+          "Outlined"
+        ],
+        "textSize": 12,
+        "leadingIcon": false,
+        "nativeDifference": "Resolved: public-profile action now uses the shared 12pt horizontal padding"
+      },
+      {
+        "surface": "팔로워 목록과 홈 검색 결과",
+        "files": [
+          "src/components/profile/DiningFriendProfileCard.tsx",
+          "src/pages/ProfilePage.tsx",
+          "src/components/home/HomeUnifiedSearch.tsx"
+        ],
+        "appearance": [
+          "Tonal",
+          "Outlined"
+        ],
+        "textSize": 11,
+        "leadingIcon": false,
+        "pendingLabels": [
+          "추가 중",
+          "취소 중"
+        ]
+      }
+    ],
+    "profileIntegration": {
+      "lightButtonInstance": "1437:2880",
+      "darkButtonInstance": "1437:2888",
+      "exposedNestedProperties": true,
+      "labelControl": "CapsuleButton.Label",
+      "showFooterPropertyPreserved": "Show footer action#197:135",
+      "retiredUnusedParentTextProperty": "Footer action#197:133"
+    },
+    "scope": "Figma library plus shared web/native CapsuleButton applied to existing buddy and follow action callers",
+    "verification": {
+      "mainVariants": 40,
+      "allMainHeights": 36,
+      "fontFamily": "Pretendard",
+      "labelHugIconVisibilityAndSwap": true,
+      "footerVisibilityPreserved": true,
+      "visualsReviewed": [
+        "component",
+        "profile",
+        "usage"
+      ]
+    },
+    "evidence": "output/figma-capsule-button-20261009",
+    "tonalIconColor": {
+      "matchesLabel": true,
+      "variableId": "VariableID:4:32",
+      "variableName": "taste/sweet/tintSurfaceText",
+      "lightDarkVariantsChecked": 20,
+      "updated": "2026-10-10"
+    },
+    "implementation": {
+      "updated": "2026-10-10",
+      "web": "src/components/system/CapsuleButton.tsx",
+      "webStyles": "src/components/system/capsule-button.css",
+      "native": "ios/TasteBuddy/Components/SystemCoreComponents.swift#TBCapsuleButton",
+      "webAccent": "Existing App.tsx createUserTasteAccentStyle -> --tb-user-accent-tint-surface / --tb-user-accent-tint-surface-text",
+      "nativeAccent": "Existing signed-in AppModel.profile.strongestAxis -> TasteAxis.tintSurfaceColor / tintSurfaceTextColor",
+      "iconColor": "Inherits label foreground",
+      "verification": "output/playwright/capsule-button-20261010/verification.json",
+      "runtimeScope": "Local web component render; authenticated screens and device interaction not verified. Existing native public-profile follow state remains local UI state."
+    }
+  },
+  "miniLineDarkColors": {
+    "updated": "2026-10-10",
+    "scope": "Line chart track, thin gradient, and nodes only; Light appearance and data/geometry unchanged",
+    "roles": {
+      "track": [
+        80,
+        60
+      ],
+      "start": [
+        70,
+        20
+      ],
+      "end": [
+        0,
+        0
+      ]
+    },
+    "semanticVariables": [
+      {
+        "axis": "sweet",
+        "roles": {
+          "track": "VariableID:1476:2694",
+          "start": "VariableID:1476:2695",
+          "end": "VariableID:1476:2696"
+        }
+      },
+      {
+        "axis": "sour",
+        "roles": {
+          "track": "VariableID:1476:2697",
+          "start": "VariableID:1476:2698",
+          "end": "VariableID:1476:2699"
+        }
+      },
+      {
+        "axis": "bitter",
+        "roles": {
+          "track": "VariableID:1476:2700",
+          "start": "VariableID:1476:2701",
+          "end": "VariableID:1476:2702"
+        }
+      },
+      {
+        "axis": "salty",
+        "roles": {
+          "track": "VariableID:1476:2703",
+          "start": "VariableID:1476:2704",
+          "end": "VariableID:1476:2705"
+        }
+      },
+      {
+        "axis": "umami",
+        "roles": {
+          "track": "VariableID:1476:2706",
+          "start": "VariableID:1476:2707",
+          "end": "VariableID:1476:2708"
+        }
+      },
+      {
+        "axis": "fat",
+        "roles": {
+          "track": "VariableID:1476:2709",
+          "start": "VariableID:1476:2710",
+          "end": "VariableID:1476:2711"
+        }
+      }
+    ],
+    "mainComponents": [
+      "820:3657",
+      "901:3685"
+    ],
+    "reviewNode": "1282:10929",
+    "verifiedDarkCard": "1397:15444",
+    "sources": [
+      "src/constants/colorModes.ts",
+      "src/constants/tasteColors.ts",
+      "src/components/system/TasteLineChart.tsx",
+      "ios/TasteBuddy/DesignSystem/TBTheme.swift",
+      "ios/TasteBuddy/Components/SystemParityComponents.swift"
+    ],
+    "evidence": "output/line-chart-dark-20261010",
+    "brightnessRefinement": "Dark start tint/20 and end main; track tint/60 unchanged",
+    "brightnessRefinementEvidence": "output/line-chart-dark-20261010/brightness-refinement.json"
+  },
+  "emptyLineStartAlignment": {
+    "updated": "2026-10-10",
+    "component": "206:2337",
+    "rectangles": [
+      "206:2347",
+      "206:2348",
+      "206:2359",
+      "206:2360"
+    ],
+    "trackBounds": [
+      0,
+      132
+    ],
+    "lineBounds": [
+      5,
+      127
+    ],
+    "centerPath": "M6 12H126",
+    "scope": "Figma geometry only; web and native already use the matching round-cap path",
+    "evidence": "output/line-chart-dark-20261010/empty-line-start-fix.json"
+  },
+  "summaryCardGraphCatalog": {
+    "updated": "2026-10-10",
+    "pageId": "4:123",
+    "section": "1282:14532",
+    "review": "1282:14533",
+    "position": {
+      "x": 105060,
+      "y": 64
+    },
+    "size": {
+      "width": 3024,
+      "height": 2887
+    },
+    "graphFamilies": [
+      "bar",
+      "grouped",
+      "stacked",
+      "line",
+      "area",
+      "bubble",
+      "pie",
+      "treemap",
+      "heatmap"
+    ],
+    "combinationCount": 19,
+    "mainCount": 38,
+    "themeCount": 2,
+    "baseSets": [
+      "197:1527",
+      "1397:15370"
+    ],
+    "baseMainIdsPreserved": [
+      "197:1525",
+      "197:1526",
+      "1397:15371",
+      "1397:15381"
+    ],
+    "mains": [
+      {
+        "id": "197:1525",
+        "mode": "light",
+        "key": "bar-week",
+        "existing": true
+      },
+      {
+        "id": "197:1526",
+        "mode": "light",
+        "key": "bar-message",
+        "existing": true
+      },
+      {
+        "id": "1485:2763",
+        "mode": "light",
+        "key": "bar-fortnight",
+        "existing": false,
+        "graph": "899:3688"
+      },
+      {
+        "id": "1485:2804",
+        "mode": "light",
+        "key": "bar-month",
+        "existing": false,
+        "graph": "787:3292"
+      },
+      {
+        "id": "1485:2945",
+        "mode": "light",
+        "key": "grouped",
+        "existing": false,
+        "graph": "813:3630"
+      },
+      {
+        "id": "1485:3036",
+        "mode": "light",
+        "key": "stacked-week",
+        "existing": false,
+        "graph": "942:3710"
+      },
+      {
+        "id": "1485:3077",
+        "mode": "light",
+        "key": "stacked-fortnight",
+        "existing": false,
+        "graph": "942:3790"
+      },
+      {
+        "id": "1485:3210",
+        "mode": "light",
+        "key": "line-single",
+        "existing": false,
+        "graph": "820:3657"
+      },
+      {
+        "id": "1485:3272",
+        "mode": "light",
+        "key": "line-paired",
+        "existing": false,
+        "graph": "901:3685"
+      },
+      {
+        "id": "1485:3467",
+        "mode": "light",
+        "key": "area-single",
+        "existing": false,
+        "graph": "858:3660"
+      },
+      {
+        "id": "1485:3529",
+        "mode": "light",
+        "key": "area-layered",
+        "existing": false,
+        "graph": "1227:4859"
+      },
+      {
+        "id": "1485:3570",
+        "mode": "light",
+        "key": "area-comparison",
+        "existing": false,
+        "graph": "1227:4874"
+      },
+      {
+        "id": "1485:3764",
+        "mode": "light",
+        "key": "bubble-two",
+        "existing": false,
+        "graph": "1098:3846"
+      },
+      {
+        "id": "1485:3805",
+        "mode": "light",
+        "key": "bubble-three",
+        "existing": false,
+        "graph": "1098:3850"
+      },
+      {
+        "id": "1485:3846",
+        "mode": "light",
+        "key": "bubble-icons",
+        "existing": false,
+        "graph": "1159:4080"
+      },
+      {
+        "id": "1485:4020",
+        "mode": "light",
+        "key": "pie-ratio",
+        "existing": false,
+        "graph": "908:3700"
+      },
+      {
+        "id": "1485:4061",
+        "mode": "light",
+        "key": "pie-absolute",
+        "existing": false,
+        "graph": "908:3722"
+      },
+      {
+        "id": "1485:4193",
+        "mode": "light",
+        "key": "treemap",
+        "existing": false,
+        "graph": "1235:4866"
+      },
+      {
+        "id": "1485:4284",
+        "mode": "light",
+        "key": "heatmap",
+        "existing": false,
+        "graph": "1089:3900"
+      },
+      {
+        "id": "1397:15371",
+        "mode": "dark",
+        "key": "bar-week",
+        "existing": true
+      },
+      {
+        "id": "1397:15381",
+        "mode": "dark",
+        "key": "bar-message",
+        "existing": true
+      },
+      {
+        "id": "1485:2853",
+        "mode": "dark",
+        "key": "bar-fortnight",
+        "existing": false,
+        "graph": "899:3688"
+      },
+      {
+        "id": "1485:2894",
+        "mode": "dark",
+        "key": "bar-month",
+        "existing": false,
+        "graph": "787:3292"
+      },
+      {
+        "id": "1485:2988",
+        "mode": "dark",
+        "key": "grouped",
+        "existing": false,
+        "graph": "813:3630"
+      },
+      {
+        "id": "1485:3120",
+        "mode": "dark",
+        "key": "stacked-week",
+        "existing": false,
+        "graph": "942:3710"
+      },
+      {
+        "id": "1485:3161",
+        "mode": "dark",
+        "key": "stacked-fortnight",
+        "existing": false,
+        "graph": "942:3790"
+      },
+      {
+        "id": "1485:3336",
+        "mode": "dark",
+        "key": "line-single",
+        "existing": false,
+        "graph": "820:3657"
+      },
+      {
+        "id": "1485:3398",
+        "mode": "dark",
+        "key": "line-paired",
+        "existing": false,
+        "graph": "901:3685"
+      },
+      {
+        "id": "1485:3613",
+        "mode": "dark",
+        "key": "area-single",
+        "existing": false,
+        "graph": "858:3660"
+      },
+      {
+        "id": "1485:3675",
+        "mode": "dark",
+        "key": "area-layered",
+        "existing": false,
+        "graph": "1227:4859"
+      },
+      {
+        "id": "1485:3716",
+        "mode": "dark",
+        "key": "area-comparison",
+        "existing": false,
+        "graph": "1227:4874"
+      },
+      {
+        "id": "1485:3889",
+        "mode": "dark",
+        "key": "bubble-two",
+        "existing": false,
+        "graph": "1098:3846"
+      },
+      {
+        "id": "1485:3930",
+        "mode": "dark",
+        "key": "bubble-three",
+        "existing": false,
+        "graph": "1098:3850"
+      },
+      {
+        "id": "1485:3971",
+        "mode": "dark",
+        "key": "bubble-icons",
+        "existing": false,
+        "graph": "1159:4080"
+      },
+      {
+        "id": "1485:4104",
+        "mode": "dark",
+        "key": "pie-ratio",
+        "existing": false,
+        "graph": "908:3700"
+      },
+      {
+        "id": "1485:4145",
+        "mode": "dark",
+        "key": "pie-absolute",
+        "existing": false,
+        "graph": "908:3722"
+      },
+      {
+        "id": "1485:4236",
+        "mode": "dark",
+        "key": "treemap",
+        "existing": false,
+        "graph": "1235:4866"
+      },
+      {
+        "id": "1485:4327",
+        "mode": "dark",
+        "key": "heatmap",
+        "existing": false,
+        "graph": "1089:3900"
+      }
+    ],
+    "existingExamplesVerified": 15,
+    "layout": "Three columns with side-by-side Light and Dark panels. Existing base sets stay intact; graph combinations are independent main components with bound editable properties.",
+    "scope": "Figma synthetic design catalog only; product code and account data unchanged",
+    "evidence": "output/summary-card-catalog-20261010",
+    "buildingBlocks": {
+      "nodeId": "1282:14698",
+      "visible": false
+    }
+  },
+  "profileCardCatalogLayout": {
+    "updated": "2026-10-10",
+    "section": "1282:12005",
+    "usageLink": "1300:6693",
+    "usageLinkFill": "none",
+    "panels": [
+      "1282:12013",
+      "1282:12082"
+    ],
+    "panelWidth": 400,
+    "componentWidth": 352,
+    "horizontalPadding": 24,
+    "sectionWidth": 920,
+    "scope": "ProfileCard Figma catalog only",
+    "evidence": "output/profile-card-container-20261010/figma-update.json"
+  },
+  "flowStepCtaAuxiliaryFit": {
+    "updated": "2026-10-10",
+    "variants": [
+      "78:422",
+      "1397:5877"
+    ],
+    "rows": [
+      "84:545",
+      "1397:5886"
+    ],
+    "rowWidth": 296,
+    "gap": 8,
+    "buttonsSizing": "FILL",
+    "instanceMinimumWidth": null,
+    "overflow": false,
+    "scope": "Figma auxiliary action variants only; shared primary button minimum unchanged",
+    "evidence": "output/flow-step-cta-20261010/overflow-fix.json"
+  },
+  "flowStepPattern": {
+    "updated": "2026-10-10",
+    "page": "4:127",
+    "section": "1282:5137",
+    "navigation": "1523:10630",
+    "lightExamples": [
+      "1523:9586",
+      "1523:9613",
+      "1523:9640"
+    ],
+    "darkExamples": [
+      "1523:9667",
+      "1523:9694",
+      "1523:9721"
+    ],
+    "stepIndicatorSets": [
+      "7:230",
+      "1397:14308"
+    ],
+    "primaryButtonSets": [
+      "6:13",
+      "1394:5842"
+    ],
+    "composition": "Ordinary auto-layout frames containing linked StepIndicator and PrimaryButton instances. No FlowStepCta master or runtime wrapper.",
+    "webSource": "src/pages/OnboardingScreen.tsx",
+    "nativeSource": "ios/TasteBuddy/Features/Onboarding/OnboardingView.swift",
+    "documentation": "/design-system/patterns/flow-step",
+    "verification": "Figma composition and source refactor; not production or device proof."
+  },
+  "miniGraphDarkColorReview": {
+    "date": "2026-10-10",
+    "page": "1541:168",
+    "reviewFrame": "1565:1439",
+    "sourceMainCount": 19,
+    "scope": "Figma dark graph color mapping only; web/native runtime integration pending",
+    "lightColorsPreserved": true,
+    "graphGeometryPreserved": true,
+    "mappings": {
+      "barTrack": {
+        "light": "tint/80",
+        "dark": "tint/20"
+      },
+      "area": {
+        "light": "tint/60",
+        "dark": "tint/10"
+      },
+      "multiSeriesFill": {
+        "light": "tint/40",
+        "dark": "main"
+      },
+      "heatmap": [
+        [
+          "tint/80",
+          "tint/20"
+        ],
+        [
+          "tint/60",
+          "tint/10"
+        ],
+        [
+          "tint/40",
+          "main"
+        ],
+        [
+          "tint/20",
+          "main + 12% white"
+        ],
+        [
+          "main",
+          "main + 25% white"
+        ]
+      ],
+      "lineTrack": {
+        "light": "tint/80",
+        "dark": "tint/20"
+      },
+      "lineStart": {
+        "light": "tint/70",
+        "dark": "main"
+      },
+      "lineEnd": {
+        "light": "main",
+        "dark": "main + 25% white"
+      },
+      "comparisonTrackOpacity": {
+        "light": 18,
+        "dark": 50
+      }
+    },
+    "createdVariableIds": [
+      "VariableID:1571:1353",
+      "VariableID:1571:1354",
+      "VariableID:1571:1355",
+      "VariableID:1571:1356",
+      "VariableID:1571:1357",
+      "VariableID:1571:1358",
+      "VariableID:1571:1359",
+      "VariableID:1571:1360",
+      "VariableID:1571:1361",
+      "VariableID:1571:1362",
+      "VariableID:1571:1363",
+      "VariableID:1574:1353",
+      "VariableID:1574:1354",
+      "VariableID:1574:1355",
+      "VariableID:1574:1356",
+      "VariableID:1574:1357",
+      "VariableID:1574:1358",
+      "VariableID:1574:1359",
+      "VariableID:1574:1360",
+      "VariableID:1574:1361",
+      "VariableID:1574:1362",
+      "VariableID:1574:1363",
+      "VariableID:1574:1364",
+      "VariableID:1574:1365"
+    ],
+    "updatedChartVariableIds": [
+      "VariableID:849:224",
+      "VariableID:1476:2694",
+      "VariableID:1476:2695",
+      "VariableID:1476:2696",
+      "VariableID:849:245",
+      "VariableID:1476:2697",
+      "VariableID:1476:2698",
+      "VariableID:1476:2699",
+      "VariableID:849:266",
+      "VariableID:1476:2700",
+      "VariableID:1476:2701",
+      "VariableID:1476:2702",
+      "VariableID:849:287",
+      "VariableID:1476:2703",
+      "VariableID:1476:2704",
+      "VariableID:1476:2705",
+      "VariableID:849:308",
+      "VariableID:1476:2706",
+      "VariableID:1476:2707",
+      "VariableID:1476:2708",
+      "VariableID:849:329",
+      "VariableID:1476:2709",
+      "VariableID:1476:2710",
+      "VariableID:1476:2711",
+      "VariableID:1571:1355",
+      "VariableID:1571:1356",
+      "VariableID:1571:1357",
+      "VariableID:1571:1358",
+      "VariableID:1571:1359",
+      "VariableID:1571:1360",
+      "VariableID:1571:1361",
+      "VariableID:1571:1362",
+      "VariableID:1571:1363",
+      "VariableID:752:3138",
+      "VariableID:1571:1354"
+    ],
+    "labelContrastMinimum": 6.32,
+    "evidence": "output/dark-mini-graph-color-20261010/verification-v2.json",
+    "revision": 2,
+    "heatmapLuminanceOrdered": true,
+    "pieRemainder": {
+      "variable": "VariableID:1576:1353",
+      "name": "color/chart/remainder",
+      "main": "908:3722",
+      "shape": "1091:4089",
+      "light": "#E4E4E4",
+      "dark": "#A3A3A3",
+      "evidence": "output/dark-mini-graph-color-20261010/pie-remainder.json"
+    }
+  },
+  "darkForegroundReview": {
+    "reviewedAt": "2026-10-10",
+    "scope": "Figma, web and native foreground roles; existing account data contracts unchanged",
+    "variables": {
+      "controlSurface": "VariableID:1585:1771",
+      "switchOffThumb": "VariableID:1585:1772",
+      "heatmapNeutral": "VariableID:1585:1773"
+    },
+    "heatmap": {
+      "master": "1089:3900",
+      "darkInstance": "1282:10890",
+      "calendarPaddingCount": 4,
+      "figmaOutlinedCells": 0,
+      "lightNeutral": "#E4E4E4",
+      "darkNeutral": "#A3A3A3",
+      "unknownOutline": "Web/native null values only; hollow shape retained",
+      "darkUmamiRamp": [
+        "#917290",
+        "#9F7D9F",
+        "#AE88AD",
+        "#B896B7",
+        "#C2A6C2"
+      ]
+    },
+    "evidence": "output/dark-foreground-20261010",
+    "verification": "output/dark-foreground-20261010/verification.json"
+  },
+  "summaryCardLegend": {
+    "updated": "2026-10-11",
+    "section": "1282:14532",
+    "legendItem": "1627:3877",
+    "masters": 38,
+    "usageExamples": 25,
+    "emptyExamples": 2,
+    "contract": {
+      "divider": 0.5,
+      "dividerGap": 12,
+      "itemGap": 8,
+      "dotLabelGap": 4,
+      "dotSize": 5,
+      "textStyle": "Product/Caption",
+      "textColor": "color/text/body",
+      "dividerColor": "color/border/subtle"
+    },
+    "web": "src/components/system/SummaryCardLegend.tsx",
+    "native": "ios/TasteBuddy/Components/SystemParityComponents.swift",
+    "preview": "/design-system/components/summary-card",
+    "evidence": "output/summary-card-legend-20261011",
+    "scope": "Shared footer presentation; existing product source data and aggregation unchanged."
+  },
+  "heatmapFilledMissingReview": {
+    "reviewedAt": "2026-10-12",
+    "master": "1089:3900",
+    "scope": "Web and iOS null/future cells plus Figma component definition",
+    "nullPresentation": "Solid color/chart/heatmap-neutral fill; no outline",
+    "knownZeroPresentation": "Taste heatmap level 0 fill",
+    "lightNeutral": "#E4E4E4",
+    "darkNeutral": "#454545",
+    "dataSemantics": "Null stays null; unit, period, date/time zone, deduplication, account scope and aggregation unchanged",
+    "figmaFixtureChanged": false,
+    "evidence": "output/heatmap-filled-missing-20261012"
   }
 }

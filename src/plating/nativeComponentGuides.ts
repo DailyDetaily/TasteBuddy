@@ -188,12 +188,12 @@ export const nativeComponentGuides: Partial<Record<string, ComponentGuide>> = {
       [
         "바탕과 경계",
         "Capsule / strokeBorder",
-        "tintSoftColor와 tintSoftBorderColor를 사용해요. 1pt 경계선은 안쪽에 그려져 칩 크기를 늘리지 않아요.",
+        "chipBackgroundColor와 borderDefaultColor를 사용해요. 채움은 Light tint/80 · Dark tint/70이며 1pt 경계선은 안쪽에 그려져 칩 크기를 늘리지 않아요.",
       ],
       [
         "이름",
         "Text(title)",
-        "값이 없으면 tintTextColor, 값이 있으면 textPrimary로 표시해요. 기본 크기는 10pt medium이에요.",
+        "미각 soft에서는 값이 없으면 tintTextColor, 값이 있으면 textPrimary로 표시해요. 공용 Chip의 기본 크기는 11pt medium이며 한 줄로 표시해요.",
       ],
       [
         "선택적 값",
@@ -203,14 +203,14 @@ export const nativeComponentGuides: Partial<Record<string, ComponentGuide>> = {
     ]),
     properties: properties([
       [
-        "axis 초기화",
-        "axis 필수",
-        "미각 이름과 팔레트를 axis에서 가져와요. 기본 tone은 .taste예요.",
+        "title",
+        "필수",
+        "공용 Chip의 이름이에요. 미각 이름은 title: axis.label로 전달해요.",
       ],
       [
-        "title 초기화",
-        "title 필수",
-        "자유 문구를 표시해요. 기본 tone은 .neutral이며, 미각 표현에는 tone: .taste와 colorAxis를 함께 지정해요.",
+        "tasteAxis",
+        "nil",
+        "미각 팔레트가 필요할 때 축을 전달해요. 지정한 미각 팔레트는 tone보다 우선해요.",
       ],
       [
         "value",
@@ -218,11 +218,13 @@ export const nativeComponentGuides: Partial<Record<string, ComponentGuide>> = {
         "String? 값이에요. nil이면 영역을 생략하고 “0”은 유지해요.",
       ],
       [
-        "tone / colorAxis",
-        ".taste 또는 .neutral / nil",
-        "초기화 방식에 따라 기본 tone이 달라요. colorAxis가 있으면 axis보다 우선해요.",
+        "tone / variant",
+        ".neutral / .soft",
+        "neutral·success·warning·accent 톤과 soft·outline·solid·text 표현 방식을 지원해요.",
       ],
-      ["size", ".xs", "xs / sm / md가 있어요. 글자·간격·패딩이 함께 달라져요."],
+      ["size", ".small", "extraSmall / small / medium이 있어요. 글자·간격·패딩이 함께 달라져요."],
+      ["아이콘 / trailingAction", "nil", "좌우 아이콘과 후행 아이콘 액션, 접근성 레이블을 지원해요."],
+      ["isEnabled", "true", "자체 값과 상위 비활성 환경을 함께 반영해요."],
     ]),
     states: states([
       [
@@ -245,19 +247,20 @@ export const nativeComponentGuides: Partial<Record<string, ComponentGuide>> = {
       ],
       [
         "중립 표현",
-        "tone=.neutral",
-        "mutedSurface / borderStrong / textTertiary",
+        "tasteAxis=nil, tone=.neutral, variant=.soft",
+        "TBChipColor.neutralBackground / neutralBorder / textTertiary",
         "이름과 값 모두 중립색이에요.",
       ],
       [
         "미각 지정 없음",
-        "axis=nil, colorAxis=nil",
+        "tasteAxis=nil",
         "중립 팔레트로 대체",
         "임의의 미각색을 배정하지 않아요.",
       ],
+      ["비활성", "isEnabled=false 또는 상위 비활성", "disabledSurface / borderDisabled / textDisabled", "후행 아이콘 액션도 실행하지 않아요."],
     ]),
     stateNote:
-      "TasteChip은 선택 컨트롤이 아닌 정보 표시 뷰예요. 선택·비활성·누름 상태를 내장하지 않아요. axis 초기화와 title 초기화의 기본 tone은 서로 달라요.",
+      "iOS TasteChip은 공용 Chip으로 통합됐어요. 이름과 값은 한 줄 고정이며, Medium 이름·Semibold 값·자연 줄 높이·내부 경계를 사용해요. 선택 상태는 호출부가 관리하고, 비활성·아이콘·후행 액션은 Chip이 지원해요.",
     rules: [
       {
         title: "미기록은 말로 밝혀요",
@@ -269,15 +272,15 @@ export const nativeComponentGuides: Partial<Record<string, ComponentGuide>> = {
       },
       {
         title: "숫자에도 배경 위 글자색을 사용해요",
-        body: "현재 SwiftUI 구현은 미각 이름과 숫자에 tintTextColor를 사용해요. 값이 있는 칩의 이름만 textPrimary로 바뀌어요.",
+        body: "미각 soft·outline·text에서는 tintTextColor를 사용하고 값이 있는 칩의 이름만 textPrimary로 바뀌어요. solid에서는 진한 미각 배경 위에 이름과 값을 흰색으로 표시해요.",
       },
     ],
     tokens: tokens([
       [
         "배경 / 경계",
-        "미각 표현",
-        "TasteAxis.tintSoftColor / tintSoftBorderColor",
-        "미각 main 색의 5% / 18%",
+        "미각 soft 표현",
+        "TasteAxis.chipBackgroundColor / borderDefaultColor",
+        "Light tint 80 / 70 · Dark tint 70 / 60",
       ],
       [
         "이름 / 값",
@@ -289,8 +292,8 @@ export const nativeComponentGuides: Partial<Record<string, ComponentGuide>> = {
       [
         "배경 / 경계 / 글자",
         "중립 표현",
-        "TBColor.mutedSurface / borderStrong / textTertiary",
-        "#F7F7F7 / #E5E5E5 / #535353",
+        "TBChipColor.neutralBackground / neutralBorder · TBColor.textTertiary",
+        "Light #F7F7F7 / #E5E5E5 / #535353 · Dark #343434 / #484848 / #C6C6C6",
       ],
       [
         "경계",
@@ -311,7 +314,7 @@ export const nativeComponentGuides: Partial<Record<string, ComponentGuide>> = {
       ["md", "글자 12 · 간격 8 · 좌우 12 · 상하 8pt"],
       [
         "색 우선순위",
-        "neutral tone → 중립 팔레트 / taste tone → colorAxis ?? axis → 없으면 중립",
+        "비활성 → 비활성 색 / 개별 색상 override → tasteAxis 팔레트 → tone·variant 팔레트",
       ],
       ["수치 색", "tintTextColor. mainColor가 아니에요."],
       [
@@ -466,7 +469,11 @@ export const nativeComponentGuides: Partial<Record<string, ComponentGuide>> = {
         "grabberWidth / grabberHeight / grabberTopMargin",
         "36×5pt · 위쪽 5pt",
       ],
-      ["손잡이 색", "기본", "TBColor.textHint", "#888888"],
+      ["손잡이 색", "기본", "TBColor.textHint", "#6F6F6F"],
+      ["배경 카드", "열림", "TBSheetPresentation.Background.scale / radius", "90% · 모서리 20pt"],
+      ["배경 이동", "AppShell", "TBSheetPresentation.Background.offsetY", "상단 안전 영역 + 10pt · 인증 진입은 10pt"],
+      ["배경 딤", "열림", "TBSheetPresentation.Background.dimOpacity", "검정 60% · 진행 값에 비례"],
+      ["드래그 닫기", "AppShell", "TBSheetPresentation.Drag.dismissProgress", "예측 이동이 시트 높이의 32% 이상"],
       [
         "헤더",
         "슬롯 있음",

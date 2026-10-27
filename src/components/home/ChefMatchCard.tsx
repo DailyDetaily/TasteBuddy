@@ -1,7 +1,8 @@
 import ImageBox from '../system/ImageBox';
-import { ICON_TOKENS, TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
+import { ICON_TOKENS, type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import {
-  getTasteTint,
+  getTasteBorder,
   getTasteTintSurface,
   getTasteTintSurfaceSubText,
   getTasteTintSurfaceText,
@@ -44,7 +45,7 @@ export default function ChefMatchCard({
       )}
       style={{
         backgroundColor: getTasteTintSurface(tasteLabel),
-        border: `1px solid ${getTasteTint(tasteLabel, 0.18)}`,
+        border: `1px solid ${getTasteBorder(tasteLabel, 'default')}`,
       }}
       aria-label={`${chefName}, ${restaurant}, 매칭률 ${matchRate}%${matchReason ? `. ${matchReason}` : ''}`}
     >

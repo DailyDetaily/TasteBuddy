@@ -1,5 +1,27 @@
 # 플레이팅 추가 컴포넌트 검토
 
+## 그룹형 미니 그래프 · 2026-10-07
+
+- 기존 기본·촘촘한 예시 옆에 4개 항목 × 이전·현재 2계열의 그룹형을 추가했다. Figma 원본은 `813:3630`, 리뷰는 `752:3284`다. 기존 기록한 식사·음식 전체 평가 카드는 유지한다.
+- React `MiniChart`·SwiftUI `TBMiniChart`가 선택적인 `comparisonValues`를 받는다. 이전은 왼쪽 회색, 현재는 오른쪽 미각색이며 두 계열의 공통 최댓값으로 높이를 계산한다.
+- 132×32, 막대 폭 12, 내부 간격 2, 그룹 간격 8. 0은 반높이·1은 원형을 유지한다. 실제 홈의 이전 기간 집계 연결은 별도이며 공용 컴포넌트와 합성 예시를 추가한 범위다.
+- 확인: Figma·웹 프리뷰, 비교 척도·결측·Figma 치수 회귀 검사 7개, 웹 타입·빌드, Swift 구문·치수 계산 및 네이티브 시뮬레이터 빌드 통과. 실기기·XCTest는 실행하지 않았다. 근거: `output/summary-card-figma-20261006/grouped-validation-20261007.json`.
+
+## Pretendard 통일 · 2026-10-07
+
+- Figma 27개 페이지의 텍스트 2,668개와 공통 텍스트 스타일 35개를 Pretendard로 전환했다. 최종 검사에서 Noto Sans 폰트와 대체 안내가 남은 텍스트는 0개다.
+- 기존 크기·행간·색상·문구를 유지하고 굵기 400/500/600/700을 Regular/Medium/SemiBold/Bold로 대응했다. 오래된 폰트 제한 안내만 현재 상태로 수정했다.
+- 웹과 iOS는 기존부터 Pretendard를 사용한다. Figma 생성 스크립트 7개와 대응표·플레이팅 문서를 갱신했다. 요약 카드·미니 그래프 보드의 렌더와 생성 스크립트 구문을 확인했다.
+- 근거: `output/plating/pretendard-20261007/migration.json`, `validation.json`. 전체 제품 화면의 줄바꿈·플랫폼별 렌더링 동등성을 보장하는 검증은 아니다.
+
+## 미니 그래프 · 2026-10-07
+
+- `MiniChart` / `TBMiniChart`를 공용화하고 Figma `197:1505`·`787:3292`, 플레이팅 `/design-system/components/mini-chart`, 홈 아카이브·기간 카드에 연결했다.
+- 컨테이너 132×32, 7개 막대 폭 12, 12개 막대 폭 8.25. 0의 높이는 두께의 절반, 1은 원형, 2 이상은 값에 따라 늘어난다. 상세 차트의 실제 비율 높이는 유지한다.
+- 예제 흰 컨테이너는 164px·좌우 패딩 16px. 기록한 식사·음식 전체 평가 예제 카드는 유지한다.
+- 공통 규격과 연결 자료: [미니 그래프](mini-chart.md). 컴포넌트 변경은 Figma·플레이팅·코드·토큰·문서·대응표를 같은 작업에서 갱신한다.
+- 확인: Figma 및 웹 프리뷰, 웹 타입 검사·빌드, 치수 회귀 검사 4개, Swift 구문과 네이티브 치수 계산 실행 통과. 네이티브 TasteBuddyMemoryQA 시뮬레이터 빌드도 통과했다. XCTest·실제 앱 상호작용은 실행하지 않았다. 근거: `output/summary-card-figma-20261006/cross-surface-validation-20261007.json`.
+
 ## 네이티브 실제 적용 · 2026-10-02
 
 기존 웹 TextareaField와 Figma ID를 유지하고 실제 네이티브 `TBTextArea`를 회고 수정·다이닝 추가 메모에 적용했다. 기존 Callout의 critical 표시형은 회고 수정의 저장 실패에 사용한다. 새 입력은 TB 스타일을 유지하며 SEED Field의 구조·이탈 확인과 Montage의 여러 줄 입력 상태를 참고했다. 코드·사이트·Figma 변경과 검증 상태는 [네이티브 UX 개선 기록](./plating-native-ux-improvement.md)에 모은다. 아래 내용은 이전 추가 작업 기록이다.
@@ -7,6 +29,19 @@
 2026-10-01 · 추가 20개 계열 / Figma 70개 변형 · 기존 31개와 합쳐 웹 카탈로그 51개.
 
 ## 현재 검토
+
+### TopBar Glass 배리언트 · 2026-10-06
+
+- iOS 버블 맵의 제목 캡슐·원형 버튼을 공용 `TopAppBar(appearance: .glass)`로 옮겼다. 기존 40pt 높이, 제목 Bold 15·좌우 패딩 12, 아이콘 24, 좌우 여백 20과 검색·다음 버튼의 표시 조건·동작을 유지한다.
+- 일반 Default/Solid/Transparent는 48pt이며, Glass는 iOS 26의 clear glassEffect와 이전 OS의 ultraThinMaterial을 사용한다.
+- iOS 홈은 Transparent에 프로필·알림·측정·메뉴를 조합한다. 아래 검색창은 별도 구성이고 검색 화면에서는 Solid로 전환한다. 웹 홈은 기존 Default 구현을 유지한다.
+- Figma 기존 TopBar 원본 ID `7:99`를 유지하고 Appearance 4종과 홈 사용 예제를 추가했다. 제목·Leading·Actions 슬롯을 연결했다. Figma와 웹의 글래스 표현은 정적/브라우저 참고이며 실제 iOS 재질 렌더와 구분한다.
+
+확인: iOS 시뮬레이터 빌드와 Appearance 4종·홈 구성의 실제 SwiftUI 렌더 5개를 확인했다. 웹 타입 검사·빌드, 1280/390/320px에서 버튼과 제목의 겹침 없음, 뒤로·검색·다음 예제 콜백을 확인했다. 실제 계정 저장·버블 맵 전체 제스처·VoiceOver 실사용은 이번 검증 범위 밖이다.
+
+### 사진 입력 항목 제거 · 2026-10-05
+
+사용자 요청으로 문서 전용 AttachmentInput과 Figma 원본·검토 보드·리소스 카드를 제거했다. 호출되지 않는 iOS `DiningReflectionPhotoEditor`도 제거했다. 실제 제품의 카메라·사진첩 선택·저장은 기존 구현을 유지한다.
 
 ### 프로필 생년월일 선택창 대조 · 2026-10-04
 
@@ -82,21 +117,20 @@ PrimaryButton, Callout, TextInput, Chip, TasteChip, Avatar, TopBar, SelectionCar
 | 13 | 기간·출처 안내 · ScopeLabel | [프리뷰](http://127.0.0.1:3001/design-system/components/scope-label) | [상태 보드](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=81-189) |
 | 14 | 화면 로딩 · FlowLoadingState | [프리뷰](http://127.0.0.1:3001/design-system/components/flow-loading) | [상태 보드](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=80-252) |
 | 15 | 오류·재시도 · FlowRetryState | [프리뷰](http://127.0.0.1:3001/design-system/components/flow-retry) | [상태 보드](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=80-287) |
-| 16 | 하단 행동 영역 · FlowStepCta | [프리뷰](http://127.0.0.1:3001/design-system/components/action-area) | [상태 보드](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=78-457) |
+| 16 | 하단 행동 영역 · Flow step pattern | [프리뷰](http://127.0.0.1:3001/design-system/patterns/flow-step) | [상태 보드](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=1282-5137) |
 | 17 | 식사일·기간 입력 · DateField | [프리뷰](http://127.0.0.1:3001/design-system/components/date-picker) | [상태 보드](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=77-504) |
 | 18 | 생년월일 휠 · WheelDatePicker | [프리뷰](http://127.0.0.1:3001/design-system/components/wheel-picker) | [상태 보드](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=78-599) |
-| 19 | 사진 입력 · AttachmentInput | [프리뷰](http://127.0.0.1:3001/design-system/components/attachment-input) | [상태 보드](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=78-754) |
 
 ## 구현 범위와 확인
 
-- 기존 ImageBox와 FlowStepCta를 카탈로그에 등록하고, 나머지는 재사용 가능한 웹 라이브러리로 추가했다. 새로운 컴포넌트의 제품 화면 편입은 별도다.
+- 당시 기존 ImageBox와 FlowStepCta를 카탈로그에 등록하고(FlowStepCta는 2026-10-10 조합 패턴으로 전환), 나머지는 재사용 가능한 웹 라이브러리로 추가했다. 새로운 컴포넌트의 제품 화면 편입은 별도다.
 - BirthDatePicker의 열별 방향키·Home/End·단일 Tab 정지점과 보이는 초점을 보완했다. WheelDatePicker는 말일 보정과 직접 입력, 확정/취소 예제를 제공한다.
 - 참조의 중복 역할은 합쳤다. Scroll Fog는 WheelDatePicker 내부, Content Placeholder는 ImageBox, Wrap/Overflow는 ChipGroup에 연결한다.
 - 타입 검사 통과: `output/plating/additions-typecheck-20261001.log`. 프로덕션 빌드 통과: `/tmp/plating-additions-final-20261001`, `output/plating/additions-build-final-20261001.log`.
 - 1440/320px에서 직접 진입·키보드·취소·실패 복귀·파일 선택·말일·동작 줄이기 등 77/77 확인. 런타임 오류 0. 근거: `output/plating/additions-browser-20261001.json`.
 - 비교 화면: 원본 이미지 표시, 접힘/펼침 클릭·Space, 제목 편집, 긴 본문, 390px 넘침 없음 확인.
 - Figma: 20세트/70변형, 상태별 원본과 인스턴스 보드, 기존 변수·텍스트 스타일 연결. 긴 문구 높이와 날짜 범위를 보정했다. 대표 최종 캡처: `output/plating/additions/figma-*-final.png`.
-- Figma 폰트는 기존 파일의 Noto Sans KR 대체 스타일을 유지한다. 웹은 Pretendard다.
+- 2026-10-07 Figma의 Noto Sans KR 대체 스타일을 Pretendard로 전환했다. 웹·네이티브와 폰트 패밀리 및 400/500/600/700 굵기를 공유한다.
 - Native/Android 실행, 계정 저장·서버 동기화, 배포는 이번 검증에 포함하지 않았다.
 
 ## 아코디언 구조 적용

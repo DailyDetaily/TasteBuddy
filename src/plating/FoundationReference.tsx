@@ -18,6 +18,9 @@ import {
 import "./foundation-reference.css";
 import { FoundationBehaviorSection } from "./FoundationBehaviorReference";
 import { SemanticColorReference } from "./ColorFoundationReference";
+import { AtomicColorReference, ColorStyleMigration, TasteSemanticReference } from "./ColorStyleGuideReference";
+import { ColorModeComparison, ColorModePicker } from "./ColorModeReference";
+import VisualizationColorReference from "./VisualizationColorReference";
 import { ContrastColorTable, InteractionColorExamples, StateColorExamples } from "./ColorRoleExamples";
 import ColorUsageExamples from "./ColorUsageExamples";
 import { ComponentTextReference, TypographyDynamicReference, TypographyFontReference, TypographyRoleBoard, TypographyUsageReference } from "./TypographyFoundationReference";
@@ -37,13 +40,14 @@ const FOUNDATION_PAGES = new Set([
   "foundations/feedback",
 ]);
 export function FoundationIntro({ slug }: { slug: string }) {
+  if (slug === "foundations/colors") return <><ColorModePicker /><ColorModeComparison /></>;
   if (!FOUNDATION_PAGES.has(slug)) return null;
   return (
     <div className="plfd-scope">
       <span>iOS</span>
       <p>
         {slug === "foundations/colors"
-          ? "iOS 색상 기준과 미각 팔레트의 디자인 의도"
+          ? "Light · Atomic / Semantic"
           : "현재 SwiftUI 소스의 기준값과 사용법"}
       </p>
     </div>
@@ -245,7 +249,7 @@ function TokenNames({ LinkComponent }: { LinkComponent: DocLink }) {
       "TasteAxis",
       "미각별 팔레트",
       "TasteAxis.sweet.tintTextColor",
-      "foundations/colors#taste",
+      "foundations/colors#atomic",
     ],
     [
       "TBTextStyle",
@@ -607,6 +611,16 @@ export function FoundationSection({
     if (section === "platforms") return <NativeSources />;
   }
   if (slug === "foundations/colors") {
+    if (section === "visualization-colors") return <VisualizationColorReference />;
+    if (section === "atomic") return <AtomicColorReference />;
+    if (section === "semantic") return <><TasteSemanticReference /><SemanticColorReference compact /></>;
+    if (section === "color-details") return <>
+      <details className="pl-color-guide-details"><summary>미각색의 선정 이유</summary><TastePalette /></details>
+      <details className="pl-color-guide-details"><summary>대비·상태 조합</summary><ContrastColorTable /><StateColorExamples /></details>
+      <details className="pl-color-guide-details"><summary>제품 사용 예 · Light</summary><ColorUsageExamples /></details>
+      <details className="pl-color-guide-details"><summary>기존 TB 컬러 비교</summary><ColorStyleMigration /></details>
+    </>;
+    if (section === "color-migration") return <ColorStyleMigration />;
     if (section === "roles") return <SemanticColorReference />;
     if (section === "state-pairs") return <StateColorExamples />;
     if (section === "interaction-colors") return <InteractionColorExamples />;

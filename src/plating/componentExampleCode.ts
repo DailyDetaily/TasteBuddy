@@ -8,6 +8,12 @@ export function componentExampleCode(component: CatalogComponent, settings: Prev
   const selected = state.includes("선택") || state.startsWith("켜짐");
   const docReproduction = `// 현재 문서 프리뷰를 재현하는 코드입니다.\n// 제품 컴포넌트 API와 조합 설명은 속성 표 및 소스를 참고하세요.\nimport ComponentPreview from './ComponentPreview';\nimport { components } from './catalog';\n\nconst component = components.find(item => item.id === ${string(component.id)})!;\n<ComponentPreview\n  component={component}\n  state=${string(state)}\n  options={${JSON.stringify(settings, null, 2)}}${label ? `\n  label={${string(label)}}` : ""}\n/>`;
   switch (component.id) {
+    case "tcs-badge": {
+      const adjustments = state === "단색" ? [{ taste: "단맛", change: 12 }]
+        : state === "세 가지 맛" ? [{ taste: "신맛", change: 10 }, { taste: "지방맛", change: 6 }, { taste: "쓴맛", change: 3 }]
+        : state === "빈 데이터" || disabled ? [] : [{ taste: "단맛", change: 20 }, { taste: "감칠맛", change: 5 }];
+      return `import TCSBadge from './components/system/TCSBadge';\n\n<TCSBadge\n  adjustments={${JSON.stringify(adjustments)}}${label ? `\n  label=${string(label)}` : ""}${disabled ? '\n  disabled' : ''}\n/>`;
+    }
     case "chip-group": {
       const editable = state === "편집형" || state === "입력 중";
       return `import ChipGroup from './components/system/plating/ChipGroup';\n\n<ChipGroup items={tags}${editable ? '\n  variant="editable" axis="sweet"\n  onToggle={toggleTag} onAdd={addTag}' : ''}\n  label="질감과 온도"\n/>\n// tags의 id·label·selected·recommended·custom과 저장은 화면에서 관리해요.`;

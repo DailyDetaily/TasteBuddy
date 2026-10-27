@@ -70,3 +70,21 @@ test('a gallery-only edit is persisted instead of treated as an unchanged record
  assert.deepEqual(after.additionalPhotoFilenames,[]);
  assert.equal(after.note,before.note);
 });
+
+test('adding a gallery photo retains the cover and remains scoped to its owner',async()=>{
+ const h=harness(false);await h.repo.refresh('A');await h.repo.refresh('B');
+ const cover={filename:'gallery-cover.jpg',blob:new Blob(['cover'],{type:'image/jpeg'})};
+ const created=await h.repo.commit('A',{...draft(),reflectionPhotoFilename:cover.filename},null,cover);
+ const original=readValidatedNativeRecords(created.snapshot)[0];
+ const second={filename:'gallery-second.jpg',blob:new Blob(['second'],{type:'image/jpeg'})};
+ const added=await h.repo.commit('A',{...original,additionalPhotoFilenames:[second.filename]},original,second);
+ const entry=readValidatedNativeRecords(added.snapshot)[0];
+ assert.equal(entry.reflectionPhotoFilename,cover.filename);
+ assert.deepEqual(entry.additionalPhotoFilenames,[second.filename]);
+ assert.deepEqual(added.snapshot.photoFilenames,[cover.filename,second.filename]);
+ assert.equal(await (await h.repo.photo('A',cover.filename)).text(),'cover');
+ assert.equal(await (await h.repo.photo('A',second.filename)).text(),'second');
+ assert.equal(await h.repo.photo('B',second.filename),null);
+ assert.equal(readNativeRecords((await h.repo.read('B')).snapshot).length,0);
+ await assert.rejects(h.repo.commit('A',{...original,additionalPhotoFilenames:[second.filename]},original,second),/원본이 변경/);
+});

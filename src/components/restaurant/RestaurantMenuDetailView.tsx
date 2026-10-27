@@ -6,7 +6,8 @@ import PageSection from '../system/PageSection';
 import PrimaryButton from '../system/PrimaryButton';
 import StatusChip from '../system/StatusChip';
 import TasteChip from '../system/TasteChip';
-import { TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
+import { type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 
 export interface RestaurantMenuDetailViewModel {
   id: string;

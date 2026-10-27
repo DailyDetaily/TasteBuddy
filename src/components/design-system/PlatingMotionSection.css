@@ -51,7 +51,7 @@
   width: min(300px, 80%);
   padding: 24px;
   background: var(--tb-color-surface-card);
-  border: 1px solid var(--tb-color-border-card);
+  border: 1px solid var(--tb-color-border-faint);
   border-radius: 20px;
   box-shadow: var(--tb-shadow-soft);
 }
@@ -81,7 +81,7 @@
 .plating-motion-signatures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .plating-motion-signatures article { display: grid; gap: 10px; align-content: start; padding-top: 20px; border-top: 1px solid var(--tb-color-border-default); }
 .plating-motion-signatures ol { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; }
-.plating-motion-signatures li { display: flex; gap: 16px; padding: 6px 0; border-bottom: 1px solid var(--tb-color-border-card); font-size: 12px; }
+.plating-motion-signatures li { display: flex; gap: 16px; padding: 6px 0; border-bottom: 1px solid var(--tb-color-border-faint); font-size: 12px; }
 .plating-motion-signatures time { min-width: 52px; color: var(--tb-color-text-body); font-variant-numeric: tabular-nums; }
 @media (max-width: 900px) {
   .plating-motion-workbench { grid-template-columns: minmax(0, 1fr); }

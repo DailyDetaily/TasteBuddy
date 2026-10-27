@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, type PanInfo } from 'framer-motion';
 
-import tbAnalysisVideo from '../assets/video/TB Analysis.mp4';
-import tbDetailMatrixVideo from '../assets/video/TB Detail Matrix.mp4';
-import tbMainVideo from '../assets/video/TB Main.mp4';
+import NativeOnboardingMotion from '../components/graphics/NativeOnboardingMotion';
 import onboardingRender1 from '../assets/onboarding_render_1.png';
 import onboardingRender2 from '../assets/onboarding_render_2.png';
 import onboardingRender3 from '../assets/onboarding_render_3.png';
 import onboardingRender4 from '../assets/onboarding_render_4.png';
-import FlowStepCta from '../components/system/FlowStepCta';
+import PrimaryButton from '../components/system/PrimaryButton';
+import StepIndicator from '../components/system/StepIndicator';
 import { MOTION_TOKENS } from '../constants/designTokens';
 
 interface OnboardingScreenProps {
@@ -20,7 +19,7 @@ interface OnboardingStep {
   imageSrc: string;
   mediaAlt: string;
   title: string;
-  videoSrc?: string;
+  motionStyle?: 'analysis' | 'rotatingLayers' | 'feedbackRings';
 }
 
 const ONBOARDING_CONTENT_BOTTOM_PADDING = 'calc(156px + var(--tb-safe-area-bottom))';
@@ -31,83 +30,6 @@ function shouldPreferLightweightOnboardingMedia() {
   }
 
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-function OnboardingMedia({
-  alt,
-  imageSrc,
-  preferLightweightMedia,
-  videoSrc,
-}: {
-  alt: string;
-  imageSrc: string;
-  preferLightweightMedia: boolean;
-  videoSrc?: string;
-}) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [hasVideoError, setHasVideoError] = useState(false);
-  const mediaClassName = 'h-full w-auto max-h-[280px] object-contain';
-
-  useEffect(() => {
-    setHasVideoError(false);
-  }, [videoSrc]);
-
-  useEffect(() => {
-    if (!videoSrc || preferLightweightMedia || hasVideoError) {
-      return;
-    }
-
-    const videoElement = videoRef.current;
-
-    if (!videoElement) {
-      return;
-    }
-
-    const attemptPlayback = () => {
-      const playPromise = videoElement.play();
-
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {
-          // Keep the poster visible if autoplay is temporarily blocked.
-        });
-      }
-    };
-
-    attemptPlayback();
-    videoElement.addEventListener('loadeddata', attemptPlayback);
-
-    return () => {
-      videoElement.removeEventListener('loadeddata', attemptPlayback);
-    };
-  }, [hasVideoError, preferLightweightMedia, videoSrc]);
-
-  if (!videoSrc || preferLightweightMedia || hasVideoError) {
-    return (
-      <img
-        src={imageSrc}
-        alt={alt}
-        className={mediaClassName}
-        decoding="async"
-      />
-    );
-  }
-
-  return (
-    <video
-      ref={videoRef}
-      poster={imageSrc}
-      aria-label={alt}
-      className={mediaClassName}
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="metadata"
-      onError={() => setHasVideoError(true)}
-    >
-      <source src={videoSrc} type="video/mp4" />
-    </video>
-  );
 }
 
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
@@ -146,7 +68,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         title: '가볍게 시작해\n현재 프로필을 만듭니다',
         description:
           '복잡한 설명보다, 지금의 미각 경향을 빠르게 정리해\n첫 예약부터 활용할 수 있는 프로필을 만듭니다.',
-        videoSrc: tbAnalysisVideo,
+        motionStyle: 'analysis',
       },
       {
         imageSrc: onboardingRender3,
@@ -154,7 +76,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         title: '프로필은 식당과 식사 맥락에 맞춰\n실용적으로 전달됩니다',
         description:
           '당신의 프로필은 매장과 주방이 의도를 해치지 않으면서도\n더 잘 맞는 경험을 준비할 수 있도록 정리됩니다.',
-        videoSrc: tbDetailMatrixVideo,
+        motionStyle: 'rotatingLayers',
       },
       {
         imageSrc: onboardingRender4,
@@ -162,20 +84,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         title: '프로필은 식사와 피드백을 통해\n조금씩 더 정교해집니다',
         description:
           '예약, 식후 피드백, 다시 찾은 선택이 쌓일수록\n다음 다이닝은 더 자연스럽고 섬세하게 맞춰집니다.',
-        videoSrc: tbMainVideo,
+        motionStyle: 'feedbackRings',
       },
     ],
     [],
-  );
-
-  const preloadVideoSources = useMemo(
-    () =>
-      preferLightweightMedia
-        ? []
-        : onboardingSteps
-          .map((step) => step.videoSrc)
-          .filter((videoSrc): videoSrc is string => Boolean(videoSrc)),
-    [onboardingSteps, preferLightweightMedia],
   );
 
   const totalSteps = onboardingSteps.length;
@@ -215,22 +127,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const stepData = onboardingSteps[currentStep];
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden bg-white">
-      {preloadVideoSources.length > 0 ? (
-        <div aria-hidden="true" className="hidden">
-          {preloadVideoSources.map((videoSrc) => (
-            <video key={videoSrc} muted playsInline preload="metadata">
-              <source src={videoSrc} type="video/mp4" />
-            </video>
-          ))}
-        </div>
-      ) : null}
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-bg-focus)]">
       <div
         aria-hidden="true"
-        className="shrink-0 bg-white"
+        className="shrink-0 bg-[var(--tb-color-surface-base)]"
         style={{ paddingTop: 'var(--tb-safe-area-top)' }}
       >
-        <div className="min-h-[var(--tb-size-top-app-bar-height)]" />
+        <div className="min-h-[var(--tb-size-flow-top-bar-height)]" />
       </div>
 
       <main className="relative flex flex-1 flex-col overflow-hidden">
@@ -239,21 +142,18 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           onDragEnd={onDragEnd}
-          initial={{ opacity: 0, x: direction > 0 ? swipeDistance : -swipeDistance }}
+          initial={preferLightweightMedia ? false : { opacity: 0, x: direction > 0 ? swipeDistance : -swipeDistance }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: direction > 0 ? -swipeDistance : swipeDistance }}
-          transition={onboardingSpring}
+          transition={preferLightweightMedia ? { duration: 0 } : onboardingSpring}
           className="absolute inset-0 px-5 pt-4"
           style={{ paddingBottom: ONBOARDING_CONTENT_BOTTOM_PADDING }}
         >
           <div className="flex h-full -translate-y-[4vh] select-none touch-none flex-col items-center justify-center">
             <div className="relative mb-8 flex h-[280px] w-full items-center justify-center">
-              <OnboardingMedia
-                alt={stepData.mediaAlt}
-                imageSrc={stepData.imageSrc}
-                preferLightweightMedia={preferLightweightMedia}
-                videoSrc={stepData.videoSrc}
-              />
+              {stepData.motionStyle ? <NativeOnboardingMotion style={stepData.motionStyle} /> : (
+                <img src={stepData.imageSrc} alt={stepData.mediaAlt} decoding="async" className="h-[280px] w-[280px] object-contain" />
+              )}
             </div>
 
             <div className="flex min-h-[100px] flex-col items-center px-5 text-center">
@@ -268,12 +168,16 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         </motion.div>
       </main>
 
-      <FlowStepCta
-        actionLabel={currentStep === totalSteps - 1 ? '시작하기' : '다음'}
-        currentIndex={currentStep}
-        onAction={handleNext}
-        total={totalSteps}
-      />
+      <div className="absolute inset-x-0 bottom-0 z-20 flex justify-center">
+        <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
+          <div className="tb-bottom-fade relative flex min-h-[calc(var(--tb-size-bottom-fade-min-height)+var(--tb-safe-area-bottom))] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))]">
+            <StepIndicator className="mb-8 self-center" currentIndex={currentStep} total={totalSteps} />
+            <PrimaryButton onClick={handleNext}>
+              {currentStep === totalSteps - 1 ? '시작하기' : '다음'}
+            </PrimaryButton>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

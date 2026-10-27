@@ -2,11 +2,11 @@
   "sources": [
     {
       "path": "ios/TasteBuddy/DesignSystem/TBTheme.swift",
-      "sha256": "27ad815c4f51c91b2abe2d88f0704e0f7be37b5c767c8a777bb1aec1de47661e"
+      "sha256": "9b1e58f70ccba1aad1f277e26b7b0a5810098ca3ea67bd9310d04e6d06a5c3a1"
     },
     {
       "path": "ios/TasteBuddy/Models/TasteModels.swift",
-      "sha256": "b9b2fd201bd0514d41744da141a70206bcbd7e27e96c021af5ae194961cfaa20"
+      "sha256": "242d40d33390dd8809b365122df4edf6aad51f985ecc2c953f0805006d106c37"
     },
     {
       "path": "ios/TasteBuddy/DesignSystem/TasteBloomMotion.swift",
@@ -568,11 +568,11 @@
     {
       "id": "sour",
       "label": "신맛",
-      "main": "#FBC02D",
+      "main": "#FFD600",
       "tintSurface": "#FFF7CC",
       "tintText": "#6F5F09",
       "gradient": [
-        "#FBC02D",
+        "#FFD600",
         "#FFD54F"
       ]
     },

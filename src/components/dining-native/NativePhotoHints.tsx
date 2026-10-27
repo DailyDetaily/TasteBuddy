@@ -127,7 +127,7 @@ export default function NativePhotoHints({
           {places.map((p) => (
             <button
               key={p.placeId}
-              className="block min-h-11 w-full rounded-xl bg-white p-3 text-left"
+              className="block min-h-11 w-full rounded-xl bg-[var(--tb-color-surface-base)] p-3 text-left"
               onClick={() => onRestaurant(p.placeId, p.name)}
             >
               {p.name}

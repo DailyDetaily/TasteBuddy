@@ -55,7 +55,7 @@ export default function SensorySelectionEditor({
                   type="button"
                   key={value}
                   aria-pressed={selection[key] === value}
-                  className={`min-h-11 rounded-full border px-3 text-[12px] ${selection[key] === value ? "border-black bg-black text-white" : "border-transparent bg-white"}`}
+                  className={`min-h-11 rounded-full border px-3 text-[12px] ${selection[key] === value ? "border-[var(--tb-color-text-primary)] bg-[var(--tb-color-interaction-primary)] text-[var(--tb-color-interaction-on-primary)]" : "border-transparent bg-[var(--tb-color-surface-base)]"}`}
                   onClick={() =>
                     update(key, selection[key] === value ? null : value)
                   }
@@ -109,7 +109,7 @@ export default function SensorySelectionEditor({
               {label as string}
               <select
                 aria-label={`${selection.labelSnapshot} ${label}`}
-                className="ml-2 min-h-11 rounded-xl bg-white px-2 text-[12px]"
+                className="ml-2 min-h-11 rounded-xl bg-[var(--tb-color-surface-base)] px-2 text-[12px]"
                 value={String(selection[key as string] ?? "unspecified")}
                 onChange={(e) => update(key as string, e.target.value)}
               >
@@ -127,7 +127,7 @@ export default function SensorySelectionEditor({
           <label className="text-[11px]">
             연결
             <select
-              className="ml-2 min-h-11 rounded-xl bg-white px-2 text-[12px]"
+              className="ml-2 min-h-11 rounded-xl bg-[var(--tb-color-surface-base)] px-2 text-[12px]"
               aria-label={`${selection.labelSnapshot} 연결`}
               value={selection.relatedBubbleID ?? ""}
               onChange={(e) => onChange({...selection,relatedBubbleID:e.target.value||null,relatedBubbleLabelSnapshot:bubbles.find(b=>b.id===e.target.value)?.labelSnapshot??null,scopeKind:e.target.value?'bubble':'whole_dish',target:e.target.value?'unspecified':'whole_dish'})}

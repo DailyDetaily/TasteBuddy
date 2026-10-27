@@ -83,6 +83,7 @@ export default function NativeDiscoverySection({
           className="flex w-[calc(100vw-72px)] min-w-[240px] max-w-[360px] shrink-0 flex-col gap-1"
         >
           <PeriodCard
+            category={c.category}
             label={homeDiscoveryLabels[c.kind]}
             title={c.title}
             detail={c.detail}
@@ -127,6 +128,7 @@ export default function NativeDiscoverySection({
               className="flex w-[calc(100vw-72px)] min-w-[240px] max-w-[360px] shrink-0"
             >
               <PeriodCard
+                category={category}
                 label={label}
                 title="다음 단서를 모으고 있어요"
                 detail="같은 감각의 직접 평가나 다른 상황의 기록이 쌓이면 비교할 수 있는 해석을 보여드려요."

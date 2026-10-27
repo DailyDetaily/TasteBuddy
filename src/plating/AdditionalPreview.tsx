@@ -1,10 +1,20 @@
+import MiniTreemapChartExamples from "./MiniTreemapChartExamples";
+import InlineButtonExamples from './InlineButtonExamples';
+import MiniBubbleChartExamples from "./MiniBubbleChartExamples";
+import MiniHeatmapExamples from "./MiniHeatmapExamples";
+import TCSBadgeExamples from "./TCSBadgeExamples";
+import PieDonutChartExamples from "./PieDonutChartExamples";
+import MiniStackedBarChartExamples from "./MiniStackedBarChartExamples";
+import MiniAreaChartExamples from "./MiniAreaChartExamples";
 import { getBirthDateLabel } from "../components/system/BirthDatePicker";
 import { SelectFieldExample } from "./ProfileFieldExamples";
 import IconActionExamples from "./IconActionExamples";
+import MiniChartExamples from "./MiniChartExamples";
+import MiniLineChartExamples from "./MiniLineChartExamples";
 import { useEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import PrimaryButton from "../components/system/PrimaryButton";
-import FlowStepCta from "../components/system/FlowStepCta";
+import StepIndicator from "../components/system/StepIndicator";
 import ImageBox from "../components/system/ImageBox";
 import { DateField, TextareaField } from "../components/system/plating/Fields";
 import CapsuleTabs from "../components/system/plating/CapsuleTabs";
@@ -17,7 +27,6 @@ import Callout from "../components/system/plating/Callout";
 import type { PreviewOptions } from "./componentDocumentation";
 import { ChipGroupExample } from "./ChipExamples";
 import { ContentSkeleton, FlowLoadingState, FlowRetryState } from "../components/system/plating/FlowState";
-import AttachmentInput from "../components/system/plating/AttachmentInput";
 import WheelDatePicker from "../components/system/plating/WheelDatePicker";
 import "./additional-preview.css";
 
@@ -37,6 +46,16 @@ export default function AdditionalPreview({ id, state, label, thumbnail = false,
   const disabled = state === "비활성";
   const error = state === "오류";
   switch (id) {
+    case "inline-button": return <InlineButtonExamples {...{ state, label, thumbnail, options }} />;
+    case "tcs-badge": return <TCSBadgeExamples state={state} label={label} thumbnail={thumbnail} />;
+    case "mini-heatmap": return <MiniHeatmapExamples thumbnail={thumbnail} />;
+    case "mini-chart": return <MiniChartExamples thumbnail={thumbnail} />;
+    case "mini-treemap-chart": return <MiniTreemapChartExamples thumbnail={thumbnail} />;
+    case "mini-bubble-chart": return <MiniBubbleChartExamples thumbnail={thumbnail} />;
+    case "pie-donut-chart": return <PieDonutChartExamples thumbnail={thumbnail} />;
+    case "mini-stacked-bar-chart": return <MiniStackedBarChartExamples thumbnail={thumbnail} />;
+    case "mini-area-chart": return <MiniAreaChartExamples thumbnail={thumbnail} state={state} variant={options?.variant} />;
+    case "mini-line-chart": return <MiniLineChartExamples thumbnail={thumbnail} />;
     case "callout": return <Callout title="안내" tone={state === "성공" ? "positive" : state === "주의" ? "warning" : state === "오류" ? "critical" : "neutral"}>{label || "기억에 남는 감각을 식사 메모로 남길 수 있어요."}</Callout>;
     case "textarea": return <TextareaField label={label || "추가 메모 · 선택사항"} value={value} disabled={disabled} autoFocus={state === "초점" && !thumbnail} onChange={e => setValue(e.target.value)} placeholder="기억에 남는 맛과 상황을 적어 주세요." error={error ? "메모를 저장하지 못했어요. 작성한 내용은 남아 있어요." : undefined} />;
     case "select": return <SelectFieldExample key={state} {...{ state, label, thumbnail }} />;
@@ -58,7 +77,6 @@ export default function AdditionalPreview({ id, state, label, thumbnail = false,
     case "action-area": return <ActionAreaExample {...{ state, label }} />;
     case "date-picker": return <DateExample {...{ state, label }} />;
     case "wheel-picker": return <WheelExample key={state} {...{ state, label, thumbnail }} />;
-    case "attachment-input": return <AttachmentInput label={label || "식사 사진"} disabled={disabled} initialPreview={state === "미리보기" ? exampleImage : undefined} initialError={error ? "사진을 불러오지 못했어요. 다시 선택해 주세요." : undefined} />;
     default: return null;
   }
 }
@@ -80,9 +98,40 @@ function RetryExample({ state, label, thumbnail }: Omit<Props, "id">) {
 
 function ActionAreaExample({ state, label }: { state: string; label: string }) {
   const [step, setStep] = useState(1);
-  return <div className="pl-add-action-screen"><p className="tb-pl-hint">식사 경험을 차례로 남겨요.</p><FlowStepCta total={5} currentIndex={step} stepLabel={`${step + 1} / 5단계`} actionLabel={label || (step === 4 ? "처음부터 보기" : "다음")} onAction={() => setStep((step + 1) % 5)} actionDisabled={state === "비활성"} secondaryButtonLabel={state === "보조 행동" ? "이전" : undefined} secondaryButtonDisabled={step === 0} onSecondaryButtonAction={() => setStep(Math.max(0, step - 1))} /></div>;
+  return (
+    <div className="pl-add-action-screen">
+      <p className="tb-pl-hint">식사 경험을 차례로 남겨요.</p>
+      <div className="absolute inset-x-0 bottom-0 z-20 flex justify-center">
+        <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
+          <div className="tb-bottom-fade relative flex min-h-[calc(var(--tb-size-bottom-fade-min-height)+var(--tb-safe-area-bottom))] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))]">
+            <div className="mb-8 flex flex-col items-center">
+              <StepIndicator className="self-center" currentIndex={step} total={5} />
+              <p className="text-center text-[12px] font-medium text-[var(--tb-color-text-faint)]">{`${step + 1} / 5단계`}</p>
+            </div>
+            {state === "보조 행동" ? (
+              <div className="flex w-full gap-2">
+                <PrimaryButton
+                  className="border border-[var(--tb-color-border-strong)] bg-transparent text-[var(--tb-color-text-tertiary)] shadow-none"
+                  disabled={step === 0}
+                  onClick={() => setStep(Math.max(0, step - 1))}
+                >
+                  이전
+                </PrimaryButton>
+                <PrimaryButton onClick={() => setStep((step + 1) % 5)}>
+                  {label || (step === 4 ? "처음부터 보기" : "다음")}
+                </PrimaryButton>
+              </div>
+            ) : (
+              <PrimaryButton disabled={state === "비활성"} onClick={() => setStep((step + 1) % 5)}>
+                {label || (step === 4 ? "처음부터 보기" : "다음")}
+              </PrimaryButton>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
-
 function DateExample({ state, label }: { state: string; label: string }) {
   const [start, setStart] = useState("2026-09-01");
   const [end, setEnd] = useState(state === "오류" ? "2026-08-30" : "2026-09-30");

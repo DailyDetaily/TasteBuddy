@@ -16,7 +16,8 @@ import TasteMeasurementChecklistPanel from '../components/measurement/TasteMeasu
 import TasteMeasurementCompletedPanel from '../components/measurement/TasteMeasurementCompletedPanel';
 import TasteMeasurementIntroPanel from '../components/measurement/TasteMeasurementIntroPanel';
 import TasteMeasurementPreparationPanel from '../components/measurement/TasteMeasurementPreparationPanel';
-import FlowStepCta from '../components/system/FlowStepCta';
+import PrimaryButton from '../components/system/PrimaryButton';
+import StepIndicator from '../components/system/StepIndicator';
 import {
     DEFAULT_TASTE_MEASUREMENT_RESULTS,
     createInitialTasteMeasurementResults,
@@ -24,7 +25,8 @@ import {
     type TasteMeasurementResults,
     type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
-import { ICON_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from '../constants/designTokens';
+import { ICON_TOKENS, TASTE_IDS, type TasteId } from '../constants/designTokens';
+import { TASTE_TOKENS } from '../constants/uiColorTokens';
 
 const FLOW_APP_BAR_ICON_SIZE = ICON_TOKENS.size.lg;
 const FLOW_APP_BAR_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
@@ -294,13 +296,19 @@ export default function TasteMeasurementScreen({
                 </AnimatePresence>
             </main>
 
-                <FlowStepCta
-                    actionLabel={actionLabel}
-                    currentIndex={measurementStepIndex}
-                    indicatorActiveColor={currentTaste.palette.main}
-                    onAction={handleNextPhase}
-                    total={measurementStepCount}
-                />
+                <div className="absolute inset-x-0 bottom-0 z-20 flex justify-center">
+                    <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
+                        <div className="tb-bottom-fade relative flex min-h-[calc(var(--tb-size-bottom-fade-min-height)+var(--tb-safe-area-bottom))] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))]">
+                            <StepIndicator
+                                className="mb-8 self-center"
+                                currentIndex={measurementStepIndex}
+                                total={measurementStepCount}
+                                activeColor={currentTaste.palette.main}
+                            />
+                            <PrimaryButton onClick={handleNextPhase}>{actionLabel}</PrimaryButton>
+                        </div>
+                    </div>
+                </div>
         </div>
     );
 }

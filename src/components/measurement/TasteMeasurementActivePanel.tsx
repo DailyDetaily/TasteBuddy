@@ -1,6 +1,9 @@
 import TbCoreLoop from '../graphics/TbCoreLoop';
 import TasteCircularLoop from '../graphics/TasteCircularLoop';
-import { TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
+import { useProductColorMode } from '../../lib/colorMode';
+import { MEASUREMENT_PALETTES_BY_MODE } from '../../constants/colorModes';
+import { type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 
 interface TasteMeasurementActivePanelProps {
   activeLevel: number;
@@ -13,13 +16,15 @@ export default function TasteMeasurementActivePanel({
   currentTaste,
   currentTasteId,
 }: TasteMeasurementActivePanelProps) {
-  const currentTasteLoop = currentTaste.measurement.loop;
+  const mode = useProductColorMode();
+  const measurement = MEASUREMENT_PALETTES_BY_MODE[mode][currentTasteId];
+  const currentTasteLoop = measurement.loop;
 
   return (
     <>
       <div className="mb-[10vh] mt-8 text-center">
         <h1 className="mb-3 text-[18px] font-bold leading-tight tracking-tight">
-          <span style={{ color: currentTaste.measurement.accent }}>
+          <span style={{ color: measurement.textColor }}>
             {currentTaste.label}
           </span>{' '}
           민감도를 측정 중입니다...

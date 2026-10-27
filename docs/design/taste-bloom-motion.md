@@ -21,6 +21,8 @@ Apple `Spring(duration:bounce:)`의 `bounce: 0.18`을 기준으로 같은 감쇠
 - 헤더의 봉우리 단계 목표 크기는 `1.018`배다.
 - 색상·불투명도는 표현 가능한 범위에서 안착한다. 차트는 기록값을 넘지 않도록 제한한다.
 
+공통 오버슛 강도는 [Plating Motion의 오버슛 기준](motion-system.md#오버슛-강도)을 따른다. 일반 콘텐츠·제품 데이터 표현부는 0%, 비정량 UI의 작은 안착은 1%, 결과 카드·헤더의 작은 Bloom은 1.8%, 일반 UI 상한은 2%다. **브랜드 그래픽·미니 차트 연출은 별도로 4%를 채택**하며, 현재 Remotion 파이·버블에 적용되어 있다. 이를 네이티브 제품에 일괄 적용한 것으로 해석하지 않는다. 위 약 1.1%는 정규화된 스프링 응답이며 최종 시각 크기의 1.1%와 동일한 단위로 간주하지 않는다. `bounce: 0.18`도 18% 오버슛을 뜻하지 않는다. 이 강도 정리는 기존 네이티브 스프링 모델이나 `settlingDuration`을 변경하지 않는다.
+
 SwiftUI의 `Animation.spring`, UIKit의 `UISpringTimingParameters`, Core Animation의 `CASpringAnimation`이 같은 `Spring`의 질량·강성·감쇠를 사용한다. Canvas는 같은 모델의 `value(target:time:)`를 사용한다. UIKit은 `animator(_:animations:)`가 반환한 `UIViewPropertyAnimator`로 실행과 취소를 제어한다. 새 라이브러리나 자체 물리 계산은 사용하지 않는다.
 
 플랫폼마다 미세한 잔여 움직임의 완료 판정은 다르다. UIKit은 반환된 animator의 완료 콜백을 사용하고, 공통 시간값과 종료 시각이 완전히 같다고 가정하지 않는다. 테스트는 UIKit이 완료로 보는 시점에 공통 스프링이 목표에서 0.1% 이내에 도착했는지 확인한다.

@@ -108,7 +108,7 @@ const colorMeta: Record<string, [ColorGroup, string]> = {
   textMuted: ["text", "투명도 50%의 보조 글자"],
   textFaint: ["text", "투명도 40%의 약한 글자"],
   textInverse: ["text", "어두운 표면 위 글자"],
-  borderCard: ["border", "카드의 약한 경계"],
+  borderCard: ["border", "아주 약한 경계 · 새 이름 borderFaint"],
   borderSubtle: ["border", "반복되는 요소의 구분"],
   border: ["border", "기본 경계"],
   borderStrong: ["border", "강조된 경계"],

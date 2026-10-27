@@ -1,29 +1,27 @@
-import { decodeNativeAccount } from "./nativeArchive";
-import { nativeRepository, withJournalLock } from "./nativeRuntime";
-import { canonical } from "./nativeRecord";
-import { DINING_RECORDS_CHANGED } from "./events";
-import type { Data } from "./engine";
-const refreshing = new Set<string>();
-export async function loadNativeAccountData(owner: string): Promise<Data> {
+import { decodeNativeAccount } from './nativeArchive';
+import { nativeRepository, withJournalLock } from './nativeRuntime';
+import type { Data } from './engine';
+
+export interface NativeAccountData extends Data {
+  freshness: 'synced' | 'local' | 'cached';
+  syncError?: string;
+}
+
+/** Keep a readable local archive on connection failure, but never call it fresh server data. */
+export async function loadNativeAccountData(owner: string): Promise<NativeAccountData> {
   const local = await nativeRepository.read(owner);
-  if (local) {
-    const data = decodeNativeAccount(local.snapshot);
-    if (!refreshing.has(owner)) {
-      refreshing.add(owner);
-      void withJournalLock(owner, () => nativeRepository.reconnect(owner))
-        .then((next) => {
-          if (canonical(next.snapshot) !== canonical(local.snapshot))
-            window.dispatchEvent(
-              new CustomEvent(DINING_RECORDS_CHANGED, { detail: { owner } }),
-            );
-        })
-        .catch(() => {})
-        .finally(() => refreshing.delete(owner));
-    }
-    return data;
+  try {
+    const archive = await withJournalLock(owner, () => nativeRepository.reconnect(owner));
+    return {
+      ...decodeNativeAccount(archive.snapshot),
+      freshness: archive.remoteEnabled ? 'synced' : 'local',
+      ...(archive.lastError ? { syncError: archive.lastError } : {}),
+    };
+  } catch (error) {
+    if (!local) throw error;
+    return {
+      ...decodeNativeAccount(local.snapshot), freshness: 'cached',
+      syncError: error instanceof Error ? error.message : '계정 기록을 동기화하지 못했어요. 이 기기의 보관본을 유지했어요.',
+    };
   }
-  const archive = await withJournalLock(owner, () =>
-    nativeRepository.refresh(owner),
-  );
-  return decodeNativeAccount(archive.snapshot);
 }

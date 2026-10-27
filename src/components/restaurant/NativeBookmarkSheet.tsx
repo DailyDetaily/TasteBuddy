@@ -1,5 +1,5 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { TASTE_TOKENS } from "../../constants/designTokens";
+import { TASTE_TOKENS } from "../../constants/uiColorTokens";
 import ToastSurface from "../system/ToastSurface";
 import { useEffect, useRef, useState } from "react";
 import { Check, Plus, Trash2, ChefHat, Sparkles, Store } from "lucide-react";
@@ -225,7 +225,7 @@ export default function NativeBookmarkSheet({
         mode === "create" ? (
           <div className="flex gap-2">
             <button
-              className={`${button} flex-1 bg-gray-100`}
+              className={`${button} flex-1 bg-[var(--tb-color-surface-muted)]`}
               disabled={busy}
               onClick={() =>
                 seed && c.state?.lists.length ? setMode("select") : onClose()
@@ -234,7 +234,7 @@ export default function NativeBookmarkSheet({
               취소
             </button>
             <button
-              className={`${button} flex-1 bg-black text-white`}
+              className={`${button} flex-1 bg-[var(--tb-color-interaction-primary)] text-[var(--tb-color-interaction-on-primary)]`}
               disabled={!ready || !draft.name.trim()}
               onClick={create}
             >
@@ -247,7 +247,7 @@ export default function NativeBookmarkSheet({
     >
       {toast && (
         <div className="absolute bottom-5 left-5 right-5 z-[65]">
-          <ToastSurface className="bg-black text-white" message={toast} />
+          <ToastSurface className="bg-[var(--tb-color-interaction-primary)] text-[var(--tb-color-interaction-on-primary)]" message={toast} />
         </div>
       )}
       <DrawerDescription className="sr-only">
@@ -287,7 +287,7 @@ export default function NativeBookmarkSheet({
           <Dialog.Root open={cover} onOpenChange={setCover}>
             <Dialog.Portal>
               <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/35" />
-              <Dialog.Content onCloseAutoFocus={e=>{e.preventDefault();coverTrigger.current?.focus();}} className="fixed left-1/2 top-1/2 z-[71] flex max-h-[90dvh] w-[calc(100%-40px)] max-w-[320px] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-[20px] bg-white p-5 outline-none">
+              <Dialog.Content onCloseAutoFocus={e=>{e.preventDefault();coverTrigger.current?.focus();}} className="fixed left-1/2 top-1/2 z-[71] flex max-h-[90dvh] w-[calc(100%-40px)] max-w-[320px] -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-[20px] bg-[var(--tb-color-surface-base)] p-5 outline-none">
                 <div className="flex items-center justify-between">
                   <Dialog.Close
                     aria-label="커버 편집 닫기"
@@ -378,7 +378,7 @@ export default function NativeBookmarkSheet({
             {suggestions.map((name) => (
               <button
                 key={name}
-                className={`${button} bg-gray-100 text-left`}
+                className={`${button} bg-[var(--tb-color-surface-muted)] text-left`}
                 onClick={() => setDraft({ ...draft, name })}
               >
                 {name}
@@ -390,7 +390,7 @@ export default function NativeBookmarkSheet({
               <span className="block text-sm font-semibold">
                 비밀 리스트로 설정하기
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-[var(--tb-color-text-hint)]">
                 회원님만 이 리스트를 볼 수 있습니다.
               </span>
             </span>
@@ -414,7 +414,7 @@ export default function NativeBookmarkSheet({
           {c.state?.lists.map((list) => (
             <div
               key={list.id}
-              className="flex min-h-[76px] items-center gap-3 rounded-2xl bg-white p-3"
+              className="flex min-h-[76px] items-center gap-3 rounded-2xl bg-[var(--tb-color-surface-base)] p-3"
             >
               <button
                 disabled={!ready}
@@ -437,7 +437,7 @@ export default function NativeBookmarkSheet({
                 <NativeBookmarkThumbnail list={list} />
                 <span className="flex-1">
                   <span className="block font-semibold">{list.name}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-[var(--tb-color-text-hint)]">
                     {list.isPrivate ? "비밀 리스트" : "공개 리스트"}
                   </span>
                 </span>

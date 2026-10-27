@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import {
   InputOTP,
@@ -41,9 +41,14 @@ export function AuthEntryForm({
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [isCodeOptionOpen, setIsCodeOptionOpen] = useState(false);
+  useEffect(() => {
+    setCode('');
+    setIsCodeOptionOpen(false);
+  }, [pendingEmail, step]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmitting || !isConfigured) return;
 
     if (step === 'code') {
       void onSubmitCode(code.trim());
@@ -74,7 +79,7 @@ export function AuthEntryForm({
               </span>
               <input
                 autoComplete="email"
-                className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-white px-3 text-[14px] text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
+                className="h-12 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] px-3 text-[14px] text-[var(--tb-color-text-primary)] outline-none transition-colors placeholder:text-[var(--tb-color-text-hint)] focus:border-[var(--tb-color-border-strong)]"
                 disabled={!isConfigured || isSubmitting}
                 inputMode="email"
                 onChange={(event) => setEmail(event.target.value)}
@@ -108,7 +113,7 @@ export function AuthEntryForm({
                   <InputOTPSlot
                     key={index}
                     index={index}
-                    className="h-12 w-11 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-white text-[16px] font-semibold text-[var(--tb-color-text-primary)] first:rounded-[var(--tb-radius-12)] first:border last:rounded-[var(--tb-radius-12)]"
+                    className="h-12 w-11 rounded-[var(--tb-radius-12)] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-base)] text-[16px] font-semibold text-[var(--tb-color-text-primary)] first:rounded-[var(--tb-radius-12)] first:border last:rounded-[var(--tb-radius-12)]"
                   />
                 ))}
               </InputOTPGroup>
@@ -140,7 +145,7 @@ export function AuthEntryForm({
 
       {!isConfigured ? (
         <p className="mt-3 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-surface-muted)] px-3 py-2 text-[12px] leading-relaxed text-[var(--tb-color-text-secondary)]">
-          Supabase 환경 변수를 설정하면 이메일 로그인 링크를 보낼 수 있습니다.
+          지금은 로그인에 연결할 수 없어요. 나중에 계정을 연결할 수 있어요.
         </p>
       ) : null}
 
@@ -183,10 +188,10 @@ export default function AuthEntryScreen({
   onSubmitEmail,
 }: AuthEntryScreenProps) {
   return (
-    <div className="flex h-full w-full flex-col bg-white">
+    <div className="flex h-full w-full flex-col bg-[var(--tb-color-surface-base)]">
       <div
         aria-hidden="true"
-        className="shrink-0 bg-white"
+        className="shrink-0 bg-[var(--tb-color-surface-base)]"
         style={{ paddingTop: 'var(--tb-safe-area-top)' }}
       >
         <div className="min-h-[var(--tb-size-top-app-bar-height)]" />

@@ -4,7 +4,7 @@ const group = process.argv[2] || 'input';
 // Native IconActionButton / RecordActions / SocialActions use the dedicated native source components.
 const groups = {
   input: { page: '4:123', ids: ['textarea', 'select', 'segmented-control', 'date-picker'] },
-  action: { page: '4:123', ids: ['text-action', 'action-area', 'attachment-input'] },
+  action: { page: '4:123', ids: ['text-action', 'action-area'] },
   content: { page: '4:124', ids: ['period-tabs', 'image-frame', 'disclosure', 'chip-group'] },
   feedback: { page: '4:125', ids: ['notification-badge', 'skeleton', 'flow-loading', 'flow-retry'] },
   domain: { page: '4:126', ids: ['scope-label'] },
@@ -25,7 +25,7 @@ let helper = await fs.readFile('/Users/sinjunho/.codex/plugins/cache/openai-cura
 // The caller switches page once per call, including when constructing several related families.
 helper = helper.replace('await figma.setCurrentPageAsync(page)', '/* page selected by caller */');
 helper = helper.replace(/\/\*[\s\S]*?\*\//g, '');
-const imageBase64 = groups[group].ids.some(id => ['image-frame', 'attachment-input'].includes(id)) ? (await fs.readFile('output/plating/additions/figma-image.jpg')).toString('base64') : '';
+const imageBase64 = groups[group].ids.some(id => ['image-frame'].includes(id)) ? (await fs.readFile('output/plating/additions/figma-image.jpg')).toString('base64') : '';
 const setup = `const items=${JSON.stringify(items)};const pageId=${JSON.stringify(groups[group].page)};const tokenIds=${JSON.stringify(map.variables)};const iconIds=${JSON.stringify(state.icons || {})};const knownComponents=${JSON.stringify(state.components || {})};const iconSVG=${JSON.stringify(icons)};const imageBase64=${JSON.stringify(imageBase64)};`;
 const code = setup + '\n' + helper + String.raw`
 const page=await figma.getNodeByIdAsync(pageId);await figma.setCurrentPageAsync(page);
@@ -33,7 +33,7 @@ const created=[];const mutated=[];const result={components:{},reviews:{},icons:{
 const track=n=>{created.push(n.id);return n;};
 const vars=Object.fromEntries((await figma.variables.getLocalVariablesAsync()).map(v=>[v.name,v]));
 const styles=Object.fromEntries((await figma.getLocalTextStylesAsync()).map(s=>[s.name,s]));
-await Promise.all(['Regular','Medium','Bold'].map(style=>figma.loadFontAsync({family:'Noto Sans KR',style})));
+await Promise.all(['Regular','Medium','Bold'].map(style=>figma.loadFontAsync({family:'Pretendard',style})));
 await figma.loadFontAsync({family:'Inter',style:'Regular'});
 function bind(n,field,key){if(!vars[key])throw new Error('Missing token '+key);n.setBoundVariable(field,vars[key]);}
 function paint(n,key,stroke=false){const p=figma.variables.setBoundVariableForPaint({type:'SOLID',color:{r:0,g:0,b:0}},'color',vars[key]);if(stroke){n.strokes=[p];n.strokeWeight=1;}else n.fills=[p];}
@@ -64,7 +64,7 @@ if(!period){surface.resize(54,32);surface.primaryAxisSizingMode='AUTO';surface.c
 bind(surface,'cornerRadius','radius/full');
 if(i===selected){paint(surface,period?'component/primary-button/background':'color/surface/card');paint(surface,'color/border/default',true);}
 const t=await text(surface,words[i],'Product/Helper',period?(i===selected?'color/text/inverse':'color/text/body'):(i===selected?'color/text/primary':'color/text/tertiary'),period?width-8:26);t.textAlignHorizontal='CENTER';
-if(!period){t.fontName={family:'Noto Sans KR',style:i===selected?'Bold':'Medium'};t.fontSize=13;t.textAutoResize='WIDTH_AND_HEIGHT';}
+if(!period){t.fontName={family:'Pretendard',style:i===selected?'Bold':'Medium'};t.fontSize=13;t.textAutoResize='WIDTH_AND_HEIGHT';}
 }}
 
 async function tags(parent,values){const row=frame(parent,'Tag list',296,'HORIZONTAL');row.layoutWrap='WRAP';bind(row,'itemSpacing','spacing/6');row.counterAxisSpacing=6;for(const value of values){const item=frame(row,'Tag',100,'HORIZONTAL');item.primaryAxisSizingMode='AUTO';pad(item,6);paint(item,'color/surface/card');paint(item,'color/border/default',true);bind(item,'cornerRadius','radius/full');const t=await text(item,value,'Product/Helper','color/text/body',260);t.textAutoResize='WIDTH_AND_HEIGHT';}}
@@ -104,7 +104,6 @@ case 'flow-loading':await loading(comp,s==='긴 안내'?'이전에 남긴 답변
 case 'flow-retry':label=await text(comp,'미각 설문을 불러오지 못했어요','Product/Title');await text(comp,s==='긴 안내'?'연결 상태를 확인한 뒤 다시 시도해 주세요. 이전에 작성한 답변은 유지돼요.':'잠시 후 다시 시도해 주세요.','Product/Body','color/text/body');button(comp,'다시 시도');break;
 case 'action-area':{await text(comp,'식사 경험을 차례로 남겨요.','Product/Helper','color/text/body');const dots=frame(comp,'Step indicator',296,'HORIZONTAL');dots.minHeight=44;dots.counterAxisAlignItems='CENTER';dots.primaryAxisAlignItems='CENTER';for(let i=0;i<5;i++)shape(dots,i===1?16:6,6,i===1?'component/primary-button/background':'color/border/default','radius/full');await text(comp,'2 / 5단계','Product/Caption','color/text/body');if(s==='보조 행동')await quiet(comp,'이전');button(comp,'다음');break;}
 case 'date-picker':label=await field(comp,s==='기간'||s==='오류'?'기간 시작':'식사일','2026. 09. 01','실제로 식사한 날짜를 남겨요.',{disabled});if(s==='기간'||s==='오류')await field(comp,'기간 끝',s==='오류'?'2026. 08. 30':'2026. 09. 30',s==='오류'?'종료일은 시작일 이후로 골라 주세요.':'',{error:s==='오류'});break;
-case 'attachment-input':label=await text(comp,'식사 사진','Product/Helper','color/text/body');if(s==='미리보기')await picture(comp,4/3);{const row=frame(comp,'Photo action',296,'HORIZONTAL');row.minHeight=64;row.counterAxisAlignItems='CENTER';row.primaryAxisAlignItems='CENTER';bind(row,'cornerRadius','radius/12');paint(row,'color/border/default',true);icon(row,'image-plus',20);await text(row,s==='미리보기'?'사진 바꾸기':'사진 선택','Product/Body','color/text/body',100);}if(s==='오류')await text(comp,'사진을 불러오지 못했어요. 다시 선택해 주세요.','Product/Helper','color/feedback/destructive');if(s==='미리보기')await quiet(comp,'사진 삭제');break;
 }if(disabled)comp.opacity=.45;return label;}
 let y=bottom()+120;
 for(const c of items){const existing=page.findOne(n=>n.type==='COMPONENT_SET'&&(n.id===knownComponents[c.id]||n.name==='Library additions/'+c.name||n.name.endsWith('/'+c.name)));if(existing){result.components[c.id]=existing.id;const review=page.findOne(n=>n.type==='FRAME'&&n.name==='Review additions/'+c.name);if(review)result.reviews[c.id]=review.id;result.counts[c.id]=existing.children.length;continue;}

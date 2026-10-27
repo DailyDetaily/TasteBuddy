@@ -2,6 +2,8 @@
 
 > 아래 표와 실행 기록은 2026-10-01의 감사 스냅샷이다. 2026-10-02에 Textarea 계열의 실제 대응을 공용 `TBTextArea`와 두 제품 사용처로 갱신하고, Callout critical을 원본 수정의 저장 실패 안내에 연결했다. 최신 규격은 `src/plating/nativeComponentAudit.ts`와 [네이티브 UX 개선 기록](./plating-native-ux-improvement.md)을 확인한다. 과거 캡처·통과 결과가 새 구현의 실행 검증을 뜻하지는 않는다.
 
+2026-10-06: iOS `TasteChip`은 공용 `Chip(tasteAxis:)`으로 통합했다. 이름 Medium·값 Semibold, 자연 줄 높이, 내부 1pt 경계와 한 줄 고정을 사용하며 기존 Chip의 아이콘·액션·비활성·톤·표현 방식을 지원한다. 아래 TasteChip 항목과 캡처는 통합 전 스냅샷이며, 현재 타입은 `Chip`과 `ChipSize`다.
+
 2026-10-01 · 현재 카탈로그 51개 계열을 각 Swift 선언 또는 실제 사용처와 대조했다.
 
 기존 웹 예제의 크기·API·상태가 iOS와 같은지 확인한 기록이다. 시스템 컨트롤과 정적 참고 견본은 제품 공용 컴포넌트와 구분한다. 아래 항목의 소스 해시는 `output/plating/native-audit-20261001/audit.json`에 있다.
@@ -15,7 +17,7 @@
 
 Native 확인: 시뮬레이터 빌드 성공. 41개 계열의 실제 SwiftUI 타입을 50장의 독립 예제로 캡처하고 전체 이미지를 확인했다. 사진·문구·값은 합성 예제이며 화면 전환·저장·VoiceOver의 실행 검증은 아니다.
 
-감사 당시 소스만 대조한 항목 중 현재 카탈로그에 남은 목록: DropdownMenu, SensoryBubble, DiningResultCard, TextareaField, SelectField, DateField, WheelDatePicker, AttachmentInput. 화면 안의 private 구성과 시스템 메뉴·피커, 독립 iOS 타입이 없는 항목이다.
+감사 당시 소스만 대조한 항목 중 현재 카탈로그에 남은 목록: DropdownMenu, SensoryBubble, DiningResultCard, TextareaField, SelectField, DateField, WheelDatePicker. 화면 안의 private 구성과 시스템 메뉴·피커, 독립 iOS 타입이 없는 항목이다.
 
 ## 항목별 확인
 
@@ -34,7 +36,7 @@ Native 확인: 시뮬레이터 빌드 성공. 41개 계열의 실제 SwiftUI 타
 | [Checkbox](http://127.0.0.1:3001/design-system/components/checkbox#native-audit) | TBUICheckbox / TBSelectionCard.Indicator.checkbox | iOS 참고 견본 | 독립 견본 18pt·반경 4 / 선택 카드 표시기 18pt·반경 6 · 체크 아이콘 12pt | NativeInputComponents에는 독립 Checkbox가 없다. 웹 16px 혼합·키보드 컨트롤을 이 정적 견본과 동일하다고 볼 수 없다. |
 | [RadioGroup](http://127.0.0.1:3001/design-system/components/radio#native-audit) | TBUIRadioGroup / TBSelectionCard.Indicator.radio | iOS 참고 견본 | 독립 견본 원 18pt·선택 점 8pt · 선택 경계 2 / 기본 1pt · 행 간격 8pt | 웹 RadioGroup의 방향키·16px·value/onValueChange와 다르다. 연결된 NativeInputComponents에는 해당 타입이 없다. |
 | [Switch](http://127.0.0.1:3001/design-system/components/switch#native-audit) | TBUISwitch | iOS 참고 견본 | 정적 견본 44×26pt · thumb 22pt · inset 2pt · on 검정 / off borderStrong | 웹 Switch와 상호작용 계약이 다르다. NativeInputComponents 링크를 정적 견본의 실제 파일로 수정했다. |
-| [TopBar](http://127.0.0.1:3001/design-system/components/top-bar#native-audit) | TopAppBar | iOS 제품 구현 | 내용 32pt + 위·아래 8pt = 48pt · 좌우 20pt · 제목 Bold 15·최대 폭 240pt | 웹 도식의 56px 높이·20px 아이콘·단일 More 버튼은 실제 iOS 구성과 다르다. |
+| [TopBar](http://127.0.0.1:3001/design-system/components/top-bar#native-audit) | TopAppBar | iOS 제품 구현 | 일반 48pt / Glass 40pt · 좌우 20pt · 제목 Bold 15 | Appearance 4종. 홈은 Transparent + 프로필·기본 액션, 버블 맵은 Glass + 뒤로·제목·검색·다음. |
 | [BottomTab](http://127.0.0.1:3001/design-system/components/bottom-tab#native-audit) | BottomTabBar | iOS 제품 구현 | 최소 높이 60pt · 좌우 8pt · 아이콘 24pt · 글자 10pt · 아이콘-글자 간격 2pt | 웹의 홈·다이닝·분석 3개 예제와 아이콘은 실제 iOS의 목적지·순서·중앙 버튼과 다르다. |
 | [BackButton](http://127.0.0.1:3001/design-system/components/back-button#native-audit) | TopAppBar.leadingControl | iOS 제품 구현 | chevron.left 24pt · 영역 32pt · iconPrimary · .plain 스타일 | 웹의 44px 영역·20px ArrowLeft·‘이전 단계’ 텍스트는 이 iOS chrome의 내장 외형과 다르다. |
 | [StepIndicator](http://127.0.0.1:3001/design-system/components/step-indicator#native-audit) | TBStepIndicator | iOS 제품 구현 | 높이 6pt · 활성 폭 16·비활성 폭 6 · 간격 6 · Capsule | 사이트의 clamp·마지막 단계 진행 버튼은 예제의 조합이며 TBStepIndicator의 내장 동작이 아니다. |
@@ -70,10 +72,9 @@ Native 확인: 시뮬레이터 빌드 성공. 41개 계열의 실제 SwiftUI 타
 | [ChipGroup](http://127.0.0.1:3001/design-system/components/chip-group#native-audit) | TBWrapLayout / TBOverflowTagRow | iOS 제품 구현 | Wrap spacing은 필수·자연 너비 측정 / Overflow spacing 기본 6pt·+N 실제 너비 포함 | 웹 ChipGroup의 label·overflow·내장 전체 보기 동작을 iOS Layout API로 설명할 수 없다. |
 | [FlowLoadingState](http://127.0.0.1:3001/design-system/components/flow-loading#native-audit) | TBFlowLoadingState | iOS 제품 구현 | 시스템 ProgressView + SemiBold 14·textBody 안내 · gap 16pt · 전체 영역 가운데 | 웹 role=status·동작 줄이기 회전 중단 설명은 실제 SwiftUI 소스의 보장과 다르다. |
 | [FlowRetryState](http://127.0.0.1:3001/design-system/components/flow-retry#native-audit) | TBFlowRetryState | iOS 제품 구현 | SectionHeading + PrimaryButton 48pt · 간격 20pt · tbPageContentPadding | 웹 busy prop과 disabled 연결은 현재 Native 타입에 없다. |
-| [FlowStepCta](http://127.0.0.1:3001/design-system/components/action-area#native-audit) | TBFlowStepCTA / TBFlowBottomCTA | iOS 제품 구현 | 높이 140pt · 좌우 20·하단 12pt · 주요 버튼 48 / Compact 40 · 단계 표시 아래 32pt | 웹 absolute 배치와 iOS VStack·고정 140pt 구조는 다르다. native CTA에 safe area 자동 포함이라는 설명을 수정했다. |
+| [Flow step pattern](http://127.0.0.1:3001/design-system/patterns/flow-step#native-audit) | TBStepIndicator + PrimaryButton 화면 조합 | iOS 제품 구현 | 높이 140pt · 좌우 20·하단 12pt · 주요 버튼 48 / Compact 40 · 단계 표시 아래 32pt | 웹 absolute 배치와 iOS VStack·고정 140pt 구조는 다르다. native CTA에 safe area 자동 포함이라는 설명을 수정했다. |
 | [DateField](http://127.0.0.1:3001/design-system/components/date-picker#native-audit) | DiningMealTimeEditor의 DatePicker | iOS 시스템 컨트롤 | OS 날짜 DatePicker · confirmed 식사일 / approximate 기간 시작·끝 · 글자 Regular 14 사용처 | 웹 input[type=date]·error·44px API는 현재 Native 공통 속성이 아니다. |
 | [WheelDatePicker](http://127.0.0.1:3001/design-system/components/wheel-picker#native-audit) | ProfileEditPickerOverlay의 DatePicker(.wheel) | iOS 시스템 컨트롤 | 카드 패딩 20·반경 24·닫기 36·적용 48pt · 1940-01-01부터 오늘 기준 12년 전 | 시스템 휠을 담는 프로필 선택창. 적용 시 프로필 초안에 반영하며 닫기·배경 탭은 적용하지 않는다. |
-| [AttachmentInput](http://127.0.0.1:3001/design-system/components/attachment-input#native-audit) | DiningReflectionPhotoEditor / PhotosPicker | iOS 시스템 컨트롤 | 미선택 높이 132pt·반경 20·dash [5,5] / 사진 4:3·반경 20 · 삭제 영역 36pt | 웹 AttachmentInput의 파일 형식·변경 버튼·오류/disabled API와 다르다. |
 
 ## 소스와 상태
 
@@ -244,11 +245,11 @@ TBUIRadioGroup은 상태 변경 콜백과 Binding을 제공하지 않는다.
 - [ios/TasteBuddy/Components/Shell/AppChromeComponents.swift:666](../../ios/TasteBuddy/Components/Shell/AppChromeComponents.swift#L666) · `struct TopAppBar:`
 - [ios/TasteBuddy/Components/Shell/AppChromeComponents.swift:6](../../ios/TasteBuddy/Components/Shell/AppChromeComponents.swift#L6) · `enum AppChromeMetrics`
 
-규격: 내용 32pt + 위·아래 8pt = 48pt · 좌우 20pt · 제목 Bold 15·최대 폭 240pt
+규격: 일반형 48pt / Glass 40pt · 좌우 20pt · 제목 Bold 15 · Glass 제목 패딩 12pt·원형 버튼 40pt
 
 | 속성 | 기본값 또는 계약 |
 | --- | --- |
-| appearance | .default / .solid / .transparent |
+| appearance | .default / .solid / .transparent / .glass |
 | showBack / showsDefaultActions | false / true |
 | rightActions / callbacks | 사용처가 전달 |
 
@@ -259,6 +260,9 @@ TBUIRadioGroup은 상태 변경 콜백과 Binding을 제공하지 않는다.
 | 스크롤 | 공용 chrome의 blur·dissolve 연동 |
 
 기본 아이콘 24pt·영역 32pt·간격 8pt. 제목은 전체 폭 중앙이며 버튼 action은 호출부가 제공한다.
+
+
+2026-10-06: 버블 맵은 공용 `TopAppBar(.glass)`를 사용한다. iOS 홈은 `transparent`에 프로필·기본 액션을 조합하고 검색 화면은 `solid`로 전환한다. 홈 검색창은 별도 구성이다. Glass의 뒤로·검색·다음은 버블 맵이 콜백과 표시 조건을 제공한다.
 
 ### BottomTab
 
@@ -892,27 +896,17 @@ children를 합쳐 읽는다. 회전은 OS ProgressView가 담당하고 공통 �
 
 retry callback만 실행한다. 내장 busy·재시도 횟수·중복 요청 차단은 없으며 화면이 로딩 상태로 전환해야 한다.
 
-### FlowStepCta
+### Flow step pattern (2026-10-10)
 
-- [ios/TasteBuddy/Components/TBComponents.swift:350](../../ios/TasteBuddy/Components/TBComponents.swift#L350) · `struct TBFlowStepCTA:`
-- [ios/TasteBuddy/Components/TBComponents.swift:238](../../ios/TasteBuddy/Components/TBComponents.swift#L238) · `struct TBFlowBottomCTA:`
-- [ios/TasteBuddy/Components/TBComponents.swift:228](../../ios/TasteBuddy/Components/TBComponents.swift#L228) · `enum FlowBottomCtaMetrics`
+- [OnboardingView.swift](../../ios/TasteBuddy/Features/Onboarding/OnboardingView.swift) · `TBStepIndicator`와 `PrimaryButton` 직접 조합
+- [CalibrationFlowView.swift](../../ios/TasteBuddy/Features/Calibration/CalibrationFlowView.swift) · 단계별 표시 조건·보조 행동 유지
+- [TBComponents.swift](../../ios/TasteBuddy/Components/TBComponents.swift) · `FlowBottomCtaMetrics` 배치 값
 
-규격: 높이 140pt · 좌우 20·하단 12pt · 주요 버튼 48 / Compact 40 · 단계 표시 아래 32pt
+규격: 높이 140pt · 좌우 20·하단 12pt · 주요 버튼 48pt · 단계 표시 아래 32pt.
 
-| 속성 | 기본값 또는 계약 |
-| --- | --- |
-| actionLabel / currentIndex / total / action | 필수 |
-| showsIndicator / isEnabled | true / true |
-| helperText / secondaryActionLabel / secondaryAction | nil |
+화면이 현재 단계와 전체 단계 수, 다음 행동, 입력 조건과 저장 상태를 전달한다. 필요할 때 보조 버튼과 안내 문구를 직접 조합하며, 화면이 배치·키보드·safe area를 담당한다. 별도 단계 CTA 컴포넌트는 없다.
 
-| 상태 | 실제 표현·책임 |
-| --- | --- |
-| 보조 행동 | 버튼 간격 8pt |
-| 비활성 | 실제 실행 차단과 visualDisabled 별개 |
-| stepLabel | Medium 12·위 간격 6pt |
-
-상위 화면이 배치·키보드·safe area를 담당한다. 공통 CTA 자체가 position:absolute나 자동 키보드 회피를 제공하지 않는다.
+기본·보조 행동·비활성 조합은 [Plating 패턴 페이지](http://127.0.0.1:3001/design-system/patterns/flow-step)와 [Figma Patterns](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=1282-5137)에서 확인한다. 이 조합 변경은 기기나 실계정 저장 검증을 의미하지 않는다.
 
 ### DateField
 
@@ -953,25 +947,6 @@ retry callback만 실행한다. 내장 busy·재시도 횟수·중복 요청 차
 | 말일·윤년 | OS DatePicker가 처리 |
 
 시스템 DatePicker(.wheel)를 제목·닫기·적용과 조합한다. 전체 계정 저장은 프로필 저장 버튼이 담당한다. 별도 직접 입력 전환과 취소 버튼은 없다. 현재 SwiftUI 소스와 사용자 제공 2026-10-04 23:27 iOS 26.5 한국어 화면을 함께 대조했다. 캡처의 기본 선택은 1995년 1월 1일이며, 선택창 크기는 362 × 368pt다. Figma·웹 예제의 캡슐과 곡면 행을 수정했다. 원본 화면을 잘라 웹 문서에 수록했으며 새 네이티브 실행·저장 검증은 수행하지 않았다.
-
-### AttachmentInput
-
-- [ios/TasteBuddy/Features/Dining/DiningView.swift:4631](../../ios/TasteBuddy/Features/Dining/DiningView.swift#L4631) · `private struct DiningReflectionPhotoEditor:`
-- [ios/TasteBuddy/Features/Dining/DiningView.swift:3573](../../ios/TasteBuddy/Features/Dining/DiningView.swift#L3573) · `private func startLoadingReflectionPhoto(from item:`
-
-규격: 미선택 높이 132pt·반경 20·dash [5,5] / 사진 4:3·반경 20 · 삭제 영역 36pt
-
-| 속성 | 기본값 또는 계약 |
-| --- | --- |
-| photoData / photoPickerItem / onRemove | 현재 사진 / Binding<PhotosPickerItem?> / callback |
-
-| 상태 | 실제 표현·책임 |
-| --- | --- |
-| 미선택 | OS PhotosPicker(.images) |
-| 사진 있음 | 이미지 + 삭제 버튼 |
-| 읽기 실패 | 화면의 alert |
-
-현재 request ID로 늦은 사진 응답을 차단하고 파일 로딩·취소는 화면이 담당한다. 사진이 있을 때 별도 변경 버튼은 이 뷰에 없다.
 
 ## 검증 범위
 

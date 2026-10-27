@@ -1,15 +1,18 @@
 import {
   ChevronLeft as ChevronLeftIcon
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useState } from 'react';
 
 import OutlineBadge from '../components/system/OutlineBadge';
 import FlowHeaderBlock from '../components/system/FlowHeaderBlock';
-import FlowStepCta from '../components/system/FlowStepCta';
+import PrimaryButton from '../components/system/PrimaryButton';
+import StepIndicator from '../components/system/StepIndicator';
 import SelectionCard from '../components/system/SelectionCard';
 import StepBadge from '../components/system/StepBadge';
-import { MOTION_TOKENS, ICON_TOKENS } from '../constants/designTokens';
+import StatusChip from '../components/system/StatusChip';
+import { ICON_TOKENS } from '../constants/designTokens';
+import { COLOR_TOKENS } from '../constants/uiColorTokens';
 import {
   buildPreferenceIntakeProfile,
   createPreferenceIntakeResponsesFromProfile,
@@ -17,7 +20,6 @@ import {
   isPreferenceQuestionAnswered,
   PREFERENCE_INTAKE_QUESTIONS,
   type PreferenceIntakeProfile,
-  type PreferenceIntakeQuestion,
   type PreferenceIntakeResponses,
 } from '../constants/preferenceIntakeData';
 import { cn } from '../components/ui/utils';
@@ -38,7 +40,7 @@ const APP_CHROME_ICON_SIZE = ICON_TOKENS.size.lg;
 const APP_CHROME_ICON_BUTTON_SIZE = ICON_TOKENS.container.lg;
 const CONTENT_BOTTOM_PADDING = 'calc(188px + var(--tb-safe-area-bottom))';
 const HEADER_SURFACE_CLASS =
-  'bg-white/88 supports-[backdrop-filter:blur(0px)]:bg-white/78 backdrop-blur-md';
+  'bg-[var(--tb-color-surface-overlay)] backdrop-blur-md';
 
 interface PreferenceIntakeScreenProps {
   initialProfile?: PreferenceIntakeProfile | null;
@@ -47,16 +49,6 @@ interface PreferenceIntakeScreenProps {
   userID?: string;
   onBack: () => void;
   onComplete: (profile: PreferenceIntakeProfile) => void | Promise<void>;
-}
-
-function getSelectionCount(question: PreferenceIntakeQuestion, responses: PreferenceIntakeResponses) {
-  const currentValue = responses[question.id];
-
-  return Array.isArray(currentValue)
-    ? currentValue.length
-    : typeof currentValue === 'string' && currentValue.length > 0
-      ? 1
-      : 0;
 }
 
 export default function PreferenceIntakeScreen({
@@ -69,7 +61,7 @@ export default function PreferenceIntakeScreen({
   const [saving,setSaving]=useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
+  const reduceMotion = useReducedMotion();
   const [responses, setResponses] = useState<PreferenceIntakeResponses>(() =>
     initialResponses ?? createPreferenceIntakeResponsesFromProfile(initialProfile, userID),
   );
@@ -78,27 +70,18 @@ export default function PreferenceIntakeScreen({
   const currentValue = responses[currentQuestion.id];
   const isLastQuestion = questionIndex === PREFERENCE_INTAKE_QUESTIONS.length - 1;
   const canContinue = isPreferenceQuestionAnswered(currentQuestion, responses);
-  const selectionCount = getSelectionCount(currentQuestion, responses);
-
-  const helperText = useMemo(() => {
-    if (!canContinue && currentQuestion.minSelections && selectionCount < currentQuestion.minSelections) {
-      return `최소 ${currentQuestion.minSelections}개를 골라주세요`;
-    }
-
-    if (currentQuestion.selectionMode === 'multiple' && currentQuestion.maxSelections) {
-      return `${selectionCount}/${currentQuestion.maxSelections} 선택`;
-    }
-
-    return '나의 입맛 화면에서 다시 바꿀 수 있어요';
-  }, [canContinue, currentQuestion, selectionCount]);
-
+  const selectionCount = Array.isArray(currentValue) ? currentValue.length : currentValue ? 1 : 0;
+  const helperText = !canContinue && currentQuestion.minSelections != null && selectionCount < currentQuestion.minSelections
+    ? `최소 ${currentQuestion.minSelections}개를 골라주세요`
+    : currentQuestion.selectionMode === 'multiple' && currentQuestion.maxSelections != null
+      ? `${selectionCount}/${currentQuestion.maxSelections} 선택`
+      : '나의 입맛 화면에서 다시 바꿀 수 있어요';
   const handleBack = () => {
     if (questionIndex === 0) {
       onBack();
       return;
     }
 
-    setDirection(-1);
     setQuestionIndex((currentIndex) => currentIndex - 1);
   };
 
@@ -120,7 +103,6 @@ export default function PreferenceIntakeScreen({
       return;
     }
 
-    setDirection(1);
     setQuestionIndex((currentIndex) => currentIndex + 1);
   };
 
@@ -135,7 +117,7 @@ export default function PreferenceIntakeScreen({
   };
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden bg-white font-sans">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[var(--tb-color-surface-base)] font-sans">
       <header className="z-30 flex w-full shrink-0 justify-center">
         <div
           className={cn(
@@ -144,9 +126,9 @@ export default function PreferenceIntakeScreen({
           )}
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
-          <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">
+          <div className="relative flex min-h-[var(--tb-size-flow-top-bar-height)] items-center justify-between px-5">
             <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-[15px] font-bold text-[var(--tb-color-text-primary)]">
-              사전 조사
+              식사 선호
             </span>
             <button
               type="button"
@@ -158,7 +140,7 @@ export default function PreferenceIntakeScreen({
                 height: APP_CHROME_ICON_BUTTON_SIZE,
               }}
             >
-              <ChevronLeft strokeWidth={1.5} size={APP_CHROME_ICON_SIZE} />
+              <ChevronLeft strokeWidth={1.8} size={APP_CHROME_ICON_SIZE} />
             </button>
             <div
               aria-hidden="true"
@@ -175,17 +157,17 @@ export default function PreferenceIntakeScreen({
         <AnimatePresence mode="wait">
           <motion.div
             key={currentQuestion.id}
-            initial={{ opacity: 0, x: direction > 0 ? MOTION_TOKENS.distance.medium : -MOTION_TOKENS.distance.medium }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction > 0 ? -MOTION_TOKENS.distance.medium : MOTION_TOKENS.distance.medium }}
-            transition={{ duration: 0.28 }}
-            className="absolute inset-0 overflow-y-auto px-5 pt-4 no-scrollbar"
+            initial={{ opacity: reduceMotion ? 1 : 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: reduceMotion ? 1 : 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.28 }}
+            className="absolute inset-0 overflow-y-auto px-5 pt-2 no-scrollbar"
             style={{ paddingBottom: CONTENT_BOTTOM_PADDING }}
           >
             <div className="tb-section-stack">
-              {saveError && <p role="alert" className="text-[13px] text-[var(--tb-color-text-body)]">{saveError}</p>}
               <FlowHeaderBlock
                 description={currentQuestion.description}
+                descriptionClassName="leading-[1.2]"
                 title={currentQuestion.title}
                 titleClassName="leading-tight"
                 topLeft={<OutlineBadge>{currentQuestion.eyebrow}</OutlineBadge>}
@@ -196,14 +178,9 @@ export default function PreferenceIntakeScreen({
                   />
                 }
               />
+              {saveError && <p role="alert" className="text-[13px] text-[var(--tb-color-text-body)]">{saveError}</p>}
 
-              <div
-                className={cn(
-                  currentQuestion.gridColumns === 2
-                    ? 'grid grid-cols-1 gap-3 sm:grid-cols-2'
-                    : 'tb-card-stack',
-                )}
-              >
+              <div className="tb-card-stack">
                 {currentQuestion.options.map((option) => {
                   const isSelected = Array.isArray(currentValue)
                     ? currentValue.includes(option.id)
@@ -216,6 +193,9 @@ export default function PreferenceIntakeScreen({
                       indicator="checkbox"
                       selected={isSelected}
                       title={option.label}
+                      className="p-[15px] [&>span:nth-child(2)>span]:leading-[1.2]"
+                      disabled={saving}
+                      trailing={isSelected ? <StatusChip backgroundColor={COLOR_TOKENS.state.successSoft} color={COLOR_TOKENS.state.success}>선택됨</StatusChip> : undefined}
                       onClick={() => handleOptionSelect(option.id)}
                     />
                   );
@@ -226,14 +206,21 @@ export default function PreferenceIntakeScreen({
         </AnimatePresence>
       </main>
 
-      <FlowStepCta
-        actionDisabled={!canContinue || saving}
-        actionLabel={saving ? '저장 중…' : isLastQuestion ? '선호 저장' : '다음 질문'}
-        currentIndex={questionIndex}
-        helperText={helperText}
-        onAction={handleNext}
-        total={PREFERENCE_INTAKE_QUESTIONS.length}
-      />
+      <div className="absolute inset-x-0 bottom-0 z-20 flex justify-center">
+        <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
+          <div className="tb-bottom-fade relative flex min-h-[calc(var(--tb-size-bottom-fade-min-height)+var(--tb-safe-area-bottom))] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))]">
+            <StepIndicator
+              className="mb-[6px] self-center"
+              currentIndex={questionIndex}
+              total={PREFERENCE_INTAKE_QUESTIONS.length}
+            />
+            <p aria-live="polite" className="mb-2 text-center text-[11px] font-medium leading-[14px] text-[var(--tb-color-text-faint)]">{helperText}</p>
+            <PrimaryButton disabled={!canContinue || saving} onClick={handleNext}>
+              {saving ? '저장 중…' : isLastQuestion ? '선호 저장' : '다음 질문'}
+            </PrimaryButton>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

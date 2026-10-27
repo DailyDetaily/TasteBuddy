@@ -6,6 +6,9 @@ import { NativeAnatomy, NativePropertyBoards, NativeStateBoard, nativeCaptureLab
 type Capture = { id: string; state: string; file: string; width: number; height: number; origin?: "user-profile-screen" };
 const captures = captureData as Record<string, Capture[]>;
 const defaultCaptureLabels: Record<string, string> = {
+  "tcs-badge": "두 가지 맛",
+  "stack-card": "스택 쌓임",
+  "expandable-card": "본문 접힘",
   "bottom-sheet": "Auto · 본문과 푸터", dialog: "Stack · 두 행동", "search-field": "검색 셸 · 빈 입력",
   "top-bar": "Solid · 제목과 뒤로", "back-button": "TopAppBar · 뒤로", "bottom-tab": "홈 활성 · 중앙 기록",
   avatar: "정적 참고 견본", checkbox: "정적 참고 견본", radio: "정적 참고 견본", switch: "정적 참고 견본", progress: "정적 참고 견본",
@@ -15,6 +18,9 @@ const defaultCaptureLabels: Record<string, string> = {
 };
 const calloutCaptureLabels: Record<string, string> = { actionable: "전체 클릭", dismissible: "닫기", positive: "성공", warning: "주의", critical: "오류", large: "큰 글자 · 접근성 2" };
 const captureLabel = (id: string, state: string) => state === "default" ? defaultCaptureLabels[id] ?? "기본"
+  : id === "tcs-badge" ? nativeCaptureLabel(id, state)
+  : ["stack-card", "expandable-card"].includes(id) ? nativeCaptureLabel(id, state)
+  : id === "top-bar" ? nativeCaptureLabel(id, state)
   : id === "callout" ? (calloutCaptureLabels[state] ?? nativeCaptureLabel(id, state))
   : id === "textarea" ? (state === "large" ? "큰 글자 · 접근성 2" : nativeCaptureLabel(id, state))
   : state === "leap-day" ? "윤년 말일"

@@ -1,4 +1,6 @@
-import { IOS_FOUNDATIONS, nativeColor } from "./foundationReferenceData";
+import { IOS_FOUNDATIONS } from "./foundationReferenceData";
+import { nativeColorForMode, TASTE_PALETTES_BY_MODE } from "../constants/colorModes";
+import { type ColorMode } from "../constants/designTokens";
 
 export const stateColorPairs = [
   { name: "중립", foreground: "neutral", background: "neutralSoft", message: "식사 메모를 남길 수 있어요." },
@@ -21,7 +23,8 @@ export function colorContrast(foreground: string, background: string) {
   return (values[0] + 0.05) / (values[1] + 0.05);
 }
 
-export function documentedColorPairs() {
+export function documentedColorPairs(mode: ColorMode = 'light') {
+  const nativeColor = (name: string) => nativeColorForMode(name, mode);
   return [
     ...stateColorPairs.map(pair => ({ name: pair.name, foreground: nativeColor(pair.foreground), background: nativeColor(pair.background) })),
     { name: "본문", foreground: nativeColor("textBody"), background: nativeColor("page") },
@@ -30,6 +33,9 @@ export function documentedColorPairs() {
     { name: "선택", foreground: nativeColor("selectionText"), background: nativeColor("selectionSurface") },
     { name: "성공 채움", foreground: nativeColor("textInverse"), background: nativeColor("successStrong") },
     { name: "주의 채움", foreground: nativeColor("textInverse"), background: nativeColor("warningStrong") },
-    ...IOS_FOUNDATIONS.tastes.map(taste => ({ name: taste.label, foreground: taste.tintText, background: taste.tintSurface })),
+    ...IOS_FOUNDATIONS.tastes.map(taste => {
+      const palette = TASTE_PALETTES_BY_MODE[mode][taste.id as keyof typeof TASTE_PALETTES_BY_MODE.light];
+      return { name: taste.label, foreground: palette.tintSurfaceText, background: palette.tintSurface };
+    }),
   ];
 }

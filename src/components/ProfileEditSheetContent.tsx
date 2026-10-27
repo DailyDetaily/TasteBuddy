@@ -1097,7 +1097,7 @@ export default function ProfileEditSheetContent({
         style={userTasteAccentStyle}
         onSubmit={handleSubmit}
       >
-        <div className="flex flex-col items-center gap-3 pt-1">
+        <div className="flex flex-col items-center gap-3">
           <PalateBloomAvatar
             ariaLabel={draftDisplayName.trim() || '프로필 아바타'}
             imageSrc={draftAvatarImageSrc}
@@ -1110,12 +1110,12 @@ export default function ProfileEditSheetContent({
             <label
               className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-[var(--tb-radius-12)] px-3 text-[12px] font-semibold transition-transform active:scale-[0.99]"
               style={{
-                background: 'var(--tb-user-accent-tint-surface)',
-                color: 'var(--tb-user-accent-dark)',
+                background: 'var(--tb-color-surface-muted)',
+                color: 'var(--tb-color-text-primary)',
               }}
             >
-              <Camera aria-hidden="true" className="size-4" strokeWidth={2} />
-              사진 편집
+              <Camera aria-hidden="true" size={14} strokeWidth={2.2} />
+              {isPreparingAvatar ? '사진 준비 중' : '사진 편집'}
               <input
                 accept="image/*"
                 className="sr-only"
@@ -1156,10 +1156,8 @@ export default function ProfileEditSheetContent({
             type="button"
             className="text-[12px] font-semibold text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-primary)] disabled:cursor-not-allowed disabled:text-[var(--tb-color-text-muted)]"
             disabled={
-              !canApplyCurrentTasteAvatar ||
               isPreparingAvatar ||
-              isSubmitting ||
-              !onApplyCurrentTasteAvatar
+              isSubmitting
             }
             onClick={() => {
               setAvatarCropState((currentCropState) => {
@@ -1178,11 +1176,11 @@ export default function ProfileEditSheetContent({
               });
               setDraftAvatarFile(null);
               setShouldRemoveAvatar(true);
-              onApplyCurrentTasteAvatar?.();
-              setAvatarMessage('저장을 누르면 현재 미각 기준 아바타로 변경됩니다.');
+              if (canApplyCurrentTasteAvatar) onApplyCurrentTasteAvatar?.();
+              setAvatarMessage('저장을 누르면 기본 아바타로 변경됩니다.');
             }}
           >
-            현재 미각 기준으로 아바타 변경
+            기본 아바타로 변경
           </button>
           {avatarMessage || statusMessage ? (
             <p

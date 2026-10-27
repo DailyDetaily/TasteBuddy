@@ -412,7 +412,7 @@ function getTasteExperienceStyle(
   } = {},
 ): CSSProperties {
   const tint = `var(--tb-taste-${axis}-tint-surface)`;
-  const border = `var(--tb-taste-${axis}-tint-soft-border)`;
+  const border = `var(--tb-taste-${axis}-border-strong)`;
   const text = `var(--tb-taste-${axis}-tint-surface-text)`;
 
   if (options.isSelected) {
@@ -1390,7 +1390,7 @@ export function TasteExperienceMap({
 
   return (
     <div className="taste-experience-map-intro relative h-full w-full overflow-hidden bg-[var(--tb-color-bg-focus)]">
-      <div className="pointer-events-none absolute inset-0 z-50 bg-white taste-experience-map-intro-veil" />
+      <div className="pointer-events-none absolute inset-0 z-50 bg-[var(--tb-color-surface-base)] taste-experience-map-intro-veil" />
       <div
         ref={viewportRef}
         onScroll={handleMapScroll}
@@ -1907,7 +1907,7 @@ function DishKindTagSelector({
                 isSelected
                   ? 'border-[var(--tb-color-text-primary)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)]'
                   : isRecommended
-                    ? 'border-[var(--tb-user-accent-main)] bg-[color-mix(in_srgb,var(--tb-user-accent-main)_12%,white)] text-[var(--tb-user-accent-main)]'
+                    ? 'border-[var(--tb-user-accent-border-strong)] bg-[var(--tb-user-accent-tint-surface)] text-[var(--tb-user-accent-tint-surface-text)]'
                     : 'border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-muted)] text-[var(--tb-color-text-subtle)]',
               )}
             >
@@ -3218,7 +3218,7 @@ export function DiningFeedbackScreen({
                       className="flex h-[176px] w-[176px] flex-col items-center justify-center rounded-full border px-5 text-center"
                       style={{
                         backgroundColor: `var(--tb-taste-${activeDetailExperience.axis}-tint-surface)`,
-                        borderColor: `var(--tb-taste-${activeDetailExperience.axis}-tint-soft-border)`,
+                        borderColor: `var(--tb-taste-${activeDetailExperience.axis}-border-default)`,
                         color: `var(--tb-taste-${activeDetailExperience.axis}-tint-surface-text)`,
                       }}
                     >
@@ -3248,7 +3248,7 @@ export function DiningFeedbackScreen({
                             backgroundColor: isActive
                               ? `var(--tb-taste-${experience.axis}-tint-surface)`
                               : `var(--tb-taste-${experience.axis}-tint-soft)`,
-                            borderColor: `var(--tb-taste-${experience.axis}-tint-soft-border)`,
+                            borderColor: `var(--tb-taste-${experience.axis}-border-strong)`,
                           }}
                           aria-label={`${index === 0 ? '메인' : '보조'} 미각 ${experience.label} 보기`}
                         />

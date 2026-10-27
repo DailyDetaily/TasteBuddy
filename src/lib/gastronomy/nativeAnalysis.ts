@@ -165,7 +165,12 @@ function legacySummary(note: string) {
       return text.startsWith(prefix) && labels.has(text.slice(prefix.length));
     });
 }
-export function nativeAnalysisSources(entries: NativeRecord[], owner: string) {
+/** Only confirmed meal time is temporal evidence; legacy save dates are not substitutes. */
+export function nativeAnalysisSources(entries: NativeRecord[], owner: string, referenceDate = new Date()) {
+  const cutoff = +referenceDate;
+  if (!Number.isFinite(cutoff)) throw new Error("INVALID_ANALYSIS_REFERENCE_DATE");
+  const mealDate = (entry: NativeRecord) => entry.mealTime?.source === "user_confirmed"
+    ? swiftDate(entry.mealTime.start) : null;
   const groups = new Map<string, NativeRecord[]>();
   for (const e of entries)
     groups.set(e.id.toLowerCase(), [
@@ -179,6 +184,11 @@ export function nativeAnalysisSources(entries: NativeRecord[], owner: string) {
         rows.every((e) => canonical(e) === canonical(rows[0])),
     )
     .map((rows) => rows[0])
+    // Keep the source in the repository, but do not learn from a future meal.
+    .filter((entry) => {
+      const observedAt = mealDate(entry);
+      return observedAt === null || Date.parse(observedAt) <= cutoff;
+    })
     .sort((a, b) => (a.id < b.id ? -1 : 1));
   const observations: AnalysisObservation[] = [],
     unresolved: AnalysisPending[] = [];
@@ -227,7 +237,7 @@ export function nativeAnalysisSources(entries: NativeRecord[], owner: string) {
         foodName: entry.menu,
         restaurantName: entry.restaurant,
         sourceField: field,
-        observedAt: swiftDate(entry.observedAt ?? entry.date),
+        observedAt: mealDate(entry),
       };
       for (const atom of result.observations ?? []) {
         const spans = atom.sourceSpans;
@@ -303,9 +313,9 @@ export function nativeAnalysisSources(entries: NativeRecord[], owner: string) {
   return {
     completed,
     observations: [
-      ...new Map(observations.map((o) => [o.observationId, o])).values(),
+      ...new Map(observations.filter((o) => o.knownAt === null || Date.parse(o.knownAt) <= cutoff).map((o) => [o.observationId, o])).values(),
     ],
-    unresolved: [...new Map(unresolved.map((o) => [o.id, o])).values()],
+    unresolved: [...new Map(unresolved.filter((o) => o.knownAt === null || Date.parse(o.knownAt) <= cutoff).map((o) => [o.id, o])).values()],
   };
 }
 const styles = [
@@ -477,8 +487,8 @@ export function nativeMainWing(records: AnalysisObservation[]) {
         : "입맛을 알아가는 중이에요",
   };
 }
-export function buildNativeAnalysis(entries: NativeRecord[], owner: string) {
-  const source = nativeAnalysisSources(entries, owner),
+export function buildNativeAnalysis(entries: NativeRecord[], owner: string, referenceDate = new Date()) {
+  const source = nativeAnalysisSources(entries, owner, referenceDate),
     byID = new Map(source.completed.map((e) => [e.id.toLowerCase(), e]));
   const answerCache = new Map<string, string[]>();
   const model = buildPersonalTasteModel(

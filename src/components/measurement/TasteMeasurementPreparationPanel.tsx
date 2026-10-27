@@ -1,5 +1,5 @@
 import personUsingTastickImage from '../../assets/Image of a person using the Tastick.png';
-import { TASTE_TOKENS } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 
 interface TasteMeasurementPreparationPanelProps {
   currentTaste: (typeof TASTE_TOKENS)[keyof typeof TASTE_TOKENS];
@@ -19,7 +19,7 @@ export default function TasteMeasurementPreparationPanel({
           className="mb-3 text-[18px] font-bold leading-tight tracking-tight"
           style={{ color: currentTaste.measurement.accent }}
         >
-          <span className="text-black">
+          <span className="text-[var(--tb-color-text-primary)]">
             {currentTaste.measurement.ordinal}, {currentTaste.label} 측정
           </span>
         </h1>
@@ -31,14 +31,14 @@ export default function TasteMeasurementPreparationPanel({
       </div>
 
       <div className="mb-6 flex flex-1 w-full items-center justify-center">
-        <div className="relative flex aspect-square w-full max-w-[440px] items-center justify-center overflow-hidden rounded-[var(--tb-radius-20)] border border-[var(--tb-color-border-card)] bg-[var(--tb-color-bg-page)] shadow-sm">
+        <div className="relative flex aspect-square w-full max-w-[440px] items-center justify-center overflow-hidden rounded-[var(--tb-radius-20)] border border-[var(--tb-color-border-faint)] bg-[var(--tb-color-bg-page)] shadow-sm">
           <img
             src={personUsingTastickImage}
             alt="Tastick Preparation"
             className="absolute inset-0 h-full w-full origin-bottom translate-y-[12%] scale-[1.9] object-cover object-center will-change-transform"
           />
 
-          <div className="absolute right-4 top-4 rounded-full bg-white/80 px-3 py-1 text-[12px] font-bold text-[var(--tb-color-text-hint)] backdrop-blur-sm">
+          <div className="absolute right-4 top-4 rounded-full bg-[var(--tb-color-surface-overlay)] px-3 py-1 text-[12px] font-bold text-[var(--tb-color-text-hint)] backdrop-blur-sm">
             {stepIndex + 1} / {totalSteps}
           </div>
         </div>

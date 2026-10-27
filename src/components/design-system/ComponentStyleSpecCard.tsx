@@ -40,8 +40,8 @@ export default function ComponentStyleSpecCard({
           className={cn(
             "inline-flex items-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]",
             spec.status === "currently-used"
-              ? "border-[rgba(15,15,15,0.12)] bg-[rgba(15,15,15,0.06)] text-[var(--tb-color-text-primary)]"
-              : "border-[rgba(255,153,0,0.2)] bg-[rgba(255,153,0,0.12)] text-[#9A5E00]",
+              ? "border-[var(--tb-color-border-default)] bg-[rgba(15,15,15,0.06)] text-[var(--tb-color-text-primary)]"
+              : "border-[var(--tb-taste-sweet-border-subtle)] bg-[rgba(255,153,0,0.12)] text-[#9A5E00]",
           )}
         >
           {STATUS_LABELS[spec.status]}

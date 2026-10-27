@@ -1,17 +1,18 @@
-import { deleteNativeRecord } from "../../lib/gastronomy/nativeRecordDeletion";
-import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useEffect, useState, type ReactNode } from "react";
-import { Plus, Pencil, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useNativeJournal } from "../../lib/gastronomy/useNativeJournal";
-import { nativeRepository } from "../../lib/gastronomy/nativeRuntime";
 import {
-  effectiveSelections,
   readNativeRecords,
   type NativeRecord,
   type NativeSnapshot,
 } from "../../lib/gastronomy/nativeRecord";
-import { swiftDate } from "../../lib/gastronomy/nativeArchive";
-import { getCurrentSupabaseSession, supabase } from "../../lib/supabase";
+import { readNativeProfileIdentity } from "../../lib/gastronomy/nativeProfileIdentity";
+import { DishFeedbackCardSkeleton } from "../dining/DishFeedbackCard";
+import NativeDiningFeedCard from "./NativeDiningFeedCard";
+import NativeDiningRecordDetail from "./NativeDiningRecordDetail";
+import useNativeRecordPhotos from "./useNativeRecordPhotos";
+import './native-dining.css';
+import type { TasteProfile } from '../system/PalateBloomAvatar';
 function RecoveryCopy({ snapshot, recordedAt }: { snapshot: NativeSnapshot; recordedAt: string }) {
   let entries: NativeRecord[] = [];
   let unreadable = false;
@@ -40,49 +41,10 @@ export function NativeRecordPhoto({
   entry: NativeRecord;
   fallback?: ReactNode;
 }) {
-  const [value, setValue] = useState<{ key: string; url: string } | null>(null);
-  const key = `${owner}/${entry.reflectionPhotoFilename}`;
-  useEffect(() => {
-    const filename = entry.reflectionPhotoFilename;
-    if (!filename) return;
-    let cancelled = false;
-    let objectURL: string | undefined;
-    void (async () => {
-      const blob = await nativeRepository.photo(owner, filename);
-      if (blob) {
-        objectURL = URL.createObjectURL(blob);
-        if (cancelled) URL.revokeObjectURL(objectURL);
-        else setValue({ key, url: objectURL });
-        return;
-      }
-      const session = await getCurrentSupabaseSession();
-      if (
-        cancelled ||
-        !supabase ||
-        session?.user.id !== owner ||
-        session.user.is_anonymous
-      )
-        return;
-      const { data } = await supabase.storage
-        .from("native-dining-photos")
-        .createSignedUrl(`${owner.toLowerCase()}/${filename}`, 120);
-      if (data && !cancelled) setValue({ key, url: data.signedUrl });
-    })().catch(() => {});
-    return () => {
-      cancelled = true;
-      if (objectURL) URL.revokeObjectURL(objectURL);
-    };
-  }, [owner, entry.reflectionPhotoFilename, key]);
-  return value?.key === key ? (
-    <img
-      src={value.url}
-      alt={`${entry.menu} 기록 사진`}
-      className="aspect-[4/3] w-full rounded-[18px] object-cover"
-    />
-  ) : (
-    (fallback ?? null)
-  );
+  const { urls: photos } = useNativeRecordPhotos(owner, entry);
+  return photos[0] ? <img src={photos[0]} alt={`${entry.menu} 기록 사진`} className="aspect-[4/3] w-full rounded-[18px] object-cover" /> : (fallback ?? null);
 }
+
 export default function NativeDiningHome({
   owner,
   active,
@@ -90,6 +52,7 @@ export default function NativeDiningHome({
   onEdit,
   onAddMenu,
   onRootViewChange,
+  avatarProfile,
   children,
 }: {
   owner: string;
@@ -98,16 +61,15 @@ export default function NativeDiningHome({
   onEdit: (id: string) => void;
   onAddMenu: (id: string) => void;
   onRootViewChange?: (root: boolean) => void;
+  avatarProfile?: TasteProfile;
   children: ReactNode;
 }) {
   const journal = useNativeJournal(owner, active);
-  const [deleting, setDeleting] = useState<NativeRecord | null>(null),
-    [deleteBusy, setDeleteBusy] = useState(false),
-    [deleteError, setDeleteError] = useState<string | null>(null);
-  useEffect(() => {
-    setDeleting(null);
-    setDeleteError(null);
-  }, [owner]);
+  const [selected, setSelected] = useState<{ id: string; options: boolean } | null>(null);
+  const [shareStatus, setShareStatus] = useState<string | null>(null);
+  useEffect(() => { setSelected(null); setShareStatus(null); }, [owner]);
+  let profile: ReturnType<typeof readNativeProfileIdentity> | null = null;
+  try { if (journal.archive) profile = readNativeProfileIdentity(journal.archive.snapshot); } catch { /* The journal displays its validation error below. */ }
   const [legacy, setLegacy] = useState(false),
     [compare, setCompare] = useState(false);
   useEffect(() => {
@@ -134,26 +96,12 @@ export default function NativeDiningHome({
     (a, b) => (b.observedAt ?? b.date) - (a.observedAt ?? a.date),
   );
   return (
-    <main className="h-full overflow-y-auto bg-[var(--tb-color-bg-page)] px-5 pb-8 pt-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-[18px] font-bold">나의 디시</h1>
-        <button
-          type="button"
-          aria-label="새 미식 기록"
-          className="flex min-h-11 items-center gap-1 text-[13px]"
-          onClick={onCreate}
-        >
-          <Plus size={18} />
-          기록
-        </button>
-      </div>
-      {journal.loading && (
-        <p role="status" className="mb-4 text-[12px]">
-          기록을 불러오고 있어요.
-        </p>
-      )}
+    <main className="h-full overflow-y-auto bg-[var(--tb-color-bg-page)] px-5 pb-[72px] pt-4">
+      <h1 className="mb-3 text-[18px] font-bold leading-[1.2]">나의 디시</h1>
+      {shareStatus && <p role="status" className="mb-3 text-[12px] text-[var(--tb-color-text-hint)]">{shareStatus}</p>}
+      {journal.loading && !journal.archive && <div role="status" aria-label="기록 불러오는 중" className="flex flex-col gap-3"><DishFeedbackCardSkeleton /><DishFeedbackCardSkeleton /></div>}
       {(journal.error || journal.archive?.dirty) && (
-        <div className="mb-4 rounded-[20px] bg-white p-4">
+        <div className="mb-4 rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
           <p
             role={journal.error ? "alert" : "status"}
             className="text-[13px] leading-6"
@@ -188,7 +136,7 @@ export default function NativeDiningHome({
                   </p>
                   <button
                     type="button"
-                    className="mt-3 min-h-11 rounded-full bg-black px-4 text-[12px] text-white"
+                    className="mt-3 min-h-11 rounded-full bg-[var(--tb-color-interaction-primary)] px-4 text-[12px] text-[var(--tb-color-interaction-on-primary)]"
                     onClick={() => void journal.useAccount()}
                   >
                     웹 변경을 따로 보관하고 계정 기록 사용
@@ -210,8 +158,8 @@ export default function NativeDiningHome({
           ) : null}
         </div>
       )}
-      {!entries.length && !journal.loading && (
-        <div className="rounded-[20px] bg-white px-5 py-8 text-center">
+      {!entries.length && !journal.loading && !journal.error && journal.archive && (
+        <div className="rounded-[20px] bg-[var(--tb-color-surface-base)] px-5 py-8 text-center">
           <h2 className="text-[15px] font-semibold">
             첫 미식 기록을 기다리고 있어요
           </h2>
@@ -220,130 +168,36 @@ export default function NativeDiningHome({
           </p>
           <button
             type="button"
-            className="mt-4 min-h-11 rounded-full bg-black px-5 text-[13px] text-white"
+            className="mt-4 min-h-11 rounded-full bg-[var(--tb-color-interaction-primary)] px-5 text-[13px] text-[var(--tb-color-interaction-on-primary)]"
             onClick={onCreate}
           >
             미식 기록 남기기
           </button>
         </div>
       )}
-      <div className="flex flex-col gap-4">
-        {entries.map((entry) => {
-          const count = entries.filter(
-            (e) => (e.mealID ?? e.id) === (entry.mealID ?? entry.id),
-          ).length;
-          return (
-            <article
-              key={entry.id}
-              className="overflow-hidden rounded-[24px] bg-white p-4"
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-[11px] text-[var(--tb-color-text-hint)]">
-                  {count > 1 ? `같은 식사 · ${count}개 메뉴` : "미식 기록"}
-                </p>
-                <button
-                  type="button"
-                  aria-label={`${entry.menu} 원본 수정`}
-                  className="flex size-11 items-center justify-center"
-                  onClick={() => onEdit(entry.id)}
-                >
-                  <Pencil size={18} />
-                </button>
-              </div>
-              <button
-                className="min-h-11 text-xs text-red-700"
-                aria-label={`${entry.menu} 기록 삭제`}
-                onClick={() => {
-                  setDeleting(structuredClone(entry));
-                  setDeleteError(null);
-                }}
-              >
-                기록 삭제
-              </button>
-              <NativeRecordPhoto owner={owner} entry={entry} />
-              <p className="mt-4 text-[12px] text-[var(--tb-color-text-hint)]">
-                {entry.restaurant || "식당 미기록"}
-              </p>
-              <h2 className="mt-1 text-[18px] font-bold">{entry.menu}</h2>
-              {entry.overallEvaluation && (
-                <p className="mt-3 text-[14px]">
-                  {entry.overallEvaluation.responseLabelSnapshot}
-                </p>
-              )}
-              <div className="mt-3 flex flex-wrap gap-2">
-                {effectiveSelections(entry).map((s) => (
-                  <span
-                    key={s.type + s.id}
-                    className="rounded-full bg-[var(--tb-color-surface-muted)] px-3 py-2 text-[11px]"
-                  >
-                    {s.labelSnapshot}
-                  </span>
-                ))}
-              </div>
-              {entry.note && (
-                <p className="mt-4 whitespace-pre-wrap text-[14px] leading-6">
-                  {entry.note}
-                </p>
-              )}
-              {entry.feedbackStatus === "captured" && (
-                <button
-                  type="button"
-                  className="mt-3 min-h-11 rounded-full bg-black px-4 text-[12px] text-white"
-                  onClick={() => onEdit(entry.id)}
-                >
-                  미각 기록 이어 쓰기
-                </button>
-              )}
-              <p className="mt-4 text-[11px] text-[var(--tb-color-text-hint)]">
-                {entry.mealTime?.source === "user_confirmed" &&
-                entry.mealTime.start != null
-                  ? `식사일 ${new Date(swiftDate(entry.mealTime.start)!).toLocaleDateString("ko-KR")}`
-                  : "식사일 미확인"}
-              </p>
-              <button
-                type="button"
-                className="mt-3 min-h-11 text-[12px]"
-                onClick={() => onAddMenu(entry.id)}
-              >
-                이 식사에 메뉴 추가
-              </button>
-              {(entry.memoryCorrections?.length ?? 0) > 0 && (
-                <details className="mt-2 text-[12px]">
-                  <summary className="min-h-11 cursor-pointer py-3">
-                    수정 이력 {entry.memoryCorrections!.length}개
-                  </summary>
-                  {entry.memoryCorrections!.map((c) => (
-                    <p key={c.id} className="py-2">
-                      {new Date(swiftDate(c.changedAt)!).toLocaleString(
-                        "ko-KR",
-                      )}{" "}
-                      ·{" "}
-                      {Object.keys(c.after)
-                        .map(
-                          (k) =>
-                            ({
-                              note: "메모",
-                              menu: "메뉴",
-                              restaurant: "식당",
-                              sensorySelections: "감각 응답",
-                              overallEvaluation: "전체 평가",
-                              mealTime: "식사 시점",
-                              foodSource: "음식 출처",
-                              dishKindIDs: "음식 종류",
-                            })[k] ?? "기록",
-                        )
-                        .filter((v, i, a) => a.indexOf(v) === i)
-                        .join(" · ")}
-                    </p>
-                  ))}
-                </details>
-              )}
-            </article>
-          );
-        })}
+      <div className="flex flex-col gap-3">
+        {entries.map((entry) => <NativeDiningFeedCard
+          key={entry.id} owner={owner} entry={entry}
+          mealCount={entries.filter((candidate) => (candidate.mealID ?? candidate.id) === (entry.mealID ?? entry.id)).length}
+          avatarImageSrc={profile?.avatarDataUrl}
+          avatarProfile={avatarProfile}
+          onSelect={() => setSelected({ id: entry.id, options: false })}
+          onOptions={() => setSelected({ id: entry.id, options: true })}
+          onShare={() => {
+            const text = `${entry.restaurant} ${entry.menu}${entry.note ? `: ${entry.note}` : ''}`.trim();
+            void (async () => {
+              try {
+                if (navigator.share) await navigator.share({ text });
+                else { await navigator.clipboard.writeText(text); setShareStatus('기록 요약을 복사했어요.'); }
+              } catch (cause) { if (!(cause instanceof DOMException && cause.name === 'AbortError')) setShareStatus('공유하지 못했어요. 다시 시도해 주세요.'); }
+            })();
+          }}
+        />)}
       </div>
+      {selected && <NativeDiningRecordDetail key={`${owner}:${selected.id}`} owner={owner} entryID={selected.id} initialOptions={selected.options}
+        onClose={() => setSelected(null)} onEdit={(id) => { setSelected(null); onEdit(id); }} onAddMenu={(id) => { setSelected(null); onAddMenu(id); }} />}
       {!!journal.archive?.recoveries?.length && (
-        <details className="mt-6 rounded-[20px] bg-white p-4">
+        <details className="mt-6 rounded-[20px] bg-[var(--tb-color-surface-base)] p-4">
           <summary className="min-h-11 cursor-pointer text-[13px] font-semibold">
             따로 보관한 기록
           </summary>
@@ -359,61 +213,6 @@ export default function NativeDiningHome({
       >
         이전 기록·예약 보기
       </button>
-      <AlertDialog.Root
-        open={!!deleting}
-        onOpenChange={(open) => {
-          if (!open && !deleteBusy) {
-            setDeleting(null);
-            setDeleteError(null);
-          }
-        }}
-      >
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 z-[90] bg-black/35" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-[91] w-[calc(100%-40px)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-5">
-            <AlertDialog.Title className="font-bold">
-              이 미식 기록을 삭제할까요?
-            </AlertDialog.Title>
-            <AlertDialog.Description className="mt-3 text-sm">
-              {deleting?.menu} 기록과 연결된 질문 이력을 삭제해요. 다른 메뉴가
-              쓰는 사진은 유지해요.
-            </AlertDialog.Description>
-            {deleteError && (
-              <p role="alert" className="mt-3 text-sm">
-                {deleteError}
-              </p>
-            )}
-            <div className="mt-4 flex gap-3">
-              <AlertDialog.Cancel
-                disabled={deleteBusy}
-                className="min-h-11 flex-1"
-              >
-                취소
-              </AlertDialog.Cancel>
-              <button
-                disabled={deleteBusy}
-                className="min-h-11 flex-1 rounded-xl bg-red-700 text-white"
-                onClick={async () => {
-                  if (!deleting) return;
-                  setDeleteBusy(true);
-                  try {
-                    await journal.changeSnapshot((s) =>
-                      deleteNativeRecord(s, deleting),
-                    );
-                    setDeleting(null);
-                  } catch (e) {
-                    setDeleteError((e as Error).message);
-                  } finally {
-                    setDeleteBusy(false);
-                  }
-                }}
-              >
-                {deleteBusy ? "삭제 중…" : "삭제"}
-              </button>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
     </main>
   );
 }

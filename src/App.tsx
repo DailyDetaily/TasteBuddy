@@ -1,4 +1,6 @@
 import NativePreferenceIntake from './components/profile/NativePreferenceIntake';
+import { useProductColorMode } from './lib/colorMode';
+import { COLOR_TOKENS_BY_MODE } from './constants/colorModes';
 import {useNativePreferences} from './lib/gastronomy/useNativePreferences';
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, Menu as MenuIcon, UserPlus, X } from 'lucide-react';
@@ -6,9 +8,11 @@ import { ChevronLeft, Menu as MenuIcon, UserPlus, X } from 'lucide-react';
 const Home = lazy(() => import('./pages/HomePage'));
 const NativeDiningHome = lazy(() => import('./components/dining-native/NativeDiningHome'));
 const NativeDiningCapture = lazy(() => import('./components/dining-native/NativeDiningCapture'));
+const NativeDiningRecordDetail = lazy(() => import('./components/dining-native/NativeDiningRecordDetail'));
 import type { NativeCaptureRequest } from './components/dining-native/NativeDiningCapture';
 import AnalysisPage from './pages/AnalysisPage';
 const PlatingSite = lazy(() => import('./plating/PlatingSite'));
+const SheetPresentationPreview = lazy(() => import('./plating/SheetPresentation').then(module => ({ default: module.SheetPresentationPreview })));
 import DesignSystemPreviewPage from './pages/DesignSystemPreviewPage';
 import FigmaWorksPreviewPage from './pages/FigmaWorksPreviewPage';
 import TbaAdminPage from './pages/TbaAdminPage';
@@ -33,6 +37,8 @@ import { DrawerTitle, DrawerDescription } from './components/ui/drawer';
 import NativeSavedRestaurantList from './components/profile/NativeSavedRestaurantList';
 import SavedRestaurantListPage from './pages/SavedRestaurantListPage';
 import SplashScreen from './pages/SplashScreen';
+import AuthLandingScreen from './pages/AuthLandingScreen';
+import PrimaryButton from './components/system/PrimaryButton';
 import { AuthEntryForm } from './pages/AuthEntryScreen';
 import OnboardingScreen from './pages/OnboardingScreen';
 import PreferenceIntakeScreen from './pages/PreferenceIntakeScreen';
@@ -50,9 +56,12 @@ import NotificationPanel from './components/NotificationPanel';
 import AppMenuDrawer, { type AppMenuSupportPanel } from './components/AppMenuDrawer';
 import AuthProfileDialog from './components/AuthProfileDialog';
 import BottomSheetShell, {
+  BOTTOM_SHEET_STAGE_HEIGHT_CLASS,
   BottomSheetCloseButton,
   BottomSheetIconButton,
 } from './components/system/BottomSheetShell';
+import SheetBackground from './components/system/SheetBackground';
+import { applyNativeSheetBackgroundCardProgress as applySheetBackgroundCardProgress } from './lib/sheetPresentation';
 import ActionOverlayCard from './components/system/ActionOverlayCard';
 import {
   createTasteProfileAvatarInitials,
@@ -91,6 +100,7 @@ import {
   type PreferenceIntakeProfile,
 } from './constants/preferenceIntakeData';
 import { clearAppliedDesignTokenRuntimeState } from './lib/designTokenRuntime';
+import { canPersistAccountPresentation, canReuseAccountPresentation, normalizePresentationOwner } from './lib/accountPresentation';
 import {
   createFollowerCountNotification,
   hydrateNotifications,
@@ -99,7 +109,7 @@ import {
   type AppNotification,
 } from './lib/notificationsSupabase';
 import {
-  hydrateLatestMeasurementSnapshot,
+  hydrateLatestMeasurementSnapshotResult,
   hydrateReservationPageData,
   hydrateRestaurantContentCatalog,
   persistTasteMeasurementSnapshot,
@@ -123,6 +133,7 @@ import {
 } from './constants/reservationCatalog';
 import {
   deleteCurrentSupabaseAccount,
+  continueWithSupabaseGoogle,
   getCurrentSupabaseSession,
   hydrateSupabaseFriendSummary,
   hydrateSupabaseProfileConnections,
@@ -188,6 +199,7 @@ import type { Session } from '@supabase/supabase-js';
 
 type AppState =
   | 'splash'
+  | 'auth-entry'
   | 'onboarding'
   | 'intake'
   | 'calibration'
@@ -215,23 +227,8 @@ interface MainNavigationLocation {
 const MAIN_APP_TOP_OFFSET = 'calc(var(--tb-safe-area-top) + var(--tb-size-top-app-bar-height))';
 const MAIN_APP_BOTTOM_OFFSET =
   'calc(var(--tb-size-bottom-tab-bar-height) + var(--tb-safe-area-bottom))';
-const FOCUS_VIEWPORT_BACKGROUND = '#ffffff';
-const PAGE_VIEWPORT_BACKGROUND = '#f3f3f3';
-const BACKGROUND_CARD_OPEN_SCALE = 0.9;
-const BACKGROUND_CARD_OPEN_OFFSET = 30;
-const BACKGROUND_CARD_OPEN_RADIUS = 24;
-const BACKGROUND_CARD_SHADOW_Y = 20;
-const BACKGROUND_CARD_SHADOW_BLUR = 60;
-const BACKGROUND_CARD_SHADOW_OPACITY = 0.24;
-const BACKGROUND_CARD_TRANSITION = [
-  `transform ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
-  `border-radius ${MOTION_TOKENS.durationMs.slowest}ms ${MOTION_TOKENS.easing.entrance}`,
-  `box-shadow ${MOTION_TOKENS.durationMs.slow}ms ${MOTION_TOKENS.easing.entrance}`,
-].join(', ');
 const VIEWPORT_HEIGHT_CSS_VARIABLE = '--tb-viewport-height';
 const EDGE_TO_EDGE_VIEWPORT_HEIGHT_CSS_VARIABLE = '--tb-edge-to-edge-viewport-height';
-const BOTTOM_SHEET_STAGE_HEIGHT_CLASS =
-  'h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)] max-h-[calc(var(--tb-viewport-height,100dvh)*0.95_-_var(--tb-safe-area-top)_-_12px)]';
 
 const USER_STATE_STORAGE_KEY = 'tastebuddy-user-state-v5';
 const DINING_FEEDBACK_SUBMISSIONS_STORAGE_KEY = 'tastebuddy-dining-feedback-submissions-v1';
@@ -395,6 +392,7 @@ function createPersistableRestaurantFeedbackScenario(
 }
 
 interface PersistedUserState {
+  presentationOwnerID?: string | null;
   referenceSurveyHistory: TasteSurveySubmission[];
   hasCompletedInitialMeasurement: boolean;
   latestPreferenceIntakeProfile: PreferenceIntakeProfile | null;
@@ -673,6 +671,7 @@ function getUserInitials(displayName: string | null, email: string | null) {
 
 function createEmptyPersistedUserState(): PersistedUserState {
   return {
+    presentationOwnerID: null,
     referenceSurveyHistory: [],
     hasCompletedInitialMeasurement: false,
     latestPreferenceIntakeProfile: null,
@@ -717,31 +716,6 @@ function consumeOnboardingResetParam() {
   window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
 
   return true;
-}
-
-function applySheetBackgroundCardProgress(
-  element: HTMLDivElement | null,
-  progress: number,
-  immediate = false,
-) {
-  if (!element) {
-    return;
-  }
-
-  const clampedProgress = Math.min(Math.max(progress, 0), 1);
-  const scale = 1 - (1 - BACKGROUND_CARD_OPEN_SCALE) * clampedProgress;
-  const translateY = BACKGROUND_CARD_OPEN_OFFSET * clampedProgress;
-  const borderRadius = BACKGROUND_CARD_OPEN_RADIUS * clampedProgress;
-  const shadowOffsetY = BACKGROUND_CARD_SHADOW_Y * clampedProgress;
-  const shadowBlur = BACKGROUND_CARD_SHADOW_BLUR * clampedProgress;
-  const shadowOpacity = BACKGROUND_CARD_SHADOW_OPACITY * clampedProgress;
-
-  element.style.transition = immediate ? 'none' : BACKGROUND_CARD_TRANSITION;
-  element.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale})`;
-  element.style.borderRadius = `${borderRadius}px`;
-  element.style.boxShadow = clampedProgress > 0
-    ? `0 ${shadowOffsetY}px ${shadowBlur}px rgba(0,0,0,${shadowOpacity})`
-    : 'none';
 }
 
 function loadPersistedUserState(): PersistedUserState {
@@ -809,6 +783,7 @@ function loadPersistedUserState(): PersistedUserState {
         : null;
 
     return {
+      presentationOwnerID: normalizePresentationOwner(parsedValue.presentationOwnerID),
       referenceSurveyHistory: mergeTasteSurveyHistory(Array.isArray(parsedValue.referenceSurveyHistory) ? parsedValue.referenceSurveyHistory : []),
       hasCompletedInitialMeasurement:
         Boolean(parsedValue.hasCompletedInitialMeasurement) && latestTasteMeasurementSnapshot !== null,
@@ -901,6 +876,7 @@ function mergeRestaurantBookmarkState(remoteState: RestaurantBookmarkState) {
 }
 
 function MainApp() {
+  const colorMode = useProductColorMode();
   const [shouldStartFromOnboarding] = useState(consumeOnboardingResetParam);
   const [persistedUserState] = useState<PersistedUserState>(() =>
     shouldStartFromOnboarding ? createEmptyPersistedUserState() : loadPersistedUserState(),
@@ -910,7 +886,10 @@ function MainApp() {
     shouldStartFromOnboarding ? 'onboarding' : 'splash',
   );
   const [activeTab, setActiveTab] = useState<TabType>('home');
+  const [hasCompletedAuthEntry, setHasCompletedAuthEntry] = useState(shouldStartFromOnboarding);
+  const [isAnalysisRootView, setIsAnalysisRootView] = useState(true);
   const [nativeCapture,setNativeCapture]=useState<NativeCaptureRequest|null>(null);
+  const [nativeRecordDetailID, setNativeRecordDetailID] = useState<string | null>(null);
   const [tabResetKeys, setTabResetKeys] = useState<Record<TabType, number>>({
     analysis: 0,
     home: 0,
@@ -1010,6 +989,14 @@ function MainApp() {
   const [authEntryPendingEmail, setAuthEntryPendingEmail] = useState<string | null>(null);
   const [isAuthEntrySheetOpen, setIsAuthEntrySheetOpen] = useState(false);
   const [isAuthEntryCancelConfirmOpen, setIsAuthEntryCancelConfirmOpen] = useState(false);
+  const authRequestGenerationRef = useRef(0);
+  const authSessionOwnerRef = useRef('guest');
+  const presentationOwnerRef = useRef<string | null>(null);
+  const [presentationOwnerID, setPresentationOwnerID] = useState<string | null>(null);
+  const [authRestoreRetry, setAuthRestoreRetry] = useState(0);
+  const [authHydrationFailure, setAuthHydrationFailure] = useState<{
+    message: string; session: Session; source: 'startup' | 'entry';
+  } | null>(null);
   const [isProfileIdentitySheetOpen, setIsProfileIdentitySheetOpen] = useState(false);
   const [isProfileEditSheetOpen, setIsProfileEditSheetOpen] = useState(false);
   const [profileEditStatus, setProfileEditStatus] = useState<'idle' | 'submitting'>('idle');
@@ -1068,7 +1055,42 @@ function MainApp() {
   const syncingExternalDiningFeedbackSubmissionIdsRef = useRef<Set<number>>(new Set());
   const [feedbackSyncAttempt, setFeedbackSyncAttempt] = useState(0);
   const feedbackSyncRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const shouldLayerAuthEntrySheet = isAuthEntrySheetOpen && authEntryStep === 'code';
+
+  // Measurement snapshots are account-derived display state, never a fallback for another account.
+  const clearAccountMeasurementPresentation = () => {
+    setLatestTasteMeasurementSnapshot(null);
+    setPalateBloomAvatarSnapshot(null);
+    setLatestRestaurantReadyGuidance(null);
+    setHasCompletedInitialMeasurement(false);
+  };
+
+  const resolveAccountPresentationOwner = (owner: string) => {
+    if (!canReuseAccountPresentation({
+      savedOwner: persistedUserState.presentationOwnerID ?? null,
+      currentPresentationOwner: presentationOwnerRef.current,
+      restoredOwner: owner,
+    })) clearAccountMeasurementPresentation();
+    presentationOwnerRef.current = owner;
+    setPresentationOwnerID(owner);
+  };
+
+  const isCurrentAuthRequest = async (generation: number, owner: string, allowAnonymousCreation = false) => {
+    if (authRequestGenerationRef.current !== generation) return false;
+    const current = await getCurrentSupabaseSession();
+    return authRequestGenerationRef.current === generation && (
+      (current?.user.id ?? 'guest') === owner ||
+      (allowAnonymousCreation && owner === 'guest' && Boolean(current?.user.is_anonymous))
+    );
+  };
+
+  const handleAuthEntryOpenChange = (open: boolean) => {
+    if (!open) {
+      authRequestGenerationRef.current += 1;
+      setAuthHydrationFailure(null);
+    }
+    setIsAuthEntrySheetOpen(open);
+  };
+  const shouldLayerAuthEntrySheet = isAuthEntrySheetOpen;
   const isLayeredMeasurementSheetOpen =
     shouldLayerAuthEntrySheet ||
     isProfileIdentitySheetOpen ||
@@ -1079,6 +1101,11 @@ function MainApp() {
     isTasteSurveySheetOpen;
 
   useEffect(() => {
+    if (!canPersistAccountPresentation({
+      hydrated: hasHydratedRemoteMeasurement,
+      presentationOwner: presentationOwnerID,
+      sessionOwner: nativeProfileOwner,
+    })) return;
     const nextTasteSurveyDraft =
       hasCompletedInitialMeasurement && latestTasteMeasurementSnapshot !== null
         ? null
@@ -1096,6 +1123,7 @@ function MainApp() {
       window.localStorage.setItem(
         USER_STATE_STORAGE_KEY,
         JSON.stringify({
+          presentationOwnerID,
           referenceSurveyHistory,
           hasCompletedInitialMeasurement,
           latestPreferenceIntakeProfile,
@@ -1115,6 +1143,9 @@ function MainApp() {
       console.warn('Failed to persist Taste Buddy user state.', error);
     }
   }, [
+    presentationOwnerID,
+    nativeProfileOwner,
+    hasHydratedRemoteMeasurement,
     referenceSurveyHistory,
     currentSurveyContextIndex,
     currentSurveyIndex,
@@ -1145,42 +1176,56 @@ function MainApp() {
     let isCancelled = false;
 
     void (async () => {
-      if (shouldStartFromOnboarding) {
+      if (shouldStartFromOnboarding && authRestoreRetry === 0) {
+        resolveAccountPresentationOwner('guest');
         setHasHydratedRemoteMeasurement(true);
         return;
       }
 
       if (!isSupabaseConfigured) {
+        resolveAccountPresentationOwner('guest');
         setHasHydratedRemoteMeasurement(true);
         return;
       }
 
       const session = await getCurrentSupabaseSession();
-
-      if (!isCancelled) {
-        setSupabaseSession(session);
-      }
+      if (isCancelled) return;
+      setSupabaseSession(session);
+      resolveAccountPresentationOwner(session?.user.id ?? 'guest');
 
       if (!session || isAnonymousSupabaseSession(session)) {
         setHasHydratedRemoteMeasurement(true);
         return;
       }
 
-      const remoteSnapshot = await hydrateLatestMeasurementSnapshot();
+      clearAccountMeasurementPresentation();
+      setAuthHydrationFailure(null);
+      let result: Awaited<ReturnType<typeof hydrateLatestMeasurementSnapshotResult>>;
+      try {
+        result = await hydrateLatestMeasurementSnapshotResult();
+      } catch {
+        result = { status: 'unavailable', message: '입맛 기록을 불러오지 못했어요. 다시 시도해 주세요.' };
+      }
+      const currentSession = await getCurrentSupabaseSession();
 
       if (isCancelled) {
         return;
       }
+      if (currentSession?.user.id !== session.user.id) {
+        setAuthRestoreRetry(value => value + 1);
+        return;
+      }
+      if (result.status === 'unavailable') {
+        setAuthHydrationFailure({ message: result.message, session, source: 'startup' });
+        return;
+      }
 
-      if (remoteSnapshot) {
+      if (result.status === 'ready') {
+        const remoteSnapshot = result.snapshot;
         setLatestTasteMeasurementSnapshot(remoteSnapshot);
-        setPalateBloomAvatarSnapshot((currentSnapshot) => currentSnapshot ?? remoteSnapshot);
+        setPalateBloomAvatarSnapshot(remoteSnapshot);
         setHasCompletedInitialMeasurement(true);
-        setLatestRestaurantReadyGuidance((current) =>
-          current
-            ? mergeRestaurantReadyGuidanceWithSnapshot(current, remoteSnapshot)
-            : createFallbackRestaurantReadyGuidance(remoteSnapshot),
-        );
+        setLatestRestaurantReadyGuidance(createFallbackRestaurantReadyGuidance(remoteSnapshot));
       }
 
       setHasHydratedRemoteMeasurement(true);
@@ -1189,7 +1234,7 @@ function MainApp() {
     return () => {
       isCancelled = true;
     };
-  }, [shouldStartFromOnboarding]);
+  }, [shouldStartFromOnboarding, authRestoreRetry]);
 
   useEffect(() => {
     applySheetBackgroundCardProgress(backgroundCardRef.current, isLayeredMeasurementSheetOpen ? 1 : 0);
@@ -1201,17 +1246,30 @@ function MainApp() {
     }
 
     let isCancelled = false;
+    let authEventRevision = 0;
+    const applyAuthSession = (session: Session | null) => {
+      if (isCancelled) return;
+      const nextOwner = session?.user.id ?? 'guest';
+      if (authSessionOwnerRef.current !== nextOwner) {
+        authSessionOwnerRef.current = nextOwner;
+        resolveAccountPresentationOwner(nextOwner);
+        setAuthHydrationFailure(null);
+        setHasHydratedRemoteMeasurement(false);
+        setAuthRestoreRetry(value => value + 1);
+      }
+      setSupabaseSession(session);
+    };
 
     void (async () => {
+      const revision = authEventRevision;
       const session = await getCurrentSupabaseSession();
-
-      if (!isCancelled) {
-        setSupabaseSession(session);
-      }
+      if (revision === authEventRevision) applyAuthSession(session);
     })();
 
     const unsubscribe = subscribeToSupabaseAuthState((session) => {
-      setSupabaseSession(session);
+      if (isCancelled) return;
+      authEventRevision += 1;
+      applyAuthSession(session);
 
       if (session && !isAnonymousSupabaseSession(session)) {
         setAuthProfileStatus('success');
@@ -1244,7 +1302,7 @@ function MainApp() {
   }, []);
 
   const hasMeasurementData =
-    hasCompletedInitialMeasurement && latestTasteMeasurementSnapshot !== null;
+    presentationOwnerID === nativeProfileOwner && hasCompletedInitialMeasurement && latestTasteMeasurementSnapshot !== null;
   const currentUserEmail = getSessionEmail(supabaseSession);
   const sessionDisplayName = getSessionDisplayName(supabaseSession);
   const sessionNickname = getSessionNickname(supabaseSession);
@@ -1401,6 +1459,13 @@ function MainApp() {
   useEffect(() => {
     setIsPreferenceIntakeSheetOpen(false);setIsProfileEditSheetOpen(false);setIsProfileIdentitySheetOpen(false);setProfileEditMessage(null);setProfileEditStatus('idle');profileEditExpectedRef.current=null;
   }, [nativeProfileOwner]);
+  useEffect(() => {
+    if (authHydrationFailure && authHydrationFailure.session.user.id !== nativeProfileOwner) {
+      authRequestGenerationRef.current += 1;
+      setAuthHydrationFailure(null);
+      setAuthRestoreRetry(value => value + 1);
+    }
+  }, [nativeProfileOwner, authHydrationFailure]);
 
   const hasCommittedPalateBloomMeasurement = Boolean(
     palateBloomAvatarSnapshot &&
@@ -1741,7 +1806,8 @@ function MainApp() {
     if (
       appState !== 'splash' ||
       !hasSplashDelayCompleted ||
-      !hasHydratedRemoteMeasurement
+      !hasHydratedRemoteMeasurement ||
+      presentationOwnerID !== nativeProfileOwner
     ) {
       return;
     }
@@ -1752,8 +1818,13 @@ function MainApp() {
       return;
     }
 
-    if (latestPreferenceIntakeProfile) {
+    if (isAnonymousUser && latestPreferenceIntakeProfile) {
       setAppState('calibration');
+      return;
+    }
+
+    if (!hasCompletedAuthEntry && isAnonymousUser) {
+      setAppState('auth-entry');
       return;
     }
 
@@ -1764,6 +1835,10 @@ function MainApp() {
     hasMeasurementData,
     hasSplashDelayCompleted,
     latestPreferenceIntakeProfile,
+    hasCompletedAuthEntry,
+    isAnonymousUser,
+    presentationOwnerID,
+    nativeProfileOwner,
   ]);
 
   const getCurrentMainNavigationLocation = (): MainNavigationLocation => ({
@@ -2212,10 +2287,10 @@ function MainApp() {
   };
 
   useLayoutEffect(() => {
-    if (appState === 'main' && !hasMeasurementData) {
+    if (appState === 'main' && !hasMeasurementData && hasHydratedRemoteMeasurement && !authHydrationFailure) {
       applyStarterHomeState();
     }
-  }, [appState, hasMeasurementData]);
+  }, [appState, hasMeasurementData, hasHydratedRemoteMeasurement, authHydrationFailure]);
 
   const handleSplashComplete = () => {
     trackEvent('splash_complete');
@@ -2223,6 +2298,8 @@ function MainApp() {
   };
 
   const openAuthEntrySheet = (intent: SupabaseEmailOtpIntent) => {
+    authRequestGenerationRef.current += 1;
+    setAuthHydrationFailure(null);
     trackEvent('auth_entry_open', { intent });
     setAuthEntryIntent(intent);
     setAuthEntryStatus('idle');
@@ -2234,6 +2311,8 @@ function MainApp() {
   };
 
   const continueAfterAuthEntry = () => {
+    authRequestGenerationRef.current += 1;
+    setAuthHydrationFailure(null);
     trackEvent('auth_entry_skip', { intent: authEntryIntent });
     setAuthEntryStatus('idle');
     setAuthEntryMessage(null);
@@ -2241,11 +2320,34 @@ function MainApp() {
     setAuthEntryPendingEmail(null);
     setAuthEntryIntent('start-with-email');
     setIsAuthEntrySheetOpen(false);
+    setHasCompletedAuthEntry(true);
+    if (appState === 'auth-entry') {
+      setAppState('onboarding');
+      return;
+    }
     enterGuestHome();
   };
 
-  const continueAfterVerifiedEmailLogin = async (session: Session | null) => {
-    const identityResult = await hydrateSupabaseProfileIdentity();
+  const continueAfterVerifiedEmailLogin = async (session: Session | null, generation: number) => {
+    if (!session || !(await isCurrentAuthRequest(generation, session.user.id))) return;
+    setHasCompletedAuthEntry(true);
+    setAuthHydrationFailure(null);
+    resolveAccountPresentationOwner(session.user.id);
+    clearAccountMeasurementPresentation();
+    let identityResult: Awaited<ReturnType<typeof hydrateSupabaseProfileIdentity>>;
+    try {
+      identityResult = await hydrateSupabaseProfileIdentity();
+    } catch {
+      if (await isCurrentAuthRequest(generation, session.user.id)) {
+        setAuthHydrationFailure({ message: '계정 정보를 불러오지 못했어요. 다시 시도해 주세요.', session, source: 'entry' });
+      }
+      return;
+    }
+    if (!(await isCurrentAuthRequest(generation, session.user.id))) return;
+    if (!identityResult.ok) {
+      setAuthHydrationFailure({ message: '계정 정보를 불러오지 못했어요. 다시 시도해 주세요.', session, source: 'entry' });
+      return;
+    }
     const sessionIdentity = {
       displayName: getSessionDisplayName(session),
       nickname: getSessionNickname(session),
@@ -2255,6 +2357,7 @@ function MainApp() {
       hasProfileIdentity(sessionIdentity);
 
     if (identityResult.ok) {
+      hydratedProfileOwnerRef.current = session.user.id;
       setProfileAvatarPath(identityResult.avatarPath);
       setHydratedProfileDisplayName(identityResult.displayName ?? null);
       setHydratedProfileNickname(identityResult.nickname ?? null);
@@ -2271,28 +2374,31 @@ function MainApp() {
       return;
     }
 
-    const remoteSnapshot = await hydrateLatestMeasurementSnapshot();
+    let result: Awaited<ReturnType<typeof hydrateLatestMeasurementSnapshotResult>>;
+    try {
+      result = await hydrateLatestMeasurementSnapshotResult();
+    } catch {
+      result = { status: 'unavailable', message: '입맛 기록을 불러오지 못했어요. 다시 시도해 주세요.' };
+    }
+    if (!(await isCurrentAuthRequest(generation, session.user.id))) return;
+    if (result.status === 'unavailable') {
+      setAuthHydrationFailure({ message: result.message, session, source: 'entry' });
+      return;
+    }
 
-    if (remoteSnapshot) {
+    if (result.status === 'ready') {
+      const remoteSnapshot = result.snapshot;
       setLatestTasteMeasurementSnapshot(remoteSnapshot);
+      setPalateBloomAvatarSnapshot(remoteSnapshot);
       setHasCompletedInitialMeasurement(true);
-      setLatestRestaurantReadyGuidance((current) =>
-        current
-          ? mergeRestaurantReadyGuidanceWithSnapshot(current, remoteSnapshot)
-          : createFallbackRestaurantReadyGuidance(remoteSnapshot),
-      );
+      setLatestRestaurantReadyGuidance(createFallbackRestaurantReadyGuidance(remoteSnapshot));
       setActiveTab('home');
       setAppState('main');
       return;
     }
 
-    if (hasMeasurementData) {
-      setActiveTab('home');
-      setAppState('main');
-      return;
-    }
-
-    openTasteSurveyIntroOnHome('auth');
+    if (appState === 'auth-entry') setAppState('onboarding');
+    else openTasteSurveyIntroOnHome('auth');
   };
 
   const handleSubmitAuthEntryEmail = async (email: string) => {
@@ -2303,14 +2409,20 @@ function MainApp() {
       return;
     }
 
+    const generation = ++authRequestGenerationRef.current;
+    const owner = profileOwnerRef.current;
     setAuthEntryStatus('submitting');
     setAuthEntryMessage(null);
     trackEvent('auth_email_submit', { intent: authEntryIntent });
 
     let effectiveIntent = authEntryIntent;
-    let result = await sendSupabaseEmailOtp(email, authEntryIntent, {
-      shouldCreateUser: true,
-    });
+    let result: Awaited<ReturnType<typeof sendSupabaseEmailOtp>>;
+    try {
+      result = await sendSupabaseEmailOtp(email, authEntryIntent, { shouldCreateUser: true });
+    } catch {
+      result = { ok: false, message: '인증 코드를 보내지 못했어요. 다시 시도해 주세요.' };
+    }
+    if (!(await isCurrentAuthRequest(generation, owner, authEntryIntent === 'link-current-profile'))) return;
 
     if (
       authEntryIntent === 'start-with-email' &&
@@ -2321,7 +2433,12 @@ function MainApp() {
     ) {
       effectiveIntent = 'link-current-profile';
       trackEvent('auth_email_auto_signup_from_login', { reason: 'email_not_found' });
-      result = await sendSupabaseEmailOtp(email, effectiveIntent);
+      try {
+        result = await sendSupabaseEmailOtp(email, effectiveIntent);
+      } catch {
+        result = { ok: false, message: '인증 코드를 보내지 못했어요. 다시 시도해 주세요.' };
+      }
+      if (!(await isCurrentAuthRequest(generation, owner, true))) return;
     }
 
     trackEvent(result.ok ? 'auth_email_code_sent' : 'auth_email_code_error', {
@@ -2360,11 +2477,21 @@ function MainApp() {
       return;
     }
 
+    const generation = ++authRequestGenerationRef.current;
+    const owner = profileOwnerRef.current;
     setAuthEntryStatus('submitting');
     setAuthEntryMessage(null);
     trackEvent('auth_code_submit', { intent: authEntryIntent });
 
-    const result = await verifySupabaseEmailOtp(authEntryPendingEmail, code, authEntryIntent);
+    let result: Awaited<ReturnType<typeof verifySupabaseEmailOtp>>;
+    try {
+      result = await verifySupabaseEmailOtp(authEntryPendingEmail, code, authEntryIntent);
+    } catch {
+      result = { ok: false, message: '인증 코드를 확인하지 못했어요. 다시 시도해 주세요.', session: null };
+    }
+    if (authRequestGenerationRef.current !== generation) return;
+    const session = result.ok ? result.session ?? (await getCurrentSupabaseSession()) : null;
+    if (!(await isCurrentAuthRequest(generation, session?.user.id ?? owner))) return;
     trackEvent(result.ok ? 'auth_code_verified' : 'auth_code_verify_error', {
       intent: authEntryIntent,
     });
@@ -2372,11 +2499,14 @@ function MainApp() {
     setAuthEntryStatus(result.ok ? 'success' : 'error');
     setAuthEntryMessage(result.message);
 
-    if (!result.ok) {
+    if (!result.ok || !session) {
+      if (result.ok) {
+        setAuthEntryStatus('error');
+        setAuthEntryMessage('인증한 계정을 확인하지 못했어요. 다시 시도해 주세요.');
+      }
       return;
     }
 
-    const session = result.session ?? (await getCurrentSupabaseSession());
     setSupabaseSession(session);
     setIsAuthEntrySheetOpen(false);
     setAuthEntryStep('email');
@@ -2389,10 +2519,11 @@ function MainApp() {
       return;
     }
 
-    await continueAfterVerifiedEmailLogin(session);
+    await continueAfterVerifiedEmailLogin(session, generation);
   };
 
   const handleBackToAuthEntryEmail = () => {
+    authRequestGenerationRef.current += 1;
     trackEvent('auth_entry_back_to_email', { intent: authEntryIntent });
     setIsAuthEntryCancelConfirmOpen(false);
     setAuthEntryStep('email');
@@ -2408,10 +2539,11 @@ function MainApp() {
       return;
     }
 
-    setIsAuthEntrySheetOpen(false);
+    handleAuthEntryOpenChange(false);
   };
 
   const handleConfirmCloseAuthEntry = () => {
+    authRequestGenerationRef.current += 1;
     trackEvent('auth_entry_close_confirm', { intent: authEntryIntent, step: authEntryStep });
     setIsAuthEntryCancelConfirmOpen(false);
     setIsAuthEntrySheetOpen(false);
@@ -2427,6 +2559,7 @@ function MainApp() {
       return;
     }
 
+    authRequestGenerationRef.current += 1;
     trackEvent('auth_entry_dev_bypass', { intent: authEntryIntent, step: authEntryStep });
 
     if (authEntryIntent === 'start-with-email') {
@@ -2470,7 +2603,7 @@ function MainApp() {
       auth_required: shouldShowAuthEntry,
       has_measurement_data: hasMeasurementData,
     });
-    if (shouldShowAuthEntry) {
+    if (shouldShowAuthEntry && !hasCompletedAuthEntry) {
       openAuthEntrySheet('start-with-email');
       return;
     }
@@ -2489,6 +2622,8 @@ function MainApp() {
       return;
     }
 
+    const generation = ++authRequestGenerationRef.current;
+    const owner = profileOwnerRef.current;
     setProfileSetupStatus('submitting');
     setProfileSetupMessage(null);
     trackEvent('profile_setup_submit', {
@@ -2496,7 +2631,13 @@ function MainApp() {
       has_nickname: Boolean(input.nickname.trim()),
     });
 
-    const result = await updateSupabaseProfileIdentity(input);
+    let result: Awaited<ReturnType<typeof updateSupabaseProfileIdentity>>;
+    try {
+      result = await updateSupabaseProfileIdentity(input);
+    } catch {
+      result = { ok: false, message: '프로필을 저장하지 못했어요. 다시 시도해 주세요.' };
+    }
+    if (!(await isCurrentAuthRequest(generation, owner))) return;
     trackEvent(result.ok ? 'profile_setup_complete' : 'profile_setup_error');
 
     setProfileSetupStatus(result.ok ? 'success' : 'error');
@@ -2507,13 +2648,15 @@ function MainApp() {
     }
 
     const session = await getCurrentSupabaseSession();
+    if (authRequestGenerationRef.current !== generation || session?.user.id !== owner) return;
     setSupabaseSession(session);
     setHydratedProfileDisplayName(input.displayName.trim() || input.nickname.trim() || null);
     setHydratedProfileNickname(input.nickname.trim() || null);
     setIsProfileSetupSheetOpen(false);
     setProfileSetupStatus('idle');
     setProfileSetupMessage(null);
-    openTasteSurveyIntroOnHome('profile');
+    if (appState === 'auth-entry') setAppState('onboarding');
+    else openTasteSurveyIntroOnHome('profile');
   };
 
   const handleStartTasteSurveyFromIntro = () => {
@@ -2584,7 +2727,7 @@ function MainApp() {
     setAppState('calibration');
   };
 
-  useEffect(() => { setNativeCapture(null); }, [supabaseSession?.user.id]);
+  useEffect(() => { setNativeCapture(null); setNativeRecordDetailID(null); }, [supabaseSession?.user.id]);
 
   const handleStartMeasurementFromMain = (originTab: TabType) => {
     trackEvent('measurement_start', { origin_tab: originTab, mode: 'new' });
@@ -3001,7 +3144,7 @@ function MainApp() {
         ? isReservationRootView
         : activeTab === 'home'
           ? isHomeRootView
-          : true));
+          : activeTab === 'analysis' ? isAnalysisRootView : true));
   const shouldShowMainTopShell = shouldShowMainShell && selectedRestaurantDetail === null;
   const shouldShowMainBottomShell =
     shouldShowMainShell &&
@@ -3024,6 +3167,7 @@ function MainApp() {
     appState === 'main' && (isReservationFeedbackMapView || isRestaurantDetailFeedbackMapView);
   const usesPageViewportBackground =
     appState === 'splash' ||
+    appState === 'auth-entry' ||
     appState === 'main' ||
     appState === 'tastick' ||
     appState === 'measurement' ||
@@ -3035,8 +3179,8 @@ function MainApp() {
     isReservationFeedbackMapView ||
     isRestaurantDetailFeedbackMapView;
   const viewportBackgroundColor = usesPageViewportBackground
-    ? PAGE_VIEWPORT_BACKGROUND
-    : FOCUS_VIEWPORT_BACKGROUND;
+    ? COLOR_TOKENS_BY_MODE[colorMode].background.page
+    : COLOR_TOKENS_BY_MODE[colorMode].background.focus;
   const userTasteAccentStyle = useMemo(
     () => createUserTasteAccentStyle(resolveUserTasteAccent(latestTasteMeasurementSnapshot)),
     [latestTasteMeasurementSnapshot],
@@ -3085,13 +3229,14 @@ function MainApp() {
         ? 'bg-black'
         : usesPageViewportBackground
           ? 'bg-[var(--tb-color-bg-page)]'
-          : 'bg-white'
+          : 'bg-[var(--tb-color-surface-base)]'
         }`}
       style={userTasteAccentStyle}
     >
-      <div
+      <SheetBackground
         ref={backgroundCardRef}
-        className={`relative flex h-[var(--tb-edge-to-edge-viewport-height,var(--tb-viewport-height,100dvh))] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesPageViewportBackground ? 'bg-[var(--tb-color-bg-page)]' : 'bg-white'
+        data-sheet-auth-landing={appState === 'auth-entry' ? 'true' : undefined}
+        className={`relative flex h-[var(--tb-edge-to-edge-viewport-height,var(--tb-viewport-height,100dvh))] w-full max-w-[1440px] origin-top flex-col overflow-hidden font-sans will-change-transform ${usesPageViewportBackground ? 'bg-[var(--tb-color-bg-page)]' : 'bg-[var(--tb-color-surface-base)]'
           }`}
       >
         <div
@@ -3102,6 +3247,17 @@ function MainApp() {
           }}
         />
         {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}
+        {authHydrationFailure && <section role="alert" className="absolute inset-0 z-[100] flex flex-col items-center justify-center gap-4 bg-[var(--tb-color-bg-page)] px-5 text-center">
+          <p className="text-[16px] font-bold">계정의 입맛 기록을 확인하지 못했어요</p>
+          <p className="text-[13px] text-[var(--tb-color-text-hint)]">{authHydrationFailure.message}</p>
+          <PrimaryButton fullWidth={false} onClick={() => {
+            const failure = authHydrationFailure;
+            setAuthHydrationFailure(null);
+            if (failure.source === 'startup') setAuthRestoreRetry(value => value + 1);
+            else void continueAfterVerifiedEmailLogin(failure.session, ++authRequestGenerationRef.current);
+          }}>다시 시도</PrimaryButton>
+        </section>}
+        {appState === 'auth-entry' && <AuthLandingScreen onStart={() => openAuthEntrySheet('start-with-email')} />}
         {appState === 'onboarding' && (
           <OnboardingScreen onComplete={handleStartInitialMeasurementFlow} />
         )}
@@ -3356,7 +3512,7 @@ function MainApp() {
                   ownerID={supabaseSession?.user.id ?? 'guest'}
                   feedbackSubmissions={externalDiningFeedbackSubmissions.filter(submission => submission.ownerUserId ? submission.ownerUserId === supabaseSession?.user.id : !supabaseSession || isAnonymousSupabaseSession(supabaseSession))}
                   onOpenJournal={() => navigateToTab('reservation')}
-                  onEditRecord={entryID => setNativeCapture({entryID})}
+                  onEditRecord={setNativeRecordDetailID}
                   onOpenGlobalSearch={handleOpenGlobalSearch}
                   disableHydration={activeTab !== 'home'}
                   hasMeasurementData={hasMeasurementData}
@@ -3394,6 +3550,7 @@ function MainApp() {
                 {nativePreferences.error && <p role="alert" className="p-4 text-sm">{nativePreferences.error}</p>}
                 {latestTasteMeasurementSnapshot ? (
                   <AnalysisPage
+                    onRootViewChange={setIsAnalysisRootView}
                     key={`analysis-${supabaseSession?.user.id ?? 'guest'}-${tabResetKeys.analysis}`}
                     isActive={activeTab === 'analysis'}
                     preferenceProfile={accountPreferenceProfile}
@@ -3403,7 +3560,7 @@ function MainApp() {
                       setIsEditingPreferencesFromAnalysis(true);
                       setIsPreferenceIntakeSheetOpen(true);
                     }}
-                    surveyHistory={referenceSurveyHistory}
+                    surveyHistory={nativeProfileOwner === 'guest' ? referenceSurveyHistory : []}
                     feedbackSubmissions={externalDiningFeedbackSubmissions.filter(submission =>
                       belongsToCurrentAccount(submission),
                     )}
@@ -3425,7 +3582,7 @@ function MainApp() {
               >
                 {latestTasteMeasurementSnapshot ? (
                   <Suspense fallback={<div role="status" className="p-5 text-[13px]">기록을 불러오고 있어요.</div>}>
-                  <NativeDiningHome key={supabaseSession?.user.id ?? 'guest'} owner={supabaseSession?.user.id ?? 'guest'} active={activeTab === 'reservation'} onCreate={() => setNativeCapture({})} onEdit={entryID => setNativeCapture({entryID})} onAddMenu={mealEntryID => setNativeCapture({mealEntryID})} onRootViewChange={setIsReservationRootView}>
+                  <NativeDiningHome key={supabaseSession?.user.id ?? 'guest'} owner={supabaseSession?.user.id ?? 'guest'} avatarProfile={userPalateBloomProfile} active={activeTab === 'reservation'} onCreate={() => setNativeCapture({})} onEdit={entryID => setNativeCapture({entryID})} onAddMenu={mealEntryID => setNativeCapture({mealEntryID})} onRootViewChange={setIsReservationRootView}>
                   <DiningPage
                     key={`reservation-${supabaseSession?.user.id ?? 'guest'}-${tabResetKeys.reservation}`}
                     disableHydration={activeTab !== 'reservation'}
@@ -3526,8 +3683,11 @@ function MainApp() {
           )}
         </div>
 
-        {nativeCapture && appState === 'main' && <Suspense fallback={<div role="status" className="fixed inset-0 z-[80] grid place-items-center bg-white">기록을 준비하고 있어요.</div>}>
-          <NativeDiningCapture key={supabaseSession?.user.id ?? 'guest'} owner={supabaseSession?.user.id ?? 'guest'} request={nativeCapture} onClose={() => setNativeCapture(null)} onSaved={() => { setNativeCapture(null); setSelectedRestaurantDetail(null); setSelectedRestaurantDetailInitialView('detail'); setIsRestaurantDetailFeedbackMapView(false); setActiveTab('reservation'); setIsReservationRootView(true); setIsHomeRootView(true); }} />
+        {nativeRecordDetailID && !nativeCapture && appState === 'main' && <Suspense fallback={<div role="status" className="fixed inset-0 z-[80] grid place-items-center bg-[var(--tb-color-bg-page)]">기록을 불러오고 있어요.</div>}>
+          <NativeDiningRecordDetail key={`${nativeProfileOwner}:${nativeRecordDetailID}`} owner={nativeProfileOwner} entryID={nativeRecordDetailID} onClose={() => setNativeRecordDetailID(null)} onEdit={entryID => setNativeCapture({entryID})} onAddMenu={mealEntryID => setNativeCapture({mealEntryID})} />
+        </Suspense>}
+        {nativeCapture && appState === 'main' && <Suspense fallback={<div role="status" className="fixed inset-0 z-[80] grid place-items-center bg-[var(--tb-color-surface-base)]">기록을 준비하고 있어요.</div>}>
+          <NativeDiningCapture key={supabaseSession?.user.id ?? 'guest'} owner={supabaseSession?.user.id ?? 'guest'} request={nativeCapture} onClose={() => setNativeCapture(null)} onSaved={() => { setNativeCapture(null); setNativeRecordDetailID(null); setSelectedRestaurantDetail(null); setSelectedRestaurantDetailInitialView('detail'); setIsRestaurantDetailFeedbackMapView(false); setActiveTab('reservation'); setIsReservationRootView(true); setIsHomeRootView(true); }} />
         </Suspense>}
 
         {/* Global Overlays */}
@@ -3606,7 +3766,7 @@ function MainApp() {
           headerStart={<BottomSheetCloseButton />}
         >
           <DrawerDescription className="sr-only">내 프로필 요약과 계정 연결</DrawerDescription>
-          {(nativeProfile.error || nativeProfile.backupError || !nativeProfile.ready || nativeProfile.dirty) && <div role="status" className="mb-3 rounded-[12px] bg-white p-3 text-[12px]">
+          {(nativeProfile.error || nativeProfile.backupError || !nativeProfile.ready || nativeProfile.dirty) && <div role="status" className="mb-3 rounded-[12px] bg-[var(--tb-color-surface-base)] p-3 text-[12px]">
             {nativeProfile.error ?? nativeProfile.backupError ?? (!nativeProfile.ready ? '프로필을 불러오고 있어요.' : nativeProfile.remoteEnabled ? '기기에 저장했어요. 계정 백업을 확인하고 있어요.' : '프로필은 이 기기에 저장되어 있어요.')}
             <button className="ml-2 min-h-11 underline" onClick={() => {nativeProfile.retry();if(nativeProfile.ready&&!nativeProfile.error)void nativeProfile.sync();}}>다시 확인</button>
           </div>}
@@ -3766,27 +3926,19 @@ function MainApp() {
 
         <BottomSheetShell
           open={isAuthEntrySheetOpen}
-          onOpenChange={setIsAuthEntrySheetOpen}
+          onOpenChange={handleAuthEntryOpenChange}
           onDrag={(_, percentageDragged) => {
-            if (authEntryStep === 'code') {
-              applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
-            }
+            applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
           }}
           onRelease={(_, open) => {
-            if (authEntryStep === 'code') {
-              applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
-            }
+            applySheetBackgroundCardProgress(backgroundCardRef.current, open ? 1 : 0);
           }}
-          contentClassName={
-            authEntryStep === 'code'
-              ? BOTTOM_SHEET_STAGE_HEIGHT_CLASS
-              : 'h-auto max-h-[72vh]'
-          }
+          contentClassName={BOTTOM_SHEET_STAGE_HEIGHT_CLASS}
           bodyClassName="px-5 pb-1 pt-2"
           headerCenter={
-            <h2 className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
-              {authEntryIntent === 'link-current-profile' ? '계정 연결' : '로그인'}
-            </h2>
+            <DrawerTitle className="text-[16px] font-bold leading-snug text-[var(--tb-color-text-primary)]">
+              {authEntryIntent === 'link-current-profile' ? '계정 연결' : '시작하기'}
+            </DrawerTitle>
           }
           headerStart={
             authEntryStep === 'code' ? (
@@ -3795,7 +3947,7 @@ function MainApp() {
                 icon={ChevronLeft}
                 onClick={handleBackToAuthEntryEmail}
               />
-            ) : undefined
+            ) : <BottomSheetCloseButton />
           }
           headerEnd={
             authEntryStep === 'code' ? (
@@ -3804,14 +3956,11 @@ function MainApp() {
                 icon={X}
                 onClick={handleRequestCloseAuthEntry}
               />
-            ) : (
-              <BottomSheetCloseButton />
-            )
+            ) : undefined
           }
           footer={
             <div className="flex flex-col gap-3">
-              <Button
-                className="h-12 rounded-[var(--tb-radius-12)] bg-[var(--tb-color-text-primary)] text-[var(--tb-color-text-inverse)] hover:bg-[var(--tb-color-text-secondary)]"
+              <PrimaryButton
                 disabled={!isSupabaseConfigured || authEntryStatus === 'submitting'}
                 form="auth-entry-sheet-email-form"
                 type="submit"
@@ -3825,15 +3974,43 @@ function MainApp() {
                     : authEntryIntent === 'link-current-profile'
                       ? '연결 코드 받기'
                       : '다음'}
-              </Button>
+              </PrimaryButton>
               {authEntryStep === 'email' && authEntryIntent === 'start-with-email' ? (
                 <button
                   type="button"
                   onClick={continueAfterAuthEntry}
-                  className="self-center px-2 py-1 text-[12px] font-semibold text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-muted)]"
+                  className="h-7 self-center px-2 text-[12px] font-medium text-[var(--tb-color-text-faint)] transition-colors hover:text-[var(--tb-color-text-muted)]"
                 >
                   나중에 하기
                 </button>
+              ) : null}
+              {authEntryStep === 'email' && authEntryIntent === 'start-with-email' ? (
+                <>
+                  <div className="flex items-center gap-2.5 text-[11px] text-[var(--tb-color-text-faint)]">
+                    <span className="h-px flex-1 bg-[var(--tb-color-border-default)]" />또는
+                    <span className="h-px flex-1 bg-[var(--tb-color-border-default)]" />
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!isSupabaseConfigured || authEntryStatus === 'submitting'}
+                    className="flex h-12 items-center justify-center gap-2.5 rounded-[12px] border border-[var(--tb-color-border-default)] bg-[var(--tb-color-surface-card)] text-[14px] font-semibold text-[var(--tb-color-text-primary)] disabled:text-[var(--tb-color-text-disabled)]"
+                    onClick={async () => {
+                      const generation = ++authRequestGenerationRef.current;
+                      const owner = profileOwnerRef.current;
+                      setAuthEntryStatus('submitting');
+                      setAuthEntryMessage(null);
+                      const result = await continueWithSupabaseGoogle();
+                      if (!(await isCurrentAuthRequest(generation, owner))) return;
+                      if (!result.ok) {
+                        setAuthEntryStatus('error');
+                        setAuthEntryMessage(result.message);
+                      }
+                    }}
+                  >
+                    <span aria-hidden="true" className="grid size-[22px] place-items-center rounded-full bg-[var(--tb-color-surface-muted)] text-[15px]">G</span>
+                    Google로 계속하기
+                  </button>
+                </>
               ) : null}
               {import.meta.env.DEV ? (
                 <button
@@ -3865,6 +4042,7 @@ function MainApp() {
             ) : null
           }
         >
+          <DrawerDescription className="sr-only">이메일이나 Google로 로그인하거나, 나중에 계정을 연결할 수 있어요.</DrawerDescription>
           <AuthEntryForm
             formId="auth-entry-sheet-email-form"
             isConfigured={isSupabaseConfigured}
@@ -3880,7 +4058,10 @@ function MainApp() {
 
         <BottomSheetShell
           open={isProfileSetupSheetOpen}
-          onOpenChange={setIsProfileSetupSheetOpen}
+          onOpenChange={open => {
+            if (!open) authRequestGenerationRef.current += 1;
+            setIsProfileSetupSheetOpen(open);
+          }}
           onDrag={(_, percentageDragged) => {
             applySheetBackgroundCardProgress(backgroundCardRef.current, 1 - percentageDragged, true);
           }}
@@ -4236,13 +4417,14 @@ function MainApp() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
+      </SheetBackground>
     </div>
   );
 }
 
 type InternalRoute =
   | 'app'
+  | 'sheet-presentation-preview'
   | 'design-system'
   | 'design-system-updates'
   | 'figma-works'
@@ -4257,6 +4439,10 @@ function getInternalRoute(): InternalRoute {
   const searchParams = new URLSearchParams(window.location.search);
   const previewMode = searchParams.get('preview');
   const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+
+  if (normalizedPath === '/design-system/sheet-presentation-preview') {
+    return 'sheet-presentation-preview';
+  }
 
   if (previewMode === 'design-system' || normalizedPath === '/design-system' || normalizedPath.startsWith('/design-system/')) {
     return 'design-system';
@@ -4301,6 +4487,10 @@ export default function App() {
       clearAppliedDesignTokenRuntimeState();
     }
   }, [internalRoute]);
+
+  if (internalRoute === 'sheet-presentation-preview') {
+    return <Suspense fallback={null}><SheetPresentationPreview /></Suspense>;
+  }
 
   if (internalRoute === 'design-system') {
     return <Suspense fallback={<div role="status" style={{padding: 32}}>플레이팅을 불러오고 있어요.</div>}><PlatingSite /></Suspense>;

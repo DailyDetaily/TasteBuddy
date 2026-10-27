@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowLeft } from "lucide-react";
+import TopAppBar from "../TopAppBar";
+import CapsuleTabs from "../system/plating/CapsuleTabs";
+import "../gastronomy/taste-detail.css";
 import SectionCard from "../SectionCard";
 import PageSection from "../system/PageSection";
-import InterpretationCard from "../system/InterpretationCard";
-import { useNativeJournal } from "../../lib/gastronomy/useNativeJournal";
-import { useNativeAnalysis } from "../../lib/gastronomy/useNativeAnalysis";
+import TCSBadge from "../system/TCSBadge";
+import { buildOverallTasteProfile } from "../../lib/overallTasteProfile.mjs";
+import { TASTE_TOKENS } from "../../constants/uiColorTokens";
+import { TASTE_IDS } from "../../constants/designTokens";
+import type { NativePalateData } from "../../lib/gastronomy/useNativeAnalysis";
 import {
-  nativeAnalysisGroups,
   type AnalysisGroup,
 } from "../../lib/gastronomy/nativeAnalysisPresentation";
 import type {
@@ -151,22 +154,35 @@ function EvidenceRecords({
 }
 export default function NativeAnalysisOverview({
   owner,
+  data,
   active = true,
+  onRootViewChange,
 }: {
   owner: string;
+  data: NativePalateData;
   active?: boolean;
+  onRootViewChange?: (isRoot: boolean) => void;
 }) {
-  const journal = useNativeJournal(owner, active),
-    analysis = useNativeAnalysis(
-      journal.entries,
-      owner,
-      !!journal.archive && journal.canEdit,
-    ),
+  const { journal, analysis } = data,
     snapshot = analysis.snapshot;
-  const groups = useMemo(
-    () => (snapshot ? nativeAnalysisGroups(snapshot) : []),
-    [snapshot],
-  );
+  const profile = snapshot?.mainWing;
+  const englishName = (id: string) => id.charAt(0).toUpperCase() + id.slice(1);
+  const englishTypeName = profile?.status === "provisional_profile" && profile.main
+    ? englishName(profile.main.id) + (profile.wing ? ` · ${englishName(profile.wing.id)} Wing` : "")
+    : null;
+  const badgeAdjustments = useMemo(() => {
+    // Use the same validated liking rates and account gate as the radar below.
+    const overall = buildOverallTasteProfile(snapshot?.model, snapshot?.observations ?? [], {
+      userID: analysis.owner === owner ? snapshot?.model.userID ?? "" : "",
+    });
+    return overall.axes.filter(row => {
+      const value = row.current.value;
+      return value !== null && Number.isFinite(value) && value > 0;
+    }).sort((left, right) => (right.current.value! - left.current.value!)
+      || TASTE_IDS.indexOf(left.axis) - TASTE_IDS.indexOf(right.axis))
+      .slice(0, 2)
+      .map(row => ({ taste: TASTE_TOKENS[row.axis].label, change: row.current.value! }));
+  }, [snapshot, analysis.owner, owner]);
   const [detail, setDetail] = useState<
       "evidence" | "hero" | AnalysisGroup | null
     >(null),
@@ -176,6 +192,10 @@ export default function NativeAnalysisOverview({
     setDetail(null);
     setEditID(null);
   }, [owner]);
+  useEffect(() => {
+    onRootViewChange?.(!detail && !editID);
+    return () => onRootViewChange?.(true);
+  }, [detail, editID, onRootViewChange]);
   useEffect(() => {
     setDetail(null);
   }, [snapshot]);
@@ -190,7 +210,7 @@ export default function NativeAnalysisOverview({
   const error =
     analysis.error ??
     (!snapshot ? journal.error : null);
-  const waiting = analysis.updating || (!snapshot && journal.loading);
+  const waiting = analysis.updating || journal.loading || (!journal.archive && !journal.error);
   const rows =
     detail === "hero" && snapshot
       ? heroEvidence(snapshot)
@@ -212,7 +232,7 @@ export default function NativeAnalysisOverview({
   const group = detail && typeof detail === "object" ? detail : null;
   return (
     <>
-      <PageSection title="나의 입맛" contentClassName="flex flex-col gap-3">
+      <section aria-label="나의 미각 타입" className="flex flex-col gap-3">
         {error ? (
           <SectionCard style={{ display: "block" }}>
             <p className="font-semibold">분석을 불러오지 못했어요</p>
@@ -247,8 +267,10 @@ export default function NativeAnalysisOverview({
             </p>
           </SectionCard>
         ) : (
-          <>
-            <SectionCard style={{ display: "block" }}>
+          <div data-testid="my-palate-type">
+              {englishTypeName && <div className="mb-2 flex">
+                <TCSBadge adjustments={badgeAdjustments} label={englishTypeName} />
+              </div>}
               <p className="text-[12px] text-[var(--tb-color-text-hint)]">
                 나의 미각 타입
               </p>
@@ -258,69 +280,9 @@ export default function NativeAnalysisOverview({
               <p className="mt-2.5 text-[13px] leading-relaxed text-[var(--tb-color-text-secondary)]">
                 {heroDescription(snapshot)}
               </p>
-            </SectionCard>
-            {!!snapshot.unresolved.length && (
-              <InterpretationCard
-                supportingTextLines={2}
-                description="아직 뜻을 확인 중인 표현이 있어요"
-                eyebrow="선택 확인"
-                supportingText="원문은 보존하고, 의미가 분명해지기 전에는 입맛 사실로 확정하지 않아요."
-                detailLabel="표현 보기"
-                onExpand={() => open("evidence")}
-              />
-            )}
-          </>
+          </div>
         )}
-      </PageSection>
-      {snapshot &&
-        !waiting &&
-        (snapshot.completed.length > 0 ||
-          snapshot.observations.length > 0 ||
-          snapshot.unresolved.length > 0) && (
-          <>
-            {(["candidate", "fit", "overall"] as const).map((kind) => {
-              const items = groups.filter((g) => g.kind === kind);
-              if (!items.length && kind !== "candidate") return null;
-              return (
-                <PageSection
-                  key={kind}
-                  title={
-                    kind === "candidate"
-                      ? "인사이트"
-                      : kind === "fit"
-                        ? "알맞았던 조건"
-                        : "음식 전체와 감각"
-                  }
-                  contentClassName="flex flex-col gap-3"
-                >
-                  {items.length ? (
-                    items.map((g) => (
-                      <InterpretationCard
-                        supportingTextLines={2}
-                        key={g.id}
-                        description={g.title}
-                        supportingText={g.body}
-                        eyebrow={g.eyebrow}
-                        detailLabel="근거 보기"
-                        onExpand={() => open(g)}
-                      />
-                    ))
-                  ) : (
-                    <SectionCard style={{ display: "block" }}>
-                      <p className="text-[14px] font-semibold">
-                        다음 단서를 모으고 있어요
-                      </p>
-                      <p className="mt-1 text-[12px] leading-relaxed text-[var(--tb-color-text-hint)]">
-                        같은 감각의 직접 평가나 다른 상황의 기록이 쌓이면 비교할
-                        수 있는 해석을 보여드려요.
-                      </p>
-                    </SectionCard>
-                  )}
-                </PageSection>
-              );
-            })}
-          </>
-        )}
+      </section>
       <Dialog.Root
         open={!!detail}
         onOpenChange={(v) => {
@@ -331,80 +293,34 @@ export default function NativeAnalysisOverview({
           <Dialog.Overlay className="fixed inset-0 z-[80] bg-black/25" />
           <Dialog.Content
             aria-describedby={undefined}
-            className="fixed inset-0 z-[81] flex flex-col bg-[var(--tb-color-bg-page)] text-[var(--tb-color-text-primary)] sm:inset-y-5 sm:left-1/2 sm:right-auto sm:w-[640px] sm:-translate-x-1/2 sm:rounded-[24px]"
+            className="fixed inset-0 z-[81] flex flex-col bg-[var(--tb-color-bg-page)] text-[var(--tb-color-text-primary)]"
           >
-            <header className="flex shrink-0 items-center gap-2 px-4 py-2">
-              <Dialog.Close
-                className="flex size-11 items-center justify-center rounded-full"
-                aria-label="분석으로 돌아가기"
-              >
-                <ArrowLeft size={20} />
-              </Dialog.Close>
-              <Dialog.Title className="text-[16px] font-semibold">
-                {title}
-              </Dialog.Title>
+            <Dialog.Title className="sr-only">{title}</Dialog.Title>
+            <header className="tb-taste-detail-header">
+              <TopAppBar appearance="transparent" title={title} showBack onBack={() => setDetail(null)} rightActions={<></>} />
             </header>
-            {detail !== "evidence" && (
-              <div
-                className="mx-5 mb-4 grid shrink-0 grid-cols-2 rounded-full bg-[var(--tb-color-surface-muted)] p-1"
-                role="group"
-                aria-label="상세 보기"
-              >
-                {(["overview", "records"] as const).map((s) => (
-                  <button
-                    key={s}
-                    className={`${button} ${section === s ? "bg-white shadow-sm" : ""}`}
-                    aria-pressed={section === s}
-                    onClick={() => setSection(s)}
-                  >
-                    {s === "overview" ? "비교" : "기록"}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-10">
+            {detail !== "evidence" && <div className="tb-taste-detail-controls">
+              <CapsuleTabs label="상세 보기" options={[{ value: 'overview', label: '비교' }, { value: 'records', label: '기록' }]} value={section} onValueChange={setSection} />
+            </div>}
+            <div className="tb-taste-detail-scroll px-5">
               {section === "overview" ? (
-                <div className="flex flex-col gap-4">
-                  <SectionCard style={{ display: "block" }}>
-                    <h2 className="text-[18px] font-semibold">
-                      {group?.title ?? snapshot?.mainWing.label}
-                    </h2>
-                    <p className="mt-3 whitespace-pre-line text-[13px] leading-relaxed">
-                      {group?.body ??
-                        (snapshot ? heroDescription(snapshot) : "")}
-                    </p>
-                    {group && (
-                      <p className="mt-3 text-[11px] text-[var(--tb-color-text-hint)]">
-                        식사 {group.mealIDs.length}회
-                      </p>
-                    )}
+                <div className="flex flex-col gap-5">
+                  <SectionCard hoverEffect={false} style={{ display: "block", border: 0, padding: 12 }}>
+                    <h2 className="text-[18px] font-bold">{group?.title ?? snapshot?.mainWing.label}</h2>
+                    {group && group.kind !== 'candidate' ? <p className="mt-4 tb-taste-detail-scope">식사 {group.mealIDs.length}회 · {group.kind === 'fit' ? '알맞음' : '전체·감각 평가'}</p> : <p className="mt-4 whitespace-pre-line text-[13px] leading-relaxed text-[var(--tb-color-text-secondary)]">{group?.body ?? (snapshot ? heroDescription(snapshot) : '')}</p>}
                   </SectionCard>
-                  {group?.rows.map((row) => (
-                    <SectionCard key={row.id} style={{ display: "block" }}>
-                      <h3 className="text-[14px] font-semibold">
-                        {row.condition}
-                      </h3>
-                      <p className="mt-2 text-[13px] leading-relaxed">
-                        {row.summary}
-                      </p>
-                      {row.counts.map((count) => (
-                        <p
-                          key={count}
-                          className="mt-2 text-[12px] text-[var(--tb-color-text-muted)]"
-                        >
-                          {count}
-                        </p>
-                      ))}
-                    </SectionCard>
-                  ))}
-                  {snapshot?.model.limits.map((limit: string) => (
-                    <p
-                      key={limit}
-                      className="text-[12px] leading-relaxed text-[var(--tb-color-text-hint)]"
-                    >
-                      {limit}
-                    </p>
-                  ))}
+                  {!!group?.rows.length && <div className="overflow-hidden rounded-[20px] bg-[var(--tb-color-surface-base)]">
+                    {group.rows.map((row, index) => <section key={row.id} className="px-4 pb-4 pt-4">
+                      {index > 0 && <hr className="mb-4 border-[var(--tb-color-border-subtle)]" />}
+                      <h3 className="text-[13px] font-semibold">{row.condition}</h3>
+                      {group.kind === 'candidate' && <p className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-secondary)]">{row.summary}</p>}
+                      {row.counts.map(count => <p key={count} className="mt-2 text-[13px] leading-relaxed text-[var(--tb-color-text-secondary)]">{count}</p>)}
+                    </section>)}
+                  </div>}
+                  {group?.kind === 'candidate' && !!snapshot?.model.limits.length && <details className="rounded-[20px] bg-[var(--tb-color-surface-base)] px-4 py-1 text-[12px] text-[var(--tb-color-text-secondary)]">
+                    <summary className="min-h-11 cursor-pointer py-3 font-medium">세부 정보</summary>
+                    {snapshot.model.limits.map((limit: string) => <p key={limit} className="mb-3 leading-relaxed">{limit}</p>)}
+                  </details>}
                 </div>
               ) : (
                 <EvidenceRecords

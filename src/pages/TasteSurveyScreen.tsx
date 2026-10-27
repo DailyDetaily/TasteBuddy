@@ -1,8 +1,10 @@
 import { ChevronLeft as ChevronLeftIcon, X as XIcon } from 'lucide-react';
 
 import TasteSurveyQuestionCard from '../components/measurement/TasteSurveyQuestionCard';
-import FlowStepCta from '../components/system/FlowStepCta';
-import { ICON_TOKENS, TASTE_TOKENS } from '../constants/designTokens';
+import PrimaryButton from '../components/system/PrimaryButton';
+import StepIndicator from '../components/system/StepIndicator';
+import { ICON_TOKENS } from '../constants/designTokens';
+import { TASTE_TOKENS } from '../constants/uiColorTokens';
 import type {
   TasteSurveyItem,
   TasteSurveyLikertValue,
@@ -48,7 +50,7 @@ export default function TasteSurveyScreen({
           className="w-full max-w-[1440px] bg-[var(--tb-color-bg-focus)]/85 backdrop-blur-md supports-[backdrop-filter:blur(0px)]:bg-[var(--tb-color-bg-focus)]/70"
           style={{ paddingTop: 'var(--tb-safe-area-top)' }}
         >
-          <div className="relative flex min-h-[var(--tb-size-top-app-bar-height)] items-center justify-between px-5">
+          <div className="relative flex min-h-[var(--tb-size-flow-top-bar-height)] items-center justify-between px-5">
             <button
               type="button"
               aria-label={isFirst ? '설문 닫기' : '이전 문항으로 돌아가기'}
@@ -79,7 +81,7 @@ export default function TasteSurveyScreen({
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-5 pt-[calc(var(--tb-safe-area-top)+var(--tb-size-top-app-bar-height)+16px)] no-scrollbar">
+      <main className="flex-1 overflow-y-auto px-5 pt-[calc(var(--tb-safe-area-top)+var(--tb-size-flow-top-bar-height)+8px)] no-scrollbar">
         <div className="tb-section-stack pb-[calc(188px+var(--tb-safe-area-bottom))]">
           <TasteSurveyQuestionCard
             currentIndex={safeIndex}
@@ -94,15 +96,21 @@ export default function TasteSurveyScreen({
         </div>
       </main>
 
-      <FlowStepCta
-        actionLabel={isLast ? '응답 검토' : '다음 문항'}
-        actionVisualDisabled={!hasResponse}
-        currentIndex={safeIndex}
-        fadeClassName="bg-[linear-gradient(to_top,var(--tb-color-bg-focus)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]"
-        indicatorActiveColor={activeColor}
-        onAction={onNext}
-        total={total}
-      />
+      <div className="absolute inset-x-0 bottom-0 z-20 flex justify-center">
+        <div className="w-full max-w-[var(--tb-layout-screen-max-width)]">
+          <div className="tb-bottom-fade relative flex min-h-[calc(var(--tb-size-bottom-fade-min-height)+var(--tb-safe-area-bottom))] w-full flex-col items-center justify-end gap-0 px-5 pb-[max(12px,var(--tb-safe-area-bottom))] bg-[linear-gradient(to_top,var(--tb-color-bg-focus)_0%,var(--tb-color-surface-overlay)_55%,transparent_100%)]">
+            <StepIndicator
+              className="mb-8 self-center"
+              currentIndex={safeIndex}
+              total={total}
+              activeColor={activeColor}
+            />
+            <PrimaryButton visualDisabled={!hasResponse} onClick={onNext}>
+              {isLast ? '응답 검토' : '다음 문항'}
+            </PrimaryButton>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -13,7 +13,8 @@ import { Slot } from '@radix-ui/react-slot';
 import { Plus } from 'lucide-react';
 import './Chip.css';
 
-import { COMPONENT_TOKENS, TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
+import { COMPONENT_TOKENS, type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import { cn } from '../ui/utils';
 
 export type ChipSize = keyof typeof COMPONENT_TOKENS.chip.size;
@@ -88,9 +89,16 @@ function ChipSurface({
     );
   };
 
+  const borderRoles = {
+    neutral: { soft: 'on-muted', outline: 'default', solid: 'selected', text: null },
+    success: { soft: 'success-soft', outline: 'success', solid: 'success', text: null },
+    warning: { soft: 'warning-soft', outline: 'warning', solid: 'warning', text: null },
+    accent: { soft: 'selected', outline: 'selected', solid: 'selected', text: null },
+  } as const;
+  const borderRole = borderRoles[tone][variant];
   const chipStyle = {
     backgroundColor: backgroundColorToken ?? toneTokens.backgroundColor,
-    borderColor: toneTokens.borderColor,
+    borderColor: borderRole ? `var(--tb-color-border-${borderRole})` : 'transparent',
     color: toneTokens.color,
     fontSize: sizeTokens.fontSize,
     gap: sizeTokens.gap,
@@ -165,12 +173,12 @@ export default function Chip(props: ChipProps) {
     ...chipControlStyle,
     ...(props.selected ? {
       backgroundColor: palette?.tintSurface ?? 'var(--tb-color-text-primary)',
-      borderColor: palette?.tintSoftBorder ?? 'var(--tb-color-text-primary)',
+      borderColor: palette?.borderStrong ?? 'var(--tb-color-border-selected)',
       color: palette?.tintSurfaceText ?? 'var(--tb-color-text-inverse)',
     } : props.recommended ? {
-      backgroundColor: 'color-mix(in srgb, var(--tb-user-accent-main) 10%, white)',
-      borderColor: 'color-mix(in srgb, var(--tb-user-accent-main) 46%, white)',
-      color: 'var(--tb-user-accent-main)',
+      backgroundColor: 'var(--tb-user-accent-tint-surface)',
+      borderColor: 'var(--tb-user-accent-border-strong)',
+      color: 'var(--tb-user-accent-tint-surface-text)',
     } : props.custom ? { borderStyle: 'dashed' } : {}),
   };
   const content = <span className="tb-chip-control-label">{props.label}</span>;
@@ -183,7 +191,7 @@ export default function Chip(props: ChipProps) {
 
 const chipControlStyle: CSSProperties = {
   minHeight: 36, padding: '0 12px', fontSize: 12, fontWeight: 600, lineHeight: '18px',
-  backgroundColor: 'var(--tb-color-surface-muted)', borderColor: 'var(--tb-color-border-default)',
+  backgroundColor: 'var(--tb-chip-neutral-background)', borderColor: 'var(--tb-color-border-default)',
   color: 'var(--tb-color-text-subtle)',
 };
 

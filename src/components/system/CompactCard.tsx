@@ -34,7 +34,7 @@ export default function CompactCard({
   ...props
 }: CompactCardProps) {
   const cardClassName = cn(
-    'flex w-full items-center gap-3 rounded-[20px] bg-white p-3 text-left transition-transform active:scale-[0.99]',
+    'flex w-full items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-base)] p-3 text-left transition-transform active:scale-[0.99]',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2',
     className,
   );

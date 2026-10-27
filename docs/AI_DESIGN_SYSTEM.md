@@ -8,6 +8,8 @@
 
 ## Read Order
 
+TCS 배지는 [TCSBadge 규격](design/tcs-badge.md)을 따른다. 기존 웹과 iOS의 `TCSBadge`를 재사용하며 조정량 가중치·틴트·빈 데이터 규칙을 일반 StatusChip과 구분한다.
+
 네이티브 SwiftUI 작업은 제품 지침과 `DESIGN.md`를 읽은 뒤 [iOS 디자인 시스템](../ios/DESIGN_SYSTEM.md)으로 이동한다. 이 문서의 React/CSS 값과 정적 프리뷰 인벤토리를 현재 네이티브 값·제품 사용 여부로 간주하지 않는다.
 
 1. 제품 경험 기준: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
@@ -42,6 +44,8 @@ Taste Buddy의 최우선 목표는 사용자의 취향을 이해하고 다양한
 
 ## Source Of Truth
 
+컴포넌트 변경은 Figma 원본·플레이팅 예시·제품 및 공용 코드·토큰·디자인 시스템 문서·Figma 대응표를 하나의 작업으로 갱신한다. 어느 한 곳만 수정한 상태를 완료로 보고하지 않는다. 영향받는 플랫폼의 사용처를 확인하고, 해당 구현이 없는 플랫폼에 새 제품 기능을 임의로 만들지는 않는다. 검증한 범위와 남은 차이는 함께 기록한다.
+
 파일 우선순위는 아래 순서를 따른다.
 
 1. 제품 방향: [`../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`](../src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md)
@@ -51,7 +55,7 @@ Taste Buddy의 최우선 목표는 사용자의 취향을 이해하고 다양한
 
 위 목록의 웹 구현 기준과 별도로, **제품 UI·UX는 현재 네이티브 구현**, **BX·브랜드 표현은 Remotion 제작 원본과 관련 브랜드 문서**를 근거로 삼는다. 브랜드 연출을 제품 피드백으로 확장할 때는 사용 목적·시간·접근성에 맞춘 파생 규칙을 남긴다. 영역별 자료가 다르면 현재 구현과 설계 의도를 함께 기록하고 기준을 정한다.
 
-토큰 값을 바꿀 때 `DESIGN.md`만 바꾸면 안 되고, 해당 플랫폼의 구현 토큰도 함께 바꿔야 한다. iOS의 현재 값은 `ios/TasteBuddy/DesignSystem/TBTheme.swift`, 미각 팔레트는 `ios/TasteBuddy/Models/TasteModels.swift`다. 네이티브만 수정할 때 웹 토큰을 자동으로 변경하지 않는다. 플랫폼별 현재 차이는 [iOS 디자인 시스템](../ios/DESIGN_SYSTEM.md)에 기록한다.
+토큰 값을 바꿀 때 `DESIGN.md`만 바꾸면 안 되고, 해당 플랫폼의 구현 토큰도 함께 바꿔야 한다. iOS의 현재 값은 `ios/TasteBuddy/DesignSystem/TBTheme.swift`, 미각 팔레트는 `ios/TasteBuddy/Models/TasteModels.swift`다. 공통 컴포넌트 규격은 웹·네이티브에 함께 반영하며, 플랫폼 고유 규칙의 차이는 [iOS 디자인 시스템](../ios/DESIGN_SYSTEM.md)에 명시한다.
 
 ## Vocabulary
 
@@ -130,12 +134,14 @@ Taste Buddy의 최우선 목표는 사용자의 취향을 이해하고 다양한
 
 ## Taste Palette
 
+최종 사용 규칙과 기존 TB 스타일 검토는 [컬러 스타일 가이드](design/color-style-guide.md)를 따른다. 흰색 10–95 혼합 팔레트를 원시 토큰으로 두고 `tintSurface`·`tintSoftBorder`·`chartTrack`은 tint/80, `tintSoft`는 tint/95를 참조한다. 모두 불투명색이다. 미각 대표색·상태색·측정 루프는 서로 다른 역할이다.
+
 이 시스템에서 taste 컬러는 도메인 언어다. 아래 값은 자주 쓰는 최소 세트다.
 
 | Taste | Main | BG | Tint Surface | Tint Surface Text | Tint Surface Sub Text |
 | --- | --- | --- | --- | --- | --- |
 | Sweet / 단맛 | `#FF9900` | `#FFD699` | `#FFEBCC` | `#6F4609` | `#896735` |
-| Sour / 신맛 | `#FBC02D` | `#FFEF99` | `#FFF7CC` | `#6F5F09` | `#897C35` |
+| Sour / 신맛 | `#FFD600` | `#FFEF99` | `#FFF7CC` | `#6F5F09` | `#897C35` |
 | Bitter / 쓴맛 | `#95C900` | `#E0EBB4` | `#EAF4CC` | `#505B24` | `#70794B` |
 | Salty / 짠맛 | `#7299FF` | `#C6D6FF` | `#E3EBFF` | `#36466F` | `#5A6789` |
 | Umami / 감칠맛 | `#B372B4` | `#E1C7E1` | `#F0E3F0` | `#513751` | `#705B70` |
@@ -150,7 +156,7 @@ Taste Buddy의 최우선 목표는 사용자의 취향을 이해하고 다양한
 소스: [`../src/components/home/ChefMatchCard.tsx`](../src/components/home/ChefMatchCard.tsx)
 
 - card bg: `getTasteTintSurface(taste)`
-- border: `getTasteTint(taste, 0.18)`
+- border: `getTasteTintSoftBorder(taste)`
 - title / match text: `getTasteTintSurfaceText(taste)`
 - meta text: `getTasteTintSurfaceSubText(taste)`
 - shell: `132 x 132`, radius `20px`, padding `12px`
@@ -161,7 +167,7 @@ Taste Buddy의 최우선 목표는 사용자의 취향을 이해하고 다양한
 소스: [`../src/pages/AnalysisPage.tsx`](../src/pages/AnalysisPage.tsx)
 
 - card bg: `getTasteTintSurface(taste)`
-- border: `getTasteTint(taste, 0.18)`
+- border: `getTasteTintSoftBorder(taste)`
 - title: `--tb-taste-{tasteId}-tint-surface-text`
 - summary: `--tb-taste-{tasteId}-tint-surface-sub-text`
 - shell: `132 x 132`, radius `20px`, padding `12px`
@@ -194,13 +200,18 @@ Taste Buddy의 최우선 목표는 사용자의 취향을 이해하고 다양한
 - shape: full pill
 - neutral meta: use `tone="neutral"` for non-taste labels such as `첫 측정` or `4회 예약`; it uses `surface-muted / border-strong / text-tertiary`
 
-위 값은 웹 레시피다. 현재 네이티브 `TasteChip`은 의도된 변형을 구분한다.
+위 값은 웹 레시피다. 2026-10-06부터 iOS의 미각 칩은 공용 `Chip`으로 통합했다. 별도 `TasteChip`과 전용 size/tone 타입은 사용하지 않는다.
 
-- 라벨 전용 미각형: 기존 `tintSoft` 배경 + 읽기용 `axis.tintTextColor` (`tintSurfaceText`) 라벨
-- 숫자 포함 미각형: 중립 primary 라벨 + `mainColor` 숫자 시그널
-- 중립형: 중립 배경·경계·텍스트
+- 공통 외형: Medium 라벨, Semibold 값, 자연 줄 높이, 내부 1pt 경계. 이름과 값은 각각 한 줄 고정이다.
+- 크기: `extraSmall / small / medium`의 글자 10/11/12pt, 좌우 8/10/12pt, 상하 4/6/8pt. 기본값은 `.small`이다.
+- 미각형: `tasteAxis`를 전달한다. soft에서는 `tintSoft` 배경, `tintSoftBorder` 경계, 읽기용 `tintTextColor`를 사용한다.
+- 값 포함 미각형: soft/outline/text에서는 primary 라벨과 미각색 값을 조합한다. solid에서는 이름과 값 모두 흰색이다. 문자열 `"0"`은 보존하고 `nil`만 값 영역을 생략한다.
+- 중립 soft: `mutedSurface / borderStrong / textTertiary`를 사용한다.
+- 기존 `tone`, `variant`, 아이콘·후행 액션, 색상·좌우 패딩 override, 비활성 스타일을 함께 지원한다. `tasteAxis`가 있으면 tone보다 미각 팔레트가 우선한다.
 
-라벨 전용을 원색으로 표시하던 과거 네이티브 이식 규칙은 가독성 개선으로 대체했다. 미각 색상 값과 의미는 보존한다.
+```swift
+Chip(title: TasteAxis.sweet.label, value: "0", tasteAxis: .sweet, size: .small)
+```
 
 ### SectionCard
 

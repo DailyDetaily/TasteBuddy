@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
-import { BorderBeam } from 'border-beam';
 import React from 'react';
 import { ICON_TOKENS } from '../constants/designTokens';
+import './bottom-tab-native.css';
 
 export interface BottomTabCenterButtonProps {
   onClick?: () => void;
@@ -33,8 +33,8 @@ export default function BottomTabCenterButton({
     let isStopped = false;
     let startTime = 0;
     let lastLoopIndex = -1;
-    const motionDurationMs = 4600;
-    const travelRadius = 5.2;
+    const motionDurationMs = 3600;
+    const travelRadius = 5.7;
     type BeamColor = { id: number; r: number; g: number; b: number };
     type BeamColorPair = [BeamColor, BeamColor];
     const tasteBeamColorTokens = [
@@ -193,30 +193,24 @@ export default function BottomTabCenterButton({
 
   return (
     <div className="flex min-w-0 items-center justify-center py-[6px]">
-      <BorderBeam
+      <div
         ref={beamRef}
-        size="pulse-inner"
-        colorVariant="colorful"
-        className="tb-bottom-tab-center-beam"
+        className="tb-native-record-action"
       >
         <button
           type="button"
           onClick={onClick}
           aria-label={ariaLabel}
           title={title}
-          className="relative flex size-[44px] items-center justify-center overflow-hidden rounded-full bg-[#1f1f1f] text-[var(--tb-color-text-inverse)] transition-transform duration-300 ease-[var(--tb-motion-ease-entrance)] hover:scale-[1.04] active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-taste-sweet-main)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--tb-color-bg-page)]"
+          className="relative flex size-[48px] items-center justify-center overflow-hidden rounded-full text-white transition-transform duration-300 ease-[var(--tb-motion-ease-entrance)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tb-color-text-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--tb-color-bg-page)]"
         >
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2 z-[1] size-[30px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(31,31,31,0.96)_0%,rgba(31,31,31,0.82)_42%,rgba(31,31,31,0)_72%)] blur-[6px]"
-          />
           <Plus
-            className="relative z-[2]"
+            className="relative z-[2] text-white"
             size={ICON_TOKENS.size.lg}
-            strokeWidth={ICON_TOKENS.strokeWidth.regular}
+            strokeWidth={ICON_TOKENS.strokeWidth.strong}
           />
         </button>
-      </BorderBeam>
+      </div>
     </div>
   );
 }

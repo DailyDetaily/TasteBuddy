@@ -5,7 +5,7 @@ import SelectionCard from '../system/SelectionCard';
 import StepBadge from '../system/StepBadge';
 import { cn } from '../ui/utils';
 import { TASTE_SURVEY_LIKERT_SCALE, TASTE_SURVEY_UNCERTAINTY_LABELS } from '../../constants/tasteSurveyConfig';
-import { TASTE_TOKENS } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import type { TasteSurveyItem, TasteSurveyLikertValue, TasteSurveyUncertaintyReason } from '../../types/tasteSurvey';
 
 interface TasteSurveyQuestionCardProps {
@@ -40,7 +40,7 @@ export default function TasteSurveyQuestionCard({
         <OutlineBadge>{taste.label}</OutlineBadge>
         <div className="flex items-center gap-2">
           {isExploratory ? (
-            <Chip size="xs" tone="warning" variant="soft">
+            <Chip size="xs" tone="neutral" variant="soft">
               조심스럽게 해석
             </Chip>
           ) : null}
@@ -53,7 +53,7 @@ export default function TasteSurveyQuestionCard({
       <div className="rounded-[14px] border border-[var(--tb-color-border-subtle)] bg-[var(--tb-color-surface-muted)] p-3">
         <p
           className="text-[16px] font-bold leading-snug"
-          style={{ color: taste.palette.main }}
+          style={{ color: taste.palette.tintSurfaceText }}
         >
           {item.anchor.label}
         </p>
@@ -90,32 +90,18 @@ export default function TasteSurveyQuestionCard({
         })}
       </div>
 
-      {(Object.entries(TASTE_SURVEY_UNCERTAINTY_LABELS) as [TasteSurveyUncertaintyReason, string][])
-        .filter(([reason]) => reason !== 'cannot_isolate_taste' || item.tasteId === 'fat')
-        .map(([reason, label]) => {
-          const selected = uncertain && (uncertaintyReason ?? 'cannot_recall') === reason;
-          return <button
-        key={reason}
-        type="button"
-        aria-pressed={selected}
-        className={cn(
-          'flex min-h-[44px] w-full items-center justify-between gap-3 rounded-[20px] border border-dashed p-4 text-left transition-all active:scale-[0.99]',
-          selected
-            ? 'border-[var(--tb-color-text-secondary)] bg-[var(--tb-color-surface-muted)]'
-            : 'border-[var(--tb-color-border-strong)] bg-[var(--tb-color-surface-base)]',
-        )}
-        onClick={() => onSelectUncertain(reason)}
-      >
-        <span className="flex flex-col gap-1">
-          <span className="text-[13px] font-semibold text-[var(--tb-color-text-primary)]">
-            {label}
-          </span>
-          <span className="text-[11px] leading-relaxed text-[var(--tb-color-text-muted)]">
-            떠올리기 어렵다면 이 항목을 선택해 주세요.
-          </span>
-        </span>
-      </button>;
-      })}
+      <div className="flex flex-col gap-2">
+        {(Object.entries(TASTE_SURVEY_UNCERTAINTY_LABELS) as [TasteSurveyUncertaintyReason, string][])
+          .filter(([reason]) => reason !== 'cannot_isolate_taste' || item.tasteId === 'fat')
+          .map(([reason, label]) => <SelectionCard
+            key={reason}
+            title={label}
+            indicator="checkbox"
+            selected={uncertain && (uncertaintyReason ?? 'cannot_recall') === reason}
+            singleLine={false}
+            onClick={() => onSelectUncertain(reason)}
+          />)}
+      </div>
     </div>
   );
 }

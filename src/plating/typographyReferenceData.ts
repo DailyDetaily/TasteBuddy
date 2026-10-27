@@ -32,15 +32,15 @@ type TypographyRecipe = {
 
 export const typographyRecipes: TypographyRecipe[] = [
   {
-    id: "usage-home", title: "홈 · 인사이트 요약", component: "HomeSummaryCard",
+    id: "usage-home", title: "홈 · 인사이트 요약", component: "CompactSummaryCard",
     description: "미각 배경 위에서 제목·값·하단 안내의 굵기와 크기를 구분해요.",
     rows: [
       ["카드 제목", "14pt · Bold", "axis.tintTextColor", "1줄 · 말줄임"],
       ["부제·값", "14pt · SemiBold", "axis.tintSubTextColor", "1줄 · 말줄임"],
-      ["하단 안내", "10pt · Regular", "axis.tintTextColor", "1줄"],
+      ["보조 문구 · detail", "10pt · Regular", "axis.tintTextColor", "현재 구현 1줄 · 작성 기준 기본 2줄"],
     ],
-    note: "현재 홈 카드는 직접 TBFont를 조합해요. 하단 안내는 카드 전체의 탭 행동에 포함됩니다. 확대 시의 카드 높이와 말줄임은 실제 사용 화면에서도 확인해야 해요.",
-    sources: ["Features/Home/HomeSummaryComponents.swift · HomeSummaryCard", "Components/SystemParityComponents.swift · RecommendationMiniCardTextLayout"],
+    note: "UX 라이팅 기준은 기본 2줄이에요. 윗줄은 핵심 값을 보완하는 사실·상태, 아랫줄은 기간·대상·비교 기준을 담아요. 각 줄은 필수 정보 한 가지를 짧은 구절로 쓰며 제목·값을 반복하지 않아요. 그래프와 나란히 놓을 때 텍스트는 카드 절반 이내에서 전체 2줄을 넘지 않게 다듬어요. 추가할 필수 기준이 없으면 아랫줄을 억지로 채우지 않아요. 이 기준의 제품 적용은 별도이며 현재 CompactSummaryCard 표본은 한 줄 구현이에요.",
+    sources: ["Features/Home/HomeSummaryComponents.swift · CompactSummaryCard", "Components/SystemParityComponents.swift · RecommendationMiniCardTextLayout", "docs/design/summary-card-ux-writing.md · 요약 카드 UX 라이팅 규칙"],
   },
   {
     id: "usage-dining", title: "식사 기록 · 메뉴 선택", component: "DiningFeedbackIntroHeader + PrimaryButton",

@@ -19,6 +19,7 @@ import TCSBadge from "../components/system/TCSBadge";
 import TastePointArrowBox from "../components/system/TastePointArrowBox";
 import { ICON_TOKENS, TASTE_IDS, TASTE_TOKENS, type TasteId } from "../constants/designTokens";
 import {
+  getTasteBorder,
   buildTasteAdjustmentGradient,
   getTasteBg,
   getTasteColor,
@@ -27,7 +28,7 @@ import {
   getTasteTintSurfaceSubText,
   getTasteTintSurfaceText,
   TASTE_TYPES,
-} from "../constants/tasteColors";
+} from '../constants/tasteColors';
 import { type DiningFeedbackDraft } from "../constants/diningFeedbackData";
 import { RESERVATION_CATALOG, type ReservationRecord } from "../constants/reservationCatalog";
 import {
@@ -1451,7 +1452,7 @@ function ChefCard({
       }`}
       style={{
         backgroundColor: chefTintBackgroundColor,
-        border: `1px solid ${getTasteTint(chef.taste, 0.18)}`,
+        border: `1px solid ${getTasteBorder(chef.taste, 'default')}`,
       }}
     >
       <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full h-full">
@@ -1999,6 +2000,7 @@ function Cards4({
   return (
     <TasteInsightSummaryCard
       action={<CardDetailLabel />}
+      category="context"
       details={cardData.details}
       keywords={cardData.keywords}
       onClick={onOpenDetail}
@@ -3221,7 +3223,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
 
   const tasteColors: { [key: string]: string } = {
     "단맛": "#FF9900",
-    "신맛": "#FBC02D",
+    "신맛": "#FFD600",
     "쓴맛": "#95C900",
     "짠맛": "#7299FF",
     "감칠맛": "#B372B4",
@@ -3238,7 +3240,7 @@ function AdjustmentDetailScreen({ data, onBack }: { data: any, onBack: () => voi
   return (
     <div className="flex flex-col w-full h-full bg-white relative overflow-y-auto no-scrollbar font-['Pretendard_Variable',sans-serif]">
       {/* Header */}
-      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-white border-b border-[#f3f3f3]">
+      <div className="flex items-center px-[20px] py-[12px] max-h-[56px] sticky top-0 z-50 bg-white border-b border-[var(--tb-color-border-faint)]">
         <button onClick={onBack} className="flex items-center justify-center size-[32px] rounded-full hover:bg-gray-100 transition-colors z-20 text-[var(--tb-color-text-secondary)]">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 19l-7-7 7-7" />

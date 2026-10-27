@@ -2,6 +2,23 @@
 
 2026-09-30 · 기준 체크아웃: `/Users/sinjunho/Desktop/Taste Buddy`
 
+## TCSBadge · 2026-10-08
+
+[TCSBadge](tcs-badge.md)를 기존 웹 기준으로 iOS 공용 컴포넌트와 Figma에 연결했다. 플레이팅에 단색·다색·빈 데이터·비활성 및 Light/Dark 예시를 추가했다. 가중치·경계 혼합·틴트·18pt 높이·7개 음영을 동기화했으며 iOS 제품 화면 편입은 사용처에서 선택한다. 검증 근거: `output/tcs-badge-20261008/`.
+
+## 컬러 스타일 가이드 · 2026-10-07
+
+[최종 컬러 가이드](./color-style-guide.md)는 Atomic 원시 색상, Semantic 역할 연결, 필수 규칙만 제공한다. 기존 TB 150개 페인트 스타일·52개 색상 변수 검토와 상세 대비 근거는 [상세 참고](./color-style-reference.md)에 보관한다. [Figma Atomic](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=39-2)·[Semantic](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=839-113)과 `/design-system/foundations/colors`에 같은 구분을 적용했다.
+
+- 페이지 정리: Figma Atomic은 원시 팔레트, Semantic은 역할 연결과 57개 UI 역할 색으로 나눴다. 중복 표와 긴 설명을 줄이고, 이전 TB 비교와 문서용 컴포넌트 원본을 Resource로 옮겼다. 플레이팅은 Atomic·Semantic·필수 규칙·참고의 네 섹션으로 줄였으며 상세 참고는 접어 두었다. 정리 작업의 근거: `output/plating/color-pages-simple-20261007/`.
+
+- 신맛 main은 #FFD600. 6개 미각 × 흰색 10·20·30·40·50·60·70·80·90·95의 60개 불투명 컬러 스타일을 만들었다. `chartTrack`·`tintSurface`·`tintSoftBorder`는 tint/80(미각색 20%), `tintSoft`도 옅은 채움 역할로 Light tint/80 · Dark tint/70을 참조한다(2026-10-12 통일). 신맛 20%는 #FFF7CC다.
+- Figma의 의미 토큰 57개를 현재 Swift 역할에 맞춰 보강했다. 웹 힌트 #6F6F6F·Figma 기본 아이콘 #3F3F3F를 정렬하고, 상태 Text/Soft·행동·딤을 웹에도 연결했다. 기존 페이지 변수 ID를 유지하며 bg/page로 이름을 정리하고 흰색 surface/base를 분리했다.
+- 웹·SwiftUI·Android의 미각 혼합 계산과 역할 연결을 갱신했다. 바·라인 그래프는 chartTrack을 사용한다. 기존 측정 그래픽의 별도 팔레트는 유지한다.
+- 타입 검사, Vite/PWA 빌드, iOS x86_64 시뮬레이터 대상 빌드, 색상·대비·미니 그래프 검사 12개 통과. Figma 60단계는 코드와 값·alpha가 일치하고 가이드의 가로 넘침은 없다. 웹 1440px·320px에서도 가로 넘침 0, 여섯 미각 선택 전환과 역할값 일치, 확인 중 런타임 오류 0을 확인했다. 실제 iOS/Android 기기 동작 검증과 Android 빌드는 포함하지 않는다.
+
+근거: `output/plating/color-style-guide-20261007/`. 다른 대화에서 진행 중인 그래프·카드 구조 변경은 유지했다.
+
 ## 전체 51개 컴포넌트 iOS 대조 · 2026-10-01
 
 [항목별 대조표](./plating-ios-component-audit.md)에 51개 계열의 실제 타입·사용처·규격·속성·상태·차이를 기록했다. 현재 iOS 제품 구현 38개, 시스템 컨트롤 7개, 참고 견본 5개, 독립 대응 없음 1개다. 기존 Native 소스 연결 17개를 실제 선언 또는 사용처로 수정했다.
@@ -97,7 +114,7 @@ Montage 전체 원본과 현재 제품을 대조한 [컴포넌트 커버리지 �
 - 31개 컴포넌트마다 모든 상태 예제, 실제 속성 표, 규격·사용 조건, 메인 컴포넌트를 한 보드에 배치했다. 기존 원본 ID와 138개 변수 연결은 유지했다.
 - 컴포넌트 이름에 Action/Input/Navigation/Content/Feedback/Overlay/TasteBuddy 분류를 적용했다.
 - TasteChip Value, BottomSheet Title·Description을 텍스트 속성으로 제공했다. Label 변경·6색 Value·Native/Web 시트 문구·아이콘 Instance Swap 12개 조작이 통과했다.
-- Kalice는 기존 BX 글리프 경로를 사용해 표지와 타이포 가이드의 벡터로 표현했다. 본문·제품 텍스트의 Figma 폰트 대체 제한은 그대로 명시했다.
+- Kalice는 기존 BX 글리프 경로를 사용해 표지와 타이포 가이드의 벡터로 표현했다. 본문·제품 텍스트는 2026-10-07 Pretendard로 전환했다.
 - 대표 보드: [PrimaryButton](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=37-114), [TasteChip](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=38-1503), [BottomSheetShell](https://www.figma.com/design/HHwQ9suI1czmYEwCQ6wW1W?node-id=38-1314).
 
 ## 기준과 최종 홈 결정
@@ -106,7 +123,7 @@ Montage 전체 원본과 현재 제품을 대조한 [컴포넌트 커버리지 �
 
 홈은 사용자 최종 요청에 따라 [Montage](https://montage.wanted.co.kr/)의 중앙 정렬 타이틀, 넓은 여백, 그래픽 행과 문서 진입 구조를 참고했다. SEED식 영상 벤토는 제거했다. 밝은 홈과 어두운 문서 화면을 유지하고, 설명 문구·번호·보조 라벨을 줄였다. 홈에는 영상 요소와 자동 재생이 없다. 기존 영상은 브랜드 에셋 문서에서 재생한다.
 
-영문 디스플레이는 Kalice, 한글·본문·조작 요소는 Pretendard다. 로컬 사이트는 기존 `Kalice-Trial-Regular.otf`와 Pretendard 원본을 로드한다. 공개 배포와 별도 폰트 라이선스 검토는 이번 로컬 구현의 검증 범위에 포함하지 않는다. Figma의 현재 실행 환경에는 두 폰트가 없어 편집 가능한 Noto Sans KR 대체 스타일을 명시했다. 원본 로고와 워드마크는 편집 가능한 SVG 형태를 보존했다.
+영문 디스플레이는 Kalice, 한글·본문·조작 요소는 Pretendard다. 로컬 사이트는 기존 `Kalice-Trial-Regular.otf`와 Pretendard 원본을 로드한다. 공개 배포와 별도 폰트 라이선스 검토는 이번 로컬 구현의 검증 범위에 포함하지 않는다. 2026-10-07 Figma 계정에 Pretendard Regular·Medium·SemiBold·Bold를 등록하고 파일 전체의 Noto Sans KR 텍스트·스타일을 Pretendard로 전환했다. Kalice의 기존 벡터 표현은 유지한다. 원본 로고와 워드마크는 편집 가능한 SVG 형태를 보존했다.
 
 홈 Bloom은 기존 `brand-launch/public/brand/taste-bloom/*.svg`에서 배경 원만 제외한 장식용 파생물이다. 원본 경로와 SHA-256은 `public/plating/bloom-forms/provenance.json`에 기록했다. 개인 취향 데이터의 시각화로 사용하지 않는다.
 
@@ -161,7 +178,7 @@ Montage 전체 원본과 현재 제품을 대조한 [컴포넌트 커버리지 �
 
 장시간 Remotion Studio 확인 세션에서는 `Maximum update depth exceeded` 로그 2건이 발생했다. 대표 프레임 표시와 재생·정지는 확인했지만, Studio 로그의 원인 분석이나 모든 컴포지션의 무오류 실행을 확인한 것은 아니다. 사이트 플레이어의 브라우저 확인 결과와 구분한다.
 
-현재 Figma 계정/플랜에서는 Code Connect 도구가 허용되지 않아 게시하지 않았다. 노드↔코드↔문서의 실제 링크는 제공하지만 Code Connect 자동 통합으로 표시하지 않는다. Figma의 폰트 대체로 글리프·줄바꿈의 완전한 일치는 미검증이다. 제품의 다크·고대비 테마는 이번 문서 테마 변경과 별도의 범위다.
+현재 Figma 계정/플랜에서는 Code Connect 도구가 허용되지 않아 게시하지 않았다. 노드↔코드↔문서의 실제 링크는 제공하지만 Code Connect 자동 통합으로 표시하지 않는다. Pretendard 폰트는 통일했으며 플랫폼별 줄바꿈·렌더링의 완전한 일치는 사용 화면에서 확인한다. 제품의 다크·고대비 테마는 이번 문서 테마 변경과 별도의 범위다.
 
 ## 레퍼런스 적용 범위
 
@@ -215,8 +232,13 @@ SEED·Montage 대조에서 실제 제품 사용 근거가 있던 누락을 중�
 
 피그마 Resource 바로 아래에 `기존 TB 컴포넌트`(163:57)와 `새로 만든 컴포넌트`(163:58)를 추가했다. 기존 3 Component의 원본을 이동하거나 복제하지 않고 연결된 인스턴스 갤러리로 제공한다.
 
-- 기존 TB 기반 33종: 기존 코드 재사용 25종 + 기존 Native 구조를 문서용으로 재현한 8종. 추가 카탈로그에 있는 ImageBox·FlowStepCta도 기존 코드이므로 이쪽에 포함한다.
+- 기존 TB 기반 33종: 기존 코드 재사용 25종 + 기존 Native 구조를 문서용으로 재현한 8종. 추가 카탈로그에 있는 ImageBox·FlowStepCta도 당시 기존 코드이므로 이쪽에 포함했다. FlowStepCta는 2026-10-10 독립 컴포넌트에서 제거하고 StepIndicator + PrimaryButton 조합 패턴으로 전환했다.
 - 신규·보강 19종: 플레이팅 웹 라이브러리 17종 + 기존 BirthDatePicker를 조합·보강한 WheelDatePicker 1종 + 신규 SwiftUI Callout 1종. 제품 화면에 적용됐다는 뜻의 분류는 아니다.
 - TextareaField 카드에는 웹과 별도 iOS TBTextArea 인스턴스를 함께 배치했다. Callout은 코드만 있고 Figma 원본은 없어 미등록 카드로 표시한다.
 - 52개 카드의 중복 없는 분류, 52개 인스턴스의 원본 연결과 카드·프리뷰 영역 내 배치를 확인했다. 두 갤러리의 대표 행을 이미지로 확인했다. 전체 페이지는 27개가 됐다.
 - 근거: `output/plating/figma-component-provenance-validation-20261003.json`, `output/plating/component-provenance-*-20261003.png`.
+## 미니 그래프 동기화 · 2026-10-07
+
+`MiniChart` / `TBMiniChart`의 [공통 규격](mini-chart.md)을 Figma, 플레이팅 예시, React·SwiftUI 코드와 함께 관리한다. 132×32 고정 영역에서 기본 7개·촘촘한 12개를 지원하며, 0은 막대 두께의 절반 높이, 1은 원형이다. 기록한 식사·음식 전체 평가 예제 카드는 유지한다. 컴포넌트를 바꿀 때 모든 연결 자료를 같은 작업에서 갱신하고 검증 범위를 기록한다.
+
+그룹형 미니 그래프는 2026-10-07 추가했다. `comparisonValues`로 이전·현재를 공통 척도로 비교하며 Figma·React·SwiftUI·플레이팅 예시는 [공통 규격](mini-chart.md)을 따른다.

@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useProductColorMode } from '../../lib/colorMode';
+import { DATA_VIZ_TOKENS_BY_MODE } from '../../constants/colorModes';
+import type { ColorMode, TasteId } from '../../constants/designTokens';
 
-import { DATA_VIZ_TOKENS, TASTE_IDS, TASTE_TOKENS } from '../../constants/designTokens';
+import { DATA_VIZ_TOKENS, TASTE_IDS } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import { getTasteColor, mixHexColors } from '../../constants/tasteColors';
 import type { TasteMeasurementEntry } from '../../constants/tasteMeasurementData';
 import { cn } from '../ui/utils';
@@ -446,6 +450,7 @@ function buildHybridProfileSegmentPaths(
 // ── component ──
 
 export interface HexRadarChartProps {
+  colorMode?: ColorMode;
   /** Array of 6 taste measurement entries with score / averageScore. */
   className?: string;
   myTasteData: Pick<TasteMeasurementEntry, 'label' | 'score' | 'averageScore'>[];
@@ -453,7 +458,11 @@ export interface HexRadarChartProps {
   shouldAnimate?: boolean;
 }
 
-type ReportedRadarProps = { reportedValues: (number | null)[]; referenceValues?: (number | null)[]; maximum: 3 | 4; className?: string };
+type RadarSelectionProps = {
+  selectedAxis?: TasteId | null;
+  onSelectAxis?: (axis: TasteId) => void;
+};
+type ReportedRadarProps = RadarSelectionProps & { reportedValues: (number | null)[]; referenceValues?: (number | null)[]; maximum: number; className?: string; colorMode?: ColorMode };
 export default function HexRadarChart(props: HexRadarChartProps | ReportedRadarProps) {
   if (!('reportedValues' in props)) return <LegacyHexRadarChart {...props} />;
   const valid = (value: number | null | undefined) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= props.maximum;
@@ -462,22 +471,29 @@ export default function HexRadarChart(props: HexRadarChartProps | ReportedRadarP
     score: valid(props.reportedValues[index]) ? props.reportedValues[index]! / props.maximum * 100 : 0,
     averageScore: valid(props.referenceValues?.[index]) ? props.referenceValues![index]! / props.maximum * 100 : 0,
   }));
-  return <LegacyHexRadarChart className={props.className} myTasteData={data} shouldAnimate={false} isReported
-    hasReference={props.referenceValues?.filter(valid).length === TASTE_IDS.length} />;
+  return <LegacyHexRadarChart colorMode={props.colorMode} className={props.className} myTasteData={data} shouldAnimate={false} isReported
+    hasReference={props.referenceValues?.filter(valid).length === TASTE_IDS.length}
+    selectedAxis={props.selectedAxis} onSelectAxis={props.onSelectAxis} />;
 }
 
 function LegacyHexRadarChart({
+  colorMode,
   className,
   myTasteData,
   shouldAnimate = true,
   isReported = false,
   hasReference = true,
-}: HexRadarChartProps & { isReported?: boolean; hasReference?: boolean }) {
+  selectedAxis,
+  onSelectAxis,
+}: HexRadarChartProps & RadarSelectionProps & { isReported?: boolean; hasReference?: boolean }) {
+  const systemMode = useProductColorMode();
+  const mode = colorMode ?? systemMode;
+  const RADAR_CHART = DATA_VIZ_TOKENS_BY_MODE[mode].radar;
   const cx = 160;
   const cy = 145;
   const maxR = 100;
   const gridLevels = [0.25, 0.5, 0.75, 1];
-  const gridStrokeColor = mixHexColors(RADAR_CHART.gridColor, '#FFFFFF', 0.7);
+  const gridStrokeColor = RADAR_CHART.renderedGridColor;
   const profileAnimationDurationMs = (60 / 60) * 1000;
   const centerMaskRadius = 18 * (25 / 27);
   const centerHexagramMask = hexagramPolygon(centerMaskRadius, -90);
@@ -613,6 +629,8 @@ function LegacyHexRadarChart({
 
   return (
     <svg
+      role={onSelectAxis ? 'group' : undefined}
+      aria-label={onSelectAxis ? '비교할 미각 선택' : undefined}
       width={RADAR_CHART.size}
       height="310"
       viewBox={`0 0 ${RADAR_CHART.size} 310`}
@@ -636,8 +654,8 @@ function LegacyHexRadarChart({
               y2={mySegmentPaths[index]?.gradientEnd[1] ?? cy}
               gradientUnits="userSpaceOnUse"
             >
-              <stop offset="0%" stopColor={mixHexColors(vertex.color, '#FFFFFF', 0.5)} />
-              <stop offset="100%" stopColor={mixHexColors(nextVertex.color, '#FFFFFF', 0.5)} />
+              <stop offset="0%" stopColor={mixHexColors(vertex.color, '#FFFFFF', mode === 'dark' ? 0.2 : 0.5)} />
+              <stop offset="100%" stopColor={mixHexColors(nextVertex.color, '#FFFFFF', mode === 'dark' ? 0.2 : 0.5)} />
             </linearGradient>
           );
         })}
@@ -686,14 +704,14 @@ function LegacyHexRadarChart({
           y1={cy}
           x2={x}
           y2={y}
-          stroke={mixHexColors(vertices[idx]?.color ?? RADAR_CHART.highlightStroke, '#FFFFFF', 0.6)}
+          stroke={mixHexColors(vertices[idx]?.color ?? RADAR_CHART.highlightStroke, mode === 'dark' ? '#1C1C1C' : '#FFFFFF', 0.6)}
           strokeWidth="16"
           strokeLinecap="round"
         />
       ))}
 
       <g transform={`translate(${cx} ${cy})`}>
-        <polygon points={centerHexagramMask} fill="#FFFFFF" />
+        <polygon points={centerHexagramMask} fill={RADAR_CHART.centerMask} />
       </g>
 
       {/* 나의 민감도 헥사곤 */}
@@ -721,6 +739,11 @@ function LegacyHexRadarChart({
         />
       ))}
 
+      {onSelectAxis && myNodePoints.map(([x, y], i) => selectedAxis === TASTE_IDS[i] && <circle
+        key={`selection-${i}`} cx={x} cy={y} r={12} fill="none"
+        stroke={mixHexColors(vertices[i].color, '#FFFFFF', mode === 'dark' ? 0.2 : 0.5)} strokeWidth={1}
+      />)}
+
       {/* 맛 라벨 */}
       {vertices.map((v, i) => {
         const isLeft = i === 5;
@@ -745,6 +768,24 @@ function LegacyHexRadarChart({
           </text>
         );
       })}
+      {onSelectAxis && vertices.map((v, i) => {
+        const axis = TASTE_IDS[i];
+        const [nodeX, nodeY] = myNodePoints[i];
+        // Labels provide 44px targets; compact node targets avoid overlapping nearby minimum nodes.
+        const labelX = v.labelPoint[0] + (i === 5 ? -14 : i === 2 ? 14 : 0);
+        const labelY = v.labelPoint[1] + (i < 2 ? -6 : i === 3 || i === 4 ? 6 : 0);
+        return <g key={`select-${axis}`} role="button" tabIndex={0} aria-label={`${v.label} 비율 비교`}
+          aria-pressed={selectedAxis === axis} className="cursor-pointer focus:outline-none"
+          onClick={() => onSelectAxis(axis)}
+          onKeyDown={event => {
+            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectAxis(axis); }
+          }}>
+          <circle cx={nodeX} cy={nodeY} r={12} fill="transparent" />
+          <rect x={labelX - 22} y={labelY - 22} width={44} height={44} rx={6} fill="transparent"
+            className="radar-axis-hit-target" />
+        </g>;
+      })}
+      {onSelectAxis && <style>{'g[role="button"]:focus-visible .radar-axis-hit-target { stroke: var(--tb-color-border-focus); stroke-width: 1.5; }'}</style>}
     </svg>
   );
 }

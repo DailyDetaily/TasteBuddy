@@ -1,10 +1,10 @@
-.tb-pl-field, .tb-pl-attachment { display: grid; gap: var(--tb-space-8, 8px); width: 100%; min-width: 0; }
+.tb-pl-field { display: grid; gap: var(--tb-space-8, 8px); width: 100%; min-width: 0; }
 .tb-pl-field > label, .tb-pl-field-label { color: var(--tb-color-text-secondary); font-size: 12px; font-weight: 600; }
 .tb-pl-input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--tb-color-border-default); border-radius: var(--tb-radius-10); padding: 10px 12px; background: var(--tb-color-surface-card); color: var(--tb-color-text-primary); font: inherit; line-height: 1.5; }
 .tb-pl-input::placeholder { color: var(--tb-color-text-body); }
-.tb-pl-input:disabled { background: var(--tb-color-surface-disabled); color: var(--tb-color-text-body); cursor: not-allowed; }
-.tb-pl-input[aria-invalid="true"] { border-color: var(--tb-color-destructive); }
-.tb-pl-input:focus-visible, .tb-pl-text-action:focus-visible, .tb-pl-disclosure > summary:focus-visible, .tb-pl-tag-more:focus-visible, .tb-pl-attachment button:focus-visible { outline: 2px solid var(--tb-color-text-primary); outline-offset: 3px; }
+.tb-pl-input:disabled { border-color: var(--tb-color-border-disabled); background: var(--tb-color-surface-disabled); color: var(--tb-color-text-body); cursor: not-allowed; }
+.tb-pl-input[aria-invalid="true"] { border-color: var(--tb-color-border-destructive); }
+.tb-pl-input:focus-visible, .tb-pl-text-action:focus-visible, .tb-pl-disclosure > summary:focus-visible, .tb-pl-tag-more:focus-visible { outline: 2px solid var(--tb-color-border-focus); outline-offset: 3px; }
 .tb-pl-textarea { min-height: 176px; border-radius: var(--tb-radius-20); padding: 10px; font-size: 13px; resize: vertical; field-sizing: fixed; box-shadow: none; }
 .tb-pl-field:has(> .tb-pl-textarea) > label { font-size: 14px; }
 .tb-pl-hint, .tb-pl-field .tb-pl-hint { margin: 0; color: var(--tb-color-text-body); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
@@ -44,10 +44,5 @@
 .tb-pl-skeleton-lines > span:nth-child(3) { width: 50%; }
 .tb-pl-skeleton-rectangle { width: 100%; aspect-ratio: 16 / 9; }
 @keyframes tb-pl-pulse { 50% { opacity: .45; } }
-.tb-pl-attachment-preview { position: relative; aspect-ratio: 4 / 3; border-radius: var(--tb-radius-12); overflow: hidden; background: var(--tb-color-surface-muted); }
-.tb-pl-attachment-preview > img { width: 100%; height: 100%; object-fit: cover; }
-.tb-pl-attachment-preview > button { position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--tb-radius-full); background: var(--tb-color-surface-card); color: var(--tb-color-text-primary); }
-.tb-pl-attachment-trigger { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 64px; border: 1px dashed var(--tb-color-text-hint); border-radius: var(--tb-radius-12); background: var(--tb-color-surface-card); color: var(--tb-color-text-secondary); }
-.tb-pl-attachment-trigger:disabled { opacity: .45; }
 .tb-pl-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @media (prefers-reduced-motion: reduce) { .tb-pl-spinner, .tb-pl-skeleton-shapes > span, .tb-pl-skeleton-lines > span { animation: none; } .tb-pl-disclosure > summary > svg { transition: none; } }

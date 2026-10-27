@@ -1,3 +1,4 @@
+import InterpretationCard from '../components/system/InterpretationCard';
 import { TextInputExample } from "./ProfileFieldExamples";
 import { componentExampleContent as exampleContent } from "./componentExampleContent";
 import { ChipExample } from "./ChipExamples";
@@ -14,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import PrimaryButton from "../components/system/PrimaryButton";
+import TopAppBar from "../components/TopAppBar";
 import TasteChip from "../components/system/TasteChip";
 import SelectionCard from "../components/system/SelectionCard";
 import Chip, { type ChipSize, type ChipTone, type ChipVariant } from "../components/system/Chip";
@@ -290,6 +292,17 @@ export default function ComponentPreview({
       );
       break;
     case "top-bar":
+      if (options.appearance === "glass") {
+        demo = <div className="pl-demo-topbar-glass-stage">
+          <TopAppBar appearance="glass" title={label || "버섯 리소토"} showBack={options.back !== "false"}
+            onBack={() => showFeedback("전체 평가로 돌아가는 예제")}
+            rightActions={options.actions === "false" ? <></> : <>
+              <button type="button" aria-label="미각 단어 검색" onClick={() => showFeedback("미각 단어 검색을 여는 예제")}><Search size={24} strokeWidth={1.8} /></button>
+              <button type="button" aria-label="디테일 태그 기록하기" onClick={() => showFeedback("디테일 태그로 이동하는 예제")}><ChevronRight size={24} strokeWidth={1.8} /></button>
+            </>} />
+        </div>;
+        break;
+      }
       demo = (
         <div className="pl-demo-topbar" data-appearance={options.appearance}>
           {options.back !== "false" ? <button
@@ -638,8 +651,10 @@ export default function ComponentPreview({
         />
       );
       break;
-    case "dining-result":
     case "interpretation-card":
+      demo = <InterpretationCard eyebrow="합성 예제 · 기록 3개" description={label || "같은 감각도 조건에 따라 달라져요"} supportingText={empty ? "해석을 위한 기록이 더 필요해요." : "기록한 감각과 직접 평가를 함께 살펴봐요. 같은 감각도 음식의 온도와 식사 상황에 따라 다르게 느껴질 수 있어요."} />;
+      break;
+    case "dining-result":
       demo = empty ? (
         <div className="pl-result-demo"><span className="pl-mini-kicker">{component.id === "dining-result" ? "기록 0개" : "근거 부족"}</span><strong>{component.id === "dining-result" ? "아직 식사 기록이 없어요" : "해석을 위해 기록이 더 필요해요"}</strong><p>{component.id === "dining-result" ? "첫 식사 경험을 남겨 보세요." : "관찰을 더 모은 뒤 경향을 살펴봐요."}</p></div>
       ) : (
@@ -654,6 +669,12 @@ export default function ComponentPreview({
         </div>
       );
       break;
+    case "stack-card":
+    case "expandable-card": {
+      const captureState = state === "스택 펼침" || state === "본문 펼침" ? "expanded" : "default";
+      demo = <img src={`/plating/native-component-audit/${component.id}--${captureState}.png`} alt={`실제 SwiftUI 렌더 · ${state} · 합성 예제`} style={{ width: "100%", maxWidth: 390, height: "auto" }} />;
+      break;
+    }
     case "taste-graph": {
       const values = Object.entries(profile).map(([key,value],i)=>({key,label:["단맛","신맛","쓴맛","짠맛","감칠맛","지방맛"][i],value:i === 0 && state === "미확인 포함" ? null : i === 0 && state === "0 포함" ? 0 : value}));
       const alternative = `합성 예제 미각 강도: ${values.map(v=>`${v.label} ${v.value ?? "미확인"}`).join(", ")}. 호감 점수가 아니에요.`;
@@ -686,7 +707,7 @@ export default function ComponentPreview({
       break;
     }
     default:
-      demo = <AdditionalPreview key={`${component.id}:${state}`} id={component.id} state={state} label={label} thumbnail={thumbnail} options={options} />;
+      demo = <AdditionalPreview key={`${component.id}:${state}`} id={component.id} state={state} label={label} thumbnail={thumbnail || (component.id === "tcs-badge" && staticExample)} options={options} />;
   }
   return (
     <div

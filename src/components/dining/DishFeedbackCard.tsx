@@ -73,6 +73,7 @@ interface DishFeedbackCardProps {
   onLike?: () => void;
   onOpenAuthorProfile?: () => void;
   onOpenComments?: () => void;
+  onOpenOptions?: () => void;
   onOpenSubject?: () => void;
   onSelect?: () => void;
   unframed?: boolean;
@@ -795,7 +796,7 @@ export function DishFeedbackCardSkeleton({ unframed = false }: { unframed?: bool
 
       <DishFeedbackSkeletonShape className="h-[76px] w-full rounded-[var(--tb-radius-12)]" />
 
-      <div className="flex w-full items-center gap-2 border-t border-[rgba(15,15,15,0.08)] pt-[12px]">
+      <div className="flex w-full items-center gap-2 border-t border-[var(--tb-color-border-subtle)] pt-[12px]">
         <span className="flex size-8 items-center justify-center" aria-hidden="true">
           <DishFeedbackSkeletonShape className="size-5 rounded-full" />
         </span>
@@ -836,6 +837,7 @@ export default function DishFeedbackCard({
   onLike,
   onOpenAuthorProfile,
   onOpenComments,
+  onOpenOptions,
   onOpenSubject,
   onSelect,
   unframed = false,
@@ -844,7 +846,7 @@ export default function DishFeedbackCard({
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const isCardInteractive = interactive && Boolean(onSelect);
-  const hasActions = Boolean(actions);
+  const hasActions = Boolean(actions || onOpenOptions);
 
   const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!isCardInteractive || event.defaultPrevented || event.target !== event.currentTarget) {
@@ -900,11 +902,12 @@ export default function DishFeedbackCard({
           <button
             type="button"
             aria-label="디시 카드 옵션"
-            aria-expanded={isActionSheetOpen}
+            aria-expanded={onOpenOptions ? undefined : isActionSheetOpen}
             className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--tb-color-text-muted)] transition-colors hover:bg-[var(--tb-color-surface-muted)] hover:text-[var(--tb-color-text-primary)]"
             onClick={(event) => {
               event.stopPropagation();
-              setIsActionSheetOpen(true);
+              if (onOpenOptions) onOpenOptions();
+              else setIsActionSheetOpen(true);
             }}
           >
             <MoreHorizontal size={ICON_TOKENS.size.md} strokeWidth={ICON_TOKENS.strokeWidth.regular} />
@@ -912,9 +915,9 @@ export default function DishFeedbackCard({
         ) : null}
       </div>
 
-      <div className="flex w-full flex-col gap-3">
+      {card.images.length > 0 && <div className="flex w-full flex-col gap-3">
         <DishFeedbackImageRail images={card.images} subject={card.subject} unframed={unframed} />
-      </div>
+      </div>}
 
       {card.tasteBubbles.length > 0 || card.detailTags.length > 0 ? (
         <div className="flex w-full flex-col gap-[6px]">
@@ -925,18 +928,19 @@ export default function DishFeedbackCard({
 
       <DiningNotePreview summary={card.synthesisSummary} />
 
-      <div className="flex w-full items-center gap-2 border-t border-[rgba(15,15,15,0.08)] pt-[12px]">
+      <div className="flex w-full items-center gap-2 border-t border-[var(--tb-color-border-subtle)] pt-[12px]">
         <SocialActions
           isLiked={isLiked}
+          commentCount={commentCount > 0 ? commentCount : undefined}
           onLike={handleLikeClick}
-          onComment={handleCommentClick}
+          onComment={onOpenComments ? handleCommentClick : undefined}
           onShare={handleShareClick}
         />
         <span className="ml-auto shrink-0 whitespace-nowrap text-right text-[11px] font-normal text-[var(--tb-color-text-muted)]">
           {card.absoluteDateLabel}
         </span>
       </div>
-      {hasActions ? (
+      {hasActions && !onOpenOptions ? (
         <DishFeedbackActionSheet
           onDelete={() => {
             setIsDeleteConfirmOpen(true);

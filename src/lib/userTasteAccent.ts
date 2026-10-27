@@ -5,7 +5,8 @@ import {
   getStrongestTasteMeasurement,
   type TasteMeasurementSnapshot,
 } from '../constants/tasteMeasurementData';
-import { TASTE_TOKENS, type TasteId } from '../constants/designTokens';
+import { type TasteId } from '../constants/designTokens';
+import { TASTE_TOKENS } from '../constants/uiColorTokens';
 
 export interface UserTasteAccent {
   label: string;
@@ -17,6 +18,10 @@ export interface UserTasteAccent {
     main: string;
     tintSoft: string;
     tintSoftBorder: string;
+    borderSubtle?: string;
+    borderDefault?: string;
+    borderStrong?: string;
+    borderAccent?: string;
     tintSurface: string;
     tintSurfaceSubText: string;
     tintSurfaceText: string;
@@ -32,6 +37,10 @@ type UserTasteAccentCssVariable =
   | '--tb-user-accent-main'
   | '--tb-user-accent-tint-soft'
   | '--tb-user-accent-tint-soft-border'
+  | '--tb-user-accent-border-subtle'
+  | '--tb-user-accent-border-default'
+  | '--tb-user-accent-border-strong'
+  | '--tb-user-accent-border-accent'
   | '--tb-user-accent-tint-surface'
   | '--tb-user-accent-tint-surface-sub-text'
   | '--tb-user-accent-tint-surface-text';
@@ -64,6 +73,10 @@ export function createUserTasteAccentStyle(
     '--tb-user-accent-main': accent.palette.main,
     '--tb-user-accent-tint-soft': accent.palette.tintSoft,
     '--tb-user-accent-tint-soft-border': accent.palette.tintSoftBorder,
+    '--tb-user-accent-border-subtle': accent.palette.borderSubtle ?? `var(--tb-taste-${accent.tasteId}-border-subtle)`,
+    '--tb-user-accent-border-default': accent.palette.borderDefault ?? `var(--tb-taste-${accent.tasteId}-border-default)`,
+    '--tb-user-accent-border-strong': accent.palette.borderStrong ?? `var(--tb-taste-${accent.tasteId}-border-strong)`,
+    '--tb-user-accent-border-accent': accent.palette.borderAccent ?? `var(--tb-taste-${accent.tasteId}-border-accent)`,
     '--tb-user-accent-tint-surface': accent.palette.tintSurface,
     '--tb-user-accent-tint-surface-sub-text': accent.palette.tintSurfaceSubText,
     '--tb-user-accent-tint-surface-text': accent.palette.tintSurfaceText,

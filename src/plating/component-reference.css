@@ -76,6 +76,8 @@
 .pl-product-demo input[data-doc-focused] { outline: 2px solid var(--tb-color-text-primary); outline-offset: 2px; }
 .pl-demo-topbar[data-appearance="solid"] { background: var(--tb-color-bg-page); }
 .pl-demo-topbar[data-appearance="transparent"] { background: transparent; border-color: transparent; box-shadow: none; }
+.pl-demo-topbar-glass-stage { width: 100%; padding-block: 28px; border-radius: 20px; background: radial-gradient(circle at 15% 65%, #e9e5ff 0 28px, transparent 29px), radial-gradient(circle at 80% 30%, #ffe9b8 0 42px, transparent 43px), var(--tb-color-bg-focus); }
+.plating-site[data-theme] .pl-live-stage .pl-product-demo[data-component="top-bar"]:has(.pl-demo-topbar-glass-stage) { max-width: 390px; padding: 0; background: transparent; }
 .pl-demo-chrome-space { width: 32px; height: 32px; }
 .pl-product-demo .pl-demo-value-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 12px 16px; font-size: 13px; }
 .pl-product-demo .pl-demo-value-row > button { display: inline-flex; align-items: center; width: auto; padding: 0; gap: 8px; border: 0; font-size: 15px; font-weight: 600; }
@@ -98,3 +100,4 @@
 @media (prefers-reduced-motion: reduce) {
   .pl-comparison-stage *, .pl-comparison-stage *::before, .pl-comparison-stage *::after { animation: none !important; transition: none !important; }
 }
+.plating-site .pl-live-stage:has(.pl-demo-topbar-glass-stage) { padding-inline: 0; }

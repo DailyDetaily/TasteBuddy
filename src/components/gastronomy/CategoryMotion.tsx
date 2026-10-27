@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { categoryMotionColor } from "../../constants/colorModes";
+import { useProductColorMode } from "../../lib/colorMode";
 import nativeEngine from "../../../ios/TasteBuddy/Resources/CategoryMotion/TasteDataCategoryMotion.js?raw";
 import {
   buildCards,
@@ -237,6 +239,7 @@ export default function CategoryMotion({
   facet: Facet;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const colorMode = useProductColorMode();
   const [frame, setFrame] = useState<Frame | null>(null);
   const [failed, setFailed] = useState(false);
   const input = motionInput(state, category, domain, attribute, facet);
@@ -321,19 +324,19 @@ export default function CategoryMotion({
                     ? `M${b.points[0].x} ${b.points[0].y} C${b.points[1].x} ${b.points[1].y} ${b.points[2].x} ${b.points[2].y} ${b.points[3].x} ${b.points[3].y} L${b.points[4].x} ${b.points[4].y} C${b.points[5].x} ${b.points[5].y} ${b.points[6].x} ${b.points[6].y} ${b.points[7].x} ${b.points[7].y} Z`
                     : ""
                 }
-                fill={b.color}
+                fill={categoryMotionColor(b.color, colorMode)}
                 opacity={b.opacity}
               />
             ))}
             {frame.dots.map((d) => (
               <g key={d.id} opacity={d.opacity}>
-                <circle cx={d.x} cy={d.y} r={d.r} fill={d.color} />
+                <circle cx={d.x} cy={d.y} r={d.r} fill={categoryMotionColor(d.color, colorMode)} />
                 {d.tintColor && (
                   <circle
                     cx={d.x}
                     cy={d.y}
                     r={d.r}
-                    fill={d.tintColor}
+                    fill={categoryMotionColor(d.tintColor, colorMode)}
                     opacity={d.tint ?? 0}
                   />
                 )}
@@ -344,13 +347,13 @@ export default function CategoryMotion({
             className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center"
             style={{ opacity: frame.summaryOpacity }}
           >
-            <p className="text-[12px] text-[var(--tb-color-text-hint)]">
+            <p className="text-[12px] text-[var(--tb-color-text-body)]">
               {frame.title}
             </p>
-            <p className="mt-1 max-w-[37%] truncate text-[22px] font-bold tabular-nums">
+            <p className="mt-1 max-w-[37%] truncate text-[22px] font-bold tabular-nums text-[var(--tb-color-text-primary)]">
               {frame.value}
             </p>
-            <p className="mt-1 max-w-[37%] text-[12px] font-medium">
+            <p className="mt-1 max-w-[37%] text-[12px] font-medium text-[var(--tb-color-text-body)]">
               {frame.unit}
             </p>
             {frame.state !== "valid" && frame.notes?.[0] && (

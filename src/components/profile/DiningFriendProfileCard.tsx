@@ -40,7 +40,7 @@ export default function DiningFriendProfileCard({
   return (
     <div
       className={cn(
-        'relative flex h-16 items-center gap-3 rounded-[20px] bg-white p-3',
+        'relative flex h-16 items-center gap-3 rounded-[20px] bg-[var(--tb-color-surface-base)] p-3',
         onOpenProfile ? 'cursor-pointer' : undefined,
       )}
     >

@@ -29,7 +29,8 @@ import ImageBox from '../system/ImageBox';
 import ToastSurface from '../system/ToastSurface';
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
-import { ICON_TOKENS, TASTE_TOKENS } from '../../constants/designTokens';
+import { ICON_TOKENS } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import { persistRestaurantBookmarkStateForEmail } from '../../lib/restaurantBookmarksSupabase';
 import type { RestaurantDetailViewModel } from '../../pages/RestaurantDetailPage';
 

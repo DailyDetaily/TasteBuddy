@@ -707,7 +707,7 @@ function DishFeedbackDetailScreen({
   const shortRecordText = item.reflectionNote ?? item.synthesisSummary;
   const accentStyle = {
     backgroundColor: `var(--tb-taste-${mainReaction.axis}-tint-surface)`,
-    borderColor: `var(--tb-taste-${mainReaction.axis}-tint-soft-border)`,
+    borderColor: `var(--tb-taste-${mainReaction.axis}-border-default)`,
     color: `var(--tb-taste-${mainReaction.axis}-tint-surface-text)`,
   } as CSSProperties;
 
@@ -756,7 +756,7 @@ function DishFeedbackDetailScreen({
                           index === 0
                             ? `var(--tb-taste-${reaction.axis}-tint-surface)`
                             : `var(--tb-taste-${reaction.axis}-tint-soft)`,
-                        borderColor: `var(--tb-taste-${reaction.axis}-tint-soft-border)`,
+                        borderColor: `var(--tb-taste-${reaction.axis}-border-default)`,
                       }}
                       title={reaction.label}
                     />

@@ -26,7 +26,7 @@ type Foundation = {
 const foundations: Foundation[] = [
   {
     label: "색상 역할",
-    path: "foundations/colors#roles",
+    path: "foundations/colors#semantic",
     column: -3,
     row: -2,
     taste: "sweet",

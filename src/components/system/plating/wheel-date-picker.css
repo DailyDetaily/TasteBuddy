@@ -4,7 +4,7 @@
 .tb-pl-wheel-header::after { grid-column: 3; }
 .tb-pl-wheel-header h3 { grid-column: 2; grid-row: 1; margin: 0; font-size: 16px; font-weight: 700; line-height: 24px; }
 .tb-pl-wheel-close { grid-column: 4; grid-row: 1; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin: 0; padding: 0; border: 0; background: transparent; color: var(--tb-color-icon-primary); cursor: pointer; }
-.tb-pl-wheel-close:focus-visible { outline: 2px solid var(--tb-color-icon-primary); outline-offset: 2px; border-radius: 8px; }
+.tb-pl-wheel-close:focus-visible { outline: 2px solid var(--tb-color-border-focus); outline-offset: 2px; border-radius: 8px; }
 .tb-pl-wheel-body { display: grid; gap: var(--tb-space-16); }
 .pl-add-profile-date-dialog { top: auto; bottom: 20px; left: 50%; width: min(390px, calc(100vw - 40px)); max-width: none; padding: 0; border: 0; border-radius: 24px; translate: none; transform: translateX(-50%); gap: 0; background: transparent; box-shadow: none; }
 .pl-add-profile-date-dialog > button { display: none; }

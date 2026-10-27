@@ -1,0 +1,22 @@
+.pl-sheet-presentation-grid { display: grid; grid-template-columns: minmax(0, 402px) minmax(0, 1fr); gap: 32px; align-items: start; }
+.pl-sheet-presentation figure { margin: 0; }
+.pl-sheet-presentation iframe { display: block; width: 100%; height: auto; aspect-ratio: 402 / 874; border: 1px solid var(--tb-color-border-default); border-radius: 24px; background: #000; }
+.pl-sheet-presentation figcaption { margin-top: 12px; color: var(--tb-color-text-hint); font-size: 12px; line-height: 1.5; }
+.pl-sheet-presentation table { width: 100%; }
+.pl-sheet-presentation caption { text-align: left; margin-bottom: 12px; }
+.pl-sheet-presentation th, .pl-sheet-presentation td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--tb-color-border-default); font-size: 13px; }
+.pl-sheet-presentation details { margin-top: 24px; }
+.pl-sheet-presentation ul { color: var(--pl-sub); }
+.plating-site[data-theme="dark"] .pl-sheet-presentation ul { color: #b8b9c7; }
+.pl-sheet-presentation pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+.pl-sheet-live { height: 100dvh; overflow: hidden; background: #000; color: var(--tb-color-text-primary); }
+.pl-sheet-live-background { position: relative; width: 100%; height: 100dvh; background: var(--tb-color-bg-page); will-change: transform; }
+.pl-sheet-live-background > img { width: 100%; height: 100%; object-fit: cover; object-position: top; pointer-events: none; }
+.pl-sheet-live-background::before { content: ''; position: absolute; inset: 0 0 auto; height: calc(100vw * 54 / 402); background: var(--tb-color-bg-page); pointer-events: none; }
+.pl-sheet-live-open { position: absolute; left: 20px; bottom: 90px; width: calc(100% - 40px); }
+.pl-sheet-live-description { margin: 12px 0 20px; font-size: 13px; color: var(--tb-color-text-body); }
+.pl-sheet-live-field { display: grid; gap: 8px; }
+.pl-sheet-live-field label { color: var(--tb-color-text-hint); font-size: 12px; }
+.pl-sheet-live-field input { width: 100%; height: 48px; border: 1px solid var(--tb-color-border-default); border-radius: 12px; padding: 0 12px; background: #fff; font: inherit; }
+.pl-sheet-live-field input:focus-visible { outline: 2px solid var(--tb-color-text-primary); outline-offset: 2px; }
+@media (max-width: 780px) { .pl-sheet-presentation-grid { grid-template-columns: minmax(0, 1fr); } .pl-sheet-presentation figure { max-width: 402px; width: 100%; margin: auto; } }

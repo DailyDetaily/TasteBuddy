@@ -59,7 +59,7 @@ export function TasteTintCardPreviewChips({
             aria-label={`${taste.label} 미각 보기`}
             onClick={() => onChange(tasteId)}
             className={cn(
-              'appearance-none rounded-full bg-transparent p-0 outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-[rgba(15,15,15,0.16)] focus-visible:ring-offset-2',
+              'appearance-none rounded-full bg-transparent p-0 outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-[var(--tb-color-border-focus)] focus-visible:ring-offset-2',
               ringOffsetClassName,
               selected && 'scale-[1.02]',
             )}

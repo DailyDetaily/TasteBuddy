@@ -13,6 +13,10 @@ Taste Buddy의 디자인 시스템 이름은 **플레이팅(Plating)**이다. �
 
 ## 문서 목적
 
+컬러의 최종 역할·값·투명도·대비·기존 TB 전환 규칙은 [컬러 스타일 가이드](docs/design/color-style-guide.md)를 따른다. 신맛 대표색은 `#FFD600`, 읽기용 힌트는 `#6F6F6F`이며, 현재 제품 기준은 Light다.
+
+컴포넌트 변경은 Figma·플레이팅·실제 코드·토큰·디자인 시스템 문서와 대응표를 함께 갱신한다. 미니 그래프의 공통 규격과 0·1 표현은 [미니 그래프](docs/design/mini-chart.md)를 따른다.
+
 이 문서는 Taste Buddy의 현재 시각 시스템을 한곳에서 읽을 수 있게 정리한 운영 문서다.
 
 - 제품 경험의 상위 기준은 `src/guidelines/TASTE_BUDDY_PRODUCT_EXPERIENCE_GUIDELINES.md`
@@ -317,7 +321,7 @@ Taste Buddy의 색상은 세 층으로 읽혀야 한다.
 | `--tb-color-text-secondary` | `#3F3F3F` | 서브 헤딩, 강조 메타 |
 | `--tb-color-text-tertiary` | `#535353` | 세 번째 단계 라벨 |
 | `--tb-color-text-body` | `#666666` | 기본 본문 |
-| `--tb-color-text-hint` | `#888888` | 힌트, 차트 라벨 |
+| `--tb-color-text-hint` | `#6F6F6F` | 읽기용 힌트 |
 | `--tb-color-text-disabled` | `#AFAFAF` | disabled 텍스트 |
 | `--tb-color-text-inverse` | `#FFFFFF` | 어두운 배경 위 텍스트 |
 | `--tb-color-icon-primary` | `#3F3F3F` | 기본 아이콘 |
@@ -345,12 +349,12 @@ Taste Buddy의 색상은 세 층으로 읽혀야 한다.
 
 | Taste | Main | Dark | Light | BG | Tint Soft | Tint Soft Border | Tint Surface | Gradient |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Sweet / 단맛 | `#FF9900` | `#CC7A00` | `#FFCC80` | `#FFD699` | `rgba(255, 153, 0, 0.05)` | `rgba(255, 153, 0, 0.18)` | `#FFEBCC` | `linear-gradient(135deg, #FF9900, #FFB84D)` |
-| Sour / 신맛 | `#FBC02D` | `#C99A00` | `#FDD835` | `#FFEF99` | `rgba(251, 192, 45, 0.05)` | `rgba(251, 192, 45, 0.18)` | `#FFF7CC` | `linear-gradient(135deg, #FBC02D, #FFD54F)` |
-| Bitter / 쓴맛 | `#95C900` | `#6E9600` | `#E6EE9C` | `#E0EBB4` | `rgba(149, 201, 0, 0.05)` | `rgba(149, 201, 0, 0.18)` | `#EAF4CC` | `linear-gradient(135deg, #95C900, #AED581)` |
-| Salty / 짠맛 | `#7299FF` | `#4A70CC` | `#90CAF9` | `#C6D6FF` | `rgba(114, 153, 255, 0.05)` | `rgba(114, 153, 255, 0.18)` | `#E3EBFF` | `linear-gradient(135deg, #7299FF, #9FBFFF)` |
-| Umami / 감칠맛 | `#B372B4` | `#8A5490` | `#CE93D8` | `#E1C7E1` | `rgba(179, 114, 180, 0.05)` | `rgba(179, 114, 180, 0.18)` | `#F0E3F0` | `linear-gradient(135deg, #B372B4, #CE93D8)` |
-| Fat / 지방맛 | `#95867A` | `#6B5E54` | `#BCAAA4` | `#D5CFCA` | `rgba(149, 134, 122, 0.05)` | `rgba(149, 134, 122, 0.18)` | `#EAE7E4` | `linear-gradient(135deg, #95867A, #B0A49A)` |
+| Sweet / 단맛 | `#FF9900` | `#CC7A00` | `#FFCC80` | `#FFD699` | `#FFFAF2` | `#FFEBCC` | `#FFEBCC` | `linear-gradient(135deg, #FF9900, #FFB84D)` |
+| Sour / 신맛 | `#FFD600` | `#C99A00` | `#FDD835` | `#FFEF99` | `#FFFDF2` | `#FFF7CC` | `#FFF7CC` | `linear-gradient(135deg, #FFD600, #FFD54F)` |
+| Bitter / 쓴맛 | `#95C900` | `#6E9600` | `#E6EE9C` | `#E0EBB4` | `#FAFCF2` | `#EAF4CC` | `#EAF4CC` | `linear-gradient(135deg, #95C900, #AED581)` |
+| Salty / 짠맛 | `#7299FF` | `#4A70CC` | `#90CAF9` | `#C6D6FF` | `#F8FAFF` | `#E3EBFF` | `#E3EBFF` | `linear-gradient(135deg, #7299FF, #9FBFFF)` |
+| Umami / 감칠맛 | `#B372B4` | `#8A5490` | `#CE93D8` | `#E1C7E1` | `#FBF8FB` | `#F0E3F0` | `#F0E3F0` | `linear-gradient(135deg, #B372B4, #CE93D8)` |
+| Fat / 지방맛 | `#95867A` | `#6B5E54` | `#BCAAA4` | `#D5CFCA` | `#FAF9F8` | `#EAE7E4` | `#EAE7E4` | `linear-gradient(135deg, #95867A, #B0A49A)` |
 
 ### Taste Surface Roles
 
@@ -558,6 +562,7 @@ Scale:
 - 대부분의 인터랙션 피드백은 `180ms` 에서 `300ms`
 - 화면 전환이나 큰 shell 변화는 `500ms` 에서 `620ms`
 - 웹 일반 UI는 단조로운 이징을 기본으로 한다. iOS의 작은 스프링 봉우리와 결과 카드·소스 스플래터처럼 명시된 연출은 [모션 계약](docs/design/motion-system.md)을 따른다.
+- 오버슛은 일반 콘텐츠·제품 데이터 표현부 0%, 작은 비정량 UI의 안착 1%, 결과 카드·헤더의 작은 Bloom 1.8%, 일반 UI 상한 2%로 구분한다. **브랜드 그래픽·미니 차트 연출은 4%(`1.04 → 1.00`)를 채택**하며 8%는 사용하지 않는다. 단위·범위·현재 구현은 [오버슛 강도](docs/design/motion-system.md#오버슛-강도)에 기록한다.
 - 원본 키프레임에 이징을 한 번만 적용하며, 이미 계산한 타임라인 전체를 다시 이징하지 않는다.
 - 동작 줄이기는 이동·블러·스태거를 생략하고 동일한 최종 상태를 즉시 제공한다.
 - 반복 애니메이션은 device state나 taste activity를 설명할 때만 허용
@@ -627,7 +632,7 @@ Scale:
 | Chip | `Chip` | 일반 목적 neutral / semantic / icon label chip | `src/components/system/Chip.tsx` |
 | Badge | `OutlineBadge` | 프로필 단계, 섹션 라벨 | `src/components/system/OutlineBadge.tsx` |
 | Badge | `StatusChip` | 예약 상태 메타데이터 | `src/components/system/StatusChip.tsx` |
-| Badge | `Home TCS Badge` | 홈 히스토리 카드의 gradient TCS 배지 | `src/imports/Home.tsx` |
+| Badge | `TCSBadge` | 조정량 가중 그라데이션 배지 · 웹/iOS 공용 규격 | [TCSBadge 규격](docs/design/tcs-badge.md) |
 | Chip | `TasteChip` | 맛 포인트 전용 taste-aware pill | `src/components/system/TasteChip.tsx` |
 | Card | `InterpretationCard` | 프로필 해석, 셰프 번역 요약, 홈 변화 요약 카드 | `src/components/system/InterpretationCard.tsx` |
 | Typography Helper | `SectionTitle` | 섹션 제목 helper | `src/components/system/SectionTitle.tsx` |
@@ -653,7 +658,7 @@ Scale:
 | `Chip` | full pill, size `xs/sm/md`, tone `neutral/success/warning/accent`, variant `soft/outline/solid/text`, general label / source tag / icon+text chip 용도. `xs`: `10px`, `px 8 / py 4 / gap 4 / icon 12`. `sm`: `11px`, `px 10 / py 6 / gap 6 / icon 12`. `md`: `12px`, `px 12 / py 8 / gap 8 / icon 14`. 필요 시 `backgroundColorToken`으로 `surface-base` 같은 배경 토큰을 직접 주입할 수 있다. |
 | `OutlineBadge` | `1px solid --tb-color-text-tertiary`, radius `6px`, padding `2px 8px`, `12px / 600` |
 | `StatusChip` | radius `6px`, padding `2px 6px`, `10px / 700`, 색상은 prop으로 주입 |
-| `HomeTcsBadge` | radius `6px`, padding `2px 6px`, `10px / 700`, weighted taste-light gradient + badge elevated shadow |
+| `TCSBadge` | 높이 18, radius 6, padding 2×6, Bold 10/14, 조정량 가중 taste.light 75% + white 25% 그라데이션, 외부 그림자 3개·내부 음영 4개 |
 | `TasteChip` | full pill, border `taste.palette.tintSoftBorder`, bg `taste.palette.tintSoft`, `10px / 500`, value는 taste color `600`; 미각과 무관한 메타는 `tone="neutral"`로 `surface-muted / border-strong / text-tertiary` 사용 |
 | `TokenBox` | radius `8px`, size `sm/md/lg = 32/40/48px`, `backgroundToken`과 `textToken`으로 `tb-*` 색상 토큰을 주입 |
 | `ImageBox` | radius `8px`, size `sm/md/lg = 32/40/48px`, 이미지가 있으면 `object-cover`, 없으면 `person/chef/restaurant/menu/generic` fallback icon |

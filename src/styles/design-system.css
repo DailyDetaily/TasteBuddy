@@ -11,12 +11,15 @@
   --tb-color-surface-elevated: #fcfcfc;
   --tb-color-surface-disabled: #efefef;
   --tb-color-surface-overlay: rgba(255, 255, 255, 0.8);
+  --tb-color-surface-placeholder: #efefef;
+  --tb-color-surface-inverse: #0f0f0f;
 
   --tb-color-text-primary: #0f0f0f;
   --tb-color-text-secondary: #3f3f3f;
   --tb-color-text-tertiary: #535353;
   --tb-color-text-body: #666666;
-  --tb-color-text-hint: #888888;
+  --tb-color-text-action: #666666;
+  --tb-color-text-hint: #6f6f6f;
   --tb-color-text-disabled: #afafaf;
   --tb-color-text-inverse: #ffffff;
   --tb-color-text-subtle: rgba(15, 15, 15, 0.6);
@@ -24,6 +27,15 @@
   --tb-color-text-faint: rgba(15, 15, 15, 0.4);
 
   --tb-color-border-card: #f0f0f0;
+  --tb-color-border-faint: var(--tb-color-border-card);
+  --tb-color-border-on-muted: #E5E5E5;
+  --tb-color-border-focus: var(--tb-color-icon-primary);
+  --tb-color-border-selected: var(--tb-color-text-primary);
+  --tb-color-border-destructive: var(--tb-color-destructive);
+  --tb-color-border-success: var(--tb-color-success);
+  --tb-color-border-success-soft: var(--tb-color-success-soft);
+  --tb-color-border-warning: var(--tb-color-warning);
+  --tb-color-border-warning-soft: var(--tb-color-warning-soft);
   --tb-color-border-subtle: #e8e8e8;
   --tb-color-border-default: #e7e7e7;
   --tb-color-border-strong: #e5e5e5;
@@ -36,10 +48,31 @@
   --tb-color-icon-muted: #afafaf;
 
   --tb-color-success: #2f8f5b;
+  --tb-color-neutral: #3f3f3f;
+  --tb-color-neutral-soft: #efefef;
+  --tb-color-informative: #3f3f3f;
+  --tb-color-informative-soft: #f7f7f7;
+  --tb-color-success-text: #236b45;
+  --tb-color-success-strong: #236b45;
   --tb-color-success-soft: #e6f4ec;
   --tb-color-warning: #a8661a;
+  --tb-color-warning-text: #875014;
+  --tb-color-warning-strong: #875014;
   --tb-color-warning-soft: #fff1de;
   --tb-color-destructive: #d4183d;
+  --tb-color-destructive-text: #b31333;
+  --tb-color-destructive-soft: #fcedef;
+  --tb-color-interaction-primary: #0f0f0f;
+  --tb-color-interaction-on-primary: #ffffff;
+  --tb-color-interaction-selected: #0f0f0f;
+  --tb-color-interaction-on-selected: #ffffff;
+  --tb-color-interaction-focus: #3f3f3f;
+  --tb-color-interaction-hover-overlay: rgba(0, 0, 0, 0.04);
+  --tb-color-interaction-pressed-overlay: rgba(0, 0, 0, 0.06);
+  --tb-color-interaction-pressed-inverse-overlay: rgba(255, 255, 255, 0.1);
+  --tb-color-scrim-subtle: rgba(0, 0, 0, 0.35);
+  --tb-color-scrim-default: rgba(0, 0, 0, 0.5);
+  --tb-color-scrim-strong: rgba(0, 0, 0, 0.6);
 
   --tb-shadow-hover: 0 1px 3px rgba(15, 15, 15, 0.06);
   --tb-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -115,9 +148,13 @@
   --tb-taste-sweet-dark: #cc7a00;
   --tb-taste-sweet-light: #ffcc80;
   --tb-taste-sweet-bg: #ffd699;
-  --tb-taste-sweet-tint-soft: rgba(255, 153, 0, 0.05);
-  --tb-taste-sweet-tint-soft-border: rgba(255, 153, 0, 0.18);
-  --tb-taste-sweet-tint-surface: #ffebcc;
+  --tb-taste-sweet-tint-soft: var(--tb-taste-sweet-tint-surface);
+  --tb-taste-sweet-tint-soft-border: var(--tb-taste-sweet-tint-80);
+  --tb-taste-sweet-border-subtle: var(--tb-taste-sweet-tint-80);
+  --tb-taste-sweet-border-default: var(--tb-taste-sweet-tint-70);
+  --tb-taste-sweet-border-strong: var(--tb-taste-sweet-tint-60);
+  --tb-taste-sweet-border-accent: var(--tb-taste-sweet-main);
+  --tb-taste-sweet-tint-surface: var(--tb-taste-sweet-tint-80);
   --tb-taste-sweet-tint-surface-sub-text: #896735;
   --tb-taste-sweet-tint-surface-text: #6f4609;
   --tb-taste-sweet-gradient: linear-gradient(135deg, #ff9900, #ffb84d);
@@ -125,16 +162,20 @@
   --tb-taste-sweet-ring-base: var(--tb-taste-sweet-tint-surface);
   --tb-taste-sweet-ring-guide: #ff9900;
 
-  --tb-taste-sour-main: #fbc02d;
+  --tb-taste-sour-main: #ffd600;
   --tb-taste-sour-dark: #c99a00;
   --tb-taste-sour-light: #fdd835;
   --tb-taste-sour-bg: #ffef99;
-  --tb-taste-sour-tint-soft: rgba(251, 192, 45, 0.05);
-  --tb-taste-sour-tint-soft-border: rgba(251, 192, 45, 0.18);
-  --tb-taste-sour-tint-surface: #fff7cc;
+  --tb-taste-sour-tint-soft: var(--tb-taste-sour-tint-surface);
+  --tb-taste-sour-tint-soft-border: var(--tb-taste-sour-tint-80);
+  --tb-taste-sour-border-subtle: var(--tb-taste-sour-tint-80);
+  --tb-taste-sour-border-default: var(--tb-taste-sour-tint-70);
+  --tb-taste-sour-border-strong: var(--tb-taste-sour-tint-60);
+  --tb-taste-sour-border-accent: var(--tb-taste-sour-main);
+  --tb-taste-sour-tint-surface: var(--tb-taste-sour-tint-80);
   --tb-taste-sour-tint-surface-sub-text: #897c35;
   --tb-taste-sour-tint-surface-text: #6f5f09;
-  --tb-taste-sour-gradient: linear-gradient(135deg, #fbc02d, #ffd54f);
+  --tb-taste-sour-gradient: linear-gradient(135deg, #ffd600, #ffd54f);
   --tb-taste-sour-accent: #ffd600;
   --tb-taste-sour-ring-base: var(--tb-taste-sour-tint-surface);
   --tb-taste-sour-ring-guide: #ffd600;
@@ -143,9 +184,13 @@
   --tb-taste-bitter-dark: #6e9600;
   --tb-taste-bitter-light: #e6ee9c;
   --tb-taste-bitter-bg: #e0ebb4;
-  --tb-taste-bitter-tint-soft: rgba(149, 201, 0, 0.05);
-  --tb-taste-bitter-tint-soft-border: rgba(149, 201, 0, 0.18);
-  --tb-taste-bitter-tint-surface: #eaf4cc;
+  --tb-taste-bitter-tint-soft: var(--tb-taste-bitter-tint-surface);
+  --tb-taste-bitter-tint-soft-border: var(--tb-taste-bitter-tint-80);
+  --tb-taste-bitter-border-subtle: var(--tb-taste-bitter-tint-80);
+  --tb-taste-bitter-border-default: var(--tb-taste-bitter-tint-70);
+  --tb-taste-bitter-border-strong: var(--tb-taste-bitter-tint-60);
+  --tb-taste-bitter-border-accent: var(--tb-taste-bitter-main);
+  --tb-taste-bitter-tint-surface: var(--tb-taste-bitter-tint-80);
   --tb-taste-bitter-tint-surface-sub-text: #70794b;
   --tb-taste-bitter-tint-surface-text: #505b24;
   --tb-taste-bitter-gradient: linear-gradient(135deg, #95c900, #aed581);
@@ -157,9 +202,13 @@
   --tb-taste-salty-dark: #4a70cc;
   --tb-taste-salty-light: #90caf9;
   --tb-taste-salty-bg: #c6d6ff;
-  --tb-taste-salty-tint-soft: rgba(114, 153, 255, 0.05);
-  --tb-taste-salty-tint-soft-border: rgba(114, 153, 255, 0.18);
-  --tb-taste-salty-tint-surface: #e3ebff;
+  --tb-taste-salty-tint-soft: var(--tb-taste-salty-tint-surface);
+  --tb-taste-salty-tint-soft-border: var(--tb-taste-salty-tint-80);
+  --tb-taste-salty-border-subtle: var(--tb-taste-salty-tint-80);
+  --tb-taste-salty-border-default: var(--tb-taste-salty-tint-70);
+  --tb-taste-salty-border-strong: var(--tb-taste-salty-tint-60);
+  --tb-taste-salty-border-accent: var(--tb-taste-salty-main);
+  --tb-taste-salty-tint-surface: var(--tb-taste-salty-tint-80);
   --tb-taste-salty-tint-surface-sub-text: #5a6789;
   --tb-taste-salty-tint-surface-text: #36466f;
   --tb-taste-salty-gradient: linear-gradient(135deg, #7299ff, #9fbfff);
@@ -171,9 +220,13 @@
   --tb-taste-umami-dark: #8a5490;
   --tb-taste-umami-light: #ce93d8;
   --tb-taste-umami-bg: #e1c7e1;
-  --tb-taste-umami-tint-soft: rgba(179, 114, 180, 0.05);
-  --tb-taste-umami-tint-soft-border: rgba(179, 114, 180, 0.18);
-  --tb-taste-umami-tint-surface: #f0e3f0;
+  --tb-taste-umami-tint-soft: var(--tb-taste-umami-tint-surface);
+  --tb-taste-umami-tint-soft-border: var(--tb-taste-umami-tint-80);
+  --tb-taste-umami-border-subtle: var(--tb-taste-umami-tint-80);
+  --tb-taste-umami-border-default: var(--tb-taste-umami-tint-70);
+  --tb-taste-umami-border-strong: var(--tb-taste-umami-tint-60);
+  --tb-taste-umami-border-accent: var(--tb-taste-umami-main);
+  --tb-taste-umami-tint-surface: var(--tb-taste-umami-tint-80);
   --tb-taste-umami-tint-surface-sub-text: #705b70;
   --tb-taste-umami-tint-surface-text: #513751;
   --tb-taste-umami-gradient: linear-gradient(135deg, #b372b4, #ce93d8);
@@ -185,9 +238,13 @@
   --tb-taste-fat-dark: #6b5e54;
   --tb-taste-fat-light: #bcaaa4;
   --tb-taste-fat-bg: #d5cfca;
-  --tb-taste-fat-tint-soft: rgba(149, 134, 122, 0.05);
-  --tb-taste-fat-tint-soft-border: rgba(149, 134, 122, 0.18);
-  --tb-taste-fat-tint-surface: #eae7e4;
+  --tb-taste-fat-tint-soft: var(--tb-taste-fat-tint-surface);
+  --tb-taste-fat-tint-soft-border: var(--tb-taste-fat-tint-80);
+  --tb-taste-fat-border-subtle: var(--tb-taste-fat-tint-80);
+  --tb-taste-fat-border-default: var(--tb-taste-fat-tint-70);
+  --tb-taste-fat-border-strong: var(--tb-taste-fat-tint-60);
+  --tb-taste-fat-border-accent: var(--tb-taste-fat-main);
+  --tb-taste-fat-tint-surface: var(--tb-taste-fat-tint-80);
   --tb-taste-fat-tint-surface-sub-text: #66625d;
   --tb-taste-fat-tint-surface-text: #453f3a;
   --tb-taste-fat-gradient: linear-gradient(135deg, #95867a, #b0a49a);
@@ -268,7 +325,8 @@
   --tb-layout-card-padding: 12px;
   --tb-safe-area-top: env(safe-area-inset-top, 0px);
   --tb-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --tb-size-top-app-bar-height: 56px;
+  --tb-size-top-app-bar-height: 48px;
+  --tb-size-flow-top-bar-height: 32px;
   --tb-size-bottom-tab-bar-height: 60px;
   --tb-size-primary-button-height: 48px;
   --tb-size-bottom-fade-min-height: 140px;
@@ -450,10 +508,19 @@
     outline: none;
     box-shadow:
       0 0 0 2px var(--tb-color-surface-base),
-      0 0 0 4px var(--tb-color-border-default);
+      0 0 0 4px var(--tb-color-border-focus);
   }
 
   .tb-tcs-badge {
+    --tb-tcs-badge-label: #ffffff;
+    --tb-tcs-badge-empty: #e0e0e0;
+    /* The TCS mark keeps its Light palette in both appearance modes. */
+    --tb-tcs-badge-sweet: color-mix(in srgb, #ffcc80 75%, #ffffff 25%);
+    --tb-tcs-badge-sour: color-mix(in srgb, #fdd835 75%, #ffffff 25%);
+    --tb-tcs-badge-bitter: color-mix(in srgb, #e6ee9c 75%, #ffffff 25%);
+    --tb-tcs-badge-salty: color-mix(in srgb, #90caf9 75%, #ffffff 25%);
+    --tb-tcs-badge-umami: color-mix(in srgb, #ce93d8 75%, #ffffff 25%);
+    --tb-tcs-badge-fat: color-mix(in srgb, #bcaaa4 75%, #ffffff 25%);
     line-height: var(--tb-line-height-normal);
   }
 
@@ -503,7 +570,7 @@
     margin-top: -8px;
     border-radius: 9999px;
     border: 2px solid var(--tb-slider-color, #0f0f0f);
-    background: #ffffff;
+    background: var(--tb-color-surface-base);
     box-sizing: border-box;
     box-shadow:
       0 10px 26px rgba(15, 15, 15, 0.18),
@@ -519,7 +586,7 @@
     height: 28px;
     border-radius: 9999px;
     border: 2px solid var(--tb-slider-color, #0f0f0f);
-    background: #ffffff;
+    background: var(--tb-color-surface-base);
     box-sizing: border-box;
     box-shadow:
       0 10px 26px rgba(15, 15, 15, 0.18),
@@ -661,4 +728,74 @@
   .tb-skeleton-shimmer::after {
     animation: none;
   }
+}
+
+/* Opaque white-mix primitives. 80 = white 80% + taste 20%. */
+:root {
+  --tb-taste-sweet-tint-10: #ffa31a;
+  --tb-taste-sweet-tint-20: #ffad33;
+  --tb-taste-sweet-tint-30: #ffb84d;
+  --tb-taste-sweet-tint-40: #ffc266;
+  --tb-taste-sweet-tint-50: #ffcc80;
+  --tb-taste-sweet-tint-60: #ffd699;
+  --tb-taste-sweet-tint-70: #ffe0b3;
+  --tb-taste-sweet-tint-80: #ffebcc;
+  --tb-taste-sweet-tint-90: #fff5e6;
+  --tb-taste-sweet-tint-95: #fffaf2;
+  --tb-taste-sweet-chart-track: var(--tb-taste-sweet-tint-80);
+  --tb-taste-sour-tint-10: #ffda1a;
+  --tb-taste-sour-tint-20: #ffde33;
+  --tb-taste-sour-tint-30: #ffe24d;
+  --tb-taste-sour-tint-40: #ffe666;
+  --tb-taste-sour-tint-50: #ffeb80;
+  --tb-taste-sour-tint-60: #ffef99;
+  --tb-taste-sour-tint-70: #fff3b3;
+  --tb-taste-sour-tint-80: #fff7cc;
+  --tb-taste-sour-tint-90: #fffbe6;
+  --tb-taste-sour-tint-95: #fffdf2;
+  --tb-taste-sour-chart-track: var(--tb-taste-sour-tint-80);
+  --tb-taste-bitter-tint-10: #a0ce1a;
+  --tb-taste-bitter-tint-20: #aad433;
+  --tb-taste-bitter-tint-30: #b5d94d;
+  --tb-taste-bitter-tint-40: #bfdf66;
+  --tb-taste-bitter-tint-50: #cae480;
+  --tb-taste-bitter-tint-60: #d5e999;
+  --tb-taste-bitter-tint-70: #dfefb3;
+  --tb-taste-bitter-tint-80: #eaf4cc;
+  --tb-taste-bitter-tint-90: #f4fae6;
+  --tb-taste-bitter-tint-95: #fafcf2;
+  --tb-taste-bitter-chart-track: var(--tb-taste-bitter-tint-80);
+  --tb-taste-salty-tint-10: #80a3ff;
+  --tb-taste-salty-tint-20: #8eadff;
+  --tb-taste-salty-tint-30: #9cb8ff;
+  --tb-taste-salty-tint-40: #aac2ff;
+  --tb-taste-salty-tint-50: #b9ccff;
+  --tb-taste-salty-tint-60: #c7d6ff;
+  --tb-taste-salty-tint-70: #d5e0ff;
+  --tb-taste-salty-tint-80: #e3ebff;
+  --tb-taste-salty-tint-90: #f1f5ff;
+  --tb-taste-salty-tint-95: #f8faff;
+  --tb-taste-salty-chart-track: var(--tb-taste-salty-tint-80);
+  --tb-taste-umami-tint-10: #bb80bc;
+  --tb-taste-umami-tint-20: #c28ec3;
+  --tb-taste-umami-tint-30: #ca9ccb;
+  --tb-taste-umami-tint-40: #d1aad2;
+  --tb-taste-umami-tint-50: #d9b9da;
+  --tb-taste-umami-tint-60: #e1c7e1;
+  --tb-taste-umami-tint-70: #e8d5e9;
+  --tb-taste-umami-tint-80: #f0e3f0;
+  --tb-taste-umami-tint-90: #f7f1f8;
+  --tb-taste-umami-tint-95: #fbf8fb;
+  --tb-taste-umami-chart-track: var(--tb-taste-umami-tint-80);
+  --tb-taste-fat-tint-10: #a09287;
+  --tb-taste-fat-tint-20: #aa9e95;
+  --tb-taste-fat-tint-30: #b5aaa2;
+  --tb-taste-fat-tint-40: #bfb6af;
+  --tb-taste-fat-tint-50: #cac3bd;
+  --tb-taste-fat-tint-60: #d5cfca;
+  --tb-taste-fat-tint-70: #dfdbd7;
+  --tb-taste-fat-tint-80: #eae7e4;
+  --tb-taste-fat-tint-90: #f4f3f2;
+  --tb-taste-fat-tint-95: #faf9f8;
+  --tb-taste-fat-chart-track: var(--tb-taste-fat-tint-80);
 }

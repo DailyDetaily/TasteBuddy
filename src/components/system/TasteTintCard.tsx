@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 
-import { TASTE_TOKENS, type TasteId } from '../../constants/designTokens';
-import { getTasteTint } from '../../constants/tasteColors';
+import { type TasteId } from '../../constants/designTokens';
+import { TASTE_TOKENS } from '../../constants/uiColorTokens';
 import { cn } from '../ui/utils';
 import TokenBox from './TokenBox';
 
@@ -45,7 +45,7 @@ export default function TasteTintCard({
   );
   const rootStyle = {
     backgroundColor: taste.palette.tintSurface,
-    border: `1px solid ${getTasteTint(taste.label, 0.18)}`,
+    border: `1px solid ${taste.palette.borderDefault}`,
     ...style,
   } satisfies CSSProperties;
 

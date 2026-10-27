@@ -12,7 +12,7 @@ const state=${JSON.stringify(state)};
 const items=${JSON.stringify(items)};
 const tastes=${JSON.stringify(registry.tastes)};
 const bloom=${JSON.stringify(bloom)};
-await Promise.all(['Regular','Medium','Bold'].map(style=>figma.loadFontAsync({family:'Noto Sans KR',style})));
+await Promise.all(['Regular','Medium','Bold'].map(style=>figma.loadFontAsync({family:'Pretendard',style})));
 const page=await figma.getNodeByIdAsync(${JSON.stringify(state.pages[pageName])});await figma.setCurrentPageAsync(page);
 if(page.children.length)throw new Error('This component page already has content; inspect ledger before retry.');
 const ids=[],sets={},defaults={},reviews=[],all=(await figma.variables.getLocalVariablesAsync()),vars=Object.fromEntries(all.map(v=>[v.name,v]));
@@ -21,13 +21,13 @@ const track=n=>{ids.push(n.id);return n;};
 function paint(n,name,fallback='#FFFFFF',stroke=false){const p={type:'SOLID',color:rgb(fallback)};const value=vars[name]?figma.variables.setBoundVariableForPaint(p,'color',vars[name]):p;if(stroke)n.strokes=[value];else n.fills=[value];}
 function bind(n,field,name){if(vars[name])n.setBoundVariable(field,vars[name]);}
 function frame(parent,name,direction='VERTICAL',width=320){const n=track(figma.createAutoLayout(direction));n.name=name;parent.appendChild(n);n.resize(width,40);n.primaryAxisSizingMode=direction==='HORIZONTAL'?'FIXED':'AUTO';n.counterAxisSizingMode=direction==='HORIZONTAL'?'AUTO':'FIXED';n.itemSpacing=12;bind(n,'itemSpacing','spacing/12');n.fills=[];n.clipsContent=false;return n;}
-async function text(parent,content,style='Product/Body',color='color/text/primary',width=0){const n=track(figma.createText());n.name=content.slice(0,35);n.fontName={family:'Noto Sans KR',style:'Regular'};n.characters=content;await n.setTextStyleIdAsync(state.styles[style]);paint(n,color,'#0F0F0F');parent.appendChild(n);if(width){n.textAutoResize='HEIGHT';n.resize(width,n.height);}else n.textAutoResize='WIDTH_AND_HEIGHT';return n;}
+async function text(parent,content,style='Product/Body',color='color/text/primary',width=0){const n=track(figma.createText());n.name=content.slice(0,35);n.fontName={family:'Pretendard',style:'Regular'};n.characters=content;await n.setTextStyleIdAsync(state.styles[style]);paint(n,color,'#0F0F0F');parent.appendChild(n);if(width){n.textAutoResize='HEIGHT';n.resize(width,n.height);}else n.textAutoResize='WIDTH_AND_HEIGHT';return n;}
 function box(parent,width,height,token='color/surface/card',radius='radius/10'){const n=track(figma.createRectangle());parent.appendChild(n);n.resize(width,height);paint(n,token);bind(n,'cornerRadius',radius);return n;}
 function icon(parent,kind='check',size=20){const paths={check:'M5 12l4 4L19 6',back:'M15 18l-6-6 6-6',close:'M6 6l12 12M18 6L6 18',search:'M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',more:'M5 12h.01M12 12h.01M19 12h.01'};const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="'+paths[kind]+'" fill="none" stroke="#0F0F0F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';const n=track(figma.createNodeFromSvg(svg));n.name='Icon/'+kind;parent.appendChild(n);n.resize(size,size);ids.push(...n.findAll().map(x=>x.id));return n;}
 function padding(n,size){for(const f of ['paddingTop','paddingBottom','paddingLeft','paddingRight']){n[f]=size;bind(n,f,'spacing/'+size);}}
 let primary=null;if(state.defaults?.['primary-button'])primary=await figma.getNodeByIdAsync(state.defaults['primary-button']);
 async function button(parent,label='기록 완료'){if(primary){const n=track(primary.createInstance());parent.appendChild(n);n.resize(280,n.height);return n;}const n=frame(parent,'Action','HORIZONTAL',280);padding(n,12);paint(n,'color/text/primary');bind(n,'cornerRadius','radius/10');n.primaryAxisAlignItems='CENTER';await text(n,label,'Product/Control','color/surface/card');return n;}
-const review=frame(page,'Review / '+${JSON.stringify(pageName)},'VERTICAL',1100);review.x=80;review.y=80;padding(review,40);paint(review,'color/surface/card');review.itemSpacing=32;await text(review,${JSON.stringify(pageName)},'Editorial/Title');await text(review,'메인 컴포넌트는 오른쪽에, 검토 예제는 인스턴스로 구성했습니다. 폰트 대체 안내는 Start 페이지를 확인하세요.','Product/Helper','color/text/body',1000);
+const review=frame(page,'Review / '+${JSON.stringify(pageName)},'VERTICAL',1100);review.x=80;review.y=80;padding(review,40);paint(review,'color/surface/card');review.itemSpacing=32;await text(review,${JSON.stringify(pageName)},'Editorial/Title');await text(review,'메인 컴포넌트는 오른쪽에, 검토 예제는 인스턴스로 구성했습니다. Pretendard 사용 안내는 Typography 페이지를 확인하세요.','Product/Helper','color/text/body',1000);
 let canvasY=80;
 for(const c of items){
  const axes=c.id==='primary-button'?{Size:['Default','Compact'],State:c.states}:c.id==='taste-chip'?{Taste:tastes.map(t=>t.label),State:c.states}:c.id==='bottom-sheet'?{Platform:['Native','Web'],State:['열림','닫힘']}:{State:c.states};

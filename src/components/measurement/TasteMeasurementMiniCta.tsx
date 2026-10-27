@@ -29,7 +29,7 @@ export default function TasteMeasurementMiniCta({
   const accentClass =
     tone === 'alert'
       ? 'border-[var(--tb-taste-sweet-light)] bg-[linear-gradient(135deg,var(--tb-taste-sweet-bg)_0%,var(--tb-color-surface-base)_100%)]'
-      : 'border-[var(--tb-color-border-card)] bg-[var(--tb-color-surface-card)]';
+      : 'border-[var(--tb-color-border-faint)] bg-[var(--tb-color-surface-card)]';
   const actionButtonStyle = {
     background: 'var(--tb-user-accent-tint-surface, var(--tb-taste-sweet-bg))',
     border: 'none',

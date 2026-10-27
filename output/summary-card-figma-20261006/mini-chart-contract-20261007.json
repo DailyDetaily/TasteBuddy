@@ -1,0 +1,122 @@
+{
+  "mutatedNodeIds": [
+    "197:1505",
+    "752:3142",
+    "752:3143",
+    "752:3148",
+    "752:3149",
+    "787:3292",
+    "787:3317",
+    "787:3318",
+    "787:3323",
+    "787:3324",
+    "752:3286"
+  ],
+  "charts": [
+    {
+      "id": "197:1505",
+      "bars": [
+        {
+          "value": 0,
+          "width": 12,
+          "height": 6
+        },
+        {
+          "value": 1,
+          "width": 12,
+          "height": 12
+        },
+        {
+          "value": 0,
+          "width": 12,
+          "height": 6
+        },
+        {
+          "value": 3,
+          "width": 12,
+          "height": 20
+        },
+        {
+          "value": 2,
+          "width": 12,
+          "height": 16
+        },
+        {
+          "value": 5,
+          "width": 12,
+          "height": 28
+        },
+        {
+          "value": 6,
+          "width": 12,
+          "height": 32
+        }
+      ]
+    },
+    {
+      "id": "787:3292",
+      "bars": [
+        {
+          "value": 0,
+          "width": 8.25,
+          "height": 4.125
+        },
+        {
+          "value": 1,
+          "width": 8.25,
+          "height": 8.25
+        },
+        {
+          "value": 0,
+          "width": 8.25,
+          "height": 4.125
+        },
+        {
+          "value": 3,
+          "width": 8.25,
+          "height": 14.1875
+        },
+        {
+          "value": 2,
+          "width": 8.25,
+          "height": 11.21875
+        },
+        {
+          "value": 5,
+          "width": 8.25,
+          "height": 20.125
+        },
+        {
+          "value": 4,
+          "width": 8.25,
+          "height": 17.15625
+        },
+        {
+          "value": 7,
+          "width": 8.25,
+          "height": 26.0625
+        },
+        {
+          "value": 6,
+          "width": 8.25,
+          "height": 23.09375
+        },
+        {
+          "value": 4,
+          "width": 8.25,
+          "height": 17.15625
+        },
+        {
+          "value": 8,
+          "width": 8.25,
+          "height": 29.03125
+        },
+        {
+          "value": 9,
+          "width": 8.25,
+          "height": 32
+        }
+      ]
+    }
+  ]
+}
