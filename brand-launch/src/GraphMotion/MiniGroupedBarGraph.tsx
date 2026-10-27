@@ -2,6 +2,7 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import type { CSSProperties } from "react";
 import { COMPONENT_TOKENS } from "../../../src/constants/designTokens";
 import {
+  CHART_COMPARISON_TRACK_COLOR,
   COLOR_TOKENS,
   TASTE_TOKENS,
 } from "../../../src/constants/uiColorTokens";
@@ -62,10 +63,9 @@ export const MiniGroupedBarGraphView = ({
                 rx={bar.radius}
                 fill={
                   bar.comparison
-                    ? COLOR_TOKENS.text.body
+                    ? CHART_COMPARISON_TRACK_COLOR
                     : "var(--tb-mini-chart-track)"
                 }
-                fillOpacity={bar.comparison ? 0.18 : undefined}
               />
               {bar.endpoint && (
                 <circle

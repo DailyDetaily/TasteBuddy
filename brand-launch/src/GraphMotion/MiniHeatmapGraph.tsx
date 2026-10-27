@@ -51,17 +51,9 @@ export const MiniHeatmapGraphView = ({
             data-level={cell.padding ? "padding" : (cell.level ?? "missing")}
             aria-hidden={cell.padding || undefined}
             fill={
-              cell.padding
+              cell.padding || cell.level === null
                 ? miniHeatmapColor(null)
-                : cell.level === null
-                  ? "none"
-                  : miniHeatmapMotionColor(cell.level, axis, cell.colorProgress)
-            }
-            stroke={
-              cell.level === null ? miniHeatmapColor(null, axis) : undefined
-            }
-            strokeWidth={
-              cell.level === null ? Math.min(0.6, cell.height / 4) : undefined
+                : miniHeatmapMotionColor(cell.level, axis, cell.colorProgress)
             }
           >
             {!cell.padding && (

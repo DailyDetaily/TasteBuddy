@@ -48,6 +48,7 @@ export const MiniLineGraphView = ({
           TASTE_IDS.find((axis) => TASTE_TOKENS[axis].label === row.미각) ??
           "umami";
         const gradient = `mini-line-${id}-${index}`;
+        const currentGradient = `${gradient}-current`;
         const track = pose.track;
         const revealed = track ? track.length * pose.progress : 0;
         const path = track?.path ?? miniLinePath(pose.visible);
@@ -80,6 +81,17 @@ export const MiniLineGraphView = ({
                   stopColor={tasteLineChartColor(axis, "end", "light")}
                   stopOpacity={1}
                 />
+              </linearGradient>
+              <linearGradient
+                id={currentGradient}
+                gradientUnits="userSpaceOnUse"
+                x1={0}
+                x2={MINI_LINE.width}
+                y1={0}
+                y2={0}
+              >
+                <stop offset="0%" stopColor={tasteLineChartColor(axis, "nodeStart", "light")} />
+                <stop offset="100%" stopColor={tasteLineChartColor(axis, "end", "light")} />
               </linearGradient>
             </defs>
             <path
@@ -117,7 +129,7 @@ export const MiniLineGraphView = ({
               cx={pose.endpoint.x}
               cy={pose.endpoint.y}
               r={currentNodeRadius ?? MINI_LINE.currentDiameter / 2}
-              fill={`url(#${gradient})`}
+              fill={`url(#${currentGradient})`}
             />
           </g>
         );

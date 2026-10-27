@@ -136,7 +136,7 @@ test("settled and static SVG geometry exactly matches the original MiniLineChart
   }
 });
 
-test("line and all dots share the original full-width gradient and color roles", () => {
+test("line, history and current node use the product's full-width gradient roles", () => {
   const graph = { ...propsFor([[1, 2, 3, 4]]), 재생: "정지" };
   const html = render(h(MiniLineGraphView, { graph, frame: 0, fps: 60 }));
   const paths = tags(html, "path"),
@@ -151,7 +151,12 @@ test("line and all dots share the original full-width gradient and color roles",
     stops[1]["stop-color"],
     tasteLineChartColor("umami", "end", "light"),
   );
-  dots.forEach((dot) => assert.equal(dot.fill, paths[1].stroke));
+  dots.slice(0, -1).forEach((dot) => assert.equal(dot.fill, paths[1].stroke));
+  const gradients = tags(html, "linearGradient");
+  assert.equal(gradients.length, 2);
+  assert.equal(dots.at(-1).fill, `url(#${gradients[1].id})`);
+  assert.equal(stops[2]["stop-color"], tasteLineChartColor("umami", "nodeStart", "light"));
+  assert.equal(stops[3]["stop-color"], tasteLineChartColor("umami", "end", "light"));
   assert.deepEqual(
     dots.map((d) => Number(d.r)),
     [2, 2, 2, 6],

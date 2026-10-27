@@ -82,7 +82,7 @@ export const GraphAreaHeatmapView = ({
                         ? miniHeatmapColor(null, axis)
                         : `color-mix(in srgb, ${TASTE_TINTS[axis][80]} ${(1 - pose.calendarProgress) * 100}%, ${miniHeatmapColor(null, axis)} ${pose.calendarProgress * 100}%)`
                     : cell.level === null && frame >= t.colorStart
-                      ? "none"
+                      ? miniHeatmapColor(null, axis)
                       : pose.colorProgress === 0
                         ? TASTE_TINTS[axis][80]
                         : miniHeatmapMotionColor(
@@ -90,16 +90,6 @@ export const GraphAreaHeatmapView = ({
                             axis,
                             pose.colorProgress,
                           )
-                }
-                stroke={
-                  cell.level === null && frame >= t.colorStart
-                    ? miniHeatmapColor(null, axis)
-                    : undefined
-                }
-                strokeWidth={
-                  cell.level === null && frame >= t.colorStart
-                    ? Math.min(0.6, cell.height / 4)
-                    : undefined
                 }
               />
             ))}

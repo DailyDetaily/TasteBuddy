@@ -60,7 +60,7 @@ const cells = (html) =>
     ),
   ].map((m) => m[0]);
 
-test("cells exactly match the original heatmap: geometry, radii, levels, fills, unknown outlines and padding", () => {
+test("cells exactly match the original heatmap: geometry, radii, levels, fills, unknown cells and padding", () => {
   assert.equal(base.기록.length, 31);
   assert.deepEqual(
     [...new Set(base.기록)].sort((a, b) => a - b),
@@ -257,7 +257,7 @@ test("the existing reveal completes in pale colors before cells deepen to their 
         cell.padding
           ? miniHeatmapColor(null)
           : cell.level === null
-            ? "none"
+            ? miniHeatmapColor(null)
             : miniHeatmapColor(0, axis),
       );
       if (frame >= 96) assert.equal(cell.opacity, 1);
@@ -302,7 +302,7 @@ test("all cells share the same 1-to-4 palette steps and stop on their own level"
         const expected = cell.padding
           ? miniHeatmapColor(null)
           : cell.level === null
-            ? "none"
+            ? miniHeatmapColor(null)
             : miniHeatmapColor(Math.min(cell.level, step), axis);
         assert.equal(fills[index], expected);
       });
