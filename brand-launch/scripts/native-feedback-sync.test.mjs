@@ -120,6 +120,33 @@ test("native theme changes update dimensions and semantic colors without structu
   assert.equal(c.colors.textPrimary, "#203040");
   assert.equal(c.status, "ready");
 });
+test("taste chip borders use the native opaque tint role and follow palette edits", async () => {
+  const current = await build(sources);
+  assert.equal(current.palette["단맛"].selectedBorder, "#FFD699");
+  const changed = await build({
+    ...sources,
+    palette: sources.palette.replace(
+      "borderStrong: TBTasteTint.color(main, white: 60)",
+      "borderStrong: TBTasteTint.color(main, white: 50)",
+    ),
+  });
+  assert.equal(changed.palette["단맛"].selectedBorder, "#FFCC80");
+  assert.equal(changed.status, "ready");
+});
+test("semantic category font sizes synchronize while unbound line heights require review", async () => {
+  const current = 'case .cardLabel: ("Pretendard-Bold", 14, 20)';
+  const changed = await build({
+    ...sources,
+    theme: sources.theme.replace(current, 'case .cardLabel: ("Pretendard-Bold", 16, 20)'),
+  });
+  assert.equal(changed.chip.categoryFontSize, 16);
+  assert.equal(changed.status, "ready", JSON.stringify(changed.review));
+  const unsupported = await build({
+    ...sources,
+    theme: sources.theme.replace(current, 'case .cardLabel: ("Pretendard-Bold", 14, 22)'),
+  });
+  assert.ok(unsupported.review.some((entry) => entry.section === "textStyles"));
+});
 test("mapped inline chip dimensions update the contract and remain ready", async () => {
   const c = await build({
     ...sources,

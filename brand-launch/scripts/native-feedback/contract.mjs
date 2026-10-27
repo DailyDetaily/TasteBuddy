@@ -32,6 +32,7 @@ export const sourceFiles = {
 const declarations = {
   font: ["theme", "enum TBFont"],
   typography: ["theme", "enum TBTypography"],
+  textStyles: ["theme", "enum TBTextStyle"],
   restaurant: ["dining", "private var restaurantSelectionContent:"],
   menu: ["dining", "private var menuSelectionContent:"],
   dishKindGroups: ["dining", "private var dishKindSelectionGroups:"],
@@ -274,6 +275,17 @@ export async function buildContract(sources, baseline, demo) {
     ),
   };
   const chipBlock = block(sources.input, declarations.chip[1]);
+  const selectedBorderRole = match(
+    chipBlock,
+    /border: accentAxis\.(border(?:Subtle|Default|Strong|Accent))Color\b/,
+    "taste chip semantic border",
+  )[1];
+  const tagSelector = block(sources.dining, declarations.tagSelector[1]);
+  const categoryTextRole = match(
+    tagSelector,
+    /Text\(category\.label\)\s*\.tbTypography\(\.(\w+)\)/,
+    "detail category text role",
+  )[1];
   const chipSize = block(sources.parity, "enum ChipSize:");
   const add = block(sources.dining, declarations.addChip[1]);
   const chip = {
@@ -297,11 +309,6 @@ export async function buildContract(sources, baseline, demo) {
       /case \.medium:\s*([\d.]+)/,
       "chip font",
     ),
-    selectedBorderOpacity: numeric(
-      chipBlock,
-      /border: accentAxis\.mainColor\.opacity\(([\d.]+)\)/,
-      "taste chip border",
-    ),
     addSize: numeric(add, /frame\(width:\s*([\d.]+)/, "add chip size"),
     borderWidth: numeric(
       chipBlock,
@@ -309,8 +316,8 @@ export async function buildContract(sources, baseline, demo) {
       "chip border width",
     ),
     categoryFontSize: numeric(
-      block(sources.dining, declarations.tagSelector[1]),
-      /TBFont\.bold\(([\d.]+)\)/,
+      block(sources.theme, declarations.textStyles[1]),
+      new RegExp(`case \\.${categoryTextRole}: \\("Pretendard-[^"]+", ([\\d.]+), (?:nil|[\\d.]+)\\)`),
       "category font",
     ),
     gap: numeric(chipBlock, /HStack\(spacing:\s*([\d.]+)/, "chip icon gap"),
@@ -471,26 +478,29 @@ export async function buildContract(sources, baseline, demo) {
           new RegExp(`${key}: 0x([0-9a-f]+)`, "i"),
           key,
         )[1].toUpperCase();
+      const whiteMix = (role) => {
+        const white = Number(match(
+          sources.palette,
+          new RegExp(`${role}:\\s*TBTasteTint\\.color\\(main, white: (\\d+)\\)`),
+          `palette white-mix ${role}`,
+        )[1]);
+        if (![10, 20, 30, 40, 50, 60, 70, 80, 90, 95].includes(white))
+          throw new Error("Unsupported palette white-mix step");
+        const main = hex("main");
+        return "#" + [1, 3, 5].map(offset =>
+          Math.floor((parseInt(main.slice(offset, offset + 2), 16) * (100 - white) + 255 * white + 50) / 100)
+            .toString(16).padStart(2, "0"),
+        ).join("").toUpperCase();
+      };
       return [
         label,
         {
           main: hex("main"),
           tint: /tintSurface: 0x/i.test(body)
             ? hex("tintSurface")
-            : (() => {
-                const white = Number(match(
-                  sources.palette,
-                  /tintSurface:\s*TBTasteTint\.color\(main, white: (\d+)\)/,
-                  "palette white-mix surface",
-                )[1]);
-                if (![10, 20, 30, 40, 50, 60, 70, 80, 90, 95].includes(white))
-                  throw new Error("Unsupported palette white-mix step");
-                const main = hex("main");
-                return "#" + [1, 3, 5].map(offset =>
-                  Math.floor((parseInt(main.slice(offset, offset + 2), 16) * (100 - white) + 255 * white + 50) / 100)
-                    .toString(16).padStart(2, "0"),
-                ).join("").toUpperCase();
-              })(),
+            : whiteMix("tintSurface"),
+          selectedBorder: selectedBorderRole === "borderAccent"
+            ? hex("main") : whiteMix(selectedBorderRole),
           text: hex("tintSurfaceText"),
         },
       ];

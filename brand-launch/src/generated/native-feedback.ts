@@ -2,12 +2,177 @@
 export const nativeFeedback = {
   "schemaVersion": 1,
   "sourceHash": "06247b330baebcfe88041d5475bb521e15842907f8206bc864e44460d6c8ee34",
-  "status": "error",
+  "status": "review",
   "review": [
     {
-      "section": "source",
-      "file": "ios/TasteBuddy",
-      "message": "자동 변환을 지원하지 않는 색상: chartComparisonTrack = Color.tbAdaptive(light: Color(hex: 0x666666, alpha: 0.18), dark: Color(hex: 0x454545))"
+      "section": "textStyles",
+      "file": "ios/TasteBuddy/DesignSystem/TBTheme.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "restaurant",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "menu",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "details",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "note",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "photoEntry",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "resultCard",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "bubble",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "bubbleCard",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "detailHero",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "tagSelector",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "input",
+      "file": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "textArea",
+      "file": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "chip",
+      "file": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "header",
+      "file": "ios/TasteBuddy/Components/TBComponents.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "cta",
+      "file": "ios/TasteBuddy/Components/TBComponents.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "primaryButton",
+      "file": "ios/TasteBuddy/Components/TBComponents.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "selectionCard",
+      "file": "ios/TasteBuddy/Components/TBComponents.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "sectionCard",
+      "file": "ios/TasteBuddy/Components/TBComponents.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "overall",
+      "file": "ios/TasteBuddy/Features/Dining/DiningOverallEvaluationStepView.swift",
+      "message": "동적 문구가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "overall",
+      "file": "ios/TasteBuddy/Features/Dining/DiningOverallEvaluationStepView.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "evaluation",
+      "file": "ios/TasteBuddy/Domain/Models/DiningOverallEvaluation.swift",
+      "message": "동적 문구가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "evaluation",
+      "file": "ios/TasteBuddy/Domain/Models/DiningOverallEvaluation.swift",
+      "message": "화면 구조가 변경되어 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "restaurant",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "menu",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "details",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "photoEntry",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "resultCard",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "detailHero",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "tagSelector",
+      "file": "ios/TasteBuddy/Features/Dining/DiningView.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "chip",
+      "file": "ios/TasteBuddy/Components/NativeInputComponents.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "selectionCard",
+      "file": "ios/TasteBuddy/Components/TBComponents.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "overall",
+      "file": "ios/TasteBuddy/Features/Dining/DiningOverallEvaluationStepView.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
+    },
+    {
+      "section": "evaluation",
+      "file": "ios/TasteBuddy/Domain/Models/DiningOverallEvaluation.swift",
+      "message": "자동 연결되지 않은 화면 수치가 변경되었습니다. 영상 어댑터 확인이 필요합니다."
     }
   ],
   "sourceFiles": [
@@ -63,6 +228,9 @@ export const nativeFeedback = {
     "homeIndicatorWidth": 134
   },
   "colors": {
+    "chartOnBrightFill": "#0F0F0F",
+    "chartComparisonTrack": "#6666662E",
+    "chartRemainder": "#E4E4E4",
     "page": "#F3F3F3",
     "focus": "#FFFFFF",
     "surface": "#FFFFFF",
@@ -70,9 +238,17 @@ export const nativeFeedback = {
     "mutedSurface": "#F7F7F7",
     "elevatedSurface": "#FCFCFC",
     "disabledSurface": "#EFEFEF",
+    "overlaySurface": "#FFFFFFCC",
     "placeholderSurface": "#EFEFEF",
     "inverseSurface": "#0F0F0F",
-    "overlaySurface": "#FFFFFFCC",
+    "actionPrimary": "#0F0F0F",
+    "actionOnPrimary": "#FFFFFF",
+    "selectionSurface": "#0F0F0F",
+    "selectionText": "#FFFFFF",
+    "focusRing": "#3F3F3F",
+    "hoverOverlay": "#0000000A",
+    "pressedOverlay": "#0000000F",
+    "pressedInverseOverlay": "#FFFFFF1A",
     "textPrimary": "#0F0F0F",
     "textSecondary": "#3F3F3F",
     "textTertiary": "#535353",
@@ -80,10 +256,10 @@ export const nativeFeedback = {
     "textAction": "#666666",
     "textHint": "#6F6F6F",
     "textDisabled": "#AFAFAF",
+    "textInverse": "#FFFFFF",
     "textSubtle": "#0F0F0F99",
     "textMuted": "#0F0F0F80",
     "textFaint": "#0F0F0F66",
-    "textInverse": "#FFFFFF",
     "borderCard": "#F0F0F0",
     "borderSubtle": "#E8E8E8",
     "border": "#E7E7E7",
@@ -109,24 +285,29 @@ export const nativeFeedback = {
     "destructive": "#D4183D",
     "destructiveText": "#B31333",
     "destructiveSoft": "#FCEDEF",
-    "actionPrimary": "#0F0F0F",
-    "actionOnPrimary": "#FFFFFF",
-    "selectionSurface": "#0F0F0F",
-    "selectionText": "#FFFFFF",
-    "focusRing": "#3F3F3F",
-    "hoverOverlay": "#0000000A",
-    "pressedOverlay": "#0000000F",
-    "pressedInverseOverlay": "#FFFFFF1A",
     "scrimSubtle": "#00000059",
     "scrimDefault": "#00000080",
-    "scrimStrong": "#00000099"
+    "scrimStrong": "#00000099",
+    "borderFaint": "#F0F0F0",
+    "borderFocus": "#3F3F3F",
+    "borderSelected": "#0F0F0F",
+    "borderDestructive": "#D4183D",
+    "borderSuccess": "#2F8F5B",
+    "borderSuccessSoft": "#E6F4EC",
+    "borderWarning": "#A8661A",
+    "borderWarningSoft": "#FFF1DE",
+    "borderOnMuted": "#E5E5E5",
+    "controlSurface": "#F7F7F7",
+    "switchOffThumb": "#FFFFFF",
+    "switchOnThumb": "#FFFFFF",
+    "heatmapNeutral": "#E4E4E4",
+    "neutralSelectionText": "#7A7A7A"
   },
   "chip": {
     "height": 36,
     "paddingX": 12,
     "paddingY": 8,
     "fontSize": 12,
-    "selectedBorderOpacity": 0.28,
     "addSize": 36,
     "borderWidth": 1,
     "categoryFontSize": 14,
@@ -172,31 +353,37 @@ export const nativeFeedback = {
     "단맛": {
       "main": "#FF9900",
       "tint": "#FFEBCC",
+      "selectedBorder": "#FFD699",
       "text": "#6F4609"
     },
     "신맛": {
       "main": "#FFD600",
       "tint": "#FFF7CC",
+      "selectedBorder": "#FFEF99",
       "text": "#6F5F09"
     },
     "쓴맛": {
       "main": "#95C900",
       "tint": "#EAF4CC",
+      "selectedBorder": "#D5E999",
       "text": "#505B24"
     },
     "짠맛": {
       "main": "#7299FF",
       "tint": "#E3EBFF",
+      "selectedBorder": "#C7D6FF",
       "text": "#36466F"
     },
     "감칠맛": {
       "main": "#B372B4",
       "tint": "#F0E3F0",
+      "selectedBorder": "#E1C7E1",
       "text": "#513751"
     },
     "지방맛": {
       "main": "#95867A",
       "tint": "#EAE7E4",
+      "selectedBorder": "#D5CFCA",
       "text": "#453F3A"
     }
   },
@@ -208,44 +395,6 @@ export const nativeFeedback = {
       "Pretendard-Bold": "Pretendard-Bold"
     },
     "typography": {},
-    "restaurant": {
-      "식후 피드백": "식후 피드백",
-      "어느 식당에서 남긴 기록인가요?": "어느 식당에서 남긴 기록인가요?",
-      "사진 위치를 기준으로 가까운 식당 후보를 먼저 정리했어요. 맞는 식당을 고르거나, 보이지 않으면 직접 입력해 주세요.": "사진 위치를 기준으로 가까운 식당 후보를 먼저 정리했어요. 맞는 식당을 고르거나, 보이지 않으면 직접 입력해 주세요.",
-      "사진 위치 주변의 식당 후보를 찾고 있어요.": "사진 위치 주변의 식당 후보를 찾고 있어요.",
-      "직접 입력": "직접 입력",
-      "후보가 맞지 않으면 식당명을 직접 남길 수 있어요": "후보가 맞지 않으면 식당명을 직접 남길 수 있어요",
-      "식당명 직접 입력": "식당명 직접 입력",
-      "예: 정식당": "예: 정식당",
-      "식당명": "식당명",
-      "식당 확인하고 메뉴 선택": "식당 확인하고 메뉴 선택"
-    },
-    "menu": {
-      "식후 피드백": "식후 피드백",
-      "dining-header": "dining-header",
-      "어떤 메뉴를 먼저 기록할까요?": "어떤 메뉴를 먼저 기록할까요?",
-      "가장 선명하게 기억나는 메뉴부터 선택해 주세요.": "가장 선명하게 기억나는 메뉴부터 선택해 주세요.",
-      "직접 입력": "직접 입력",
-      "코스 목록에 없는 메뉴도 미각 기록으로 남길 수 있어요.": "코스 목록에 없는 메뉴도 미각 기록으로 남길 수 있어요.",
-      "메뉴 직접 입력": "메뉴 직접 입력",
-      "메뉴 수정": "메뉴 수정",
-      "예: 오미자와 배 디저트": "예: 오미자와 배 디저트",
-      "메뉴명": "메뉴명",
-      "음식 종류와 특성": "음식 종류와 특성",
-      "추천 태그를 먼저 골라두었어요. 메뉴와 다르면 직접 바꿔주세요.": "추천 태그를 먼저 골라두었어요. 메뉴와 다르면 직접 바꿔주세요.",
-      "선택사항": "선택사항",
-      "디시 종류 직접 입력": "디시 종류 직접 입력",
-      "dining-content": "dining-content",
-      "취향까지 기록": "취향까지 기록",
-      "여기까지만 저장": "여기까지만 저장",
-      "dining-footer": "dining-footer",
-      "메뉴를 삭제했어요": "메뉴를 삭제했어요",
-      "되돌리기": "되돌리기",
-      "사진을 저장하지 못했어요": "사진을 저장하지 못했어요",
-      "기록을 저장하지 못했어요": "기록을 저장하지 못했어요",
-      "확인": "확인",
-      "": ""
-    },
     "dishKindGroups": {
       "ingredient": "ingredient"
     },
@@ -256,31 +405,8 @@ export const nativeFeedback = {
       "특성": "특성",
       "이전에 선택한 분류": "이전에 선택한 분류"
     },
-    "details": {
-      "이전에 남긴 표현을 그대로 보관하고 있어요.": "이전에 남긴 표현을 그대로 보관하고 있어요.",
-      "이 선택 지우기": "이 선택 지우기",
-      "": "",
-      "선택한 디테일 평가": "선택한 디테일 평가",
-      "느낀 점의 대상과 시점을 필요한 만큼 더 알려주세요.": "느낀 점의 대상과 시점을 필요한 만큼 더 알려주세요.",
-      "완료": "완료",
-      "사진을 불러오지 못했어요": "사진을 불러오지 못했어요",
-      "확인": "확인"
-    },
-    "note": {
-      "추가 메모 · 선택사항": "추가 메모 · 선택사항",
-      "기억에 남는 맛과 상황을 적어 주세요.": "기억에 남는 맛과 상황을 적어 주세요.",
-      "추가 메모": "추가 메모",
-      "계속하기": "계속하기",
-      "취소하기": "취소하기"
-    },
     "helper": {
       "태그를 고르지 않아도 미각 인상은 저장됩니다.": "태그를 고르지 않아도 미각 인상은 저장됩니다."
-    },
-    "photoEntry": {
-      "추가 메모 또는 사진": "추가 메모 또는 사진",
-      "선택한 버블과 태그를 보충하고 싶을 때만 남겨주세요.": "선택한 버블과 태그를 보충하고 싶을 때만 남겨주세요.",
-      "선택사항인 추가 메모 작성": "선택사항인 추가 메모 작성",
-      "미식 기록 사진 추가": "미식 기록 사진 추가"
     },
     "camera": {
       "카메라를 준비하고 있어요.": "카메라를 준비하고 있어요.",
@@ -307,54 +433,12 @@ export const nativeFeedback = {
       "식사 기록 카드 공유": "식사 기록 카드 공유",
       "미각 결과 카드 공유": "미각 결과 카드 공유"
     },
-    "resultCard": {
-      "취향은 언제든 덧붙일 수 있어요.": "취향은 언제든 덧붙일 수 있어요.",
-      "미식 노트": "미식 노트",
-      "식사를 담아두었어요": "식사를 담아두었어요"
-    },
     "resultLayout": {},
-    "bubble": {
-      "메인 미각": "메인 미각",
-      "보조 미각": "보조 미각",
-      "현재 초점": "현재 초점",
-      "": ""
-    },
-    "bubbleCard": {
-      "선택한 미각 인상으로 기록하기": "선택한 미각 인상으로 기록하기",
-      "다음 미각 후보로 이동하기": "다음 미각 후보로 이동하기",
-      "현재 미각 인상 선택하기": "현재 미각 인상 선택하기"
-    },
-    "detailHero": {
-      "메인 미각": "메인 미각",
-      "보조 미각": "보조 미각",
-      " : ": " : "
-    },
-    "tagSelector": {
-      "선택사항": "선택사항",
-      "": "",
-      "Pretendard-SemiBold": "Pretendard-SemiBold"
-    },
     "intro": {},
     "addChip": {},
-    "input": {
-      "": "",
-      "sheet-input": "sheet-input"
-    },
     "inputVariant": {},
-    "textArea": {
-      "": ""
-    },
-    "chip": {},
-    "header": {
-      "chevron.left": "chevron.left",
-      "이전 화면으로 돌아가기": "이전 화면으로 돌아가기"
-    },
-    "cta": {},
-    "primaryButton": {},
     "primaryAppearance": {},
     "controlFeedback": {},
-    "selectionCard": {},
-    "sectionCard": {},
     "backdrop": {}
   },
   "details": {
@@ -3672,31 +3756,13 @@ export const nativeFeedback = {
       [
         "path",
         {
-          "d": "M7 21h10"
+          "d": "M2 22c1.25-.987 2.27-1.975 3.9-2.2a5.56 5.56 0 0 1 3.8 1.5 4 4 0 0 0 6.187-2.353 3.5 3.5 0 0 0 3.69-5.116A3.5 3.5 0 0 0 20.95 8 3.5 3.5 0 1 0 16 3.05a3.5 3.5 0 0 0-5.831 1.373 3.5 3.5 0 0 0-5.116 3.69 4 4 0 0 0-2.348 6.155C3.499 15.42 4.409 16.712 4.2 18.1 3.926 19.743 3.014 20.732 2 22"
         }
       ],
       [
         "path",
         {
-          "d": "M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"
-        }
-      ],
-      [
-        "path",
-        {
-          "d": "M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1"
-        }
-      ],
-      [
-        "path",
-        {
-          "d": "m13 12 4-4"
-        }
-      ],
-      [
-        "path",
-        {
-          "d": "M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2"
+          "d": "M2 22 17 7"
         }
       ]
     ],
@@ -3780,19 +3846,19 @@ export const nativeFeedback = {
       [
         "path",
         {
-          "d": "M12 4V2"
+          "d": "M16.847 5.847 20 9a7.23 7.23 0 011.551 7.516C21.241 17.352 21 17.932 21 19v1a1 1 0 01-1 1h-1c-1.069 0-1.648.242-2.485.552A7.2 7.2 0 019.002 20l-3.155-3.153"
         }
       ],
       [
         "path",
         {
-          "d": "M5 10v4a7.004 7.004 0 0 0 5.277 6.787c.412.104.802.292 1.102.592L12 22l.621-.621c.3-.3.69-.488 1.102-.592A7.003 7.003 0 0 0 19 14v-4"
+          "d": "M18.21 5.43c-1.71.69-5.07 1.07-6.71 1.07.46 1.38.91 2.74.61 4.88a.88.88 0 01-.73.74c-1.78.28-3.54-.17-4.88-.62 0 1.64-.38 5-1.07 6.71-.21.52-.82.55-1.17.12A10 10 0 0118.33 4.26c.43.35.4.97-.12 1.17"
         }
       ],
       [
         "path",
         {
-          "d": "M12 4C8 4 4.5 6 4 8c-.243.97-.919 1.952-2 3 1.31-.082 1.972-.29 3-1 .54.92.982 1.356 2 2 1.452-.647 1.954-1.098 2.5-2 .595.995 1.151 1.427 2.5 2 1.31-.621 1.862-1.058 2.5-2 .629.977 1.162 1.423 2.5 2 1.209-.548 1.68-.967 2-2 1.032.916 1.683 1.157 3 1-1.297-1.036-1.758-2.03-2-3-.5-2-4-4-8-4Z"
+          "d": "M4.93 4.93 3 3a.7.7 0 010-1"
         }
       ]
     ],

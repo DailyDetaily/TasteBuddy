@@ -27,6 +27,8 @@ Native edits are coalesced for 250ms; a 1.5-second content poll also catches fil
 
 `demo.json` supplies the demo menu, dish kinds and iPhone safe-area geometry. Changing those inputs also refreshes category context. Generated data lives in `src/generated/native-feedback.ts`; the old per-feature modules are thin imports of this module. Do not edit generated output. `public/native-feedback-sync.json` is the local Studio revision signal; `.native-feedback-sync/` contains local watcher state.
 
+The film uses the native light appearance explicitly. Color extraction resolves `Color.tbAdaptive` through `TBLightColor`/`TBDarkColor`, token aliases and inline alpha; its dark branch is covered by separate parser tests. Missing, cyclic or unsupported expressions still fail extraction. Selected taste-chip borders use the native opaque border tint instead of an old main-color opacity, and category font sizes follow the native `TBTextStyle` role. Unmapped text metrics and view changes retain the structural-review gate.
+
 ## Structural changes and unsupported expressions
 
 This is a source adapter, not a general SwiftUI-to-React compiler. Inserting/removing/reordering views, changing unsupported modifiers, changing an unbound inline measurement, or changing an expression outside the supported numeric/color grammar produces a Studio-only review notice with its source file/section. Last usable UI values remain visible on extraction errors. A missing source file becomes an error and recovers automatically after restoration.

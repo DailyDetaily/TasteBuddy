@@ -88,41 +88,68 @@ export function numberToken(sources, type, name, seen = []) {
   );
 }
 
-export function themeColors(source) {
-  const entries = [
-    ...block(source, "enum TBColor {").matchAll(
-      /static let (\w+)\s*=\s*([^\n]+)/g,
-    ),
-  ];
-  const expressions = Object.fromEntries(
-    entries.map((m) => [m[1], m[2].split("//")[0].trim()]),
-  );
-  const values = {};
-  const resolve = (name) => {
-    if (values[name]) return values[name];
-    const expr = expressions[name];
-    if (!expr) throw new Error(`색상 토큰 없음: ${name}`);
-    let value;
+// The feedback film is authored in light mode. Resolve native adaptive tokens
+// for that explicit appearance, while keeping both branches testable.
+export function themeColors(source, mode = "light") {
+  if (!["light", "dark"].includes(mode))
+    throw new Error(`지원하지 않는 색상 모드: ${mode}`);
+  const scopes = new Map();
+  const expressions = (scope) => {
+    if (!scopes.has(scope)) {
+      scopes.set(scope, Object.fromEntries(
+        [...block(source, `enum ${scope} {`).matchAll(
+          /static let (\w+)(?:\s*:\s*Color)?\s*=\s*([^\n]+)/g,
+        )].map((m) => [m[1], m[2].split("//")[0].trim()]),
+      ));
+    }
+    return scopes.get(scope);
+  };
+  const values = new Map();
+  const resolve = (scope, name, seen = []) => {
+    const key = `${scope}.${name}`;
+    if (values.has(key)) return values.get(key);
+    if (seen.includes(key)) throw new Error(`순환 색상 토큰: ${key}`);
+    const expr = expressions(scope)[name];
+    if (!expr) throw new Error(`색상 토큰 없음: ${key}`);
+    const value = evaluate(expr, scope, [...seen, key]);
+    values.set(key, value);
+    return value;
+  };
+  const evaluate = (expr, scope, seen) => {
     const hex = expr.match(
-      /^Color\(hex: 0x([0-9a-f]+)(?:, alpha: ([\d.]+))?\)$/i,
+      /^Color\(hex: 0x([0-9a-f]{1,6})(?:, alpha: ([\d.]+))?\)$/i,
     );
     const named = expr.match(
       /^Color\.(white|black)(?:\.opacity\(([\d.]+)\))?$/,
     );
-    if (hex) value = cssHex(hex[1], hex[2]);
-    else if (named)
-      value = cssHex(named[1] === "white" ? "FFFFFF" : "000000", named[2]);
-    else if (/^(?:TBColor\.)?\w+$/.test(expr))
-      value = resolve(expr.replace("TBColor.", ""));
-    else throw new Error(`자동 변환을 지원하지 않는 색상: ${name} = ${expr}`);
-    values[name] = value;
-    return value;
+    if (hex) return cssHex(hex[1], hex[2]);
+    if (named)
+      return cssHex(named[1] === "white" ? "FFFFFF" : "000000", named[2]);
+    const adaptive = expr.match(/^Color\.tbAdaptive\((.*)\)$/);
+    if (adaptive) {
+      // Split only the outer arguments: inline Color(hex:, alpha:) also has a comma.
+      let depth = 0;
+      const comma = [...adaptive[1]].findIndex((c) => {
+        if (c === "(") depth++;
+        if (c === ")") depth--;
+        return c === "," && depth === 0;
+      });
+      const light = adaptive[1].slice(0, comma).match(/^light:\s*(.+)$/);
+      const dark = adaptive[1].slice(comma + 1).trim().match(/^dark:\s*(.+)$/);
+      if (comma >= 0 && light && dark)
+        return evaluate(mode === "light" ? light[1] : dark[1], scope, seen);
+    }
+    const reference = expr.match(/^(?:(TBColor|TBLightColor|TBDarkColor)\.)?(\w+)$/);
+    if (reference) return resolve(reference[1] ?? scope, reference[2], seen);
+    throw new Error(`자동 변환을 지원하지 않는 색상: ${seen.at(-1)} = ${expr}`);
   };
-  Object.keys(expressions).forEach(resolve);
-  return values;
+  return Object.fromEntries(Object.keys(expressions("TBColor"))
+    .map((name) => [name, resolve("TBColor", name)]));
 }
-const cssHex = (hex, alpha) =>
-  "#" +
+const cssHex = (hex, alpha) => {
+  if (alpha !== undefined && (!Number.isFinite(Number(alpha)) || Number(alpha) < 0 || Number(alpha) > 1))
+    throw new Error(`유효하지 않은 색상 알파: ${alpha}`);
+  return "#" +
   hex.toUpperCase().padStart(6, "0") +
   (alpha === undefined
     ? ""
@@ -130,6 +157,7 @@ const cssHex = (hex, alpha) =>
         .toString(16)
         .padStart(2, "0")
         .toUpperCase());
+};
 
 // Structure signatures retain modifiers/identifiers but ignore values that are
 // explicitly exported. Unknown declarations remain hashed and require review.

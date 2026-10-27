@@ -12,5 +12,5 @@ export type TasteAxis = (typeof tasteAxes)[number];
 // Values follow the native TasteAxisPalette automatically.
 export const palette: Record<
   TasteAxis,
-  { main: string; tint: string; text: string }
+  { main: string; tint: string; text: string; selectedBorder: string }
 > = nativeFeedback.palette;

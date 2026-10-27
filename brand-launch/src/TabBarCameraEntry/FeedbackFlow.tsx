@@ -400,7 +400,7 @@ const Chip = ({
       padding: `${nativeChip.paddingY}px ${nativeChip.paddingX}px`,
       minHeight: nativeChip.height,
       borderRadius: 999,
-      border: `${nativeChip.borderWidth}px solid ${selected ? (axis ? rgba(palette[axis].main, nativeChip.selectedBorderOpacity) : colors.textPrimary) : colors.border}`,
+      border: `${nativeChip.borderWidth}px solid ${selected ? (axis ? palette[axis].selectedBorder : colors.textPrimary) : colors.border}`,
       background: selected
         ? axis
           ? palette[axis].tint
@@ -408,7 +408,7 @@ const Chip = ({
         : colors.mutedSurface,
       color: selected
         ? axis
-          ? palette[axis].main
+          ? palette[axis].text
           : "white"
         : colors.textSubtle,
       fontSize: nativeChip.fontSize,
