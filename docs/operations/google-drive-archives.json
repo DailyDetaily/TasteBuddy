@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "manifests": [
+    "output/storage/google-drive-20261023/manifest.json",
+    "output/storage/google-drive-20261024-builds/manifest.json"
+  ]
+}
