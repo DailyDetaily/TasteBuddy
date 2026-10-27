@@ -262,8 +262,18 @@ export function bubbleMapFrame(frame: number, props: BubbleMapProps): MapFrame {
   const zoom = hasIntro && pose.time >= FINALE.start
     ? mix(MAP.selectedZoom, FULL_MAP_ZOOM, finale.progress)
     : mix(pose.a.zoom, pose.b.zoom, pose.p);
+  // The accelerating shrink can reveal more than the fixed world-space guard
+  // band in one frame. Preload that next viewport without changing this frame's
+  // camera or zoom; keep this stateless so seeking and export stay identical.
+  const nextFinale = finaleState(
+    pose.time + props["재생 속도"] / BUBBLE_FPS,
+    hasIntro && !reduced,
+  );
+  const samplingZoom = nextFinale.progress > finale.progress
+    ? Math.min(zoom, mix(MAP.selectedZoom, FULL_MAP_ZOOM, nextFinale.progress))
+    : zoom;
   const grid = finale.phase === "blank" ? []
-    : buildBubbleGrid(samplingCamera, zoom, finale.rotationDegrees);
+    : buildBubbleGrid(samplingCamera, samplingZoom, finale.rotationDegrees);
 
   const bases = grid.map((b) => {
     const amount = enlarged.get(b.id) ?? 0;

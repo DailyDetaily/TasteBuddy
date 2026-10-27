@@ -160,7 +160,8 @@ test('all final neighbor gaps return to exactly ten and the full-frame grid stop
       if(neighbor)assert.ok(Math.abs(dist(b,neighbor)-136)<1e-5);
     }
   }
-  assert.deepEqual(s.bubbles,at(16.3).bubbles);
+  assert.deepEqual(s.bubbles,at(FINALE.settled).bubbles);
+  assert.deepEqual(s.bubbles,at(FINALE.exitStart).bubbles);
   assert.equal(s.focusID,null);assert.equal(s.zoom,FULL_MAP_ZOOM);
 });
 
@@ -226,24 +227,49 @@ test('all frames keep coverage and new viewport cells never pop in on-screen',()
   assert.ok(maxStep<7,`one-frame world-space jump ${maxStep}`);
 });
 
+test('accelerating zoom preloads visible cells at the slowest and fastest playback speeds',()=>{
+  for(const speed of [.5,1.5]){
+    const props={...standard,'재생 속도':speed};
+    const first=Math.floor((INTRO_SECONDS+FINALE.start)*30/speed)-1;
+    const last=Math.ceil((INTRO_SECONDS+FINALE.settled)*30/speed);
+    let previous=bubbleMapFrame(first,props);
+    for(let frame=first+1;frame<=last;frame++){
+      const state=bubbleMapFrame(frame,props);assertCoverage(state);
+      const ids=new Set(previous.bubbles.map(b=>b.id));
+      for(const b of visible(state,15))
+        assert.ok(ids.has(b.id),`new visible cell ${b.id}, speed ${speed}, frame ${frame}`);
+      previous=state;
+    }
+  }
+});
+
 test('labels fit three lines and playback props still calculate the same durations',()=>{
   for(const b of buildBubbleGrid(center,FULL_MAP_ZOOM)){
     const lines=bubbleLabelLines(b.label);assert.ok(lines.length<=3);assert.equal(lines.join(' '),b.label);
   }
-  assert.equal(bubbleMapDuration(standard),610);assert.equal(bubbleMapDuration(idle),420);assert.equal(bubbleMapDuration(reduced),90);
-  assert.equal(bubbleMapDuration({...standard,'재생 속도':.5}),1219);
+  assert.equal(bubbleMapDuration(standard),550);assert.equal(bubbleMapDuration(idle),420);assert.equal(bubbleMapDuration(reduced),90);
+  assert.equal(bubbleMapDuration({...standard,'재생 속도':.5}),1099);
+  assert.equal(bubbleMapDuration({...standard,'재생 속도':1.5}),367);
   assert.ok(!bubbleMapSchema.safeParse({...standard,'재생 속도':0}).success);
   assert.throws(()=>buildBubbleGrid(center,.01));
 });
 
 
-test('zoom-out runs without rotating the bubble map and then holds exactly',()=>{
+test('zoom-out accelerates without rotation for 1.2 seconds and then holds exactly',()=>{
   assert.equal(FINALE.degrees,0);
   assert.equal(at(FINALE.start).rotationDegrees,0);
   assert.equal(at(FINALE.start).zoom,MAP.selectedZoom);
   const half=at((FINALE.start+FINALE.settled)/2);
   assert.equal(half.rotationDegrees,0);
-  assert.ok(Math.abs(half.zoom-(MAP.selectedZoom+FULL_MAP_ZOOM)/2)<1e-12);
+  assert.ok(Math.abs(FINALE.settled-FINALE.start-1.2)<1e-12);
+  // The authored ease-in covers 28.125% of the zoom range halfway through.
+  assert.ok(Math.abs(half.zoom-(MAP.selectedZoom+(FULL_MAP_ZOOM-MAP.selectedZoom)*.28125))<1e-12);
+  let previousZoom=MAP.selectedZoom,previousStep=0;
+  for(let i=1;i<=12;i++){
+    const zoom=at(FINALE.start+i*.1).zoom,step=previousZoom-zoom;
+    assert.ok(step>previousStep,'zoom-out should keep accelerating until its hold');
+    previousZoom=zoom;previousStep=step;
+  }
   const duringShrink=at(12.8);
   assert.equal(duringShrink.rotationDegrees,0);
   assert.ok(duringShrink.zoom<1);
