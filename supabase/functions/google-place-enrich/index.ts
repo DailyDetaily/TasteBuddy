@@ -1,3 +1,4 @@
+import { choosePlace, normalizeCoordinate } from './matching.ts';
 const GOOGLE_TEXT_SEARCH_URL = 'https://places.googleapis.com/v1/places:searchText';
 const GOOGLE_PLACE_PHOTO_MAX_WIDTH = 720;
 
@@ -13,6 +14,7 @@ interface GooglePlaceEnrichRequest {
   lng?: number | null;
   phone?: string | null;
   query?: string;
+  placeId?: string;
 }
 
 interface GooglePlace {
@@ -63,12 +65,6 @@ function jsonResponse(body: unknown, init: ResponseInit = {}) {
 
 function normalizeQuery(value: unknown) {
   return typeof value === 'string' ? value.trim().slice(0, 120) : '';
-}
-
-function normalizeCoordinate(value: unknown) {
-  const coordinate = Number(value);
-
-  return Number.isFinite(coordinate) ? coordinate : null;
 }
 
 function formatOpeningHours(weekdayDescriptions?: string[]) {
@@ -157,76 +153,54 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const queryParts = [
-    normalizeQuery(payload.query),
-    normalizeQuery(payload.address),
-  ].filter(Boolean);
-  const textQuery = queryParts.join(' ');
-
-  if (!textQuery) {
-    return jsonResponse({ error: 'query is required' }, { status: 400 });
+  const query = normalizeQuery(payload.query);
+  const placeId = typeof payload.placeId === 'string' ? payload.placeId.trim() : '';
+  if (placeId && !/^[A-Za-z0-9_-]{10,255}$/.test(placeId)) {
+    return jsonResponse({ error: 'Invalid placeId' }, { status: 400 });
+  }
+  if (!query && !placeId) {
+    return jsonResponse({ error: 'query or placeId is required' }, { status: 400 });
   }
 
-  const lat = normalizeCoordinate(payload.lat);
-  const lng = normalizeCoordinate(payload.lng);
-  const body: Record<string, unknown> = {
-    includedType: 'restaurant',
-    languageCode: 'ko',
-    maxResultCount: 5,
-    regionCode: 'KR',
-    textQuery,
-  };
-
-  if (lat !== null && lng !== null) {
-    body.locationBias = {
-      circle: {
-        center: {
-          latitude: lat,
-          longitude: lng,
-        },
-        radius: 500,
-      },
-    };
+  const fields = [
+    'displayName', 'formattedAddress', 'googleMapsUri', 'id', 'internationalPhoneNumber',
+    'location', 'nationalPhoneNumber', 'photos', 'priceLevel', 'rating',
+    'regularOpeningHours', 'userRatingCount', 'websiteUri',
+  ];
+  const headers = { 'Content-Type': 'application/json', 'X-Goog-Api-Key': googleMapsApiKey };
+  let place: GooglePlace | null = null;
+  try {
+    if (placeId) {
+      const response = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?languageCode=ko`, {
+        headers: { ...headers, 'X-Goog-FieldMask': fields.join(',') },
+      });
+      if (response.status === 404) return jsonResponse({ place: null });
+      if (!response.ok) throw new Error(`Google returned ${response.status}`);
+      const resolved = await response.json() as GooglePlace;
+      place = resolved.id === placeId ? resolved : null;
+    } else {
+      const lat = normalizeCoordinate(payload.lat);
+      const lng = normalizeCoordinate(payload.lng);
+      const address = normalizeQuery(payload.address);
+      const queries = [...new Set([query + (address ? ` ${address}` : ''), query])];
+      for (const textQuery of queries) {
+        // Food records include bars and cafés; a restaurant-only filter drops valid places.
+        const body: Record<string, unknown> = { languageCode: 'ko', maxResultCount: 5, regionCode: 'KR', textQuery };
+        if (lat !== null && lng !== null) {
+          body.locationBias = { circle: { center: { latitude: lat, longitude: lng }, radius: 500 } };
+        }
+        const response = await fetch(GOOGLE_TEXT_SEARCH_URL, {
+          body: JSON.stringify(body), headers: { ...headers, 'X-Goog-FieldMask': fields.map(field => `places.${field}`).join(',') }, method: 'POST',
+        });
+        if (!response.ok) throw new Error(`Google returned ${response.status}`);
+        const result = await response.json();
+        const places = Array.isArray(result.places) ? result.places as GooglePlace[] : [];
+        place = choosePlace(places, payload);
+        if (place) break;
+      }
+    }
+    return jsonResponse({ place: place ? await formatPlace(place, googleMapsApiKey) : null });
+  } catch {
+    return jsonResponse({ error: 'Google Places API request failed' }, { status: 502 });
   }
-
-  const googleResponse = await fetch(GOOGLE_TEXT_SEARCH_URL, {
-    body: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Goog-Api-Key': googleMapsApiKey,
-      'X-Goog-FieldMask': [
-        'places.displayName',
-        'places.formattedAddress',
-        'places.googleMapsUri',
-        'places.id',
-        'places.internationalPhoneNumber',
-        'places.location',
-        'places.nationalPhoneNumber',
-        'places.photos',
-        'places.priceLevel',
-        'places.rating',
-        'places.regularOpeningHours',
-        'places.userRatingCount',
-        'places.websiteUri',
-      ].join(','),
-    },
-    method: 'POST',
-  });
-
-  if (!googleResponse.ok) {
-    const message = await googleResponse.text();
-
-    return jsonResponse(
-      { error: 'Google Places API request failed', status: googleResponse.status, message },
-      { status: 502 },
-    );
-  }
-
-  const data = await googleResponse.json();
-  const places = Array.isArray(data.places) ? (data.places as GooglePlace[]) : [];
-  const place = places[0] ?? null;
-
-  return jsonResponse({
-    place: place ? await formatPlace(place, googleMapsApiKey) : null,
-  });
 });

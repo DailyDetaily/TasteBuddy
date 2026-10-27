@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { choosePlace, normalizeCoordinate } from './matching.ts';
+const make = (id, name, lat = 37.5, lng = 127, phone = '02-1234-5678') => ({ id, displayName: { text: name }, location: { latitude: lat, longitude: lng }, nationalPhoneNumber: phone });
+const q = { query: '테스트 주방', lat: 37.5, lng: 127, phone: '02-1234-5678' };
+assert.equal(choosePlace([make('wrong', '다른 가게', 37.52, 127.1), make('correct', '테스트주방')], q)?.id, 'correct');
+assert.equal(choosePlace([make('far', '테스트주방', 37.6, 127.2)], q), null);
+assert.equal(choosePlace([make('wrong', '옆집', 37.5, 127, '02-9999-0000')], q), null);
+assert.equal(choosePlace([make('alias', 'Test Kitchen')], q)?.id, 'alias');
+assert.equal(choosePlace([make('a', '테스트주방'), make('b', '테스트주방')], { query: '테스트주방' }), null);
+assert.equal(choosePlace([], q), null);
+assert.equal(normalizeCoordinate(null), null);
+assert.equal(normalizeCoordinate(undefined), null);
+assert.equal(normalizeCoordinate(''), null);
+assert.equal(normalizeCoordinate(0), 0);
+console.log('10 place identity assertions passed');
