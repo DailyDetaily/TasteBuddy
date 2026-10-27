@@ -86,7 +86,7 @@ export const NativeDetail: React.FC<{
 export const Food: React.FC = () => (
   <CanvasImage
     name="영상용 식사 사진"
-    src={staticFile("images/hero-food.png")}
+    src={staticFile("images/camera-entry/generated-pasta-reference.png")}
     style={{ width: "100%", height: "100%", objectFit: "cover" }}
   />
 );

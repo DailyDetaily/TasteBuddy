@@ -1,6 +1,7 @@
-import { COLOR_TOKENS } from "../../../src/constants/designTokens";
+import { COLOR_TOKENS, TASTE_IDS, TASTE_TOKENS } from "../../../src/constants/designTokens";
+import { motionTint, EMPTY_RING_COLOR } from "./colors";
 import { changeFrame } from "./change";
-import { contextFrame, CONTEXT_IDLE } from "./context";
+import { contextFrame, dotRingMotion, CONTEXT_IDLE } from "./context";
 import { sensoryFrame } from "./sensory";
 import {
   experienceFrame,
@@ -123,14 +124,15 @@ function baseCategoryFrame(
         key = category === undefined ? "" : String(category);
       f.dots.push({
         id: "proportion-" + i,
-        x: 320 + (dot.x - 320) * 0.84,
-        y: 320 + (dot.y - 320) * 0.84,
-        r: dot.radius * 0.84,
+        x: 320 + (dot.x - 320) * 0.92,
+        y: 320 + (dot.y - 320) * 0.92,
+        r: dot.radius,
         color: category === undefined ? "#e4e0da" : COLORS[category],
-        // Stable decorative tone levels remain visibly distinct at the preview scale.
+        // Decorative pale points share the opaque surface role, not a background-dependent alpha.
+        tintColor: category === undefined ? "#e4e0da" : motionTint(TASTE_TOKENS[TASTE_IDS[category]].palette),
+        tint: category !== undefined && (i * 7 + Math.floor(i / 6)) % 4 !== 0 ? 1 : 0,
         opacity:
           dot.progress *
-          [1, 0.84, 0.68, 0.52][(i * 7 + Math.floor(i / 6)) % 4] *
           (options.selected && options.selected !== key ? 0.35 : 1),
         group: key,
       });
@@ -208,6 +210,30 @@ export function categoryFrame(
   options: Options = {},
 ): Frame {
   const frame = baseCategoryFrame(data, time, options);
+  // Reuse only presentation geometry. No records, responses, periods or denominators are fabricated.
+  // A partially available comparison keeps the genuine period already drawn by its base frame.
+  if (frame.state === "noData" && (data.state === "noData" || !frame.dots.length)) {
+    const layered = data.kind === "contextLayers" || data.kind === "changeRipples";
+    const scale = 0.92;
+    const dots = layered
+      ? dotRingMotion(data.kind === "contextLayers" ? 3 : 2, 0, { playback: "reduced" }).layers.flat()
+      : insightFrame(insightIntroDuration, true, data.kind === "sensoryRays" ? 1 : 0).dots.map(dot => ({
+          x: 320 + (dot.x - 320) * scale,
+          y: 320 + (dot.y - 320) * scale,
+          r: dot.radius,
+        }));
+    frame.dots = dots.map((dot, i) => ({
+      id: `empty-${data.kind}-${i}`, x: dot.x, y: dot.y, r: dot.r,
+      color: EMPTY_RING_COLOR, opacity: 1, data: false, group: "",
+    }));
+    frame.lines = [];
+    frame.bridges = [];
+    frame.labels = [];
+    frame.summaryOpacity = 1;
+    frame.motionPhase = "자료 없음";
+    frame.legend = "연한 뉴트럴 점은 빈 상태의 기본 형태이며 기록·평가·조건 수를 나타내지 않음";
+    return frame;
+  }
   if (frame.state === "held") {
     const neutral = COLOR_TOKENS.border.subtle;
     // A missing data shape gets a decorative neutral ring, never synthetic records.

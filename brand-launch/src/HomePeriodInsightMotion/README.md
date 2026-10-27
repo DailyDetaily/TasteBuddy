@@ -21,12 +21,12 @@ The three motion examples use native source geometry, not the GIF layout:
 | Change text | Medium 14pt/#3F3F3F label, semibold 12pt/taste-color value |
 | Change graph | Width 132, rows 24+4, track 12, core 2, node diameter 12, original domain |
 | Arrow | 18pt box/radius 4, centered 9pt Lucide canvas, 24-unit native path/stroke 1.8 |
-| Indicator | 16pt; absolute change weights, transition half-width min(0.16, adjacent weights/2) |
+| Header icon | 16pt native category icon; first graph taste/main supplies the color. Taste change uses RefreshCw. |
 | Keyword chips | Native sm: 11pt, padding 10×6, gap 6, inset border 1 |
 
 `native.tsx` shares the card and detail label styles. Line boxes use the bundled Pretendard CoreText ascent+descent ratio 1.193359375, measured locally at 11/12/14/16pt. Native line spacing adds 2pt between title lines and 3pt between detail lines, without adding spacing before/after a one-line label.
 
-The 3× graph amplification was removed from these cards. The separate `TasteGraph-TasteChange-Reference` composition is unchanged. Card width 362 and video scale 1.8 are presentation choices, not hardcoded native screen dimensions.
+The 3× graph amplification was removed from these cards. The former standalone reference composition was removed from Graph-Motion; these cards retain the shared line renderer and geometry. Card width 362 and video scale 1.8 are presentation choices, not hardcoded native screen dimensions.
 
 ## Motion and examples
 

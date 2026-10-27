@@ -7,15 +7,21 @@ import { dessertShape, prepareDessertShape } from "./dessert-shape";
 import { fruitOutline, prepareFruitOutline } from "./fruit-shape";
 import { DessertReturn } from "./DessertReturn";
 
-export const Dessert = ({
-  icon,
-  motion,
-}: {
-  icon: FoodIconEntry;
-  motion: FoodIconMotionProps;
-}) => {
+type DessertProps = { icon: FoodIconEntry; motion: FoodIconMotionProps };
+
+export const Dessert = (props: DessertProps) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  return <DessertFrame {...props} frame={frame} fps={fps} />;
+};
+
+/** Reuse the original animation with an explicit local clock when embedded. */
+export const DessertFrame = ({
+  icon,
+  motion,
+  frame,
+  fps,
+}: DessertProps & { frame: number; fps: number }) => {
   const cutMask = `dessert-cut-${useId().replace(/:/g, "")}`;
   const cake = useMemo(
     () =>

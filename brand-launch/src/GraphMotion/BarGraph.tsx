@@ -1,38 +1,35 @@
-import { useEffect, useState } from "react";
 import {
   AbsoluteFill,
   Sequence,
-  cancelRender,
-  continueRender,
-  delayRender,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { TASTE_IDS, TASTE_TOKENS } from "../../../src/constants/designTokens";
-import { fontReady } from "../fonts";
-import { barLayout, barPose, barTiming } from "./motion";
+import {
+  COMPONENT_TOKENS,
+  TASTE_IDS,
+  TASTE_TOKENS,
+} from "../../../src/constants/designTokens";
+import { barPose, barTiming } from "./motion";
 import type { BarGraphProps } from "./settings";
 
+/** Motion specimen of MiniChart; settled geometry comes from the product. */
 export const BarGraph: React.FC<BarGraphProps> = (props) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
-  const [fontHandle] = useState(() => delayRender("막대 그래프 Pretendard"));
-  useEffect(() => {
-    fontReady.then(() => continueRender(fontHandle)).catch(cancelRender);
-  }, [fontHandle]);
-  const layout = barLayout(props);
+  const plot = COMPONENT_TOKENS.miniChart;
   const timing = barTiming(props, fps);
   const taste =
     TASTE_IDS.find((id) => TASTE_TOKENS[id].label === props.색상) ?? "umami";
   const palette = TASTE_TOKENS[taste].palette;
   const scale = Math.min(
-    (width * 0.8) / layout.viewWidth,
-    (height * 0.74) / layout.viewHeight,
+    props["확대 배율"],
+    (width * 0.9) / plot.width,
+    (height * 0.9) / plot.height,
   );
   const summary = props.데이터
     .map(
       (point) =>
-        `${point.항목} ${point.값 == null ? "미확인" : `${point.값}회`}`,
+        `${point.항목}: ${point.값 === null ? "미확인" : `${point.값}개`}`,
     )
     .join(", ");
 
@@ -45,96 +42,56 @@ export const BarGraph: React.FC<BarGraphProps> = (props) => {
       }}
     >
       <svg
-        viewBox={`0 0 ${layout.viewWidth} ${layout.viewHeight}`}
-        width={layout.viewWidth * scale}
-        height={layout.viewHeight * scale}
+        viewBox={`0 0 ${plot.width} ${plot.height}`}
+        width={plot.width * scale}
+        height={plot.height * scale}
         role="img"
-        aria-label={`막대 그래프 모션 예시. ${summary}`}
-        data-graph="taste-bar"
+        aria-label={`미니 막대 모션 · 합성 요리 기록 수. ${summary}`}
+        data-graph="mini-bar"
         data-frame={frame}
-        style={{
-          display: "block",
-          overflow: "visible",
-          fontFamily: "Pretendard, sans-serif",
-        }}
+        style={{ display: "block" }}
       >
-        <title>기존 캡슐 막대 그래프 · 미리보기 예시 데이터</title>
+        <title>미니 막대 그래프 · 실제 계정과 연결되지 않은 합성 견본</title>
         {props.데이터.map((point, index) => {
           const pose = barPose(frame, index, props, fps);
-          const from =
-            props.재생 === "정지" ? 0 : timing.padding + index * timing.stagger;
           return (
             <Sequence
               key={index}
               name={`${index + 1} · ${point.항목 || "막대"}`}
-              from={from}
+              from={
+                props.재생 === "정지"
+                  ? 0
+                  : timing.start + index * timing.stagger
+              }
               layout="none"
             >
               <g
                 data-bar-index={index}
                 data-value={point.값 ?? "missing"}
                 data-progress={pose.progress}
+                opacity={pose.opacity}
               >
                 {pose.height > 0 && (
                   <>
                     <rect
                       data-mark="capsule"
-                      x={pose.x - pose.width / 2}
+                      x={pose.x}
                       y={pose.y}
                       width={pose.width}
                       height={pose.height}
                       rx={pose.radius}
-                      ry={pose.radius}
-                      fill={palette.tintSoftBorder}
+                      fill={palette.chartTrack}
                     />
-                    {pose.endpointRadius > 0 && (
+                    {pose.endpoint && (
                       <circle
                         data-mark="endpoint"
-                        cx={pose.x}
-                        cy={pose.y + pose.endpointRadius}
-                        r={pose.endpointRadius}
+                        cx={pose.x + pose.width / 2}
+                        cy={pose.y + pose.radius}
+                        r={pose.radius}
                         fill={palette.main}
                       />
                     )}
                   </>
-                )}
-                {props["수치와 라벨"] && (
-                  <g opacity={pose.labelOpacity} textAnchor="middle">
-                    <text
-                      x={pose.x}
-                      y={layout.top - 8}
-                      fontSize={props.형태 === "홈 미니" ? 6 : 11}
-                      fontWeight={500}
-                      fill="#0F0F0F"
-                      textLength={
-                        String(point.값 ?? "—").length *
-                          (props.형태 === "홈 미니" ? 6 : 11) *
-                          0.6 >
-                        layout.column
-                          ? layout.column
-                          : undefined
-                      }
-                      lengthAdjust="spacingAndGlyphs"
-                    >
-                      {point.값 == null ? "—" : point.값}
-                    </text>
-                    <text
-                      x={pose.x}
-                      y={layout.baseline + 16}
-                      fontSize={layout.labelFontSize}
-                      fill="#666666"
-                    >
-                      {layout.labelLines[index].map((line, lineIndex) => (
-                        <tspan
-                          key={lineIndex}
-                          x={pose.x}
-                          dy={lineIndex === 0 ? 0 : layout.labelFontSize * 1.35}
-                        >
-                          {line}
-                        </tspan>
-                      ))}
-                    </text>
-                  </g>
                 )}
               </g>
             </Sequence>

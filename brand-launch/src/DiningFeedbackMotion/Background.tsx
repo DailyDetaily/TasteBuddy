@@ -8,7 +8,15 @@ export const FeedbackBackground: React.FC<{
   width: number;
   height: number;
   mainCoverage?: number;
-}> = ({ colors, elapsed: t, width, height, mainCoverage = 0.56 }) => {
+  motionRange?: number;
+}> = ({
+  colors,
+  elapsed: t,
+  width,
+  height,
+  mainCoverage = 0.56,
+  motionRange = 1,
+}) => {
   const largest = Math.max(width, height);
   const mainScale = Math.sqrt(mainCoverage / 0.56);
   const supportScale = Math.sqrt((1 - mainCoverage) / 0.44);
@@ -89,7 +97,7 @@ export const FeedbackBackground: React.FC<{
               height: h,
               left: blob.x * width - w / 2,
               top: blob.y * height - h / 2,
-              transform: `translate(${blob.dx}px, ${blob.dy}px) scale(${blob.scale})`,
+              transform: `translate(${blob.dx * motionRange}px, ${blob.dy * motionRange}px) scale(${blob.scale})`,
               willChange: "transform",
               filter: `blur(${blob.blur}px)`,
               background: `radial-gradient(circle ${radius}px at center, rgba(255,255,255,0.24) 0%, ${rgba(blob.color, blob.opacity * 0.7)} 33.333%, ${rgba(blob.color, blob.opacity * 0.34)} 66.667%, transparent 100%)`,

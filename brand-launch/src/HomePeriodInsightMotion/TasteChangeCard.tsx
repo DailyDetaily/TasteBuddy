@@ -1,11 +1,11 @@
 import { TASTE_IDS, TASTE_TOKENS } from "../../../src/constants/designTokens";
+import InsightCategoryIcon from "../../../src/components/system/InsightCategoryIcon";
 import {
   CardTasteChangeGraph,
   cardTasteChangeLayout,
   type TasteChangeRows,
 } from "./CardTasteChangeGraph";
 import {
-  AnimatedTasteIndicator,
   AnimatedTrendArrow,
   countingChange,
 } from "./TasteChangeAccents";
@@ -60,13 +60,9 @@ export const TasteChangeCard: React.FC<{
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <AnimatedTasteIndicator
-            colors={colors}
-            weights={graph.데이터.map((row) =>
-              Math.abs(row.기록[row.기록.length - 1]),
-            )}
-            progress={progress}
-          />
+          <span style={{ display: "flex", flexShrink: 0 }}>
+            <InsightCategoryIcon category="change" color={colors[0]} />
+          </span>
           <span
             style={{
               fontSize: 14,

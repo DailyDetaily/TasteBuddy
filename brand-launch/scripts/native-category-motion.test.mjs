@@ -16,7 +16,7 @@ const {categoryFrame}=await import(compile('geometry'));
 const source=fs.readFileSync(new URL('../../ios/TasteBuddy/Resources/CategoryMotion/TasteDataCategoryMotion.js',import.meta.url),'utf8');
 const engine=vm.createContext({});vm.runInContext(source,engine);const api=engine.TasteBuddyCategoryMotion;
 test('bundled native geometry matches the web for all five categories and reduced motion',()=>{
- for(const kind of ['experienceCluster','sensoryRays','preferenceFocus','contextLayers','changeRipples']) for(const scenario of ['standard','held']){
+ for(const kind of ['experienceCluster','sensoryRays','preferenceFocus','contextLayers','changeRipples']) for(const scenario of ['standard','held','empty']){
   const data=fixture(kind,scenario);api.configure(JSON.stringify({data}));
   for(const [time,options] of [[0,{playback:'reduced'}],[1.2,{playback:'intro'}],[5,{playback:'idle'}]]){
    const actual=JSON.parse(api.frame(time,JSON.stringify(options)));

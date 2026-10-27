@@ -3,6 +3,21 @@ import { flipSchema } from "./DiningFeedbackMotion/flip-settings";
 import { flipTiming } from "./DiningFeedbackMotion/flip-motion";
 import { DishTopviewCompositions } from "./DishTopviews";
 import { FoodIconCompositions } from "./FoodIcons";
+import { InsightCategoryIconCompositions } from "./InsightCategoryIcons";
+import { ColorGuide } from "./ColorGuide/ColorGuide";
+import { ColorGuideOriginal } from "./ColorGuide/Original/ColorGuideOriginal";
+import {
+  COLOR_GUIDE_FPS as ORIGINAL_COLOR_GUIDE_FPS,
+  originalColorGuideDuration,
+} from "./ColorGuide/Original/settings";
+import { TasteColorGradientCircle } from "./ColorGuide/GradientCircle";
+import { COLOR_GUIDE_FPS, colorGuideDuration, colorGuideSchema } from "./ColorGuide/settings";
+import { SauceSplatter } from "./SauceSplatter/Scene";
+import { sauceSplatterSchema } from "./SauceSplatter/settings";
+import {
+  SAUCE_SPLATTER_FPS,
+  sauceSplatterTiming,
+} from "./SauceSplatter/motion";
 import { TabBarPlusButton } from "./TabBarPlusButton/PlusButton";
 import { plusButtonSchema } from "./TabBarPlusButton/settings";
 import { BUTTON_FPS, buttonTiming } from "./TabBarPlusButton/motion";
@@ -23,19 +38,80 @@ import { KineticStatementsCompositions } from "./KineticStatements";
 import { HomePeriodInsightMotion } from "./HomePeriodInsightMotion";
 import { homePeriodMotionSchema } from "./HomePeriodInsightMotion/settings";
 import { periodTiming } from "./HomePeriodInsightMotion/motion";
+import { SummaryCardGridMotion } from "./SummaryCardGridMotion";
+import {
+  SUMMARY_GRID_FPS,
+  summaryCardGridSchema,
+  summaryCardGridDefaultProps,
+} from "./SummaryCardGridMotion/settings";
+import { summaryGridTiming } from "./SummaryCardGridMotion/motion";
 import { TasteBloomAvatarCompositions } from "./TasteBloomAvatars";
 import { PetalLogoCompositions } from "./PetalLogo";
 import { LogoGridCompositions } from "./LogoGrid";
 import { TasteDataCategoryCompositions } from "./TasteDataCategoryMotion";
 import { BarGraph } from "./GraphMotion/BarGraph";
+import { GraphTransition } from "./GraphMotion/GraphTransition";
+import {
+  GRAPH_TRANSITION_DURATION,
+  graphTransitionSchema,
+  graphTransitionDefaultProps,
+} from "./GraphMotion/graph-transition-settings";
 import { GRAPH_FPS, barTiming } from "./GraphMotion/motion";
 import { barGraphSchema } from "./GraphMotion/settings";
-import { TasteChangeGraph } from "./GraphMotion/TasteChangeGraph";
-import { tasteChangeGraphSchema } from "./GraphMotion/line-settings";
-import { lineTiming } from "./GraphMotion/line-motion";
-import { ReferenceTasteChangeGraph } from "./GraphMotion/ReferenceTasteChangeGraph";
-import { referenceLineSchema } from "./GraphMotion/reference-settings";
-import { referenceTiming } from "./GraphMotion/reference-motion";
+import { MiniLineGraph } from "./GraphMotion/MiniLineGraph";
+import { miniLineGraphSchema } from "./GraphMotion/mini-line-settings";
+import { miniLineTiming } from "./GraphMotion/mini-line-motion";
+import { MiniAreaGraph } from "./GraphMotion/MiniAreaGraph";
+import { miniAreaGraphSchema } from "./GraphMotion/mini-area-settings";
+import { AREA_DURATION, AREA_FPS } from "./GraphMotion/mini-area-motion";
+import { MiniStackedBarGraph } from "./GraphMotion/MiniStackedBarGraph";
+import {
+  miniStackedBarGraphSchema,
+  miniStackedBarDefaultProps,
+} from "./GraphMotion/mini-stacked-bar-settings";
+import {
+  STACKED_BAR_DURATION,
+  STACKED_BAR_FPS,
+} from "./GraphMotion/mini-stacked-bar-motion";
+import { MiniGroupedBarGraph } from "./GraphMotion/MiniGroupedBarGraph";
+import {
+  miniGroupedBarGraphSchema,
+  miniGroupedBarDefaultProps,
+} from "./GraphMotion/mini-grouped-bar-settings";
+import {
+  GROUPED_BAR_DURATION,
+  GROUPED_BAR_FPS,
+} from "./GraphMotion/mini-grouped-bar-motion";
+import { MiniHeatmapGraph } from "./GraphMotion/MiniHeatmapGraph";
+import {
+  miniHeatmapGraphSchema,
+  miniHeatmapDefaultProps,
+} from "./GraphMotion/mini-heatmap-settings";
+import {
+  HEATMAP_DURATION,
+  HEATMAP_FPS,
+} from "./GraphMotion/mini-heatmap-motion";
+import { MiniPieGraph } from "./GraphMotion/MiniPieGraph";
+import {
+  miniPieGraphSchema,
+  miniPieDefaultProps,
+} from "./GraphMotion/mini-pie-settings";
+import { PIE_DURATION, PIE_FPS } from "./GraphMotion/mini-pie-motion";
+import { MiniBubbleGraph } from "./GraphMotion/MiniBubbleGraph";
+import {
+  miniBubbleGraphSchema,
+  miniBubbleDefaultProps,
+} from "./GraphMotion/mini-bubble-settings";
+import { BUBBLE_DURATION, BUBBLE_FPS } from "./GraphMotion/mini-bubble-motion";
+import { MiniTreemapGraph } from "./GraphMotion/MiniTreemapGraph";
+import {
+  miniTreemapGraphSchema,
+  miniTreemapDefaultProps,
+} from "./GraphMotion/mini-treemap-settings";
+import {
+  TREEMAP_DURATION,
+  TREEMAP_FPS,
+} from "./GraphMotion/mini-treemap-motion";
 import { TasteMotionCompositions } from "./TasteMotion";
 import { Composition, Folder } from "remotion";
 import { BrandLaunch } from "./BrandLaunch";
@@ -103,6 +179,96 @@ export const RemotionRoot: React.FC = () => {
       </Folder>
       <DishTopviewCompositions />
       <FoodIconCompositions />
+      <InsightCategoryIconCompositions />
+      <Folder name="Color-Guide">
+        <Composition
+          id="TasteColor-Guide"
+          component={ColorGuide}
+          schema={colorGuideSchema}
+          defaultProps={{ 재생: "영상", 속도: 0.8, "배경 색": "#FFFFFF" }}
+          width={1080}
+          height={1080}
+          fps={COLOR_GUIDE_FPS}
+          durationInFrames={colorGuideDuration(0.8)}
+          calculateMetadata={({ props }) => ({ durationInFrames: colorGuideDuration(props.속도) })}
+        />
+        <Composition
+          id="TasteColor-Guide-Original"
+          component={ColorGuideOriginal}
+          schema={colorGuideSchema}
+          defaultProps={{ 재생: "영상", 속도: 0.8, "배경 색": "#FFFFFF" }}
+          width={1080}
+          height={1080}
+          fps={ORIGINAL_COLOR_GUIDE_FPS}
+          durationInFrames={originalColorGuideDuration(0.8)}
+          calculateMetadata={({ props }) => ({
+            durationInFrames: originalColorGuideDuration(props.속도),
+          })}
+        />
+        <Composition
+          id="TasteColor-GradientCircle"
+          component={TasteColorGradientCircle}
+          schema={colorGuideSchema}
+          defaultProps={{ 재생: "영상", 속도: 0.8, "배경 색": "#FFFFFF" }}
+          width={1080}
+          height={1080}
+          fps={ORIGINAL_COLOR_GUIDE_FPS}
+          durationInFrames={originalColorGuideDuration(0.8)}
+          calculateMetadata={({ props }) => ({
+            durationInFrames: originalColorGuideDuration(props.속도),
+          })}
+        />
+      </Folder>
+      <Folder name="Chip-Motion">
+        <Composition
+          id="Sauce-Splatter"
+          component={SauceSplatter}
+          schema={sauceSplatterSchema}
+          width={1080}
+          height={1080}
+          fps={SAUCE_SPLATTER_FPS}
+          durationInFrames={395}
+          calculateMetadata={({ props }) => ({
+            durationInFrames: sauceSplatterTiming(props).durationInFrames,
+          })}
+          defaultProps={{
+            재생: "진입 후 유지" as const,
+            속도: 1,
+            "시작 대기": 0.4,
+            "유지 시간": 1.5,
+            "확대 배율": 5,
+            "줄 수": 5,
+            "상하 여백": 72,
+            "카메라 여백": 80,
+            칩: [
+              { 문구: "해산물", 선택: false, 아이콘: "seafood" },
+              { 문구: "육류", 선택: false, 아이콘: "meat" },
+              { 문구: "채소/허브", 선택: false, 아이콘: "vegetable_herb" },
+              { 문구: "두부/콩", 선택: false, 아이콘: "legume_tofu" },
+              { 문구: "달걀", 선택: false, 아이콘: "egg" },
+              { 문구: "버섯", 선택: false, 아이콘: "mushroom" },
+              { 문구: "과일", 선택: false, 아이콘: "fruit" },
+              { 문구: "견과·씨앗", 선택: false, 아이콘: "nut_seed" },
+              { 문구: "해조류", 선택: false, 아이콘: "seaweed" },
+              { 문구: "면류", 선택: false, 아이콘: "noodle" },
+              { 문구: "밥·곡물", 선택: false, 아이콘: "rice_grain" },
+              { 문구: "빵", 선택: false, 아이콘: "bread" },
+              { 문구: "만두", 선택: false, 아이콘: "dumpling" },
+              { 문구: "국물/브로스", 선택: false, 아이콘: "broth" },
+              { 문구: "향신료", 선택: false, 아이콘: "spice" },
+              { 문구: "구이", 선택: false, 아이콘: "grilled" },
+              { 문구: "훈연", 선택: false, 아이콘: "smoked" },
+              { 문구: "볶음/웍", 선택: false, 아이콘: "stir_fried_wok" },
+              { 문구: "튀김/크리스피", 선택: false, 아이콘: "fried_crispy" },
+              { 문구: "찜·스팀", 선택: false, 아이콘: "steamed" },
+              { 문구: "전·부침", 선택: false, 아이콘: "pancake" },
+              { 문구: "디저트", 선택: false, 아이콘: "dessert" },
+              { 문구: "음료/페어링", 선택: false, 아이콘: "beverage_pairing" },
+              { 문구: "유제품/치즈", 선택: false, 아이콘: "dairy_cheese" },
+            ],
+          }}
+        />
+      </Folder>
       <Folder name="Dining-Feedback">
         <Composition
           id="DiningFeedback-Flip"
@@ -626,6 +792,21 @@ export const RemotionRoot: React.FC = () => {
       <TasteBubbleMapCompositions />
       <Folder name="Card-Motion">
         <Composition
+          id="SummaryCard-MiniGraphs-Grid"
+          component={SummaryCardGridMotion}
+          schema={summaryCardGridSchema}
+          fps={SUMMARY_GRID_FPS}
+          width={1920}
+          height={1080}
+          durationInFrames={
+            summaryGridTiming(summaryCardGridDefaultProps).durationInFrames
+          }
+          calculateMetadata={({ props }) => ({
+            durationInFrames: summaryGridTiming(props).durationInFrames,
+          })}
+          defaultProps={summaryCardGridDefaultProps}
+        />
+        <Composition
           id="HomePeriodInsightCard"
           component={HomePeriodInsightMotion}
           schema={homePeriodMotionSchema}
@@ -679,57 +860,14 @@ export const RemotionRoot: React.FC = () => {
       </Folder>
       <Folder name="Graph-Motion">
         <Composition
-          id="TasteGraph-TasteChange-Reference"
-          component={ReferenceTasteChangeGraph}
-          schema={referenceLineSchema}
+          id="TasteGraph-Transition"
+          component={GraphTransition}
+          schema={graphTransitionSchema}
           fps={GRAPH_FPS}
           width={1080}
           height={1080}
-          durationInFrames={112}
-          calculateMetadata={({ props }) => ({
-            durationInFrames: referenceTiming(props).durationInFrames,
-          })}
-          defaultProps={{
-            재생: "진입·유지·퇴장",
-            "높낮이 배율": 3,
-            "시작 대기": 0.36,
-            "진입 시간": 1.04,
-            "행 간 지연": 0,
-            "유지 시간": 0.84,
-            "끝 여백": 0.44,
-            "배경 색": "#FFFFFF",
-            "라벨 표시": false,
-            "첫 기록 대기선": true,
-            데이터: [
-              { 미각: "단맛", 기록: [0, 0, 5, 3, 10, 10, 15.2] },
-              { 미각: "감칠맛", 기록: [0, 0, -4, -4, -7, -6, -10.7] },
-            ],
-          }}
-        />
-        <Composition
-          id="TasteGraph-TasteChange"
-          component={TasteChangeGraph}
-          schema={tasteChangeGraphSchema}
-          fps={GRAPH_FPS}
-          width={1080}
-          height={1080}
-          durationInFrames={195}
-          calculateMetadata={({ props }) => ({
-            durationInFrames: lineTiming(props).durationInFrames,
-          })}
-          defaultProps={{
-            재생: "진입·유지·퇴장",
-            "진입 시간": 1.4,
-            "행 간 지연": 0.14,
-            "유지 시간": 3,
-            "배경 색": "#FFFFFF",
-            "라벨 표시": false,
-            "첫 기록 대기선": true,
-            데이터: [
-              { 미각: "단맛", 기록: [-6, -2, 5, 12] },
-              { 미각: "짠맛", 기록: [10, 6, -2, -8] },
-            ],
-          }}
+          durationInFrames={GRAPH_TRANSITION_DURATION}
+          defaultProps={graphTransitionDefaultProps}
         />
         <Composition
           id="TasteGraph-Bar"
@@ -738,92 +876,129 @@ export const RemotionRoot: React.FC = () => {
           fps={GRAPH_FPS}
           width={1080}
           height={1080}
-          durationInFrames={211}
+          durationInFrames={300}
           calculateMetadata={({ props }) => ({
             durationInFrames: barTiming(props).durationInFrames,
           })}
           defaultProps={{
-            형태: "상세" as const,
-            색상: "감칠맛" as const,
-            끝점: "마지막 막대" as const,
-            재생: "진입·유지·퇴장" as const,
-            "진입 시간": 1.2,
-            "막대 간 지연": 0.1,
-            "유지 시간": 3,
-            "수치와 라벨": false,
-            "배경 색": "#FFFFFF",
-            데이터: [
-              { 항목: "월", 값: 2 },
-              { 항목: "화", 값: 4 },
-              { 항목: "수", 값: 3 },
-              { 항목: "목", 값: 6 },
-              { 항목: "금", 값: 4 },
-              { 항목: "토", 값: 7 },
-              { 항목: "일", 값: 5 },
-            ],
-          }}
-        />
-        <Composition
-          id="TasteGraph-Bar-Home"
-          component={BarGraph}
-          schema={barGraphSchema}
-          fps={GRAPH_FPS}
-          width={1080}
-          height={1080}
-          durationInFrames={211}
-          calculateMetadata={({ props }) => ({
-            durationInFrames: barTiming(props).durationInFrames,
-          })}
-          defaultProps={{
-            형태: "홈 미니",
             색상: "감칠맛",
-            끝점: "마지막 막대",
             재생: "진입·유지·퇴장",
-            "진입 시간": 1.2,
-            "막대 간 지연": 0.1,
-            "유지 시간": 3,
-            "수치와 라벨": false,
+            "시작 대기": 0.3,
+            "진입 시간": 0.8,
+            "막대 간 지연": 0.08,
+            "유지 시간": 1.6,
+            "끝 여백": 0.5,
+            "확대 배율": 6,
             "배경 색": "#FFFFFF",
             데이터: [
-              { 항목: "월", 값: 2 },
-              { 항목: "화", 값: 4 },
-              { 항목: "수", 값: 3 },
-              { 항목: "목", 값: 6 },
-              { 항목: "금", 값: 4 },
-              { 항목: "토", 값: 7 },
-              { 항목: "일", 값: 5 },
+              { 항목: "1일", 값: 0 },
+              { 항목: "2일", 값: 1 },
+              { 항목: "3일", 값: 3 },
+              { 항목: "4일", 값: 2 },
+              { 항목: "5일", 값: 5 },
+              { 항목: "6일", 값: 4 },
+              { 항목: "7일", 값: 7 },
             ],
           }}
         />
         <Composition
-          id="TasteGraph-Bar-Distribution"
-          component={BarGraph}
-          schema={barGraphSchema}
+          id="TasteGraph-Line"
+          component={MiniLineGraph}
+          schema={miniLineGraphSchema}
           fps={GRAPH_FPS}
           width={1080}
           height={1080}
-          durationInFrames={199}
+          durationInFrames={300}
           calculateMetadata={({ props }) => ({
-            durationInFrames: barTiming(props).durationInFrames,
+            durationInFrames: miniLineTiming(props).durationInFrames,
           })}
           defaultProps={{
-            형태: "상세",
-            색상: "단맛",
-            끝점: "모든 막대",
             재생: "진입·유지·퇴장",
+            "시작 대기": 0.3,
             "진입 시간": 1.2,
-            "막대 간 지연": 0.1,
-            "유지 시간": 3,
-            "수치와 라벨": true,
+            "행 간 지연": 0.12,
+            "유지 시간": 1.6,
+            "끝 여백": 0.7,
+            "확대 배율": 6,
             "배경 색": "#FFFFFF",
-            데이터: [
-              { 항목: "1점", 값: 0 },
-              { 항목: "2점", 값: 2 },
-              { 항목: "3점", 값: 4 },
-              { 항목: "4점", 값: 7 },
-              { 항목: "5점", 값: 3 },
-            ],
+            데이터: [{ 미각: "감칠맛", 기록: [1.2, 2.1, 2.4, 4.5] }],
           }}
+        />
+        <Composition
+          id="TasteGraph-Area"
+          component={MiniAreaGraph}
+          schema={miniAreaGraphSchema}
+          fps={AREA_FPS}
+          width={1080}
+          height={1080}
+          durationInFrames={AREA_DURATION}
+          defaultProps={{
+            재생: "진입·유지·퇴장",
+            미각: "감칠맛",
+            "확대 배율": 6,
+            "배경 색": "#FFFFFF",
+            기록: [1.2, 2.1, 2.4, 4.5],
+          }}
+        />
+        <Composition
+          id="TasteGraph-StackedBar"
+          component={MiniStackedBarGraph}
+          schema={miniStackedBarGraphSchema}
+          fps={STACKED_BAR_FPS}
+          width={1080}
+          height={1080}
+          durationInFrames={STACKED_BAR_DURATION}
+          defaultProps={miniStackedBarDefaultProps}
+        />
+        <Composition
+          id="TasteGraph-GroupedBar"
+          component={MiniGroupedBarGraph}
+          schema={miniGroupedBarGraphSchema}
+          fps={GROUPED_BAR_FPS}
+          width={1080}
+          height={1080}
+          durationInFrames={GROUPED_BAR_DURATION}
+          defaultProps={miniGroupedBarDefaultProps}
+        />
+        <Composition
+          id="TasteGraph-Heatmap"
+          component={MiniHeatmapGraph}
+          schema={miniHeatmapGraphSchema}
+          fps={HEATMAP_FPS}
+          width={1080}
+          height={1080}
+          durationInFrames={HEATMAP_DURATION}
+          defaultProps={miniHeatmapDefaultProps}
+        />
+        <Composition
+          id="TasteGraph-Pie"
+          component={MiniPieGraph}
+          schema={miniPieGraphSchema}
+          fps={PIE_FPS}
+          width={1080}
+          height={1080}
+          durationInFrames={PIE_DURATION}
+          defaultProps={miniPieDefaultProps}
+        />
+        <Composition
+          id="TasteGraph-Bubble"
+          component={MiniBubbleGraph}
+          schema={miniBubbleGraphSchema}
+          fps={BUBBLE_FPS}
+          width={1080}
+          height={1080}
+          durationInFrames={BUBBLE_DURATION}
+          defaultProps={miniBubbleDefaultProps}
+        />
+        <Composition
+          id="TasteGraph-Treemap"
+          component={MiniTreemapGraph}
+          schema={miniTreemapGraphSchema}
+          fps={TREEMAP_FPS}
+          width={1080}
+          height={1080}
+          durationInFrames={TREEMAP_DURATION}
+          defaultProps={miniTreemapDefaultProps}
         />
       </Folder>
       <TasteBloomAvatarCompositions />

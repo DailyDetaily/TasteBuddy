@@ -1,1 +1,1 @@
-{"inputHash":"5371b593605766a965b445e46e914cabf67102d2771a0af363f038e71224fbd1","status":"ready","review":[]}
+{"inputHash":"e7c576b9a484b280a820cd30d80dc984b01bbafa9384ace49a1d54fa53610f7a","status":"error","review":[{"section":"source","file":"ios/TasteBuddy","message":"자동 변환을 지원하지 않는 색상: chartComparisonTrack = Color.tbAdaptive(light: Color(hex: 0x666666, alpha: 0.18), dark: Color(hex: 0x454545))"}]}

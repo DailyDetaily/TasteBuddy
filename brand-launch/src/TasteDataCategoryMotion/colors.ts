@@ -1,10 +1,5 @@
-/** Shared filled-dot tint: retain the surface tone with a gentle amount of its own pigment. */
-export const MOTION_TINT_PIGMENT = 0.16;
-export const motionTint = ({ main, tintSurface }: { main: string; tintSurface: string }) => {
-  const base = parseInt(tintSurface.slice(1), 16);
-  const pigment = parseInt(main.slice(1), 16);
-  return "#" + [16, 8, 0].map((shift) =>
-    Math.round(((base >> shift) & 255) * (1 - MOTION_TINT_PIGMENT) + ((pigment >> shift) & 255) * MOTION_TINT_PIGMENT)
-      .toString(16).padStart(2, "0"),
-  ).join("");
-};
+/** Source role marker; product renderers resolve Light tint/60 and Dark tint/70 on page backgrounds. */
+export const motionTint = ({ tintSurface }: { tintSurface: string }) => tintSurface;
+
+/** Presentation-only empty ring; renderers resolve the mode-specific empty foreground. */
+export const EMPTY_RING_COLOR = '#E4E4E4';

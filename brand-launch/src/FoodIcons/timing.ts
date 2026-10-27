@@ -41,6 +41,7 @@ const originalTimingIds = new Set([
   "smoked",
   "steamed",
   "stir_fried_wok",
+  "legume_tofu",
 ]);
 const halfCycleIds = new Set(["noodle", "seaweed", "braised", "pancake"]);
 

@@ -45,7 +45,7 @@ test('first and final frames have identical card positions and background phase'
  const first=carouselPose(0,props); const last=carouselPose(carouselTiming(props).durationInFrames-1,props);
  for(let i=0;i<6;i++) assert.equal(relativeCardPosition(i,first.position),relativeCardPosition(i,last.position));
  assert.equal(first.elapsed,last.elapsed); assert.equal(first.from,last.to); assert.equal(last.blend,1);
- assert.equal(mixHex('#FF9900','#FBC02D',0),'#ff9900'); assert.equal(mixHex('#FF9900','#FBC02D',1),'#fbc02d');
+ assert.equal(mixHex('#FF9900','#FFD600',0),'#ff9900'); assert.equal(mixHex('#FF9900','#FFD600',1),'#ffd600');
 });
 test('static mode stays on the selected dish; custom timings preserve the loop', () => {
  const fixed={...props,재생:'정지','정지 카드':4};

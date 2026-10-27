@@ -4,15 +4,21 @@ import type { FoodIconEntry } from "./catalog";
 import type { FoodIconMotionProps } from "./settings";
 import { WOK_ARC, wokMotion } from "./wok-motion";
 
-export const Wok = ({
-  icon,
-  motion,
-}: {
-  icon: FoodIconEntry;
-  motion: FoodIconMotionProps;
-}) => {
+type WokProps = { icon: FoodIconEntry; motion: FoodIconMotionProps };
+
+export const Wok = (props: WokProps) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  return <WokFrame {...props} frame={frame} fps={fps} />;
+};
+
+/** Reuse the original animation with an explicit local clock when embedded. */
+export const WokFrame = ({
+  icon,
+  motion,
+  frame,
+  fps,
+}: WokProps & { frame: number; fps: number }) => {
   const rimClipId = `wok-rim-${useId().replace(/:/g, "")}`;
   const { pan, orbit } = wokMotion(
     frame,

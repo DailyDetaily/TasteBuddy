@@ -5,15 +5,21 @@ import type { FoodIconEntry } from "./catalog";
 import type { FoodIconMotionProps } from "./settings";
 import { WINE_LINE_WIDTH, wineMotion, wineSurface } from "./wine-motion";
 
-export const Wine = ({
-  icon,
-  motion,
-}: {
-  icon: FoodIconEntry;
-  motion: FoodIconMotionProps;
-}) => {
+type WineProps = { icon: FoodIconEntry; motion: FoodIconMotionProps };
+
+export const Wine = (props: WineProps) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  return <WineFrame {...props} frame={frame} fps={fps} />;
+};
+
+/** Reuse the original animation with an explicit local clock when embedded. */
+export const WineFrame = ({
+  icon,
+  motion,
+  frame,
+  fps,
+}: WineProps & { frame: number; fps: number }) => {
   const clipId = `wine-bowl-${useId().replace(/:/g, "")}`;
   const pose = wineMotion(
     frame,

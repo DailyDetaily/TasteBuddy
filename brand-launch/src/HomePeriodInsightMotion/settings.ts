@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Category } from "../../../src/lib/gastronomy/engine";
 import { tasteChangeGraphSchema } from "../GraphMotion/line-settings";
 
 export const cardKinds = [
@@ -48,12 +49,12 @@ export type HomePeriodMotionProps = z.infer<typeof homePeriodMotionSchema>;
 
 export const cardIdentity: Record<
   CardKind,
-  { label: string; axis: TasteAxis }
+  { label: string; axis: TasteAxis; category: Category }
 > = {
-  recordFlow: { label: "기록 흐름", axis: "umami" },
-  newExperiences: { label: "새로운 경험", axis: "sweet" },
-  repeatPatterns: { label: "반복 기록", axis: "salty" },
-  tasteClue: { label: "미각 단서", axis: "sour" },
-  experienceBreadth: { label: "경험의 폭", axis: "fat" },
-  tasteChange: { label: "미각 기록 변화", axis: "bitter" },
+  recordFlow: { label: "기록 흐름", axis: "umami", category: "experience" },
+  newExperiences: { label: "새로운 경험", axis: "sweet", category: "experience" },
+  repeatPatterns: { label: "반복 기록", axis: "salty", category: "experience" },
+  tasteClue: { label: "미각 단서", axis: "sour", category: "sensation" },
+  experienceBreadth: { label: "경험의 폭", axis: "fat", category: "experience" },
+  tasteChange: { label: "미각 기록 변화", axis: "bitter", category: "change" },
 };

@@ -1,9 +1,15 @@
 // Generated from native SwiftUI sources by native-feedback-sync.mjs. Do not edit.
 export const nativeFeedback = {
   "schemaVersion": 1,
-  "sourceHash": "57106e8de55ac3f37c5fc4dd28d9e9d30585900ac6ce084c4ad763190adc1850",
-  "status": "ready",
-  "review": [],
+  "sourceHash": "06247b330baebcfe88041d5475bb521e15842907f8206bc864e44460d6c8ee34",
+  "status": "error",
+  "review": [
+    {
+      "section": "source",
+      "file": "ios/TasteBuddy",
+      "message": "자동 변환을 지원하지 않는 색상: chartComparisonTrack = Color.tbAdaptive(light: Color(hex: 0x666666, alpha: 0.18), dark: Color(hex: 0x454545))"
+    }
+  ],
   "sourceFiles": [
     "ios/TasteBuddy/DesignSystem/TBTheme.swift",
     "ios/TasteBuddy/Components/TBComponents.swift",
@@ -169,7 +175,7 @@ export const nativeFeedback = {
       "text": "#6F4609"
     },
     "신맛": {
-      "main": "#FBC02D",
+      "main": "#FFD600",
       "tint": "#FFF7CC",
       "text": "#6F5F09"
     },
@@ -349,49 +355,6 @@ export const nativeFeedback = {
     "controlFeedback": {},
     "selectionCard": {},
     "sectionCard": {},
-    "overall": {
-      "전체 평가": "전체 평가",
-      "메뉴 선택으로 돌아가기": "메뉴 선택으로 돌아가기",
-      "가장 가까운 느낌을 골라주세요.": "가장 가까운 느낌을 골라주세요.",
-      "미각 버블 고르기": "미각 버블 고르기",
-      "전체 평가를 하나 선택해 주세요.": "전체 평가를 하나 선택해 주세요."
-    },
-    "evaluation": {
-      "dining-overall-liking/1": "dining-overall-liking/1",
-      "이 음식은 전체적으로 어땠나요?": "이 음식은 전체적으로 어땠나요?",
-      "veryLiked": "veryLiked",
-      "liked": "liked",
-      "neutral": "neutral",
-      "disliked": "disliked",
-      "veryDisliked": "veryDisliked",
-      "정말 좋았어요": "정말 좋았어요",
-      "좋았어요": "좋았어요",
-      "보통이었어요": "보통이었어요",
-      "아쉬웠어요": "아쉬웠어요",
-      "많이 아쉬웠어요": "많이 아쉬웠어요",
-      "알 수 없는 응답": "알 수 없는 응답",
-      "very_positive": "very_positive",
-      "positive": "positive",
-      "negative": "negative",
-      "very_negative": "very_negative",
-      "overall_liking": "overall_liking",
-      "whole_dish": "whole_dish",
-      "unspecified": "unspecified",
-      "전체평가 객체가 아님": "전체평가 객체가 아님",
-      "unknown": "unknown",
-      "읽을 수 없는 전체평가": "읽을 수 없는 전체평가",
-      "읽을 수 없는 응답": "읽을 수 없는 응답",
-      "overallEvaluation": "overallEvaluation",
-      "liking": "liking",
-      "resolved": "resolved",
-      "unreadable_overall_evaluation_payload": "unreadable_overall_evaluation_payload",
-      "unknown_overall_evaluation_version": "unknown_overall_evaluation_version",
-      "overall_evaluation_label_mismatch": "overall_evaluation_label_mismatch",
-      "unknown_overall_evaluation_response": "unknown_overall_evaluation_response",
-      "invalid_overall_evaluation_scope": "invalid_overall_evaluation_scope",
-      "unresolved": "unresolved",
-      "overall-five-category-v1": "overall-five-category-v1"
-    },
     "backdrop": {}
   },
   "details": {
@@ -4790,6 +4753,6 @@ export const nativeFeedback = {
     "seafood",
     "noodle"
   ],
-  "inputHash": "5371b593605766a965b445e46e914cabf67102d2771a0af363f038e71224fbd1"
+  "inputHash": "e7c576b9a484b280a820cd30d80dc984b01bbafa9384ace49a1d54fa53610f7a"
 } as const;
 export const nativeFeedbackSync: {status: 'ready' | 'review' | 'error'; sourceHash: string; review: readonly {section: string; file: string; message: string}[]} = nativeFeedback;

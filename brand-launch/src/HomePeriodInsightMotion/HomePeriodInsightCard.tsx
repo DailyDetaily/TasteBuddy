@@ -1,5 +1,10 @@
 import type { CSSProperties, ReactNode } from "react";
 import { TASTE_TOKENS } from "../../../src/constants/designTokens";
+import InsightCategoryIcon from "../../../src/components/system/InsightCategoryIcon";
+import type { Category } from "../../../src/lib/gastronomy/engine";
+import SummaryCardFooter, {
+  type SummaryCardLegendItem,
+} from "../../../src/components/system/SummaryCardLegend";
 import { cardIdentity, type CardKind, type TasteAxis } from "./settings";
 import {
   nativeCardStyle,
@@ -7,21 +12,6 @@ import {
   nativeLineHeight,
   NativeText,
 } from "./native";
-
-// Coordinates follow the native LucideIcon.swift outline variants (24-unit grid).
-const iconPaths: Record<CardKind, string> = {
-  recordFlow:
-    "M8 2V6 M16 2V6 M5 4H19A2 2 0 0 1 21 6V20A2 2 0 0 1 19 22H5A2 2 0 0 1 3 20V6A2 2 0 0 1 5 4 M3 10H21 M9 16L11 18L15 14",
-  newExperiences:
-    "M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9Z M20 3V7 M22 5H18 M4 17V19 M5 18H3",
-  repeatPatterns:
-    "M3 12A9 9 0 0 1 12 3A9.75 9.75 0 0 1 18.74 5.74L21 8 M21 3V8H16 M21 12A9 9 0 0 1 12 21A9.75 9.75 0 0 1 5.26 18.26L3 16 M3 21V16H8",
-  tasteClue:
-    "M3 7C5 5 7 9 9 7S13 9 15 7S19 9 21 7 M3 12C5 10 7 14 9 12S13 14 15 12S19 14 21 12 M3 17C5 15 7 19 9 17S13 19 15 17S19 19 21 17",
-  experienceBreadth:
-    "M22 12A10 10 0 1 1 2 12A10 10 0 1 1 22 12 M2 12H22 M12 2C7.5 6 7.5 18 12 22 M12 2C16.5 6 16.5 18 12 22 M4 7H20 M4 17H20",
-  tasteChange: "M7 17L17 7 M7 7H17V17",
-};
 
 export type ArchiveChart = {
   kind: "timeSeries" | "distribution" | "composition";
@@ -34,6 +24,7 @@ export type HomePeriodInsightCardProps = {
   detail: string;
   chartValues: number[];
   accentAxis?: TasteAxis;
+  category?: Category;
   archiveChart?: ArchiveChart;
   labelOverride?: string;
   detailLineLimit?: number | null;
@@ -45,6 +36,7 @@ export type HomePeriodInsightCardProps = {
   showsDetailAction?: boolean;
   graphProgress?: number;
   graphContent?: ReactNode;
+  legend?: readonly SummaryCardLegendItem[];
   style?: CSSProperties;
 };
 
@@ -54,6 +46,7 @@ export const HomePeriodInsightCard: React.FC<HomePeriodInsightCardProps> = ({
   detail,
   chartValues,
   accentAxis,
+  category,
   archiveChart,
   labelOverride,
   detailLineLimit = 2,
@@ -65,6 +58,7 @@ export const HomePeriodInsightCard: React.FC<HomePeriodInsightCardProps> = ({
   showsDetailAction = false,
   graphProgress = 1,
   graphContent,
+  legend = [],
   style,
 }) => {
   const growth = Math.max(0, Math.min(1, graphProgress));
@@ -180,20 +174,12 @@ export const HomePeriodInsightCard: React.FC<HomePeriodInsightCardProps> = ({
         }}
       >
         {iconOverride ?? (
-          <svg
-            width={16}
-            height={16}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={TASTE_TOKENS[axis].palette.main}
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            style={{ flexShrink: 0 }}
-          >
-            <path d={iconPaths[kind]} />
-          </svg>
+          <span style={{ display: "flex", flexShrink: 0 }}>
+            <InsightCategoryIcon
+              category={category ?? identity.category}
+              color={TASTE_TOKENS[axis].palette.main}
+            />
+          </span>
         )}
         <div
           style={{
@@ -269,6 +255,11 @@ export const HomePeriodInsightCard: React.FC<HomePeriodInsightCardProps> = ({
             />
             <div>{balancedFooter}</div>
           </>
+        )}
+        {legend.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <SummaryCardFooter items={legend} />
+          </div>
         )}
       </div>
     </article>

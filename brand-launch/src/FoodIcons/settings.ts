@@ -21,7 +21,7 @@ const appearance = {
 };
 
 export const foodIconGridSchema = z.object({
-  ...appearance,
+  ...motionSettings,
   "아이콘 크기": z.number().min(24).max(120).step(4),
   "열 개수": z.number().int().min(4).max(8),
 });
@@ -43,8 +43,6 @@ const motionDefaults: FoodIconMotionProps = {
 
 export const gridDefaults: FoodIconGridProps = {
   ...motionDefaults,
-  "배경 색": "#E8EEF5",
-  "아이콘 색": "#90969C",
   "아이콘 크기": 56,
   "열 개수": 8,
 };

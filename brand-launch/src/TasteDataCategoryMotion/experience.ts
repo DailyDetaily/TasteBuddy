@@ -502,7 +502,7 @@ export function experienceFrame(
         ease((t - insightIntroDuration) / 0.4),
       );
       if (mark.role === "record") {
-        opacity = mix(base, 0.98, growths[index]);
+        opacity = mix(base, 1, growths[index]);
       } else opacity = mix(base, 1, tints[index]);
     }
     f.dots.push({

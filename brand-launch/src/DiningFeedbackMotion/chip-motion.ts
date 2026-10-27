@@ -42,11 +42,18 @@ export type ChipPose = {
   textOpacity: number;
 };
 
+export type ChipSeparation = {
+  travelSeconds: number;
+  neckStartSeconds: number;
+  neckDurationSeconds: number;
+};
+
 export const chipRowPoses = (
   elapsed: number,
   widths: number[],
   height: number,
   gap = 6,
+  separation?: ChipSeparation,
 ): ChipPose[] => {
   let left = 0;
   const poses: ChipPose[] = [];
@@ -58,7 +65,11 @@ export const chipRowPoses = (
     const radius = (height / 2) * mix(0.2, 1, smooth(age / 0.12));
     const parent = poses[index - 1];
     const center = parent
-      ? mix(parent.x + parent.width - 2, left + height / 2, smooth(age / 0.18))
+      ? mix(
+          parent.x + parent.width - 2,
+          left + height / 2,
+          smooth(age / (separation?.travelSeconds ?? 0.18)),
+        )
       : left + height / 2;
     const squash = Math.max(0, growth - 1) / PEAK_AMOUNT;
     const rebound =
@@ -87,10 +98,14 @@ export const chipBridge = (
   parent: ChipPose,
   child: ChipPose,
   rowHeight: number,
+  separation?: ChipSeparation,
 ) => {
-  if (!parent.visible || !child.visible || child.age >= CHIP_DETACH_SECONDS)
+  const neckStart = separation?.neckStartSeconds ?? 0.1;
+  const neckDuration = separation?.neckDurationSeconds ?? 0.12;
+  const detachAt = Math.min(CHIP_DETACH_SECONDS, neckStart + neckDuration);
+  if (!parent.visible || !child.visible || child.age >= detachAt)
     return "";
-  const detach = smooth((child.age - 0.1) / 0.12);
+  const detach = smooth((child.age - neckStart) / neckDuration);
   const angle = mix(1.1, 0.12, detach);
   const sin = Math.sin(angle),
     cos = Math.cos(angle);

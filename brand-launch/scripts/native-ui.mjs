@@ -17,7 +17,7 @@ const bundleId = 'com.juneh96.tastebuddy.ios';
 const screenNames = ['dining', 'feedback', 'analysis'];
 const packageLockPath = 'ios/TasteBuddy.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved';
 const inputPaths = ['ios/TasteBuddy', 'ios/Config', 'ios/project.yml', packageLockPath,
-  'brand-launch/public/images/hero-food.png', 'brand-launch/scripts/native-ui.mjs'];
+  'brand-launch/public/images/camera-entry/generated-pasta-reference.png', 'brand-launch/scripts/native-ui.mjs'];
 const activeChildren = new Set();
 let stopping = false;
 
@@ -350,7 +350,7 @@ async function refresh() {
     const container = await run('xcrun', ['simctl', 'get_app_container', udid, bundleId, 'data']);
     const photoDir = path.join(container, 'Library/Application Support/TasteBuddy/DiningFeedbackPhotos');
     await fs.mkdir(photoDir, {recursive: true});
-    await run('sips', ['-s', 'format', 'jpeg', path.join(brandRoot, 'public/images/hero-food.png'), '--out', path.join(photoDir, 'brand-video-01.jpg')]);
+    await run('sips', ['-s', 'format', 'jpeg', path.join(brandRoot, 'public/images/camera-entry/generated-pasta-reference.png'), '--out', path.join(photoDir, 'brand-video-butter-pasta.jpg')]);
     await fs.mkdir(stage, {recursive: true});
     const stagedScreens = {};
     for (const screen of screenNames) {

@@ -85,7 +85,7 @@ export const InsightMotion = ({time}: {time: number}) => {
   </g>;
 };
 
-const TasteMotion = ({ style, transitionFromAnalysis = false, sequence = false, divisions = 6, rayCount = 12 }: { style: MotionStyle; transitionFromAnalysis?: boolean; sequence?: boolean; divisions?: RotationDivisions; rayCount?: RotationRayCount }) => {
+const TasteMotion = ({ style, transitionFromAnalysis = false, sequence = false, divisions = 6, rayCount = 12, motionDiameter }: { style: MotionStyle; transitionFromAnalysis?: boolean; sequence?: boolean; divisions?: RotationDivisions; rayCount?: RotationRayCount; motionDiameter?: number }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const time = frame / fps;
@@ -103,8 +103,9 @@ const TasteMotion = ({ style, transitionFromAnalysis = false, sequence = false, 
   const points = circle ? analysisPoints(circle, collapseFromDensity) : activeStyle === "feedbackRings" ? [] : motionPoints(activeStyle, motionTime, divisions, rayCount);
   const lineDensity = circle?.lineDensity ?? 0;
   return (
-    <AbsoluteFill style={{backgroundColor: "white"}}>
-      <svg viewBox="0 0 640 640" width="100%" height="100%">
+    <AbsoluteFill style={{backgroundColor: "white", alignItems: "center", justifyContent: "center"}}>
+      {/* Radius 316 plus the 4-unit stroke gives a 636-unit outer diameter. */}
+      <svg viewBox={motionDiameter === undefined ? "0 0 640 640" : "2 2 636 636"} width={motionDiameter ?? "100%"} height={motionDiameter ?? "100%"}>
         {activeStyle === "feedbackRings" && <FeedbackMotion time={motionTime} rayCount={rayCount} angle={inFeedback ? feedbackEntry(4, motionTime, divisions, rayCount).angle : 0} endingAt={inFeedback ? feedbackTransitionDuration + 6 : null} />}
         {activeStyle === "analysis" && Array.from({length: points.length / 2}, (_, i) => (
           <line key={i} x1={points[i * 2].x} y1={points[i * 2].y} x2={points[i * 2 + 1].x} y2={points[i * 2 + 1].y} stroke={palette[analysisLineColorIndex(i, lineDensity)]} strokeWidth={4} opacity={Math.max(analysisLineOpacity(i, collapseFromDensity ?? lineDensity), analysisLineOpacity(i, lineDensity))} />
@@ -132,7 +133,7 @@ const TasteMotion = ({ style, transitionFromAnalysis = false, sequence = false, 
 
 export const TasteMotionCompositions = () => (
   <Folder name="TasteMotion">
-    <Composition id="TasteMotion-completeFlow" component={TasteMotion} defaultProps={{style: "analysis" as MotionStyle, sequence: true, divisions: 6 as RotationDivisions, rayCount: 12 as RotationRayCount}} durationInFrames={Math.round((4 + rotationTransitionDuration + 4 + feedbackTransitionDuration + 6 + feedbackEndDuration + 0.5) * 30)} fps={30} width={640} height={640} />
+    <Composition id="TasteMotion-completeFlow" component={TasteMotion} defaultProps={{style: "analysis" as MotionStyle, sequence: true, divisions: 6 as RotationDivisions, rayCount: 12 as RotationRayCount, motionDiameter: 720}} durationInFrames={Math.round((4 + rotationTransitionDuration + 4 + feedbackTransitionDuration + 6 + feedbackEndDuration + 0.5) * 30)} fps={30} width={1080} height={1080} />
     <Folder name="RotationModes">
       {([3, 6, 12] as const).map(divisions => (
         <Folder key={divisions} name={`${divisions}-segments`}>

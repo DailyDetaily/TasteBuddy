@@ -8,6 +8,14 @@ Remotion Studio는 BX·브랜딩 에이전시 스타일로 Taste Buddy의 브랜
 
 전체 모션 목록과 **블룸 프레임 / 소스 스플래터**의 이름·동작 규칙: [Taste Buddy 모션 시스템](../docs/design/motion-system.md).
 
+칩 모션만 보기: **Chip-Motion → [Sauce-Splatter](http://localhost:3110/Sauce-Splatter)**. 네이티브 음식 종류 칩의 문구·아이콘·선택 상태·속도·대기·유지·배율을 조절하는 [독립 컴포지션](src/SauceSplatter/README.md).
+
+컬러 가이드: **Color-Guide → [TasteColor-Guide](http://localhost:3110/TasteColor-Guide)**. 1080×1080, 원래 두 링의 비율을 유지한 바깥 지름 720px·사방 여백 180px. 안쪽 이동점 하나가 100→90→…→10→100을 끊김 없이 이어가며 단계 점을 쌓고 지운다. 정착 대기 없이 두 바퀴가 이어지고, 바깥 점은 안쪽 퇴장 한 바퀴와 동시에 다음 미각에 도착한다. 기본 속도 0.8배, 미각당 5초. [구성·모션·렌더 안내](src/ColorGuide/README.md).
+
+큰 미각 구: **Color-Guide → [TasteColor-GradientCircle](http://localhost:3110/TasteColor-GradientCircle)**. 지름 720px의 구형을 미각 단계별 100→10 틴트로 표현하며, TasteColor-Guide-Original과 같은 38.27초 타이밍으로 색이 그라데이션 전환된다. 두 가이드의 바깥 링도 같은 지름이며, 안쪽 링과의 원래 배치 비율을 유지한다. [구성·렌더 안내](src/ColorGuide/GradientCircle.README.md).
+
+기존 컬러 가이드: **Color-Guide → [TasteColor-Guide-Original](http://localhost:3110/TasteColor-Guide-Original)**. 정착 대기와 오버슛이 있던 수정 전 버전을 별도로 보존한 38.27초 영상이다. [안내](src/ColorGuide/Original/README.md).
+
 ## 앱 소개 영상 · 1차 시안
 
 **1920 × 1080 · 16:9 · 30fps · 30초(900프레임)**  

@@ -7,7 +7,9 @@
     "strict": true,
     "noEmit": true,
     "lib": [
-      "es2015"
+      "es2015",
+      "es2022.array",
+      "es2022.object"
     ],
     "esModuleInterop": true,
     "skipLibCheck": true,

@@ -1,23 +1,23 @@
 {
   "status": "ready",
-  "revision": "7483ccf47a31-1789917783044-68455f9c",
-  "capturedSourceHash": "7483ccf47a31cf68f30fe50e64f00a277770a6110c1c35032a73bca80f247fea",
-  "currentSourceHash": "7483ccf47a31cf68f30fe50e64f00a277770a6110c1c35032a73bca80f247fea",
-  "capturedAt": "2026-09-20T15:23:03.043Z",
+  "revision": "7f58ae6eaf5b-1791275280910-b5b84f86",
+  "capturedSourceHash": "7f58ae6eaf5b10368fe2e275e63f6890ffdc28fa913fc96d26940333aeaf7627",
+  "currentSourceHash": "7f58ae6eaf5b10368fe2e275e63f6890ffdc28fa913fc96d26940333aeaf7627",
+  "capturedAt": "2026-10-06T08:28:00.906Z",
   "message": "현재 iOS SwiftUI 소스로 앱 화면을 갱신했어요.",
   "screens": {
     "dining": {
-      "src": "native/7483ccf47a31-1789917783044-68455f9c-dining.png",
+      "src": "native/7f58ae6eaf5b-1791275280910-b5b84f86-dining.png",
       "width": 1206,
       "height": 2622
     },
     "feedback": {
-      "src": "native/7483ccf47a31-1789917783044-68455f9c-feedback.png",
+      "src": "native/7f58ae6eaf5b-1791275280910-b5b84f86-feedback.png",
       "width": 1206,
       "height": 2622
     },
     "analysis": {
-      "src": "native/7483ccf47a31-1789917783044-68455f9c-analysis.png",
+      "src": "native/7f58ae6eaf5b-1791275280910-b5b84f86-analysis.png",
       "width": 1206,
       "height": 2622
     }

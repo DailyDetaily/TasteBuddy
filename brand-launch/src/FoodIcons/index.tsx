@@ -1,5 +1,11 @@
 import { Composition, Folder } from "remotion";
 import { FoodIconGrid, FoodIconSingle } from "./Board";
+import { FoodIconTransition } from "./Transition";
+import { foodIconTransitionTiming } from "./transition-motion";
+import {
+  foodIconTransitionDefaults,
+  foodIconTransitionSchema,
+} from "./transition-settings";
 import { foodIcons } from "./catalog";
 import {
   FOOD_ICON_FPS,
@@ -33,6 +39,21 @@ export const FoodIconCompositions = () => (
       width={1920}
       height={1280}
       {...preview}
+    />
+    <Composition
+      id="FoodIcons-Transition"
+      component={FoodIconTransition}
+      schema={foodIconTransitionSchema}
+      defaultProps={foodIconTransitionDefaults}
+      calculateMetadata={({ props }) => ({
+        durationInFrames: foodIconTransitionTiming(props).durationInFrames,
+      })}
+      width={1080}
+      height={1080}
+      fps={FOOD_ICON_FPS}
+      durationInFrames={
+        foodIconTransitionTiming(foodIconTransitionDefaults).durationInFrames
+      }
     />
     <Folder name="Individual">
       {foodIcons.map((icon) => (

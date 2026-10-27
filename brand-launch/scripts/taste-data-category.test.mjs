@@ -149,6 +149,10 @@ test("idle geometry never changes data; reduce motion is complete from frame zer
       b = categoryFrame(data, 50, { playback: "reduced" });
     assert.deepEqual(a, b);
     assert.equal(a.summaryOpacity, 1);
+    assert(a.dots.every(d => d.opacity === 1), 'settled points use opaque color roles');
+    if (kind === 'preferenceFocus') {
+      assert(a.dots.some(d => d.tint === 0) && a.dots.some(d => d.tint === 1));
+    }
     const first = categoryFrame(data, 3, { playback: "idle" }),
       later = categoryFrame(data, 9, { playback: "idle" });
     const meaning = (f) =>
@@ -511,12 +515,7 @@ test("experience reserves dark-point clearance, stays smooth, and centres record
       if (d.role === "halo") {
         const palette = tokens.get(d.color);
         assert(palette);
-        assert.notEqual(d.tintColor.toLowerCase(), palette.tintSurface.toLowerCase());
-        for (const offset of [1, 3, 5]) {
-          const channel = (hex) => parseInt(hex.slice(offset, offset + 2), 16);
-          const a = channel(palette.main), b = channel(palette.tintSurface);
-          assert(channel(d.tintColor) >= Math.min(a, b) && channel(d.tintColor) <= Math.max(a, b));
-        }
+        assert.equal(d.tintColor.toLowerCase(), palette.tintSurface.toLowerCase());
         assert.equal(d.tint, 1);
       }
     }
@@ -612,7 +611,7 @@ test("sensory ring deduplicates meals and keeps independent proportions in every
       selected: "taste.salty",
     });
     assert.equal(f.value, "—");
-    assert.equal(f.dots.length, state === "held" ? 126 : 0);
+    assert.equal(f.dots.length, state === "held" || state === "empty" ? 126 : 0);
     assert.equal(f.lines.filter((l) => l.data).length, 0);
     assert(f.selection.includes("강도 응답 자료 없음"));
   }
@@ -623,7 +622,8 @@ test("sensory ring deduplicates meals and keeps independent proportions in every
   assert(!f.selection.some((s) => s.startsWith("강도 약함")));
 });
 
-test("all categories retain bounded periodic idle movement without changing encoded values", () => {
+test("all categories retain bounded periodic idle movement without changing encoded values", async () => {
+  const { contextRingScale, CONTEXT_ZIGZAG } = await load("context");
   for (const kind of categories) {
     const data = fixture(kind),
       rest = categoryFrame(data, 0, { playback: "idle" });
@@ -686,8 +686,11 @@ test("all categories retain bounded periodic idle movement without changing enco
       }
     }
     assert(max > 0.5, kind + " must visibly move");
+    const bound = kind === "contextLayers" || kind === "changeRipples"
+      ? 2 * CONTEXT_ZIGZAG * contextRingScale(kind === "contextLayers" ? Math.min(data.conditions.length, 4) : 2) + 1
+      : kind === "sensoryRays" ? 15 : 12;
     assert(
-      max < (kind === "sensoryRays" ? 15 : kind === "contextLayers" ? 13 : 12),
+      max < bound,
       kind + " drift remains bounded",
     );
   }
@@ -817,9 +820,14 @@ test("context enters once and keeps its idle shape indefinitely without timed co
   assert.deepEqual(reduced, contextFrame(data, 99, { playback: "reduced" }));
 });
 
-test("context dots match the base ring size and retain equal neighbour spacing without lines", () => {
+test("context dots match the base ring size and retain equal neighbour spacing without lines", async () => {
+  const { contextRingScale } = await load("context");
   for (const scenario of ["standard", "dense", "single"]) {
     const data = fixture("contextLayers", scenario);
+    const scale = contextRingScale(Math.min(data.conditions.length, 4));
+    const rest = categoryFrame(data, 0, {playback: "reduced"});
+    const outer = Math.max(...rest.dots.map(d => Math.hypot(d.x - 320, d.y - 320) + d.r));
+    assert(Math.abs(outer * 2 * 340 / 640 - 302.8125) < 1e-8);
     for (const time of [0, 1.5, 6, 11.9]) {
       const f = categoryFrame(data, time, { playback: "idle" });
       assert.equal(f.lines.length, 0);
@@ -831,7 +839,7 @@ test("context dots match the base ring size and retain equal neighbour spacing w
           const first = dots[0],
             second = dots[1];
           const spacing = Math.hypot(first.x - second.x, first.y - second.y);
-          assert(spacing >= 19 && spacing <= 26 + 1e-8);
+          assert(spacing >= 19 && spacing <= 26 * scale + 1e-8);
           assert(
             Math.abs(Math.hypot(d.x - next.x, d.y - next.y) - spacing) < 1e-8,
           );
@@ -842,9 +850,10 @@ test("context dots match the base ring size and retain equal neighbour spacing w
 });
 
 test("context zigzag alternates radial offsets without seam gaps or overlapping layers", async () => {
-  const { contextRingRadius, contextIdleZigzag, CONTEXT_ZIGZAG, CONTEXT_IDLE } =
+  const { contextRingRadius, contextRingScale, contextIdleZigzag, CONTEXT_ZIGZAG, CONTEXT_IDLE } =
     await load("context");
   const data = fixture("contextLayers", "dense");
+  const scale = contextRingScale(4);
   for (const time of [0, 2, 4, 6, CONTEXT_IDLE - 0.1]) {
     const f = categoryFrame(data, time, { playback: "idle" });
     data.conditions.slice(0, 4).forEach((condition, layer) => {
@@ -855,9 +864,9 @@ test("context zigzag alternates radial offsets without seam gaps or overlapping 
         assert(
           Math.abs(
             radius -
-              contextRingRadius(layer) -
+              contextRingRadius(layer) * scale -
               (i % 2 === 0 ? CONTEXT_ZIGZAG : -CONTEXT_ZIGZAG) *
-                contextIdleZigzag(time),
+                contextIdleZigzag(time) * scale,
           ) < 1e-8,
         );
       });
@@ -872,8 +881,9 @@ test("context zigzag alternates radial offsets without seam gaps or overlapping 
 });
 
 test("context idle passes through circle and reversed zigzag while retaining identity and reduced motion", async () => {
-  const { contextRingRadius, CONTEXT_ZIGZAG, CONTEXT_IDLE } = await load("context");
+  const { contextRingRadius, contextRingScale, CONTEXT_ZIGZAG, CONTEXT_IDLE } = await load("context");
   const data = fixture("contextLayers");
+  const scale = contextRingScale(data.conditions.length);
   const samples = [0, 2, 4, 6, CONTEXT_IDLE].map((t) =>
     categoryFrame(data, t, { playback: "idle" }),
   );
@@ -884,9 +894,9 @@ test("context idle passes through circle and reversed zigzag while retaining ide
       const dots = f.dots.filter((d) => d.group === condition.id);
       dots.forEach((d, i) => {
         const expected =
-          contextRingRadius(layer) +
+          contextRingRadius(layer) * scale +
           (i % 2 === 0 ? CONTEXT_ZIGZAG : -CONTEXT_ZIGZAG) *
-            [1, 0, -1, 0, 1][k];
+            [1, 0, -1, 0, 1][k] * scale;
         assert(Math.abs(Math.hypot(d.x - 320, d.y - 320) - expected) < 1e-8);
       });
     });
@@ -994,7 +1004,7 @@ test("change and context share the same ring geometry, idle wave and reversed en
   }
   for (const state of ["empty", "held", "unanswered"]) {
     const f = categoryFrame(fixture("changeRipples", state), 5);
-    assert.equal(f.dots.length, state === "held" ? 126 : 0);
+    assert.equal(f.dots.length, state === "held" ? 126 : state === "empty" ? 84 : 0);
     assert.equal(f.value, "— → —");
   }
   const f = categoryFrame(change, 0, { playback: "reduced" });
@@ -1005,6 +1015,31 @@ test("change and context share the same ring geometry, idle wave and reversed en
   );
 });
 
+
+test("empty categories retain their own basic shapes without inventing records or zero values", () => {
+  const counts = [126, 126, 126, 144, 84];
+  for (const [i, kind] of categories.entries()) {
+    const data = fixture(kind, "empty");
+    const before = JSON.stringify(data);
+    const frame = categoryFrame(data, 0, {playback: "reduced"});
+    assert.equal(frame.state, "noData");
+    assert(frame.value.includes("—"));
+    assert.equal(frame.dots.length, counts[i]);
+    assert(frame.dots.every(d => d.color === "#E4E4E4" && d.data === false && !d.group && !d.role && d.opacity === 1));
+    assert.equal(frame.lines.length, 0);
+    assert.equal(frame.labels.length, 0);
+    assert.equal(frame.summaryOpacity, 1);
+    assert.match(frame.legend, /기록·평가·조건 수를 나타내지 않음/);
+    assert.deepEqual(frame, categoryFrame(data, 60, {playback: "idle", selected: "missing"}));
+    assert.equal(JSON.stringify(data), before);
+    if (kind !== "experienceCluster") {
+      const populated = categoryFrame(fixture(kind), 0, {playback: "reduced"});
+      const shape = f => f.dots.map(({x, y, r}) => ({x, y, r})).sort((a,b) => a.x - b.x || a.y - b.y);
+      assert.deepEqual(shape(frame), shape(populated), kind + ' retains its own geometry');
+    }
+  }
+  assert.equal(categoryFrame(fixture("experienceCluster", "zero"), 0, {playback: "reduced"}).value, "0");
+});
 
 test("held categories use the basic neutral ring colour without presenting decorative dots as data", () => {
   for (const kind of categories) {

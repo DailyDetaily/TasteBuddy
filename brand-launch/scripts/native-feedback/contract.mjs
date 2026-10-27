@@ -475,7 +475,22 @@ export async function buildContract(sources, baseline, demo) {
         label,
         {
           main: hex("main"),
-          tint: hex("tintSurface"),
+          tint: /tintSurface: 0x/i.test(body)
+            ? hex("tintSurface")
+            : (() => {
+                const white = Number(match(
+                  sources.palette,
+                  /tintSurface:\s*TBTasteTint\.color\(main, white: (\d+)\)/,
+                  "palette white-mix surface",
+                )[1]);
+                if (![10, 20, 30, 40, 50, 60, 70, 80, 90, 95].includes(white))
+                  throw new Error("Unsupported palette white-mix step");
+                const main = hex("main");
+                return "#" + [1, 3, 5].map(offset =>
+                  Math.floor((parseInt(main.slice(offset, offset + 2), 16) * (100 - white) + 255 * white + 50) / 100)
+                    .toString(16).padStart(2, "0"),
+                ).join("").toUpperCase();
+              })(),
           text: hex("tintSurfaceText"),
         },
       ];

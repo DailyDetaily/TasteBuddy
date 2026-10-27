@@ -38,7 +38,7 @@ export const cardTasteChangeLayout = (rows: TasteChangeRows) => {
 };
 
 // Native TasteLineChart: 24pt rows + 4pt spacing, unamplified shared domain.
-// Card timing owns entrance/exit; the standalone graph remains unchanged.
+// Card timing owns entrance/exit; the shared renderer supplies graph geometry.
 export const CardTasteChangeGraph: React.FC<{
   rows: TasteChangeRows;
   progress: number;

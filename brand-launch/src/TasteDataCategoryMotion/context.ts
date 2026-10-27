@@ -7,7 +7,7 @@ import type { ContextData, Frame, Options, Point, State, Dot } from "./types";
 export const CONTEXT_DOT_RADIUS = 9.5;
 export const CONTEXT_DOT_PITCH = 26;
 export const CONTEXT_ZIGZAG = 6;
-// The approved settled zigzag and the animated radial travel now both use ±6.
+// Base settled zigzag and radial travel are ±6, before fitting the whole multi-ring layout.
 const CONTEXT_LAYOUT_OFFSET = 6;
 // Even slot counts close the alternating inward/outward pattern at every seam.
 export const contextRingSlots = (layer: number) => 12 + layer * 4;
@@ -22,6 +22,10 @@ export const contextRingRadius = (layer: number) => {
     (2 * Math.sin(halfStep))
   );
 };
+/** Match the ~303px envelope of the other rings in a 340px view without enlarging dots. */
+export const contextRingScale = (layerCount: number) => layerCount > 0
+  ? (285 - CONTEXT_DOT_RADIUS) / (contextRingRadius(layerCount - 1) + CONTEXT_ZIGZAG)
+  : 1;
 export const CONTEXT_INTRO = 1.8;
 export const CONTEXT_IDLE = 8;
 const TAU = Math.PI * 2;
@@ -79,6 +83,7 @@ export function dotRingMotion(
     (phase.entry / CONTEXT_INTRO) * insightIntroDuration,
   );
   let entryIndex = 0;
+  const scale = contextRingScale(layerCount);
   const zigzagPhase = phase.reduced ? 1 : contextIdleZigzag(phase.idle);
   const layers = Array.from({ length: layerCount }, (_, layer) => {
     const count = contextRingSlots(layer) * 3,
@@ -87,7 +92,7 @@ export function dotRingMotion(
       const angle = -Math.PI / 2 + (TAU * (slot + 0.5)) / count;
       const target = polar(
         angle,
-        radius + (slot % 2 === 0 ? 1 : -1) * CONTEXT_ZIGZAG * zigzagPhase,
+        (radius + (slot % 2 === 0 ? 1 : -1) * CONTEXT_ZIGZAG * zigzagPhase) * scale,
       );
       const source = entrance.dots[entryIndex++];
       return {
@@ -239,7 +244,7 @@ export function contextFrame(
     labels.forEach((label, c) =>
       f.labels.push({
         id: "response:" + c,
-        ...polar(-Math.PI / 2 + ((c + 0.5) * TAU) / 3, 286),
+        ...polar(-Math.PI / 2 + ((c + 0.5) * TAU) / 3, 308),
         text: label,
         anchor: "middle",
       }),

@@ -10,7 +10,12 @@ import {
 } from "remotion";
 import { TASTE_IDS, TASTE_TOKENS } from "../../../src/constants/designTokens";
 import { fontReady } from "../fonts";
-import { LINE_METRICS, linePath, linePose, lineTiming } from "./line-motion";
+import { LINE_METRICS, linePose, lineTiming } from "./line-motion";
+import {
+  pointOnRoundedTrack,
+  roundedLineTrack,
+  roundedTrackWindow,
+} from "./rounded-line-track";
 import type { TasteChangeGraphProps } from "./line-settings";
 
 export type TasteChangeGraphScene = {
@@ -106,7 +111,22 @@ export const TasteChangeGraphView: React.FC<{
             (props.재생 === "정지"
               ? 0
               : timing.padding + index * timing.stagger);
-          const d = linePath(pose.visible);
+          const track = roundedLineTrack(pose.track, LINE_METRICS.nodeRadius);
+          const exitProgress =
+            "exitProgress" in pose ? Number(pose.exitProgress) : 0;
+          const startDistance = !pending ? track.length * exitProgress : 0;
+          const endDistance =
+            track.length *
+            (pending && exitProgress > 0 ? 1 - exitProgress : pose.progress);
+          const d = track.path;
+          const window = roundedTrackWindow(
+            track.length,
+            startDistance,
+            endDistance,
+          );
+          const endpoint = pending
+            ? pose.endpoint
+            : pointOnRoundedTrack(track, endDistance);
           return (
             <Sequence
               key={index}
@@ -170,6 +190,7 @@ export const TasteChangeGraphView: React.FC<{
                     <path
                       data-mark="track"
                       d={d}
+                      {...window}
                       fill="none"
                       stroke={pending ? `url(#${trackId})` : tint}
                       strokeWidth={LINE_METRICS.trackWidth}
@@ -184,6 +205,7 @@ export const TasteChangeGraphView: React.FC<{
                       <path
                         data-mark="core"
                         d={d}
+                        {...window}
                         fill="none"
                         stroke={`url(#${coreId})`}
                         strokeWidth={LINE_METRICS.coreWidth}
@@ -193,11 +215,11 @@ export const TasteChangeGraphView: React.FC<{
                     )}
                   </>
                 )}
-                {pose.opacity > 0 && pose.endpoint && (
+                {pose.opacity > 0 && pose.endpoint && endpoint && (
                   <circle
                     data-mark="endpoint"
-                    cx={pose.endpoint.x}
-                    cy={pose.endpoint.y}
+                    cx={endpoint.x}
+                    cy={endpoint.y}
                     r={LINE_METRICS.nodeRadius}
                     fill={main}
                     opacity={scene?.endpointOpacities?.[index] ?? 1}
@@ -234,7 +256,3 @@ export const TasteChangeGraphView: React.FC<{
     </Container>
   );
 };
-
-export const TasteChangeGraph: React.FC<TasteChangeGraphProps> = (props) => (
-  <TasteChangeGraphView graph={props} />
-);
